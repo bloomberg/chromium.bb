@@ -22,7 +22,7 @@ const AXPosition AXPosition::CreatePositionBeforeObject(const AXObject& child) {
   // If |child| is a text object, make behavior the same as
   // |CreateFirstPositionInObject| so that equality would hold.
   if (child.GetNode() && child.GetNode()->IsTextNode())
-    return CreateFirstPositionInContainerObject(child);
+    return CreateFirstPositionInObject(child);
 
   const AXObject* parent = child.ParentObjectUnignored();
   DCHECK(parent);
@@ -37,7 +37,7 @@ const AXPosition AXPosition::CreatePositionAfterObject(const AXObject& child) {
   // If |child| is a text object, make behavior the same as
   // |CreateLastPositionInObject| so that equality would hold.
   if (child.GetNode() && child.GetNode()->IsTextNode())
-    return CreateLastPositionInContainerObject(child);
+    return CreateLastPositionInObject(child);
 
   const AXObject* parent = child.ParentObjectUnignored();
   DCHECK(parent);
@@ -48,7 +48,7 @@ const AXPosition AXPosition::CreatePositionAfterObject(const AXObject& child) {
 }
 
 // static
-const AXPosition AXPosition::CreateFirstPositionInContainerObject(
+const AXPosition AXPosition::CreateFirstPositionInObject(
     const AXObject& container) {
   if (container.GetNode() && container.GetNode()->IsTextNode()) {
     AXPosition position(container);
@@ -63,7 +63,7 @@ const AXPosition AXPosition::CreateFirstPositionInContainerObject(
 }
 
 // static
-const AXPosition AXPosition::CreateLastPositionInContainerObject(
+const AXPosition AXPosition::CreateLastPositionInObject(
     const AXObject& container) {
   if (container.GetNode() && container.GetNode()->IsTextNode()) {
     AXPosition position(container);
@@ -77,8 +77,7 @@ const AXPosition AXPosition::CreateLastPositionInContainerObject(
     return position;
   }
   AXPosition position(container);
-  position.text_offset_or_child_index_ =
-      static_cast<int>(container.Children().size());
+  position.text_offset_or_child_index_ = container.ChildCount();
   DCHECK(position.IsValid());
   return position;
 }
@@ -131,8 +130,7 @@ const AXPosition AXPosition::FromPosition(const Position& position) {
 
   const Node* node_after_position = position.ComputeNodeAfterPosition();
   if (!node_after_position) {
-    ax_position.text_offset_or_child_index_ =
-        static_cast<int>(container->Children().size());
+    ax_position.text_offset_or_child_index_ = container->ChildCount();
     DCHECK(ax_position.IsValid());
     return ax_position;
   }
@@ -207,8 +205,7 @@ bool AXPosition::IsValid() const {
   DCHECK(text_offset_or_child_index_);
   if (text_offset_or_child_index_ &&
       !container_object_->GetNode()->IsTextNode()) {
-    if (text_offset_or_child_index_ >
-        static_cast<int>(container_object_->Children().size()))
+    if (text_offset_or_child_index_ > container_object_->ChildCount())
       return false;
   }
 
@@ -263,8 +260,7 @@ const PositionWithAffinity AXPosition::ToPositionWithAffinity(
   }
 
   if (!IsTextPosition()) {
-    if (ChildIndex() ==
-        static_cast<int>(container_object_->Children().size())) {
+    if (ChildIndex() == container_object_->ChildCount()) {
       return PositionWithAffinity(Position::LastPositionInNode(*container_node),
                                   affinity_);
     }

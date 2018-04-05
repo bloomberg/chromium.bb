@@ -23,7 +23,7 @@ TEST_F(AccessibilityTest, SetSelectionInText) {
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
   const AXObject* ax_static_text =
-      *(GetAXObjectByElementId("paragraph")->Children().begin());
+      GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
   const auto ax_base =
       AXPosition::CreatePositionInTextObject(*ax_static_text, 3);
@@ -44,7 +44,7 @@ TEST_F(AccessibilityTest, SetSelectionInTextWithWhiteSpace) {
   const Node* text = GetElementById("paragraph")->firstChild();
   ASSERT_NE(nullptr, text);
   const AXObject* ax_static_text =
-      *(GetAXObjectByElementId("paragraph")->Children().begin());
+      GetAXObjectByElementId("paragraph")->FirstChild();
   ASSERT_NE(nullptr, ax_static_text);
   const auto ax_base =
       AXPosition::CreatePositionInTextObject(*ax_static_text, 3);

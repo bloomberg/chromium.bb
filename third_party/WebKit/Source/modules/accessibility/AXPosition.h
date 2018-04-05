@@ -34,10 +34,9 @@ class MODULES_EXPORT AXPosition final {
  public:
   static const AXPosition CreatePositionBeforeObject(const AXObject& child);
   static const AXPosition CreatePositionAfterObject(const AXObject& child);
-  static const AXPosition CreateFirstPositionInContainerObject(
+  static const AXPosition CreateFirstPositionInObject(
       const AXObject& container);
-  static const AXPosition CreateLastPositionInContainerObject(
-      const AXObject& container);
+  static const AXPosition CreateLastPositionInObject(const AXObject& container);
   static const AXPosition CreatePositionInTextObject(
       const AXObject& container,
       int offset,
