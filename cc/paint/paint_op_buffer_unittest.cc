@@ -1955,7 +1955,7 @@ TEST_P(PaintOpSerializationTest, UsesOverridenFlags) {
     PaintOp* written = PaintOp::Deserialize(
         output_.get(), bytes_written, deserialized.get(), deserialized_size,
         &bytes_read, options_provider.deserialize_options());
-    ASSERT_TRUE(written);
+    ASSERT_TRUE(written) << PaintOpTypeToString(GetParamType());
     EXPECT_EQ(*op, *written);
     written->DestroyThis();
     written = nullptr;
