@@ -4,6 +4,7 @@
 
 #include "components/exo/client_controlled_shell_surface.h"
 
+#include "ash/frame/custom_frame_view_ash.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"
@@ -266,7 +267,7 @@ TEST_F(ClientControlledShellSurfaceTest, SurfaceShadow) {
   EXPECT_FALSE(wm::ShadowController::GetShadowForWindow(window));
 
   // 3) Create a shadow.
-  surface->SetFrame(SurfaceFrameType::NORMAL);
+  surface->SetFrame(SurfaceFrameType::SHADOW);
   shell_surface->SetShadowBounds(gfx::Rect(10, 10, 100, 100));
   surface->Commit();
   ui::Shadow* shadow = wm::ShadowController::GetShadowForWindow(window);
@@ -321,7 +322,7 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowWithStateChange) {
   const gfx::Rect original_bounds(gfx::Point(10, 10), content_size);
   shell_surface->SetGeometry(original_bounds);
   surface->Attach(buffer.get());
-  surface->SetFrame(SurfaceFrameType::NORMAL);
+  surface->SetFrame(SurfaceFrameType::SHADOW);
   surface->Commit();
 
   // Placing a shadow at screen origin will make the shadow's origin (-10, -10).
@@ -380,7 +381,7 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowWithTransform) {
   const gfx::Rect original_bounds(gfx::Point(10, 10), content_size);
   shell_surface->SetGeometry(original_bounds);
   surface->Attach(buffer.get());
-  surface->SetFrame(SurfaceFrameType::NORMAL);
+  surface->SetFrame(SurfaceFrameType::SHADOW);
   surface->Commit();
 
   aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
@@ -410,7 +411,7 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowStartMaximized) {
       exo_test_helper()->CreateClientControlledShellSurface(surface.get());
   shell_surface->SetMaximized();
   surface->Attach(buffer.get());
-  surface->SetFrame(SurfaceFrameType::NORMAL);
+  surface->SetFrame(SurfaceFrameType::SHADOW);
   surface->Commit();
 
   views::Widget* widget = shell_surface->GetWidget();
@@ -431,6 +432,82 @@ TEST_F(ClientControlledShellSurfaceTest, ShadowStartMaximized) {
   ASSERT_TRUE(shadow);
   EXPECT_TRUE(shadow->layer()->visible());
   EXPECT_EQ(gfx::Rect(10, 10, 100, 100), shadow->content_bounds());
+}
+
+TEST_F(ClientControlledShellSurfaceTest, Frame) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+
+  std::unique_ptr<Surface> surface(new Surface);
+
+  gfx::Rect client_bounds(20, 50, 300, 200);
+  gfx::Rect fullscreen_bounds(0, 0, 800, 500);
+  // The window bounds is the client bounds + frame size.
+  gfx::Rect normal_window_bounds(20, 17, 300, 233);
+
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  surface->Attach(buffer.get());
+  shell_surface->SetGeometry(client_bounds);
+  surface->SetFrame(SurfaceFrameType::NORMAL);
+  surface->Commit();
+
+  views::Widget* widget = shell_surface->GetWidget();
+  ash::CustomFrameViewAsh* frame_view = static_cast<ash::CustomFrameViewAsh*>(
+      widget->non_client_view()->frame_view());
+
+  // Normal state.
+  EXPECT_TRUE(frame_view->visible());
+  EXPECT_EQ(normal_window_bounds, widget->GetWindowBoundsInScreen());
+  EXPECT_EQ(client_bounds,
+            frame_view->GetClientBoundsForWindowBounds(normal_window_bounds));
+
+  // Maximized
+  shell_surface->SetMaximized();
+  shell_surface->SetGeometry(fullscreen_bounds);
+  surface->Commit();
+
+  EXPECT_TRUE(frame_view->visible());
+  EXPECT_EQ(fullscreen_bounds, widget->GetWindowBoundsInScreen());
+  EXPECT_EQ(
+      gfx::Size(800, 467),
+      frame_view->GetClientBoundsForWindowBounds(fullscreen_bounds).size());
+
+  // AutoHide
+  surface->SetFrame(SurfaceFrameType::AUTOHIDE);
+  EXPECT_TRUE(frame_view->visible());
+  EXPECT_EQ(fullscreen_bounds, widget->GetWindowBoundsInScreen());
+  EXPECT_EQ(fullscreen_bounds,
+            frame_view->GetClientBoundsForWindowBounds(fullscreen_bounds));
+
+  // Fullscreen state.
+  shell_surface->SetFullscreen(true);
+  surface->Commit();
+  EXPECT_TRUE(frame_view->visible());
+  EXPECT_EQ(fullscreen_bounds, widget->GetWindowBoundsInScreen());
+  EXPECT_EQ(fullscreen_bounds,
+            frame_view->GetClientBoundsForWindowBounds(fullscreen_bounds));
+
+  // Restore to normal state.
+  shell_surface->SetRestored();
+  shell_surface->SetGeometry(client_bounds);
+  surface->SetFrame(SurfaceFrameType::NORMAL);
+  surface->Commit();
+  EXPECT_TRUE(frame_view->visible());
+  EXPECT_EQ(normal_window_bounds, widget->GetWindowBoundsInScreen());
+  EXPECT_EQ(client_bounds,
+            frame_view->GetClientBoundsForWindowBounds(normal_window_bounds));
+
+  // No frame. The all bounds are same as client bounds.
+  shell_surface->SetRestored();
+  shell_surface->SetGeometry(client_bounds);
+  surface->SetFrame(SurfaceFrameType::NONE);
+  surface->Commit();
+  EXPECT_FALSE(frame_view->visible());
+  EXPECT_EQ(client_bounds, widget->GetWindowBoundsInScreen());
+  EXPECT_EQ(client_bounds,
+            frame_view->GetClientBoundsForWindowBounds(client_bounds));
 }
 
 TEST_F(ClientControlledShellSurfaceTest, CompositorLockInRotation) {

@@ -114,6 +114,9 @@ class CustomFrameView : public ash::CustomFrameViewAsh {
       CustomFrameViewAsh::SetShouldPaintHeader(paint);
       return;
     }
+    // TODO(oshima): The caption area will be unknown
+    // if a client draw a caption. (It may not even be
+    // rectangular). Remove mask.
     aura::Window* window = GetWidget()->GetNativeWindow();
     ui::Layer* layer = window->layer();
     if (paint) {
@@ -730,21 +733,39 @@ bool ShellSurfaceBase::IsInputEnabled(Surface*) const {
 }
 
 void ShellSurfaceBase::OnSetFrame(SurfaceFrameType type) {
-  // TODO(reveman): Allow frame to change after surface has been enabled.
   switch (type) {
     case SurfaceFrameType::NONE:
       frame_enabled_ = false;
       shadow_bounds_.reset();
       break;
     case SurfaceFrameType::NORMAL:
+    case SurfaceFrameType::AUTOHIDE:
+    case SurfaceFrameType::OVERLAY:
       frame_enabled_ = true;
-      shadow_bounds_ = gfx::Rect();
+      if (!shadow_bounds_)
+        shadow_bounds_ = gfx::Rect();
       break;
     case SurfaceFrameType::SHADOW:
       frame_enabled_ = false;
       shadow_bounds_ = gfx::Rect();
       break;
   }
+  if (!widget_)
+    return;
+  CustomFrameView* frame_view =
+      static_cast<CustomFrameView*>(widget_->non_client_view()->frame_view());
+  if (frame_view->enabled() == frame_enabled_)
+    return;
+
+  frame_view->SetEnabled(frame_enabled_);
+  frame_view->SetVisible(frame_enabled_);
+  frame_view->SetShouldPaintHeader(frame_enabled_);
+  frame_view->SetHeaderHeight(base::nullopt);
+  widget_->GetRootView()->Layout();
+  // TODO(oshima): We probably should wait applying these if the
+  // window is animating.
+  UpdateWidgetBounds();
+  UpdateSurfaceBounds();
 }
 
 void ShellSurfaceBase::OnSetFrameColors(SkColor active_color,
@@ -1245,19 +1266,17 @@ bool ShellSurfaceBase::IsResizing() const {
 void ShellSurfaceBase::UpdateWidgetBounds() {
   DCHECK(widget_);
 
-  // Return early if the shell is currently managing the bounds of the widget.
-  // 1) When a window is either maximized/fullscreen/pinned, and the bounds
-  // are not controlled by a client.
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(widget_->GetNativeWindow());
-  if (window_state->IsMaximizedOrFullscreenOrPinned() &&
-      !window_state->allow_set_bounds_direct()) {
-    return;
+  // Return early if the shell is currently managing the bounds of the widget.
+  if (!window_state->allow_set_bounds_direct()) {
+    // 1) When a window is either maximized/fullscreen/pinned.
+    if (window_state->IsMaximizedOrFullscreenOrPinned())
+      return;
+    // 2) When a window is being dragged by |resizer_|.
+    if (IsResizing())
+      return;
   }
-
-  // 2) When a window is being dragged by |resizer_|.
-  if (IsResizing())
-    return;
 
   // Return early if there is pending configure requests.
   if (!pending_configs_.empty() || scoped_configure_)

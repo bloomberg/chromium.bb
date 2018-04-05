@@ -36,6 +36,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/frame/caption_buttons/caption_button_types.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -1969,6 +1970,18 @@ void bind_xdg_shell_v6(wl_client* client,
 ////////////////////////////////////////////////////////////////////////////////
 // remote_surface_interface:
 
+SurfaceFrameType RemoteShellSurfaceFrameType(uint32_t frame_type) {
+  switch (frame_type) {
+    case ZCR_REMOTE_SURFACE_V1_FRAME_TYPE_AUTOHIDE:
+      return SurfaceFrameType::AUTOHIDE;
+    case ZCR_REMOTE_SURFACE_V1_FRAME_TYPE_OVERLAY:
+      return SurfaceFrameType::OVERLAY;
+    default:
+      VLOG(2) << "Unkonwn remote-shell frame type: " << frame_type;
+      return SurfaceFrameType::NONE;
+  }
+}
+
 void remote_surface_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
@@ -2198,6 +2211,22 @@ void remote_surface_start_resize(wl_client* client,
       Component(direction), gfx::Point(x, y));
 }
 
+void remote_surface_set_frame(wl_client* client,
+                              wl_resource* resource,
+                              uint32_t type) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->OnSetFrame(
+      RemoteShellSurfaceFrameType(type));
+}
+
+void remote_surface_set_frame_buttons(wl_client* client,
+                                      wl_resource* resource,
+                                      uint32_t visible_button_mask,
+                                      uint32_t enabled_button_mask) {}
+
+void remote_surface_set_extra_title(wl_client* client,
+                                    wl_resource* resource,
+                                    const char* frame_extra_title) {}
+
 const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -2234,7 +2263,10 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_set_max_size,
     remote_surface_set_snapped_to_left,
     remote_surface_set_snapped_to_right,
-    remote_surface_start_resize};
+    remote_surface_start_resize,
+    remote_surface_set_frame,
+    remote_surface_set_frame_buttons,
+    remote_surface_set_extra_title};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
@@ -2661,7 +2693,7 @@ const struct zcr_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface,
     remote_shell_get_notification_surface};
 
-const uint32_t remote_shell_version = 12;
+const uint32_t remote_shell_version = 13;
 
 void bind_remote_shell(wl_client* client,
                        void* data,
@@ -2725,7 +2757,7 @@ class AuraSurface : public SurfaceObserver {
   DISALLOW_COPY_AND_ASSIGN(AuraSurface);
 };
 
-SurfaceFrameType ToSurfaceFrameType(uint32_t frame_type) {
+SurfaceFrameType AuraSurfaceFrameType(uint32_t frame_type) {
   switch (frame_type) {
     case ZAURA_SURFACE_FRAME_TYPE_NONE:
       return SurfaceFrameType::NONE;
@@ -2734,14 +2766,14 @@ SurfaceFrameType ToSurfaceFrameType(uint32_t frame_type) {
     case ZAURA_SURFACE_FRAME_TYPE_SHADOW:
       return SurfaceFrameType::SHADOW;
     default:
-      DLOG(WARNING) << "Unsupported frame type: " << frame_type;
+      VLOG(2) << "Unkonwn aura-shell frame type: " << frame_type;
       return SurfaceFrameType::NONE;
   }
 }
 
 void aura_surface_set_frame(wl_client* client, wl_resource* resource,
                             uint32_t type) {
-  GetUserDataAs<AuraSurface>(resource)->SetFrame(ToSurfaceFrameType(type));
+  GetUserDataAs<AuraSurface>(resource)->SetFrame(AuraSurfaceFrameType(type));
 }
 
 void aura_surface_set_parent(wl_client* client,
