@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.signin;
 
 import android.content.Context;
+import android.graphics.drawable.Animatable;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
@@ -19,6 +21,7 @@ import org.chromium.ui.widget.ButtonCompat;
 /** View that wraps signin screen and caches references to UI elements. */
 public class SigninView extends LinearLayout {
     private SigninScrollView mScrollView;
+    private ImageView mHeaderImage;
     private TextView mTitle;
     private View mAccountPicker;
     private ImageView mAccountImage;
@@ -42,6 +45,7 @@ public class SigninView extends LinearLayout {
         super.onFinishInflate();
 
         mScrollView = (SigninScrollView) findViewById(R.id.signin_scroll_view);
+        mHeaderImage = (ImageView) findViewById(R.id.signin_header_image);
         mTitle = (TextView) findViewById(R.id.signin_title);
         mAccountPicker = findViewById(R.id.signin_account_picker);
         mAccountImage = (ImageView) findViewById(R.id.account_image);
@@ -61,6 +65,10 @@ public class SigninView extends LinearLayout {
 
     public SigninScrollView getScrollView() {
         return mScrollView;
+    }
+
+    public ImageView getHeaderImage() {
+        return mHeaderImage;
     }
 
     public TextView getTitleView() {
@@ -113,5 +121,19 @@ public class SigninView extends LinearLayout {
 
     public View getAcceptButtonEndPadding() {
         return mAcceptButtonEndPadding;
+    }
+
+    void startAnimations() {
+        Drawable headerImage = getHeaderImage().getDrawable();
+        if (headerImage instanceof Animatable) {
+            ((Animatable) headerImage).start();
+        }
+    }
+
+    void stopAnimations() {
+        Drawable headerImage = getHeaderImage().getDrawable();
+        if (headerImage instanceof Animatable) {
+            ((Animatable) headerImage).stop();
+        }
     }
 }
