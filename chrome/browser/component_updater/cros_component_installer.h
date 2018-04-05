@@ -68,12 +68,15 @@ class CrOSComponentInstallerPolicy : public ComponentInstallerPolicy {
 // This class contains functions used to register and install a component.
 class CrOSComponentManager {
  public:
+  // Error needs to be consistent with CrosComponentManagerError in
+  // src/tools/metrics/histograms/enums.xml.
   enum class Error {
     NONE = 0,
     UNKNOWN_COMPONENT = 1,  // Component requested does not exist.
     INSTALL_FAILURE = 2,    // update_client fails to install component.
     MOUNT_FAILURE = 3,      // Component can not be mounted.
     COMPATIBILITY_CHECK_FAILED = 4,  // Compatibility check failed.
+    ERROR_MAX
   };
   using LoadCallback =
       base::OnceCallback<void(Error error, const base::FilePath&)>;
@@ -146,6 +149,7 @@ class CrOSComponentManager {
   // Calls load_callback and pass in the parameter |result| (component mount
   // point).
   void FinishLoad(LoadCallback load_callback,
+                  const base::TimeTicks start_time,
                   base::Optional<base::FilePath> result);
 
   // Registers component |configs| to be updated.

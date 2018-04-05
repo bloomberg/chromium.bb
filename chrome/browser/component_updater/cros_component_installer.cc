@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
@@ -84,6 +85,13 @@ std::vector<ComponentConfig> GetInstalled() {
       configs.push_back(config);
   }
   return configs;
+}
+
+// Report Error code.
+CrOSComponentManager::Error ReportError(CrOSComponentManager::Error error) {
+  UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.ChromeOS.InstallResult", error,
+                            CrOSComponentManager::Error::ERROR_MAX);
+  return error;
 }
 
 }  // namespace
@@ -202,8 +210,9 @@ void CrOSComponentManager::Load(const std::string& name,
     LoadInternal(name, std::move(load_callback));
   } else {
     // A compatible component is installed, do not load it.
-    base::PostTask(FROM_HERE, base::BindOnce(std::move(load_callback),
-                                             Error::NONE, base::FilePath()));
+    base::PostTask(FROM_HERE,
+                   base::BindOnce(std::move(load_callback),
+                                  ReportError(Error::NONE), base::FilePath()));
   }
 }
 
@@ -259,7 +268,8 @@ void CrOSComponentManager::Install(ComponentUpdateService* cus,
   if (!config) {
     base::PostTask(FROM_HERE,
                    base::BindOnce(std::move(load_callback),
-                                  Error::UNKNOWN_COMPONENT, base::FilePath()));
+                                  ReportError(Error::UNKNOWN_COMPONENT),
+                                  base::FilePath()));
     return;
   }
   Register(
@@ -283,14 +293,16 @@ void CrOSComponentManager::FinishInstall(const std::string& name,
                                          LoadCallback load_callback,
                                          update_client::Error error) {
   if (error != update_client::Error::NONE) {
-    base::PostTask(FROM_HERE,
-                   base::BindOnce(std::move(load_callback),
-                                  Error::INSTALL_FAILURE, base::FilePath()));
+    base::PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(load_callback),
+                       ReportError(Error::INSTALL_FAILURE), base::FilePath()));
   } else if (mount_policy == MountPolicy::kMount) {
     LoadInternal(name, std::move(load_callback));
   } else {
-    base::PostTask(FROM_HERE, base::BindOnce(std::move(load_callback),
-                                             Error::NONE, base::FilePath()));
+    base::PostTask(FROM_HERE,
+                   base::BindOnce(std::move(load_callback),
+                                  ReportError(Error::NONE), base::FilePath()));
   }
 }
 
@@ -305,23 +317,31 @@ void CrOSComponentManager::LoadInternal(const std::string& name,
         ->LoadComponentAtPath(
             name, path,
             base::BindOnce(&CrOSComponentManager::FinishLoad,
-                           base::Unretained(this), std::move(load_callback)));
+                           base::Unretained(this), std::move(load_callback),
+                           base::TimeTicks::Now()));
   } else {
-    base::PostTask(FROM_HERE, base::BindOnce(std::move(load_callback),
-                                             Error::COMPATIBILITY_CHECK_FAILED,
-                                             base::FilePath()));
+    base::PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(load_callback),
+                       ReportError(Error::COMPATIBILITY_CHECK_FAILED),
+                       base::FilePath()));
   }
 }
 
 void CrOSComponentManager::FinishLoad(LoadCallback load_callback,
+                                      const base::TimeTicks start_time,
                                       base::Optional<base::FilePath> result) {
+  // Report component image mount time.
+  UMA_HISTOGRAM_LONG_TIMES("ComponentUpdater.ChromeOS.MountTime",
+                           base::TimeTicks::Now() - start_time);
   if (!result.has_value()) {
+    base::PostTask(FROM_HERE, base::BindOnce(std::move(load_callback),
+                                             ReportError(Error::MOUNT_FAILURE),
+                                             base::FilePath()));
+  } else {
     base::PostTask(FROM_HERE,
                    base::BindOnce(std::move(load_callback),
-                                  Error::MOUNT_FAILURE, base::FilePath()));
-  } else {
-    base::PostTask(FROM_HERE, base::BindOnce(std::move(load_callback),
-                                             Error::NONE, result.value()));
+                                  ReportError(Error::NONE), result.value()));
   }
 }
 
