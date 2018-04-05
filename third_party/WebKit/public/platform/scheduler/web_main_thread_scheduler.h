@@ -43,8 +43,7 @@ namespace scheduler {
 enum class RendererProcessType;
 class RenderWidgetSchedulingState;
 
-// TODO(yutak): Rename this class to WebMainThreadScheduler.
-class BLINK_PLATFORM_EXPORT RendererScheduler : public WebThreadScheduler {
+class BLINK_PLATFORM_EXPORT WebMainThreadScheduler : public WebThreadScheduler {
  public:
   class BLINK_PLATFORM_EXPORT RAILModeObserver {
    public:
@@ -52,12 +51,12 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public WebThreadScheduler {
     virtual void OnRAILModeChanged(v8::RAILMode rail_mode) = 0;
   };
 
-  ~RendererScheduler() override;
+  ~WebMainThreadScheduler() override;
 
   // If |initial_virtual_time| is specified then the scheduler will be created
   // with virtual time enabled and paused, and base::Time will be overridden to
   // start at |initial_virtual_time|.
-  static std::unique_ptr<RendererScheduler> Create(
+  static std::unique_ptr<WebMainThreadScheduler> Create(
       base::Optional<base::Time> initial_virtual_time = base::nullopt);
 
   // Returns the compositor task runner.
@@ -93,7 +92,7 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public WebThreadScheduler {
   // called from the main thread.
   virtual void DidCommitFrameToCompositor() = 0;
 
-  // Keep RendererScheduler::InputEventStateToString in sync with this enum.
+  // Keep InputEventStateToString() in sync with this enum.
   enum class InputEventState {
     EVENT_CONSUMED_BY_COMPOSITOR,
     EVENT_FORWARDED_TO_MAIN_THREAD,
@@ -228,8 +227,8 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public WebThreadScheduler {
           WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant) = 0;
 
  protected:
-  RendererScheduler();
-  DISALLOW_COPY_AND_ASSIGN(RendererScheduler);
+  WebMainThreadScheduler();
+  DISALLOW_COPY_AND_ASSIGN(WebMainThreadScheduler);
 };
 
 }  // namespace scheduler

@@ -16,14 +16,14 @@
 namespace blink {
 namespace scheduler {
 
-RendererScheduler::RendererScheduler() = default;
+WebMainThreadScheduler::WebMainThreadScheduler() = default;
 
-RendererScheduler::~RendererScheduler() = default;
+WebMainThreadScheduler::~WebMainThreadScheduler() = default;
 
-RendererScheduler::RAILModeObserver::~RAILModeObserver() = default;
+WebMainThreadScheduler::RAILModeObserver::~RAILModeObserver() = default;
 
 // static
-std::unique_ptr<RendererScheduler> RendererScheduler::Create(
+std::unique_ptr<WebMainThreadScheduler> WebMainThreadScheduler::Create(
     base::Optional<base::Time> initial_virtual_time) {
   // Ensure categories appear as an option in chrome://tracing.
   WarmupTracingCategories();
@@ -32,11 +32,11 @@ std::unique_ptr<RendererScheduler> RendererScheduler::Create(
 
   std::unique_ptr<RendererSchedulerImpl> scheduler(new RendererSchedulerImpl(
       TaskQueueManager::TakeOverCurrentThread(), initial_virtual_time));
-  return base::WrapUnique<RendererScheduler>(scheduler.release());
+  return base::WrapUnique<WebMainThreadScheduler>(scheduler.release());
 }
 
 // static
-const char* RendererScheduler::InputEventStateToString(
+const char* WebMainThreadScheduler::InputEventStateToString(
     InputEventState input_event_state) {
   switch (input_event_state) {
     case InputEventState::EVENT_CONSUMED_BY_COMPOSITOR:

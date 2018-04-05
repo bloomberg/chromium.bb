@@ -93,7 +93,7 @@ class CORE_EXPORT NavigationScheduler final
   Member<ScheduledNavigation> redirect_;
 
   // Exists because we can't deref m_frame in destructor.
-  scheduler::RendererScheduler::NavigatingFrameType frame_type_;
+  scheduler::WebMainThreadScheduler::NavigatingFrameType frame_type_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationScheduler);
 };

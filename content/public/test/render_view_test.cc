@@ -128,8 +128,8 @@ bool GetWindowsKeyCode(char ascii_character, int* key_code) {
 class RendererBlinkPlatformImplTestOverrideImpl
     : public RendererBlinkPlatformImpl {
  public:
-  RendererBlinkPlatformImplTestOverrideImpl(
-      blink::scheduler::RendererScheduler* scheduler)
+  explicit RendererBlinkPlatformImplTestOverrideImpl(
+      blink::scheduler::WebMainThreadScheduler* scheduler)
       : RendererBlinkPlatformImpl(scheduler) {}
 
   // Get rid of the dependency to the sandbox, which is not available in
@@ -152,14 +152,14 @@ RenderViewTest::RendererBlinkPlatformImplTestOverride::Get() const {
 }
 
 void RenderViewTest::RendererBlinkPlatformImplTestOverride::Initialize() {
-  renderer_scheduler_ = blink::scheduler::RendererScheduler::Create();
+  main_thread_scheduler_ = blink::scheduler::WebMainThreadScheduler::Create();
   blink_platform_impl_ =
       std::make_unique<RendererBlinkPlatformImplTestOverrideImpl>(
-          renderer_scheduler_.get());
+          main_thread_scheduler_.get());
 }
 
 void RenderViewTest::RendererBlinkPlatformImplTestOverride::Shutdown() {
-  renderer_scheduler_->Shutdown();
+  main_thread_scheduler_->Shutdown();
   blink_platform_impl_->Shutdown();
 }
 

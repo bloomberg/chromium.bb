@@ -37,7 +37,7 @@ class SyncMessageFilter;
 
 namespace blink {
 namespace scheduler {
-class RendererScheduler;
+class WebMainThreadScheduler;
 class WebThreadBase;
 }
 class WebCanvasCaptureHandler;
@@ -67,7 +67,7 @@ class WebDatabaseObserverImpl;
 class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
   explicit RendererBlinkPlatformImpl(
-      blink::scheduler::RendererScheduler* renderer_scheduler);
+      blink::scheduler::WebMainThreadScheduler* main_thread_scheduler);
   ~RendererBlinkPlatformImpl() override;
 
   // Shutdown must be called just prior to shutting down blink.
@@ -334,7 +334,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   base::IDMap<std::unique_ptr<PlatformEventObserverBase>>
       platform_event_observers_;
 
-  blink::scheduler::RendererScheduler* renderer_scheduler_;  // NOT OWNED
+  // NOT OWNED
+  blink::scheduler::WebMainThreadScheduler* main_thread_scheduler_;
+
   TopLevelBlameContext top_level_blame_context_;
 
   std::unique_ptr<LocalStorageCachedAreas> local_storage_cached_areas_;

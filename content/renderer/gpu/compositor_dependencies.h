@@ -22,7 +22,7 @@ class UkmRecorderFactory;
 
 namespace blink {
 namespace scheduler {
-class RendererScheduler;
+class WebMainThreadScheduler;
 }
 }
 
@@ -43,7 +43,8 @@ class CompositorDependencies {
   // compositor thread).
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorImplThreadTaskRunner() = 0;
-  virtual blink::scheduler::RendererScheduler* GetRendererScheduler() = 0;
+  virtual blink::scheduler::WebMainThreadScheduler*
+  GetWebMainThreadScheduler() = 0;
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
   virtual bool IsThreadedAnimationEnabled() = 0;
   virtual bool IsScrollAnimatorEnabled() = 0;

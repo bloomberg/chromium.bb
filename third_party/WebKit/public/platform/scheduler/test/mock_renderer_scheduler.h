@@ -17,7 +17,7 @@
 namespace blink {
 namespace scheduler {
 
-class MockRendererScheduler : public RendererScheduler {
+class MockRendererScheduler : public WebMainThreadScheduler {
  public:
   MockRendererScheduler() = default;
   ~MockRendererScheduler() override = default;

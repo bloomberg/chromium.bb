@@ -104,11 +104,11 @@ class SynchronousCompositorProxyRegistry
 scoped_refptr<WidgetInputHandlerManager> WidgetInputHandlerManager::Create(
     base::WeakPtr<RenderWidget> render_widget,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-    blink::scheduler::RendererScheduler* renderer_scheduler) {
+    blink::scheduler::WebMainThreadScheduler* main_thread_scheduler) {
   scoped_refptr<WidgetInputHandlerManager> manager =
       new WidgetInputHandlerManager(std::move(render_widget),
                                     std::move(compositor_task_runner),
-                                    renderer_scheduler);
+                                    main_thread_scheduler);
   manager->Init();
   return manager;
 }
@@ -116,9 +116,9 @@ scoped_refptr<WidgetInputHandlerManager> WidgetInputHandlerManager::Create(
 WidgetInputHandlerManager::WidgetInputHandlerManager(
     base::WeakPtr<RenderWidget> render_widget,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-    blink::scheduler::RendererScheduler* renderer_scheduler)
+    blink::scheduler::WebMainThreadScheduler* main_thread_scheduler)
     : render_widget_(render_widget),
-      renderer_scheduler_(renderer_scheduler),
+      main_thread_scheduler_(main_thread_scheduler),
       input_event_queue_(render_widget->GetInputEventQueue()),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       compositor_task_runner_(std::move(compositor_task_runner)) {
@@ -241,7 +241,7 @@ void WidgetInputHandlerManager::DidStopFlinging() {
 }
 
 void WidgetInputHandlerManager::DidAnimateForInput() {
-  renderer_scheduler_->DidAnimateForInputOnCompositorThread();
+  main_thread_scheduler_->DidAnimateForInputOnCompositorThread();
 }
 
 void WidgetInputHandlerManager::DidStartScrollingViewport() {
@@ -439,15 +439,15 @@ void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
   InputEventAckState ack_state = InputEventDispositionToAck(event_disposition);
   switch (ack_state) {
     case INPUT_EVENT_ACK_STATE_CONSUMED:
-      renderer_scheduler_->DidHandleInputEventOnCompositorThread(
-          *input_event, blink::scheduler::RendererScheduler::InputEventState::
-                            EVENT_CONSUMED_BY_COMPOSITOR);
+      main_thread_scheduler_->DidHandleInputEventOnCompositorThread(
+          *input_event, blink::scheduler::WebMainThreadScheduler::
+                            InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
       break;
     case INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
     case INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING:
-      renderer_scheduler_->DidHandleInputEventOnCompositorThread(
-          *input_event, blink::scheduler::RendererScheduler::InputEventState::
-                            EVENT_FORWARDED_TO_MAIN_THREAD);
+      main_thread_scheduler_->DidHandleInputEventOnCompositorThread(
+          *input_event, blink::scheduler::WebMainThreadScheduler::
+                            InputEventState::EVENT_FORWARDED_TO_MAIN_THREAD);
       break;
     default:
       break;

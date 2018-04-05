@@ -84,7 +84,7 @@ class CONTENT_EXPORT MainThreadEventQueue
   MainThreadEventQueue(
       MainThreadEventQueueClient* client,
       const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
-      blink::scheduler::RendererScheduler* renderer_scheduler,
+      blink::scheduler::WebMainThreadScheduler* main_thread_scheduler,
       bool allow_raf_aligned_input);
 
   // Called once the compositor has handled |event| and indicated that it is
@@ -153,7 +153,7 @@ class CONTENT_EXPORT MainThreadEventQueue
   SharedState shared_state_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
-  blink::scheduler::RendererScheduler* renderer_scheduler_;
+  blink::scheduler::WebMainThreadScheduler* main_thread_scheduler_;
   base::OneShotTimer raf_fallback_timer_;
   bool use_raf_fallback_timer_;
 

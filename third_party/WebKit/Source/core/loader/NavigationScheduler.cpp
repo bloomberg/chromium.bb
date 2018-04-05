@@ -362,11 +362,11 @@ class ScheduledFormSubmission final : public ScheduledNavigation {
 
 NavigationScheduler::NavigationScheduler(LocalFrame* frame)
     : frame_(frame),
-      frame_type_(
-          frame_->IsMainFrame()
-              ? scheduler::RendererScheduler::NavigatingFrameType::kMainFrame
-              : scheduler::RendererScheduler::NavigatingFrameType::
-                    kChildFrame) {}
+      frame_type_(frame_->IsMainFrame()
+                      ? scheduler::WebMainThreadScheduler::NavigatingFrameType::
+                            kMainFrame
+                      : scheduler::WebMainThreadScheduler::NavigatingFrameType::
+                            kChildFrame) {}
 
 NavigationScheduler::~NavigationScheduler() {
   if (navigate_task_handle_.IsActive()) {

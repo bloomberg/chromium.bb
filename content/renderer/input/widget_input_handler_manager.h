@@ -16,7 +16,7 @@
 
 namespace blink {
 namespace scheduler {
-class RendererScheduler;
+class WebMainThreadScheduler;
 };  // namespace scheduler
 };  // namespace blink
 
@@ -35,7 +35,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager
   static scoped_refptr<WidgetInputHandlerManager> Create(
       base::WeakPtr<RenderWidget> render_widget,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-      blink::scheduler::RendererScheduler* renderer_scheduler);
+      blink::scheduler::WebMainThreadScheduler* main_thread_scheduler);
   void AddAssociatedInterface(
       mojom::WidgetInputHandlerAssociatedRequest interface_request,
       mojom::WidgetInputHandlerHostPtr host);
@@ -97,7 +97,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager
   WidgetInputHandlerManager(
       base::WeakPtr<RenderWidget> render_widget,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
-      blink::scheduler::RendererScheduler* renderer_scheduler);
+      blink::scheduler::WebMainThreadScheduler* main_thread_scheduler);
   void Init();
   void InitOnCompositorThread(
       const base::WeakPtr<cc::InputHandler>& input_handler,
@@ -128,7 +128,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager
 
   // Only valid to be called on the main thread.
   base::WeakPtr<RenderWidget> render_widget_;
-  blink::scheduler::RendererScheduler* renderer_scheduler_;
+  blink::scheduler::WebMainThreadScheduler* main_thread_scheduler_;
 
   // InputHandlerProxy is only interacted with on the compositor
   // thread.

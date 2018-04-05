@@ -75,7 +75,7 @@ class LocalStorageCachedAreaTest : public testing::Test {
  protected:
   TestBrowserThreadBundle test_browser_thread_bundle_;
   MockLevelDBWrapper mock_leveldb_wrapper_;
-  std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler_;
+  std::unique_ptr<blink::scheduler::WebMainThreadScheduler> renderer_scheduler_;
   LocalStorageCachedAreas cached_areas_;
 };
 

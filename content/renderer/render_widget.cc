@@ -425,7 +425,7 @@ RenderWidget::RenderWidget(
   // In tests there may not be a RenderThreadImpl.
   if (RenderThreadImpl::current()) {
     render_widget_scheduling_state_ = RenderThreadImpl::current()
-                                          ->GetRendererScheduler()
+                                          ->GetWebMainThreadScheduler()
                                           ->NewRenderWidgetSchedulingState();
     render_widget_scheduling_state_->SetHidden(is_hidden_);
   }
@@ -585,7 +585,7 @@ void RenderWidget::Init(const ShowCallback& show_callback,
         render_thread_impl && compositor_
             ? render_thread_impl->compositor_task_runner()
             : nullptr,
-        render_thread_impl ? render_thread_impl->GetRendererScheduler()
+        render_thread_impl ? render_thread_impl->GetWebMainThreadScheduler()
                            : nullptr);
   }
 
@@ -1491,8 +1491,8 @@ blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   if (render_thread) {
     input_event_queue_ = new MainThreadEventQueue(
-        this, render_thread->GetRendererScheduler()->InputTaskRunner(),
-        render_thread->GetRendererScheduler(), should_generate_frame_sink);
+        this, render_thread->GetWebMainThreadScheduler()->InputTaskRunner(),
+        render_thread->GetWebMainThreadScheduler(), should_generate_frame_sink);
 
     InputHandlerManager* input_handler_manager =
         render_thread->input_handler_manager();

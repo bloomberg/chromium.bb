@@ -19,12 +19,12 @@ DOMStorageCachedArea::DOMStorageCachedArea(
     const std::string& namespace_id,
     const GURL& origin,
     DOMStorageProxy* proxy,
-    blink::scheduler::RendererScheduler* renderer_scheduler)
+    blink::scheduler::WebMainThreadScheduler* main_thread_scheduler)
     : ignore_all_mutations_(false),
       namespace_id_(namespace_id),
       origin_(origin),
       proxy_(proxy),
-      renderer_scheduler_(renderer_scheduler),
+      main_thread_scheduler_(main_thread_scheduler),
       weak_factory_(this) {}
 
 DOMStorageCachedArea::~DOMStorageCachedArea() {}
@@ -73,7 +73,7 @@ bool DOMStorageCachedArea::SetItem(int connection_id,
 
   // Ignore mutations to 'key' until OnSetItemComplete.
   blink::WebScopedVirtualTimePauser virtual_time_pauser =
-      renderer_scheduler_->CreateWebScopedVirtualTimePauser();
+      main_thread_scheduler_->CreateWebScopedVirtualTimePauser();
   virtual_time_pauser.PauseVirtualTime(true);
   ignore_key_mutations_[key]++;
   proxy_->SetItem(connection_id, key, value, old_value, page_url,
@@ -100,7 +100,7 @@ void DOMStorageCachedArea::RemoveItem(int connection_id,
 
   // Ignore mutations to 'key' until OnRemoveItemComplete.
   blink::WebScopedVirtualTimePauser virtual_time_pauser =
-      renderer_scheduler_->CreateWebScopedVirtualTimePauser();
+      main_thread_scheduler_->CreateWebScopedVirtualTimePauser();
   virtual_time_pauser.PauseVirtualTime(true);
   ignore_key_mutations_[key]++;
   proxy_->RemoveItem(connection_id, key,
@@ -117,7 +117,7 @@ void DOMStorageCachedArea::Clear(int connection_id, const GURL& page_url) {
 
   // Ignore all mutations until OnClearComplete time.
   blink::WebScopedVirtualTimePauser virtual_time_pauser =
-      renderer_scheduler_->CreateWebScopedVirtualTimePauser();
+      main_thread_scheduler_->CreateWebScopedVirtualTimePauser();
   virtual_time_pauser.PauseVirtualTime(true);
   ignore_all_mutations_ = true;
   proxy_->ClearArea(connection_id, page_url,

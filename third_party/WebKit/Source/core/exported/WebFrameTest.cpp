@@ -204,7 +204,7 @@ class WebFrameTest : public testing::Test {
       Platform::Current()
           ->CurrentThread()
           ->Scheduler()
-          ->GetRendererSchedulerForTest()
+          ->GetWebMainThreadSchedulerForTest()
           ->SetRendererBackgrounded(false);
     }
   }

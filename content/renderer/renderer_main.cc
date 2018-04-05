@@ -201,8 +201,9 @@ int RendererMain(const MainFunctionParams& parameters) {
       initial_virtual_time = base::Time::FromDoubleT(initial_time);
     }
   }
-  std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler(
-      blink::scheduler::RendererScheduler::Create(initial_virtual_time));
+  std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
+      main_thread_scheduler(blink::scheduler::WebMainThreadScheduler::Create(
+          initial_virtual_time));
 
   // PlatformInitialize uses FieldTrials, so this must happen later.
   platform.PlatformInitialize();
@@ -225,7 +226,7 @@ int RendererMain(const MainFunctionParams& parameters) {
     // instruction down.
     auto render_process = RenderProcessImpl::Create();
     RenderThreadImpl::Create(std::move(main_message_loop),
-                             std::move(renderer_scheduler));
+                             std::move(main_thread_scheduler));
 #endif
     bool run_loop = true;
     if (!no_sandbox)
@@ -233,7 +234,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     auto render_process = RenderProcessImpl::Create();
     RenderThreadImpl::Create(std::move(main_message_loop),
-                             std::move(renderer_scheduler));
+                             std::move(main_thread_scheduler));
 #endif
 
     base::HighResolutionTimerManager hi_res_timer_manager;

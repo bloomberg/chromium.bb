@@ -21,7 +21,7 @@
 
 namespace blink {
 namespace scheduler {
-class RendererScheduler;
+class WebMainThreadScheduler;
 }
 }
 
@@ -86,7 +86,8 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   base::ScopedTempDir file_system_root_;
   std::unique_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;
   cc_blink::WebCompositorSupportImpl compositor_support_;
-  std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler_;
+  std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
+      main_thread_scheduler_;
   std::unique_ptr<blink::WebThread> web_thread_;
   std::unique_ptr<viz::TestSharedBitmapManager> shared_bitmap_manager_;
 

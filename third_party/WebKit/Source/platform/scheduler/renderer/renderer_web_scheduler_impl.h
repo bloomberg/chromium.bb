@@ -27,7 +27,7 @@ class PLATFORM_EXPORT RendererWebSchedulerImpl : public WebSchedulerImpl {
 
   base::TimeTicks MonotonicallyIncreasingVirtualTime() const override;
 
-  RendererScheduler* GetRendererSchedulerForTest() override;
+  WebMainThreadScheduler* GetWebMainThreadSchedulerForTest() override;
 
  private:
   RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED

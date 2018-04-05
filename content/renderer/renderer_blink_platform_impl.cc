@@ -282,18 +282,18 @@ class RendererBlinkPlatformImpl::SandboxSupport
 //------------------------------------------------------------------------------
 
 RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
-    blink::scheduler::RendererScheduler* renderer_scheduler)
-    : BlinkPlatformImpl(renderer_scheduler->DefaultTaskRunner(),
+    blink::scheduler::WebMainThreadScheduler* main_thread_scheduler)
+    : BlinkPlatformImpl(main_thread_scheduler->DefaultTaskRunner(),
                         RenderThreadImpl::current()
                             ? RenderThreadImpl::current()->GetIOTaskRunner()
                             : nullptr),
       compositor_thread_(nullptr),
-      main_thread_(renderer_scheduler->CreateMainThread()),
+      main_thread_(main_thread_scheduler->CreateMainThread()),
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),
-      default_task_runner_(renderer_scheduler->DefaultTaskRunner()),
+      default_task_runner_(main_thread_scheduler->DefaultTaskRunner()),
       web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
-      renderer_scheduler_(renderer_scheduler) {
+      main_thread_scheduler_(main_thread_scheduler) {
 #if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_FUCHSIA)
   if (g_sandbox_enabled && sandboxEnabled()) {
     sandbox_support_.reset(new RendererBlinkPlatformImpl::SandboxSupport);
@@ -326,7 +326,7 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
   blink_interface_provider_.reset(
       new BlinkInterfaceProviderImpl(connector_.get()));
   top_level_blame_context_.Initialize();
-  renderer_scheduler_->SetTopLevelBlameContext(&top_level_blame_context_);
+  main_thread_scheduler_->SetTopLevelBlameContext(&top_level_blame_context_);
 
   GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&web_database_host_info_));
@@ -337,7 +337,7 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
 
 RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
   WebFileSystemImpl::DeleteThreadSpecificInstance();
-  renderer_scheduler_->SetTopLevelBlameContext(nullptr);
+  main_thread_scheduler_->SetTopLevelBlameContext(nullptr);
   shared_bitmap_manager_ = nullptr;
 }
 
@@ -570,7 +570,7 @@ RendererBlinkPlatformImpl::CreateLocalStorageNamespace() {
   if (!local_storage_cached_areas_) {
     local_storage_cached_areas_.reset(new LocalStorageCachedAreas(
         RenderThreadImpl::current()->GetStoragePartitionService(),
-        renderer_scheduler_));
+        main_thread_scheduler_));
   }
   return std::make_unique<LocalStorageNamespace>(
       local_storage_cached_areas_.get());
@@ -583,7 +583,7 @@ RendererBlinkPlatformImpl::CreateSessionStorageNamespace(
     if (!local_storage_cached_areas_) {
       local_storage_cached_areas_.reset(new LocalStorageCachedAreas(
           RenderThreadImpl::current()->GetStoragePartitionService(),
-          renderer_scheduler_));
+          main_thread_scheduler_));
     }
     return std::make_unique<SessionWebStorageNamespaceImpl>(
         namespace_id.as_string(), local_storage_cached_areas_.get());
@@ -598,7 +598,7 @@ void RendererBlinkPlatformImpl::CloneSessionStorageNamespace(
   if (!local_storage_cached_areas_) {
     local_storage_cached_areas_.reset(new LocalStorageCachedAreas(
         RenderThreadImpl::current()->GetStoragePartitionService(),
-        renderer_scheduler_));
+        main_thread_scheduler_));
   }
   local_storage_cached_areas_->CloneNamespace(source_namespace,
                                               destination_namespace);

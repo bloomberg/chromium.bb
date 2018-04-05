@@ -44,9 +44,9 @@ constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
 class TestBlinkPlatformSupport : public blink::Platform {
  public:
   TestBlinkPlatformSupport()
-      : renderer_scheduler_(
-            blink::scheduler::CreateRendererSchedulerForTests()),
-        main_thread_(renderer_scheduler_->CreateMainThread()) {}
+      : main_thread_scheduler_(
+            blink::scheduler::CreateWebMainThreadSchedulerForTests()),
+        main_thread_(main_thread_scheduler_->CreateMainThread()) {}
   ~TestBlinkPlatformSupport() override;
 
   blink::WebThread* CurrentThread() override {
@@ -55,12 +55,13 @@ class TestBlinkPlatformSupport : public blink::Platform {
   }
 
  private:
-  std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler_;
+  std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
+      main_thread_scheduler_;
   std::unique_ptr<blink::WebThread> main_thread_;
 };
 
 TestBlinkPlatformSupport::~TestBlinkPlatformSupport() {
-  renderer_scheduler_->Shutdown();
+  main_thread_scheduler_->Shutdown();
 }
 
 class BlinkMediaTestSuite : public base::TestSuite {

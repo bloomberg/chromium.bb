@@ -46,7 +46,7 @@ TEST_F(DisableBackgroundThrottlingIsRespectedTest,
   Platform::Current()
       ->CurrentThread()
       ->Scheduler()
-      ->GetRendererSchedulerForTest()
+      ->GetWebMainThreadSchedulerForTest()
       ->SetRendererBackgrounded(true);
 
   // Run delayed tasks for 1 second. All tasks should be completed
@@ -77,7 +77,7 @@ TEST_F(BackgroundRendererThrottlingTest, BackgroundRenderersAreThrottled) {
   Platform::Current()
       ->CurrentThread()
       ->Scheduler()
-      ->GetRendererSchedulerForTest()
+      ->GetWebMainThreadSchedulerForTest()
       ->SetRendererBackgrounded(true);
 
   // Make sure that we run a task once a second.
