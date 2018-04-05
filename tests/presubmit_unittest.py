@@ -764,66 +764,6 @@ def CheckChangeOnCommit(input_api, output_api):
         'on the file to figure out who to ask for help.\n')
     self.assertEquals(output.getvalue(), text)
 
-  def testDoPresubmitChecksWithTags(self):
-    tag_checker_presubmit_script = """
-def CheckChangeOnUpload(input_api, output_api):
-  if input_api.change.tags['BUG'] != 'boo':
-    return [output_api.PresubmitError('Tag parsing failed. 1')]
-  if input_api.change.tags['STORY'] != 'http://tracker.com/42':
-    return [output_api.PresubmitError('Tag parsing failed. 2')]
-  try:
-    y = False
-    x = input_api.change.invalid
-  except AttributeError:
-    y = True
-  if not y:
-    return [output_api.PresubmitError('Tag parsing failed. 8')]
-  if 'TEST' in input_api.change.tags:
-    return [output_api.PresubmitError('Tag parsing failed. 3')]
-  if input_api.change.DescriptionText() != 'Blah Blah':
-    return [output_api.PresubmitError('Tag parsing failed. 4 ' +
-                                      input_api.change.DescriptionText())]
-  if (input_api.change.FullDescriptionText() !=
-      'Blah Blah\\n\\nSTORY=http://tracker.com/42\\nBUG=boo\\n'):
-    return [output_api.PresubmitError('Tag parsing failed. 5 ' +
-                                      input_api.change.FullDescriptionText())]
-  return [output_api.PresubmitNotifyResult(input_api.change.tags['STORY'])]
-def CheckChangeOnCommit(input_api, output_api):
-  raise Exception("Test error")
-"""
-    presubmit.random.randint(0, 4).AndReturn(1)
-    inherit_path = presubmit.os.path.join(
-        self.fake_root_dir, self._INHERIT_SETTINGS)
-    presubmit.os.path.isfile(inherit_path).AndReturn(False)
-    self.mox.ReplayAll()
-
-    output_buf = StringIO.StringIO()
-    input_buf = StringIO.StringIO('y\n')
-    change = presubmit.Change(
-        'foo',
-        'Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n',
-        self.fake_root_dir,
-        None,
-        0,
-        0,
-        None)
-    presubmit_output = presubmit.DoPresubmitChecks(
-        change=change, committing=False, verbose=True,
-        output_stream=output_buf, input_stream=input_buf,
-        default_presubmit=tag_checker_presubmit_script,
-        may_prompt=False, gerrit_obj=None)
-
-    self.failUnless(presubmit_output)
-    self.assertEquals(output_buf.getvalue(),
-                      ('Running presubmit upload checks ...\n'
-                       'Warning, no PRESUBMIT.py found.\n'
-                       'Running default presubmit script.\n'
-                       '\n'
-                       '** Presubmit Messages **\n'
-                       'http://tracker.com/42\n'
-                       '\n'
-                       'Presubmit checks passed.\n'))
-
   def testGetTryMastersExecuter(self):
     self.mox.ReplayAll()
     change = self.ExampleChange(
@@ -1664,15 +1604,9 @@ class ChangeUnittest(PresubmitTestsBase):
         'foo', 'foo', self.fake_root_dir, [('M', 'AA')], 0, 0, 'foo')
     self.compareMembers(change, members)
 
-  def testMembers(self):
+  def testAffectedFiles(self):
     change = presubmit.Change(
-        'foo1', 'foo2\nDRU=ro', self.fake_root_dir, [('Y', 'AA')], 3, 5, 'foo3')
-    self.assertEquals('foo1', change.Name())
-    self.assertEquals('foo2', change.DescriptionText())
-    self.assertEquals('foo3', change.author_email)
-    self.assertEquals(3, change.issue)
-    self.assertEquals(5, change.patchset)
-    self.assertEquals(self.fake_root_dir, change.RepositoryRoot())
+        '', '', self.fake_root_dir, [('Y', 'AA')], 3, 5, '')
     self.assertEquals(1, len(change.AffectedFiles()))
     self.assertEquals('Y', change.AffectedFiles()[0].Action())
 
@@ -1681,10 +1615,12 @@ class ChangeUnittest(PresubmitTestsBase):
         '', 'foo\nDRU=ro', self.fake_root_dir, [], 3, 5, '')
     self.assertEquals('foo', change.DescriptionText())
     self.assertEquals('foo\nDRU=ro', change.FullDescriptionText())
+    self.assertEquals({'DRU': 'ro'}, change.tags)
 
-    change.SetDescriptionText('bar\nWHIZ=bang')
+    change.SetDescriptionText('WHIZ=bang\nbar\nFOO=baz')
     self.assertEquals('bar', change.DescriptionText())
-    self.assertEquals('bar\nWHIZ=bang', change.FullDescriptionText())
+    self.assertEquals('WHIZ=bang\nbar\nFOO=baz', change.FullDescriptionText())
+    self.assertEquals({'WHIZ': 'bang', 'FOO': 'baz'}, change.tags)
 
   def testBugsFromDescription(self):
     change = presubmit.Change(

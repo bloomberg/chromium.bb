@@ -155,23 +155,6 @@ class GClientSmoke(GClientSmokeBase):
   def git_base(self):
     return 'git://random.server/git/'
 
-  def testHelp(self):
-    """testHelp: make sure no new command was added."""
-    result = self.gclient(['help'])
-    # Roughly, not too short, not too long.
-    self.assertTrue(1000 < len(result[0]) and len(result[0]) < 2300,
-                    'Too much written to stdout: %d bytes' % len(result[0]))
-    self.assertEquals(0, len(result[1]))
-    self.assertEquals(0, result[2])
-
-  def testUnknown(self):
-    result = self.gclient(['foo'])
-    # Roughly, not too short, not too long.
-    self.assertTrue(1000 < len(result[0]) and len(result[0]) < 2300,
-                    'Too much written to stdout: %d bytes' % len(result[0]))
-    self.assertEquals(0, len(result[1]))
-    self.assertEquals(0, result[2])
-
   def testNotConfigured(self):
     res = ('', 'Error: client not configured; see \'gclient config\'\n', 1)
     self.check(res, self.gclient(['diff']))
