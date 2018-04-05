@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
@@ -896,6 +897,38 @@ TEST_F(UpdateCheckerTest, NoUpdateActionRun) {
 
   EXPECT_EQ(0, error_);
   EXPECT_STREQ("this", component->action_run_.c_str());
+}
+
+TEST_F(UpdateCheckerTest, UpdatePauseResume) {
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
+  post_interceptor_->url_job_request_ready_callback(base::BindOnce(
+      [](scoped_refptr<URLRequestPostInterceptor> post_interceptor) {
+        post_interceptor->Resume();
+      },
+      post_interceptor_));
+  post_interceptor_->Pause();
+
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+
+  IdToComponentPtrMap components;
+  components[kUpdateItemId] = MakeComponent();
+
+  update_checker_->CheckForUpdates(
+      update_context_->session_id, std::vector<std::string>{kUpdateItemId},
+      components, "", true,
+      base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
+                     base::Unretained(this)));
+  RunThreads();
+
+  const auto request = post_interceptor_->GetRequestBody(0);
+  EXPECT_NE(string::npos,
+            request.find(std::string("<app appid=\"") + kUpdateItemId +
+                         "\" version=\"0.9\" brand=\"TEST\" enabled=\"1\">"
+                         "<updatecheck/><ping r=\"-2\" "));
+  EXPECT_NE(string::npos,
+            request.find("<packages><package fp=\"fp1\"/></packages></app>"));
 }
 
 }  // namespace update_client
