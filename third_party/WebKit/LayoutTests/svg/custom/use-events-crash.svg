@@ -6,7 +6,7 @@
 function test()
 {
     if (window.eventSender) {
-	eventSender.mouseMoveTo(370, 45);
+	eventSender.mouseMoveTo(370, 60);
 	eventSender.contextClick();
     }
 }
