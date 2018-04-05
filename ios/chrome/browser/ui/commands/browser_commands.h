@@ -113,6 +113,9 @@
 // TODO(crbug.com/799601): Delete this once its not needed.
 - (void)navigateToMemexTabSwitcher;
 
+// Prepares the browser to display a popup menu.
+- (void)prepareForPopupMenuPresentation:(PopupMenuCommandType)type;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_
