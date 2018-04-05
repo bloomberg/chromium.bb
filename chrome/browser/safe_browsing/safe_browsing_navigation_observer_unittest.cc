@@ -49,8 +49,8 @@ class SBNavigationObserverTest : public BrowserWithTestWindowTest {
       const GURL& expected_source_main_frame_url,
       const GURL& expected_original_request_url,
       const GURL& expected_destination_url,
-      int expected_source_tab,
-      int expected_target_tab,
+      SessionID expected_source_tab,
+      SessionID expected_target_tab,
       ReferrerChainEntry::NavigationInitiation expected_nav_initiation,
       bool expected_has_committed,
       bool expected_has_server_redirect,
@@ -119,7 +119,8 @@ TEST_F(SBNavigationObserverTest, TestNavigationEventList) {
   NavigationEventList events(3);
 
   EXPECT_EQ(nullptr,
-            events.FindNavigationEvent(GURL("http://invalid.com"), GURL(), -1));
+            events.FindNavigationEvent(GURL("http://invalid.com"), GURL(),
+                                       SessionID::InvalidValue()));
   EXPECT_EQ(0U, events.CleanUpNavigationEvents());
   EXPECT_EQ(0U, events.Size());
 
@@ -133,9 +134,10 @@ TEST_F(SBNavigationObserverTest, TestNavigationEventList) {
       CreateNavigationEventUniquePtr(GURL("http://foo1.com"), now));
   EXPECT_EQ(2U, events.Size());
   // FindNavigationEvent should return the latest matching event.
-  EXPECT_EQ(now,
-            events.FindNavigationEvent(GURL("http://foo1.com"), GURL(), -1)
-                ->last_updated);
+  EXPECT_EQ(now, events
+                     .FindNavigationEvent(GURL("http://foo1.com"), GURL(),
+                                          SessionID::InvalidValue())
+                     ->last_updated);
   // One event should get removed.
   EXPECT_EQ(1U, events.CleanUpNavigationEvents());
   EXPECT_EQ(1U, events.Size());
@@ -164,7 +166,7 @@ TEST_F(SBNavigationObserverTest, BasicNavigationAndCommit) {
                              WindowOpenDisposition::CURRENT_TAB,
                              ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
   CommitPendingLoad(controller);
-  int tab_id = SessionTabHelper::IdForTab(controller->GetWebContents());
+  SessionID tab_id = SessionTabHelper::IdForTab(controller->GetWebContents());
   auto* nav_list = navigation_event_list();
   ASSERT_EQ(1U, nav_list->Size());
   VerifyNavigationEvent(GURL(),                // source_url
@@ -186,7 +188,7 @@ TEST_F(SBNavigationObserverTest, ServerRedirect) {
   navigation->Start();
   navigation->Redirect(GURL("http://redirect/1"));
   navigation->Commit();
-  int tab_id = SessionTabHelper::IdForTab(
+  SessionID tab_id = SessionTabHelper::IdForTab(
       browser()->tab_strip_model()->GetWebContentsAt(0));
   auto* nav_list = navigation_event_list();
   ASSERT_EQ(1U, nav_list->Size());
@@ -238,8 +240,8 @@ TEST_F(SBNavigationObserverTest, TestCleanUpStaleNavigationEvents) {
 
   // Verifies all stale and invalid navigation events are removed.
   ASSERT_EQ(2U, navigation_event_list()->Size());
-  EXPECT_EQ(nullptr,
-            navigation_event_list()->FindNavigationEvent(url_1, GURL(), -1));
+  EXPECT_EQ(nullptr, navigation_event_list()->FindNavigationEvent(
+                         url_1, GURL(), SessionID::InvalidValue()));
   EXPECT_THAT(histograms.GetAllSamples(kNavigationEventCleanUpHistogramName),
               testing::ElementsAre(base::Bucket(4, 1)));
 }

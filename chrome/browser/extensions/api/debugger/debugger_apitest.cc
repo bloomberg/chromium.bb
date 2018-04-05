@@ -86,7 +86,7 @@ testing::AssertionResult DebuggerApiTest::RunAttachFunction(
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // Attach by tabId.
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
   std::string debugee_by_tab = base::StringPrintf("{\"tabId\": %d}", tab_id);
   testing::AssertionResult result =
       RunAttachFunctionOnTarget(debugee_by_tab, expected_error);
@@ -191,7 +191,8 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest,
 
 IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
   int tab_id = SessionTabHelper::IdForTab(
-      browser()->tab_strip_model()->GetActiveWebContents());
+                   browser()->tab_strip_model()->GetActiveWebContents())
+                   .id();
   scoped_refptr<DebuggerAttachFunction> attach_function;
   scoped_refptr<DebuggerDetachFunction> detach_function;
 
@@ -200,7 +201,8 @@ IN_PROC_BROWSER_TEST_F(DebuggerApiTest, InfoBar) {
   AddBlankTabAndShow(another_browser);
   AddBlankTabAndShow(another_browser);
   int tab_id2 = SessionTabHelper::IdForTab(
-      another_browser->tab_strip_model()->GetActiveWebContents());
+                    another_browser->tab_strip_model()->GetActiveWebContents())
+                    .id();
 
   InfoBarService* service1 = InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());

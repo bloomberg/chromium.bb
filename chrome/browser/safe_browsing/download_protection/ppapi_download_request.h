@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
+#include "components/sessions/core/session_id.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -134,7 +135,7 @@ class PPAPIDownloadRequest {
 
   // Tab id that associated with the PPAPI plugin, computed by
   // SessionTabHelper::IdForTab().
-  int tab_id_;
+  SessionID tab_id_;
 
   // If the user interacted with this PPAPI plugin to trigger the download.
   bool has_user_gesture_;

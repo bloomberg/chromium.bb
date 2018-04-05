@@ -112,8 +112,8 @@ Task::Type TestTaskManager::GetType(TaskId task_id) const {
   return Task::UNKNOWN;
 }
 
-int TestTaskManager::GetTabId(TaskId task_id) const {
-  return -1;
+SessionID TestTaskManager::GetTabId(TaskId task_id) const {
+  return SessionID::InvalidValue();
 }
 
 int TestTaskManager::GetChildProcessUniqueId(TaskId task_id) const {

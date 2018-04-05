@@ -174,7 +174,7 @@ void MediaRouterBase::DetachRouteController(const MediaRoute::Id& route_id,
 #endif  // !defined(OS_ANDROID)
 
 void MediaRouterBase::RegisterRemotingSource(
-    int32_t tab_id,
+    SessionID tab_id,
     CastRemotingConnector* remoting_source) {
   auto it = remoting_sources_.find(tab_id);
   if (it != remoting_sources_.end()) {
@@ -184,7 +184,7 @@ void MediaRouterBase::RegisterRemotingSource(
   remoting_sources_.emplace(tab_id, remoting_source);
 }
 
-void MediaRouterBase::UnregisterRemotingSource(int32_t tab_id) {
+void MediaRouterBase::UnregisterRemotingSource(SessionID tab_id) {
   auto it = remoting_sources_.find(tab_id);
   DCHECK(it != remoting_sources_.end());
   remoting_sources_.erase(it);

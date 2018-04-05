@@ -77,8 +77,7 @@ class BrowserLiveTabContext : public sessions::LiveTabContext {
   // see chrome::FindBrowserWithID
   // Returns the LiveTabContext of the Browser with |desired_id| if
   // such a Browser exists.
-  static sessions::LiveTabContext* FindContextWithID(
-      SessionID::id_type desired_id);
+  static sessions::LiveTabContext* FindContextWithID(SessionID desired_id);
 
  private:
   Browser* const browser_;

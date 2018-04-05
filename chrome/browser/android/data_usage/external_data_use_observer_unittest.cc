@@ -34,7 +34,7 @@
 namespace {
 
 const char kDefaultLabel[] = "label";
-const SessionID::id_type kDefaultTabId = 0;
+const SessionID kDefaultTabId = SessionID::FromSerializedValue(1);
 const char kDefaultURL[] = "http://www.google.com/#q=abc";
 
 }  // namespace

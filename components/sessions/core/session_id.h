@@ -46,6 +46,10 @@ class SESSIONS_EXPORT SessionID {
   // Sets underlying type (deprecated: use FromSerializedValue() instead).
   void set_id(id_type id) { id_ = id; }
 
+  struct Hasher {
+    inline std::size_t operator()(SessionID id) const { return id.id(); }
+  };
+
  private:
   explicit constexpr SessionID(id_type id) : id_(id) {}
 

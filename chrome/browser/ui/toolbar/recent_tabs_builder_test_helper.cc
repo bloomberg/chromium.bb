@@ -33,50 +33,45 @@ bool SortTabTimesByRecency(const TitleTimestampPair& t1,
   return t1.timestamp > t2.timestamp;
 }
 
-int CreateUniqueID() {
-  static int s_id = 0;
-  ++s_id;
-  return s_id;
+std::string ToSessionTag(SessionID session_id) {
+  return std::string(kBaseSessionTag + base::IntToString(session_id.id()));
 }
 
-std::string ToSessionTag(SessionID::id_type session_id) {
-  return std::string(kBaseSessionTag + base::IntToString(session_id));
+std::string ToSessionName(SessionID session_id) {
+  return std::string(kBaseSessionName + base::IntToString(session_id.id()));
 }
 
-std::string ToSessionName(SessionID::id_type session_id) {
-  return std::string(kBaseSessionName + base::IntToString(session_id));
+std::string ToTabTitle(SessionID session_id,
+                       SessionID window_id,
+                       SessionID tab_id) {
+  return base::StringPrintf(kTabTitleFormat, session_id.id(), window_id.id(),
+                            tab_id.id());
 }
 
-std::string ToTabTitle(SessionID::id_type session_id,
-                       SessionID::id_type window_id,
-                       SessionID::id_type tab_id) {
-  return base::StringPrintf(kTabTitleFormat, session_id, window_id, tab_id);
-}
-
-std::string ToTabUrl(SessionID::id_type session_id,
-                     SessionID::id_type window_id,
-                     SessionID::id_type tab_id) {
+std::string ToTabUrl(SessionID session_id,
+                     SessionID window_id,
+                     SessionID tab_id) {
   return std::string(kBaseTabUrl + ToTabTitle(session_id, window_id, tab_id));
 }
 
 }  // namespace
 
 struct RecentTabsBuilderTestHelper::TabInfo {
-  TabInfo() : id(0) {}
-  SessionID::id_type id;
+  TabInfo() : id(SessionID::InvalidValue()) {}
+  SessionID id;
   base::Time timestamp;
   base::string16 title;
 };
 struct RecentTabsBuilderTestHelper::WindowInfo {
-  WindowInfo() : id(0) {}
+  WindowInfo() : id(SessionID::InvalidValue()) {}
   ~WindowInfo() {}
-  SessionID::id_type id;
+  SessionID id;
   std::vector<TabInfo> tabs;
 };
 struct RecentTabsBuilderTestHelper::SessionInfo {
-  SessionInfo() : id(0) {}
+  SessionInfo() : id(SessionID::InvalidValue()) {}
   ~SessionInfo() {}
-  SessionID::id_type id;
+  SessionID id;
   std::vector<WindowInfo> windows;
 };
 
@@ -90,7 +85,7 @@ RecentTabsBuilderTestHelper::~RecentTabsBuilderTestHelper() {
 
 void RecentTabsBuilderTestHelper::AddSession() {
   SessionInfo info;
-  info.id = CreateUniqueID();
+  info.id = SessionID::NewUnique();
   sessions_.push_back(info);
 }
 
@@ -98,8 +93,7 @@ int RecentTabsBuilderTestHelper::GetSessionCount() {
   return sessions_.size();
 }
 
-SessionID::id_type RecentTabsBuilderTestHelper::GetSessionID(
-    int session_index) {
+SessionID RecentTabsBuilderTestHelper::GetSessionID(int session_index) {
   return sessions_[session_index].id;
 }
 
@@ -119,7 +113,7 @@ base::Time RecentTabsBuilderTestHelper::GetSessionTimestamp(int session_index) {
 
 void RecentTabsBuilderTestHelper::AddWindow(int session_index) {
   WindowInfo window_info;
-  window_info.id = CreateUniqueID();
+  window_info.id = SessionID::NewUnique();
   sessions_[session_index].windows.push_back(window_info);
 }
 
@@ -127,8 +121,8 @@ int RecentTabsBuilderTestHelper::GetWindowCount(int session_index) {
   return sessions_[session_index].windows.size();
 }
 
-SessionID::id_type RecentTabsBuilderTestHelper::GetWindowID(int session_index,
-                                                            int window_index) {
+SessionID RecentTabsBuilderTestHelper::GetWindowID(int session_index,
+                                                   int window_index) {
   return sessions_[session_index].windows[window_index].id;
 }
 
@@ -144,7 +138,7 @@ void RecentTabsBuilderTestHelper::AddTabWithInfo(int session_index,
                                                  base::Time timestamp,
                                                  const base::string16& title) {
   TabInfo tab_info;
-  tab_info.id = CreateUniqueID();
+  tab_info.id = SessionID::NewUnique();
   tab_info.timestamp = timestamp;
   tab_info.title = title;
   sessions_[session_index].windows[window_index].tabs.push_back(tab_info);
@@ -155,9 +149,9 @@ int RecentTabsBuilderTestHelper::GetTabCount(int session_index,
   return sessions_[session_index].windows[window_index].tabs.size();
 }
 
-SessionID::id_type RecentTabsBuilderTestHelper::GetTabID(int session_index,
-                                                         int window_index,
-                                                         int tab_index) {
+SessionID RecentTabsBuilderTestHelper::GetTabID(int session_index,
+                                                int window_index,
+                                                int tab_index) {
   return sessions_[session_index].windows[window_index].tabs[tab_index].id;
 }
 
@@ -250,7 +244,7 @@ RecentTabsBuilderTestHelper::GetTabTitlesSortedByRecency() {
 void RecentTabsBuilderTestHelper::BuildSessionSpecifics(
     int session_index,
     sync_pb::SessionSpecifics* meta) {
-  SessionID::id_type session_id = GetSessionID(session_index);
+  SessionID session_id = GetSessionID(session_index);
   meta->set_session_tag(ToSessionTag(session_id));
   sync_pb::SessionHeader* header = meta->mutable_header();
   header->set_device_type(sync_pb::SyncEnums_DeviceType_TYPE_CROS);
@@ -263,12 +257,12 @@ void RecentTabsBuilderTestHelper::BuildWindowSpecifics(
     sync_pb::SessionSpecifics* meta) {
   sync_pb::SessionHeader* header = meta->mutable_header();
   sync_pb::SessionWindow* window = header->add_window();
-  SessionID::id_type window_id = GetWindowID(session_index, window_index);
-  window->set_window_id(window_id);
+  SessionID window_id = GetWindowID(session_index, window_index);
+  window->set_window_id(window_id.id());
   window->set_selected_tab_index(0);
   window->set_browser_type(sync_pb::SessionWindow_BrowserType_TYPE_TABBED);
   for (int i = 0; i < GetTabCount(session_index, window_index); ++i)
-    window->add_tab(GetTabID(session_index, window_index, i));
+    window->add_tab(GetTabID(session_index, window_index, i).id());
 }
 
 void RecentTabsBuilderTestHelper::BuildTabSpecifics(
@@ -276,15 +270,15 @@ void RecentTabsBuilderTestHelper::BuildTabSpecifics(
     int window_index,
     int tab_index,
     sync_pb::SessionSpecifics* tab_base) {
-  SessionID::id_type session_id = GetSessionID(session_index);
-  SessionID::id_type window_id = GetWindowID(session_index, window_index);
-  SessionID::id_type tab_id = GetTabID(session_index, window_index, tab_index);
+  SessionID session_id = GetSessionID(session_index);
+  SessionID window_id = GetWindowID(session_index, window_index);
+  SessionID tab_id = GetTabID(session_index, window_index, tab_index);
 
   tab_base->set_session_tag(ToSessionTag(session_id));
   tab_base->set_tab_node_id(++max_tab_node_id_);
   sync_pb::SessionTab* tab = tab_base->mutable_tab();
-  tab->set_window_id(window_id);
-  tab->set_tab_id(tab_id);
+  tab->set_window_id(window_id.id());
+  tab->set_tab_id(tab_id.id());
   tab->set_tab_visual_index(1);
   tab->set_current_navigation_index(0);
   tab->set_pinned(true);

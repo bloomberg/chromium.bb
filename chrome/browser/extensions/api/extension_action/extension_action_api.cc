@@ -239,7 +239,7 @@ void ExtensionActionAPI::DispatchExtensionActionClicked(
 void ExtensionActionAPI::ClearAllValuesForTab(
     content::WebContents* web_contents) {
   DCHECK(web_contents);
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  const SessionID tab_id = SessionTabHelper::IdForTab(web_contents);
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
   const ExtensionSet& enabled_extensions =
       ExtensionRegistry::Get(browser_context_)->enabled_extensions();
@@ -251,7 +251,7 @@ void ExtensionActionAPI::ClearAllValuesForTab(
     ExtensionAction* extension_action =
         action_manager->GetExtensionAction(**iter);
     if (extension_action) {
-      extension_action->ClearAllValuesForTab(tab_id);
+      extension_action->ClearAllValuesForTab(tab_id.id());
       NotifyChange(extension_action, web_contents, browser_context);
     }
   }

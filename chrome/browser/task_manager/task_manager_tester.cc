@@ -172,7 +172,7 @@ int64_t TaskManagerTester::GetColumnValue(ColumnSpecifier column, int row) {
   return value;
 }
 
-int32_t TaskManagerTester::GetTabId(int row) {
+SessionID TaskManagerTester::GetTabId(int row) {
   TaskId task_id = model_->tasks_[row];
   return task_manager()->GetTabId(task_id);
 }

@@ -28,7 +28,7 @@ size_t GetPageActionCount(content::WebContents* web_contents,
                           bool only_count_visible) {
   DCHECK(web_contents);
   size_t count = 0u;
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  SessionID tab_id = SessionTabHelper::IdForTab(web_contents);
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   ToolbarActionsModel* toolbar_model = ToolbarActionsModel::Get(profile);
@@ -44,7 +44,7 @@ size_t GetPageActionCount(content::WebContents* web_contents,
       ExtensionAction* extension_action =
           action_manager->GetPageAction(*extension);
       if (extension_action &&
-          (!only_count_visible || extension_action->GetIsVisible(tab_id)))
+          (!only_count_visible || extension_action->GetIsVisible(tab_id.id())))
         ++count;
     }
   }

@@ -62,7 +62,7 @@ class RendererTask : public Task,
   void GetTerminationStatus(base::TerminationStatus* out_status,
                             int* out_error_code) const override;
   base::string16 GetProfileName() const override;
-  int GetTabId() const override;
+  SessionID GetTabId() const override;
   int64_t GetV8MemoryAllocated() const override;
   int64_t GetV8MemoryUsed() const override;
   bool ReportsWebCacheStats() const override;

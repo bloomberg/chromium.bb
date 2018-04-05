@@ -57,8 +57,7 @@ class AndroidLiveTabContext : public sessions::LiveTabContext {
 
   static LiveTabContext* FindContextForWebContents(
       const content::WebContents* contents);
-  static sessions::LiveTabContext* FindContextWithID(
-      SessionID::id_type desired_id);
+  static sessions::LiveTabContext* FindContextWithID(SessionID desired_id);
 
  private:
   TabModel* tab_model_;

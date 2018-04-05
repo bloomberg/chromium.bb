@@ -153,7 +153,7 @@ content::WebContents* ToolbarActionView::GetCurrentWebContents() const {
 void ToolbarActionView::UpdateState() {
   content::WebContents* web_contents = GetCurrentWebContents();
   SetAccessibleName(view_controller_->GetAccessibleName(web_contents));
-  if (SessionTabHelper::IdForTab(web_contents) < 0)
+  if (!SessionTabHelper::IdForTab(web_contents).is_valid())
     return;
 
   if (!view_controller_->IsEnabled(web_contents) &&

@@ -64,7 +64,7 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
   params.user_gesture = true;
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   Navigate(&params);
-  settings_session_map_[profile] = params.browser->session_id().id();
+  settings_session_map_[profile] = params.browser->session_id();
   DCHECK(params.browser->is_trusted_source());
 
   for (SettingsWindowManagerObserver& observer : observers_)
@@ -82,7 +82,7 @@ bool SettingsWindowManager::IsSettingsBrowser(Browser* browser) const {
   ProfileSessionMap::const_iterator iter =
       settings_session_map_.find(browser->profile());
   return (iter != settings_session_map_.end() &&
-          iter->second == browser->session_id().id());
+          iter->second == browser->session_id());
 }
 
 SettingsWindowManager::SettingsWindowManager() {}

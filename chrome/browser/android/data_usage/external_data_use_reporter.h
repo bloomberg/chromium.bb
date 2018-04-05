@@ -39,9 +39,8 @@ namespace android {
 // must only be accessed on UI thread.
 class ExternalDataUseReporter {
  public:
-  typedef base::Callback<bool(SessionID::id_type,
-                              const base::TimeTicks,
-                              DataUseTabModel::TrackingInfo*)>
+  typedef base::Callback<
+      bool(SessionID, const base::TimeTicks, DataUseTabModel::TrackingInfo*)>
       GetTrackingInfoCallback;
 
   typedef base::Callback<void(const std::string&,

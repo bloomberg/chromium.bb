@@ -39,7 +39,7 @@ class TabModelList {
 
   static TabModel* GetTabModelForWebContents(
       content::WebContents* web_contents);
-  static TabModel* FindTabModelWithId(SessionID::id_type desired_id);
+  static TabModel* FindTabModelWithId(SessionID desired_id);
   static bool IsOffTheRecordSessionActive();
 
   static const_iterator begin();

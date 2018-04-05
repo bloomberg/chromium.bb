@@ -42,7 +42,7 @@ class FakeTask : public Task {
 
   const Task* GetParentTask() const override { return nullptr; }
 
-  int GetTabId() const override { return 0; }
+  SessionID GetTabId() const override { return SessionID::InvalidValue(); }
 
  private:
   Type type_;

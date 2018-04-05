@@ -1255,7 +1255,7 @@ bool TabsUpdateFunction::RunAsync() {
       error_ = keys::kNoSelectedTabError;
       return false;
     }
-    tab_id = SessionTabHelper::IdForTab(contents);
+    tab_id = SessionTabHelper::IdForTab(contents).id();
   } else {
     tab_id = *params->tab_id;
   }
@@ -1737,7 +1737,7 @@ WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(int window_id) {
   }
 
   if (!extension()->permissions_data()->CanCaptureVisiblePage(
-          SessionTabHelper::IdForTab(contents), &error_)) {
+          SessionTabHelper::IdForTab(contents).id(), &error_)) {
     return NULL;
   }
   return contents;

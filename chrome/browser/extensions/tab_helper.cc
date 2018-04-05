@@ -171,9 +171,7 @@ TabHelper::TabHelper(content::WebContents* web_contents)
   web_contents->ForEachFrame(
       base::BindRepeating(&TabHelper::SetTabId, base::Unretained(this)));
   active_tab_permission_granter_.reset(new ActiveTabPermissionGranter(
-      web_contents,
-      SessionTabHelper::IdForTab(web_contents),
-      profile_));
+      web_contents, SessionTabHelper::IdForTab(web_contents).id(), profile_));
 
   AddScriptExecutionObserver(ActivityLog::GetInstance(profile_));
 
@@ -612,9 +610,9 @@ void TabHelper::GetApplicationInfo(WebAppAction action) {
 }
 
 void TabHelper::SetTabId(content::RenderFrameHost* render_frame_host) {
-  render_frame_host->Send(
-      new ExtensionMsg_SetTabId(render_frame_host->GetRoutingID(),
-                                SessionTabHelper::IdForTab(web_contents())));
+  render_frame_host->Send(new ExtensionMsg_SetTabId(
+      render_frame_host->GetRoutingID(),
+      SessionTabHelper::IdForTab(web_contents()).id()));
 }
 
 }  // namespace extensions

@@ -59,7 +59,7 @@ RedirectData CreateRedirectData(const std::string& primary_key,
 OriginData CreateOriginData(const std::string& host,
                             uint64_t last_visit_time = 0);
 
-NavigationID CreateNavigationID(SessionID::id_type tab_id,
+NavigationID CreateNavigationID(SessionID tab_id,
                                 const std::string& main_frame_url);
 
 PageRequestSummary CreatePageRequestSummary(
@@ -68,7 +68,7 @@ PageRequestSummary CreatePageRequestSummary(
     const std::vector<URLRequestSummary>& subresource_requests);
 
 URLRequestSummary CreateURLRequestSummary(
-    SessionID::id_type tab_id,
+    SessionID tab_id,
     const std::string& main_frame_url,
     const std::string& request_url = std::string(),
     content::ResourceType resource_type = content::RESOURCE_TYPE_MAIN_FRAME,
@@ -76,7 +76,7 @@ URLRequestSummary CreateURLRequestSummary(
     bool always_revalidate = false);
 
 URLRequestSummary CreateRedirectRequestSummary(
-    SessionID::id_type session_id,
+    SessionID session_id,
     const std::string& main_frame_url,
     const std::string& redirect_url);
 

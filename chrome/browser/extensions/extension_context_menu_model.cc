@@ -209,7 +209,7 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
       content::WebContents* web_contents = GetActiveWebContents();
       return web_contents && extension_action_ &&
              extension_action_->HasPopup(
-                 SessionTabHelper::IdForTab(web_contents));
+                 SessionTabHelper::IdForTab(web_contents).id());
     }
     case UNINSTALL:
       return !IsExtensionRequiredByPolicy(extension, profile_);

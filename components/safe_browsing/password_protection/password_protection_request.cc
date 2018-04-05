@@ -149,7 +149,7 @@ void PasswordProtectionRequest::FillRequestProto() {
   main_frame->set_url(main_frame_url_.spec());
   main_frame->set_frame_index(0 /* main frame */);
   password_protection_service_->FillReferrerChain(
-      main_frame_url_, -1 /* tab id not available */, main_frame);
+      main_frame_url_, SessionID::InvalidValue(), main_frame);
   bool clicked_through_interstitial =
       password_protection_service_->UserClickedThroughSBInterstitial(
           web_contents_);

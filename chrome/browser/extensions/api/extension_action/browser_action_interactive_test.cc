@@ -345,13 +345,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
   OpenPopupViaAPI(false);
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
-  ASSERT_FALSE(
-      service->GetExtensionById(last_loaded_extension_id(), false)
-          ->permissions_data()
-          ->HasAPIPermissionForTab(
-              SessionTabHelper::IdForTab(
-                  browser()->tab_strip_model()->GetActiveWebContents()),
-              APIPermission::kTab));
+  ASSERT_FALSE(service->GetExtensionById(last_loaded_extension_id(), false)
+                   ->permissions_data()
+                   ->HasAPIPermissionForTab(
+                       SessionTabHelper::IdForTab(
+                           browser()->tab_strip_model()->GetActiveWebContents())
+                           .id(),
+                       APIPermission::kTab));
   ClosePopup();
 }
 

@@ -62,8 +62,7 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
 
 - (instancetype)init {
   if ((self = [super init])) {
-    SessionID session;
-    SessionID::id_type futureSessionIDOfTab = session.id() + 1;
+    SessionID::id_type futureSessionIDOfTab = SessionID::NewUnique().id() + 1;
     // Holds the SessionID that the new tab is going to get.
     base::scoped_nsobject<NSNumber> numID(
         [[NSNumber alloc] initWithInt:futureSessionIDOfTab]);

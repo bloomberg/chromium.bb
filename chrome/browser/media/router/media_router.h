@@ -21,6 +21,7 @@
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sessions/core/session_id.h"
 #include "content/public/browser/media_controller.h"
 #include "content/public/browser/presentation_service_delegate.h"
 
@@ -205,9 +206,9 @@ class MediaRouter : public KeyedService {
   // given |tab_id|, only one CastRemotingConnector can be registered. The
   // registered CastRemotingConnector should be removed before it is destroyed.
   virtual void RegisterRemotingSource(
-      int32_t tab_id,
+      SessionID tab_id,
       CastRemotingConnector* remoting_source) = 0;
-  virtual void UnregisterRemotingSource(int32_t tab_id) = 0;
+  virtual void UnregisterRemotingSource(SessionID tab_id) = 0;
 
   // Returns media router state as a JSON string represented by base::Vaule.
   // Used by media-router-internals page.

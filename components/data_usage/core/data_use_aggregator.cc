@@ -55,10 +55,10 @@ void DataUseAggregator::ReportDataUse(net::URLRequest* request,
   net::LoadTimingInfo load_timing_info;
   request->GetLoadTimingInfo(&load_timing_info);
 
-  std::unique_ptr<DataUse> data_use(
-      new DataUse(request->url(), load_timing_info.request_start,
-                  request->site_for_cookies(), -1 /* tab_id */,
-                  connection_type_, mcc_mnc_, tx_bytes, rx_bytes));
+  std::unique_ptr<DataUse> data_use(new DataUse(
+      request->url(), load_timing_info.request_start,
+      request->site_for_cookies(), /*tab_id=*/SessionID::InvalidValue(),
+      connection_type_, mcc_mnc_, tx_bytes, rx_bytes));
 
   if (!annotator_) {
     PassDataUseToAmortizer(std::move(data_use));

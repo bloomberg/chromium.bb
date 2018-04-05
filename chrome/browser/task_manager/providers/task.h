@@ -14,6 +14,7 @@
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/sessions/core/session_id.h"
 #include "third_party/WebKit/public/platform/WebCache.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -121,9 +122,9 @@ class Task {
   virtual base::string16 GetProfileName() const;
 
   // Returns the unique ID of the tab if this task represents a renderer
-  // WebContents used for a tab. Returns -1 if this task does not represent
-  // a renderer, or a contents of a tab.
-  virtual int GetTabId() const;
+  // WebContents used for a tab. Returns SessionID::InvalidValue() if this task
+  // does not represent a renderer, or a contents of a tab.
+  virtual SessionID GetTabId() const;
 
   // For Tasks that represent a subactivity of some other task (e.g. a plugin
   // embedded in a page), this returns the Task representing the parent

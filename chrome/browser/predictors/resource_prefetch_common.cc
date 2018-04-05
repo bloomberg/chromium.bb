@@ -18,7 +18,7 @@
 
 namespace predictors {
 
-NavigationID::NavigationID() : tab_id(-1) {}
+NavigationID::NavigationID() : tab_id(SessionID::InvalidValue()) {}
 
 NavigationID::NavigationID(const NavigationID& other)
     : tab_id(other.tab_id),
@@ -38,7 +38,7 @@ NavigationID::NavigationID(content::WebContents* web_contents,
       creation_time(creation_time) {}
 
 bool NavigationID::is_valid() const {
-  return tab_id != -1 && !main_frame_url.is_empty();
+  return tab_id.is_valid() && !main_frame_url.is_empty();
 }
 
 bool NavigationID::operator<(const NavigationID& rhs) const {

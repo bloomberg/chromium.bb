@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillTab) {
   // Killing the tab via task manager should remove the row.
   int tab = FindResourceIndex(MatchTab("title1.html"));
   ASSERT_NE(-1, tab);
-  ASSERT_NE(-1, model()->GetTabId(tab));
+  ASSERT_TRUE(model()->GetTabId(tab).is_valid());
   model()->Kill(tab);
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchTab("title1.html")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
@@ -365,11 +365,11 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTabChanges) {
 
   int extension_tab = FindResourceIndex(MatchExtension("Foobar"));
   ASSERT_NE(-1, extension_tab);
-  ASSERT_NE(-1, model()->GetTabId(extension_tab));
+  ASSERT_TRUE(model()->GetTabId(extension_tab).is_valid());
 
   int background_page = FindResourceIndex(MatchExtension("My extension 1"));
   ASSERT_NE(-1, background_page);
-  ASSERT_EQ(-1, model()->GetTabId(background_page));
+  ASSERT_FALSE(model()->GetTabId(background_page).is_valid());
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTab) {
@@ -395,11 +395,11 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTab) {
 
   int extension_tab = FindResourceIndex(MatchExtension("Foobar"));
   ASSERT_NE(-1, extension_tab);
-  ASSERT_NE(-1, model()->GetTabId(extension_tab));
+  ASSERT_TRUE(model()->GetTabId(extension_tab).is_valid());
 
   int background_page = FindResourceIndex(MatchExtension("My extension 1"));
   ASSERT_NE(-1, background_page);
-  ASSERT_EQ(-1, model()->GetTabId(background_page));
+  ASSERT_FALSE(model()->GetTabId(background_page).is_valid());
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabChanges) {
@@ -432,7 +432,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabChanges) {
   // a tab contents and an extension.
   int app_tab = FindResourceIndex(MatchApp("Packaged App Test"));
   ASSERT_NE(-1, app_tab);
-  ASSERT_NE(-1, model()->GetTabId(app_tab));
+  ASSERT_TRUE(model()->GetTabId(app_tab).is_valid());
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
 
   // Unload extension to make sure the tab goes away.
@@ -469,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTab) {
   // a tab contents and an extension.
   int app_tab = FindResourceIndex(MatchApp("Packaged App Test"));
   ASSERT_NE(-1, app_tab);
-  ASSERT_NE(-1, model()->GetTabId(app_tab));
+  ASSERT_TRUE(model()->GetTabId(app_tab).is_valid());
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabChanges) {
@@ -1011,7 +1011,7 @@ IN_PROC_BROWSER_TEST_P(TaskManagerOOPIFBrowserTest, DISABLED_KillSubframe) {
 
     int subframe_b = FindResourceIndex(MatchSubframe("http://b.com/"));
     ASSERT_NE(-1, subframe_b);
-    ASSERT_NE(-1, model()->GetTabId(subframe_b));
+    ASSERT_TRUE(model()->GetTabId(subframe_b).is_valid());
     model()->Kill(subframe_b);
 
     ASSERT_NO_FATAL_FAILURE(

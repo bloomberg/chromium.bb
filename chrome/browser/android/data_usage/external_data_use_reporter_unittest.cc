@@ -41,7 +41,7 @@ const char kUMAReportSubmissionDurationHistogram[] =
     "DataUsage.Perf.ReportSubmissionDuration";
 
 const char kDefaultLabel[] = "label";
-const SessionID::id_type kDefaultTabId = 0;
+const SessionID kDefaultTabId = SessionID::FromSerializedValue(1);
 const char kDefaultURL[] = "http://www.google.com/#q=abc";
 
 const char kFooMccMnc[] = "foo_mccmnc";
@@ -312,8 +312,9 @@ TEST_F(ExternalDataUseReporterTest, MultipleMatchingRules) {
       kDefaultTabId, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH,
       GURL("http://www.foo.com/#q=abc"), std::string(), nullptr);
 
+  const SessionID kTabIdBar = SessionID::FromSerializedValue(2);
   data_use_tab_model()->OnNavigationEvent(
-      kDefaultTabId + 1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH,
+      kTabIdBar, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH,
       GURL("http://www.bar.com/#q=abc"), std::string(), nullptr);
 
   EXPECT_EQ(0U, external_data_use_reporter()->buffered_data_reports_.size());
@@ -328,7 +329,7 @@ TEST_F(ExternalDataUseReporterTest, MultipleMatchingRules) {
 
   // Check |kLabelBar| matching rule.
   data_usage::DataUse data_bar = default_data_use();
-  data_bar.tab_id = kDefaultTabId + 1;
+  data_bar.tab_id = kTabIdBar;
   data_bar.url = GURL("http://www.bar.com/#q=abc");
   data_bar.mcc_mnc = kBarMccMnc;
   OnDataUse(data_bar);

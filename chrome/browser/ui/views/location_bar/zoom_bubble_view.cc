@@ -518,7 +518,7 @@ void ZoomBubbleView::UpdateZoomIconVisibility() {
   // destroyed by the time we get this call. Also note parent_window() (if set)
   // may also be destroyed: the call to WindowClosing() may be triggered by
   // parent window destruction tearing down its child windows.
-  Browser* browser = chrome::FindBrowserWithID(session_id_.id());
+  Browser* browser = chrome::FindBrowserWithID(session_id_);
   if (browser && browser->window() && browser->window()->GetLocationBar())
     browser->window()->GetLocationBar()->UpdateZoomViewVisibility();
 }

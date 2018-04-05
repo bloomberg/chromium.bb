@@ -158,7 +158,7 @@ base::string16 RendererTask::GetProfileName() const {
   return profile_name_;
 }
 
-int RendererTask::GetTabId() const {
+SessionID RendererTask::GetTabId() const {
   return SessionTabHelper::IdForTab(web_contents_);
 }
 

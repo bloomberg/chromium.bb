@@ -175,7 +175,7 @@ class CryptoTokenPermissionTest : public ExtensionApiUnittest {
 
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetWebContentsAt(0);
-    tab_id_ = SessionTabHelper::IdForTab(web_contents);
+    tab_id_ = SessionTabHelper::IdForTab(web_contents).id();
     PermissionRequestManager::CreateForWebContents(web_contents);
     prompt_factory_ = std::make_unique<MockPermissionPromptFactory>(
         PermissionRequestManager::FromWebContents(web_contents));

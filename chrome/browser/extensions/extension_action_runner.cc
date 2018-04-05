@@ -111,7 +111,7 @@ ExtensionAction::ShowAction ExtensionActionRunner::RunAction(
 
   // Anything that gets here should have a page or browser action.
   DCHECK(extension_action);
-  int tab_id = SessionTabHelper::IdForTab(web_contents());
+  int tab_id = SessionTabHelper::IdForTab(web_contents()).id();
   if (!extension_action->GetIsVisible(tab_id))
     return ExtensionAction::ACTION_NONE;
 
@@ -204,7 +204,7 @@ ExtensionActionRunner::RequiresUserConsentForScriptInjection(
     return PermissionsData::ACCESS_ALLOWED;
 
   GURL url = web_contents()->GetVisibleURL();
-  int tab_id = SessionTabHelper::IdForTab(web_contents());
+  int tab_id = SessionTabHelper::IdForTab(web_contents()).id();
   switch (type) {
     case UserScript::CONTENT_SCRIPT:
       return extension->permissions_data()->GetContentScriptAccess(

@@ -142,10 +142,10 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_TabMirroring) {
       browser(), GURL("about:blank"), 1);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  SessionID tab_id = SessionTabHelper::IdForTab(web_contents);
 
   // Wait for 30 seconds to make sure the route is stable.
-  CreateMediaRoute(MediaSourceForTab(tab_id),
+  CreateMediaRoute(MediaSourceForTab(tab_id.id()),
                    url::Origin::Create(GURL(kOrigin)), web_contents);
   Wait(base::TimeDelta::FromSeconds(30));
 

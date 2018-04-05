@@ -24,7 +24,7 @@ namespace chrome_browser_data_usage {
 
 namespace {
 
-const int32_t kTabId = 10;
+const SessionID kTabId = SessionID::FromSerializedValue(10);
 
 class TabIdProviderTest : public testing::Test {
  public:
@@ -34,7 +34,7 @@ class TabIdProviderTest : public testing::Test {
 
   ~TabIdProviderTest() override {}
 
-  base::OnceCallback<int32_t(void)> TabIdGetterCallback() {
+  base::OnceCallback<SessionID(void)> TabIdGetterCallback() {
     return base::BindOnce(&TabIdProviderTest::GetTabInfo,
                           base::Unretained(this));
   }
@@ -44,7 +44,7 @@ class TabIdProviderTest : public testing::Test {
   int tab_id_getter_call_count() const { return tab_id_getter_call_count_; }
 
  private:
-  int32_t GetTabInfo() {
+  SessionID GetTabInfo() {
     ++tab_id_getter_call_count_;
     return kTabId;
   }
@@ -58,14 +58,14 @@ class TabIdProviderTest : public testing::Test {
 };
 
 // Copies |tab_id| into |capture|.
-void CaptureTabId(int32_t* capture, int32_t tab_info) {
+void CaptureTabId(SessionID* capture, SessionID tab_info) {
   *capture = tab_info;
 }
 
 TEST_F(TabIdProviderTest, ProvideTabId) {
   TabIdProvider provider(task_runner(), FROM_HERE, TabIdGetterCallback());
 
-  int32_t tab_id = -1;
+  SessionID tab_id = SessionID::InvalidValue();
   provider.ProvideTabId(base::BindOnce(&CaptureTabId, &tab_id));
   run_loop()->RunUntilIdle();
 
@@ -77,13 +77,13 @@ TEST_F(TabIdProviderTest, ProvideTabIdPiggyback) {
   TabIdProvider provider(task_runner(), FROM_HERE, TabIdGetterCallback());
 
   // First, ask for the first tab ID to kick things off.
-  int32_t first_tab_id = -1;
+  SessionID first_tab_id = SessionID::InvalidValue();
   provider.ProvideTabId(base::BindOnce(&CaptureTabId, &first_tab_id));
 
   // The first tab ID callback should still be pending, with the tab ID not
   // available yet, so this second callback should piggyback off of the first
   // callback.
-  int32_t piggyback_tab_id = -1;
+  SessionID piggyback_tab_id = SessionID::InvalidValue();
   provider.ProvideTabId(base::BindOnce(&CaptureTabId, &piggyback_tab_id));
 
   run_loop()->RunUntilIdle();
@@ -98,7 +98,7 @@ TEST_F(TabIdProviderTest, ProvideTabIdCacheHit) {
   TabIdProvider provider(task_runner(), FROM_HERE, TabIdGetterCallback());
 
   // First, ask for the first tab ID to kick things off.
-  int32_t first_tab_id = -1;
+  SessionID first_tab_id = SessionID::InvalidValue();
   provider.ProvideTabId(base::BindOnce(&CaptureTabId, &first_tab_id));
 
   // Wait for the first tab ID callback to finish.
@@ -109,7 +109,7 @@ TEST_F(TabIdProviderTest, ProvideTabIdCacheHit) {
 
   // Ask for another tab ID, which should be satisfied by the cached tab ID from
   // the first callback.
-  int32_t cache_hit_tab_id = -1;
+  SessionID cache_hit_tab_id = SessionID::InvalidValue();
   provider.ProvideTabId(base::BindOnce(&CaptureTabId, &cache_hit_tab_id));
 
   // This cache hit callback should run synchronously, without causing the tab
@@ -123,7 +123,8 @@ TEST_F(TabIdProviderTest, ProvideTabIdAfterProviderDestroyed) {
       new TabIdProvider(task_runner(), FROM_HERE, TabIdGetterCallback()));
 
   // Ask for two tab IDs.
-  int32_t first_tab_id = -1, second_tab_id = -1;
+  SessionID first_tab_id = SessionID::InvalidValue(),
+            second_tab_id = SessionID::InvalidValue();
   provider->ProvideTabId(base::BindOnce(&CaptureTabId, &first_tab_id));
   provider->ProvideTabId(base::BindOnce(&CaptureTabId, &second_tab_id));
 

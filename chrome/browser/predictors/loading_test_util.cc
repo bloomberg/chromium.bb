@@ -79,7 +79,7 @@ OriginData CreateOriginData(const std::string& host, uint64_t last_visit_time) {
   return data;
 }
 
-NavigationID CreateNavigationID(SessionID::id_type tab_id,
+NavigationID CreateNavigationID(SessionID tab_id,
                                 const std::string& main_frame_url) {
   NavigationID navigation_id;
   navigation_id.tab_id = tab_id;
@@ -95,13 +95,14 @@ PageRequestSummary CreatePageRequestSummary(
   GURL main_frame_gurl(main_frame_url);
   PageRequestSummary summary(main_frame_gurl);
   summary.initial_url = GURL(initial_url);
-  summary.UpdateOrAddToOrigins(CreateURLRequestSummary(1, main_frame_url));
+  summary.UpdateOrAddToOrigins(CreateURLRequestSummary(
+      SessionID::FromSerializedValue(1), main_frame_url));
   for (auto& request_summary : subresource_requests)
     summary.UpdateOrAddToOrigins(request_summary);
   return summary;
 }
 
-URLRequestSummary CreateURLRequestSummary(SessionID::id_type tab_id,
+URLRequestSummary CreateURLRequestSummary(SessionID tab_id,
                                           const std::string& main_frame_url,
                                           const std::string& request_url,
                                           content::ResourceType resource_type,
@@ -121,7 +122,7 @@ URLRequestSummary CreateURLRequestSummary(SessionID::id_type tab_id,
 }
 
 URLRequestSummary CreateRedirectRequestSummary(
-    SessionID::id_type session_id,
+    SessionID session_id,
     const std::string& main_frame_url,
     const std::string& redirect_url) {
   URLRequestSummary summary =

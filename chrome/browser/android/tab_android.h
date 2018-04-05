@@ -120,7 +120,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   void DeleteFrozenNavigationEntries(
       const WebContentsState::DeletionPredicate& predicate);
 
-  void SetWindowSessionID(SessionID::id_type window_id);
+  void SetWindowSessionID(SessionID window_id);
   void SetSyncId(int sync_id);
 
   void HandlePopupNavigation(NavigateParams* params);

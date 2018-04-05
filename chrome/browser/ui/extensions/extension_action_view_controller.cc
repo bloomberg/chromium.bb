@@ -102,8 +102,8 @@ base::string16 ExtensionActionViewController::GetAccessibleName(
   if (!ExtensionIsValid())
     return base::string16();
 
-  std::string title =
-      extension_action()->GetTitle(SessionTabHelper::IdForTab(web_contents));
+  std::string title = extension_action()->GetTitle(
+      SessionTabHelper::IdForTab(web_contents).id());
   return base::UTF8ToUTF16(title.empty() ? extension()->name() : title);
 }
 
@@ -118,7 +118,7 @@ bool ExtensionActionViewController::IsEnabled(
     return false;
 
   return extension_action_->GetIsVisible(
-             SessionTabHelper::IdForTab(web_contents)) ||
+             SessionTabHelper::IdForTab(web_contents).id()) ||
          HasBeenBlocked(web_contents);
 }
 
@@ -133,8 +133,8 @@ bool ExtensionActionViewController::HasPopup(
   if (!ExtensionIsValid())
     return false;
 
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
-  return (tab_id < 0) ? false : extension_action_->HasPopup(tab_id);
+  SessionID tab_id = SessionTabHelper::IdForTab(web_contents);
+  return tab_id.is_valid() ? extension_action_->HasPopup(tab_id.id()) : false;
 }
 
 void ExtensionActionViewController::HidePopup() {
@@ -214,7 +214,7 @@ bool ExtensionActionViewController::ExecuteAction(PopupShowAction show_action,
   if (action_runner->RunAction(extension(), grant_tab_permissions) ==
       ExtensionAction::ACTION_SHOW_POPUP) {
     GURL popup_url = extension_action_->GetPopupUrl(
-        SessionTabHelper::IdForTab(web_contents));
+        SessionTabHelper::IdForTab(web_contents).id());
     return GetPreferredPopupViewController()
         ->TriggerPopupWithUrl(show_action, popup_url, grant_tab_permissions);
   }
@@ -370,7 +370,7 @@ std::unique_ptr<IconWithBadgeImageSource>
 ExtensionActionViewController::GetIconImageSource(
     content::WebContents* web_contents,
     const gfx::Size& size) {
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
   std::unique_ptr<IconWithBadgeImageSource> image_source(
       new IconWithBadgeImageSource(size));
 
@@ -410,7 +410,7 @@ bool ExtensionActionViewController::PageActionWantsToRun(
   return extension_action_->action_type() ==
              extensions::ActionInfo::TYPE_PAGE &&
          extension_action_->GetIsVisible(
-             SessionTabHelper::IdForTab(web_contents));
+             SessionTabHelper::IdForTab(web_contents).id());
 }
 
 bool ExtensionActionViewController::HasBeenBlocked(

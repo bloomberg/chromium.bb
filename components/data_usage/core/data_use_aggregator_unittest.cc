@@ -90,7 +90,7 @@ class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
 // predetermined fake tab ID.
 class FakeDataUseAnnotator : public DataUseAnnotator {
  public:
-  FakeDataUseAnnotator() : tab_id_(-1) {}
+  FakeDataUseAnnotator() : tab_id_(SessionID::InvalidValue()) {}
   ~FakeDataUseAnnotator() override {}
 
   void Annotate(
@@ -101,10 +101,10 @@ class FakeDataUseAnnotator : public DataUseAnnotator {
     callback.Run(std::move(data_use));
   }
 
-  void set_tab_id(int32_t tab_id) { tab_id_ = tab_id; }
+  void set_tab_id(SessionID tab_id) { tab_id_ = tab_id; }
 
  private:
-  int32_t tab_id_;
+  SessionID tab_id_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDataUseAnnotator);
 };
@@ -135,15 +135,15 @@ class ReportingNetworkDelegate : public net::NetworkDelegateImpl {
   // The simulated context for the data usage of a net::URLRequest.
   struct DataUseContext {
     DataUseContext()
-        : tab_id(-1),
+        : tab_id(SessionID::InvalidValue()),
           connection_type(net::NetworkChangeNotifier::CONNECTION_UNKNOWN) {}
 
-    DataUseContext(int32_t tab_id,
+    DataUseContext(SessionID tab_id,
                    net::NetworkChangeNotifier::ConnectionType connection_type,
                    const std::string& mcc_mnc)
         : tab_id(tab_id), connection_type(connection_type), mcc_mnc(mcc_mnc) {}
 
-    int32_t tab_id;
+    SessionID tab_id;
     net::NetworkChangeNotifier::ConnectionType connection_type;
     std::string mcc_mnc;
   };
@@ -268,7 +268,7 @@ class DataUseAggregatorTest : public testing::Test {
   std::unique_ptr<net::URLRequest> ExecuteRequest(
       const GURL& url,
       const GURL& site_for_cookies,
-      int32_t tab_id,
+      SessionID tab_id,
       net::NetworkChangeNotifier::ConnectionType connection_type,
       const std::string& mcc_mnc) {
     net::MockRead reads[] = {
@@ -344,7 +344,7 @@ TEST_F(DataUseAggregatorTest, ReportDataUse) {
 
     Initialize(std::move(annotator), std::move(amortizer));
 
-    const int32_t kFooTabId = 10;
+    const SessionID kFooTabId = SessionID::FromSerializedValue(10);
     const net::NetworkChangeNotifier::ConnectionType kFooConnectionType =
         net::NetworkChangeNotifier::CONNECTION_2G;
     const std::string kFooMccMnc = "foo_mcc_mnc";
@@ -352,7 +352,7 @@ TEST_F(DataUseAggregatorTest, ReportDataUse) {
         ExecuteRequest(GURL("http://foo.com"), GURL("http://foofirstparty.com"),
                        kFooTabId, kFooConnectionType, kFooMccMnc);
 
-    const int32_t kBarTabId = 20;
+    const SessionID kBarTabId = SessionID::FromSerializedValue(20);
     const net::NetworkChangeNotifier::ConnectionType kBarConnectionType =
         net::NetworkChangeNotifier::CONNECTION_WIFI;
     const std::string kBarMccMnc = "bar_mcc_mnc";
@@ -373,7 +373,7 @@ TEST_F(DataUseAggregatorTest, ReportDataUse) {
       if (test_case.expect_tab_ids)
         EXPECT_EQ(kFooTabId, data_use_it->tab_id);
       else
-        EXPECT_EQ(-1, data_use_it->tab_id);
+        EXPECT_FALSE(data_use_it->tab_id.is_valid());
 
       EXPECT_EQ(kFooConnectionType, data_use_it->connection_type);
       EXPECT_EQ(kFooMccMnc, data_use_it->mcc_mnc);
@@ -400,7 +400,7 @@ TEST_F(DataUseAggregatorTest, ReportDataUse) {
       if (test_case.expect_tab_ids)
         EXPECT_EQ(kBarTabId, data_use_it->tab_id);
       else
-        EXPECT_EQ(-1, data_use_it->tab_id);
+        EXPECT_FALSE(data_use_it->tab_id.is_valid());
 
       EXPECT_EQ(kBarConnectionType, data_use_it->connection_type);
       EXPECT_EQ(kBarMccMnc, data_use_it->mcc_mnc);

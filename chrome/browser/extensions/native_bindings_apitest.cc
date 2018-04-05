@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, DeclarativeEvents) {
       ExtensionActionManager::Get(profile())->GetPageAction(*extension);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  int tab_id = SessionTabHelper::IdForTab(web_contents);
+  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
   EXPECT_FALSE(page_action->GetIsVisible(tab_id));
   EXPECT_TRUE(page_action->GetDeclarativeIcon(tab_id).IsEmpty());
 

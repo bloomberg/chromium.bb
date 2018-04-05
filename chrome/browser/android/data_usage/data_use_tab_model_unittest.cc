@@ -44,9 +44,9 @@ const char kTestLabel1[] = "label_1";
 const char kTestLabel2[] = "label_2";
 const char kTestLabel3[] = "label_3";
 
-const int kTabID1 = 1;
-const int kTabID2 = 2;
-const int kTabID3 = 3;
+const SessionID kTabID1 = SessionID::FromSerializedValue(1);
+const SessionID kTabID2 = SessionID::FromSerializedValue(2);
+const SessionID kTabID3 = SessionID::FromSerializedValue(3);
 
 const char kURLFoo[] = "http://foo.com/";
 const char kURLBar[] = "http://bar.com/";
@@ -71,8 +71,8 @@ enum TrackingState {
 class MockTabDataUseObserver
     : public android::DataUseTabModel::TabDataUseObserver {
  public:
-  MOCK_METHOD1(NotifyTrackingStarting, void(SessionID::id_type tab_id));
-  MOCK_METHOD1(NotifyTrackingEnding, void(SessionID::id_type tab_id));
+  MOCK_METHOD1(NotifyTrackingStarting, void(SessionID tab_id));
+  MOCK_METHOD1(NotifyTrackingEnding, void(SessionID tab_id));
   MOCK_METHOD0(OnDataUseTabModelReady, void());
 };
 
@@ -130,7 +130,7 @@ class DataUseTabModelTest : public testing::Test {
   }
 
   // Returns true if tab entry for |tab_id| exists in |active_tabs_|.
-  bool IsTabEntryExists(SessionID::id_type tab_id) const {
+  bool IsTabEntryExists(SessionID tab_id) const {
     return data_use_tab_model_->active_tabs_.find(tab_id) !=
            data_use_tab_model_->active_tabs_.end();
   }
@@ -143,7 +143,7 @@ class DataUseTabModelTest : public testing::Test {
 
   // Returns true if |tab_id| is a custom tab and started tracking due to
   // package match.
-  bool IsCustomTabPackageMatch(SessionID::id_type tab_id) const {
+  bool IsCustomTabPackageMatch(SessionID tab_id) const {
     auto tab_entry_iterator = data_use_tab_model_->active_tabs_.find(tab_id);
     return (tab_entry_iterator != data_use_tab_model_->active_tabs_.end()) &&
            tab_entry_iterator->second.is_custom_tab_package_match();
@@ -151,7 +151,7 @@ class DataUseTabModelTest : public testing::Test {
 
   // Returns true if the tracking session for tab with id |tab_id| is currently
   // active.
-  bool IsTrackingDataUse(SessionID::id_type tab_id) const {
+  bool IsTrackingDataUse(SessionID tab_id) const {
     const auto& tab_entry_iterator =
         data_use_tab_model_->active_tabs_.find(tab_id);
     if (tab_entry_iterator == data_use_tab_model_->active_tabs_.end())
@@ -161,7 +161,7 @@ class DataUseTabModelTest : public testing::Test {
 
   // Checks if the DataUse object for the given |tab_id| with request start time
   // |at_time| is labeled as an empty tracking info.
-  void ExpectEmptyTrackingInfoAtTime(SessionID::id_type tab_id,
+  void ExpectEmptyTrackingInfoAtTime(SessionID tab_id,
                                      const base::TimeTicks& at_time) const {
     ExpectTrackingInfoAtTimeWithReturn(tab_id, at_time, false,
                                        DataUseTabModel::TrackingInfo());
@@ -169,14 +169,14 @@ class DataUseTabModelTest : public testing::Test {
 
   // Checks if the DataUse object for the given |tab_id| is labeled as an empty
   // tracking info.
-  void ExpectEmptyTrackingInfo(SessionID::id_type tab_id) {
+  void ExpectEmptyTrackingInfo(SessionID tab_id) {
     ExpectTrackingInfoAtTimeWithReturn(tab_id, tick_clock_.NowTicks(), false,
                                        DataUseTabModel::TrackingInfo());
   }
 
   // Checks if the DataUse object for given |tab_id| is labeled as
   // |expected_label| with custom tab indicated by |expected_is_custom_tab|.
-  void ExpectTrackingInfo(SessionID::id_type tab_id,
+  void ExpectTrackingInfo(SessionID tab_id,
                           const std::string& expected_label,
                           const std::string& expected_tag) {
     DataUseTabModel::TrackingInfo expected_tracking_info;
@@ -191,7 +191,7 @@ class DataUseTabModelTest : public testing::Test {
   // DataUse object for |tab_id| with request start time |at_time|, as
   // |expected_tracking_info| and returns |expected_return|.
   void ExpectTrackingInfoAtTimeWithReturn(
-      SessionID::id_type tab_id,
+      SessionID tab_id,
       const base::TimeTicks& at_time,
       bool expected_return,
       const DataUseTabModel::TrackingInfo& expected_tracking_info) const {
@@ -205,13 +205,12 @@ class DataUseTabModelTest : public testing::Test {
     }
   }
 
-  void StartTrackingDataUse(SessionID::id_type tab_id,
-                            const std::string& label) {
+  void StartTrackingDataUse(SessionID tab_id, const std::string& label) {
     data_use_tab_model_->StartTrackingDataUse(
         DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, tab_id, label, false);
   }
 
-  void EndTrackingDataUse(SessionID::id_type tab_id) {
+  void EndTrackingDataUse(SessionID tab_id) {
     data_use_tab_model_->EndTrackingDataUse(
         DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, tab_id);
   }
@@ -424,29 +423,31 @@ TEST_F(DataUseTabModelTest, OnTrackingLabelRemoved) {
 TEST_F(DataUseTabModelTest, CompactTabEntriesWithinMaxLimit) {
   const int32_t max_tab_entries =
       static_cast<int32_t>(data_use_tab_model_->max_tab_entries_);
-  SessionID::id_type tab_id = 1;
+  std::list<SessionID> tab_ids;
 
   ExpectTabEntrySize(TabEntrySize::ZERO);
 
-  while (tab_id <= max_tab_entries) {
-    std::string tab_label = base::StringPrintf("label_%d", tab_id);
+  for (int i = 0; i < max_tab_entries; ++i) {
+    SessionID tab_id = SessionID::NewUnique();
+    tab_ids.push_back(tab_id);
+    std::string tab_label = base::StringPrintf("label_%d", tab_id.id());
     StartTrackingDataUse(tab_id, tab_label);
     tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
     EndTrackingDataUse(tab_id);
     tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
 
-    ExpectTabEntrySize(tab_id);
-    ++tab_id;
+    ExpectTabEntrySize(i + 1);
   }
-
-  // Oldest tab entry that will be removed first.
-  SessionID::id_type oldest_tab_id = 1;
 
   // Starting and ending more tracking tab entries does not increase the size of
   // |active_tabs_|.
-  while (tab_id < max_tab_entries + 10) {
+  for (int i = 0; i < 10; ++i) {
+    SessionID oldest_tab_id = tab_ids.front();
+
     EXPECT_TRUE(IsTabEntryExists(oldest_tab_id));
-    std::string tab_label = base::StringPrintf("label_%d", tab_id);
+    SessionID tab_id = SessionID::NewUnique();
+    tab_ids.push_back(tab_id);
+    std::string tab_label = base::StringPrintf("label_%d", tab_id.id());
     StartTrackingDataUse(tab_id, tab_label);
     tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
     EndTrackingDataUse(tab_id);
@@ -456,15 +457,17 @@ TEST_F(DataUseTabModelTest, CompactTabEntriesWithinMaxLimit) {
     EXPECT_FALSE(IsTabEntryExists(oldest_tab_id));
     ExpectTabEntrySize(max_tab_entries);
 
-    ++tab_id;
-    ++oldest_tab_id;  // next oldest tab entry.
+    tab_ids.pop_front();  // next oldest tab entry.
   }
 
   // Starting and not ending more tracking tab entries does not increase the
   // size of |active_tabs_|.
-  while (tab_id < max_tab_entries + 20) {
+  for (int i = 0; i < 10; ++i) {
+    SessionID oldest_tab_id = tab_ids.front();
     EXPECT_TRUE(IsTabEntryExists(oldest_tab_id));
-    std::string tab_label = base::StringPrintf("label_%d", tab_id);
+    SessionID tab_id = SessionID::NewUnique();
+    tab_ids.push_back(tab_id);
+    std::string tab_label = base::StringPrintf("label_%d", tab_id.id());
     StartTrackingDataUse(tab_id, tab_label);
     tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
 
@@ -472,8 +475,7 @@ TEST_F(DataUseTabModelTest, CompactTabEntriesWithinMaxLimit) {
     EXPECT_FALSE(IsTabEntryExists(oldest_tab_id));
     ExpectTabEntrySize(max_tab_entries);
 
-    ++tab_id;
-    ++oldest_tab_id;  // next oldest tab entry.
+    tab_ids.pop_front();  // next oldest tab entry.
   }
 }
 
@@ -513,20 +515,20 @@ TEST_F(DataUseTabModelTest, UnexpiredTabEntryRemovaltimeHistogram) {
   base::HistogramTester histogram_tester;
   const int32_t max_tab_entries =
       static_cast<int32_t>(data_use_tab_model_->max_tab_entries_);
-  SessionID::id_type tab_id = 1;
 
-  while (tab_id <= max_tab_entries) {
-    std::string tab_label = base::StringPrintf("label_%d", tab_id);
+  for (int i = 0; i < max_tab_entries; ++i) {
+    SessionID tab_id = SessionID::NewUnique();
+    std::string tab_label = base::StringPrintf("label_%d", tab_id.id());
     StartTrackingDataUse(tab_id, tab_label);
     EndTrackingDataUse(tab_id);
-    ++tab_id;
   }
 
   // Fast forward 10 minutes.
   tick_clock_.Advance(base::TimeDelta::FromMinutes(10));
 
   // Adding another tab entry triggers CompactTabEntries.
-  std::string tab_label = base::StringPrintf("label_%d", tab_id);
+  SessionID tab_id = SessionID::NewUnique();
+  std::string tab_label = base::StringPrintf("label_%d", tab_id.id());
   StartTrackingDataUse(tab_id, tab_label);
   EndTrackingDataUse(tab_id);
 
@@ -653,7 +655,6 @@ TEST_F(DataUseTabModelTest, AllNavigationEnterEvents) {
       {DataUseTabModel::TRANSITION_RELOAD, kURLFoo, std::string(), kTestLabel2},
   };
   std::vector<std::string> app_package_names, domain_regexes, labels;
-  SessionID::id_type tab_id = 1;
 
   app_package_names.push_back(kPackageFoo);
   domain_regexes.push_back(std::string());
@@ -667,7 +668,9 @@ TEST_F(DataUseTabModelTest, AllNavigationEnterEvents) {
 
   RegisterURLRegexes(app_package_names, domain_regexes, labels);
 
+  int num_tabs = 0;
   for (const auto& test : all_enter_transition_tests) {
+    SessionID tab_id = SessionID::NewUnique();
     EXPECT_FALSE(IsTrackingDataUse(tab_id));
     ExpectEmptyTrackingInfo(tab_id);
 
@@ -692,11 +695,9 @@ TEST_F(DataUseTabModelTest, AllNavigationEnterEvents) {
           tab_id, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, GURL(kURLBar),
           navigation_entry_bar.get()));
     }
-    ExpectTabEntrySize(tab_id);
+    ExpectTabEntrySize(++num_tabs);
     EXPECT_EQ(test.transition == DataUseTabModel::TRANSITION_CUSTOM_TAB,
               IsCustomTabPackageMatch(tab_id));
-
-    ++tab_id;
   }
 }
 
@@ -712,7 +713,6 @@ TEST_F(DataUseTabModelTest, AllNavigationExitEvents) {
       {DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, kURLFooBar},
   };
   std::vector<std::string> app_package_names, domain_regexes, labels;
-  SessionID::id_type tab_id = 1;
 
   app_package_names.push_back(std::string());
   domain_regexes.push_back(kURLFoo);
@@ -720,7 +720,9 @@ TEST_F(DataUseTabModelTest, AllNavigationExitEvents) {
 
   RegisterURLRegexes(app_package_names, domain_regexes, labels);
 
+  int num_tabs = 0;
   for (const auto& test : all_exit_transition_tests) {
+    SessionID tab_id = SessionID::NewUnique();
     EXPECT_FALSE(IsTrackingDataUse(tab_id));
     auto navigation_entry = CreateNavigationEntry(kURLFoo);
     data_use_tab_model_->OnNavigationEvent(
@@ -741,8 +743,7 @@ TEST_F(DataUseTabModelTest, AllNavigationExitEvents) {
     ExpectDataUseLabelInNavigationEntry(*navigation_entry, std::string());
 
     EXPECT_FALSE(IsTrackingDataUse(tab_id));
-    ExpectTabEntrySize(tab_id);
-    ++tab_id;
+    ExpectTabEntrySize(++num_tabs);
   }
 }
 
@@ -753,7 +754,6 @@ TEST_F(DataUseTabModelTest, AllNavigationExitAndEnterEvents) {
       DataUseTabModel::TRANSITION_OMNIBOX_SEARCH,
       DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION};
   std::vector<std::string> app_package_names, domain_regexes, labels;
-  SessionID::id_type tab_id = 1;
 
   app_package_names.push_back(std::string());
   domain_regexes.push_back(kURLFoo);
@@ -761,7 +761,9 @@ TEST_F(DataUseTabModelTest, AllNavigationExitAndEnterEvents) {
 
   RegisterURLRegexes(app_package_names, domain_regexes, labels);
 
+  int num_tabs = 0;
   for (const auto& transition : all_test_transitions) {
+    SessionID tab_id = SessionID::NewUnique();
     EXPECT_FALSE(IsTrackingDataUse(tab_id));
     auto navigation_entry = CreateNavigationEntry(kURLFoo);
     data_use_tab_model_->OnNavigationEvent(tab_id, transition, GURL(kURLFoo),
@@ -793,8 +795,7 @@ TEST_F(DataUseTabModelTest, AllNavigationExitAndEnterEvents) {
         tab_id, transition, GURL(), std::string(), navigation_entry.get());
 
     EXPECT_FALSE(IsTrackingDataUse(tab_id));
-    ExpectTabEntrySize(tab_id);
-    ++tab_id;
+    ExpectTabEntrySize(++num_tabs);
   }
 }
 

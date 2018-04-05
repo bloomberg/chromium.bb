@@ -29,12 +29,12 @@ class RecentTabsBuilderTestHelper {
 
   void AddSession();
   int GetSessionCount();
-  SessionID::id_type GetSessionID(int session_index);
+  SessionID GetSessionID(int session_index);
   base::Time GetSessionTimestamp(int session_index);
 
   void AddWindow(int session_index);
   int GetWindowCount(int session_index);
-  SessionID::id_type GetWindowID(int session_index, int window_index);
+  SessionID GetWindowID(int session_index, int window_index);
 
   void AddTab(int session_index, int window_index);
   void AddTabWithInfo(int session_index,
@@ -42,9 +42,7 @@ class RecentTabsBuilderTestHelper {
                       base::Time timestamp,
                       const base::string16& title);
   int GetTabCount(int session_index, int window_index);
-  SessionID::id_type GetTabID(int session_index,
-                              int window_index,
-                              int tab_index);
+  SessionID GetTabID(int session_index, int window_index, int tab_index);
   base::Time GetTabTimestamp(int session_index,
                              int window_index,
                              int tab_index);

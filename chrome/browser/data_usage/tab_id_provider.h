@@ -10,8 +10,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "base/threading/thread_checker.h"
+#include "components/sessions/core/session_id.h"
 #include "content/public/browser/global_request_id.h"
 
 namespace base {
@@ -29,18 +31,18 @@ class TabIdProvider : public base::SupportsUserData::Data {
  public:
   struct URLRequestTabInfo {
     URLRequestTabInfo()
-        : tab_id(-1),
+        : tab_id(SessionID::InvalidValue()),
           main_frame_global_request_id(content::GlobalRequestID()) {}
 
     URLRequestTabInfo(
-        int32_t tab_id,
+        SessionID tab_id,
         const content::GlobalRequestID& main_frame_global_request_id)
         : tab_id(tab_id),
           main_frame_global_request_id(main_frame_global_request_id) {}
 
     // ID of the Tab for which this request happens. See comments of the same
     // field in data_usage::DataUse for when this is field is populated.
-    int32_t tab_id;
+    SessionID tab_id;
 
     // GlobalRequestID of the mainframe request. See comments of the same field
     // in data_usage::DataUse for when this is field is populated.
@@ -51,13 +53,13 @@ class TabIdProvider : public base::SupportsUserData::Data {
   // |task_runner|.
   TabIdProvider(base::TaskRunner* task_runner,
                 const base::Location& from_here,
-                base::OnceCallback<int32_t(void)> tab_id_getter);
+                base::OnceCallback<SessionID(void)> tab_id_getter);
 
   ~TabIdProvider() override;
 
   // Calls |callback| with the tab ID, either immediately if it's already
   // available, or later once it becomes available.
-  void ProvideTabId(base::OnceCallback<void(int32_t)> callback);
+  void ProvideTabId(base::OnceCallback<void(SessionID)> callback);
 
   base::WeakPtr<TabIdProvider> GetWeakPtr();
 
@@ -67,11 +69,10 @@ class TabIdProvider : public base::SupportsUserData::Data {
   class CallbackRunner;
 
   // Called when the |tab_info| is ready.
-  void OnTabIdReady(int32_t tab_info);
+  void OnTabIdReady(SessionID tab_info);
 
   base::ThreadChecker thread_checker_;
-  bool is_tab_info_ready_;
-  int32_t tab_info_;
+  base::Optional<SessionID> tab_info_;
   base::WeakPtr<CallbackRunner> weak_callback_runner_;
   base::WeakPtrFactory<TabIdProvider> weak_ptr_factory_;
 

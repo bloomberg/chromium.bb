@@ -33,7 +33,7 @@ struct NavigationID {
   // Returns true iff the tab_id is valid and the Main frame URL is set.
   bool is_valid() const;
 
-  SessionID::id_type tab_id;
+  SessionID tab_id;
   GURL main_frame_url;
 
   // NOTE: Even though we store the creation time here, it is not used during

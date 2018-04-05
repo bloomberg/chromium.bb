@@ -90,8 +90,8 @@ class DataUseTabModel {
     virtual ~TabDataUseObserver() {}
 
     // Notification callbacks when tab tracking sessions are started and ended.
-    virtual void NotifyTrackingStarting(SessionID::id_type tab_id) = 0;
-    virtual void NotifyTrackingEnding(SessionID::id_type tab_id) = 0;
+    virtual void NotifyTrackingStarting(SessionID tab_id) = 0;
+    virtual void NotifyTrackingEnding(SessionID tab_id) = 0;
 
     // Notification callback that DataUseTabModel is ready to process the UI
     // navigation events.
@@ -124,7 +124,7 @@ class DataUseTabModel {
   // |navigation_entry| can be null in some cases where it cannot be retrieved
   // such as buffered navigation events or when support for back-forward
   // navigations is not needed such as custom tab navigation.
-  void OnNavigationEvent(SessionID::id_type tab_id,
+  void OnNavigationEvent(SessionID tab_id,
                          TransitionType transition,
                          const GURL& url,
                          const std::string& package,
@@ -133,7 +133,7 @@ class DataUseTabModel {
   // Notifies the DataUseTabModel that tab with |tab_id| is closed. Any active
   // tracking sessions for the tab are terminated, and the tab is marked as
   // closed.
-  void OnTabCloseEvent(SessionID::id_type tab_id);
+  void OnTabCloseEvent(SessionID tab_id);
 
   // Notifies the DataUseTabModel that tracking label |label| is removed. Any
   // active tracking sessions with the label are ended, without notifying any of
@@ -146,7 +146,7 @@ class DataUseTabModel {
   // |output_tracking_info| is populated with its information. Otherwise,
   // returns false.
   virtual bool GetTrackingInfoForTabAtTime(
-      SessionID::id_type tab_id,
+      SessionID tab_id,
       base::TimeTicks timestamp,
       TrackingInfo* output_tracking_info) const;
 
@@ -156,7 +156,7 @@ class DataUseTabModel {
   // navigation entry of the current navigation in back-forward navigation
   // history.
   bool WouldNavigationEventEndTracking(
-      SessionID::id_type tab_id,
+      SessionID tab_id,
       TransitionType transition,
       const GURL& url,
       const content::NavigationEntry* navigation_entry) const;
@@ -193,7 +193,7 @@ class DataUseTabModel {
 
   // Returns true if the |tab_id| is a custom tab and started tracking due to
   // package name match.
-  bool IsCustomTabPackageMatch(SessionID::id_type tab_id) const;
+  bool IsCustomTabPackageMatch(SessionID tab_id) const;
 
   // Returns true if DataUseTabModel is ready to process UI navigation events.
   bool is_ready_for_navigation_event() const {
@@ -203,11 +203,11 @@ class DataUseTabModel {
  protected:
   // Notifies the observers that a data usage tracking session started for
   // |tab_id|. Protected for testing.
-  void NotifyObserversOfTrackingStarting(SessionID::id_type tab_id);
+  void NotifyObserversOfTrackingStarting(SessionID tab_id);
 
   // Notifies the observers that an active data usage tracking session ended for
   // |tab_id|. Protected for testing.
-  void NotifyObserversOfTrackingEnding(SessionID::id_type tab_id);
+  void NotifyObserversOfTrackingEnding(SessionID tab_id);
 
   // Notifies the observers that DataUseTabModel is ready to process navigation
   // events.
@@ -237,7 +237,7 @@ class DataUseTabModel {
   FRIEND_TEST_ALL_PREFIXES(ExternalDataUseObserverTest,
                            MatchingRuleFetchOnControlAppInstall);
 
-  using TabEntryMap = std::map<SessionID::id_type, TabDataUseEntry>;
+  using TabEntryMap = std::map<SessionID, TabDataUseEntry>;
 
   // Gets the current label of a tab, and the new label if a navigation event
   // occurs in the tab. |tab_id| is the source tab of the generated event,
@@ -252,7 +252,7 @@ class DataUseTabModel {
   // tracking session if the navigation happens. |is_package_match| will be set
   // to true if a tracking session will start due to package name match.
   void GetCurrentAndNewLabelForNavigationEvent(
-      SessionID::id_type tab_id,
+      SessionID tab_id,
       TransitionType transition,
       const GURL& url,
       const std::string& package,
@@ -265,12 +265,12 @@ class DataUseTabModel {
   // |is_custom_tab_package_match| is true if |tab_id| is a custom tab and
   // started tracking due to package name match.
   void StartTrackingDataUse(TransitionType transition,
-                            SessionID::id_type tab_id,
+                            SessionID tab_id,
                             const std::string& label,
                             bool is_custom_tab_package_match);
 
   // Ends the current tracking session for tab with id |tab_id|.
-  void EndTrackingDataUse(TransitionType transition, SessionID::id_type tab_id);
+  void EndTrackingDataUse(TransitionType transition, SessionID tab_id);
 
   // Compacts the tab entry map |active_tabs_| by removing expired tab entries.
   // After removing expired tab entries, if the size of |active_tabs_| exceeds

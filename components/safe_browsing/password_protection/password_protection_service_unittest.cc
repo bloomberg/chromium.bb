@@ -143,7 +143,9 @@ class TestPasswordProtectionService : public PasswordProtectionService {
   }
 
   MOCK_METHOD3(FillReferrerChain,
-               void(const GURL&, int, LoginReputationClientRequest::Frame*));
+               void(const GURL&,
+                    SessionID,
+                    LoginReputationClientRequest::Frame*));
   MOCK_METHOD1(MaybeLogPasswordReuseDetectedEvent, void(content::WebContents*));
   MOCK_METHOD2(ShowModalWarning,
                void(content::WebContents*, const std::string&));

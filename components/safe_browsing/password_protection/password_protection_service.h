@@ -21,6 +21,7 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
+#include "components/sessions/core/session_id.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
@@ -282,7 +283,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // info into |frame|.
   virtual void FillReferrerChain(
       const GURL& event_url,
-      int event_tab_id,  // -1 if tab id is not available.
+      SessionID
+          event_tab_id,  // SessionID::InvalidValue() if tab not available.
       LoginReputationClientRequest::Frame* frame) = 0;
 
   void FillUserPopulation(
