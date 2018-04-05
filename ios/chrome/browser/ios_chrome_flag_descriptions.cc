@@ -16,6 +16,10 @@ const char kAutofillIOSDelayBetweenFieldsDescription[] =
     "Delay between the different fields of a form being autofilled. In "
     "milliseconds.";
 
+const char kAutofillDynamicFormsName[] = "Autofill dynamic forms";
+const char kAutofillDynamicFormsDescription[] =
+    "Refills forms that dynamically change after an initial fill";
+
 const char kBrowserTaskScheduler[] = "Task Scheduler";
 const char kBrowserTaskSchedulerDescription[] =
     "Enables redirection of some task posting APIs to the task scheduler.";
