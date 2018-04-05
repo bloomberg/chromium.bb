@@ -344,6 +344,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   SlidingTimeDeltaAverage webvr_acquire_time_;
   SlidingTimeDeltaAverage webvr_submit_time_;
 
+  SlidingTimeDeltaAverage ui_processing_time_;
+  SlidingTimeDeltaAverage ui_controller_update_time_;
+
   gfx::Point3F pointer_start_;
 
   RenderInfo render_info_primary_;
