@@ -237,22 +237,25 @@ class EvaluateConditionTest(unittest.TestCase):
 
 
 class AddVarTest(unittest.TestCase):
+  def assert_adds_var(self, before, after):
+    local_scope = gclient_eval.Exec('\n'.join(before))
+    gclient_eval.AddVar(local_scope, 'baz', 'lemur')
+    results = gclient_eval.RenderDEPSFile(local_scope)
+    self.assertEqual(results, '\n'.join(after))
+
   def test_adds_var(self):
-    local_scope = gclient_eval.Exec('\n'.join([
+    before = [
         'vars = {',
         '  "foo": "bar",',
         '}',
-    ]))
-
-    gclient_eval.AddVar(local_scope, 'baz', 'lemur')
-    result = gclient_eval.RenderDEPSFile(local_scope)
-
-    self.assertEqual(result, '\n'.join([
+    ]
+    after = [
         'vars = {',
         '  "baz": "lemur",',
         '  "foo": "bar",',
         '}',
-    ]))
+    ]
+    self.assert_adds_var(before, after)
 
   def test_adds_var_twice(self):
     local_scope = gclient_eval.Exec('\n'.join([
@@ -274,39 +277,38 @@ class AddVarTest(unittest.TestCase):
     ]))
 
   def test_preserves_formatting(self):
-    local_scope = gclient_eval.Exec('\n'.join([
+    before = [
         '# Copyright stuff',
         '# some initial comments',
         '',
         'vars = { ',
+        '  # Some comments.',
         '  "foo": "bar",',
-        '  # Some commets.',
+        '',
         '  # More comments.',
         '  # Even more comments.',
         '  "v8_revision":   ',
         '       "deadbeef",',
         ' # Someone formatted this wrong',
         '}',
-    ]))
-
-    gclient_eval.AddVar(local_scope, 'baz', 'lemur')
-    result = gclient_eval.RenderDEPSFile(local_scope)
-
-    self.assertEqual(result, '\n'.join([
+    ]
+    after = [
         '# Copyright stuff',
         '# some initial comments',
         '',
         'vars = { ',
         '  "baz": "lemur",',
+        '  # Some comments.',
         '  "foo": "bar",',
-        '  # Some commets.',
+        '',
         '  # More comments.',
         '  # Even more comments.',
         '  "v8_revision":   ',
         '       "deadbeef",',
         ' # Someone formatted this wrong',
         '}',
-    ]))
+    ]
+    self.assert_adds_var(before, after)
 
 
 class SetVarTest(unittest.TestCase):

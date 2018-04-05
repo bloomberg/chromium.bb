@@ -542,13 +542,15 @@ def AddVar(gclient_dict, var_name, value):
   if not gclient_dict['vars']:
     raise ValueError('vars dict is empty. This is not yet supported.')
 
-  # We will attempt to add the var right before the first var.
-  node = gclient_dict.GetNode('vars').keys[0]
+  # We will attempt to add the var right after 'vars = {'.
+  node = gclient_dict.GetNode('vars')
   if node is None:
     raise ValueError(
         "The vars dict has no formatting information." % var_name)
-  line = node.lineno
-  col = node.col_offset
+  line = node.lineno + 1
+
+  # We will try to match the new var's indentation to the next variable.
+  col = node.keys[0].col_offset
 
   # We use a minimal Python dictionary, so that ast can parse it.
   var_content = '{\n%s"%s": "%s",\n}' % (' ' * col, var_name, value)
