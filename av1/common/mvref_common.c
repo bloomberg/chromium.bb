@@ -518,7 +518,7 @@ static void setup_ref_mv_list(
 
   // Find valid maximum row/col offset.
   if (xd->up_available) {
-    max_row_offset = -(MVREF_ROWS << 1) + row_adj;
+    max_row_offset = -(MVREF_ROW_COLS << 1) + row_adj;
 
     if (xd->n8_h < mi_size_high[BLOCK_8X8])
       max_row_offset = -(2 << 1) + row_adj;
@@ -528,7 +528,7 @@ static void setup_ref_mv_list(
   }
 
   if (xd->left_available) {
-    max_col_offset = -(MVREF_COLS << 1) + col_adj;
+    max_col_offset = -(MVREF_ROW_COLS << 1) + col_adj;
 
     if (xd->n8_w < mi_size_wide[BLOCK_8X8])
       max_col_offset = -(2 << 1) + col_adj;
@@ -635,7 +635,7 @@ static void setup_ref_mv_list(
 #endif  // USE_CUR_GM_REFMV
                 refmv_count);
 
-  for (int idx = 2; idx <= MVREF_ROWS; ++idx) {
+  for (int idx = 2; idx <= MVREF_ROW_COLS; ++idx) {
     const int row_offset = -(idx << 1) + 1 + row_adj;
     const int col_offset = -(idx << 1) + 1 + col_adj;
 
@@ -658,7 +658,8 @@ static void setup_ref_mv_list(
                     max_col_offset, &processed_cols);
   }
 
-  const int col_offset = -(MVREF_COLS << 1) + 1 + col_adj;
+  const int col_offset = -(MVREF_ROW_COLS << 1) + 1 + col_adj;
+
   if (abs(col_offset) <= abs(max_col_offset) &&
       abs(col_offset) > processed_cols)
     scan_col_mbmi(cm, xd, mi_row, mi_col, rf, col_offset, ref_mv_stack,
