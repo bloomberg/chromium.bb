@@ -1180,20 +1180,45 @@ static inline bool NeedsToReinsertIntoFlowThread(
 
 static inline bool NeedsToRemoveFromFlowThread(const ComputedStyle& old_style,
                                                const ComputedStyle& new_style) {
-  // If an in-flow descendant goes out-of-flow, we may have to remove column
-  // sets and spanner placeholders.
+  // This function is called BEFORE computed style update. If an in-flow
+  // descendant goes out-of-flow, we may have to remove column sets and spanner
+  // placeholders. Note that we may end up with false positives here, since some
+  // out-of-flow descendants still need to be associated with a column set. This
+  // is the case when the containing block of the soon-to-be out-of-flow
+  // positioned descendant is contained by the same flow thread as the
+  // descendant currently is inside. It's too early to check for that, though,
+  // since the descendant at this point is still in-flow positioned. We'll
+  // detect this and re-insert it into the flow thread when computed style has
+  // been updated.
   return (new_style.HasOutOfFlowPosition() &&
           !old_style.HasOutOfFlowPosition()) ||
          NeedsToReinsertIntoFlowThread(old_style, new_style);
 }
 
-static inline bool NeedsToInsertIntoFlowThread(const ComputedStyle& old_style,
-                                               const ComputedStyle& new_style) {
-  // If an out-of-flow descendant goes in-flow, we may have to insert column
-  // sets and spanner placeholders.
-  return (!new_style.HasOutOfFlowPosition() &&
-          old_style.HasOutOfFlowPosition()) ||
-         NeedsToReinsertIntoFlowThread(old_style, new_style);
+static inline bool NeedsToInsertIntoFlowThread(
+    const LayoutMultiColumnFlowThread* flow_thread,
+    const LayoutBox* descendant,
+    const ComputedStyle& old_style,
+    const ComputedStyle& new_style) {
+  // This function is called AFTER computed style update. If an out-of-flow
+  // descendant goes in-flow, we may have to insert column sets and spanner
+  // placeholders.
+  bool toggled_out_of_flow =
+      new_style.HasOutOfFlowPosition() != old_style.HasOutOfFlowPosition();
+  if (toggled_out_of_flow) {
+    // If we're no longer out-of-flow, we definitely need the descendant to be
+    // associated with a column set.
+    if (!new_style.HasOutOfFlowPosition())
+      return true;
+    const auto* containing_flow_thread =
+        descendant->ContainingBlock()->FlowThreadContainingBlock();
+    // If an out-of-flow positioned descendant is still going to be contained by
+    // this flow thread, the descendant needs to be associated with a column
+    // set.
+    if (containing_flow_thread == flow_thread)
+      return true;
+  }
+  return NeedsToReinsertIntoFlowThread(old_style, new_style);
 }
 
 void LayoutMultiColumnFlowThread::FlowThreadDescendantStyleWillChange(
@@ -1224,7 +1249,8 @@ void LayoutMultiColumnFlowThread::FlowThreadDescendantStyleDidChange(
   bool toggle_spanners_if_needed = toggle_spanners_if_needed_;
   toggle_spanners_if_needed_ = false;
 
-  if (NeedsToInsertIntoFlowThread(old_style, descendant->StyleRef())) {
+  if (NeedsToInsertIntoFlowThread(this, descendant, old_style,
+                                  descendant->StyleRef())) {
     FlowThreadDescendantWasInserted(descendant);
     return;
   }
