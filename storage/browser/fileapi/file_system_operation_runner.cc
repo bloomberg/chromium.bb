@@ -45,7 +45,7 @@ FileSystemOperationRunner::OperationHandle::~OperationHandle() = default;
 FileSystemOperationRunner::~FileSystemOperationRunner() = default;
 
 void FileSystemOperationRunner::Shutdown() {
-  operations_.Clear();
+  operations_.clear();
 }
 
 OperationID FileSystemOperationRunner::CreateFile(
@@ -331,13 +331,14 @@ void FileSystemOperationRunner::Cancel(
     stray_cancel_callbacks_[id] = callback;
     return;
   }
-  FileSystemOperation* operation = operations_.Lookup(id);
-  if (!operation) {
+
+  Operations::iterator found = operations_.find(id);
+  if (found == operations_.end() || !found->second) {
     // There is no operation with |id|.
     callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
-  operation->Cancel(callback);
+  found->second->Cancel(callback);
 }
 
 OperationID FileSystemOperationRunner::TouchFile(
@@ -696,7 +697,8 @@ FileSystemOperationRunner::BeginOperation(
     std::unique_ptr<FileSystemOperation> operation,
     base::WeakPtr<BeginOperationScoper> scope) {
   OperationHandle handle;
-  handle.id = operations_.Add(std::move(operation));
+  handle.id = next_operation_id_++;
+  operations_.emplace(handle.id, std::move(operation));
   handle.scope = scope;
   return handle;
 }
@@ -715,10 +717,7 @@ void FileSystemOperationRunner::FinishOperation(OperationID id) {
     write_target_urls_.erase(found);
   }
 
-  // IDMap::Lookup fails if the operation is NULL, so we don't check
-  // operations_.Lookup(id) here.
-
-  operations_.Remove(id);
+  operations_.erase(id);
   finished_operations_.erase(id);
 
   // Dispatch stray cancel callback if exists.
