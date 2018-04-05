@@ -666,7 +666,13 @@ def SetRevision(gclient_dict, dep_name, new_revision):
       SetVar(gclient_dict, var_name, new_revision)
     else:
       if '@' in node.s:
+        # '@' is part of the last string, which we want to modify. Discard
+        # whatever was after the '@' and put the new revision in its place.
         new_revision = node.s.split('@')[0] + '@' + new_revision
+      elif '@' not in dep_dict[dep_key]:
+        # '@' is not part of the URL at all. This mean the dependency is
+        # unpinned and we should pin it.
+        new_revision = node.s + '@' + new_revision
       _UpdateAstString(tokens, node, new_revision)
       dep_dict.SetNode(dep_key, new_revision, node)
 

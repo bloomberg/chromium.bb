@@ -504,6 +504,20 @@ class SetRevisionTest(unittest.TestCase):
     ]
     self.assert_changes_revision(before, after)
 
+  def test_pins_revision(self):
+    before = [
+        'deps = {',
+        '  "src/dep": "https://example.com/dep.git",',
+        '}',
+    ]
+    after = [
+        'deps = {',
+        '  "src/dep": "https://example.com/dep.git@deadfeed",',
+        '}',
+    ]
+    self.assert_changes_revision(before, after)
+
+
   def test_preserves_formatting(self):
     before = [
         'vars = {',
