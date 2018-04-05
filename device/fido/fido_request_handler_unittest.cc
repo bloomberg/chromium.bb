@@ -89,6 +89,36 @@ TEST_F(FidoRequestHandlerTest, TestMakeCredentialRequestHandler) {
   EXPECT_TRUE(request_handler->is_complete());
 }
 
+// Tests a scenario where two unresponsive authenticators are connected and
+// cancel request has been sent either from the user or from the relying party
+// (i.e. FidoRequestHandler object is destroyed.) Upon destruction, cancel
+// command must be invoked to all connected authenticators.
+TEST_F(FidoRequestHandlerTest, TestCancelRequest) {
+  auto request_handler = CreateMakeCredentialHandler();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  auto device0 = std::make_unique<MockFidoDevice>();
+  device0->set_supported_protocol(ProtocolVersion::kCtap);
+  EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
+  device0->ExpectCtap2CommandWithoutResponse(
+      CtapRequestCommand::kAuthenticatorGetInfo);
+  device0->ExpectCtap2CommandWithoutResponse(
+      CtapRequestCommand::kAuthenticatorCancel);
+
+  auto device1 = std::make_unique<MockFidoDevice>();
+  device1->set_supported_protocol(ProtocolVersion::kCtap);
+  EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
+  device1->ExpectCtap2CommandWithoutResponse(
+      CtapRequestCommand::kAuthenticatorGetInfo);
+  device1->ExpectCtap2CommandWithoutResponse(
+      CtapRequestCommand::kAuthenticatorCancel);
+
+  discovery()->AddDevice(std::move(device0));
+  discovery()->AddDevice(std::move(device1));
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  request_handler.reset();
+}
+
 // Test a scenario where 2 devices are connected and a response is received from
 // only a single device(device1) and the remaining device hangs.
 TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleDevices) {

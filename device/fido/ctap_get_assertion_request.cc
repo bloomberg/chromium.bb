@@ -19,7 +19,13 @@ CtapGetAssertionRequest::CtapGetAssertionRequest(
       client_data_hash_(std::move(client_data_hash)) {}
 
 CtapGetAssertionRequest::CtapGetAssertionRequest(
+    const CtapGetAssertionRequest& that) = default;
+
+CtapGetAssertionRequest::CtapGetAssertionRequest(
     CtapGetAssertionRequest&& that) = default;
+
+CtapGetAssertionRequest& CtapGetAssertionRequest::operator=(
+    const CtapGetAssertionRequest& other) = default;
 
 CtapGetAssertionRequest& CtapGetAssertionRequest::operator=(
     CtapGetAssertionRequest&& other) = default;
