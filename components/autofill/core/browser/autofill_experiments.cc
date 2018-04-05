@@ -21,6 +21,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 
 namespace autofill {
 
@@ -81,6 +82,8 @@ const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[] =
 #if defined(OS_MACOSX)
 const base::Feature kCreditCardAutofillTouchBar{
     "CreditCardAutofillTouchBar", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kMacViewsAutofillPopup{"MacViewsAutofillPopup",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
 namespace {
@@ -303,6 +306,15 @@ bool IsAutofillUpstreamSendPanFirstSixExperimentEnabled() {
 #if defined(OS_MACOSX)
 bool IsCreditCardAutofillTouchBarExperimentEnabled() {
   return base::FeatureList::IsEnabled(kCreditCardAutofillTouchBar);
+}
+
+bool IsMacViewsAutofillPopupExperimentEnabled() {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (!features::IsViewsBrowserCocoa())
+    return true;
+#endif
+
+  return base::FeatureList::IsEnabled(kMacViewsAutofillPopup);
 }
 #endif  // defined(OS_MACOSX)
 

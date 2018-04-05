@@ -51,6 +51,7 @@ extern const char kAutofillUpstreamMaxMinutesSinceAutofillProfileUseKey[];
 
 #if defined(OS_MACOSX)
 extern const base::Feature kCreditCardAutofillTouchBar;
+extern const base::Feature kMacViewsAutofillPopup;
 #endif  // defined(OS_MACOSX)
 
 // Returns true if autofill should be enabled. See also
@@ -146,6 +147,10 @@ bool IsAutofillUpstreamSendPanFirstSixExperimentEnabled();
 #if defined(OS_MACOSX)
 // Returns whether the Credit Card Autofill Touch Bar experiment is enabled.
 bool IsCreditCardAutofillTouchBarExperimentEnabled();
+
+// Returns true if whether the views autofill popup feature is enabled or the
+// we're using the views browser.
+bool IsMacViewsAutofillPopupExperimentEnabled();
 #endif  // defined(OS_MACOSX)
 
 }  // namespace autofill
