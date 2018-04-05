@@ -117,13 +117,6 @@ rtc_static_library("rtc_xmpp") {
   if (is_nacl) {
     deps += [ "//native_client_sdk/src/libraries/nacl_io" ]
   }
-
-  if (is_posix && is_debug) {
-    # The Chromium configs defines this for all posix _except_ for ios & mac.
-    # We want it there as well, e.g. because ASSERT and friends trigger off of
-    # it.
-    defines += [ "_DEBUG" ]
-  }
 }
 
 config("libjingle_xmpp_unittests_config") {
