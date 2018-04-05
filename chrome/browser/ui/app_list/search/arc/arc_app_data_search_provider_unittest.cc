@@ -7,12 +7,12 @@
 #include <memory>
 #include <utility>
 
-#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/search/arc/icon_decode_request.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 
 namespace app_list {

@@ -38,9 +38,9 @@ class ExtensionAppResult : public AppResult,
                      bool is_recommendation);
   ~ExtensionAppResult() override;
 
-  // SearchResult overrides:
+  // ChromeSearchResult overrides:
   void Open(int event_flags) override;
-  std::unique_ptr<SearchResult> Duplicate() const override;
+  std::unique_ptr<ChromeSearchResult> Duplicate() const override;
   ui::MenuModel* GetContextMenuModel() override;
 
  private:

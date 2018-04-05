@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_search_provider.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
@@ -108,7 +108,7 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
     SCOPED_TRACE(message);
 
     EXPECT_EQ(1UL, results().size());
-    SearchResult* result = results()[0].get();
+    ChromeSearchResult* result = results()[0].get();
     EXPECT_EQ(ash::SearchResultDisplayType::kCard, result->display_type());
     EXPECT_EQ(id, result->id());
     EXPECT_EQ(1, result->relevance());

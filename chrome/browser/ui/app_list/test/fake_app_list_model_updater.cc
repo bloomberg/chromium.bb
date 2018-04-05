@@ -123,7 +123,7 @@ bool FakeAppListModelUpdater::SearchEngineIsGoogle() {
   return search_engine_is_google_;
 }
 
-app_list::SearchResult* FakeAppListModelUpdater::FindSearchResult(
+ChromeSearchResult* FakeAppListModelUpdater::FindSearchResult(
     const std::string& result_id) {
   for (auto& result : search_results_) {
     if (result->id() == result_id)
@@ -132,13 +132,13 @@ app_list::SearchResult* FakeAppListModelUpdater::FindSearchResult(
   return nullptr;
 }
 
-app_list::SearchResult* FakeAppListModelUpdater::GetResultByTitle(
+ChromeSearchResult* FakeAppListModelUpdater::GetResultByTitle(
     const std::string& title) {
   return nullptr;
 }
 
 void FakeAppListModelUpdater::PublishSearchResults(
-    std::vector<std::unique_ptr<app_list::SearchResult>> results) {
+    std::vector<std::unique_ptr<ChromeSearchResult>> results) {
   search_results_ = std::move(results);
 }
 

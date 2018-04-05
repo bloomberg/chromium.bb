@@ -10,8 +10,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "ash/app_list/model/search/search_result.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 
 class ChromeAppListItem;
 
@@ -41,7 +41,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   // For SearchModel:
   void SetSearchEngineIsGoogle(bool is_google) override;
   void PublishSearchResults(
-      std::vector<std::unique_ptr<app_list::SearchResult>> results) override;
+      std::vector<std::unique_ptr<ChromeSearchResult>> results) override;
 
   void ActivateChromeItem(const std::string& id, int event_flags) override;
 
@@ -56,10 +56,9 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   size_t BadgedItemCount() override;
   // For SearchModel:
   bool SearchEngineIsGoogle() override;
-  app_list::SearchResult* FindSearchResult(
-      const std::string& result_id) override;
-  app_list::SearchResult* GetResultByTitle(const std::string& title) override;
-  const std::vector<std::unique_ptr<app_list::SearchResult>>& search_results()
+  ChromeSearchResult* FindSearchResult(const std::string& result_id) override;
+  ChromeSearchResult* GetResultByTitle(const std::string& title) override;
+  const std::vector<std::unique_ptr<ChromeSearchResult>>& search_results()
       const {
     return search_results_;
   }
@@ -73,7 +72,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
  private:
   bool search_engine_is_google_ = false;
   std::vector<std::unique_ptr<ChromeAppListItem>> items_;
-  std::vector<std::unique_ptr<app_list::SearchResult>> search_results_;
+  std::vector<std::unique_ptr<ChromeSearchResult>> search_results_;
   AppListModelUpdaterDelegate* delegate_ = nullptr;
 
   ash::mojom::AppListItemMetadataPtr FindOrCreateOemFolder(

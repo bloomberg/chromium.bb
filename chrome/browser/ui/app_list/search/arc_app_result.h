@@ -28,9 +28,9 @@ class ArcAppResult : public AppResult,
                bool is_recommendation);
   ~ArcAppResult() override;
 
-  // SearchResult overrides:
+  // ChromeSearchResult overrides:
   void Open(int event_flags) override;
-  std::unique_ptr<SearchResult> Duplicate() const override;
+  std::unique_ptr<ChromeSearchResult> Duplicate() const override;
   ui::MenuModel* GetContextMenuModel() override;
 
   // AppContextMenuDelegate overrides:

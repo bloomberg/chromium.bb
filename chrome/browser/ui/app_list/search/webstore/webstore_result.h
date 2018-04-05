@@ -8,10 +8,10 @@
 #include <memory>
 #include <string>
 
-#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/install_observer.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/manifest.h"
@@ -27,7 +27,7 @@ class InstallTracker;
 
 namespace app_list {
 
-class WebstoreResult : public SearchResult,
+class WebstoreResult : public ChromeSearchResult,
                        public extensions::InstallObserver,
                        public extensions::ExtensionRegistryObserver {
  public:
@@ -47,10 +47,10 @@ class WebstoreResult : public SearchResult,
   extensions::Manifest::Type item_type() const { return item_type_; }
   bool is_paid() const { return is_paid_; }
 
-  // SearchResult overrides:
+  // ChromeSearchResult overrides:
   void Open(int event_flags) override;
   void InvokeAction(int action_index, int event_flags) override;
-  std::unique_ptr<SearchResult> Duplicate() const override;
+  std::unique_ptr<ChromeSearchResult> Duplicate() const override;
 
  private:
   // Set the initial state and start observing both InstallObserver and

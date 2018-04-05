@@ -58,15 +58,15 @@ void ArcAppResult::Open(int event_flags) {
   controller()->DismissView();
 }
 
-std::unique_ptr<SearchResult> ArcAppResult::Duplicate() const {
-  std::unique_ptr<SearchResult> copy = std::make_unique<ArcAppResult>(
+std::unique_ptr<ChromeSearchResult> ArcAppResult::Duplicate() const {
+  ArcAppResult* copy = new ArcAppResult(
       profile(), app_id(), controller(),
       display_type() == ash::SearchResultDisplayType::kRecommendation);
   copy->set_title(title());
   copy->set_title_tags(title_tags());
   copy->set_relevance(relevance());
 
-  return copy;
+  return base::WrapUnique(copy);
 }
 
 ui::MenuModel* ArcAppResult::GetContextMenuModel() {

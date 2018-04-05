@@ -59,7 +59,7 @@ void InternalAppResult::Open(int event_flags) {
     keyboard_shortcut_viewer_util::ShowKeyboardShortcutViewer();
 }
 
-std::unique_ptr<SearchResult> InternalAppResult::Duplicate() const {
+std::unique_ptr<ChromeSearchResult> InternalAppResult::Duplicate() const {
   auto copy = std::make_unique<InternalAppResult>(
       profile(), app_id(), controller(),
       display_type() == DisplayType::kRecommendation);

@@ -32,7 +32,7 @@ const size_t kMaxAppsGroupResults = 4;
 const size_t kMaxOmniboxResults = 4;
 const size_t kMaxWebstoreResults = 2;
 
-class TestSearchResult : public SearchResult {
+class TestSearchResult : public ChromeSearchResult {
  public:
   TestSearchResult(const std::string& id, double relevance)
       : instance_id_(instantiation_count++) {
@@ -42,17 +42,17 @@ class TestSearchResult : public SearchResult {
   }
   ~TestSearchResult() override {}
 
-  // SearchResult overrides:
+  // ChromeSearchResult overrides:
   void Open(int event_flags) override {}
   void InvokeAction(int action_index, int event_flags) override {}
-  std::unique_ptr<SearchResult> Duplicate() const override {
+  std::unique_ptr<ChromeSearchResult> Duplicate() const override {
     return std::make_unique<TestSearchResult>(id(), relevance());
   }
 
   // For reference equality testing. (Addresses cannot be used to test reference
   // equality because it is possible that an object will be allocated at the
   // same address as a previously deleted one.)
-  static int GetInstanceId(SearchResult* result) {
+  static int GetInstanceId(ChromeSearchResult* result) {
     return static_cast<const TestSearchResult*>(result)->instance_id_;
   }
 
@@ -87,12 +87,12 @@ class TestSearchProvider : public SearchProvider {
         relevance = 10.0 - i * 10;
       TestSearchResult* result = new TestSearchResult(id, relevance);
       result->set_display_type(display_type_);
-      Add(std::unique_ptr<SearchResult>(result));
+      Add(std::unique_ptr<ChromeSearchResult>(result));
     }
   }
 
   void set_prefix(const std::string& prefix) { prefix_ = prefix; }
-  void set_display_type(SearchResult::DisplayType display_type) {
+  void set_display_type(ChromeSearchResult::DisplayType display_type) {
     display_type_ = display_type;
   }
   void set_count(size_t count) { count_ = count; }
@@ -102,7 +102,7 @@ class TestSearchProvider : public SearchProvider {
   std::string prefix_;
   size_t count_;
   bool bad_relevance_range_;
-  SearchResult::DisplayType display_type_;
+  ChromeSearchResult::DisplayType display_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSearchProvider);
 };

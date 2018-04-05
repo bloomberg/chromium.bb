@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "ash/app_list/model/search/search_result.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "components/arc/common/app.mojom.h"
 
 class AppListControllerDelegate;
@@ -21,15 +21,15 @@ namespace app_list {
 
 class IconDecodeRequest;
 
-class ArcAppDataSearchResult : public SearchResult {
+class ArcAppDataSearchResult : public ChromeSearchResult {
  public:
   ArcAppDataSearchResult(arc::mojom::AppDataResultPtr data,
                          Profile* profile,
                          AppListControllerDelegate* list_controller);
   ~ArcAppDataSearchResult() override;
 
-  // app_list::SearchResult:
-  std::unique_ptr<SearchResult> Duplicate() const override;
+  // ChromeSearchResult:
+  std::unique_ptr<ChromeSearchResult> Duplicate() const override;
   ui::MenuModel* GetContextMenuModel() override;
   void Open(int event_flags) override;
 

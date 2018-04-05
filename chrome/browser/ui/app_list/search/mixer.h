@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/app_list/search/history_types.h"
 
 class AppListModelUpdater;
+class ChromeSearchResult;
 
 namespace app_list {
 
@@ -23,7 +24,6 @@ FORWARD_DECLARE_TEST(MixerTest, Publish);
 }
 
 class SearchProvider;
-class SearchResult;
 
 // Mixer collects results from providers, sorts them and publishes them to the
 // SearchResults UI model. The targeted results have 6 slots to hold the
@@ -54,11 +54,11 @@ class Mixer {
   // Used for sorting and mixing results.
   struct SortData {
     SortData();
-    SortData(SearchResult* result, double score);
+    SortData(ChromeSearchResult* result, double score);
 
     bool operator<(const SortData& other) const;
 
-    SearchResult* result;  // Not owned.
+    ChromeSearchResult* result;  // Not owned.
     double score;
   };
   typedef std::vector<Mixer::SortData> SortedResults;

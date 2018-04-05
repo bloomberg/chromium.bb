@@ -6,14 +6,14 @@
 
 #include <utility>
 
-#include "ash/app_list/model/search/search_result.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 
 namespace app_list {
 
 SearchProvider::SearchProvider() {}
 SearchProvider::~SearchProvider() {}
 
-void SearchProvider::Add(std::unique_ptr<SearchResult> result) {
+void SearchProvider::Add(std::unique_ptr<ChromeSearchResult> result) {
   results_.emplace_back(std::move(result));
   FireResultChanged();
 }

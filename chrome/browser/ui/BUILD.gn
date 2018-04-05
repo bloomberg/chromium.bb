@@ -3515,6 +3515,8 @@ split_static_library("ui") {
       "app_list/search/arc/arc_playstore_search_result.h",
       "app_list/search/arc/icon_decode_request.cc",
       "app_list/search/arc/icon_decode_request.h",
+      "app_list/search/chrome_search_result.cc",
+      "app_list/search/chrome_search_result.h",
       "app_list/search/common/json_response_fetcher.cc",
       "app_list/search/common/json_response_fetcher.h",
       "app_list/search/common/url_icon_source.cc",

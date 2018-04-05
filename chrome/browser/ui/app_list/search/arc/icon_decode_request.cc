@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/grit/component_extension_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/app_list/app_list_constants.h"

@@ -184,11 +184,6 @@ class ExampleSearchResult : public app_list::SearchResult {
 
   WindowTypeShelfItem::Type type() const { return type_; }
 
-  // app_list::SearchResult:
-  std::unique_ptr<SearchResult> Duplicate() const override {
-    return std::unique_ptr<SearchResult>();
-  }
-
  private:
   WindowTypeShelfItem::Type type_;
 

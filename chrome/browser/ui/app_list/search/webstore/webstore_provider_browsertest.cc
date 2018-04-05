@@ -11,13 +11,13 @@
 #include <string>
 #include <utility>
 
-#include "ash/app_list/model/search/search_result.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_result.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_switches.h"
@@ -217,7 +217,8 @@ class WebstoreProviderTest : public InProcessBrowserTest {
                      size_t expected_result_size) {
     ASSERT_EQ(expected_result_size, webstore_provider_->results().size());
     for (size_t i = 0; i < expected_result_size; ++i) {
-      const SearchResult* result = (webstore_provider_->results()[i]).get();
+      const ChromeSearchResult* result =
+          (webstore_provider_->results()[i]).get();
       // A search for an installed app will return a general webstore search
       // instead of an app in the webstore.
       if (!strcmp(expected_results[i].id, kWebstoreUrlPlaceholder)) {
@@ -240,7 +241,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
       }
 
       EXPECT_EQ(std::string(expected_results[i].title),
-                app_list::SearchResult::TagsDebugString(
+                ChromeSearchResult::TagsDebugString(
                     base::UTF16ToUTF8(result->title()), result->title_tags()));
 
       // Ensure the number of action buttons is appropriate for the item type.

@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "ash/app_list/model/search/search_result.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
+#include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 
 class AppListControllerDelegate;
 class Profile;
@@ -20,8 +20,7 @@ class Time;
 }
 namespace app_list {
 
-class AppResult : public SearchResult,
-                  public AppContextMenuDelegate {
+class AppResult : public ChromeSearchResult, public AppContextMenuDelegate {
  public:
   ~AppResult() override;
 
