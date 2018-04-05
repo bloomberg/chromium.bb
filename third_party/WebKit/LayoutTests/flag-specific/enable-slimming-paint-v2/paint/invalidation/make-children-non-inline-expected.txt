@@ -78,12 +78,12 @@
         },
         {
           "object": "InlineTextBox 'Word,'",
-          "rect": [8, 64, 39, 19],
+          "rect": [8, 64, 38, 19],
           "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'Word,'",
-          "rect": [8, 64, 39, 19],
+          "rect": [8, 64, 38, 19],
           "reason": "disappeared"
         },
         {
