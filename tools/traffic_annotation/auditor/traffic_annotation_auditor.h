@@ -159,6 +159,8 @@ class TrafficAnnotationAuditor {
   const base::FilePath build_path_;
   const base::FilePath clang_tool_path_;
 
+  std::vector<std::string> clang_tool_switches_;
+
   TrafficAnnotationExporter exporter_;
 
   std::string clang_tool_raw_output_;

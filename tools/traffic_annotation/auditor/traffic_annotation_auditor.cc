@@ -61,6 +61,12 @@ const base::FilePath kSafeListPath =
         .Append(FILE_PATH_LITERAL("auditor"))
         .Append(FILE_PATH_LITERAL("safe_list.txt"));
 
+const base::FilePath kClangToolSwitchesPath =
+    base::FilePath(FILE_PATH_LITERAL("tools"))
+        .Append(FILE_PATH_LITERAL("traffic_annotation"))
+        .Append(FILE_PATH_LITERAL("auditor"))
+        .Append(FILE_PATH_LITERAL("traffic_annotation_extractor_switches.txt"));
+
 // The folder that includes the latest Clang built-in library. Inside this
 // folder, there should be another folder with version number, like
 // '.../lib/clang/6.0.0', which would be passed to the clang tool.
@@ -76,10 +82,6 @@ const base::FilePath kRunToolScript =
         .Append(FILE_PATH_LITERAL("clang"))
         .Append(FILE_PATH_LITERAL("scripts"))
         .Append(FILE_PATH_LITERAL("run_tool.py"));
-
-const std::string kClangToolSwitches[] = {
-    "-Wno-comment", "-Wno-tautological-unsigned-enum-zero-compare",
-    "-Wno-tautological-constant-compare", "-Wno-error=unknown-warning-option"};
 
 // Checks if the list of |path_filters| include the given |file_path|, or there
 // are path filters which are a folder (don't have a '.' in their name), and
@@ -112,6 +114,14 @@ TrafficAnnotationAuditor::TrafficAnnotationAuditor(
   DCHECK(!source_path.empty());
   DCHECK(!build_path.empty());
   DCHECK(!clang_tool_path.empty());
+
+  std::string file_content;
+  if (base::ReadFileToString(kClangToolSwitchesPath, &file_content)) {
+    clang_tool_switches_ = base::SplitString(
+        file_content, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  } else {
+    LOG(ERROR) << "Could not read " << kClangToolSwitchesPath;
+  }
 }
 
 TrafficAnnotationAuditor::~TrafficAnnotationAuditor() = default;
@@ -168,8 +178,9 @@ bool TrafficAnnotationAuditor::RunClangTool(
       base::MakeAbsoluteFilePath(clang_tool_path_).MaybeAsASCII().c_str(),
       base::MakeAbsoluteFilePath(GetClangLibraryPath()).MaybeAsASCII().c_str());
 
-  for (const std::string& item : kClangToolSwitches)
+  for (const std::string& item : clang_tool_switches_)
     fprintf(options_file, "--tool-arg=--extra-arg=%s ", item.c_str());
+
   if (use_compile_commands)
     fprintf(options_file, "--all ");
 
