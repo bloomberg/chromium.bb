@@ -17,9 +17,9 @@ namespace {
 TEST(FrameMetricsWindowedAnalyzerTest, AllResultsTheSame) {
   // For this test, we don't care about the timeline, so just keep it constant.
   TestWindowedAnalyzerClient client;
-  SharedWindowedAnalyzerClient shared_client{
+  SharedWindowedAnalyzerClient shared_client(
       60, base::TimeTicks(),
-      base::TimeTicks() + base::TimeDelta::FromSeconds(1)};
+      base::TimeTicks() + base::TimeDelta::FromSeconds(1));
 
   // Try adding a single sample vs. multiple samples.
   for (size_t samples : {1u, 100u}) {
@@ -71,9 +71,9 @@ TEST(FrameMetricsWindowedAnalyzerTest, AllResultsDifferent) {
   const uint32_t kSampleWeight = 100;
 
   TestWindowedAnalyzerClient client;
-  SharedWindowedAnalyzerClient shared_client{
+  SharedWindowedAnalyzerClient shared_client(
       kMaxWindowSize, base::TimeTicks(),
-      base::TimeTicks() + base::TimeDelta::FromSeconds(1)};
+      base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   WindowedAnalyzer analyzer(&client, &shared_client);
 
   // Used to "clear" all the windowed accumulators.
@@ -95,15 +95,15 @@ TEST(FrameMetricsWindowedAnalyzerTest, AllResultsDifferent) {
 
   AddPatternHelper(&shared_client, &analyzer, pattern_clear, kSampleWeight);
   AddPatternHelper(&shared_client, &analyzer, pattern_max_mean, kSampleWeight);
-  SharedWindowedAnalyzerClient worst_mean_client = shared_client;
+  SharedWindowedAnalyzerClient worst_mean_client(shared_client);
 
   AddPatternHelper(&shared_client, &analyzer, pattern_clear, kSampleWeight);
   AddPatternHelper(&shared_client, &analyzer, pattern_max_smr, kSampleWeight);
-  SharedWindowedAnalyzerClient worst_smr_client = shared_client;
+  SharedWindowedAnalyzerClient worst_smr_client(shared_client);
 
   AddPatternHelper(&shared_client, &analyzer, pattern_clear, kSampleWeight);
   AddPatternHelper(&shared_client, &analyzer, pattern_max_rms, kSampleWeight);
-  SharedWindowedAnalyzerClient worst_rms_client = shared_client;
+  SharedWindowedAnalyzerClient worst_rms_client(shared_client);
 
   // If there is a tie, the first window detected wins.
   // This can go wrong if there's any accumulation of error because the
@@ -141,16 +141,16 @@ TEST(FrameMetricsWindowedAnalyzerTest, SmallSampleSize) {
   const uint32_t kSampleWeight = 100;
 
   TestWindowedAnalyzerClient client;
-  SharedWindowedAnalyzerClient shared_client{
+  SharedWindowedAnalyzerClient shared_client(
       kMaxWindowSize, base::TimeTicks(),
-      base::TimeTicks() + base::TimeDelta::FromSeconds(1)};
+      base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   WindowedAnalyzer analyzer(&client, &shared_client);
 
   const std::vector<uint32_t> pattern_short = {2, 2, 2};
   double expected_initial_value =
       2 * kFixedPointMultiplier * TestWindowedAnalyzerClient::result_scale;
   AddPatternHelper(&shared_client, &analyzer, pattern_short, kSampleWeight);
-  SharedWindowedAnalyzerClient short_client = shared_client;
+  SharedWindowedAnalyzerClient short_client(shared_client);
 
   FrameRegionResult worst_mean = analyzer.WorstMean();
   EXPECT_DOUBLE_EQ(expected_initial_value, worst_mean.value);
@@ -175,9 +175,9 @@ TEST(FrameMetricsWindowedAnalyzerTest, BadFirstSamples) {
   FrameRegionResult worst_mean, worst_smr, worst_rms;
 
   TestWindowedAnalyzerClient client;
-  SharedWindowedAnalyzerClient shared_client{
+  SharedWindowedAnalyzerClient shared_client(
       kMaxWindowSize, base::TimeTicks(),
-      base::TimeTicks() + base::TimeDelta::FromSeconds(1)};
+      base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   WindowedAnalyzer analyzer(&client, &shared_client);
 
   // The 7's at the start will dominate the result if the implemenationd
@@ -187,7 +187,7 @@ TEST(FrameMetricsWindowedAnalyzerTest, BadFirstSamples) {
   double expected_initial_value =
       7 * kFixedPointMultiplier * TestWindowedAnalyzerClient::result_scale;
   AddPatternHelper(&shared_client, &analyzer, pattern_short, kSampleWeight);
-  SharedWindowedAnalyzerClient short_client = shared_client;
+  SharedWindowedAnalyzerClient short_client(shared_client);
 
   worst_mean = analyzer.WorstMean();
   EXPECT_DOUBLE_EQ(expected_initial_value, worst_mean.value);
@@ -213,7 +213,7 @@ TEST(FrameMetricsWindowedAnalyzerTest, BadFirstSamples) {
   double expected_final_value =
       6 * kFixedPointMultiplier * TestWindowedAnalyzerClient::result_scale;
   AddPatternHelper(&shared_client, &analyzer, pattern_long, kSampleWeight);
-  SharedWindowedAnalyzerClient long_client = shared_client;
+  SharedWindowedAnalyzerClient long_client(shared_client);
 
   worst_mean = analyzer.WorstMean();
   EXPECT_DOUBLE_EQ(expected_final_value, worst_mean.value);
@@ -238,9 +238,9 @@ TEST(FrameMetricsWindowedAnalyzerTest, ResetWorstValues) {
   FrameRegionResult worst_mean, worst_smr, worst_rms;
 
   TestWindowedAnalyzerClient client;
-  SharedWindowedAnalyzerClient shared_client{
+  SharedWindowedAnalyzerClient shared_client(
       kMaxWindowSize, base::TimeTicks(),
-      base::TimeTicks() + base::TimeDelta::FromSeconds(1)};
+      base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   WindowedAnalyzer analyzer(&client, &shared_client);
 
   // Start off with the worst pattern.
@@ -248,7 +248,7 @@ TEST(FrameMetricsWindowedAnalyzerTest, ResetWorstValues) {
   double expected_initial_value =
       9 * kFixedPointMultiplier * TestWindowedAnalyzerClient::result_scale;
   AddPatternHelper(&shared_client, &analyzer, pattern1, kSampleWeight);
-  SharedWindowedAnalyzerClient initial_client = shared_client;
+  SharedWindowedAnalyzerClient initial_client(shared_client);
 
   worst_mean = analyzer.WorstMean();
   EXPECT_DOUBLE_EQ(expected_initial_value, worst_mean.value);
@@ -295,7 +295,7 @@ TEST(FrameMetricsWindowedAnalyzerTest, ResetWorstValues) {
   double expected_final_value =
       4 * kFixedPointMultiplier * TestWindowedAnalyzerClient::result_scale;
   AddPatternHelper(&shared_client, &analyzer, pattern3, kSampleWeight);
-  SharedWindowedAnalyzerClient final_client = shared_client;
+  SharedWindowedAnalyzerClient final_client(shared_client);
 
   // Add a window of 1's here to verify it does not affect the window of 4's.
   const std::vector<uint32_t> pattern4 = {1, 1, 1, 1, 1, 1};
@@ -393,15 +393,15 @@ void TestNoAccumulatedPrecisionError(uint32_t big_value,
 
   // Set up the actual WindowedAnalyzer implementation.
   TestWindowedAnalyzerClient client_impl;
-  SharedWindowedAnalyzerClient shared_client_impl{
+  SharedWindowedAnalyzerClient shared_client_impl(
       kMaxWindowSize, base::TimeTicks(),
-      base::TimeTicks() + base::TimeDelta::FromSeconds(1)};
+      base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   TestWindowedAnalyzer analyzer_impl(&client_impl, &shared_client_impl);
 
   // Set up the naive WindowedAnalyzer implementation.
-  SharedWindowedAnalyzerClient shared_client_naive{
+  SharedWindowedAnalyzerClient shared_client_naive(
       kMaxWindowSize, base::TimeTicks(),
-      base::TimeTicks() + base::TimeDelta::FromSeconds(1)};
+      base::TimeTicks() + base::TimeDelta::FromSeconds(1));
   WindowedAnalyzerNaive analyzer_naive(kMaxWindowSize);
 
   // Verify error keeps accumulating each time the bad pattern is applied.
