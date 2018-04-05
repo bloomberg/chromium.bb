@@ -47,7 +47,7 @@ using MessagePumpForUI = MessagePumpLibevent;
 #elif defined(OS_FUCHSIA)
 using MessagePumpForUI = MessagePumpFuchsia;
 #else
-#error Platform doesn't define MessagePumpForUI
+#error Platform does not define MessagePumpForUI
 #endif
 
 }  // namespace base
