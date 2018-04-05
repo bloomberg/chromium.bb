@@ -9,6 +9,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "core/testing/DeathAwareScriptWrappable.h"
 #include "platform/bindings/TraceWrapperV8Reference.h"
+#include "platform/bindings/V8DOMWrapper.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -379,16 +380,16 @@ TEST(ScriptWrappableMarkingVisitor, WriteBarrierForScriptWrappable) {
   HeapObjectHeader::FromPayload(target)->MarkWrapperHeader();
 
   // Create a 'wrapper' object.
-  v8::Local<v8::ObjectTemplate> t = v8::ObjectTemplate::New(scope.GetIsolate());
-  t->SetInternalFieldCount(2);
-  v8::Local<v8::Object> obj =
-      t->NewInstance(scope.GetContext()).ToLocalChecked();
+  v8::Local<v8::Object> wrapper = V8DOMWrapper::CreateWrapper(
+      scope.GetIsolate(), scope.GetContext()->Global(),
+      target->GetWrapperTypeInfo());
 
   // Upon setting the wrapper we should have executed the write barrier.
   CHECK_EQ(0u, raw_visitor->NumberOfMarkedWrappers());
-  bool success =
-      target->SetWrapper(scope.GetIsolate(), target->GetWrapperTypeInfo(), obj);
-  CHECK(success);
+  v8::Local<v8::Object> final_wrapper =
+      V8DOMWrapper::AssociateObjectWithWrapper(
+          scope.GetIsolate(), target, target->GetWrapperTypeInfo(), wrapper);
+  CHECK(!final_wrapper.IsEmpty());
   CHECK_EQ(1u, raw_visitor->NumberOfMarkedWrappers());
 }
 
