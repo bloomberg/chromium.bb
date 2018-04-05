@@ -16,6 +16,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/clock.h"
+#include "base/time/time.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_local.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_remote.h"
@@ -144,6 +145,16 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       const std::string& metadata = "",
       base::OnceCallback<void(bool)> reply = base::OnceCallback<void(bool)>());
 
+  // Clear WebRTC event logs associated with a given browser context, in a given
+  // time range (|delete_begin| inclusive, |delete_end| exclusive), then
+  // post |reply| back to the thread from which the method was originally
+  // invoked (which can be any thread).
+  void ClearCacheForBrowserContext(
+      const content::BrowserContext* browser_context,
+      const base::Time& delete_begin,
+      const base::Time& delete_end,
+      base::OnceClosure reply);
+
   // Set (or unset) an observer that will be informed whenever a local log file
   // is started/stopped. The observer needs to be able to either run from
   // anywhere. If you need the code to run on specific runners or queues, have
@@ -165,6 +176,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
                              base::OnceClosure reply = base::OnceClosure());
 
  private:
+  friend class SigninManagerAndroidTest;       // Calls *ForTesting() methods.
   friend class WebRtcEventLogManagerTestBase;  // Calls *ForTesting() methods.
 
   using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
@@ -234,6 +246,10 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
                                   size_t max_file_size_bytes,
                                   const std::string& metadata,
                                   base::OnceCallback<void(bool)> reply);
+
+  void ClearCacheForBrowserContextInternal(BrowserContextId browser_context_id,
+                                           const base::Time& delete_begin,
+                                           const base::Time& delete_end);
 
   void RenderProcessExitedInternal(int render_process_id);
 

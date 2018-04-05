@@ -311,6 +311,23 @@ void WebRtcEventLogManager::StartRemoteLogging(
                      std::move(reply)));
 }
 
+void WebRtcEventLogManager::ClearCacheForBrowserContext(
+    const BrowserContext* browser_context,
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
+    base::OnceClosure reply) {
+  const auto browser_context_id = GetBrowserContextId(browser_context);
+  DCHECK_NE(browser_context_id, kNullBrowserContextId);
+
+  // The object outlives the task queue - base::Unretained(this) is safe.
+  task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(
+          &WebRtcEventLogManager::ClearCacheForBrowserContextInternal,
+          base::Unretained(this), browser_context_id, delete_begin, delete_end),
+      std::move(reply));
+}
+
 void WebRtcEventLogManager::SetLocalLogsObserver(
     WebRtcLocalEventLogsObserver* observer,
     base::OnceClosure reply) {
@@ -578,6 +595,18 @@ void WebRtcEventLogManager::StartRemoteLoggingInternal(
   if (reply) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::BindOnce(std::move(reply), result));
+  }
+}
+
+void WebRtcEventLogManager::ClearCacheForBrowserContextInternal(
+    BrowserContextId browser_context_id,
+    const base::Time& delete_begin,
+    const base::Time& delete_end) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+
+  if (remote_logs_manager_) {
+    remote_logs_manager_->ClearCacheForBrowserContext(browser_context_id,
+                                                      delete_begin, delete_end);
   }
 }
 

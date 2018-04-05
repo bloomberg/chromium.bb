@@ -125,6 +125,7 @@
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_WEBRTC)
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "components/webrtc_logging/browser/log_cleanup.h"
 #include "components/webrtc_logging/browser/log_list.h"
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
@@ -981,6 +982,18 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
                   IgnoreArgument<
                       offline_pages::OfflinePageModel::DeletePageResult>(
                       CreatePendingTaskCompletionClosure())));
+    }
+#endif
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+    // TODO(crbug.com/829321): Remove null-check.
+    auto* webrtc_event_log_manager = WebRtcEventLogManager::GetInstance();
+    if (webrtc_event_log_manager) {
+      webrtc_event_log_manager->ClearCacheForBrowserContext(
+          profile_, delete_begin_, delete_end_,
+          CreatePendingTaskCompletionClosure());
+    } else {
+      LOG(ERROR) << "WebRtcEventLogManager not instantiated.";
     }
 #endif
   }

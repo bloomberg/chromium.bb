@@ -238,6 +238,14 @@ bool WebRtcRemoteEventLogManager::EventLogWrite(const PeerConnectionKey& key,
   return WriteToLogFile(it, message);
 }
 
+void WebRtcRemoteEventLogManager::ClearCacheForBrowserContext(
+    BrowserContextId browser_context_id,
+    const base::Time& delete_begin,
+    const base::Time& delete_end) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+  RemovePendingLogs(delete_begin, delete_end, browser_context_id);
+}
+
 void WebRtcRemoteEventLogManager::RenderProcessHostExitedDestroyed(
     int render_process_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
@@ -472,15 +480,29 @@ void WebRtcRemoteEventLogManager::MaybeStopRemoteLogging(
 
 void WebRtcRemoteEventLogManager::PrunePendingLogs() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
-  const base::Time oldest_non_expired_timestamp =
-      base::Time::Now() - kRemoteBoundWebRtcEventLogsMaxRetention;
+  RemovePendingLogs(
+      base::Time::Min(),
+      base::Time::Now() - kRemoteBoundWebRtcEventLogsMaxRetention);
+}
+
+void WebRtcRemoteEventLogManager::RemovePendingLogs(
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
+    base::Optional<BrowserContextId> browser_context_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
   for (auto it = pending_logs_.begin(); it != pending_logs_.end();) {
-    if (it->last_modified < oldest_non_expired_timestamp) {
+    const bool relevant_browser_content =
+        !browser_context_id || it->browser_context_id == browser_context_id;
+    if (relevant_browser_content &&
+        (delete_begin.is_null() || delete_begin <= it->last_modified) &&
+        (delete_end.is_null() || it->last_modified < delete_end)) {
+      DVLOG(1) << "Removing " << it->path << ".";
       if (!base::DeleteFile(it->path, /*recursive=*/false)) {
         LOG(ERROR) << "Failed to delete " << it->path << ".";
       }
       it = pending_logs_.erase(it);
     } else {
+      DVLOG(1) << "Keeping " << it->path << " on disk.";
       ++it;
     }
   }
