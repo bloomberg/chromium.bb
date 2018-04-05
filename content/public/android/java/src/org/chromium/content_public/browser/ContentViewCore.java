@@ -199,11 +199,16 @@ public interface ContentViewCore {
     void onResume();
 
     /**
-     * Called when keyboard/IME focus has changed.
+     * Called when view-level focus for the container view has changed.
      * @param gainFocus {@code true} if the focus is gained, otherwise {@code false}.
+     */
+    void onViewFocusChanged(boolean gainFocus);
+
+    /**
+     * Sets whether the keyboard should be hidden when losing input focus.
      * @param hideKeyboardOnBlur {@code true} if we should hide soft keyboard when losing focus.
      */
-    void onFocusChanged(boolean gainFocus, boolean hideKeyboardOnBlur);
+    void setHideKeyboardOnBlur(boolean hideKeyboardOnBlur);
 
     /**
      * @see View#scrollBy(int, int)

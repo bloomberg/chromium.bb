@@ -234,7 +234,7 @@ public class PopupZoomerTest {
                 Assert.assertTrue(mPopupZoomer.isShowing());
 
                 // Simulate losing the focus.
-                mContentViewCore.onFocusChanged(false, true);
+                mContentViewCore.onViewFocusChanged(false);
 
                 // Wait for the hide animation to finish.
                 mPopupZoomer.finishPendingDraws();

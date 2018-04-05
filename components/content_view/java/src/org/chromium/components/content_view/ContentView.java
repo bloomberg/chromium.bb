@@ -153,7 +153,10 @@ public class ContentView
             TraceEvent.begin("ContentView.onFocusChanged");
             super.onFocusChanged(gainFocus, direction, previouslyFocusedRect);
             ContentViewCore cvc = getContentViewCore();
-            if (cvc != null) cvc.onFocusChanged(gainFocus, true /* hideKeyboardOnBlur */);
+            if (cvc != null) {
+                cvc.setHideKeyboardOnBlur(true);
+                cvc.onViewFocusChanged(gainFocus);
+            }
         } finally {
             TraceEvent.end("ContentView.onFocusChanged");
         }
