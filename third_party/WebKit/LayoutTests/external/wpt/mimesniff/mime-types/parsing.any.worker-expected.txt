@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1857 tests; 697 PASS, 1160 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1873 tests; 699 PASS, 1174 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
 PASS text/html;charset=gbk (Blob/File)
 PASS text/html;charset=gbk (Request/Response)
@@ -11,6 +11,8 @@ FAIL text/html;x=(;charset=gbk (Blob/File) assert_equals: Blob expected "text/ht
 FAIL text/html;x=(;charset=gbk (Request/Response) assert_equals: expected "text/html;x=\"(\";charset=gbk" but got "text/html;x=(;charset=gbk"
 FAIL text/html;charset=gbk;charset=windows-1255 (Blob/File) assert_equals: Blob expected "text/html;charset=gbk" but got "text/html;charset=gbk;charset=windows-1255"
 FAIL text/html;charset=gbk;charset=windows-1255 (Request/Response) assert_equals: expected "text/html;charset=gbk" but got "text/html;charset=gbk;charset=windows-1255"
+FAIL text/html;charset=();charset=GBK (Blob/File) assert_equals: Blob expected "text/html;charset=\"()\"" but got "text/html;charset=();charset=gbk"
+FAIL text/html;charset=();charset=GBK (Request/Response) assert_equals: expected "text/html;charset=\"()\"" but got "text/html;charset=();charset=gbk"
 FAIL text/html;charset =gbk (Blob/File) assert_equals: Blob expected "text/html" but got "text/html;charset =gbk"
 FAIL text/html;charset =gbk (Request/Response) assert_equals: expected "text/html" but got "text/html;charset =gbk"
 FAIL text/html ;charset=gbk (Blob/File) assert_equals: Blob expected "text/html;charset=gbk" but got "text/html ;charset=gbk"
@@ -19,12 +21,16 @@ FAIL text/html; charset=gbk (Blob/File) assert_equals: Blob expected "text/html;
 FAIL text/html; charset=gbk (Request/Response) assert_equals: expected "text/html;charset=gbk" but got "text/html; charset=gbk"
 FAIL text/html;charset= gbk (Blob/File) assert_equals: Blob expected "text/html;charset=\" gbk\"" but got "text/html;charset= gbk"
 FAIL text/html;charset= gbk (Request/Response) assert_equals: expected "text/html;charset=\" gbk\"" but got "text/html;charset= gbk"
+FAIL text/html;charset= "gbk" (Blob/File) assert_equals: Blob expected "text/html;charset=\" \\\"gbk\\"\"" but got "text/html;charset= \"gbk\""
+FAIL text/html;charset= "gbk" (Request/Response) assert_equals: expected "text/html;charset=\" \\\"gbk\\"\"" but got "text/html;charset= \"gbk\""
 PASS text/html;charset='gbk' (Blob/File)
 PASS text/html;charset='gbk' (Request/Response)
 PASS text/html;charset='gbk (Blob/File)
 PASS text/html;charset='gbk (Request/Response)
 PASS text/html;charset=gbk' (Blob/File)
 PASS text/html;charset=gbk' (Request/Response)
+FAIL text/html;charset=';charset=GBK (Blob/File) assert_equals: Blob expected "text/html;charset='" but got "text/html;charset=';charset=gbk"
+FAIL text/html;charset=';charset=GBK (Request/Response) assert_equals: expected "text/html;charset='" but got "text/html;charset=';charset=gbk"
 FAIL text/html;test;charset=gbk (Blob/File) assert_equals: Blob expected "text/html;charset=gbk" but got "text/html;test;charset=gbk"
 FAIL text/html;test;charset=gbk (Request/Response) assert_equals: expected "text/html;charset=gbk" but got "text/html;test;charset=gbk"
 FAIL text/html;test=;charset=gbk (Blob/File) assert_equals: Blob expected "text/html;charset=gbk" but got "text/html;test=;charset=gbk"
@@ -37,6 +43,10 @@ FAIL text/html ; ; charset=gbk (Blob/File) assert_equals: Blob expected "text/ht
 FAIL text/html ; ; charset=gbk (Request/Response) assert_equals: expected "text/html;charset=gbk" but got "text/html ; ; charset=gbk"
 FAIL text/html;;;;charset=gbk (Blob/File) assert_equals: Blob expected "text/html;charset=gbk" but got "text/html;;;;charset=gbk"
 FAIL text/html;;;;charset=gbk (Request/Response) assert_equals: expected "text/html;charset=gbk" but got "text/html;;;;charset=gbk"
+FAIL text/html;charset= ";charset=GBK (Blob/File) assert_equals: Blob expected "text/html;charset=GBK" but got ""
+FAIL text/html;charset= ";charset=GBK (Request/Response) assert_equals: expected "text/html;charset=GBK" but got ""
+FAIL text/html;charset=";charset=foo";charset=GBK (Blob/File) assert_equals: Blob expected "text/html;charset=GBK" but got ""
+FAIL text/html;charset=";charset=foo";charset=GBK (Request/Response) assert_equals: expected "text/html;charset=GBK" but got ""
 FAIL text/html;charset="gbk" (Blob/File) assert_equals: Blob expected "text/html;charset=gbk" but got "text/html;charset=\"gbk\""
 FAIL text/html;charset="gbk" (Request/Response) assert_equals: expected "text/html;charset=gbk" but got "text/html;charset=\"gbk\""
 FAIL text/html;charset="gbk (Blob/File) assert_equals: Blob expected "text/html;charset=gbk" but got "text/html;charset=\"gbk"
@@ -45,12 +55,18 @@ FAIL text/html;charset=gbk" (Blob/File) assert_equals: Blob expected "text/html;
 FAIL text/html;charset=gbk" (Request/Response) assert_equals: expected "text/html;charset=\"gbk\\\"\"" but got "text/html;charset=gbk\""
 PASS text/html;charset=" gbk" (Blob/File)
 PASS text/html;charset=" gbk" (Request/Response)
+PASS text/html;charset="gbk " (Blob/File)
+PASS text/html;charset="gbk " (Request/Response)
 FAIL text/html;charset="\ gbk" (Blob/File) assert_equals: Blob expected "text/html;charset=\" gbk\"" but got "text/html;charset=\"\\ gbk\""
 FAIL text/html;charset="\ gbk" (Request/Response) assert_equals: expected "text/html;charset=\" gbk\"" but got "text/html;charset=\"\\ gbk\""
 FAIL text/html;charset="\g\b\k" (Blob/File) assert_equals: Blob expected "text/html;charset=gbk" but got "text/html;charset=\"\\g\b\k\""
 FAIL text/html;charset="\g\b\k" (Request/Response) assert_equals: expected "text/html;charset=gbk" but got "text/html;charset=\"\\g\b\k\""
 FAIL text/html;charset="gbk"x (Blob/File) assert_equals: Blob expected "text/html;charset=gbk" but got "text/html;charset=\"gbk\"x"
 FAIL text/html;charset="gbk"x (Request/Response) assert_equals: expected "text/html;charset=gbk" but got "text/html;charset=\"gbk\"x"
+FAIL text/html;charset="";charset=GBK (Blob/File) assert_equals: Blob expected "text/html;charset=GBK" but got "text/html;charset=\"\";charset=gbk"
+FAIL text/html;charset="";charset=GBK (Request/Response) assert_equals: expected "text/html;charset=GBK" but got "text/html;charset=\"\";charset=gbk"
+FAIL text/html;charset=";charset=GBK (Blob/File) assert_equals: Blob expected "text/html;charset=\";charset=GBK\"" but got "text/html;charset=\";charset=gbk"
+FAIL text/html;charset=";charset=GBK (Request/Response) assert_equals: expected "text/html;charset=\";charset=GBK\"" but got "text/html;charset=\";charset=gbk"
 FAIL text/html;charset={gbk} (Blob/File) assert_equals: Blob expected "text/html;charset=\"{gbk}\"" but got "text/html;charset={gbk}"
 FAIL text/html;charset={gbk} (Request/Response) assert_equals: expected "text/html;charset=\"{gbk}\"" but got "text/html;charset={gbk}"
 PASS text/html;0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789=x;charset=gbk (Blob/File)
