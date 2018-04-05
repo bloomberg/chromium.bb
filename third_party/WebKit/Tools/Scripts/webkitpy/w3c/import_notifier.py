@@ -215,7 +215,8 @@ class ImportNotifier(object):
             directory, self.finder.path_from_layout_tests('external', 'wpt'))
         commit_list = ''
         for sha, subject in imported_commits:
-            line = '{}: {}'.format(subject, GITHUB_COMMIT_PREFIX + sha)
+            # subject is a Unicode string and can contain non-ASCII characters.
+            line = u'{}: {}'.format(subject, GITHUB_COMMIT_PREFIX + sha)
             if self.local_wpt.is_commit_affecting_directory(sha, path_from_wpt):
                 line += ' [affecting this directory]'
             commit_list += line + '\n'

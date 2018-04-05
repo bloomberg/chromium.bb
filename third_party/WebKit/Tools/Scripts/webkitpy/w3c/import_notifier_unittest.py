@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -130,7 +131,9 @@ class ImportNotifierTest(unittest.TestCase):
         self.assertEqual(self.notifier.new_failures_by_directory, {})
 
     def test_format_commit_list(self):
-        imported_commits = [('SHA1', 'Subject 1'), ('SHA2', 'Subject 2')]
+        imported_commits = [('SHA1', 'Subject 1'),
+                            # Use non-ASCII chars to really test Unicode handling.
+                            ('SHA2', u'ABC~‾¥≈¤･・•∙·☼★星🌟星★☼·∙•・･¤≈¥‾~XYZ')]
 
         def _is_commit_affecting_directory(commit, directory):
             self.assertIn(commit, ('SHA1', 'SHA2'))
@@ -140,8 +143,8 @@ class ImportNotifierTest(unittest.TestCase):
         self.local_wpt.is_commit_affecting_directory = _is_commit_affecting_directory
         self.assertEqual(
             self.notifier.format_commit_list(imported_commits, '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/foo'),
-            'Subject 1: https://github.com/w3c/web-platform-tests/commit/SHA1 [affecting this directory]\n'
-            'Subject 2: https://github.com/w3c/web-platform-tests/commit/SHA2\n'
+            u'Subject 1: https://github.com/w3c/web-platform-tests/commit/SHA1 [affecting this directory]\n'
+            u'ABC~‾¥≈¤･・•∙·☼★星🌟星★☼·∙•・･¤≈¥‾~XYZ: https://github.com/w3c/web-platform-tests/commit/SHA2\n'
         )
 
     def test_find_owned_directory_non_virtual(self):
