@@ -54,6 +54,9 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
 
   void SetPlatformWindow(std::unique_ptr<ui::PlatformWindow> window);
   ui::PlatformWindow* platform_window() { return platform_window_.get(); }
+  const ui::PlatformWindow* platform_window() const {
+    return platform_window_.get();
+  }
 
   // ui::PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override;

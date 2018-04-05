@@ -53,6 +53,9 @@ class WaylandConnection : public PlatformEventSource,
 
   int GetKeyboardModifiers();
 
+  // Returns the current pointer, which may be null.
+  WaylandPointer* pointer() { return pointer_.get(); }
+
  private:
   void Flush();
   void DispatchUiEvent(Event* event);

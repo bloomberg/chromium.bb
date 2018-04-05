@@ -56,6 +56,10 @@ void HeadlessWindow::SetCapture() {}
 
 void HeadlessWindow::ReleaseCapture() {}
 
+bool HeadlessWindow::HasCapture() const {
+  return false;
+}
+
 void HeadlessWindow::ToggleFullscreen() {}
 
 void HeadlessWindow::Maximize() {}

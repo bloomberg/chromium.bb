@@ -53,6 +53,10 @@ void StubWindow::SetCapture() {
 void StubWindow::ReleaseCapture() {
 }
 
+bool StubWindow::HasCapture() const {
+  return false;
+}
+
 void StubWindow::ToggleFullscreen() {
 }
 

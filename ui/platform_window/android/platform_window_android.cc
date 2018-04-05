@@ -196,6 +196,11 @@ void PlatformWindowAndroid::ReleaseCapture() {
   NOTIMPLEMENTED();
 }
 
+bool PlatformWindowAndroid::HasCapture() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void PlatformWindowAndroid::ToggleFullscreen() {
   NOTIMPLEMENTED();
 }

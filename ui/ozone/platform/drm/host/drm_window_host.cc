@@ -97,6 +97,10 @@ void DrmWindowHost::ReleaseCapture() {
   window_manager_->UngrabEvents(widget_);
 }
 
+bool DrmWindowHost::HasCapture() const {
+  return widget_ == window_manager_->event_grabber();
+}
+
 void DrmWindowHost::ToggleFullscreen() {
 }
 
