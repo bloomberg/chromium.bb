@@ -12,6 +12,7 @@
 #include "content/browser/webrtc/webrtc_internals.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_web_ui.h"
 #include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,7 +78,9 @@ TEST_F(WebRtcInternalsMessageHandlerTest, DontRunJSBeforeNavigationCommitted) {
                                        kConstraints);
   base::RunLoop().RunUntilIdle();
 
-  static_cast<TestWebContents*>(web_contents())->StartNavigation(webrtc_url);
+  auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
+      webrtc_url, web_contents());
+  navigation->Start();
   // We still shouldn't run JS, since navigation to webrtc-internals isn't
   // finished.
   webrtc_internals.OnRemovePeerConnection(1, 2);
