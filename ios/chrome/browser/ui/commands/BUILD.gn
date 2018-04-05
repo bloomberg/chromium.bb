@@ -27,8 +27,6 @@ source_set("commands") {
     "show_signin_command.h",
     "show_signin_command.mm",
     "snackbar_commands.h",
-    "start_voice_search_command.h",
-    "start_voice_search_command.mm",
     "toolbar_commands.h",
     "tools_menu_commands.h",
   ]
