@@ -31,7 +31,8 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   LayoutPoint layout_snapped_paint_offset =
       fragment_data.PaintOffset() - mapping->SubpixelAccumulation();
   IntPoint snapped_paint_offset = RoundedIntPoint(layout_snapped_paint_offset);
-  DCHECK(layout_snapped_paint_offset == snapped_paint_offset);
+  // TODO(crbug.com/816490): Re-enable this check once it is fixed.
+  // DCHECK(layout_snapped_paint_offset == snapped_paint_offset);
 
   Optional<PropertyTreeState> container_layer_state;
   auto SetContainerLayerState =
