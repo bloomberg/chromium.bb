@@ -1943,7 +1943,6 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                            int frame_filter_level_r, int plane,
                            int partial_frame) {
   int start_mi_row, end_mi_row, mi_rows_to_filter;
-  int orig_filter_level[2] = { cm->lf.filter_level[0], cm->lf.filter_level[1] };
 
   if (!frame_filter_level && !frame_filter_level_r) return;
   start_mi_row = 0;
@@ -1956,12 +1955,5 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   end_mi_row = start_mi_row + mi_rows_to_filter;
   av1_loop_filter_frame_init(cm, frame_filter_level, frame_filter_level_r,
                              plane);
-
-  cm->lf.filter_level[0] = frame_filter_level;
-  cm->lf.filter_level[1] = frame_filter_level_r;
-
   av1_loop_filter_rows(frame, cm, xd->plane, start_mi_row, end_mi_row, plane);
-
-  cm->lf.filter_level[0] = orig_filter_level[0];
-  cm->lf.filter_level[1] = orig_filter_level[1];
 }
