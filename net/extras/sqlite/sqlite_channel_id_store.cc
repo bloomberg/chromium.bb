@@ -162,7 +162,7 @@ class SQLiteChannelIDStore::Backend
   std::unique_ptr<sql::Connection> db_;
   sql::MetaTable meta_table_;
 
-  typedef std::list<PendingOperation*> PendingOperationsList;
+  typedef std::list<std::unique_ptr<PendingOperation>> PendingOperationsList;
   PendingOperationsList pending_;
   PendingOperationsList::size_type num_pending_;
   // True if the persistent store should skip clear on exit rules.
@@ -414,7 +414,7 @@ void SQLiteChannelIDStore::Backend::BatchOperation(
   PendingOperationsList::size_type num_pending;
   {
     base::AutoLock locked(lock_);
-    pending_.push_back(po.release());
+    pending_.push_back(std::move(po));
     num_pending = ++num_pending_;
   }
 
@@ -440,7 +440,7 @@ void SQLiteChannelIDStore::Backend::PrunePendingOperationsForDeletes(
        it != pending_.end();) {
     if (base::ContainsValue(server_identifiers,
                             (*it)->channel_id().server_identifier())) {
-      std::unique_ptr<PendingOperation> po(*it);
+      std::unique_ptr<PendingOperation> po(std::move(*it));
       it = pending_.erase(it);
       --num_pending_;
     } else {
@@ -491,7 +491,7 @@ void SQLiteChannelIDStore::Backend::Commit() {
   for (PendingOperationsList::iterator it = ops.begin(); it != ops.end();
        ++it) {
     // Free the certs as we commit them to the database.
-    std::unique_ptr<PendingOperation> po(*it);
+    std::unique_ptr<PendingOperation> po(std::move(*it));
     switch (po->op()) {
       case PendingOperation::CHANNEL_ID_ADD: {
         add_statement.Reset(true);
