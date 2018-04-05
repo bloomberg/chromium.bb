@@ -29,18 +29,31 @@ struct HashValueToRootCertDataComp {
   }
 };
 
-}  // namespace
-
-int32_t GetNetTrustAnchorHistogramIdForSPKI(const HashValue& spki_hash) {
+const RootCertData* GetRootCertData(const HashValue& spki_hash) {
   if (spki_hash.tag() != HASH_VALUE_SHA256)
-    return 0;
+    return nullptr;
 
   auto* it = std::lower_bound(std::begin(kRootCerts), std::end(kRootCerts),
                               spki_hash, HashValueToRootCertDataComp());
-  return (it != std::end(kRootCerts) &&
-          !HashValueToRootCertDataComp()(spki_hash, *it))
-             ? it->histogram_id
-             : 0;
+  if (it == std::end(kRootCerts) ||
+      HashValueToRootCertDataComp()(spki_hash, *it)) {
+    return nullptr;
+  }
+  return it;
+}
+
+}  // namespace
+
+int32_t GetNetTrustAnchorHistogramIdForSPKI(const HashValue& spki_hash) {
+  const RootCertData* root_data = GetRootCertData(spki_hash);
+  if (!root_data)
+    return 0;
+  return root_data->histogram_id;
+}
+
+bool IsLegacyPubliclyTrustedCA(const HashValue& spki_hash) {
+  const RootCertData* root_data = GetRootCertData(spki_hash);
+  return root_data && root_data->legacy_ca;
 }
 
 }  // namespace net

@@ -4,13 +4,17 @@
 
 #include "components/certificate_transparency/ct_policy_manager.h"
 
+#include <algorithm>
+#include <iterator>
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -20,9 +24,144 @@
 #include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_matcher/url_matcher.h"
+#include "crypto/sha2.h"
+#include "net/base/hash_value.h"
 #include "net/base/host_port_pair.h"
+#include "net/cert/asn1_util.h"
+#include "net/cert/internal/name_constraints.h"
+#include "net/cert/internal/parse_name.h"
+#include "net/cert/internal/parsed_certificate.h"
+#include "net/cert/known_roots.h"
+#include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 
 namespace certificate_transparency {
+
+namespace {
+
+// Helper that takes a given net::RDNSequence and returns only the
+// organizationName net::X509NameAttributes.
+class OrgAttributeFilter {
+ public:
+  // Creates a new OrgAttributeFilter for |sequence| that begins iterating at
+  // |head|. Note that |head| can be equal to |sequence.end()|, in which case,
+  // there are no organizationName attributes.
+  explicit OrgAttributeFilter(const net::RDNSequence& sequence)
+      : sequence_head_(sequence.begin()), sequence_end_(sequence.end()) {
+    if (sequence_head_ != sequence_end_) {
+      rdn_it_ = sequence_head_->begin();
+      AdvanceIfNecessary();
+    }
+  }
+
+  bool IsValid() const { return sequence_head_ != sequence_end_; }
+
+  const net::X509NameAttribute& GetAttribute() const {
+    DCHECK(IsValid());
+    return *rdn_it_;
+  }
+
+  void Advance() {
+    DCHECK(IsValid());
+    ++rdn_it_;
+    AdvanceIfNecessary();
+  }
+
+ private:
+  // If the current field is an organization field, does nothing, otherwise,
+  // advances the state to the next organization field, or, if no more are
+  // present, the end of the sequence.
+  void AdvanceIfNecessary() {
+    while (sequence_head_ != sequence_end_) {
+      while (rdn_it_ != sequence_head_->end()) {
+        if (rdn_it_->type == net::TypeOrganizationNameOid())
+          return;
+        ++rdn_it_;
+      }
+      ++sequence_head_;
+      if (sequence_head_ != sequence_end_) {
+        rdn_it_ = sequence_head_->begin();
+      }
+    }
+  }
+
+  net::RDNSequence::const_iterator sequence_head_;
+  net::RDNSequence::const_iterator sequence_end_;
+  net::RelativeDistinguishedName::const_iterator rdn_it_;
+};
+
+// Returns true if |dn_without_sequence| identifies an
+// organizationally-validated certificate, per the CA/Browser Forum's Baseline
+// Requirements, storing the parsed RDNSequence in |*out|.
+bool ParseOrganizationBoundName(net::der::Input dn_without_sequence,
+                                net::RDNSequence* out) {
+  if (!net::ParseNameValue(dn_without_sequence, out))
+    return false;
+  for (const auto& rdn : *out) {
+    for (const auto& attribute_type_and_value : rdn) {
+      if (attribute_type_and_value.type == net::TypeOrganizationNameOid())
+        return true;
+    }
+  }
+  return false;
+}
+
+// Returns true if the certificate identified by |leaf_rdn_sequence| is
+// considered to be issued under the same organizational authority as
+// |org_cert|.
+bool AreCertsSameOrganization(const net::RDNSequence& leaf_rdn_sequence,
+                              CRYPTO_BUFFER* org_cert) {
+  scoped_refptr<net::ParsedCertificate> parsed_org =
+      net::ParsedCertificate::Create(net::x509_util::DupCryptoBuffer(org_cert),
+                                     net::ParseCertificateOptions(), nullptr);
+  if (!parsed_org)
+    return false;
+
+  // If the candidate cert has nameConstraints, see if it has a
+  // permittedSubtrees nameConstraint over a DirectoryName that is
+  // organizationally-bound. If so, the enforcement of nameConstraints is
+  // sufficient to consider |org_cert| a match.
+  if (parsed_org->has_name_constraints()) {
+    const net::NameConstraints& nc = parsed_org->name_constraints();
+    for (const auto& permitted_name : nc.permitted_subtrees().directory_names) {
+      net::RDNSequence tmp;
+      if (ParseOrganizationBoundName(permitted_name, &tmp))
+        return true;
+    }
+  }
+
+  net::RDNSequence org_rdn_sequence;
+  if (!net::ParseNameValue(parsed_org->normalized_subject(), &org_rdn_sequence))
+    return false;
+
+  // Finally, try to match the organization fields within |leaf_rdn_sequence|
+  // to |org_rdn_sequence|. As |leaf_rdn_sequence| has already been checked
+  // for all the necessary fields, it's not necessary to check
+  // |org_rdn_sequence|. Iterate through all of the organization fields in
+  // each, doing a byte-for-byte equality check.
+  // Note that this does permit differences in the SET encapsulations between
+  // RelativeDistinguishedNames, although it does still require that the same
+  // number of organization fields appear, and with the same overall ordering.
+  // This is simply as an implementation simplification, and not done for
+  // semantic or technical reasons.
+  OrgAttributeFilter leaf_filter(leaf_rdn_sequence);
+  OrgAttributeFilter org_filter(org_rdn_sequence);
+  while (leaf_filter.IsValid() && org_filter.IsValid()) {
+    if (leaf_filter.GetAttribute().type != org_filter.GetAttribute().type ||
+        leaf_filter.GetAttribute().value_tag !=
+            org_filter.GetAttribute().value_tag ||
+        leaf_filter.GetAttribute().value != org_filter.GetAttribute().value) {
+      return false;
+    }
+    leaf_filter.Advance();
+    org_filter.Advance();
+  }
+
+  // Ensure all attributes were fully consumed.
+  return !leaf_filter.IsValid() && !org_filter.IsValid();
+}
+
+}  // namespace
 
 class CTPolicyManager::CTDelegate
     : public net::TransportSecurityState::RequireCTDelegate {
@@ -34,11 +173,16 @@ class CTPolicyManager::CTDelegate
   // Called on the prefs task runner. Updates the CTDelegate to require CT
   // for |required_hosts|, and exclude |excluded_hosts| from CT policies.
   void UpdateFromPrefs(const base::ListValue* required_hosts,
-                       const base::ListValue* excluded_hosts);
+                       const base::ListValue* excluded_hosts,
+                       const base::ListValue* excluded_spkis,
+                       const base::ListValue* excluded_legacy_spkis);
 
   // RequireCTDelegate implementation
   // Called on the network task runner.
-  CTRequirementLevel IsCTRequiredForHost(const std::string& hostname) override;
+  CTRequirementLevel IsCTRequiredForHost(
+      const std::string& hostname,
+      const net::X509Certificate* chain,
+      const net::HashValueVector& hashes) override;
 
  private:
   struct Filter {
@@ -47,18 +191,40 @@ class CTPolicyManager::CTDelegate
     size_t host_length = 0;
   };
 
-  // Called on the |network_task_runner_|, updates the |url_matcher_| to
+  // Returns true if a policy for |hostname| is found, setting
+  // |*ct_required| to indicate whether or not Certificate Transparency is
+  // required for the host.
+  bool MatchHostname(const std::string& hostname, bool* ct_required) const;
+
+  // Returns true if a policy for |chain|, which contains the SPKI hashes
+  // |hashes|, is found, setting |*ct_required| to indicate whether or not
+  // Certificate Transparency is required for the certificate.
+  bool MatchSPKI(const net::X509Certificate* chain,
+                 const net::HashValueVector& hashes,
+                 bool* ct_required) const;
+
+  // Called on the |network_task_runner_|. Updates the |url_matcher_| to
   // require CT for |required_hosts| and exclude |excluded_hosts|, both
-  // of which are Lists of Strings which are URLBlacklist filters.
-  void Update(base::ListValue* required_hosts, base::ListValue* excluded_hosts);
+  // of which are Lists of Strings which are URLBlacklist filters, and
+  // updates |excluded_spkis| and |excluded_legacy_spkis| to exclude CT for
+  // those SPKIs, which are encoded as strings using net::HashValue::ToString.
+  void Update(base::ListValue required_hosts,
+              base::ListValue excluded_hosts,
+              base::ListValue excluded_spkis,
+              base::ListValue excluded_legacy_spkis);
 
   // Parses the filters from |host_patterns|, adding them as filters to
   // |filters_| (with |ct_required| indicating whether or not CT is required
   // for that host), and updating |*conditions| with the corresponding
   // URLMatcher::Conditions to match the host.
   void AddFilters(bool ct_required,
-                  base::ListValue* host_patterns,
+                  const base::ListValue& host_patterns,
                   url_matcher::URLMatcherConditionSet::Vector* conditions);
+
+  // Parses the SPKIs from |list|, setting |*hashes| to the sorted set of all
+  // valid SPKIs.
+  void ParseSpkiHashes(const base::ListValue& list,
+                       net::HashValueVector* hashes) const;
 
   // Returns true if |lhs| has greater precedence than |rhs|.
   bool FilterTakesPrecedence(const Filter& lhs, const Filter& rhs) const;
@@ -67,6 +233,10 @@ class CTPolicyManager::CTDelegate
   std::unique_ptr<url_matcher::URLMatcher> url_matcher_;
   url_matcher::URLMatcherConditionSet::ID next_id_;
   std::map<url_matcher::URLMatcherConditionSet::ID, Filter> filters_;
+
+  // Both SPKI lists are sorted.
+  net::HashValueVector spkis_;
+  net::HashValueVector legacy_spkis_;
 
   DISALLOW_COPY_AND_ASSIGN(CTDelegate);
 };
@@ -79,17 +249,39 @@ CTPolicyManager::CTDelegate::CTDelegate(
 
 void CTPolicyManager::CTDelegate::UpdateFromPrefs(
     const base::ListValue* required_hosts,
-    const base::ListValue* excluded_hosts) {
+    const base::ListValue* excluded_hosts,
+    const base::ListValue* excluded_spkis,
+    const base::ListValue* excluded_legacy_spkis) {
   network_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&CTDelegate::Update, base::Unretained(this),
-                 base::Owned(required_hosts->CreateDeepCopy().release()),
-                 base::Owned(excluded_hosts->CreateDeepCopy().release())));
+      base::BindOnce(&CTDelegate::Update, base::Unretained(this),
+                     base::ListValue(required_hosts->GetList()),
+                     base::ListValue(excluded_hosts->GetList()),
+                     base::ListValue(excluded_spkis->GetList()),
+                     base::ListValue(excluded_legacy_spkis->GetList())));
 }
 
 net::TransportSecurityState::RequireCTDelegate::CTRequirementLevel
-CTPolicyManager::CTDelegate::IsCTRequiredForHost(const std::string& hostname) {
+CTPolicyManager::CTDelegate::IsCTRequiredForHost(
+    const std::string& hostname,
+    const net::X509Certificate* chain,
+    const net::HashValueVector& hashes) {
   DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
+
+  bool ct_required = false;
+  if (MatchHostname(hostname, &ct_required) ||
+      MatchSPKI(chain, hashes, &ct_required)) {
+    return ct_required ? CTRequirementLevel::REQUIRED
+                       : CTRequirementLevel::NOT_REQUIRED;
+  }
+
+  return CTRequirementLevel::DEFAULT;
+}
+
+bool CTPolicyManager::CTDelegate::MatchHostname(const std::string& hostname,
+                                                bool* ct_required) const {
+  if (url_matcher_->IsEmpty())
+    return false;
 
   // Scheme and port are ignored by the policy, so it's OK to construct a
   // new GURL here. However, |hostname| is in network form, not URL form,
@@ -98,7 +290,7 @@ CTPolicyManager::CTDelegate::IsCTRequiredForHost(const std::string& hostname) {
       url_matcher_->MatchURL(
           GURL("https://" + net::HostPortPair(hostname, 443).HostForURL()));
   if (matching_ids.empty())
-    return CTRequirementLevel::DEFAULT;
+    return false;
 
   // Determine the overall policy by determining the most specific policy.
   std::map<url_matcher::URLMatcherConditionSet::ID, Filter>::const_iterator it =
@@ -119,12 +311,93 @@ CTPolicyManager::CTDelegate::IsCTRequiredForHost(const std::string& hostname) {
   }
   CHECK(active_filter);
 
-  return active_filter->ct_required ? CTRequirementLevel::REQUIRED
-                                    : CTRequirementLevel::NOT_REQUIRED;
+  *ct_required = active_filter->ct_required;
+  return true;
 }
 
-void CTPolicyManager::CTDelegate::Update(base::ListValue* required_hosts,
-                                         base::ListValue* excluded_hosts) {
+bool CTPolicyManager::CTDelegate::MatchSPKI(const net::X509Certificate* chain,
+                                            const net::HashValueVector& hashes,
+                                            bool* ct_required) const {
+  // Try to scan legacy SPKIs first, if any, since they will only require
+  // comparing hash values.
+  if (!legacy_spkis_.empty()) {
+    for (const auto& hash : hashes) {
+      if (std::binary_search(legacy_spkis_.begin(), legacy_spkis_.end(),
+                             hash)) {
+        *ct_required = false;
+        return true;
+      }
+    }
+  }
+
+  if (spkis_.empty())
+    return false;
+
+  // Scan the constrained SPKIs via |hashes| first, as an optimization. If
+  // there are matches, the SPKI hash will have to be recomputed anyways to
+  // find the matching certificate, but avoid recomputing all the hashes for
+  // the case where there is no match.
+  net::HashValueVector matches;
+  for (const auto& hash : hashes) {
+    if (std::binary_search(spkis_.begin(), spkis_.end(), hash)) {
+      matches.push_back(hash);
+    }
+  }
+  if (matches.empty())
+    return false;
+
+  CRYPTO_BUFFER* leaf_cert = chain->cert_buffer();
+
+  // As an optimization, since the leaf is allowed to be listed as an SPKI,
+  // a match on the leaf's SPKI hash can return early, without comparing
+  // the organization information to itself.
+  net::HashValue hash;
+  if (net::x509_util::CalculateSha256SpkiHash(leaf_cert, &hash) &&
+      std::find(matches.begin(), matches.end(), hash) != matches.end()) {
+    *ct_required = false;
+    return true;
+  }
+
+  // If there was a match (or multiple matches), it's necessary to recompute
+  // the hashes to find the associated certificate.
+  std::vector<CRYPTO_BUFFER*> candidates;
+  for (const auto& buffer : chain->intermediate_buffers()) {
+    if (net::x509_util::CalculateSha256SpkiHash(buffer.get(), &hash) &&
+        std::find(matches.begin(), matches.end(), hash) != matches.end()) {
+      candidates.push_back(buffer.get());
+    }
+  }
+
+  if (candidates.empty())
+    return false;
+
+  scoped_refptr<net::ParsedCertificate> parsed_leaf =
+      net::ParsedCertificate::Create(net::x509_util::DupCryptoBuffer(leaf_cert),
+                                     net::ParseCertificateOptions(), nullptr);
+  if (!parsed_leaf)
+    return false;
+  // If the leaf is not organizationally-bound, it's not a match.
+  net::RDNSequence leaf_rdn_sequence;
+  if (!ParseOrganizationBoundName(parsed_leaf->normalized_subject(),
+                                  &leaf_rdn_sequence)) {
+    return false;
+  }
+
+  for (auto* cert : candidates) {
+    if (AreCertsSameOrganization(leaf_rdn_sequence, cert)) {
+      *ct_required = false;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void CTPolicyManager::CTDelegate::Update(
+    base::ListValue required_hosts,
+    base::ListValue excluded_hosts,
+    base::ListValue excluded_spkis,
+    base::ListValue excluded_legacy_spkis) {
   DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
 
   url_matcher_.reset(new url_matcher::URLMatcher);
@@ -136,16 +409,32 @@ void CTPolicyManager::CTDelegate::Update(base::ListValue* required_hosts,
   AddFilters(false, excluded_hosts, &all_conditions);
 
   url_matcher_->AddConditionSets(all_conditions);
+
+  ParseSpkiHashes(excluded_spkis, &spkis_);
+  ParseSpkiHashes(excluded_legacy_spkis, &legacy_spkis_);
+
+  // Filter out SPKIs that aren't for legacy CAs.
+  legacy_spkis_.erase(
+      std::remove_if(legacy_spkis_.begin(), legacy_spkis_.end(),
+                     [](const net::HashValue& hash) {
+                       if (!net::IsLegacyPubliclyTrustedCA(hash)) {
+                         LOG(ERROR) << "Non-legacy SPKI configured "
+                                    << hash.ToString();
+                         return true;
+                       }
+                       return false;
+                     }),
+      legacy_spkis_.end());
 }
 
 void CTPolicyManager::CTDelegate::AddFilters(
     bool ct_required,
-    base::ListValue* hosts,
+    const base::ListValue& hosts,
     url_matcher::URLMatcherConditionSet::Vector* conditions) {
-  for (size_t i = 0; i < hosts->GetSize(); ++i) {
-    std::string pattern;
-    if (!hosts->GetString(i, &pattern))
+  for (const base::Value& host : hosts) {
+    if (!host.is_string())
       continue;
+    std::string pattern = host.GetString();
 
     Filter filter;
     filter.ct_required = ct_required;
@@ -203,6 +492,22 @@ void CTPolicyManager::CTDelegate::AddFilters(
   }
 }
 
+void CTPolicyManager::CTDelegate::ParseSpkiHashes(
+    const base::ListValue& list,
+    net::HashValueVector* hashes) const {
+  hashes->clear();
+  for (const base::Value& value : list.GetList()) {
+    if (!value.is_string())
+      continue;
+    net::HashValue hash;
+    if (!hash.FromString(value.GetString())) {
+      continue;
+    }
+    hashes->push_back(std::move(hash));
+  }
+  std::sort(hashes->begin(), hashes->end());
+}
+
 bool CTPolicyManager::CTDelegate::FilterTakesPrecedence(
     const Filter& lhs,
     const Filter& rhs) const {
@@ -222,6 +527,8 @@ bool CTPolicyManager::CTDelegate::FilterTakesPrecedence(
 void CTPolicyManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kCTRequiredHosts);
   registry->RegisterListPref(prefs::kCTExcludedHosts);
+  registry->RegisterListPref(prefs::kCTExcludedSPKIs);
+  registry->RegisterListPref(prefs::kCTExcludedLegacySPKIs);
 }
 
 CTPolicyManager::CTPolicyManager(
@@ -232,10 +539,20 @@ CTPolicyManager::CTPolicyManager(
   pref_change_registrar_.Init(pref_service);
   pref_change_registrar_.Add(
       prefs::kCTRequiredHosts,
-      base::Bind(&CTPolicyManager::ScheduleUpdate, base::Unretained(this)));
+      base::BindRepeating(&CTPolicyManager::ScheduleUpdate,
+                          base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kCTExcludedHosts,
-      base::Bind(&CTPolicyManager::ScheduleUpdate, base::Unretained(this)));
+      base::BindRepeating(&CTPolicyManager::ScheduleUpdate,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kCTExcludedSPKIs,
+      base::BindRepeating(&CTPolicyManager::ScheduleUpdate,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kCTExcludedLegacySPKIs,
+      base::BindRepeating(&CTPolicyManager::ScheduleUpdate,
+                          base::Unretained(this)));
 
   ScheduleUpdate();
 }
@@ -265,7 +582,9 @@ void CTPolicyManager::ScheduleUpdate() {
 void CTPolicyManager::Update() {
   delegate_->UpdateFromPrefs(
       pref_change_registrar_.prefs()->GetList(prefs::kCTRequiredHosts),
-      pref_change_registrar_.prefs()->GetList(prefs::kCTExcludedHosts));
+      pref_change_registrar_.prefs()->GetList(prefs::kCTExcludedHosts),
+      pref_change_registrar_.prefs()->GetList(prefs::kCTExcludedSPKIs),
+      pref_change_registrar_.prefs()->GetList(prefs::kCTExcludedLegacySPKIs));
 }
 
 }  // namespace certificate_transparency

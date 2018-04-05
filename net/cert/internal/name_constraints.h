@@ -83,6 +83,9 @@ class NET_EXPORT NameConstraints {
   // either process the constraint or reject the certificate.
   int constrained_name_types() const { return constrained_name_types_; }
 
+  const GeneralNames& permitted_subtrees() const { return permitted_subtrees_; }
+  const GeneralNames& excluded_subtrees() const { return excluded_subtrees_; }
+
  private:
   bool Parse(const der::Input& extension_value,
              bool is_critical,

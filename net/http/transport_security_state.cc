@@ -922,7 +922,8 @@ TransportSecurityState::CheckCTRequirements(
   if (require_ct_delegate_) {
     // Allow the delegate to override the CT requirement state, including
     // overriding any Expect-CT enforcement.
-    ct_required = require_ct_delegate_->IsCTRequiredForHost(hostname);
+    ct_required = require_ct_delegate_->IsCTRequiredForHost(
+        hostname, validated_certificate_chain, public_key_hashes);
   }
   switch (ct_required) {
     case CTRequirementLevel::REQUIRED:

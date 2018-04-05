@@ -105,6 +105,11 @@ class Section(object):
         return
 
 
+  def clear_properties(self):
+    """Removes all configured properties."""
+    self.properties = []
+
+
   def write_to(self, out):
     """Outputs the section in the format used by .cnf files"""
     out.write('[%s]\n' % (self.name))

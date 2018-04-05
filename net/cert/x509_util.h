@@ -11,9 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "net/base/hash_value.h"
 #include "net/base/net_export.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
@@ -112,6 +114,12 @@ scoped_refptr<X509Certificate> CreateX509CertificateFromBuffers(
 
 // Returns the default ParseCertificateOptions for the net stack.
 ParseCertificateOptions DefaultParseCertificateOptions();
+
+// On success, returns true and updates |hash| to be the SHA-256 hash of the
+// subjectPublicKeyInfo of the certificate in |buffer|. If |buffer| is not a
+// valid certificate, returns false and |hash| is in an undefined state.
+NET_EXPORT bool CalculateSha256SpkiHash(const CRYPTO_BUFFER* buffer,
+                                        HashValue* hash) WARN_UNUSED_RESULT;
 
 } // namespace x509_util
 

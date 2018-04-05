@@ -11,5 +11,10 @@ const char kCTRequiredHosts[] = "certificate_transparency.required_hosts";
 
 const char kCTExcludedHosts[] = "certificate_transparency.excluded_hosts";
 
+const char kCTExcludedSPKIs[] = "certificate_transparency.excluded_spkis";
+
+const char kCTExcludedLegacySPKIs[] =
+    "certificate_transparency.excluded_legacy_spkis";
+
 }  // namespace prefs
 }  // namespace certificate_transparency
