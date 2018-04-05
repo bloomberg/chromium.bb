@@ -30,7 +30,8 @@ APP_LIST_EXPORT bool ProcessLeftRightKeyTraversalForTextfield(
     const ui::KeyEvent& key_event);
 
 // Returns the dimension at which a result's icon should be displayed.
-APP_LIST_EXPORT int GetPreferredIconDimension(SearchResult* search_result);
+APP_LIST_EXPORT int GetPreferredIconDimension(
+    ash::SearchResultDisplayType display_type);
 
 }  // namespace app_list
 

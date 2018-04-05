@@ -41,7 +41,7 @@ ExtensionAppResult::ExtensionAppResult(Profile* profile,
 
   is_platform_app_ = extension->is_platform_app();
   icon_ = extensions::ChromeAppIconService::Get(profile)->CreateIcon(
-      this, app_id, GetPreferredIconDimension(this));
+      this, app_id, GetPreferredIconDimension(display_type()));
 
   StartObservingExtensionRegistry();
 }
