@@ -17,6 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -301,6 +302,12 @@ GetTrackingConfiguration() {
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
 void HandleReadError(const base::FilePath& pref_filename,
                      PersistentPrefStore::PrefReadError error) {
+  // The error callback is always invoked back on the main thread (which is
+  // BrowserThread::UI unless called during early initialization before the main
+  // thread is promoted to BrowserThread::UI).
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
+
   // Sample the histogram also for the successful case in order to get a
   // baseline on the success rate in addition to the error distribution.
   UMA_HISTOGRAM_ENUMERATION("PrefService.ReadError", error,
@@ -319,18 +326,14 @@ void HandleReadError(const base::FilePath& pref_filename,
     }
 
     if (message_id) {
-      auto show_profile_error_dialog = base::BindOnce(
-          &ShowProfileErrorDialog, ProfileErrorType::PREFERENCES, message_id,
-          sql::GetCorruptFileDiagnosticsInfo(pref_filename));
-      if (BrowserThread::IsThreadInitialized(BrowserThread::UI)) {
-        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                std::move(show_profile_error_dialog));
-      } else {
-        // In early startup (e.g. on error loading Local State before most
-        // browser pieces are up), the only option is to show the dialog
-        // synchronously.
-        std::move(show_profile_error_dialog).Run();
-      }
+      // Note: ThreadTaskRunnerHandle() is usually BrowserThread::UI but during
+      // early startup it can be ChromeBrowserMainParts::DeferringTaskRunner
+      // which will forward to BrowserThread::UI when it's initialized.
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&ShowProfileErrorDialog, ProfileErrorType::PREFERENCES,
+                         message_id,
+                         sql::GetCorruptFileDiagnosticsInfo(pref_filename)));
     }
 #else
     // On ChromeOS error screen with message about broken local state
@@ -397,7 +400,8 @@ void PrepareFactory(sync_preferences::PrefServiceSyncableFactory* factory,
   factory->set_command_line_prefs(
       base::MakeRefCounted<ChromeCommandLinePrefStore>(
           base::CommandLine::ForCurrentProcess()));
-  factory->set_read_error_callback(base::Bind(&HandleReadError, pref_filename));
+  factory->set_read_error_callback(
+      base::BindRepeating(&HandleReadError, pref_filename));
   factory->set_user_prefs(std::move(user_pref_store));
   factory->SetPrefModelAssociatorClient(
       ChromePrefModelAssociatorClient::GetInstance());
