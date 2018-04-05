@@ -133,7 +133,12 @@ bool HTMLLinkElement::LoadLink(const LinkLoadParameters& params) {
 
 LinkResource* HTMLLinkElement::LinkResourceToProcess() {
   if (!ShouldLoadLink()) {
-    DCHECK(!GetLinkStyle() || !GetLinkStyle()->HasSheet());
+    // If we shouldn't load the link, but the link is already of type
+    // LinkType::kStyle and has a stylesheet loaded, it is because the
+    // rel attribute is modified and we need to process it to remove
+    // the sheet from the style engine and do style recalculation.
+    if (GetLinkStyle() && GetLinkStyle()->HasSheet())
+      return GetLinkStyle();
     // TODO(yoav): Ideally, the element's error event would be fired here.
     return nullptr;
   }
