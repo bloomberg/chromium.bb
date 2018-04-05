@@ -253,13 +253,6 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(
   hr = encoder_->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL);
   RETURN_ON_HR_FAILURE(hr, "Couldn't set ProcessMessage", false);
 
-  // Pin all client callbacks to the main task runner initially. It can be
-  // reassigned by TryToSetupEncodeOnSeparateThread().
-  if (!encode_client_task_runner_) {
-    encode_client_task_runner_ = main_client_task_runner_;
-    encode_client_ = main_client_;
-  }
-
   main_client_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Client::RequireBitstreamBuffers, main_client_,
                             kNumInputBuffers, input_visible_size_,
@@ -271,7 +264,7 @@ void MediaFoundationVideoEncodeAccelerator::Encode(
     const scoped_refptr<VideoFrame>& frame,
     bool force_keyframe) {
   DVLOG(3) << __func__;
-  DCHECK(encode_client_task_runner_->BelongsToCurrentThread());
+  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
 
   encoder_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&MediaFoundationVideoEncodeAccelerator::EncodeTask,
@@ -282,7 +275,7 @@ void MediaFoundationVideoEncodeAccelerator::Encode(
 void MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBuffer(
     const BitstreamBuffer& buffer) {
   DVLOG(3) << __func__ << ": buffer size=" << buffer.size();
-  DCHECK(encode_client_task_runner_->BelongsToCurrentThread());
+  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
 
   if (buffer.size() < bitstream_buffer_size_) {
     DLOG(ERROR) << "Output BitstreamBuffer isn't big enough: " << buffer.size()
@@ -313,7 +306,7 @@ void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChange(
     uint32_t framerate) {
   DVLOG(3) << __func__ << ": bitrate=" << bitrate
            << ": framerate=" << framerate;
-  DCHECK(encode_client_task_runner_->BelongsToCurrentThread());
+  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
 
   encoder_thread_task_runner_->PostTask(
       FROM_HERE,
@@ -338,16 +331,6 @@ void MediaFoundationVideoEncodeAccelerator::Destroy() {
   }
 
   delete this;
-}
-
-bool MediaFoundationVideoEncodeAccelerator::TryToSetupEncodeOnSeparateThread(
-    const base::WeakPtr<Client>& encode_client,
-    const scoped_refptr<base::SingleThreadTaskRunner>& encode_task_runner) {
-  DVLOG(3) << __func__;
-  DCHECK(main_client_task_runner_->BelongsToCurrentThread());
-  encode_client_ = encode_client;
-  encode_client_task_runner_ = encode_task_runner;
-  return true;
 }
 
 // static
@@ -553,7 +536,8 @@ bool MediaFoundationVideoEncodeAccelerator::IsResolutionSupported(
 void MediaFoundationVideoEncodeAccelerator::NotifyError(
     VideoEncodeAccelerator::Error error) {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread() ||
-         encode_client_task_runner_->BelongsToCurrentThread());
+         main_client_task_runner_->BelongsToCurrentThread());
+
   main_client_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Client::NotifyError, main_client_, error));
 }
@@ -694,8 +678,8 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
     memcpy(buffer_ref->shm->memory(), scoped_buffer.get(), size);
   }
 
-  encode_client_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Client::BitstreamBufferReady, encode_client_,
+  main_client_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Client::BitstreamBufferReady, main_client_,
                             buffer_ref->id, size, keyframe, timestamp));
 
   // Keep calling ProcessOutput recursively until MF_E_TRANSFORM_NEED_MORE_INPUT
@@ -729,9 +713,9 @@ void MediaFoundationVideoEncodeAccelerator::ReturnBitstreamBuffer(
 
   memcpy(buffer_ref->shm->memory(), encode_output->memory(),
          encode_output->size());
-  encode_client_task_runner_->PostTask(
+  main_client_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Client::BitstreamBufferReady, encode_client_, buffer_ref->id,
+      base::Bind(&Client::BitstreamBufferReady, main_client_, buffer_ref->id,
                  encode_output->size(), encode_output->keyframe,
                  encode_output->capture_timestamp));
 }
