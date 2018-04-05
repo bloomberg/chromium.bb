@@ -11,6 +11,10 @@ namespace flag_descriptions {
 extern const char kAutofillIOSDelayBetweenFieldsName[];
 extern const char kAutofillIOSDelayBetweenFieldsDescription[];
 
+// Title and description for the flag to controll the dynamic autofill.
+extern const char kAutofillDynamicFormsName[];
+extern const char kAutofillDynamicFormsDescription[];
+
 // Title and description for the flag to control redirection to the task
 // scheduler.
 extern const char kBrowserTaskScheduler[];
