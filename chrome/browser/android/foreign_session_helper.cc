@@ -246,26 +246,9 @@ jboolean ForeignSessionHelper::GetForeignSessions(
         ConvertUTF8ToJavaString(env, session.session_name), session.device_type,
         session.modified_time.ToJavaTime()));
 
-    const std::string group_name =
-        base::FieldTrialList::FindFullName("TabSyncByRecency");
-    if (group_name == "Enabled") {
-      // Create a custom window with tabs from all windows included and ordered
-      // by recency (GetForeignSessionTabs will do ordering automatically).
-      std::vector<const sessions::SessionTab*> tabs;
-      open_tabs->GetForeignSessionTabs(session.session_tag, &tabs);
-      ScopedJavaLocalRef<jobject> last_pushed_window(
-          Java_ForeignSessionHelper_pushWindow(
-              env, last_pushed_session, session.modified_time.ToJavaTime(), 0));
-      for (const sessions::SessionTab* tab : tabs) {
-         if (ShouldSkipTab(*tab))
-           continue;
-         JNI_ForeignSessionHelper_CopyTabToJava(env, *tab, last_pushed_window);
-      }
-    } else {
-      // Push the full session, with tabs ordered by visual position.
-      JNI_ForeignSessionHelper_CopySessionToJava(env, session,
-                                                 last_pushed_session);
-    }
+    // Push the full session, with tabs ordered by visual position.
+    JNI_ForeignSessionHelper_CopySessionToJava(env, session,
+                                               last_pushed_session);
   }
 
   return true;

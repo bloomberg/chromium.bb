@@ -3679,23 +3679,6 @@
             ]
         }
     ],
-    "TabSyncByRecency": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
     "ThrottleDelayable": [
         {
             "platforms": [
