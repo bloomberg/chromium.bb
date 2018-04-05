@@ -412,6 +412,13 @@ void HTMLFormElement::Submit(Event* event,
 
   FormSubmission* form_submission =
       FormSubmission::Create(this, attributes_, event, submit_button);
+  // 'formdata' event handlers might disconnect the form.
+  if (RuntimeEnabledFeatures::FormDataEventEnabled() && !isConnected()) {
+    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel,
+        "Form submission canceled because the form is not connected"));
+    return;
+  }
   if (form_submission->Method() == FormSubmission::kDialogMethod) {
     SubmitDialog(form_submission);
   } else if (in_user_js_submit_event_) {
