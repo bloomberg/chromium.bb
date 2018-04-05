@@ -4772,8 +4772,20 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)showRecentTabs {
-  if (!self.recentTabsCoordinator)
-    [self createRecentTabsCoordinator];
+  // TODO(crbug.com/825431): If BVC's clearPresentedState is ever called (such
+  // as in tearDown after a failed egtest), then this coordinator is left in a
+  // started state even though its corresponding VC is no longer on screen.
+  // That causes issues when the coordinator is started again and we destroy the
+  // old mediator without disconnecting it first.  Temporarily work around these
+  // issues by not having a long lived coordinator.  A longer-term solution will
+  // require finding a way to stop this coordinator so that the mediator is
+  // properly disconnected and destroyed and does not live longer than its
+  // associated VC.
+  if (self.recentTabsCoordinator) {
+    [self.recentTabsCoordinator stop];
+    self.recentTabsCoordinator = nil;
+  }
+  [self createRecentTabsCoordinator];
   [self.recentTabsCoordinator start];
 }
 
