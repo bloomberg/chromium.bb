@@ -70,9 +70,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
 
   bool HasContentEditableAttributeSet() const;
   bool IsTextControl() const override;
-  // This returns true if it's focusable but it's not content editable and it's
-  // not a control or ARIA control.
-  bool IsGenericFocusableElement() const;
   AXObject* MenuButtonForMenu() const;
   AXObject* MenuButtonForMenuIfExists() const;
   Element* MenuItemElementForMenu() const;
