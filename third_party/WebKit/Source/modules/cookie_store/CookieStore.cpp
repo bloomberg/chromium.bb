@@ -127,6 +127,13 @@ network::mojom::blink::CanonicalCookiePtr ToCanonicalCookie(
       canonical_cookie->value = value;
     }
 
+    if (canonical_cookie->name.IsEmpty() &&
+        canonical_cookie->value.Contains('=')) {
+      exception_state.ThrowTypeError(
+          "Cookie value cannot contain '=' if the name is empty.");
+      return nullptr;
+    }
+
     if (options.hasExpires())
       canonical_cookie->expiry = WTF::Time::FromJavaTime(options.expires());
     // The expires option is not set in CookieStoreSetOptions for session
