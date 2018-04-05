@@ -1245,19 +1245,17 @@ bool ShellSurfaceBase::IsResizing() const {
 void ShellSurfaceBase::UpdateWidgetBounds() {
   DCHECK(widget_);
 
-  // Return early if the shell is currently managing the bounds of the widget.
-  // 1) When a window is either maximized/fullscreen/pinned, and the bounds
-  // are not controlled by a client.
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(widget_->GetNativeWindow());
-  if (window_state->IsMaximizedOrFullscreenOrPinned() &&
-      !window_state->allow_set_bounds_direct()) {
-    return;
+  // Return early if the shell is currently managing the bounds of the widget.
+  if (!window_state->allow_set_bounds_direct()) {
+    // 1) When a window is either maximized/fullscreen/pinned.
+    if (window_state->IsMaximizedOrFullscreenOrPinned())
+      return;
+    // 2) When a window is being dragged by |resizer_|.
+    if (IsResizing())
+      return;
   }
-
-  // 2) When a window is being dragged by |resizer_|.
-  if (IsResizing())
-    return;
 
   // Return early if there is pending configure requests.
   if (!pending_configs_.empty() || scoped_configure_)
