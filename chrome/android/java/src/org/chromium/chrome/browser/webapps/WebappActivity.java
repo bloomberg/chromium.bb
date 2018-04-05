@@ -244,6 +244,12 @@ public class WebappActivity extends SingleTabActivity {
         return (intent == null) ? WebappInfo.createEmpty() : WebappInfo.create(intent);
     }
 
+    @Override
+    public void initializeState() {
+        super.initializeState();
+        initializeUI(getSavedInstanceState());
+    }
+
     protected void initializeUI(Bundle savedInstanceState) {
         // We do not load URL when restoring from saved instance states.
         if (savedInstanceState == null) {
@@ -324,12 +330,6 @@ public class WebappActivity extends SingleTabActivity {
 
     @Override
     public void finishNativeInitialization() {
-        if (!mWebappInfo.isInitialized()) {
-            ApiCompatibilityUtils.finishAndRemoveTask(this);
-            return;
-        }
-
-        initializeUI(getSavedInstanceState());
         LayoutManager layoutDriver = new LayoutManager(getCompositorViewHolder());
         initializeCompositorContent(layoutDriver, findViewById(R.id.url_bar),
                 (ViewGroup) findViewById(android.R.id.content),
