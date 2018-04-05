@@ -99,6 +99,7 @@
 -OmniboxPopupContentsViewTest.ThemeIntegration/*
 -PDFIsolatedExtensionTest.MultipleDomains
 -PrefHashBrowserTest*
+-StartupBrowserCreatorTest.ProfilesWithoutPagesNotLaunched
 -UserInitiatedRunsDisabled*
 -UserInitiatedRunsEnabled*
 -WithVaryingSeeds/ChromeCleanerPromptUserTest.*
