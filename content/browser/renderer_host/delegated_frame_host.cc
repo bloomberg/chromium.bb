@@ -302,8 +302,13 @@ void DelegatedFrameHost::WasResized(
       // On Windows and Linux, we would like to produce new content as soon as
       // possible or the OS will create an additional black gutter. Until we can
       // block resize on surface synchronization on these platforms, we will not
-      // block UI on the top-level renderer.
-      deadline_policy = cc::DeadlinePolicy::UseSpecifiedDeadline(0u);
+      // block UI on the top-level renderer. The exception to this is if we're
+      // using an infinite deadline, in which case we should respect the
+      // specified deadline and block UI since that's what was requested.
+      if (deadline_policy.policy_type() !=
+          cc::DeadlinePolicy::kUseInfiniteDeadline) {
+        deadline_policy = cc::DeadlinePolicy::UseSpecifiedDeadline(0u);
+      }
 #endif
       client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
           surface_id, current_frame_size_in_dip_, GetGutterColor(),

@@ -148,8 +148,9 @@ void BrowserPlugin::OnSetChildFrameSurface(
     return;
 
   if (!enable_surface_synchronization_) {
-    compositing_helper_->SetPrimarySurfaceId(surface_info.id(),
-                                             screen_space_rect().size());
+    compositing_helper_->SetPrimarySurfaceId(
+        surface_info.id(), screen_space_rect().size(),
+        cc::DeadlinePolicy::UseDefaultDeadline());
   }
   compositing_helper_->SetFallbackSurfaceId(surface_info.id(),
                                             screen_space_rect().size());
@@ -272,9 +273,11 @@ void BrowserPlugin::WasResized() {
     parent_local_surface_id_allocator_.GenerateId();
 
   if (enable_surface_synchronization_ && frame_sink_id_.is_valid()) {
+    // TODO(vmpstr): When capture_sequence_number is available, the deadline
+    // should be infinite if the sequence number has changed.
     compositing_helper_->SetPrimarySurfaceId(
         viz::SurfaceId(frame_sink_id_, GetLocalSurfaceId()),
-        screen_space_rect().size());
+        screen_space_rect().size(), cc::DeadlinePolicy::UseDefaultDeadline());
   }
 
   bool position_changed = !sent_resize_params_ ||

@@ -369,8 +369,9 @@ void RenderFrameProxy::SetChildFrameSurface(
     return;
 
   if (!enable_surface_synchronization_) {
-    compositing_helper_->SetPrimarySurfaceId(surface_info.id(),
-                                             local_frame_size());
+    compositing_helper_->SetPrimarySurfaceId(
+        surface_info.id(), local_frame_size(),
+        cc::DeadlinePolicy::UseDefaultDeadline());
   }
   compositing_helper_->SetFallbackSurfaceId(surface_info.id(),
                                             local_frame_size());
@@ -612,8 +613,13 @@ void RenderFrameProxy::WasResized() {
     local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
 
   viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
-  if (enable_surface_synchronization_)
-    compositing_helper_->SetPrimarySurfaceId(surface_id, local_frame_size());
+  if (enable_surface_synchronization_) {
+    // TODO(vmpstr): When capture_sequence_number is available, the deadline
+    // should be infinite if the sequence number has changed.
+    compositing_helper_->SetPrimarySurfaceId(
+        surface_id, local_frame_size(),
+        cc::DeadlinePolicy::UseDefaultDeadline());
+  }
 
   bool rect_changed =
       !sent_resize_params_ || sent_resize_params_->screen_space_rect !=

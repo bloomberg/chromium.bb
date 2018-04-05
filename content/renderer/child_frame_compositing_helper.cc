@@ -72,7 +72,8 @@ void ChildFrameCompositingHelper::ChildFrameGone(
 
 void ChildFrameCompositingHelper::SetPrimarySurfaceId(
     const viz::SurfaceId& surface_id,
-    const gfx::Size& frame_size_in_dip) {
+    const gfx::Size& frame_size_in_dip,
+    const cc::DeadlinePolicy& deadline) {
   if (primary_surface_id_ == surface_id)
     return;
 
@@ -83,8 +84,7 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceId(
   surface_layer_->SetHitTestable(true);
   surface_layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
 
-  surface_layer_->SetPrimarySurfaceId(surface_id,
-                                      cc::DeadlinePolicy::UseDefaultDeadline());
+  surface_layer_->SetPrimarySurfaceId(surface_id, deadline);
   surface_layer_->SetFallbackSurfaceId(fallback_surface_id_);
 
   std::unique_ptr<cc_blink::WebLayerImpl> layer(
@@ -111,7 +111,8 @@ void ChildFrameCompositingHelper::SetFallbackSurfaceId(
   fallback_surface_id_ = surface_id;
 
   if (!surface_layer_) {
-    SetPrimarySurfaceId(surface_id, frame_size_in_dip);
+    SetPrimarySurfaceId(surface_id, frame_size_in_dip,
+                        cc::DeadlinePolicy::UseDefaultDeadline());
     return;
   }
 
