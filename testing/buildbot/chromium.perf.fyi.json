@@ -4,7 +4,8 @@
       {
         "args": [
           "-v",
-          "--browser=android-chromium"
+          "--browser=android-chromium",
+          "--upload-results"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -450,11 +451,10 @@
     "isolated_scripts": [
       {
         "args": [
-          "-v",
-          "--browser=release",
-          "--non-telemetry=true"
+          "--non-telemetry=true",
+          "--migrated-test=true"
         ],
-        "isolate_name": "load_library_perf_tests_v2",
+        "isolate_name": "load_library_perf_tests",
         "merge": {
           "args": [
             "--service-account-file",
@@ -462,9 +462,9 @@
           ],
           "script": "//tools/perf/process_perf_results.py"
         },
-        "name": "load_library_perf_tests_v2",
+        "name": "load_library_perf_tests",
         "override_compile_targets": [
-          "load_library_perf_tests_v2"
+          "load_library_perf_tests"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -495,7 +495,8 @@
       {
         "args": [
           "-v",
-          "--browser=release"
+          "--browser=release",
+          "--upload-results"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -573,10 +574,53 @@
     "isolated_scripts": [
       {
         "args": [
+          "--non-telemetry=true",
+          "--migrated-test=true"
+        ],
+        "isolate_name": "load_library_perf_tests",
+        "merge": {
+          "args": [
+            "--service-account-file",
+            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "load_library_perf_tests",
+        "override_compile_targets": [
+          "load_library_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Linux",
+              "pool": "Chrome-perf-fyi"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800,
+          "shards": 1,
+          "upload_test_results": true
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"id\": \"swarm823-c4\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      },
+      {
+        "args": [
           "-v",
           "--browser=reference",
-          "--xvfb",
-          "--testing=true"
+          "--upload-results",
+          "--testing=true",
+          "--xvfb"
         ],
         "isolate_name": "telemetry_perf_tests_experimental",
         "merge": {

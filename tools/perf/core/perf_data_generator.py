@@ -1079,6 +1079,8 @@ def validate_tests(waterfall, waterfall_file, benchmark_file):
 #     of the isolate you are running.
 # shards: shard indices that you want the isolate to run on.  If omitted
 #     will run on all shards.
+# telemetry: boolean indicating if this is a telemetry test.  If omitted
+#     assumed to be true.
 NEW_PERF_RECIPE_FYI_TESTERS = {
   'testers' : {
     'One Buildbot Step Test Builder': {
@@ -1086,6 +1088,11 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         {
           'isolate': 'telemetry_perf_tests_experimental',
           'extra_args': ['--xvfb'],
+        },
+        {
+          'isolate': 'load_library_perf_tests',
+          'shards': [0],
+          'telemetry': False,
         }
       ],
       'platform': 'linux',
@@ -1106,10 +1113,9 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'isolate': 'performance_test_suite',
         },
         {
-          'isolate': 'load_library_perf_tests_v2',
-          'test_suite_name': 'load_library_perf_tests',
-          'extra_args': ["--non-telemetry=true"],
-          'shards': [0]
+          'isolate': 'load_library_perf_tests',
+          'shards': [0],
+          'telemetry': False,
         }
       ],
       'platform': 'mac',
@@ -1184,7 +1190,7 @@ def add_common_test_properties(test_entry, tester_config, test_spec):
   return len(dimensions)
 
 
-def generate_performance_test(tester_config, test):
+def generate_telemetry_args(tester_config):
   # First determine the browser that you need based on the tester
   browser_name = ''
   # For trybot testing we always use the reference build
@@ -1203,20 +1209,39 @@ def generate_performance_test(tester_config, test):
 
   test_args = [
     '-v',
-    '--browser=%s' % browser_name
+    '--browser=%s' % browser_name,
+    '--upload-results'
   ]
-  test_args += test.get('extra_args', [])
+
+  if browser_name == 'android-webview':
+    test_args.append(
+        '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk')
 
   # Appending testing=true if we only want to run a subset of benchmarks
   # for quicker testing
   if tester_config.get('testing', False):
     test_args.append('--testing=true')
 
+  return test_args
+
+def generate_non_telemetry_args():
+  # --non-telemetry tells run_performance_tests.py that this test needs
+  #   to be executed differently
+  # --migrated-test tells run_performance_test_wrapper that this has
+  #   non-telemetry test has been migrated to the new recipe.
+  return [
+    '--non-telemetry=true',
+    '--migrated-test=true'
+  ]
+
+def generate_performance_test(tester_config, test):
+  if test.get('telemetry', True):
+    test_args = generate_telemetry_args(tester_config)
+  else:
+    test_args = generate_non_telemetry_args()
+  # Append any additional args specific to an isolate
+  test_args += test.get('extra_args', [])
   isolate_name = test['isolate']
-  if browser_name == 'android-webview':
-    test_args.append(
-        '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk')
-    isolate_name = 'telemetry_perf_webview_tests'
 
   # Check to see if the name is different than the isolate
   test_suite = isolate_name
