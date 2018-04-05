@@ -399,6 +399,91 @@ TEST_P(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
   EXPECT_TRUE(tab3->showing_close_button_);
 }
 
+// Tests that the tab close buttons of non-active tabs are hidden when
+// the tabstrip is not in stacked tab mode and the tab sizes are shrunk
+// into small sizes.
+TEST_P(TabStripTest, TabCloseButtonVisibilityWhenNotStacked) {
+  if (GetParam()) {
+    // TODO(malaykeshav): Fix test failure in touch-optimized UI mode.
+    // https://crbug.com/814847.
+    return;
+  }
+
+  // Set the tab strip width to be wide enough for three tabs to show all
+  // three icons, but not enough for five tabs to show all three icons.
+  tab_strip_->SetBounds(0, 0, 240, 20);
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, true);
+  controller_->AddTab(2, false);
+  ASSERT_EQ(3, tab_strip_->tab_count());
+
+  Tab* tab0 = tab_strip_->tab_at(0);
+  ASSERT_FALSE(tab0->IsActive());
+  Tab* tab1 = tab_strip_->tab_at(1);
+  ASSERT_TRUE(tab1->IsActive());
+  Tab* tab2 = tab_strip_->tab_at(2);
+  ASSERT_FALSE(tab2->IsActive());
+
+  // Ensure this is not in stacked layout mode.
+  ASSERT_FALSE(tab_strip_->touch_layout_.get());
+
+  // Ensure that all tab close buttons are initially visible.
+  EXPECT_TRUE(tab0->showing_close_button_);
+  EXPECT_TRUE(tab1->showing_close_button_);
+  EXPECT_TRUE(tab2->showing_close_button_);
+
+  // Shrink the tab sizes by adding more tabs.
+  // An inactive tab added to the tabstrip, now each tab size is not
+  // big enough to accomodate 3 icons, so it should not show its
+  // tab close button.
+  controller_->AddTab(3, false);
+  Tab* tab3 = tab_strip_->tab_at(3);
+  EXPECT_FALSE(tab3->showing_close_button_);
+
+  // This inactive tab doesn't have alert button, but its favicon and
+  // title would be shown.
+  EXPECT_TRUE(tab3->showing_icon_);
+  EXPECT_FALSE(tab3->showing_alert_indicator_);
+  EXPECT_TRUE(tab3->title_->visible());
+
+  // The active tab's close button still shows.
+  EXPECT_TRUE(tab1->showing_close_button_);
+
+  // An active tab added to the tabstrip should show its tab close
+  // button.
+  controller_->AddTab(4, true);
+  Tab* tab4 = tab_strip_->tab_at(4);
+  ASSERT_TRUE(tab4->IsActive());
+  EXPECT_TRUE(tab4->showing_close_button_);
+
+  // The previous active button is now inactive so its close
+  // button should not show.
+  EXPECT_FALSE(tab1->showing_close_button_);
+
+  // After switching tabs, the previously-active tab should have its
+  // tab close button hidden and the newly-active tab should show
+  // its tab close button.
+  tab_strip_->SelectTab(tab2);
+  ASSERT_FALSE(tab4->IsActive());
+  ASSERT_TRUE(tab2->IsActive());
+  EXPECT_FALSE(tab0->showing_close_button_);
+  EXPECT_FALSE(tab1->showing_close_button_);
+  EXPECT_TRUE(tab2->showing_close_button_);
+  EXPECT_FALSE(tab3->showing_close_button_);
+  EXPECT_FALSE(tab4->showing_close_button_);
+
+  // After closing the active tab, the tab which becomes active should
+  // show its tab close button.
+  tab_strip_->CloseTab(tab2, CLOSE_TAB_FROM_TOUCH);
+  tab2 = nullptr;
+  ASSERT_TRUE(tab3->IsActive());
+  tab_strip_->DoLayout();
+  EXPECT_FALSE(tab0->showing_close_button_);
+  EXPECT_FALSE(tab1->showing_close_button_);
+  EXPECT_TRUE(tab3->showing_close_button_);
+  EXPECT_FALSE(tab4->showing_close_button_);
+}
+
 TEST_P(TabStripTest, GetEventHandlerForOverlappingArea) {
   tab_strip_->SetBounds(0, 0, 1000, 20);
 

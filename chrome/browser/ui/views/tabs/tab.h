@@ -170,6 +170,8 @@ class Tab : public gfx::AnimationDelegate,
   friend class TabTest;
   friend class TabStripTest;
   FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabCloseButtonVisibilityWhenStacked);
+  FRIEND_TEST_ALL_PREFIXES(TabStripTest,
+                           TabCloseButtonVisibilityWhenNotStacked);
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
