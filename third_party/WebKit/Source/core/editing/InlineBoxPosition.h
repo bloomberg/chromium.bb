@@ -48,7 +48,7 @@ struct InlineBoxPosition {
 
   InlineBoxPosition() : inline_box(nullptr), offset_in_box(0) {}
 
-  InlineBoxPosition(InlineBox* inline_box, int offset_in_box)
+  InlineBoxPosition(const InlineBox* inline_box, int offset_in_box)
       : inline_box(inline_box), offset_in_box(offset_in_box) {
     DCHECK(inline_box);
     DCHECK_GE(offset_in_box, 0);
