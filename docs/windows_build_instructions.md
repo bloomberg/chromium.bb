@@ -178,16 +178,36 @@ IDE files up to date automatically when you build.
 
 The generated solution will contain several thousand projects and will be very
 slow to load. Use the `--filters` argument to restrict generating project files
-for only the code you're interested in, although this will also limit what
-files appear in the project explorer. A minimal solution that will let you
-compile and run Chrome in the IDE but will not show any source files is:
+for only the code you're interested in. Although this will also limit what
+files appear in the project explorer, debugging will still work and you can
+set breakpoints in files that you open manually. A minimal solution that will
+let you compile and run Chrome in the IDE but will not show any source files
+is:
 
 ```
-$ gn gen --ide=vs --filters=//chrome out\Default
+$ gn gen --ide=vs --filters=//chrome --no-deps out\Default
 ```
+
+You can selectively add other directories you care about to the filter like so:
+`--filters=//chrome;//third_party/WebKit/*;//gpu/*`.
 
 There are other options for controlling how the solution is generated, run `gn
 help gen` for the current documentation.
+
+By default when you start debugging in Visual Studio the debugger will only
+attach to the main browser process. To debug all of Chrome, install
+[Microsoft's Child Process Debugging Power Tool](https://blogs.msdn.microsoft.com/devops/2014/11/24/introducing-the-child-process-debugging-power-tool/).
+You will also need to run Visual Studio as administrator, or it will silently
+fail to attach to some of Chrome's child processes.
+
+It is also possible to debug and develop Chrome in Visual Studio without a
+solution file. Simply "open" your chrome.exe binary with
+`File->Open->Project/Solution`, or from a Visual Studio command prompt like
+so: `devenv /debugexe out\Debug\chrome.exe <your arguments>`. Many of Visual
+Studio's code editing features will not work in this configuration, but by
+installing the [VsChromium Visual Studio Extension](https://chromium.github.io/vs-chromium/)
+you can get the source code to appear in the solution explorer window along
+with other useful features such as code search.
 
 ### Faster builds
 
