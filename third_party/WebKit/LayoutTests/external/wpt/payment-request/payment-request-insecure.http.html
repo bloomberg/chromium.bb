@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Copyright © 2017 Chromium authors and World Wide Web Consortium, (Massachusetts Institute of Technology, ERCIM, Keio University, Beihang). -->
 <meta charset="utf-8">
 <title>Test for PaymentRequest Constructor (insecure)</title>
 <link rel="help" href="https://w3c.github.io/payment-request/#paymentrequest-interface">
@@ -7,8 +8,6 @@
 <script>
 test(() => {
   assert_false(isSecureContext);
-  assert_false('PaymentRequest' in window);
-  assert_false('PaymentResponse' in window);
-  assert_false('PaymentRequestUpdateEvent' in window);
+  assert_false("PaymentRequest" in window);
 }, "PaymentRequest constructor must not be exposed in insecure context");
 </script>

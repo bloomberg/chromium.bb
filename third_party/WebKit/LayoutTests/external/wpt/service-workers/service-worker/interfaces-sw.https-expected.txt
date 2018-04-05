@@ -17,10 +17,10 @@ FAIL ServiceWorker interface: operation postMessage(any, [object Object]) assert
 PASS Unscopable handled correctly for postMessage(any, [object Object]) on ServiceWorker
 FAIL ServiceWorker interface: attribute onstatechange assert_own_property: self does not have own property "ServiceWorker" expected property "ServiceWorker" missing
 PASS Unscopable handled correctly for onstatechange property on ServiceWorker
-FAIL ServiceWorkerRegistration interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
+PASS ServiceWorkerRegistration interface: existence and properties of interface object
 PASS ServiceWorkerRegistration interface object length
 PASS ServiceWorkerRegistration interface object name
-FAIL ServiceWorkerRegistration interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
+PASS ServiceWorkerRegistration interface: existence and properties of interface prototype object
 PASS ServiceWorkerRegistration interface: existence and properties of interface prototype object's "constructor" property
 PASS ServiceWorkerRegistration interface: existence and properties of interface prototype object's @@unscopables property
 PASS ServiceWorkerRegistration interface: attribute installing
@@ -42,7 +42,7 @@ PASS Unscopable handled correctly for unregister() on ServiceWorkerRegistration
 PASS ServiceWorkerRegistration interface: attribute onupdatefound
 PASS Unscopable handled correctly for onupdatefound property on ServiceWorkerRegistration
 PASS ServiceWorkerRegistration must be primary interface of self.registration
-FAIL Stringification of self.registration Cannot read property 'has_stringifier' of undefined
+PASS Stringification of self.registration
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "installing" with the proper type
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "waiting" with the proper type
 PASS ServiceWorkerRegistration interface: self.registration must inherit property "active" with the proper type
