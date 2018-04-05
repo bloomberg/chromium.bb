@@ -120,7 +120,8 @@ void IDBRequestLoader::DidFail(FileError::ErrorCode) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(SparseHistogram,
                                   idb_request_loader_read_errors_histogram,
                                   ("Storage.Blob.IDBRequestLoader.ReadError"));
-  idb_request_loader_read_errors_histogram.Sample(loader_->GetNetError());
+  idb_request_loader_read_errors_histogram.Sample(
+      std::max(0, -loader_->GetNetError()));
 
   ReportError();
 }
