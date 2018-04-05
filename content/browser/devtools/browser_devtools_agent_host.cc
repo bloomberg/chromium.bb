@@ -66,10 +66,8 @@ bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(base::WrapUnique(new protocol::SystemInfoHandler()));
   session->AddHandler(base::WrapUnique(new protocol::TetheringHandler(
       socket_callback_, tethering_task_runner_)));
-  session->AddHandler(base::WrapUnique(new protocol::TracingHandler(
-      protocol::TracingHandler::Browser,
-      FrameTreeNode::kFrameTreeNodeInvalidId,
-      GetIOContext())));
+  session->AddHandler(
+      base::WrapUnique(new protocol::TracingHandler(nullptr, GetIOContext())));
   return true;
 }
 

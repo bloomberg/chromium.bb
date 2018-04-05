@@ -31,14 +31,14 @@ namespace content {
 class DevToolsAgentHostImpl;
 class DevToolsFrameTraceRecorderForViz;
 class DevToolsIOContext;
+class FrameTreeNode;
+class NavigationHandleImpl;
 
 namespace protocol {
 
 class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
  public:
-  enum Target { Browser, Renderer };
-  CONTENT_EXPORT TracingHandler(Target target,
-                                int frame_tree_node_id,
+  CONTENT_EXPORT TracingHandler(FrameTreeNode* frame_tree_node,
                                 DevToolsIOContext* io_context);
   CONTENT_EXPORT ~TracingHandler() override;
 
@@ -69,6 +69,8 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
   Response RecordClockSyncMarker(const std::string& sync_id) override;
 
   bool did_initiate_recording() { return did_initiate_recording_; }
+  void ReadyToCommitNavigation(NavigationHandleImpl* navigation_handle);
+  void FrameDeleted(RenderFrameHostImpl* frame_host);
 
  private:
   friend class TracingHandlerTest;
@@ -102,17 +104,17 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
       const scoped_refptr<TracingController::TraceDataEndpoint>& endpoint,
       const std::string& agent_label);
   bool IsTracing() const;
+  void EmitFrameTree();
   static bool IsStartupTracingActive();
   CONTENT_EXPORT static base::trace_event::TraceConfig
       GetTraceConfigFromDevToolsConfig(
           const base::DictionaryValue& devtools_config);
 
   std::unique_ptr<base::Timer> buffer_usage_poll_timer_;
-  Target target_;
 
   std::unique_ptr<Tracing::Frontend> frontend_;
   DevToolsIOContext* io_context_;
-  int frame_tree_node_id_;
+  FrameTreeNode* frame_tree_node_;
   bool did_initiate_recording_;
   bool return_as_stream_;
   bool gzip_compression_;

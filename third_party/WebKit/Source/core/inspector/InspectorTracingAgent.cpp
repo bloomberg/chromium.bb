@@ -69,7 +69,7 @@ void InspectorTracingAgent::DidStartWorker(WorkerInspectorProxy* proxy, bool) {
                          "TracingSessionIdForWorker", TRACE_EVENT_SCOPE_THREAD,
                          "data",
                          InspectorTracingSessionIdForWorkerEvent::Data(
-                             frame, proxy->GetWorkerThread()));
+                             frame, proxy->Url(), proxy->GetWorkerThread()));
   }
 }
 

@@ -28,6 +28,9 @@
 #include "content/browser/devtools/devtools_frame_trace_recorder_for_viz.h"
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
@@ -144,15 +147,56 @@ class DevToolsStreamEndpoint : public TracingController::TraceDataEndpoint {
   base::WeakPtr<TracingHandler> tracing_handler_;
 };
 
+std::string GetProcessHostHex(RenderProcessHost* host) {
+  return base::StringPrintf("0x%" PRIxPTR, reinterpret_cast<uintptr_t>(host));
+}
+
+void SendProcessReadyInBrowserEvent(const base::UnguessableToken& frame_token,
+                                    RenderProcessHost* host) {
+  auto data = std::make_unique<base::trace_event::TracedValue>();
+  data->SetString("frame", frame_token.ToString());
+  data->SetString("processPseudoId", GetProcessHostHex(host));
+  data->SetInteger("processId",
+                   static_cast<int>(base::GetProcId(host->GetHandle())));
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                       "ProcessReadyInBrowser", TRACE_EVENT_SCOPE_THREAD,
+                       "data", std::move(data));
+}
+
+void FillFrameData(base::trace_event::TracedValue* data,
+                   FrameTreeNode* node,
+                   RenderFrameHostImpl* frame_host,
+                   const GURL& url) {
+  url::Replacements<char> strip_fragment;
+  strip_fragment.ClearRef();
+  data->SetString("frame", node->devtools_frame_token().ToString());
+  data->SetString("url", url.ReplaceComponents(strip_fragment).spec());
+  data->SetString("name", node->frame_name());
+  if (node->parent())
+    data->SetString("parent",
+                    node->parent()->devtools_frame_token().ToString());
+  if (frame_host) {
+    RenderProcessHost* process_host = frame_host->GetProcess();
+    base::ProcessId process_id = base::GetProcId(process_host->GetHandle());
+    if (process_id == base::kNullProcessId) {
+      data->SetString("processPseudoId", GetProcessHostHex(process_host));
+      frame_host->GetProcess()->PostTaskWhenProcessIsReady(
+          base::BindOnce(&SendProcessReadyInBrowserEvent,
+                         node->devtools_frame_token(), process_host));
+    } else {
+      // Cast process id to int to be compatible with tracing.
+      data->SetInteger("processId", static_cast<int>(process_id));
+    }
+  }
+}
+
 }  // namespace
 
-TracingHandler::TracingHandler(TracingHandler::Target target,
-                               int frame_tree_node_id,
+TracingHandler::TracingHandler(FrameTreeNode* frame_tree_node_,
                                DevToolsIOContext* io_context)
     : DevToolsDomainHandler(Tracing::Metainfo::domainName),
-      target_(target),
       io_context_(io_context),
-      frame_tree_node_id_(frame_tree_node_id),
+      frame_tree_node_(frame_tree_node_),
       did_initiate_recording_(false),
       return_as_stream_(false),
       gzip_compression_(false),
@@ -343,7 +387,7 @@ void TracingHandler::Start(Maybe<std::string> categories,
 
   // If inspected target is a render process Tracing.start will be handled by
   // tracing agent in the renderer.
-  if (target_ == Renderer)
+  if (frame_tree_node_)
     callback->fallThrough();
 
   TracingController::GetInstance()->StartTracing(
@@ -380,7 +424,7 @@ void TracingHandler::End(std::unique_ptr<EndCallback> callback) {
   }
   // If inspected target is a render process Tracing.end will be handled by
   // tracing agent in the renderer.
-  if (target_ == Renderer)
+  if (frame_tree_node_)
     callback->fallThrough();
   else
     callback->sendSuccess();
@@ -396,10 +440,9 @@ void TracingHandler::GetCategories(
 
 void TracingHandler::OnRecordingEnabled(
     std::unique_ptr<StartCallback> callback) {
-  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
-                       "TracingStartedInBrowser", TRACE_EVENT_SCOPE_THREAD,
-                       "frameTreeNodeId", frame_tree_node_id_);
-  if (target_ != Renderer)
+  EmitFrameTree();
+
+  if (!frame_tree_node_)
     callback->sendSuccess();
 
   bool screenshot_enabled;
@@ -489,6 +532,53 @@ bool TracingHandler::IsTracing() const {
   return TracingController::GetInstance()->IsTracing();
 }
 
+void TracingHandler::EmitFrameTree() {
+  auto data = std::make_unique<base::trace_event::TracedValue>();
+  if (frame_tree_node_) {
+    data->SetInteger("frameTreeNodeId", frame_tree_node_->frame_tree_node_id());
+    data->SetBoolean("persistentIds", true);
+    data->BeginArray("frames");
+    FrameTree::NodeRange subtree =
+        frame_tree_node_->frame_tree()->SubtreeNodes(frame_tree_node_);
+    for (FrameTreeNode* node : subtree) {
+      data->BeginDictionary();
+      FillFrameData(data.get(), node, node->current_frame_host(),
+                    node->current_url());
+      data->EndDictionary();
+    }
+    data->EndArray();
+  }
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                       "TracingStartedInBrowser", TRACE_EVENT_SCOPE_THREAD,
+                       "data", std::move(data));
+}
+
+void TracingHandler::ReadyToCommitNavigation(
+    NavigationHandleImpl* navigation_handle) {
+  if (!did_initiate_recording_)
+    return;
+  auto data = std::make_unique<base::trace_event::TracedValue>();
+  FillFrameData(data.get(), navigation_handle->frame_tree_node(),
+                navigation_handle->GetRenderFrameHost(),
+                navigation_handle->GetURL());
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                       "FrameCommittedInBrowser", TRACE_EVENT_SCOPE_THREAD,
+                       "data", std::move(data));
+}
+
+void TracingHandler::FrameDeleted(RenderFrameHostImpl* frame_host) {
+  if (!did_initiate_recording_)
+    return;
+  auto data = std::make_unique<base::trace_event::TracedValue>();
+  data->SetString(
+      "frame",
+      frame_host->frame_tree_node()->devtools_frame_token().ToString());
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                       "FrameDeletedInBrowser", TRACE_EVENT_SCOPE_THREAD,
+                       "data", std::move(data));
+}
+
+// static
 bool TracingHandler::IsStartupTracingActive() {
   return ::tracing::TraceConfigFile::GetInstance()->IsEnabled();
 }

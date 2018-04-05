@@ -449,7 +449,9 @@ std::unique_ptr<TracedValue> Data(ExecutionContext*, const String& message);
 }
 
 namespace InspectorTracingSessionIdForWorkerEvent {
-std::unique_ptr<TracedValue> Data(LocalFrame*, WorkerThread*);
+std::unique_ptr<TracedValue> Data(LocalFrame*,
+                                  const String& url,
+                                  WorkerThread*);
 }
 
 namespace InspectorTracingStartedInFrame {

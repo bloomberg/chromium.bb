@@ -392,13 +392,13 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
     session->AddHandler(base::WrapUnique(
         new protocol::TargetHandler(false /* browser_only */)));
   }
-  session->AddHandler(base::WrapUnique(new protocol::TracingHandler(
-      protocol::TracingHandler::Renderer,
-      frame_tree_node_ ? frame_tree_node_->frame_tree_node_id() : 0,
-      GetIOContext())));
   session->AddHandler(
       base::WrapUnique(new protocol::PageHandler(emulation_handler)));
   session->AddHandler(base::WrapUnique(new protocol::SecurityHandler()));
+  if (!frame_tree_node_ || !frame_tree_node_->parent()) {
+    session->AddHandler(base::WrapUnique(
+        new protocol::TracingHandler(frame_tree_node_, GetIOContext())));
+  }
 
   if (EnsureAgent())
     session->AttachToAgent(agent_ptr_);
@@ -466,6 +466,9 @@ void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
   NavigationHandleImpl* handle =
       static_cast<NavigationHandleImpl*>(navigation_handle);
+  for (auto* tracing : protocol::TracingHandler::ForAgentHost(this))
+    tracing->ReadyToCommitNavigation(handle);
+
   if (handle->frame_tree_node() != frame_tree_node_) {
     if (ShouldForceCreation() && handle->GetRenderFrameHost() &&
         handle->GetRenderFrameHost()->IsCrossProcessSubframe()) {
@@ -611,9 +614,12 @@ void RenderFrameDevToolsAgentHost::RenderFrameHostChanged(
 }
 
 void RenderFrameDevToolsAgentHost::FrameDeleted(RenderFrameHost* rfh) {
-  if (static_cast<RenderFrameHostImpl*>(rfh)->frame_tree_node() ==
-      frame_tree_node_) {
-    DestroyOnRenderFrameGone();  // |this| may be deleted at this point.
+  RenderFrameHostImpl* host = static_cast<RenderFrameHostImpl*>(rfh);
+  for (auto* tracing : protocol::TracingHandler::ForAgentHost(this))
+    tracing->FrameDeleted(host);
+  if (host->frame_tree_node() == frame_tree_node_) {
+    DestroyOnRenderFrameGone();
+    // |this| may be deleted at this point.
   }
 }
 
