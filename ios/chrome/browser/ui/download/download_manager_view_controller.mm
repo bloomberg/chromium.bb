@@ -633,8 +633,8 @@ NSString* GetSizeString(long long size_in_bytes) {
                                     : self.actionButton;
 
   self.statusLabelTrailingConstraint = [self.statusLabel.trailingAnchor
-      constraintEqualToAnchor:secondAnchorElement.leadingAnchor
-                     constant:-kElementMargin];
+      constraintLessThanOrEqualToAnchor:secondAnchorElement.leadingAnchor
+                               constant:-kElementMargin];
 
   self.statusLabelTrailingConstraint.active = YES;
 }
