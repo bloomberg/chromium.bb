@@ -59,36 +59,6 @@ base::FilePath NormalizeRelativePath(const base::FilePath& path) {
       base::JoinString(parts, base::FilePath::StringType(1, '/')));
 }
 
-bool IsBackgroundPage(const Extension* extension,
-                      const base::FilePath& relative_path) {
-  return BackgroundInfo::HasBackgroundPage(extension) &&
-         extensions::file_util::ExtensionURLToRelativeFilePath(
-             BackgroundInfo::GetBackgroundURL(extension)) == relative_path;
-}
-
-bool IsBackgroundScript(const Extension* extension,
-                        const base::FilePath& relative_path) {
-  for (const std::string& script :
-       BackgroundInfo::GetBackgroundScripts(extension)) {
-    if (extension->GetResource(script).relative_path() == relative_path)
-      return true;
-  }
-  return false;
-}
-
-bool IsContentScript(const Extension* extension,
-                     const base::FilePath& relative_path) {
-  for (const std::unique_ptr<UserScript>& script :
-       ContentScriptsInfo::GetContentScripts(extension)) {
-    for (const std::unique_ptr<UserScript::File>& js_file :
-         script->js_scripts()) {
-      if (js_file->relative_path() == relative_path)
-        return true;
-    }
-  }
-  return false;
-}
-
 bool HasScriptFileExt(const base::FilePath& requested_path) {
   return requested_path.Extension() == FILE_PATH_LITERAL(".js");
 }
@@ -97,6 +67,45 @@ bool HasPageFileExt(const base::FilePath& requested_path) {
   base::FilePath::StringType file_extension = requested_path.Extension();
   return file_extension == FILE_PATH_LITERAL(".html") ||
          file_extension == FILE_PATH_LITERAL(".htm");
+}
+
+std::unique_ptr<ContentVerifierIOData::ExtensionData> CreateIOData(
+    const Extension* extension,
+    ContentVerifierDelegate* delegate) {
+  // The browser image paths from the extension may not be relative (eg
+  // they might have leading '/' or './'), so we strip those to make
+  // comparing to actual relative paths work later on.
+  std::set<base::FilePath> original_image_paths =
+      delegate->GetBrowserImagePaths(extension);
+
+  auto image_paths = std::make_unique<std::set<base::FilePath>>();
+  for (const auto& path : original_image_paths) {
+    image_paths->insert(NormalizeRelativePath(path));
+  }
+
+  auto background_or_content_paths =
+      std::make_unique<std::set<base::FilePath>>();
+  for (const std::string& script :
+       BackgroundInfo::GetBackgroundScripts(extension)) {
+    background_or_content_paths->insert(
+        extension->GetResource(script).relative_path());
+  }
+  if (BackgroundInfo::HasBackgroundPage(extension)) {
+    background_or_content_paths->insert(
+        extensions::file_util::ExtensionURLToRelativeFilePath(
+            BackgroundInfo::GetBackgroundURL(extension)));
+  }
+  for (const std::unique_ptr<UserScript>& script :
+       ContentScriptsInfo::GetContentScripts(extension)) {
+    for (const std::unique_ptr<UserScript::File>& js_file :
+         script->js_scripts()) {
+      background_or_content_paths->insert(js_file->relative_path());
+    }
+  }
+
+  return std::make_unique<ContentVerifierIOData::ExtensionData>(
+      std::move(image_paths), std::move(background_or_content_paths),
+      extension->version());
 }
 
 }  // namespace
@@ -493,27 +502,11 @@ void ContentVerifier::OnExtensionLoaded(
 
   ContentVerifierDelegate::Mode mode = delegate_->ShouldBeVerified(*extension);
   if (mode != ContentVerifierDelegate::NONE) {
-    // The browser image paths from the extension may not be relative (eg
-    // they might have leading '/' or './'), so we strip those to make
-    // comparing to actual relative paths work later on.
-    std::set<base::FilePath> original_image_paths =
-        delegate_->GetBrowserImagePaths(extension);
-
-    std::unique_ptr<std::set<base::FilePath>> image_paths(
-        new std::set<base::FilePath>);
-    for (const auto& path : original_image_paths) {
-      image_paths->insert(NormalizeRelativePath(path));
-    }
-
-    std::unique_ptr<ContentVerifierIOData::ExtensionData> data(
-        new ContentVerifierIOData::ExtensionData(std::move(image_paths),
-                                                 extension->version()));
-
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
         base::BindOnce(&ContentVerifier::OnExtensionLoadedOnIO, this,
                        extension->id(), extension->path(), extension->version(),
-                       std::move(data)));
+                       CreateIOData(extension, delegate_.get())));
   }
 }
 
@@ -601,10 +594,8 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
     return false;
 
   const std::set<base::FilePath>& browser_images = *(data->browser_image_paths);
-
-  ExtensionRegistry* registry = ExtensionRegistry::Get(context_);
-  const Extension* extension =
-      registry->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
+  const std::set<base::FilePath>& background_or_content_paths =
+      *(data->background_or_content_paths);
 
   base::FilePath locales_dir = extension_root.Append(kLocaleFolder);
   std::unique_ptr<std::set<std::string>> all_locales;
@@ -626,11 +617,8 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
 
     // Background pages, scripts and content scripts should always be verified
     // regardless of their file type.
-    if (extension && (IsBackgroundPage(extension, relative_unix_path) ||
-                      IsBackgroundScript(extension, relative_unix_path) ||
-                      IsContentScript(extension, relative_unix_path))) {
+    if (base::ContainsKey(background_or_content_paths, relative_unix_path))
       return true;
-    }
 
     if (base::ContainsKey(browser_images, relative_unix_path))
       continue;
@@ -683,17 +671,7 @@ ContentVerifier::HashHelper* ContentVerifier::GetOrCreateHashHelper() {
 }
 
 void ContentVerifier::ResetIODataForTesting(const Extension* extension) {
-  std::set<base::FilePath> original_image_paths =
-      delegate_->GetBrowserImagePaths(extension);
-
-  auto image_paths = std::make_unique<std::set<base::FilePath>>();
-  for (const auto& path : original_image_paths) {
-    image_paths->insert(NormalizeRelativePath(path));
-  }
-
-  auto data = std::make_unique<ContentVerifierIOData::ExtensionData>(
-      std::move(image_paths), extension->version());
-  io_data_->AddData(extension->id(), std::move(data));
+  io_data_->AddData(extension->id(), CreateIOData(extension, delegate_.get()));
 }
 
 }  // namespace extensions
