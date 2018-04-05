@@ -33,7 +33,6 @@
       return;
 
     if (event.name === TimelineModel.TimelineModel.RecordType.TracingStartedInPage) {
-      TestRunner.assertEquals(PerformanceTestRunner.timelineModel()._sessionId, event.args['sessionId'] || event.args['data']['sessionId']);
       TestRunner.addResult('Got DevTools metadata event: ' + event.name);
       frameId = event.args['data']['frames'][0]['frame'];
     } else if (event.name === TimelineModel.TimelineModel.RecordType.SetLayerTreeId) {
