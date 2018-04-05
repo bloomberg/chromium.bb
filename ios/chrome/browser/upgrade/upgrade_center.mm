@@ -255,7 +255,7 @@ class UpgradeInfoBarDismissObserver
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   NSString* nextVersion = [defaults stringForKey:kNextVersionKey];
   if (nextVersion) {
-    base::Version current_version(version_info::GetVersionNumber());
+    const base::Version& current_version = version_info::GetVersion();
     const std::string upgrade = base::SysNSStringToUTF8(nextVersion);
     return current_version < base::Version(upgrade);
   }

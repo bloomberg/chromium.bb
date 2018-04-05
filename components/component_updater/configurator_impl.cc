@@ -158,8 +158,8 @@ std::vector<GURL> ConfiguratorImpl::PingUrl() const {
   return pings_enabled_ ? UpdateUrl() : std::vector<GURL>();
 }
 
-base::Version ConfiguratorImpl::GetBrowserVersion() const {
-  return base::Version(version_info::GetVersionNumber());
+const base::Version& ConfiguratorImpl::GetBrowserVersion() const {
+  return version_info::GetVersion();
 }
 
 std::string ConfiguratorImpl::GetOSLongName() const {

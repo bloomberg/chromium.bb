@@ -27,8 +27,8 @@ const cryptauth::DeviceClassifier& GetDeviceClassifier() {
     classifier.set_device_os_version_code(major_version);
     classifier.set_device_type(cryptauth::CHROME);
 
-    const std::vector<uint32_t> version_components =
-        base::Version(version_info::GetVersionNumber()).components();
+    const std::vector<uint32_t>& version_components =
+        version_info::GetVersion().components();
     if (!version_components.empty()) {
       classifier.set_device_software_version_code(version_components[0]);
     }

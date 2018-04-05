@@ -160,7 +160,7 @@ NSSet* GaiaIdSetWithIdentities(NSArray* identities) {
 }
 
 + (base::Version)currentVersion {
-  base::Version currentVersion(version_info::GetVersionNumber());
+  base::Version currentVersion = version_info::GetVersion();
   DCHECK(currentVersion.IsValid());
   return currentVersion;
 }

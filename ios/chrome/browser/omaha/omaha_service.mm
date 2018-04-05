@@ -372,7 +372,7 @@ void OmahaService::Initialize() {
   }
 
   // Fire a ping as early as possible if the version changed.
-  base::Version current_version(version_info::GetVersionNumber());
+  const base::Version& current_version = version_info::GetVersion();
   if (last_sent_version_ < current_version) {
     next_tries_time_ = base::Time::Now() - base::TimeDelta::FromSeconds(1);
     number_of_tries_ = 0;
@@ -506,7 +506,7 @@ std::string OmahaService::GetPingContent(const std::string& requestId,
 }
 
 std::string OmahaService::GetCurrentPingContent() {
-  base::Version current_version(version_info::GetVersionNumber());
+  const base::Version& current_version = version_info::GetVersion();
   sending_install_event_ = last_sent_version_ < current_version;
   PingContent ping_content =
       sending_install_event_ ? INSTALL_EVENT : USAGE_PING;
@@ -621,7 +621,7 @@ void OmahaService::OnURLFetchComplete(const net::URLFetcher* fetcher) {
                                                    kHoursBetweenRequests);
   current_ping_time_ = next_tries_time_;
   last_sent_time_ = base::Time::Now();
-  last_sent_version_ = base::Version(version_info::GetVersionNumber());
+  last_sent_version_ = version_info::GetVersion();
   sending_install_event_ = false;
   ClearInstallRetryRequestId();
   PersistStates();
