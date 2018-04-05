@@ -6,6 +6,7 @@
 #define WorkerThreadLifecycleContext_h
 
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "core/CoreExport.h"
 #include "platform/LifecycleNotifier.h"
 #include "platform/heap/GarbageCollected.h"
@@ -31,6 +32,9 @@ class CORE_EXPORT WorkerThreadLifecycleContext final
  private:
   friend class WorkerThreadLifecycleObserver;
   bool was_context_destroyed_ = false;
+
+  THREAD_CHECKER(thread_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(WorkerThreadLifecycleContext);
 };
 
