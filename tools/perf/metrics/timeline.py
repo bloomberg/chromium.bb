@@ -16,7 +16,6 @@ from telemetry.web_perf.metrics import timeline_based_metric
 TimelineThreadCategories = {
     "Chrome_InProcGpuThread": "GPU",
     "CrGpuMain": "GPU",
-    "AsyncTransferThread": "GPU_transfer",
     "VizCompositorThread": "display_compositor",
     "CrBrowserMain": "browser",
     "Browser Compositor": "browser",
