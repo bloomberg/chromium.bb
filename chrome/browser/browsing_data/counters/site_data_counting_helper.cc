@@ -233,11 +233,11 @@ void SiteDataCountingHelper::Done(const std::vector<GURL>& origins) {
   DCHECK(tasks_ > 0);
   for (const GURL& origin : origins) {
     if (BrowsingDataHelper::HasWebScheme(origin))
-      unique_origins_.insert(origin);
+      unique_hosts_.insert(origin.host());
   }
   if (--tasks_ > 0)
     return;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(completion_callback_, unique_origins_.size()));
+      FROM_HERE, base::BindOnce(completion_callback_, unique_hosts_.size()));
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
