@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_REGISTRY_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_REGISTRY_SERVICE_H_
 
+#include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -31,16 +33,31 @@ namespace chromeos {
 class CrostiniRegistryService : public KeyedService {
  public:
   struct Registration {
-    Registration(const std::string& desktop_file_id, const std::string& name);
-    ~Registration() = default;
+    // Maps from locale to localized string, where the default string is always
+    // present with an empty string key. Locales strings are formatted with
+    // underscores and not hyphens (e.g. 'fr', 'en_US').
+    using LocaleString = std::map<std::string, std::string>;
+
+    Registration(const std::string& desktop_file_id,
+                 const std::string& vm_name,
+                 const std::string& container_name,
+                 const LocaleString& name,
+                 const LocaleString& comment,
+                 const std::vector<std::string>& mime_types,
+                 bool no_display);
+    ~Registration();
+
+    static const std::string& Localize(const LocaleString& locale_string);
 
     std::string desktop_file_id;
+    std::string vm_name;
+    std::string container_name;
 
-    // TODO(timloh): Add other relevant fields from the Desktop Entry Spec, in
-    // particular: Icon, Comment, MimeType, NoDisplay
-    // TODO(timloh): .desktop files allow localization of this string. We need
-    // to expand this to support those too.
-    std::string name;
+    // TODO(timloh): Support icons.
+    LocaleString name;
+    LocaleString comment;
+    std::vector<std::string> mime_types;
+    bool no_display;
 
     DISALLOW_COPY_AND_ASSIGN(Registration);
   };
