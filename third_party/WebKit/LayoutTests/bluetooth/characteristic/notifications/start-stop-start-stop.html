@@ -6,20 +6,26 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(() => {
-  return setBluetoothFakeAdapter('HeartRateAdapter')
-    .then(() => requestDeviceWithTrustedClick({
-      filters: [{services: ['heart_rate']}]}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
-    .then(service => service.getCharacteristic('heart_rate_measurement'))
-    .then(characteristic => {
-      return characteristic.startNotifications()
-        .then(() => characteristic.stopNotifications())
-        .then(() => characteristic.startNotifications())
-        .then(() => characteristic.stopNotifications());
-    });
-  // TODO(ortuno): Assert that notifications are not active.
-  // http://crbug.com/600762
-}, 'Start -> stop -> start -> stop.');
+const test_desc = 'The characteristic should be able to start and stop ' +
+    'notifications multiple times in a row.';
+let characteristic, fake_characteristic;
+let startStopNotifications = () => {
+  return fake_characteristic.setNextSubscribeToNotificationsResponse(
+          HCI_SUCCESS)
+      .then(() => characteristic.startNotifications())
+      .then(() => fake_characteristic.isNotifying())
+      .then(isNotifying => assert_true(isNotifying))
+      .then(() =>
+          fake_characteristic.setNextUnsubscribeFromNotificationsResponse(
+              HCI_SUCCESS))
+      .then(() => characteristic.stopNotifications())
+      .then(() => fake_characteristic.isNotifying())
+      .then(isNotifying => assert_false(isNotifying));
+}
+
+bluetooth_test(() => getMeasurementIntervalCharacteristic()
+    .then(_ => ({characteristic, fake_characteristic} = _))
+    .then(() => startStopNotifications())
+    .then(() => startStopNotifications()),
+    test_desc);
 </script>

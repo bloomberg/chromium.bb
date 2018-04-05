@@ -317,6 +317,38 @@ void FakeCentral::SetNextSubscribeToNotificationsResponse(
   std::move(callback).Run(true);
 }
 
+void FakeCentral::SetNextUnsubscribeFromNotificationsResponse(
+    uint16_t gatt_code,
+    const std::string& characteristic_id,
+    const std::string& service_id,
+    const std::string& peripheral_address,
+    SetNextUnsubscribeFromNotificationsResponseCallback callback) {
+  FakeRemoteGattCharacteristic* fake_remote_gatt_characteristic =
+      GetFakeRemoteGattCharacteristic(peripheral_address, service_id,
+                                      characteristic_id);
+  if (fake_remote_gatt_characteristic == nullptr) {
+    std::move(callback).Run(false);
+  }
+
+  fake_remote_gatt_characteristic->SetNextUnsubscribeFromNotificationsResponse(
+      gatt_code);
+  std::move(callback).Run(true);
+}
+
+void FakeCentral::IsNotifying(const std::string& characteristic_id,
+                              const std::string& service_id,
+                              const std::string& peripheral_address,
+                              IsNotifyingCallback callback) {
+  FakeRemoteGattCharacteristic* fake_remote_gatt_characteristic =
+      GetFakeRemoteGattCharacteristic(peripheral_address, service_id,
+                                      characteristic_id);
+  if (!fake_remote_gatt_characteristic) {
+    std::move(callback).Run(false, false);
+  }
+
+  std::move(callback).Run(true, fake_remote_gatt_characteristic->IsNotifying());
+}
+
 void FakeCentral::GetLastWrittenCharacteristicValue(
     const std::string& characteristic_id,
     const std::string& service_id,
