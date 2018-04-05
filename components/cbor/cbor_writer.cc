@@ -103,10 +103,10 @@ bool CBORWriter::EncodeCBOR(const CBORValue& node, int max_nesting_level) {
                 base::checked_cast<uint64_t>(simple_value));
       return true;
     }
-
-    default:
-      break;
   }
+
+  // This is needed because, otherwise, MSVC complains that not all paths return
+  // a value. We should be able to remove it once MSVC builders are gone.
   NOTREACHED();
   return false;
 }
