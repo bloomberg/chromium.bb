@@ -3507,13 +3507,13 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursiveInternal() {
 
   frame_->GetDocument()->UpdateStyleAndLayoutTree();
 
-  // Update style for all embedded replaced content under this frame, so
+  // Update style for all embedded SVG documents underneath this frame, so
   // that intrinsic size computation for any embedded objects has up-to-date
-  // information.
-  // TODO(chrishtr): generalize this to fully separate style from layout.
+  // information before layout.
   ForAllChildLocalFrameViews([](LocalFrameView& view) {
-    if (view.EmbeddedReplacedContent())
-      view.GetLayoutView()->GetDocument().UpdateStyleAndLayoutTree();
+    Document& document = *view.GetFrame().GetDocument();
+    if (document.IsSVGDocument())
+      document.UpdateStyleAndLayoutTree();
   });
 
   CHECK(!ShouldThrottleRendering());
