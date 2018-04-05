@@ -27,6 +27,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr_shell.rules.ChromeTabbedActivityVrTestRule;
+import org.chromium.chrome.browser.vr_shell.rules.HeadTrackingMode;
 import org.chromium.chrome.browser.vr_shell.util.TransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -95,6 +96,7 @@ public class VrShellDialogTest {
     @Test
     @Manual
     @LargeTest
+    @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void microphoneDialogTest() throws InterruptedException, TimeoutException {
         // Display audio permissions prompt.
         displayDialog(
@@ -110,6 +112,7 @@ public class VrShellDialogTest {
     @Test
     @Manual
     @LargeTest
+    @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void cameraDialogTest() throws InterruptedException, TimeoutException {
         // Display Camera permissions prompt.
         displayDialog(
@@ -125,6 +128,7 @@ public class VrShellDialogTest {
     @Test
     @Manual
     @LargeTest
+    @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void locationDialogTest() throws InterruptedException, TimeoutException {
         // Display Location permissions prompt.
         displayDialog("test_navigation_2d_page",
@@ -140,6 +144,7 @@ public class VrShellDialogTest {
     @Test
     @Manual
     @LargeTest
+    @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void notificationDialogTest() throws InterruptedException, TimeoutException {
         // Display Notification permissions prompt.
         displayDialog("test_navigation_2d_page", "Notification.requestPermission(()=>{})");
@@ -154,6 +159,7 @@ public class VrShellDialogTest {
     @Test
     @Manual
     @LargeTest
+    @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void midiDialogTest() throws InterruptedException, TimeoutException {
         // Display MIDI permissions prompt.
         displayDialog("test_navigation_2d_page", "navigator.requestMIDIAccess({sysex: true})");

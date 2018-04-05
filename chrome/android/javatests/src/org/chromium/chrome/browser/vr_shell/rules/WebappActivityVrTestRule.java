@@ -9,6 +9,7 @@ import org.junit.runners.model.Statement;
 
 import org.chromium.chrome.browser.vr_shell.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr_shell.rules.VrActivityRestriction.SupportedActivity;
+import org.chromium.chrome.browser.vr_shell.util.HeadTrackingUtils;
 import org.chromium.chrome.browser.webapps.WebappActivityTestRule;
 
 /**
@@ -16,14 +17,22 @@ import org.chromium.chrome.browser.webapps.WebappActivityTestRule;
  * up a WebappActivity to a blank page.
  */
 public class WebappActivityVrTestRule extends WebappActivityTestRule implements VrTestRule {
+    private boolean mTrackerDirty;
+
     @Override
-    public Statement apply(final Statement base, Description desc) {
+    public Statement apply(final Statement base, final Description desc) {
         return super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
+                HeadTrackingUtils.checkForAndApplyHeadTrackingModeAnnotation(
+                        WebappActivityVrTestRule.this, desc);
                 startWebappActivity();
                 TestVrShellDelegate.createTestVrShellDelegate(getActivity());
-                base.evaluate();
+                try {
+                    base.evaluate();
+                } finally {
+                    if (isTrackerDirty()) HeadTrackingUtils.revertTracker();
+                }
             }
         }, desc);
     }
@@ -31,5 +40,15 @@ public class WebappActivityVrTestRule extends WebappActivityTestRule implements 
     @Override
     public SupportedActivity getRestriction() {
         return SupportedActivity.WAA;
+    }
+
+    @Override
+    public boolean isTrackerDirty() {
+        return mTrackerDirty;
+    }
+
+    @Override
+    public void setTrackerDirty() {
+        mTrackerDirty = true;
     }
 }
