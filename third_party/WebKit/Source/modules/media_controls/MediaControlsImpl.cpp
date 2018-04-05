@@ -534,7 +534,9 @@ void MediaControlsImpl::InitializeControls() {
       volume_slider_->SetIsWanted(false);
   }
 
-  if (RuntimeEnabledFeatures::PictureInPictureEnabled()) {
+  // TODO(apacible): Enable for modern controls when SVG is added.
+  if (RuntimeEnabledFeatures::PictureInPictureEnabled() && !IsModern() &&
+      MediaElement().IsHTMLVideoElement()) {
     picture_in_picture_button_ =
         new MediaControlPictureInPictureButtonElement(*this);
     picture_in_picture_button_->SetIsWanted(
@@ -577,7 +579,8 @@ void MediaControlsImpl::InitializeControls() {
   overflow_list_->AppendChild(
       toggle_closed_captions_button_->CreateOverflowElement(
           new MediaControlToggleClosedCaptionsButtonElement(*this)));
-  if (RuntimeEnabledFeatures::PictureInPictureEnabled()) {
+  if (RuntimeEnabledFeatures::PictureInPictureEnabled() && !IsModern() &&
+      MediaElement().IsHTMLVideoElement()) {
     overflow_list_->AppendChild(
         picture_in_picture_button_->CreateOverflowElement(
             new MediaControlPictureInPictureButtonElement(*this)));
