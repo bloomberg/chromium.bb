@@ -13,20 +13,6 @@
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "ui/gfx/image/image.h"
 
-namespace {
-
-// TODO(estade): remove this function. NotificationPlatformBridge should either
-// get Profile* pointers or, longer term, all profile management should be moved
-// up a layer to NativeNotificationDisplayService.
-Profile* GetProfileFromId(const std::string& profile_id, bool incognito) {
-  ProfileManager* manager = g_browser_process->profile_manager();
-  Profile* profile =
-      manager->GetProfile(manager->user_data_dir().AppendASCII(profile_id));
-  return incognito ? profile->GetOffTheRecordProfile() : profile;
-}
-
-}  // namespace
-
 // static
 NotificationPlatformBridge* NotificationPlatformBridge::Create() {
   return new NotificationPlatformBridgeChromeOs();
@@ -45,14 +31,12 @@ NotificationPlatformBridgeChromeOs::~NotificationPlatformBridgeChromeOs() {}
 
 void NotificationPlatformBridgeChromeOs::Display(
     NotificationHandler::Type notification_type,
-    const std::string& profile_id,
-    bool is_incognito,
+    Profile* profile,
     const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
   auto active_notification = std::make_unique<ProfileNotification>(
-      GetProfileFromId(profile_id, is_incognito), notification,
-      notification_type);
-  impl_->Display(NotificationHandler::Type::MAX, std::string(), false,
+      profile, notification, notification_type);
+  impl_->Display(NotificationHandler::Type::MAX, nullptr /* profile */,
                  active_notification->notification(), std::move(metadata));
 
   std::string profile_notification_id =
@@ -62,16 +46,15 @@ void NotificationPlatformBridgeChromeOs::Display(
 }
 
 void NotificationPlatformBridgeChromeOs::Close(
-    const std::string& profile_id,
+    Profile* profile,
     const std::string& notification_id) {
-  impl_->Close(profile_id, notification_id);
+  impl_->Close(profile, notification_id);
 }
 
 void NotificationPlatformBridgeChromeOs::GetDisplayed(
-    const std::string& profile_id,
-    bool incognito,
+    Profile* profile,
     GetDisplayedNotificationsCallback callback) const {
-  impl_->GetDisplayed(profile_id, incognito, std::move(callback));
+  impl_->GetDisplayed(profile, std::move(callback));
 }
 
 void NotificationPlatformBridgeChromeOs::SetReadyCallback(

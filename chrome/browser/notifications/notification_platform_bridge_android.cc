@@ -222,8 +222,7 @@ void NotificationPlatformBridgeAndroid::OnNotificationClosed(
 
 void NotificationPlatformBridgeAndroid::Display(
     NotificationHandler::Type notification_type,
-    const std::string& profile_id,
-    bool incognito,
+    Profile* profile,
     const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
   JNIEnv* env = AttachCurrentThread();
@@ -273,11 +272,11 @@ void NotificationPlatformBridgeAndroid::Display(
       base::android::ToJavaIntArray(env, notification.vibration_pattern());
 
   ScopedJavaLocalRef<jstring> j_profile_id =
-      ConvertUTF8ToJavaString(env, profile_id);
+      ConvertUTF8ToJavaString(env, GetProfileId(profile));
 
   Java_NotificationPlatformBridge_displayNotification(
       env, java_object_, j_notification_id, j_origin, j_scope_url, j_profile_id,
-      incognito, title, body, image, notification_icon, badge,
+      profile->IsOffTheRecord(), title, body, image, notification_icon, badge,
       vibration_pattern, notification.timestamp().ToJavaTime(),
       notification.renotify(), notification.silent(), actions);
 
@@ -286,7 +285,7 @@ void NotificationPlatformBridgeAndroid::Display(
 }
 
 void NotificationPlatformBridgeAndroid::Close(
-    const std::string& profile_id,
+    Profile* profile,
     const std::string& notification_id) {
   const auto iterator = regenerated_notification_infos_.find(notification_id);
   if (iterator == regenerated_notification_infos_.end())
@@ -319,8 +318,7 @@ void NotificationPlatformBridgeAndroid::Close(
 }
 
 void NotificationPlatformBridgeAndroid::GetDisplayed(
-    const std::string& profile_id,
-    bool incognito,
+    Profile* profile,
     GetDisplayedNotificationsCallback callback) const {
   auto displayed_notifications = std::make_unique<std::set<std::string>>();
   content::BrowserThread::PostTask(

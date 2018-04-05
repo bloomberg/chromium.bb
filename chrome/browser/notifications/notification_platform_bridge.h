@@ -35,26 +35,26 @@ class NotificationPlatformBridge {
   // can't handle TRANSIENT notifications.
   static bool CanHandleType(NotificationHandler::Type notification_type);
 
+  // Returns a unique string identifier for |profile|.
+  static std::string GetProfileId(Profile* profile);
+
   virtual ~NotificationPlatformBridge() {}
 
   // Shows a toast on screen using the data passed in |notification|.
   virtual void Display(
       NotificationHandler::Type notification_type,
-      const std::string& profile_id,
-      bool is_incognito,
+      Profile* profile,
       const message_center::Notification& notification,
       std::unique_ptr<NotificationCommon::Metadata> metadata) = 0;
 
-  // Closes a nofication with |notification_id| and |profile_id| if being
+  // Closes a nofication with |notification_id| and |profile| if being
   // displayed.
-  virtual void Close(const std::string& profile_id,
-                     const std::string& notification_id) = 0;
+  virtual void Close(Profile* profile, const std::string& notification_id) = 0;
 
   // Writes the ids of all currently displaying notifications and posts
   // |callback| with the result.
   virtual void GetDisplayed(
-      const std::string& profile_id,
-      bool incognito,
+      Profile* profile,
       GetDisplayedNotificationsCallback callback) const = 0;
 
   // Calls |callback| once |this| is initialized. The argument is
