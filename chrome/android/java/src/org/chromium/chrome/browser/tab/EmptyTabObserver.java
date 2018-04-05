@@ -9,6 +9,7 @@ import android.view.ContextMenu;
 
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.BrowserControlsState;
 
 /**
  * An implementation of the {@link TabObserver} which has empty implementations of all methods.
@@ -123,4 +124,8 @@ public class EmptyTabObserver implements TabObserver {
 
     @Override
     public void onNavigationEntriesDeleted(Tab tab) {}
+
+    @Override
+    public void onBrowserControlsConstraintsUpdated(
+            Tab tab, @BrowserControlsState int constraints) {}
 }
