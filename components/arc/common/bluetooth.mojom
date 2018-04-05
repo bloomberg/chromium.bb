@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 8
+// Next MinVersion: 9
 
 module arc.mojom;
 
@@ -292,7 +292,7 @@ struct BluetoothCreateSdpRecordResult {
   uint32 service_handle;
 };
 
-// Next Method ID: 43
+// Next Method ID: 44
 interface BluetoothHost {
   EnableAdapter@0() => (BluetoothAdapterState state);
   DisableAdapter@1() => (BluetoothAdapterState state);
@@ -396,10 +396,12 @@ interface BluetoothHost {
   // Multi-advertisement functions
   [MinVersion=6] ReserveAdvertisementHandle@40()
       => (BluetoothGattStatus status, int32 adv_handle);
-  [MinVersion=6] BroadcastAdvertisement@41(int32 adv_handle,
-                                           BluetoothAdvertisement adv)
+  [MinVersion=6] EnableAdvertisement@41(int32 adv_handle,
+                                        BluetoothAdvertisement adv)
       => (BluetoothGattStatus status);
   [MinVersion=6] ReleaseAdvertisementHandle@42(int32 adv_handle)
+      => (BluetoothGattStatus status);
+  [MinVersion=8] DisableAdvertisement@43(int32 adv_handle)
       => (BluetoothGattStatus status);
 };
 

@@ -1881,6 +1881,31 @@ void ArcBluetoothBridge::RemoveSdpRecord(uint32_t service_handle,
       base::Bind(&OnRemoveServiceRecordError, repeating_callback));
 }
 
+template <typename... Args>
+void ArcBluetoothBridge::AddAdvertisementTask(
+    base::OnceCallback<void(base::OnceCallback<void(Args...)>)> task,
+    base::OnceCallback<void(Args...)> callback) {
+  advertisement_task_queue_.emplace(base::BindOnce(
+      std::move(task),
+      base::BindOnce(&ArcBluetoothBridge::CompleteAdvertisementTask<Args...>,
+                     weak_factory_.GetWeakPtr(), std::move(callback))));
+  if (advertisement_task_queue_.size() != 1)
+    return;
+  // No task pending, run immediately.
+  std::move(advertisement_task_queue_.front()).Run();
+}
+
+template <typename... Args>
+void ArcBluetoothBridge::CompleteAdvertisementTask(
+    base::OnceCallback<void(Args...)> callback,
+    Args... args) {
+  std::move(callback).Run(std::forward<Args>(args)...);
+  advertisement_task_queue_.pop();  // Current task is done. Pop it from queue.
+  if (advertisement_task_queue_.empty())
+    return;
+  std::move(advertisement_task_queue_.front()).Run();  // Run next task.
+}
+
 bool ArcBluetoothBridge::GetAdvertisementHandle(int32_t* adv_handle) {
   for (int i = 0; i < kMaxAdvertisements; i++) {
     if (advertisements_.find(i) == advertisements_.end()) {
@@ -1892,6 +1917,14 @@ bool ArcBluetoothBridge::GetAdvertisementHandle(int32_t* adv_handle) {
 }
 
 void ArcBluetoothBridge::ReserveAdvertisementHandle(
+    ReserveAdvertisementHandleCallback callback) {
+  AddAdvertisementTask(
+      base::BindOnce(&ArcBluetoothBridge::ReserveAdvertisementHandleImpl,
+                     weak_factory_.GetWeakPtr()),
+      std::move(callback));
+}
+
+void ArcBluetoothBridge::ReserveAdvertisementHandleImpl(
     ReserveAdvertisementHandleCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -1912,35 +1945,94 @@ void ArcBluetoothBridge::ReserveAdvertisementHandle(
   std::move(callback).Run(mojom::BluetoothGattStatus::GATT_SUCCESS, adv_handle);
 }
 
-void ArcBluetoothBridge::BroadcastAdvertisement(
+void ArcBluetoothBridge::EnableAdvertisement(
     int32_t adv_handle,
     std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement,
-    BroadcastAdvertisementCallback callback) {
+    EnableAdvertisementCallback callback) {
+  AddAdvertisementTask(
+      base::BindOnce(&ArcBluetoothBridge::EnableAdvertisementImpl,
+                     weak_factory_.GetWeakPtr(), adv_handle,
+                     std::move(advertisement)),
+      std::move(callback));
+}
+
+void ArcBluetoothBridge::EnableAdvertisementImpl(
+    int32_t adv_handle,
+    std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement,
+    EnableAdvertisementCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (advertisements_.find(adv_handle) == advertisements_.end()) {
-    std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
-    return;
-  }
 
-  if (!advertisements_[adv_handle]) {
-    OnReadyToRegisterAdvertisement(std::move(callback), adv_handle,
-                                   std::move(advertisement));
-    return;
-  }
-
-  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
-  // the callee interface.
+  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by
+  // updating the callee interface.
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
-  advertisements_[adv_handle]->Unregister(
+  base::Callback<void(void)> done_callback =
       base::Bind(&ArcBluetoothBridge::OnReadyToRegisterAdvertisement,
                  weak_factory_.GetWeakPtr(), repeating_callback, adv_handle,
-                 base::Passed(std::move(advertisement))),
+                 base::Passed(std::move(advertisement)));
+  base::Callback<void(BluetoothAdvertisement::ErrorCode)> error_callback =
       base::Bind(&ArcBluetoothBridge::OnRegisterAdvertisementError,
-                 weak_factory_.GetWeakPtr(), repeating_callback, adv_handle));
+                 weak_factory_.GetWeakPtr(), repeating_callback, adv_handle);
+
+  auto it = advertisements_.find(adv_handle);
+  if (it == advertisements_.end()) {
+    repeating_callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+    return;
+  }
+  if (it->second == nullptr) {
+    done_callback.Run();
+    return;
+  }
+  it->second->Unregister(done_callback, error_callback);
+}
+
+void ArcBluetoothBridge::DisableAdvertisement(
+    int32_t adv_handle,
+    EnableAdvertisementCallback callback) {
+  AddAdvertisementTask(
+      base::BindOnce(&ArcBluetoothBridge::DisableAdvertisementImpl,
+                     weak_factory_.GetWeakPtr(), adv_handle),
+      std::move(callback));
+}
+
+void ArcBluetoothBridge::DisableAdvertisementImpl(
+    int32_t adv_handle,
+    EnableAdvertisementCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by
+  // updating the callee interface.
+  auto repeating_callback =
+      base::AdaptCallbackForRepeating(std::move(callback));
+  base::Callback<void(void)> done_callback =
+      base::Bind(&ArcBluetoothBridge::OnUnregisterAdvertisementDone,
+                 weak_factory_.GetWeakPtr(), repeating_callback, adv_handle);
+  base::Callback<void(BluetoothAdvertisement::ErrorCode)> error_callback =
+      base::Bind(&ArcBluetoothBridge::OnUnregisterAdvertisementError,
+                 weak_factory_.GetWeakPtr(), repeating_callback, adv_handle);
+
+  auto it = advertisements_.find(adv_handle);
+  if (it == advertisements_.end()) {
+    repeating_callback.Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+    return;
+  }
+  if (it->second == nullptr) {
+    done_callback.Run();
+    return;
+  }
+  it->second->Unregister(done_callback, error_callback);
 }
 
 void ArcBluetoothBridge::ReleaseAdvertisementHandle(
+    int32_t adv_handle,
+    ReleaseAdvertisementHandleCallback callback) {
+  AddAdvertisementTask(
+      base::BindOnce(&ArcBluetoothBridge::ReleaseAdvertisementHandleImpl,
+                     weak_factory_.GetWeakPtr(), adv_handle),
+      std::move(callback));
+}
+
+void ArcBluetoothBridge::ReleaseAdvertisementHandleImpl(
     int32_t adv_handle,
     ReleaseAdvertisementHandleCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -1955,14 +2047,14 @@ void ArcBluetoothBridge::ReleaseAdvertisementHandle(
     return;
   }
 
-  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
-  // the callee interface.
+  // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by
+  // updating the callee interface.
   auto repeating_callback =
       base::AdaptCallbackForRepeating(std::move(callback));
   advertisements_[adv_handle]->Unregister(
-      base::Bind(&ArcBluetoothBridge::OnUnregisterAdvertisementDone,
+      base::Bind(&ArcBluetoothBridge::OnReleaseAdvertisementHandleDone,
                  weak_factory_.GetWeakPtr(), repeating_callback, adv_handle),
-      base::Bind(&ArcBluetoothBridge::OnUnregisterAdvertisementError,
+      base::Bind(&ArcBluetoothBridge::OnReleaseAdvertisementHandleError,
                  weak_factory_.GetWeakPtr(), repeating_callback, adv_handle));
 }
 
@@ -2007,7 +2099,7 @@ void ArcBluetoothBridge::OnUnregisterAdvertisementDone(
     ArcBluetoothBridge::GattStatusCallback callback,
     int32_t adv_handle) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  advertisements_.erase(adv_handle);
+  advertisements_[adv_handle] = nullptr;
   std::move(callback).Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
 }
 
@@ -2017,6 +2109,25 @@ void ArcBluetoothBridge::OnUnregisterAdvertisementError(
     BluetoothAdvertisement::ErrorCode error_code) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   LOG(WARNING) << "Failed to unregister advertisement for handle " << adv_handle
+               << ", error code = " << error_code;
+  advertisements_[adv_handle] = nullptr;
+  std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
+}
+
+void ArcBluetoothBridge::OnReleaseAdvertisementHandleDone(
+    ArcBluetoothBridge::GattStatusCallback callback,
+    int32_t adv_handle) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  advertisements_.erase(adv_handle);
+  std::move(callback).Run(mojom::BluetoothGattStatus::GATT_SUCCESS);
+}
+
+void ArcBluetoothBridge::OnReleaseAdvertisementHandleError(
+    ArcBluetoothBridge::GattStatusCallback callback,
+    int32_t adv_handle,
+    BluetoothAdvertisement::ErrorCode error_code) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  LOG(WARNING) << "Failed to relase advertisement handle " << adv_handle
                << ", error code = " << error_code;
   advertisements_.erase(adv_handle);
   std::move(callback).Run(mojom::BluetoothGattStatus::GATT_FAILURE);
