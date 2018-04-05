@@ -10,6 +10,7 @@ Bug(none) external/wpt/content-security-policy/inside-worker/dedicated-script.ht
 Bug(none) external/wpt/cookies/secure/set-from-wss.https.sub.html [ Failure ]
 Bug(none) external/wpt/css/css-fonts/font-display/font-display.html [ Failure Timeout ]
 Bug(none) external/wpt/html/browsers/offline/appcache/workers/appcache-worker.html [ Timeout ]
+crbug.com/829417 external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/claim-shared-worker-fetch.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/clients-get-client-types.https.html [ Failure ]
 crbug.com/807271 external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Failure ]
