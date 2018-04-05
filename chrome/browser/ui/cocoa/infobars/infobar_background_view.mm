@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/infobars/infobar_gradient_view.h"
+#include "chrome/browser/ui/cocoa/infobars/infobar_background_view.h"
 
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/themes/theme_properties.h"
@@ -14,7 +14,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 
-@implementation InfoBarGradientView
+@implementation InfoBarBackgroundView
 
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];

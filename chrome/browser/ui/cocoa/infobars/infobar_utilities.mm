@@ -15,8 +15,8 @@
 @implementation InfobarLabelTextField
 
 - (void)drawRect:(NSRect)rect {
-  NSView* infobarGradientView = [self superview];
-  [self cr_drawUsingAncestor:infobarGradientView inRect:rect];
+  NSView* infobarBackgroundView = [self superview];
+  [self cr_drawUsingAncestor:infobarBackgroundView inRect:rect];
   [super drawRect:rect];
 }
 
