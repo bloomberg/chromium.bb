@@ -14,9 +14,10 @@ class _Grouper(object):
 
   def Add(self, name, group):
     logging.debug('Computed %s (%d syms)', name, len(group))
-    sorted_group = group.Sorted()
-    sorted_group.SetName(name)
-    self.groups.append(sorted_group)
+    if len(group):
+      sorted_group = group.Sorted()
+      sorted_group.SetName(name)
+      self.groups.append(sorted_group)
     return group.Inverted()
 
   def Finalize(self, remaining):
@@ -28,8 +29,11 @@ class _Grouper(object):
         stars = stars.Sorted()
         stars.SetName('** Merged Symbols')
         self.groups.append(stars)
-      remaining.SetName('Other')
-      self.groups.append(remaining)
+
+      others_by_path = remaining.GroupedByPath(depth=1).Sorted()
+      for subgroup in others_by_path:
+        subgroup.SetName('Other //' + subgroup.name)
+      self.groups.extend(others_by_path)
 
     logging.debug('Finalized')
     return models.SymbolGroup(self.groups, is_sorted=True)
