@@ -314,8 +314,7 @@ class CFLSubsampleHBDTest
   virtual void SetUp() {
     CFLSubsampleTest::SetUp();
     fun_420_ref = cfl_get_luma_subsampling_420_hbd_c(tx_size);
-    // TODO(ltrudeau) Replace with 422 when SIMD is available
-    fun_422_ref = cfl_get_luma_subsampling_420_hbd_c(tx_size);
+    fun_422_ref = cfl_get_luma_subsampling_422_hbd_c(tx_size);
     // TODO(ltrudeau) Replace with 444 when SIMD is available
     fun_444_ref = cfl_get_luma_subsampling_420_hbd_c(tx_size);
   }
@@ -328,6 +327,14 @@ TEST_P(CFLSubsampleHBDTest, SubsampleHBD420Test) {
 
 TEST_P(CFLSubsampleHBDTest, DISABLED_SubsampleHBD420SpeedTest) {
   subsampleSpeedTest(fun_420, fun_420_ref, &ACMRandom::Rand12);
+}
+
+TEST_P(CFLSubsampleHBDTest, SubsampleHBD422Test) {
+  subsampleTest(fun_422, fun_422_ref, width >> 1, height, &ACMRandom::Rand12);
+}
+
+TEST_P(CFLSubsampleHBDTest, DISABLED_SubsampleHBD422SpeedTest) {
+  subsampleSpeedTest(fun_422, fun_422_ref, &ACMRandom::Rand12);
 }
 
 typedef cfl_predict_lbd_fn (*get_predict_fn)(TX_SIZE tx_size);
@@ -443,8 +450,7 @@ const subsample_lbd_param subsample_lbd_sizes_ssse3[] = {
 const subsample_hbd_param subsample_hbd_sizes_ssse3[] = {
   ALL_CFL_TX_SIZES_SUBSAMPLE(
       cfl_get_luma_subsampling_420_hbd_ssse3,
-      cfl_get_luma_subsampling_420_hbd_ssse3,  // TODO(ltrudeau) replace with
-                                               // 422 when SIMD is available
+      cfl_get_luma_subsampling_422_hbd_ssse3,
       cfl_get_luma_subsampling_420_hbd_ssse3)  // TODO(ltrudeau) replace with
                                                // 444 when SIMD is available
 };
@@ -481,7 +487,7 @@ const subsample_lbd_param subsample_lbd_sizes_avx2[] = {
 const subsample_hbd_param subsample_hbd_sizes_avx2[] = {
   ALL_CFL_TX_SIZES_SUBSAMPLE(
       cfl_get_luma_subsampling_420_hbd_avx2,
-      cfl_get_luma_subsampling_420_hbd_avx2,  // TODO(ltrudeau) replace with
+      cfl_get_luma_subsampling_422_hbd_c,  // TODO(ltrudeau) replace with
       // 422 when SIMD is available
       cfl_get_luma_subsampling_420_hbd_avx2)  // TODO(ltrudeau) replace with
                                               // 444 when SIMD is available
@@ -523,7 +529,7 @@ const subsample_lbd_param subsample_lbd_sizes_neon[] = {
 const subsample_hbd_param subsample_hbd_sizes_neon[] = {
   ALL_CFL_TX_SIZES_SUBSAMPLE(
       cfl_get_luma_subsampling_420_hbd_neon,
-      cfl_get_luma_subsampling_420_hbd_neon,  // TODO(ltrudeau) replace with
+      cfl_get_luma_subsampling_422_hbd_c,  // TODO(ltrudeau) replace with
       // 422 when SIMD is available
       cfl_get_luma_subsampling_420_hbd_neon)  // TODO(ltrudeau) replace with
                                               // 444 when SIMD is available
