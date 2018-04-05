@@ -84,10 +84,6 @@ void MojoVideoEncodeAcceleratorService::Initialize(
     return;
   }
 
-  // TODO(mcasas): We could still TryToSetupEncodeOnSeparateThread() with an
-  // ad-hoc background worker thread, but for the time being this doesn't seem
-  // necessary since we're already on a background thread.
-
   std::move(success_callback).Run(true);
   return;
 }
