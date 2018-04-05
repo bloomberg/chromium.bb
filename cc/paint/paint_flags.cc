@@ -40,7 +40,7 @@ PaintFlags::~PaintFlags() {
   // TODO(enne): non-default dtor to investigate http://crbug.com/790915
 
   // Sanity check accessing this object doesn't crash.
-  CHECK_NE(blend_mode_, static_cast<uint32_t>(SkBlendMode::kLastMode) + 100);
+  blend_mode_ = static_cast<uint32_t>(SkBlendMode::kLastMode);
 
   // Free refcounted objects one by one.
   typeface_.reset();
