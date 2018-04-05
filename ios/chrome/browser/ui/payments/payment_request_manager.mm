@@ -12,7 +12,6 @@
 
 #include "base/feature_list.h"
 #include "base/ios/block_types.h"
-#include "base/ios/ios_util.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"

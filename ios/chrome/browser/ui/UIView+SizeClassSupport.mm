@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/UIView+SizeClassSupport.h"
 
 #import "base/logging.h"
-#import "base/ios/ios_util.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

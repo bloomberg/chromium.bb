@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/ios/ios_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/handoff/pref_names_ios.h"

@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 
-#include "base/ios/ios_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"

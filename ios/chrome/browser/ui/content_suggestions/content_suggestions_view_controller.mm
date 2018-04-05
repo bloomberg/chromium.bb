@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 
-#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"

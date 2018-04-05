@@ -5,7 +5,6 @@
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 
 #include "base/bind.h"
-#include "base/ios/ios_util.h"
 #include "base/location.h"
 #include "base/mac/foundation_util.h"
 #include "base/single_thread_task_runner.h"

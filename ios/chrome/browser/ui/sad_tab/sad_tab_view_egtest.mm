@@ -5,7 +5,6 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
-#include "base/ios/ios_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/test/app/chrome_test_util.h"

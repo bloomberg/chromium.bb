@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/ios/callback_counter.h"
-#include "base/ios/ios_util.h"
 #import "base/mac/bind_objc_block.h"
 #import "ios/net/cookies/cookie_creation_time_manager.h"
 #include "ios/net/cookies/system_cookie_util.h"

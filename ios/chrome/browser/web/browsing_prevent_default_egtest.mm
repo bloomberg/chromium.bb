@@ -6,7 +6,6 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/test/app/chrome_test_util.h"

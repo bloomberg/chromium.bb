@@ -4,7 +4,6 @@
 
 #import <EarlGrey/EarlGrey.h>
 
-#include "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/autofill/autofill_edit_accessory_view.h"

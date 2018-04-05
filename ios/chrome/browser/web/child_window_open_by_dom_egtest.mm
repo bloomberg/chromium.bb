@@ -4,7 +4,6 @@
 
 #import <EarlGrey/EarlGrey.h>
 
-#include "base/ios/ios_util.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "ios/chrome/test/app/settings_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"

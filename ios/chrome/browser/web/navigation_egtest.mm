@@ -4,7 +4,6 @@
 
 #import <XCTest/XCTest.h>
 
-#include "base/ios/ios_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"

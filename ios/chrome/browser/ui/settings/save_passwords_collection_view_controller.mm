@@ -6,7 +6,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 

@@ -6,7 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/ios/ios_util.h"
+#include "base/logging.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

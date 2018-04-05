@@ -8,7 +8,6 @@
 #import <WebKit/WebKit.h>
 #import <XCTest/XCTest.h>
 
-#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/ui_util.h"

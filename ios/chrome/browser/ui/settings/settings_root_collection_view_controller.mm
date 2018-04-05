@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/settings/settings_root_collection_view_controller.h"
 
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 

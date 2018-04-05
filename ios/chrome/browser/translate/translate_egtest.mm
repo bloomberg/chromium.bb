@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/ios/ios_util.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
