@@ -67,8 +67,8 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
     case 2: cm->lf.filter_level_v = filter_level[0]; break;
   }
 
-  av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd,
-                        filter_level[0], filter_level[1], plane, partial_frame);
+  av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd, plane,
+                        plane + 1, partial_frame);
 
   int highbd = 0;
   highbd = cm->use_highbitdepth;

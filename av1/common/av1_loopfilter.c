@@ -566,8 +566,8 @@ static uint8_t get_filter_level(const AV1_COMMON *cm,
     }
     return lvl_seg;
   } else {
-    return lfi_n
-        ->lvl[segment_id][dir_idx][mbmi->ref_frame[0]][mode_lf_lut[mbmi->mode]];
+    return lfi_n->lvl[plane][segment_id][dir_idx][mbmi->ref_frame[0]]
+                     [mode_lf_lut[mbmi->mode]];
   }
 }
 
@@ -588,8 +588,10 @@ void av1_loop_filter_init(AV1_COMMON *cm) {
 // Update the loop filter for the current frame.
 // This should be called before loop_filter_rows(),
 // av1_loop_filter_frame() calls this function directly.
-static void loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl,
-                                   int default_filt_lvl_r, int plane) {
+static void loop_filter_frame_init(AV1_COMMON *cm, int plane_start,
+                                   int plane_end) {
+  int filt_lvl[MAX_MB_PLANE], filt_lvl_r[MAX_MB_PLANE];
+  int plane;
   int seg_id;
   // n_shift is the multiplier for lf_deltas
   // the multiplier is 1 for when filter_lvl is between 0 and 31;
@@ -601,33 +603,51 @@ static void loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl,
   // update sharpness limits
   update_sharpness(lfi, lf->sharpness_level);
 
-  for (seg_id = 0; seg_id < MAX_SEGMENTS; seg_id++) {
-    for (int dir = 0; dir < 2; ++dir) {
-      int lvl_seg = (dir == 0) ? default_filt_lvl : default_filt_lvl_r;
-      assert(plane >= 0 && plane <= 2);
-      const int seg_lf_feature_id = seg_lvl_lf_lut[plane][dir];
-      if (segfeature_active(seg, seg_id, seg_lf_feature_id)) {
-        const int data = get_segdata(&cm->seg, seg_id, seg_lf_feature_id);
-        lvl_seg = clamp(lvl_seg + data, 0, MAX_LOOP_FILTER);
-      }
+  filt_lvl[0] = cm->lf.filter_level[0];
+  filt_lvl[1] = cm->lf.filter_level_u;
+  filt_lvl[2] = cm->lf.filter_level_v;
 
-      if (!lf->mode_ref_delta_enabled) {
-        // we could get rid of this if we assume that deltas are set to
-        // zero when not in use; encoder always uses deltas
-        memset(lfi->lvl[seg_id][dir], lvl_seg, sizeof(lfi->lvl[seg_id][dir]));
-      } else {
-        int ref, mode;
-        const int scale = 1 << (lvl_seg >> 5);
-        const int intra_lvl = lvl_seg + lf->ref_deltas[INTRA_FRAME] * scale;
-        lfi->lvl[seg_id][dir][INTRA_FRAME][0] =
-            clamp(intra_lvl, 0, MAX_LOOP_FILTER);
+  filt_lvl_r[0] = cm->lf.filter_level[1];
+  filt_lvl_r[1] = cm->lf.filter_level_u;
+  filt_lvl_r[2] = cm->lf.filter_level_v;
 
-        for (ref = LAST_FRAME; ref < REF_FRAMES; ++ref) {
-          for (mode = 0; mode < MAX_MODE_LF_DELTAS; ++mode) {
-            const int inter_lvl = lvl_seg + lf->ref_deltas[ref] * scale +
-                                  lf->mode_deltas[mode] * scale;
-            lfi->lvl[seg_id][dir][ref][mode] =
-                clamp(inter_lvl, 0, MAX_LOOP_FILTER);
+  for (plane = plane_start; plane < plane_end; plane++) {
+    if (plane == 0 && !filt_lvl[0] && !filt_lvl_r[0])
+      break;
+    else if (plane == 1 && !filt_lvl[1])
+      continue;
+    else if (plane == 2 && !filt_lvl[2])
+      continue;
+
+    for (seg_id = 0; seg_id < MAX_SEGMENTS; seg_id++) {
+      for (int dir = 0; dir < 2; ++dir) {
+        int lvl_seg = (dir == 0) ? filt_lvl[plane] : filt_lvl_r[plane];
+        assert(plane >= 0 && plane <= 2);
+        const int seg_lf_feature_id = seg_lvl_lf_lut[plane][dir];
+        if (segfeature_active(seg, seg_id, seg_lf_feature_id)) {
+          const int data = get_segdata(&cm->seg, seg_id, seg_lf_feature_id);
+          lvl_seg = clamp(lvl_seg + data, 0, MAX_LOOP_FILTER);
+        }
+
+        if (!lf->mode_ref_delta_enabled) {
+          // we could get rid of this if we assume that deltas are set to
+          // zero when not in use; encoder always uses deltas
+          memset(lfi->lvl[plane][seg_id][dir], lvl_seg,
+                 sizeof(lfi->lvl[plane][seg_id][dir]));
+        } else {
+          int ref, mode;
+          const int scale = 1 << (lvl_seg >> 5);
+          const int intra_lvl = lvl_seg + lf->ref_deltas[INTRA_FRAME] * scale;
+          lfi->lvl[plane][seg_id][dir][INTRA_FRAME][0] =
+              clamp(intra_lvl, 0, MAX_LOOP_FILTER);
+
+          for (ref = LAST_FRAME; ref < REF_FRAMES; ++ref) {
+            for (mode = 0; mode < MAX_MODE_LF_DELTAS; ++mode) {
+              const int inter_lvl = lvl_seg + lf->ref_deltas[ref] * scale +
+                                    lf->mode_deltas[mode] * scale;
+              lfi->lvl[plane][seg_id][dir][ref][mode] =
+                  clamp(inter_lvl, 0, MAX_LOOP_FILTER);
+            }
           }
         }
       }
@@ -1865,68 +1885,77 @@ static void loop_filter_block_plane_horz(AV1_COMMON *const cm,
 #endif  // LOOP_FILTER_BITMASK
 
 static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
-                             MACROBLOCKD *xd, int start, int stop, int plane) {
+                             MACROBLOCKD *xd, int start, int stop,
+                             int plane_start, int plane_end) {
   struct macroblockd_plane *pd = xd->plane;
   const int col_start = 0;
   const int col_end = cm->mi_cols;
   int mi_row, mi_col;
+  int plane;
+
+  for (plane = plane_start; plane < plane_end; plane++) {
+    if (plane == 0 && !(cm->lf.filter_level[0]) && !(cm->lf.filter_level[1]))
+      break;
+    else if (plane == 1 && !(cm->lf.filter_level_u))
+      continue;
+    else if (plane == 2 && !(cm->lf.filter_level_v))
+      continue;
 
 #if LOOP_FILTER_BITMASK
-  enum lf_path path = get_loop_filter_path(plane, pd);
+    enum lf_path path = get_loop_filter_path(plane, pd);
 
-  // filter all vertical edges in every super block
-  for (mi_row = start; mi_row < stop; mi_row += MIN_MIB_SIZE) {
-    for (mi_col = col_start; mi_col < col_end; mi_col += MIN_MIB_SIZE) {
-      av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
-                           mi_col, plane, plane + 1);
+    // filter all vertical edges in every super block
+    for (mi_row = start; mi_row < stop; mi_row += MIN_MIB_SIZE) {
+      for (mi_col = col_start; mi_col < col_end; mi_col += MIN_MIB_SIZE) {
+        av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
+                             mi_col, plane, plane + 1);
 
-      LoopFilterMask *lf_mask = get_loop_filter_mask(cm, mi_row, mi_col);
-      av1_setup_bitmask(cm, mi_row, mi_col, plane, pd[plane].subsampling_x,
-                        pd[plane].subsampling_y, lf_mask);
-      loop_filter_block_plane_vert(cm, pd, plane, mi_row, mi_col, path,
-                                   lf_mask);
+        LoopFilterMask *lf_mask = get_loop_filter_mask(cm, mi_row, mi_col);
+        av1_setup_bitmask(cm, mi_row, mi_col, plane, pd[plane].subsampling_x,
+                          pd[plane].subsampling_y, lf_mask);
+        loop_filter_block_plane_vert(cm, pd, plane, mi_row, mi_col, path,
+                                     lf_mask);
+      }
     }
-  }
 
-  // filter all horizontal edges in every super block
-  for (mi_row = start; mi_row < stop; mi_row += MIN_MIB_SIZE) {
-    for (mi_col = col_start; mi_col < col_end; mi_col += MIN_MIB_SIZE) {
-      av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
-                           mi_col, plane, plane + 1);
+    // filter all horizontal edges in every super block
+    for (mi_row = start; mi_row < stop; mi_row += MIN_MIB_SIZE) {
+      for (mi_col = col_start; mi_col < col_end; mi_col += MIN_MIB_SIZE) {
+        av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
+                             mi_col, plane, plane + 1);
 
-      LoopFilterMask *lf_mask = get_loop_filter_mask(cm, mi_row, mi_col);
-      loop_filter_block_plane_horz(cm, pd, plane, mi_row, mi_col, path,
-                                   lf_mask);
+        LoopFilterMask *lf_mask = get_loop_filter_mask(cm, mi_row, mi_col);
+        loop_filter_block_plane_horz(cm, pd, plane, mi_row, mi_col, path,
+                                     lf_mask);
+      }
     }
-  }
 #else
-  // filter all vertical edges in every 64x64 super block
-  for (mi_row = start; mi_row < stop; mi_row += MIN_MIB_SIZE) {
-    for (mi_col = col_start; mi_col < col_end; mi_col += MIN_MIB_SIZE) {
-      av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
-                           mi_col, plane, plane + 1);
-      filter_block_plane_vert(cm, xd, plane, &pd[plane], mi_row, mi_col);
+    // filter all vertical edges in every 64x64 super block
+    for (mi_row = start; mi_row < stop; mi_row += MIN_MIB_SIZE) {
+      for (mi_col = col_start; mi_col < col_end; mi_col += MIN_MIB_SIZE) {
+        av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
+                             mi_col, plane, plane + 1);
+        filter_block_plane_vert(cm, xd, plane, &pd[plane], mi_row, mi_col);
+      }
     }
-  }
 
-  // filter all horizontal edges in every 64x64 super block
-  for (mi_row = start; mi_row < stop; mi_row += MIN_MIB_SIZE) {
-    for (mi_col = col_start; mi_col < col_end; mi_col += MIN_MIB_SIZE) {
-      av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
-                           mi_col, plane, plane + 1);
-      filter_block_plane_horz(cm, xd, plane, &pd[plane], mi_row, mi_col);
+    // filter all horizontal edges in every 64x64 super block
+    for (mi_row = start; mi_row < stop; mi_row += MIN_MIB_SIZE) {
+      for (mi_col = col_start; mi_col < col_end; mi_col += MIN_MIB_SIZE) {
+        av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
+                             mi_col, plane, plane + 1);
+        filter_block_plane_horz(cm, xd, plane, &pd[plane], mi_row, mi_col);
+      }
     }
-  }
 #endif  // LOOP_FILTER_BITMASK
+  }
 }
 
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
-                           MACROBLOCKD *xd, int frame_filter_level,
-                           int frame_filter_level_r, int plane,
+                           MACROBLOCKD *xd, int plane_start, int plane_end,
                            int partial_frame) {
   int start_mi_row, end_mi_row, mi_rows_to_filter;
 
-  if (!frame_filter_level && !frame_filter_level_r) return;
   start_mi_row = 0;
   mi_rows_to_filter = cm->mi_rows;
   if (partial_frame && cm->mi_rows > 8) {
@@ -1935,6 +1964,7 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     mi_rows_to_filter = AOMMAX(cm->mi_rows / 8, 8);
   }
   end_mi_row = start_mi_row + mi_rows_to_filter;
-  loop_filter_frame_init(cm, frame_filter_level, frame_filter_level_r, plane);
-  loop_filter_rows(frame, cm, xd, start_mi_row, end_mi_row, plane);
+  loop_filter_frame_init(cm, plane_start, plane_end);
+  loop_filter_rows(frame, cm, xd, start_mi_row, end_mi_row, plane_start,
+                   plane_end);
 }

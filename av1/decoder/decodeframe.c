@@ -1981,17 +1981,8 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     // Loopfilter the whole frame.
     if (endTile == cm->tile_rows * cm->tile_cols - 1)
       if (cm->lf.filter_level[0] || cm->lf.filter_level[1]) {
-        av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                              cm->lf.filter_level[0], cm->lf.filter_level[1], 0,
-                              0);
-        if (num_planes > 1) {
-          av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                                cm->lf.filter_level_u, cm->lf.filter_level_u, 1,
-                                0);
-          av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
-                                cm->lf.filter_level_v, cm->lf.filter_level_v, 2,
-                                0);
-        }
+        av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb, 0,
+                              num_planes, 0);
       }
   }
 

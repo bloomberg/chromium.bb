@@ -3979,14 +3979,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   }
 
   if (lf->filter_level[0] || lf->filter_level[1]) {
-    av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level[0],
-                          lf->filter_level[1], 0, 0);
-    if (num_planes > 1) {
-      av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level_u,
-                            lf->filter_level_u, 1, 0);
-      av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level_v,
-                            lf->filter_level_v, 2, 0);
-    }
+    av1_loop_filter_frame(cm->frame_to_show, cm, xd, 0, num_planes, 0);
   }
 
   if (!no_restoration)

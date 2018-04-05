@@ -149,7 +149,7 @@ typedef struct {
 
 typedef struct {
   loop_filter_thresh lfthr[MAX_LOOP_FILTER + 1];
-  uint8_t lvl[MAX_SEGMENTS][2][REF_FRAMES][MAX_MODE_LF_DELTAS];
+  uint8_t lvl[MAX_MB_PLANE][MAX_SEGMENTS][2][REF_FRAMES][MAX_MODE_LF_DELTAS];
 } loop_filter_info_n;
 
 // This structure holds bit masks for all 8x8 blocks in a 64x64 region.
@@ -187,8 +187,8 @@ void av1_setup_mask(struct AV1Common *const cm, int mi_row, int mi_col,
 void av1_loop_filter_init(struct AV1Common *cm);
 
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
-                           struct macroblockd *mbd, int filter_level,
-                           int filter_level_r, int plane, int partial_frame);
+                           struct macroblockd *mbd, int plane_start,
+                           int plane_end, int partial_frame);
 
 typedef struct LoopFilterWorkerData {
   YV12_BUFFER_CONFIG *frame_buffer;
