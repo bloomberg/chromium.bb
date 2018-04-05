@@ -113,8 +113,7 @@ TEST(FileTest, SelfSwap) {
   FilePath file_path = temp_dir.GetPath().AppendASCII("create_file_1");
   File file(file_path,
             base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_DELETE_ON_CLOSE);
-  using namespace std;
-  swap(file, file);
+  std::swap(file, file);
   EXPECT_TRUE(file.IsValid());
 }
 

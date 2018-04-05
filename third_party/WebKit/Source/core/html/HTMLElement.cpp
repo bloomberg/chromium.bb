@@ -77,8 +77,6 @@ namespace blink {
 using namespace cssvalue;
 using namespace HTMLNames;
 
-using namespace std;
-
 using AttributeChangedFunction =
     void (HTMLElement::*)(const Element::AttributeModificationParams& params);
 
@@ -1134,7 +1132,7 @@ static RGBA32 ParseColorStringWithCrazyLegacyRules(const String& color_string) {
   // each component.
   DCHECK_GE(digit_buffer.size(), 6u);
   size_t component_length = digit_buffer.size() / 3;
-  size_t component_search_window_length = min<size_t>(component_length, 8);
+  size_t component_search_window_length = std::min<size_t>(component_length, 8);
   size_t red_index = component_length - component_search_window_length;
   size_t green_index = component_length * 2 - component_search_window_length;
   size_t blue_index = component_length * 3 - component_search_window_length;
