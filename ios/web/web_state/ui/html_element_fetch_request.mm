@@ -31,7 +31,13 @@
 }
 
 - (void)runHandlerWithResponse:(NSDictionary*)response {
-  _foundElementHandler(response);
+  if (_foundElementHandler) {
+    _foundElementHandler(response);
+  }
+}
+
+- (void)invalidate {
+  _foundElementHandler = nullptr;
 }
 
 @end

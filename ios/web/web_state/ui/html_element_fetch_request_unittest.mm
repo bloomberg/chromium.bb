@@ -45,4 +45,18 @@ TEST_F(HtmlElementFetchRequestTest, RunHandler) {
   EXPECT_NSEQ(response, received_response);
 }
 
+// Tests that |runHandlerWithResponse:| does not run the handler from the
+// object's initializer if |invalidate| has been called.
+TEST_F(HtmlElementFetchRequestTest, Invalidate) {
+  __block bool handler_called = false;
+  void (^handler)(NSDictionary*) = ^(NSDictionary* response) {
+    handler_called = true;
+  };
+  HTMLElementFetchRequest* request =
+      [[HTMLElementFetchRequest alloc] initWithFoundElementHandler:handler];
+  [request invalidate];
+  [request runHandlerWithResponse:nil];
+  EXPECT_FALSE(handler_called);
+}
+
 }  // namespace web
