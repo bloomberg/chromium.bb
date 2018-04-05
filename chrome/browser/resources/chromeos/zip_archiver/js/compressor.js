@@ -722,8 +722,9 @@ unpacker.Compressor.prototype.onErrorInternal_ = function() {
 unpacker.Compressor.prototype.removeTemporaryFileIfExists_ = function() {
   if (!this.archiveFileEntry_)
     return;
+  const entry = this.archiveFileEntry_;
   this.archiveFileEntry_ = null;
-  this.archiveFileEntry_.remove(
+  entry.remove(
       function() {},
       function(error) {
         console.error('failed to remove temporary file.');
