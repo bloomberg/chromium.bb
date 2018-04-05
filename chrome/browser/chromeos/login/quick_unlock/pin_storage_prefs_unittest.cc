@@ -26,6 +26,11 @@ class PinStoragePrefsUnitTest : public testing::Test {
     quick_unlock::EnableForTesting(quick_unlock::PinStorageType::kPrefs);
   }
 
+  quick_unlock::PinStoragePrefs* PinStoragePrefs() const {
+    return quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
+        ->pin_storage_prefs();
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
 
@@ -68,13 +73,10 @@ TEST_F(PinStoragePrefsUnitTest, PinStorageWritesToPrefs) {
   EXPECT_EQ("", prefs->GetString(ash::prefs::kQuickUnlockPinSalt));
   EXPECT_EQ("", prefs->GetString(prefs::kQuickUnlockPinSecret));
 
-  quick_unlock::PinStoragePrefs* pin_storage =
-      quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
-          ->pin_storage_prefs();
-  PinStoragePrefsTestApi pin_storage_test(pin_storage);
+  PinStoragePrefsTestApi pin_storage_test(PinStoragePrefs());
 
-  pin_storage->SetPin("1111");
-  EXPECT_TRUE(pin_storage->IsPinSet());
+  PinStoragePrefs()->SetPin("1111");
+  EXPECT_TRUE(PinStoragePrefs()->IsPinSet());
   EXPECT_EQ(pin_storage_test.PinSalt(),
             prefs->GetString(ash::prefs::kQuickUnlockPinSalt));
   EXPECT_EQ(pin_storage_test.PinSecret(),
@@ -82,8 +84,8 @@ TEST_F(PinStoragePrefsUnitTest, PinStorageWritesToPrefs) {
   EXPECT_NE("", pin_storage_test.PinSalt());
   EXPECT_NE("", pin_storage_test.PinSecret());
 
-  pin_storage->RemovePin();
-  EXPECT_FALSE(pin_storage->IsPinSet());
+  PinStoragePrefs()->RemovePin();
+  EXPECT_FALSE(PinStoragePrefs()->IsPinSet());
   EXPECT_EQ("", prefs->GetString(ash::prefs::kQuickUnlockPinSalt));
   EXPECT_EQ("", prefs->GetString(prefs::kQuickUnlockPinSecret));
 }
@@ -93,29 +95,22 @@ TEST_F(PinStoragePrefsUnitTest, PinStorageWritesToPrefs) {
 // 2. Attempting unlock attempts correctly increases unlock attempt count.
 // 3. Resetting unlock attempt count correctly sets attempt count to 0.
 TEST_F(PinStoragePrefsUnitTest, UnlockAttemptCount) {
-  quick_unlock::PinStoragePrefs* pin_storage =
-      quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
-          ->pin_storage_prefs();
+  EXPECT_EQ(0, PinStoragePrefs()->unlock_attempt_count());
 
-  EXPECT_EQ(0, pin_storage->unlock_attempt_count());
+  PinStoragePrefs()->AddUnlockAttempt();
+  PinStoragePrefs()->AddUnlockAttempt();
+  PinStoragePrefs()->AddUnlockAttempt();
+  EXPECT_EQ(3, PinStoragePrefs()->unlock_attempt_count());
 
-  pin_storage->AddUnlockAttempt();
-  pin_storage->AddUnlockAttempt();
-  pin_storage->AddUnlockAttempt();
-  EXPECT_EQ(3, pin_storage->unlock_attempt_count());
-
-  pin_storage->ResetUnlockAttemptCount();
-  EXPECT_EQ(0, pin_storage->unlock_attempt_count());
+  PinStoragePrefs()->ResetUnlockAttemptCount();
+  EXPECT_EQ(0, PinStoragePrefs()->unlock_attempt_count());
 }
 
 // Verifies that the correct pin can be used to authenticate.
 TEST_F(PinStoragePrefsUnitTest, AuthenticationSucceedsWithRightPin) {
-  quick_unlock::PinStoragePrefs* pin_storage =
-      quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
-          ->pin_storage_prefs();
-  PinStoragePrefsTestApi pin_storage_test(pin_storage);
+  PinStoragePrefsTestApi pin_storage_test(PinStoragePrefs());
 
-  pin_storage->SetPin("1111");
+  PinStoragePrefs()->SetPin("1111");
 
   EXPECT_TRUE(pin_storage_test.TryAuthenticatePin(
       "1111", Key::KEY_TYPE_PASSWORD_PLAIN));
@@ -124,19 +119,17 @@ TEST_F(PinStoragePrefsUnitTest, AuthenticationSucceedsWithRightPin) {
 // Verifies that the correct pin will fail to authenticate if too many
 // authentication attempts have been made.
 TEST_F(PinStoragePrefsUnitTest, AuthenticationFailsFromTooManyAttempts) {
-  quick_unlock::PinStoragePrefs* pin_storage =
-      quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())
-          ->pin_storage_prefs();
-  PinStoragePrefsTestApi pin_storage_test(pin_storage);
+  PinStoragePrefsTestApi pin_storage_test(PinStoragePrefs());
 
-  pin_storage->SetPin("1111");
+  PinStoragePrefs()->SetPin("1111");
 
   // Use up all of the authentication attempts so authentication fails.
   EXPECT_TRUE(pin_storage_test.IsPinAuthenticationAvailable());
   for (int i = 0; i < quick_unlock::PinStoragePrefs::kMaximumUnlockAttempts;
-       ++i)
+       ++i) {
     EXPECT_FALSE(pin_storage_test.TryAuthenticatePin(
         "foobar", Key::KEY_TYPE_PASSWORD_PLAIN));
+  }
 
   // We used up all of the attempts, so entering the right PIN will still fail.
   EXPECT_FALSE(pin_storage_test.IsPinAuthenticationAvailable());
