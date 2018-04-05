@@ -8,13 +8,11 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -31,23 +29,22 @@
 
 namespace device {
 
-// Stops the specified (nested) message loop when the listener is called back.
-class MessageLoopQuitListener {
- public:
-  MessageLoopQuitListener()
-      : client_message_loop_(base::MessageLoop::current()),
-        updated_provider_(nullptr) {
-    CHECK(client_message_loop_);
-  }
+// Records the most recent position update and counts the number of times
+// OnLocationUpdate is called.
+struct LocationUpdateListener {
+  LocationUpdateListener()
+      : callback(base::BindRepeating(&LocationUpdateListener::OnLocationUpdate,
+                                     base::Unretained(this))) {}
 
   void OnLocationUpdate(const LocationProvider* provider,
                         const mojom::Geoposition& position) {
-    EXPECT_EQ(client_message_loop_, base::MessageLoop::current());
-    updated_provider_ = provider;
+    last_position = position;
+    update_count++;
   }
 
-  base::MessageLoop* client_message_loop_;
-  const LocationProvider* updated_provider_;
+  const LocationProvider::LocationProviderUpdateCallback callback;
+  mojom::Geoposition last_position;
+  int update_count = 0;
 };
 
 // A mock implementation of WifiDataProvider for testing. Adapted from
@@ -105,6 +102,21 @@ class MockWifiDataProvider : public WifiDataProvider {
   DISALLOW_COPY_AND_ASSIGN(MockWifiDataProvider);
 };
 
+// An implementation of LastPositionCache.
+class TestLastPositionCache
+    : public NetworkLocationProvider::LastPositionCache {
+ public:
+  void SetLastNetworkPosition(const mojom::Geoposition& position) override {
+    last_network_position_ = position;
+  }
+  const mojom::Geoposition& GetLastNetworkPosition() override {
+    return last_network_position_;
+  }
+
+ private:
+  mojom::Geoposition last_network_position_;
+};
+
 MockWifiDataProvider* MockWifiDataProvider::instance_ = nullptr;
 
 // Main test fixture
@@ -118,7 +130,8 @@ class GeolocationNetworkProviderTest : public testing::Test {
                                    const std::string& api_key = std::string()) {
     // No URLContextGetter needed: The request within the provider is tested
     // directly using TestURLFetcherFactory.
-    LocationProvider* provider = new NetworkLocationProvider(nullptr, api_key);
+    LocationProvider* provider = new NetworkLocationProvider(
+        nullptr, api_key, last_position_cache_.get());
     if (set_permission_granted)
       provider->OnPermissionGranted();
     return provider;
@@ -126,7 +139,8 @@ class GeolocationNetworkProviderTest : public testing::Test {
 
  protected:
   GeolocationNetworkProviderTest()
-      : wifi_data_provider_(MockWifiDataProvider::CreateInstance()) {
+      : wifi_data_provider_(MockWifiDataProvider::CreateInstance()),
+        last_position_cache_(std::make_unique<TestLastPositionCache>()) {
     // TODO(joth): Really these should be in SetUp, not here, but they take no
     // effect on Mac OS Release builds if done there. I kid not. Figure out why.
     WifiDataProviderManager::SetFactoryForTesting(
@@ -183,6 +197,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
     pos.latitude = id;
     pos.longitude = -(id + 1);
     pos.altitude = 2 * id;
+    pos.accuracy = 3 * id;
     pos.timestamp = base::Time::Now();
     return pos;
   }
@@ -275,6 +290,8 @@ class GeolocationNetworkProviderTest : public testing::Test {
   const base::MessageLoop main_message_loop_;
   const net::TestURLFetcherFactory url_fetcher_factory_;
   const scoped_refptr<MockWifiDataProvider> wifi_data_provider_;
+  std::unique_ptr<NetworkLocationProvider::LastPositionCache>
+      last_position_cache_;
 };
 
 // Tests that fixture members were SetUp correctly.
@@ -443,13 +460,12 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
 // Tests that, if no Wifi scan data is available at startup, the provider
 // doesn't initiate a request, until Wifi data later becomes available.
 TEST_F(GeolocationNetworkProviderTest, NoRequestOnStartupUntilWifiData) {
-  MessageLoopQuitListener listener;
+  LocationUpdateListener listener;
   wifi_data_provider_->set_got_data(false);  // No initial Wifi data.
   std::unique_ptr<LocationProvider> provider(CreateProvider(true));
   provider->StartProvider(false);
 
-  provider->SetUpdateCallback(base::Bind(
-      &MessageLoopQuitListener::OnLocationUpdate, base::Unretained(&listener)));
+  provider->SetUpdateCallback(listener.callback);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(get_url_fetcher_and_advance_id())
@@ -540,6 +556,211 @@ TEST_F(GeolocationNetworkProviderTest, NetworkPositionCache) {
       EXPECT_TRUE(cache.FindPosition(CreateReferenceWifiScanData(evicted + 1)));
     }
   }
+}
+
+// Tests that the provider's last position cache delegate is correctly used to
+// cache the most recent network position estimate, and that this estimate is
+// not lost when the provider is torn down and recreated.
+TEST_F(GeolocationNetworkProviderTest, LastPositionCache) {
+  std::unique_ptr<LocationProvider> provider(CreateProvider(true));
+  provider->StartProvider(false);
+
+  // Check that the provider is initialized with an invalid position.
+  mojom::Geoposition position = provider->GetPosition();
+  EXPECT_FALSE(ValidateGeoposition(position));
+
+  // Check that the cached value is also invalid.
+  position = last_position_cache_->GetLastNetworkPosition();
+  EXPECT_FALSE(ValidateGeoposition(position));
+
+  // Now wifi data arrives -- SetData will notify listeners.
+  const int kFirstScanAps = 6;
+  wifi_data_provider_->SetData(CreateReferenceWifiScanData(kFirstScanAps));
+  base::RunLoop().RunUntilIdle();
+  net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
+  ASSERT_TRUE(fetcher);
+  // The request should have the wifi data.
+  CheckRequestIsValid(*fetcher, kFirstScanAps, 0);
+
+  // Send a reply with good position fix.
+  const char* kReferenceNetworkResponse =
+      "{"
+      "  \"accuracy\": 1200.4,"
+      "  \"location\": {"
+      "    \"lat\": 51.0,"
+      "    \"lng\": -0.1"
+      "  }"
+      "}";
+  fetcher->set_status(net::URLRequestStatus());
+  fetcher->set_response_code(200);  // OK
+  fetcher->SetResponseString(kReferenceNetworkResponse);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  // The provider should return the position as the current best estimate.
+  position = provider->GetPosition();
+  EXPECT_EQ(51.0, position.latitude);
+  EXPECT_EQ(-0.1, position.longitude);
+  EXPECT_EQ(1200.4, position.accuracy);
+  EXPECT_FALSE(position.timestamp.is_null());
+  EXPECT_TRUE(ValidateGeoposition(position));
+
+  // Shut down the provider. This typically happens whenever there are no active
+  // Geolocation API calls.
+  provider->StopProvider();
+  provider = nullptr;
+
+  // The cache preserves the last estimate while the provider is inactive.
+  position = last_position_cache_->GetLastNetworkPosition();
+  EXPECT_EQ(51.0, position.latitude);
+  EXPECT_EQ(-0.1, position.longitude);
+  EXPECT_EQ(1200.4, position.accuracy);
+  EXPECT_FALSE(position.timestamp.is_null());
+  EXPECT_TRUE(ValidateGeoposition(position));
+
+  // Restart the provider.
+  provider.reset(CreateProvider(true));
+  provider->StartProvider(false);
+
+  // Check that the most recent position estimate is retained.
+  position = provider->GetPosition();
+  EXPECT_EQ(51.0, position.latitude);
+  EXPECT_EQ(-0.1, position.longitude);
+  EXPECT_EQ(1200.4, position.accuracy);
+  EXPECT_FALSE(position.timestamp.is_null());
+  EXPECT_TRUE(ValidateGeoposition(position));
+}
+
+// Tests that when the last network position estimate is sufficiently recent and
+// we do not expect to receive a fresh estimate soon (no new wifi data available
+// and no pending geolocation service request) then the provider may return the
+// last position instead of waiting to acquire a fresh estimate.
+TEST_F(GeolocationNetworkProviderTest, LastPositionCacheUsed) {
+  LocationUpdateListener listener;
+
+  // Seed the last position cache with a valid geoposition value and the
+  // timestamp set to the current time.
+  mojom::Geoposition last_position = CreateReferencePosition(0);
+  EXPECT_TRUE(ValidateGeoposition(last_position));
+  last_position_cache_->SetLastNetworkPosition(last_position);
+
+  // Simulate no initial wifi data.
+  wifi_data_provider_->set_got_data(false);
+
+  // Start the provider without geolocation permission.
+  std::unique_ptr<LocationProvider> provider(CreateProvider(false));
+  provider->StartProvider(false);
+
+  // Register a location update callback. The listener will count how many times
+  // OnLocationUpdate is called.
+  provider->SetUpdateCallback(listener.callback);
+
+  // Under normal circumstances, when there is no initial wifi data
+  // RequestPosition is not called until a few seconds after the provider is
+  // started to allow time for the wifi scan to complete. To avoid waiting,
+  // grant permissions once the provider is running to cause RequestPosition to
+  // be called immediately.
+  provider->OnPermissionGranted();
+
+  base::RunLoop().RunUntilIdle();
+
+  // Check that the listener received the position update and that the position
+  // is the same as the seeded value except for the timestamp, which should be
+  // newer.
+  EXPECT_EQ(1, listener.update_count);
+  EXPECT_TRUE(ValidateGeoposition(listener.last_position));
+  EXPECT_EQ(last_position.latitude, listener.last_position.latitude);
+  EXPECT_EQ(last_position.longitude, listener.last_position.longitude);
+  EXPECT_EQ(last_position.accuracy, listener.last_position.accuracy);
+  EXPECT_LT(last_position.timestamp, listener.last_position.timestamp);
+}
+
+// Tests that the last network position estimate is not returned if the
+// estimate is too old.
+TEST_F(GeolocationNetworkProviderTest, LastPositionNotUsedTooOld) {
+  LocationUpdateListener listener;
+
+  // Seed the last position cache with a geoposition value with the timestamp
+  // set to 20 minutes ago.
+  mojom::Geoposition last_position = CreateReferencePosition(0);
+  last_position.timestamp =
+      base::Time::Now() - base::TimeDelta::FromMinutes(20);
+  EXPECT_TRUE(ValidateGeoposition(last_position));
+  last_position_cache_->SetLastNetworkPosition(last_position);
+
+  // Simulate no initial wifi data.
+  wifi_data_provider_->set_got_data(false);
+
+  // Start the provider without geolocation permission.
+  std::unique_ptr<LocationProvider> provider(CreateProvider(false));
+  provider->StartProvider(false);
+
+  // Register a location update callback. The listener will count how many times
+  // OnLocationUpdate is called.
+  provider->SetUpdateCallback(listener.callback);
+
+  // Under normal circumstances, when there is no initial wifi data
+  // RequestPosition is not called until a few seconds after the provider is
+  // started to allow time for the wifi scan to complete. To avoid waiting,
+  // grant permissions once the provider is running to cause RequestPosition to
+  // be called immediately.
+  provider->OnPermissionGranted();
+
+  base::RunLoop().RunUntilIdle();
+
+  // Check that the listener received no updates.
+  EXPECT_EQ(0, listener.update_count);
+  EXPECT_FALSE(ValidateGeoposition(listener.last_position));
+}
+
+// Tests that the last network position estimate is not returned if there is
+// new wifi data or a pending geolocation service request.
+TEST_F(GeolocationNetworkProviderTest, LastPositionNotUsedNewData) {
+  LocationUpdateListener listener;
+
+  // Seed the last position cache with a valid geoposition value. The timestamp
+  // of the cached position is set to the current time.
+  mojom::Geoposition last_position = CreateReferencePosition(0);
+  EXPECT_TRUE(ValidateGeoposition(last_position));
+  last_position_cache_->SetLastNetworkPosition(last_position);
+
+  // Simulate a completed wifi scan.
+  const int kFirstScanAps = 6;
+  wifi_data_provider_->SetData(CreateReferenceWifiScanData(kFirstScanAps));
+
+  // Create the provider without permissions enabled.
+  std::unique_ptr<LocationProvider> provider(CreateProvider(false));
+
+  // Register a location update callback. The callback will count how many times
+  // OnLocationUpdate is called.
+  provider->SetUpdateCallback(listener.callback);
+
+  // Start the provider.
+  provider->StartProvider(false);
+  base::RunLoop().RunUntilIdle();
+
+  // The listener should not receive any updates. There is a valid cached value
+  // but it should not be sent while we have pending wifi data.
+  EXPECT_EQ(0, listener.update_count);
+  EXPECT_FALSE(ValidateGeoposition(listener.last_position));
+
+  // Check that there is no pending network request.
+  EXPECT_FALSE(get_url_fetcher_and_advance_id());
+
+  // Simulate no new wifi data.
+  wifi_data_provider_->set_got_data(false);
+
+  // Grant permission to allow the network request to proceed.
+  provider->OnPermissionGranted();
+  base::RunLoop().RunUntilIdle();
+
+  // The listener should still not receive any updates. There is a valid cached
+  // value and no new wifi data, but the cached value should not be sent while
+  // we have a pending request to the geolocation service.
+  EXPECT_EQ(0, listener.update_count);
+  EXPECT_FALSE(ValidateGeoposition(listener.last_position));
+
+  // Check that a network request is pending.
+  EXPECT_TRUE(get_url_fetcher_and_advance_id());
 }
 
 }  // namespace device

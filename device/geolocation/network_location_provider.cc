@@ -21,6 +21,11 @@ namespace {
 // The maximum period of time we'll wait for a complete set of wifi data
 // before sending the request.
 const int kDataCompleteWaitSeconds = 2;
+
+// The maximum age of a cached network location estimate before it can no longer
+// be returned as a fresh estimate. This should be at least as long as the
+// longest polling interval used by the WifiDataProvider.
+const int kLastPositionMaxAgeSeconds = 10 * 60;  // 10 minutes
 }  // namespace
 
 // static
@@ -97,12 +102,14 @@ bool NetworkLocationProvider::PositionCache::MakeKey(const WifiData& wifi_data,
 // NetworkLocationProvider
 NetworkLocationProvider::NetworkLocationProvider(
     scoped_refptr<net::URLRequestContextGetter> url_context_getter,
-    const std::string& api_key)
+    const std::string& api_key,
+    LastPositionCache* last_position_cache)
     : wifi_data_provider_manager_(nullptr),
       wifi_data_update_callback_(
           base::Bind(&NetworkLocationProvider::OnWifiDataUpdate,
                      base::Unretained(this))),
       is_wifi_data_complete_(false),
+      last_position_delegate_(last_position_cache),
       is_permission_granted_(false),
       is_new_data_available_(false),
       request_(new NetworkLocationRequest(
@@ -111,7 +118,9 @@ NetworkLocationProvider::NetworkLocationProvider(
           base::Bind(&NetworkLocationProvider::OnLocationResponse,
                      base::Unretained(this)))),
       position_cache_(new PositionCache),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(last_position_delegate_);
+}
 
 NetworkLocationProvider::~NetworkLocationProvider() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -150,13 +159,15 @@ void NetworkLocationProvider::OnLocationResponse(
     const WifiData& wifi_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Record the position and update our cache.
-  position_ = position;
+  last_position_delegate_->SetLastNetworkPosition(position);
   if (ValidateGeoposition(position))
     position_cache_->CachePosition(wifi_data, position);
 
   // Let listeners know that we now have a position available.
-  if (!location_provider_update_callback_.is_null())
-    location_provider_update_callback_.Run(this, position_);
+  if (!location_provider_update_callback_.is_null()) {
+    location_provider_update_callback_.Run(
+        this, last_position_delegate_->GetLastNetworkPosition());
+  }
 }
 
 void NetworkLocationProvider::StartProvider(bool high_accuracy) {
@@ -188,11 +199,35 @@ void NetworkLocationProvider::StopProvider() {
 }
 
 const mojom::Geoposition& NetworkLocationProvider::GetPosition() {
-  return position_;
+  return last_position_delegate_->GetLastNetworkPosition();
 }
 
 void NetworkLocationProvider::RequestPosition() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // The wifi polling policy may require us to wait for several minutes before
+  // fresh wifi data is available. To ensure we can return a position estimate
+  // quickly when the network location provider is the primary provider, allow
+  // a cached value to be returned under certain conditions.
+  //
+  // If we have a sufficiently recent network location estimate and we do not
+  // expect to receive a new one soon (i.e., no new wifi data is available and
+  // there is no pending network request), report the last network position
+  // estimate as if it were a fresh estimate.
+  const mojom::Geoposition& last_position =
+      last_position_delegate_->GetLastNetworkPosition();
+  if (!is_new_data_available_ && !request_->is_request_pending() &&
+      ValidateGeoposition(last_position)) {
+    base::Time now = base::Time::Now();
+    base::TimeDelta last_position_age = now - last_position.timestamp;
+    if (last_position_age.InSeconds() < kLastPositionMaxAgeSeconds &&
+        !location_provider_update_callback_.is_null()) {
+      // Update the timestamp to the current time.
+      mojom::Geoposition position = last_position;
+      position.timestamp = now;
+      location_provider_update_callback_.Run(this, position);
+    }
+  }
 
   if (!is_new_data_available_ || !is_wifi_data_complete_)
     return;
@@ -202,19 +237,20 @@ void NetworkLocationProvider::RequestPosition() {
   const mojom::Geoposition* cached_position =
       position_cache_->FindPosition(wifi_data_);
   if (cached_position) {
-    DCHECK(ValidateGeoposition(*cached_position));
-    // Record the position and update its timestamp.
-    position_ = *cached_position;
-
+    mojom::Geoposition position(*cached_position);
+    DCHECK(ValidateGeoposition(position));
     // The timestamp of a position fix is determined by the timestamp
-    // of the source data update. (The value of position_.timestamp from
+    // of the source data update. (The value of position.timestamp from
     // the cache could be from weeks ago!)
-    position_.timestamp = wifi_timestamp_;
+    position.timestamp = wifi_timestamp_;
     is_new_data_available_ = false;
+
+    // Record the position.
+    last_position_delegate_->SetLastNetworkPosition(position);
 
     // Let listeners know that we now have a position available.
     if (!location_provider_update_callback_.is_null())
-      location_provider_update_callback_.Run(this, position_);
+      location_provider_update_callback_.Run(this, position);
     return;
   }
   // Don't send network requests until authorized. http://crbug.com/39171
