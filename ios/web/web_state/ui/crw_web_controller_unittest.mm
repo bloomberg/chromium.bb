@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/path_service.h"
 #include "base/scoped_observer.h"

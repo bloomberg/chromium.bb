@@ -8,7 +8,6 @@
 
 #include "base/format_macros.h"
 #include "base/i18n/rtl.h"
-#include "base/ios/ios_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"

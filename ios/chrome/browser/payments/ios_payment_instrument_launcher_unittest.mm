@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/base64.h"
-#include "base/ios/ios_util.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"

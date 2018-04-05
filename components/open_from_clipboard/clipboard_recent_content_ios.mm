@@ -9,7 +9,6 @@
 #include <stdint.h>
 #import <UIKit/UIKit.h>
 
-#import "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"

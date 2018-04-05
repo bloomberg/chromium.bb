@@ -7,7 +7,6 @@
 #import <QuartzCore/QuartzCore.h>
 #include <stdint.h>
 
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"

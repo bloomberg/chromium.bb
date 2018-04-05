@@ -6,7 +6,6 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/ios/ios_util.h"
 #import "base/test/ios/wait_util.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"

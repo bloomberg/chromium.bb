@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/contextual_search/js_contextual_search_manager.h"
 
-#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/strings/string_util.h"

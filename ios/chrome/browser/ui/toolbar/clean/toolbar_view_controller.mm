@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/toolbar/clean/toolbar_view_controller.h"
 
-#include "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"

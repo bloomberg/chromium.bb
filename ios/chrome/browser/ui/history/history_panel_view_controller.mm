@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/ios/block_types.h"
-#include "base/ios/ios_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/browser_sync/profile_sync_service.h"

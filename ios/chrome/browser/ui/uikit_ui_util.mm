@@ -12,7 +12,6 @@
 #import <UIKit/UIKit.h>
 #include <cmath>
 
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/numerics/math_constants.h"

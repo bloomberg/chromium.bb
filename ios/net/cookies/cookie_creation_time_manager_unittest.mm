@@ -7,7 +7,6 @@
 #import <Foundation/Foundation.h>
 #include <stdint.h>
 
-#include "base/ios/ios_util.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"

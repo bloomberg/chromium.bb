@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/search_widget_extension/search_widget_view.h"
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #import "ios/chrome/search_widget_extension/copied_url_view.h"
 #import "ios/chrome/search_widget_extension/search_action_view.h"

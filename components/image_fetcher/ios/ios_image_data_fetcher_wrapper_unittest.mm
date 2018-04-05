@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/ios/ios_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

@@ -6,7 +6,7 @@
 
 #import <NotificationCenter/NotificationCenter.h>
 
-#include "base/ios/ios_util.h"
+#include "base/logging.h"
 #import "ios/chrome/search_widget_extension/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

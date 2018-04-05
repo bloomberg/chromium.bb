@@ -10,7 +10,6 @@
 #include "net/base/mac/url_conversions.h"
 
 #if defined(OS_IOS)
-#include "base/ios/ios_util.h"
 #include "components/handoff/pref_names_ios.h"
 #include "components/pref_registry/pref_registry_syncable.h"  // nogncheck
 #endif

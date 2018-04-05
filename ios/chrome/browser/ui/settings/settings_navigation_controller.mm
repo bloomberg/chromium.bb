@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 
-#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"

@@ -5,7 +5,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/format_macros.h"
-#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"

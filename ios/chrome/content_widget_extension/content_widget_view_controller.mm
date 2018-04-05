@@ -4,7 +4,6 @@
 
 #import "ios/chrome/content_widget_extension/content_widget_view_controller.h"
 
-#include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/ntp/ntp_tile.h"

@@ -8,7 +8,6 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/i18n/rtl.h"
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/ui/ui_util.h"

@@ -12,7 +12,6 @@
 #import <QuartzCore/QuartzCore.h>
 
 #import "base/ios/block_types.h"
-#import "base/ios/ios_util.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"

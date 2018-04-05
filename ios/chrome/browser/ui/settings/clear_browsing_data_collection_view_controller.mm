@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
