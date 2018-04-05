@@ -63,8 +63,9 @@ const char kProduct[] = "Chrome_ChromeOS";
 
 // TODO(crbug.com/775415): Update comment to reflect new policy when discarding
 // the command line flag.
-constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("webrtc_event_log_uploader", R"(
+constexpr net::NetworkTrafficAnnotationTag
+    kWebrtcEventLogUploaderTrafficAnnotation =
+        net::DefineNetworkTrafficAnnotation("webrtc_event_log_uploader", R"(
       semantics {
         sender: "WebRTC Event Log uploader module"
         description:
@@ -262,7 +263,8 @@ void WebRtcEventLogUploaderImpl::StartUpload() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   url_fetcher_ = net::URLFetcher::Create(
-      GURL(kUploadURL), net::URLFetcher::POST, &delegate_, kTrafficAnnotation);
+      GURL(kUploadURL), net::URLFetcher::POST, &delegate_,
+      kWebrtcEventLogUploaderTrafficAnnotation);
   url_fetcher_->SetRequestContext(request_context_getter_);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                              net::LOAD_DO_NOT_SEND_COOKIES);

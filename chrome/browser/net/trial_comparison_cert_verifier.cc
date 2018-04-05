@@ -34,7 +34,7 @@
 
 // Certificate reports are only sent from official builds, but this flag can be
 // set by tests.
-static bool g_is_fake_official_build_for_testing = false;
+static bool g_is_fake_official_build_for_cert_verifier_testing = false;
 
 namespace {
 
@@ -255,7 +255,7 @@ TrialComparisonCertVerifier::~TrialComparisonCertVerifier() = default;
 
 // static
 void TrialComparisonCertVerifier::SetFakeOfficialBuildForTesting() {
-  g_is_fake_official_build_for_testing = true;
+  g_is_fake_official_build_for_cert_verifier_testing = true;
 }
 
 int TrialComparisonCertVerifier::Verify(const RequestParams& params,
@@ -284,7 +284,7 @@ void TrialComparisonCertVerifier::OnPrimaryVerifierComplete(
     bool is_first_job) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  bool is_official_build = g_is_fake_official_build_for_testing;
+  bool is_official_build = g_is_fake_official_build_for_cert_verifier_testing;
 #if defined(OFFICIAL_BUILD) && defined(GOOGLE_CHROME_BUILD)
   is_official_build = true;
 #endif
