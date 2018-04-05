@@ -207,7 +207,6 @@ void PopulateAXState(AXNodeInfoData* node, ui::AXNodeData* out_data) {
   MAP_STATE(AXBooleanProperty::FOCUSABLE, ax::mojom::State::kFocusable);
   MAP_STATE(AXBooleanProperty::MULTI_LINE, ax::mojom::State::kMultiline);
   MAP_STATE(AXBooleanProperty::PASSWORD, ax::mojom::State::kProtected);
-  MAP_STATE(AXBooleanProperty::SELECTED, ax::mojom::State::kSelected);
 
 #undef MAP_STATE
 
@@ -541,6 +540,9 @@ void AXTreeSourceArc::SerializeNode(AXNodeInfoData* node,
   }
   if (GetProperty(node, AXBooleanProperty::CLICKABLE)) {
     out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kClickable, true);
+  }
+  if (GetProperty(node, AXBooleanProperty::SELECTED)) {
+    out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
   }
 
   // Range info.

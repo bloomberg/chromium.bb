@@ -1837,7 +1837,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   for (uint32_t index = 0; index < childCount; ++index) {
     BrowserAccessibility* child =
       browserAccessibility_->PlatformGetChild(index);
-    if (child->HasState(ax::mojom::State::kSelected))
+    if (child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
       [ret addObject:ToBrowserAccessibilityCocoa(child)];
   }
 
@@ -2112,7 +2112,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
         value = 2;
         break;
       default:
-        value = GetState(browserAccessibility_, ax::mojom::State::kSelected)
+        value = browserAccessibility_->GetBoolAttribute(
+                    ax::mojom::BoolAttribute::kSelected)
                     ? 1
                     : 0;
         break;

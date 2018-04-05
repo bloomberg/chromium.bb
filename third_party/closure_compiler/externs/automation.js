@@ -233,8 +233,6 @@ chrome.automation.StateType = {
   PROTECTED: 'protected',
   REQUIRED: 'required',
   RICHLY_EDITABLE: 'richlyEditable',
-  SELECTABLE: 'selectable',
-  SELECTED: 'selected',
   VERTICAL: 'vertical',
   VISITED: 'visited',
 };
@@ -1125,6 +1123,13 @@ chrome.automation.AutomationNode.prototype.underline;
  * @see https://developer.chrome.com/extensions/automation#type-lineThrough
  */
 chrome.automation.AutomationNode.prototype.lineThrough;
+
+/**
+ * Indicates whether this node is selected, unselected, or neither.
+ * @type {(boolean|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-selected
+ */
+chrome.automation.AutomationNode.prototype.selected;
 
 /**
  * Walking the tree.

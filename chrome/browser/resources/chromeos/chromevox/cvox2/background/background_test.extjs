@@ -1533,9 +1533,14 @@ TEST_F('BackgroundTest', 'NavigationSyncsSelect', function() {
   */}, function(root) {
     var select = root.find({role: RoleType.POP_UP_BUTTON});
     mockFeedback.call(select.doDefault.bind(select))
-        .expectSpeech('apple', 'Selected')
+        .expectSpeech('apple', 'Menu item', ' 1 of 2 ')
         .call(doCmd('nextObject'))
-        .expectSpeech('grape', 'Selected')
+        .expectNextSpeechUtteranceIsNot('Selected')
+        .expectNextSpeechUtteranceIsNot('Unselected')
+        .expectSpeech('grape', 'Menu item')
+        .expectNextSpeechUtteranceIsNot('Selected')
+        .expectNextSpeechUtteranceIsNot('Unselected')
+        .expectSpeech(' 2 of 2 ')
         .replay();
   });
 });

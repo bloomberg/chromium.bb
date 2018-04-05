@@ -6,11 +6,11 @@ rootWebArea
 ++++staticText name='This is an ARIA article 2.'
 ++++++inlineTextBox name='This is an ARIA article 2.'
 ++listBox
-++++listBoxOption selectable name='Item 1' setSize=2 posInSet=1
-++++listBoxOption selectable name='Item 2' setSize=2 posInSet=2
+++++listBoxOption name='Item 1' setSize=2 posInSet=1 selected=false
+++++listBoxOption name='Item 2' setSize=2 posInSet=2 selected=false
 ++listBox
-++++listBoxOption selectable name='Item 1' setSize=2 posInSet=1
-++++listBoxOption selectable name='Item 2' setSize=2 posInSet=2
+++++listBoxOption name='Item 1' setSize=2 posInSet=1 selected=false
+++++listBoxOption name='Item 2' setSize=2 posInSet=2 selected=false
 ++form
 ++++radioButton setSize=4 posInSet=3 checkedState=false
 ++++staticText name='1'

@@ -1,5 +1,5 @@
 rootWebArea
 ++grid
-++++row selectable
-++++row selectable
+++++row selected=false
+++++row selected=false
 ++++tableHeaderContainer

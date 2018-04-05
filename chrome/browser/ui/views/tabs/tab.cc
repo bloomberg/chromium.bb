@@ -863,9 +863,8 @@ void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTab;
   node_data->SetName(controller_->GetAccessibleTabName(this));
   node_data->AddState(ax::mojom::State::kMultiselectable);
-  node_data->AddState(ax::mojom::State::kSelectable);
-  if (IsSelected())
-    node_data->AddState(ax::mojom::State::kSelected);
+  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
+                              IsSelected());
 }
 
 void Tab::OnGestureEvent(ui::GestureEvent* event) {

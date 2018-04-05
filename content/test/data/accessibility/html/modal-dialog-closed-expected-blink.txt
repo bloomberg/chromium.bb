@@ -4,5 +4,5 @@ rootWebArea
 ++region
 ++++popUpButton collapsed haspopup
 ++++++menuListPopup invisible
-++++++++menuListOption selectable selected name='This should be in the tree.'
+++++++++menuListOption name='This should be in the tree.' selected=true
 ++colorWell

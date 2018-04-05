@@ -179,7 +179,7 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onEventIfSelected: function(evt) {
-    if (evt.target.state.selected)
+    if (evt.target.selected)
       this.onEventDefault(evt);
   },
 

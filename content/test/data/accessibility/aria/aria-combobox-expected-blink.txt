@@ -4,5 +4,5 @@ rootWebArea
 ++++++inlineTextBox name='State'
 ++textFieldWithComboBox haspopup autoComplete='list' name='State' activedescendantId=listBoxOption restriction=readOnly
 ++listBox
-++++listBoxOption selectable name='Alabama'
-++++listBoxOption selectable selected name='Alaska'
+++++listBoxOption name='Alabama' selected=false
+++++listBoxOption name='Alaska' selected=true

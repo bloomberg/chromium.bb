@@ -2,11 +2,11 @@ rootWebArea
 ++log containerLiveRelevant='additions text' containerLiveStatus='polite' name='Atomic illegal' liveRelevant='additions text' liveStatus='polite' containerLiveAtomic=true containerLiveBusy=false liveAtomic=true
 ++textField autoComplete='x-illegal' name='Autocomplete illegal'
 ++log containerLiveRelevant='additions text' containerLiveStatus='polite' name='Busy illegal' liveRelevant='additions text' liveStatus='polite' busy=true containerLiveAtomic=false containerLiveBusy=true liveAtomic=false
-++treeItem selectable name='Checked illegal' checkedState=true
+++treeItem name='Checked illegal' checkedState=true selected=false
 ++genericContainer name='Current illegal' ariaCurrentState=true
 ++genericContainer name='Disabled illegal' restriction=disabled
 ++genericContainer name='Dropeffect illegal'
-++treeItem expanded selectable name='Expanded illegal'
+++treeItem expanded name='Expanded illegal' selected=false
 ++genericContainer name='Grabbed illegal'
 ++popUpButton haspopup name='Haspopup illegal'
 ++genericContainer ariaInvalidValue='X-ILLEGAL' name='Invalid illegal' invalidState=other
@@ -21,5 +21,5 @@ rootWebArea
 ++log containerLiveRelevant='X-ILLEGAL' containerLiveStatus='polite' name='Relevant illegal' liveRelevant='X-ILLEGAL' liveStatus='polite' containerLiveAtomic=false containerLiveBusy=false liveAtomic=false
 ++textField required name='Required illegal'
 ++tree multiselectable vertical
-++++treeItem selectable selected name='Selected illegal'
-++columnHeader selectable name='Sort illegal' sortDirection=other
+++++treeItem name='Selected illegal' selected=true
+++columnHeader name='Sort illegal' sortDirection=other selected=false

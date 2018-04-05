@@ -1,17 +1,17 @@
 rootWebArea
 ++grid multiselectable
-++++row selectable
-++++++columnHeader selectable name='Browser'
+++++row selected=false
+++++++columnHeader name='Browser' selected=false
 ++++++++staticText name='Browser'
 ++++++++++inlineTextBox name='Browser'
-++++++columnHeader selectable name='Rendering Engine'
+++++++columnHeader name='Rendering Engine' selected=false
 ++++++++staticText name='Rendering Engine'
 ++++++++++inlineTextBox name='Rendering Engine'
-++++row selectable
-++++++cell selectable name='Chrome'
+++++row selected=false
+++++++cell name='Chrome' selected=false
 ++++++++staticText name='Chrome'
 ++++++++++inlineTextBox name='Chrome'
-++++++cell selectable name='Blink'
+++++++cell name='Blink' selected=false
 ++++++++staticText name='Blink'
 ++++++++++inlineTextBox name='Blink'
 ++++column
