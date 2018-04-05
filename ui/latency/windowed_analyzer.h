@@ -49,6 +49,18 @@ class WindowedAnalyzerClient {
 // Tracks the current window of time that can be stored as the worst
 // window of time if a metric detects it as such.
 struct SharedWindowedAnalyzerClient {
+  SharedWindowedAnalyzerClient() : max_window_size(0) {}
+
+  explicit SharedWindowedAnalyzerClient(size_t max_window_size)
+      : max_window_size(max_window_size) {}
+
+  SharedWindowedAnalyzerClient(size_t max_window_size,
+                               base::TimeTicks window_begin,
+                               base::TimeTicks window_end)
+      : max_window_size(max_window_size),
+        window_begin(window_begin),
+        window_end(window_end) {}
+
   // Maximum window size in number of samples.
   size_t max_window_size;
 
