@@ -120,8 +120,7 @@ MaterialDesignController::Mode MaterialDesignController::GetMode() {
 
 // static
 bool MaterialDesignController::IsSecondaryUiMaterial() {
-  return base::FeatureList::IsEnabled(features::kSecondaryUiMd) ||
-         GetMode() == MATERIAL_REFRESH;
+  return base::FeatureList::IsEnabled(features::kSecondaryUiMd);
 }
 
 // static
