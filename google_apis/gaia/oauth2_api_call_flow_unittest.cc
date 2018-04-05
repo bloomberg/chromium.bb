@@ -8,7 +8,7 @@
 
 #include <memory>
 #include <string>
-#include <vector>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
@@ -39,6 +39,7 @@ using net::URLFetcherFactory;
 using net::URLRequestContextGetter;
 using net::URLRequestStatus;
 using testing::_;
+using testing::ByMove;
 using testing::Return;
 using testing::StrictMock;
 
@@ -64,13 +65,13 @@ class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
   }
   virtual ~MockUrlFetcherFactory() {}
 
-  MOCK_METHOD5(
-      CreateURLFetcherMock,
-      URLFetcher*(int id,
-                  const GURL& url,
-                  URLFetcher::RequestType request_type,
-                  URLFetcherDelegate* d,
-                  net::NetworkTrafficAnnotationTag traffic_annotation));
+  MOCK_METHOD5(CreateURLFetcherMock,
+               std::unique_ptr<URLFetcher>(
+                   int id,
+                   const GURL& url,
+                   URLFetcher::RequestType request_type,
+                   URLFetcherDelegate* d,
+                   net::NetworkTrafficAnnotationTag traffic_annotation));
 
   std::unique_ptr<URLFetcher> CreateURLFetcher(
       int id,
@@ -78,8 +79,7 @@ class MockUrlFetcherFactory : public ScopedURLFetcherFactory,
       URLFetcher::RequestType request_type,
       URLFetcherDelegate* d,
       net::NetworkTrafficAnnotationTag traffic_annotation) override {
-    return std::unique_ptr<URLFetcher>(
-        CreateURLFetcherMock(id, url, request_type, d, traffic_annotation));
+    return CreateURLFetcherMock(id, url, request_type, d, traffic_annotation);
   }
 };
 
@@ -88,16 +88,13 @@ class MockApiCallFlow : public OAuth2ApiCallFlow {
   MockApiCallFlow() {}
   ~MockApiCallFlow() {}
 
-  MOCK_METHOD0(CreateApiCallUrl, GURL ());
-  MOCK_METHOD0(CreateApiCallBody, std::string ());
-  MOCK_METHOD1(ProcessApiCallSuccess,
-      void (const URLFetcher* source));
-  MOCK_METHOD1(ProcessApiCallFailure,
-      void (const URLFetcher* source));
-  MOCK_METHOD1(ProcessNewAccessToken,
-      void (const std::string& access_token));
+  MOCK_METHOD0(CreateApiCallUrl, GURL());
+  MOCK_METHOD0(CreateApiCallBody, std::string());
+  MOCK_METHOD1(ProcessApiCallSuccess, void(const URLFetcher* source));
+  MOCK_METHOD1(ProcessApiCallFailure, void(const URLFetcher* source));
+  MOCK_METHOD1(ProcessNewAccessToken, void(const std::string& access_token));
   MOCK_METHOD1(ProcessMintAccessTokenFailure,
-      void (const GoogleServiceAuthError& error));
+               void(const GoogleServiceAuthError& error));
 
   net::PartialNetworkTrafficAnnotationTag GetNetworkTrafficAnnotationTag() {
     return PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS;
@@ -109,13 +106,15 @@ class MockApiCallFlow : public OAuth2ApiCallFlow {
 class OAuth2ApiCallFlowTest : public testing::Test {
  protected:
   OAuth2ApiCallFlowTest()
-      : request_context_getter_(new net::TestURLRequestContextGetter(
-            message_loop_.task_runner())) {}
+      : request_context_getter_(
+            base::MakeRefCounted<net::TestURLRequestContextGetter>(
+                message_loop_.task_runner())) {}
 
-  TestURLFetcher* CreateURLFetcher(
-      const GURL& url, bool fetch_succeeds,
-      int response_code, const std::string& body) {
-    TestURLFetcher* url_fetcher = new TestURLFetcher(0, url, &flow_);
+  std::unique_ptr<TestURLFetcher> CreateURLFetcher(const GURL& url,
+                                                   bool fetch_succeeds,
+                                                   int response_code,
+                                                   const std::string& body) {
+    auto url_fetcher = std::make_unique<TestURLFetcher>(0, url, &flow_);
     net::Error error = fetch_succeeds ? net::OK : net::ERR_FAILED;
     url_fetcher->set_status(URLRequestStatus::FromError(error));
 
@@ -133,11 +132,12 @@ class OAuth2ApiCallFlowTest : public testing::Test {
     GURL url(CreateApiUrl());
     EXPECT_CALL(flow_, CreateApiCallBody()).WillOnce(Return(body));
     EXPECT_CALL(flow_, CreateApiCallUrl()).WillOnce(Return(url));
-    TestURLFetcher* url_fetcher =
+    std::unique_ptr<TestURLFetcher> url_fetcher =
         CreateURLFetcher(url, succeeds, status, std::string());
+    TestURLFetcher* url_fetcher_ptr = url_fetcher.get();
     EXPECT_CALL(factory_, CreateURLFetcherMock(_, url, _, _, _))
-        .WillOnce(Return(url_fetcher));
-    return url_fetcher;
+        .WillOnce(Return(ByMove(std::move(url_fetcher))));
+    return url_fetcher_ptr;
   }
 
   base::MessageLoop message_loop_;
