@@ -710,4 +710,9 @@ bool ContentBrowserClient::HandleExternalProtocol(
   return true;
 }
 
+std::unique_ptr<OverlayWindow>
+ContentBrowserClient::CreateWindowForPictureInPicture() {
+  return nullptr;
+}
+
 }  // namespace content

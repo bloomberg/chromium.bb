@@ -1,0 +1,45 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_PUBLIC_BROWSER_PICTURE_IN_PICTURE_WINDOW_CONTROLLER_H_
+#define CONTENT_PUBLIC_BROWSER_PICTURE_IN_PICTURE_WINDOW_CONTROLLER_H_
+
+#include "content/common/content_export.h"
+
+namespace viz {
+class SurfaceId;
+}  // namespace viz
+
+namespace content {
+class OverlayWindow;
+class WebContents;
+
+// Interface for Picture in Picture window controllers. This is currently tied
+// to a WebContents |initiator| and created when a Picture in Picture window is
+// to be shown. This allows creation of a single window for the initiator
+// WebContents.
+class PictureInPictureWindowController {
+ public:
+  // Gets a reference to the controller associated with |initiator| and creates
+  // one if it does not exist. The returned pointer is guaranteed to be
+  // non-null.
+  CONTENT_EXPORT static PictureInPictureWindowController*
+  GetOrCreateForWebContents(WebContents* initiator);
+
+  virtual ~PictureInPictureWindowController() = default;
+
+  virtual void Show() = 0;
+  virtual void Close() = 0;
+  virtual void EmbedSurface(viz::SurfaceId) = 0;
+  virtual OverlayWindow* GetWindowForTesting() = 0;
+
+ protected:
+  // Use PictureInPictureWindowController::GetOrCreateForWebContents() to
+  // create an instance.
+  PictureInPictureWindowController() = default;
+};
+
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_PICTURE_IN_PICTURE_WINDOW_CONTROLLER_H_

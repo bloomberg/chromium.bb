@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/overlay_window.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/media_stream_request.h"
@@ -1150,6 +1151,13 @@ class CONTENT_EXPORT ContentBrowserClient {
       bool is_main_frame,
       ui::PageTransition page_transition,
       bool has_user_gesture);
+
+  // Creates an OverlayWindow to be used for Picture-in-Picture. This window
+  // will house the content shown when in Picture-in-Picture mode. This will
+  // return a new OverlayWindow.
+  // May return nullptr if embedder does not support this functionality. The
+  // default implementation provides nullptr OverlayWindow.
+  virtual std::unique_ptr<OverlayWindow> CreateWindowForPictureInPicture();
 };
 
 }  // namespace content

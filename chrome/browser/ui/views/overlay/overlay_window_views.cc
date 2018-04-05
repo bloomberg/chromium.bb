@@ -14,7 +14,7 @@
 #include "ui/views/widget/widget_delegate.h"
 
 // static
-std::unique_ptr<OverlayWindow> OverlayWindow::Create() {
+std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create() {
   return base::WrapUnique(new OverlayWindowViews());
 }
 
