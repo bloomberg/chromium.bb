@@ -210,7 +210,7 @@ void BaseArena::MakeConsistentForMutator() {
   }
   DCHECK(SweepingCompleted());
 
-  Verify();
+  VerifyObjectStartBitmap();
 }
 
 size_t BaseArena::ObjectPayloadSizeForTesting() {
@@ -232,7 +232,7 @@ void BaseArena::PrepareForSweep() {
   ClearFreeLists();
 
   // Verification depends on the allocation point being cleared.
-  Verify();
+  VerifyObjectStartBitmap();
 
   for (BasePage* page = first_page_; page; page = page->Next()) {
     page->MarkAsUnswept();
@@ -584,11 +584,14 @@ void NormalPageArena::SweepAndCompact() {
   heap.Compaction()->FinishedArenaCompaction(this, freed_page_count,
                                              freed_size);
 
-  Verify();
+  VerifyObjectStartBitmap();
 }
 
-void NormalPageArena::Verify() {
+void NormalPageArena::VerifyObjectStartBitmap() {
 #if DCHECK_IS_ON()
+  // Verifying object start bitmap requires iterability of pages. As compaction
+  // may set up a new we have to reset here.
+  SetAllocationPoint(nullptr, 0);
   for (NormalPage* page = static_cast<NormalPage*>(first_page_); page;
        page = static_cast<NormalPage*>(page->Next()))
     page->VerifyObjectStartBitmapIsConsistentWithPayload();

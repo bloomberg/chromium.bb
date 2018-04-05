@@ -774,7 +774,7 @@ class PLATFORM_EXPORT BaseArena {
 
   bool WillObjectBeLazilySwept(BasePage*, void*) const;
 
-  virtual void Verify(){};
+  virtual void VerifyObjectStartBitmap(){};
   virtual void VerifyMarking(){};
 
  protected:
@@ -836,7 +836,7 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
 
   void SweepAndCompact();
 
-  void Verify() override;
+  void VerifyObjectStartBitmap() override;
   void VerifyMarking() override;
 
   Address CurrentAllocationPoint() const { return current_allocation_point_; }
