@@ -112,7 +112,10 @@ bool WebFrame::Swap(WebFrame* frame) {
             local_frame.View());
       }
     } else {
-      local_frame.GetPage()->SetMainFrame(&local_frame);
+      Page* other_page = local_frame.GetPage();
+      other_page->SetMainFrame(&local_frame);
+      if (PageScheduler* page_scheduler = other_page->GetPageScheduler())
+        page_scheduler->SetIsMainFrameLocal(true);
       // This trace event is needed to detect the main frame of the
       // renderer in telemetry metrics. See crbug.com/692112#c11.
       TRACE_EVENT_INSTANT1("loading", "markAsMainFrame",

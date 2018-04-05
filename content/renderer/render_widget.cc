@@ -391,7 +391,6 @@ RenderWidget::RenderWidget(
       closing_(false),
       host_closing_(false),
       is_swapped_out_(swapped_out),
-      for_oopif_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
       text_input_flags_(0),
@@ -408,6 +407,7 @@ RenderWidget::RenderWidget(
       has_host_context_menu_location_(false),
       has_added_input_handler_(false),
       has_focus_(false),
+      for_oopif_(false),
 #if defined(OS_MACOSX)
       text_input_client_observer_(new TextInputClientObserver(this)),
 #endif

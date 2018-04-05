@@ -46,6 +46,8 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   void SetPageVisible(bool page_visible) override;
   void SetPageFrozen(bool) override;
   void SetKeepActive(bool) override;
+  bool IsMainFrameLocal() const override;
+  void SetIsMainFrameLocal(bool is_local) override;
 
   std::unique_ptr<FrameScheduler> CreateFrameScheduler(
       BlameContext*,
@@ -118,6 +120,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool reported_background_throttling_since_navigation_;
   bool has_active_connection_;
   bool nested_runloop_;
+  bool is_main_frame_local_;
   CPUTimeBudgetPool* background_time_budget_pool_;  // Not owned.
   PageScheduler::Delegate* delegate_;               // Not owned.
   base::WeakPtrFactory<PageSchedulerImpl> weak_factory_;

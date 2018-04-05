@@ -14,6 +14,7 @@
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
+#include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/loader/fetch/ResourceRequest.h"
@@ -36,7 +37,11 @@ inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
 RemoteFrame* RemoteFrame::Create(RemoteFrameClient* client,
                                  Page& page,
                                  FrameOwner* owner) {
-  return new RemoteFrame(client, page, owner);
+  RemoteFrame* frame = new RemoteFrame(client, page, owner);
+  PageScheduler* page_scheduler = page.GetPageScheduler();
+  if (frame->IsMainFrame() && page_scheduler)
+    page_scheduler->SetIsMainFrameLocal(false);
+  return frame;
 }
 
 RemoteFrame::~RemoteFrame() {

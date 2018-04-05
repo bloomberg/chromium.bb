@@ -778,9 +778,6 @@ class CONTENT_EXPORT RenderWidget
   // swapped out, the process can exit.
   bool is_swapped_out_;
 
-  // Whether this RenderWidget is for an out-of-process iframe or not.
-  bool for_oopif_;
-
   // Stores information about the current text input.
   blink::WebTextInputInfo text_input_info_;
 
@@ -944,6 +941,9 @@ class CONTENT_EXPORT RenderWidget
 
   // Indicates whether this widget has focus.
   bool has_focus_;
+
+  // Whether this RenderWidget is for an out-of-process iframe or not.
+  bool for_oopif_;
 
   // A callback into the creator/opener of this widget, to be executed when
   // WebWidgetClient::show() occurs.
