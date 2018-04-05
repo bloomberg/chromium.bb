@@ -117,7 +117,7 @@ void WebContentsViewAndroid::SetContentViewCore(ContentViewCore* cvc) {
     content_view_core_.reset(cvc);
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)
-    rwhv->UpdateNativeViewTree(&view_);
+    rwhv->UpdateNativeViewTree(cvc ? &view_ : nullptr);
 
   if (web_contents_->ShowingInterstitialPage()) {
     rwhv = static_cast<RenderWidgetHostViewAndroid*>(
@@ -127,7 +127,7 @@ void WebContentsViewAndroid::SetContentViewCore(ContentViewCore* cvc) {
             ->GetWidget()
             ->GetView());
     if (rwhv)
-      rwhv->UpdateNativeViewTree(&view_);
+      rwhv->UpdateNativeViewTree(cvc ? &view_ : nullptr);
   }
 }
 
