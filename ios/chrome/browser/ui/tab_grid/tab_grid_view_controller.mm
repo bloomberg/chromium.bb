@@ -723,6 +723,7 @@ TabGridPage GetPageFromScrollView(UIScrollView* scrollView) {
       [self.incognitoTabsDelegate closeAllItems];
       break;
     case TabGridPageRegularTabs:
+      [self.incognitoTabsDelegate closeAllItems];
       [self.regularTabsDelegate closeAllItems];
       break;
     case TabGridPageRemoteTabs:
