@@ -14,7 +14,6 @@
 #include "base/win/scoped_winrt_initializer.h"
 #include "base/win/windows_types.h"
 #include "chrome/install_static/install_util.h"
-#include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/registry_key_backup.h"
 #include "chrome/installer/util/util_constants.h"
