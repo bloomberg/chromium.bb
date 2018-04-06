@@ -117,25 +117,17 @@ class WPTManifest(object):
         wpt_path = manifest_path = finder.path_from_layout_tests('external', 'wpt')
         WPTManifest.generate_manifest(host, wpt_path)
 
-        # Adding this log line to diagnose https://crbug.com/714503
         _log.debug('Manifest generation completed.')
 
     @staticmethod
     def generate_manifest(host, dest_path):
         """Generates MANIFEST.json on the specified directory."""
-        executive = host.executive
         finder = PathFinder(host.filesystem)
         wpt_exec_path = finder.path_from_tools_scripts('webkitpy', 'thirdparty', 'wpt', 'wpt', 'wpt')
-
         cmd = ['python', wpt_exec_path, 'manifest', '--work', '--tests-root', dest_path]
-        _log.debug('Running command: %s', ' '.join(cmd))
-        proc = executive.popen(cmd, stdout=executive.PIPE, stderr=executive.PIPE, stdin=executive.PIPE)
-        out, err = proc.communicate('')
-        if proc.returncode:
-            _log.info('# ret> %d', proc.returncode)
-            if out:
-                _log.info(out)
-            if err:
-                _log.info(err)
-            host.exit(proc.returncode)
-        return proc.returncode, out
+
+        # ScriptError will be raised if the command fails.
+        host.executive.run_command(
+            cmd,
+            return_stderr=True  # This will also include stderr in the exception message.
+        )

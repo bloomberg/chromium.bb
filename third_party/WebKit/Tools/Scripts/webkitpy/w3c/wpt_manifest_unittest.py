@@ -5,6 +5,8 @@
 import unittest
 
 from webkitpy.common.host_mock import MockHost
+from webkitpy.common.system.executive import ScriptError
+from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.w3c.wpt_manifest import WPTManifest
 
 
@@ -37,7 +39,7 @@ class WPTManifestUnitTest(unittest.TestCase):
         host = MockHost()
         manifest_path = '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/MANIFEST.json'
 
-        host.filesystem.write_binary_file(manifest_path, '{}')
+        host.filesystem.write_text_file(manifest_path, '{}')
         self.assertTrue(host.filesystem.exists(manifest_path))
 
         WPTManifest.ensure_manifest(host)
@@ -57,3 +59,10 @@ class WPTManifestUnitTest(unittest.TestCase):
                 ]
             ]
         )
+
+    def test_ensure_manifest_raises_exception(self):
+        host = MockHost()
+        host.executive = MockExecutive(should_throw=True)
+
+        with self.assertRaises(ScriptError):
+            WPTManifest.ensure_manifest(host)
