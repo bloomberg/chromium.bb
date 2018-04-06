@@ -10,6 +10,7 @@
 #include "ash/public/cpp/config.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "ui/views/widget/widget.h"
 
 namespace service_manager {
 class Service;
@@ -40,6 +41,13 @@ bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator);
 
 // Returns true if ash has an accelerator for |key_event| that is enabled.
 bool WillAshProcessAcceleratorForEvent(const ui::KeyEvent& key_event);
+
+// Sets up |params| to place the widget in an ash shell window container on
+// the primary display. See ash/public/cpp/shell_window_ids.h for |container_id|
+// values.
+// TODO(jamescook): Extend to take a display_id.
+void SetupWidgetInitParamsForContainer(views::Widget::InitParams* params,
+                                       int container_id);
 
 }  // namespace ash_util
 

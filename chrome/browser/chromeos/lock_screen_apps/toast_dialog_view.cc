@@ -7,14 +7,10 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/shell.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
-#include "services/ui/public/cpp/property_type_converters.h"
-#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -80,15 +76,8 @@ void ToastDialogView::Show() {
   views::Widget::InitParams params =
       GetDialogWidgetInitParams(this, nullptr, nullptr, gfx::Rect());
 
-  const int container_id = ash::kShellWindowId_SettingBubbleContainer;
-  if (ash_util::IsRunningInMash()) {
-    using ui::mojom::WindowManager;
-    params.mus_properties[WindowManager::kContainerId_InitProperty] =
-        mojo::ConvertTo<std::vector<uint8_t>>(container_id);
-  } else {
-    params.parent = ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
-                                             container_id);
-  }
+  ash_util::SetupWidgetInitParamsForContainer(
+      &params, ash::kShellWindowId_SettingBubbleContainer);
 
   views::Widget* widget = new views::Widget;  // owned by native widget
   widget->Init(params);
