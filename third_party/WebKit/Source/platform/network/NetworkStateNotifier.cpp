@@ -35,6 +35,7 @@
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/text/StringHash.h"
+#include "third_party/WebKit/public/common/client_hints/client_hints.h"
 
 namespace blink {
 
@@ -374,20 +375,8 @@ void NetworkStateNotifier::CollectZeroedObservers(
 // static
 String NetworkStateNotifier::EffectiveConnectionTypeToString(
     WebEffectiveConnectionType type) {
-  switch (type) {
-    case WebEffectiveConnectionType::kTypeUnknown:
-    case WebEffectiveConnectionType::kTypeOffline:
-    case WebEffectiveConnectionType::kType4G:
-      return "4g";
-    case WebEffectiveConnectionType::kTypeSlow2G:
-      return "slow-2g";
-    case WebEffectiveConnectionType::kType2G:
-      return "2g";
-    case WebEffectiveConnectionType::kType3G:
-      return "3g";
-  }
-  NOTREACHED();
-  return "4g";
+  DCHECK_GT(kWebEffectiveConnectionTypeMappingCount, static_cast<size_t>(type));
+  return kWebEffectiveConnectionTypeMapping[static_cast<int>(type)];
 }
 
 double NetworkStateNotifier::GetRandomMultiplier(const String& host) const {

@@ -81,6 +81,10 @@ GetAdditionalNavigationRequestClientHintsHeaders(
     content::BrowserContext* context,
     const GURL& url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(blink::kWebEffectiveConnectionTypeMappingCount,
+            net::EFFECTIVE_CONNECTION_TYPE_4G + 1u);
+  DCHECK_EQ(blink::kWebEffectiveConnectionTypeMappingCount,
+            net::EFFECTIVE_CONNECTION_TYPE_LAST);
 
   // Get the client hint headers.
   if (!url.is_valid())

@@ -18,6 +18,17 @@ BLINK_COMMON_EXPORT extern const char* const kClientHintsHeaderMapping[];
 
 BLINK_COMMON_EXPORT extern const size_t kClientHintsHeaderMappingCount;
 
+// Mapping from WebEffectiveConnectionType to the header value. This value is
+// sent to the origins and is returned by the JavaScript API. The ordering
+// should match the ordering in //net/nqe/effective_connection_type.h and
+// public/platform/WebEffectiveConnectionType.h.
+// This array should be updated if either of the enums in
+// effective_connection_type.h or WebEffectiveConnectionType.h are updated.
+BLINK_COMMON_EXPORT extern const char* const
+    kWebEffectiveConnectionTypeMapping[];
+
+BLINK_COMMON_EXPORT extern const size_t kWebEffectiveConnectionTypeMappingCount;
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_WEBKIT_PUBLIC_COMMON_CLIENT_HINTS_CLIENT_HINTS_H_
