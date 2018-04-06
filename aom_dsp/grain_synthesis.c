@@ -338,7 +338,8 @@ static void dealloc_arrays(aom_film_grain_t *params, int ***pred_pos_luma,
                            int **cr_line_buf, int **y_col_buf, int **cb_col_buf,
                            int **cr_col_buf) {
   int num_pos_luma = 2 * params->ar_coeff_lag * (params->ar_coeff_lag + 1);
-  int num_pos_chroma = num_pos_luma + 1;
+  int num_pos_chroma = num_pos_luma;
+  if (params->num_y_points > 0) ++num_pos_chroma;
 
   for (int row = 0; row < num_pos_luma; row++) {
     aom_free((*pred_pos_luma)[row]);
@@ -813,13 +814,14 @@ static void extend_even(uint8_t *dst, int dst_stride, int width, int height,
   if ((width & 1) == 0 && (height & 1) == 0) return;
   if (use_high_bit_depth) {
     uint16_t *dst16 = (uint16_t *)dst;
+    int dst16_stride = dst_stride / 2;
     if (width & 1) {
       for (int i = 0; i < height; ++i)
-        dst16[i * dst_stride + width] = dst16[i * dst_stride + width - 1];
+        dst16[i * dst16_stride + width] = dst16[i * dst16_stride + width - 1];
     }
     width = (width + 1) & (~1);
     if (height & 1) {
-      memcpy(&dst16[height * dst_stride], &dst16[(height - 1) * dst_stride],
+      memcpy(&dst16[height * dst16_stride], &dst16[(height - 1) * dst16_stride],
              sizeof(*dst16) * width);
     }
   } else {
