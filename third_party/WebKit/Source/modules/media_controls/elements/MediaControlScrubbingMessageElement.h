@@ -5,16 +5,22 @@
 #ifndef MediaControlScrubbingMessageElement_h
 #define MediaControlScrubbingMessageElement_h
 
+#include "modules/ModulesExport.h"
 #include "modules/media_controls/elements/MediaControlDivElement.h"
 
 namespace blink {
 
 class MediaControlsImpl;
 
-class MediaControlScrubbingMessageElement final
+class MODULES_EXPORT MediaControlScrubbingMessageElement final
     : public MediaControlDivElement {
  public:
   explicit MediaControlScrubbingMessageElement(MediaControlsImpl&);
+
+  void SetIsWanted(bool) final;
+
+ private:
+  void PopulateChildren();
 };
 
 }  // namespace blink

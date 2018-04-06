@@ -27,7 +27,7 @@ class MODULES_EXPORT MediaControlElementBase : public GarbageCollectedMixin {
  public:
   // These hold the state about whether this control should be shown if
   // space permits.  These will also show / hide as needed.
-  void SetIsWanted(bool);
+  virtual void SetIsWanted(bool);
   bool IsWanted() const;
 
   // Tell us whether we fit or not.  This will hide / show the control as

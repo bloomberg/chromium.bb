@@ -19,7 +19,10 @@ MediaControlScrubbingMessageElement::MediaControlScrubbingMessageElement(
     : MediaControlDivElement(media_controls, kMediaScrubbingMessage) {
   SetShadowPseudoId(AtomicString("-internal-media-controls-scrubbing-message"));
   CreateShadowRootInternal();
+  SetIsWanted(false);
+}
 
+void MediaControlScrubbingMessageElement::PopulateChildren() {
   ShadowRoot* shadow_root = GetShadowRoot();
 
   // This stylesheet element will contain rules that are specific to the
@@ -53,8 +56,14 @@ MediaControlScrubbingMessageElement::MediaControlScrubbingMessageElement(
       MediaControlsResourceLoader::GetArrowRightSVGImage());
   arrow_right_div2->SetInnerHTMLFromString(
       MediaControlsResourceLoader::GetArrowRightSVGImage());
+}
 
-  SetIsWanted(false);
+void MediaControlScrubbingMessageElement::SetIsWanted(bool wanted) {
+  // Populate the DOM on demand.
+  if (wanted && !GetShadowRoot()->firstChild())
+    PopulateChildren();
+
+  MediaControlDivElement::SetIsWanted(wanted);
 }
 
 }  // namespace blink

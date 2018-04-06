@@ -271,6 +271,7 @@ jumbo_source_set("unit_tests") {
     "media_controls/elements/MediaControlInputElementTest.cpp",
     "media_controls/elements/MediaControlLoadingPanelElementTest.cpp",
     "media_controls/elements/MediaControlOverlayPlayButtonElementTest.cpp",
+    "media_controls/elements/MediaControlScrubbingMessageElementTest.cpp",
     "media_controls/elements/MediaControlTimelineElementTest.cpp",
     "media_controls/elements/MediaControlToggleClosedCaptionsButtonElementTest.cpp",
     "mediastream/MediaConstraintsTest.cpp",
