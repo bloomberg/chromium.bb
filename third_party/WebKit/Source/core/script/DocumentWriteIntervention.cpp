@@ -53,8 +53,8 @@ void EmitErrorBlocked(const String& url, Document& document) {
       url +
       ", invoked via document.write was BLOCKED by the browser due to poor "
       "network connectivity. ";
-  document.AddConsoleMessage(
-      ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
+  document.AddConsoleMessage(ConsoleMessage::Create(
+      kInterventionMessageSource, kErrorMessageLevel, message));
 }
 
 void AddWarningHeader(FetchParameters* params) {
