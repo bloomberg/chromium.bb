@@ -367,14 +367,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // See also https://crbug.com/825369
   virtual bool ShouldEnableStrictSiteIsolation();
 
-  // Allows //content embedders to check if --site-per-process has been enabled
-  // (via cmdline flag or via a field trial).
-  //
-  // TODO(lukasza, weili): https://crbug.com/824867: Remove this method after
-  // shipping OOPIF printing (the only caller is in
-  // components/printing/browser/print_manager_utils.cc).
-  static bool IsStrictSiteIsolationEnabled();
-
   // Indicates whether a file path should be accessible via file URL given a
   // request from a browser context which lives within |profile_path|.
   virtual bool IsFileAccessAllowed(const base::FilePath& path,
