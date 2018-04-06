@@ -1118,15 +1118,17 @@ void HWNDMessageHandler::ApplyPanGestureEvent(
   gfx::Point cursor_location(location);
   gfx::Point cursor_root_location(root_location);
 
+  int modifiers = ui::GetModifiersFromKeyState();
+
   if (IsPrecisionTouchpadNavigationGestureEnabled()) {
     ui::ScrollEvent event(ui::ET_SCROLL, cursor_location, ui::EventTimeForNow(),
-                          ui::EF_NONE, scroll_x, scroll_y, scroll_x, scroll_y,
-                          2, momentum_phase, phase);
+                          modifiers, scroll_x, scroll_y, scroll_x, scroll_y, 2,
+                          momentum_phase, phase);
     delegate_->HandleScrollEvent(&event);
   } else {
     ui::MouseWheelEvent wheel_event(
         offset, cursor_location, cursor_root_location, base::TimeTicks::Now(),
-        ui::EF_PRECISION_SCROLLING_DELTA, ui::EF_NONE);
+        modifiers | ui::EF_PRECISION_SCROLLING_DELTA, ui::EF_NONE);
     delegate_->HandleMouseEvent(&wheel_event);
   }
 }
