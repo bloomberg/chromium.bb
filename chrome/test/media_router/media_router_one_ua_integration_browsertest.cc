@@ -106,8 +106,14 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
   RunReconnectSessionTest();
 }
 
+// TODO(crbug.com/826016): Crashes on ASAN.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ReconnectSessionSameTab MANUAL_ReconnectSessionSameTab
+#else
+#define MAYBE_ReconnectSessionSameTab ReconnectSessionSameTab
+#endif
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUANoReceiverBrowserTest,
-                       ReconnectSessionSameTab) {
+                       MAYBE_ReconnectSessionSameTab) {
   RunReconnectSessionSameTabTest();
 }
 
