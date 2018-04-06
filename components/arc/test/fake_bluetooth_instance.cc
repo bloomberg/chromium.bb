@@ -108,17 +108,20 @@ void FakeBluetoothInstance::OnGattNotify(
     bool is_notify,
     const std::vector<uint8_t>& value) {}
 
-void FakeBluetoothInstance::RequestGattRead(mojom::BluetoothAddressPtr address,
-                                            int32_t attribute_handle,
-                                            int32_t offset,
-                                            bool is_long,
-                                            RequestGattReadCallback callback) {}
+void FakeBluetoothInstance::RequestGattRead(
+    mojom::BluetoothAddressPtr address,
+    int32_t attribute_handle,
+    int32_t offset,
+    bool is_long,
+    mojom::BluetoothGattDBAttributeType attribute_type,
+    RequestGattReadCallback callback) {}
 
 void FakeBluetoothInstance::RequestGattWrite(
     mojom::BluetoothAddressPtr address,
     int32_t attribute_handle,
     int32_t offset,
     const std::vector<uint8_t>& value,
+    mojom::BluetoothGattDBAttributeType attribute_type,
     RequestGattWriteCallback callback) {}
 
 void FakeBluetoothInstance::OnGetSdpRecords(

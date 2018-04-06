@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 9
+// Next MinVersion: 10
 
 module arc.mojom;
 
@@ -451,15 +451,19 @@ interface BluetoothInstance {
                                  array<uint8> value);
 
   // Bluetooth Gatt Server functions
-  [MinVersion=3] RequestGattRead@14(BluetoothAddress address,
-                                    int32 attribute_handle,
-                                    int32 offset,
-                                    bool is_long)
+  [MinVersion=3] RequestGattRead@14(
+      BluetoothAddress address,
+      int32 attribute_handle,
+      int32 offset,
+      bool is_long,
+      [MinVersion=9] BluetoothGattDBAttributeType attribute_type)
       => (BluetoothGattStatus status, array<uint8> value);
-  [MinVersion=3] RequestGattWrite@15(BluetoothAddress address,
-                                     int32 attribute_handle,
-                                     int32 offset,
-                                     array<uint8> value)
+  [MinVersion=3] RequestGattWrite@15(
+      BluetoothAddress address,
+      int32 attribute_handle,
+      int32 offset,
+      array<uint8> value,
+      [MinVersion=9] BluetoothGattDBAttributeType attribute_type)
       => (BluetoothGattStatus status);
 
   // Bluetooth SDP function
