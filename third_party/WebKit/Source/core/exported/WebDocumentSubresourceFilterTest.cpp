@@ -28,17 +28,23 @@ namespace {
 
 class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
  public:
-  explicit TestDocumentSubresourceFilter(bool allow_loads)
-      : allow_loads_(allow_loads) {}
+  explicit TestDocumentSubresourceFilter(LoadPolicy policy)
+      : load_policy_(policy) {}
 
   LoadPolicy GetLoadPolicy(const WebURL& resource_url,
                            WebURLRequest::RequestContext) override {
     std::string resource_path = WebString(KURL(resource_url).GetPath()).Utf8();
     if (std::find(queried_subresource_paths_.begin(),
                   queried_subresource_paths_.end(),
-                  resource_path) == queried_subresource_paths_.end())
+                  resource_path) == queried_subresource_paths_.end()) {
       queried_subresource_paths_.push_back(resource_path);
-    return allow_loads_ ? kAllow : kDisallow;
+    }
+    String resource_string = resource_url.GetString();
+    for (const String& suffix : blacklisted_suffixes_) {
+      if (resource_string.EndsWith(suffix))
+        return load_policy_;
+    }
+    return LoadPolicy::kAllow;
   }
 
   LoadPolicy GetLoadPolicyForWebSocketConnect(const WebURL& url) override {
@@ -49,6 +55,10 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
 
   bool ShouldLogToConsole() override { return false; }
 
+  void AddToBlacklist(const String& suffix) {
+    blacklisted_suffixes_.push_back(suffix);
+  }
+
   const std::vector<std::string>& QueriedSubresourcePaths() const {
     return queried_subresource_paths_;
   }
@@ -56,8 +66,10 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
   bool GetIsAssociatedWithAdSubframe() const override { return false; }
 
  private:
+  // Using STL types for compatibility with gtest/gmock.
   std::vector<std::string> queried_subresource_paths_;
-  bool allow_loads_;
+  Vector<String> blacklisted_suffixes_;
+  LoadPolicy load_policy_;
 };
 
 class SubresourceFilteringWebFrameClient
@@ -69,12 +81,14 @@ class SubresourceFilteringWebFrameClient
     // the sake of this test, however, inject it earlier to verify that it
     // is not consulted for the main resource load.
     subresource_filter_ =
-        new TestDocumentSubresourceFilter(allow_subresources_from_next_load_);
+        new TestDocumentSubresourceFilter(load_policy_for_next_load_);
+    subresource_filter_->AddToBlacklist("1x1.png");
     data_source->SetSubresourceFilter(subresource_filter_);
   }
 
-  void SetAllowSubresourcesFromNextLoad(bool allow) {
-    allow_subresources_from_next_load_ = allow;
+  void SetLoadPolicyFromNextLoad(
+      TestDocumentSubresourceFilter::LoadPolicy policy) {
+    load_policy_for_next_load_ = policy;
   }
   const TestDocumentSubresourceFilter* SubresourceFilter() const {
     return subresource_filter_;
@@ -83,7 +97,7 @@ class SubresourceFilteringWebFrameClient
  private:
   // Weak, owned by WebDocumentLoader.
   TestDocumentSubresourceFilter* subresource_filter_ = nullptr;
-  bool allow_subresources_from_next_load_ = false;
+  TestDocumentSubresourceFilter::LoadPolicy load_policy_for_next_load_;
 };
 
 }  // namespace
@@ -96,8 +110,8 @@ class WebDocumentSubresourceFilterTest : public testing::Test {
     web_view_helper_.Initialize(&client_);
   }
 
-  void LoadDocument(bool allow_subresources) {
-    client_.SetAllowSubresourcesFromNextLoad(allow_subresources);
+  void LoadDocument(TestDocumentSubresourceFilter::LoadPolicy policy) {
+    client_.SetLoadPolicyFromNextLoad(policy);
     FrameTestHelpers::LoadFrame(MainFrame(), BaseURL() + "foo_with_image.html");
   }
 
@@ -133,7 +147,7 @@ class WebDocumentSubresourceFilterTest : public testing::Test {
 };
 
 TEST_F(WebDocumentSubresourceFilterTest, AllowedSubresource) {
-  LoadDocument(true /* allowSubresources */);
+  LoadDocument(TestDocumentSubresourceFilter::kAllow);
   ExpectSubresourceWasLoaded(true);
   // The filter should not be consulted for the main document resource.
   EXPECT_THAT(QueriedSubresourcePaths(),
@@ -141,20 +155,20 @@ TEST_F(WebDocumentSubresourceFilterTest, AllowedSubresource) {
 }
 
 TEST_F(WebDocumentSubresourceFilterTest, DisallowedSubresource) {
-  LoadDocument(false /* allowSubresources */);
+  LoadDocument(TestDocumentSubresourceFilter::kDisallow);
   ExpectSubresourceWasLoaded(false);
 }
 
 TEST_F(WebDocumentSubresourceFilterTest, FilteringDecisionIsMadeLoadByLoad) {
-  for (const bool allow_subresources : {false, true}) {
-    SCOPED_TRACE(testing::Message()
-                 << "First load allows subresources = " << allow_subresources);
+  for (const TestDocumentSubresourceFilter::LoadPolicy policy :
+       {TestDocumentSubresourceFilter::kDisallow,
+        TestDocumentSubresourceFilter::kAllow,
+        TestDocumentSubresourceFilter::kWouldDisallow}) {
+    SCOPED_TRACE(testing::Message() << "First load policy= " << policy);
 
-    LoadDocument(allow_subresources);
-    ExpectSubresourceWasLoaded(allow_subresources);
-
-    LoadDocument(!allow_subresources);
-    ExpectSubresourceWasLoaded(!allow_subresources);
+    LoadDocument(policy);
+    ExpectSubresourceWasLoaded(policy !=
+                               TestDocumentSubresourceFilter::kDisallow);
     EXPECT_THAT(QueriedSubresourcePaths(),
                 testing::ElementsAre("/white-1x1.png"));
 
