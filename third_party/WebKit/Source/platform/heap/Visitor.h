@@ -129,7 +129,10 @@ class PLATFORM_EXPORT Visitor {
   }
 
   template <typename T>
-  void TraceBackingStoreWeakly(T* backing_store, T** backing_store_slot) {
+  void TraceBackingStoreWeakly(T* backing_store,
+                               T** backing_store_slot,
+                               WeakCallback callback,
+                               void* parameter) {
     static_assert(sizeof(T), "T must be fully defined");
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
@@ -139,7 +142,20 @@ class PLATFORM_EXPORT Visitor {
     VisitBackingStoreWeakly(reinterpret_cast<void*>(backing_store),
                             reinterpret_cast<void**>(backing_store_slot),
                             TraceTrait<T>::GetTraceDescriptor(
-                                reinterpret_cast<void*>(backing_store)));
+                                reinterpret_cast<void*>(backing_store)),
+                            callback, parameter);
+  }
+
+  template <typename T>
+  void TraceBackingStoreOnly(T* backing_store, T** backing_store_slot) {
+    static_assert(sizeof(T), "T must be fully defined");
+    static_assert(IsGarbageCollectedType<T>::value,
+                  "T needs to be a garbage collected object");
+
+    if (!backing_store)
+      return;
+    VisitBackingStoreOnly(reinterpret_cast<void*>(backing_store),
+                          reinterpret_cast<void**>(backing_store_slot));
   }
 
   // WeakMember version of the templated trace method. It doesn't keep
@@ -202,7 +218,12 @@ class PLATFORM_EXPORT Visitor {
 
   // Visitors for collection backing stores.
   virtual void VisitBackingStoreStrongly(void*, void**, TraceDescriptor) = 0;
-  virtual void VisitBackingStoreWeakly(void*, void**, TraceDescriptor) = 0;
+  virtual void VisitBackingStoreWeakly(void*,
+                                       void**,
+                                       TraceDescriptor,
+                                       WeakCallback,
+                                       void*) = 0;
+  virtual void VisitBackingStoreOnly(void*, void**) = 0;
 
   // Registers backing store pointers so that they can be moved and properly
   // updated.

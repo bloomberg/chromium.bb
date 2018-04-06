@@ -71,8 +71,6 @@ using NotFullyConstructedItem = void*;
 using MarkingWorklist = Worklist<MarkingItem, 512 /* local entries */>;
 using NotFullyConstructedWorklist =
     Worklist<NotFullyConstructedItem, 16 /* local entries */>;
-using PostMarkingWorklist =
-    Worklist<CustomCallbackItem, 128 /* local entries */>;
 using WeakCallbackWorklist =
     Worklist<CustomCallbackItem, 256 /* local entries */>;
 
@@ -255,10 +253,6 @@ class PLATFORM_EXPORT ThreadHeap {
     return not_fully_constructed_worklist_.get();
   }
 
-  PostMarkingWorklist* GetPostMarkingWorklist() const {
-    return post_marking_worklist_.get();
-  }
-
   WeakCallbackWorklist* GetWeakCallbackWorklist() const {
     return weak_callback_worklist_.get();
   }
@@ -348,7 +342,6 @@ class PLATFORM_EXPORT ThreadHeap {
   static Address Reallocate(void* previous, size_t);
 
   void ProcessMarkingStack(Visitor*);
-  void PostMarkingProcessing(Visitor*);
   void WeakProcessing(Visitor*);
   void MarkNotFullyConstructedObjects(Visitor*);
   bool AdvanceMarkingStackProcessing(Visitor*, double deadline_seconds);
@@ -513,7 +506,6 @@ class PLATFORM_EXPORT ThreadHeap {
   std::unique_ptr<PagePool> free_page_pool_;
   std::unique_ptr<MarkingWorklist> marking_worklist_;
   std::unique_ptr<NotFullyConstructedWorklist> not_fully_constructed_worklist_;
-  std::unique_ptr<PostMarkingWorklist> post_marking_worklist_;
   std::unique_ptr<WeakCallbackWorklist> weak_callback_worklist_;
   // No duplicates allowed for ephemeron callbacks. Hence, we use a hashmap
   // with the key being the HashTable.

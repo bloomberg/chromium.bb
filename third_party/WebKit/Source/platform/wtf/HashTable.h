@@ -2023,8 +2023,14 @@ struct WeakProcessingHashTableHelper<kWeakHandling,
   // Used for purely weak and for weak-and-strong tables (ephemerons).
   static void Process(typename Allocator::Visitor* visitor, void* closure) {
     HashTableType* table = reinterpret_cast<HashTableType*>(closure);
+    // During incremental marking, the table may be freed after the callback has
+    // been registered.
     if (!table->table_)
       return;
+
+    // Only trace the backing store. Its fields will be processed below.
+    Allocator::template TraceHashTableBackingOnly<ValueType, HashTableType>(
+        visitor, table->table_, &(table->table_));
     // Now perform weak processing (this is a no-op if the backing was
     // accessible through an iterator and was already marked strongly).
     for (ValueType* element = table->table_ + table->table_size_ - 1;
@@ -2091,18 +2097,15 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     // Weak HashTable. The HashTable may be held alive strongly from somewhere
     // else, e.g., an iterator.
 
-    // Marking of the table is delayed because the backing store is potentially
-    // held alive strongly by other objects. Delayed marking happens after
-    // regular marking.
+    // Trace the table weakly. For marking this will result in delaying the
+    // processing until the end of the atomic pause. It is safe to trace
+    // weakly multiple times.
     Allocator::template TraceHashTableBackingWeakly<ValueType, HashTable>(
-        visitor, table_, &table_);
-
-    // It is safe to register the table multiple times.
-    Allocator::RegisterWeakMembers(
-        visitor, this,
+        visitor, table_, &table_,
         WeakProcessingHashTableHelper<Traits::kWeakHandlingFlag, Key, Value,
                                       Extractor, HashFunctions, Traits,
-                                      KeyTraits, Allocator>::Process);
+                                      KeyTraits, Allocator>::Process,
+        this);
 
     if (IsTraceableInCollectionTrait<Traits>::value) {
       // Mix of strong and weak fields. We use an approach similar to ephemeron

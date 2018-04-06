@@ -111,17 +111,21 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
     Visit(object, desc);
   }
 
-  // Used to delay the marking of objects until the usual marking including
-  // ephemeron iteration is done. This is used to delay the marking of
-  // collection backing stores until we know if they are reachable from
-  // locations other than the collection front object. If collection backings
-  // are reachable from other locations we strongify them to avoid issues with
-  // iterators and weak processing.
+  // All work is registered through RegisterWeakCallback.
   void VisitBackingStoreWeakly(void* object,
                                void** object_slot,
-                               TraceDescriptor desc) final {
+                               TraceDescriptor desc,
+                               WeakCallback callback,
+                               void* parameter) final {
+    RegisterWeakCallback(parameter, callback);
+  }
+
+  // Used to only mark the backing store when it has been registered for weak
+  // processing. In this case, the contents are processed separately using
+  // the corresponding traits but the backing store requires marking.
+  void VisitBackingStoreOnly(void* object, void** object_slot) final {
+    MarkHeaderNoTracing(HeapObjectHeader::FromPayload(object));
     RegisterBackingStoreReference(object_slot);
-    post_marking_worklist_.Push({object, &MarkNoTracingCallback});
   }
 
   void RegisterBackingStoreCallback(void* backing_store,
@@ -132,15 +136,12 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
   void RegisterWeakCallback(void* closure, WeakCallback) final;
 
  private:
-  static void MarkNoTracingCallback(Visitor*, void*);
-
   void RegisterBackingStoreReference(void* slot);
 
   void ConservativelyMarkHeader(HeapObjectHeader*);
 
   MarkingWorklist::View marking_worklist_;
   NotFullyConstructedWorklist::View not_fully_constructed_worklist_;
-  PostMarkingWorklist::View post_marking_worklist_;
   WeakCallbackWorklist::View weak_callback_worklist_;
   const MarkingMode marking_mode_;
 };
