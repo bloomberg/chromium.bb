@@ -396,6 +396,7 @@ source_set("unit_tests") {
     "//components/autofill/core/common",
     "//components/os_crypt:test_support",
     "//components/password_manager/core/browser:proto",
+    "//components/password_manager/core/browser/form_parsing/fuzzer:unit_tests",
     "//components/password_manager/core/common",
     "//components/prefs:test_support",
     "//components/security_state/core",
