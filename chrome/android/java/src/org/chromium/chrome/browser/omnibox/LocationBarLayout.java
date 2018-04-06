@@ -1003,7 +1003,7 @@ public class LocationBarLayout
     private void updateFocusedUrlBarSelection() {
         if (!mUrlBar.hasFocus()) return;
 
-        if (mToolbarDataProvider.isDisplayingQueryTerms()) {
+        if (mToolbarDataProvider.shouldDisplaySearchTerms()) {
             mUrlBar.setSelection(mUrlBar.getText().length());
         } else {
             selectAll();
@@ -1317,9 +1317,9 @@ public class LocationBarLayout
         } else {
             // For the default toolbar color, use a green or red icon.
             if (securityLevel == ConnectionSecurityLevel.DANGEROUS) {
-                assert !provider.isDisplayingQueryTerms();
+                assert !provider.shouldDisplaySearchTerms();
                 list = ApiCompatibilityUtils.getColorStateList(resources, R.color.google_red_700);
-            } else if (!provider.isDisplayingQueryTerms()
+            } else if (!provider.shouldDisplaySearchTerms()
                     && (securityLevel == ConnectionSecurityLevel.SECURE
                                || securityLevel == ConnectionSecurityLevel.EV_SECURE)) {
                 list = ApiCompatibilityUtils.getColorStateList(resources, R.color.google_green_700);
@@ -1363,7 +1363,7 @@ public class LocationBarLayout
     }
 
     private void emphasizeUrl() {
-        if (mToolbarDataProvider.isDisplayingQueryTerms()) return;
+        if (mToolbarDataProvider.shouldDisplaySearchTerms()) return;
         mUrlBar.emphasizeUrl();
     }
 
@@ -2075,14 +2075,14 @@ public class LocationBarLayout
 
     @Override
     public boolean shouldForceLTR() {
-        return !mToolbarDataProvider.isDisplayingQueryTerms();
+        return !mToolbarDataProvider.shouldDisplaySearchTerms();
     }
 
     @Override
     @UrlBar.ScrollType
     public int getScrollType() {
-        return mToolbarDataProvider.isDisplayingQueryTerms() ? UrlBar.SCROLL_TO_BEGINNING
-                                                             : UrlBar.SCROLL_TO_TLD;
+        return mToolbarDataProvider.shouldDisplaySearchTerms() ? UrlBar.SCROLL_TO_BEGINNING
+                                                               : UrlBar.SCROLL_TO_TLD;
     }
 
     /**
@@ -2142,12 +2142,12 @@ public class LocationBarLayout
      */
     @Override
     public void setUrlToPageUrl() {
-        String url = mToolbarDataProvider.getCurrentUrl();
+        String currentUrl = mToolbarDataProvider.getCurrentUrl();
 
         // If the URL is currently focused, do not replace the text they have entered with the URL.
         // Once they stop editing the URL, the current tab's URL will automatically be filled in.
         if (mUrlBar.hasFocus()) {
-            if (mUrlFocusedWithoutAnimations && !NewTabPage.isNTPUrl(url)) {
+            if (mUrlFocusedWithoutAnimations && !NewTabPage.isNTPUrl(currentUrl)) {
                 // If we did not run the focus animations, then the user has not typed any text.
                 // So, clear the focus and accept whatever URL the page is currently attempting to
                 // display. If the NTP is showing, the current page's URL should not be displayed.
@@ -2157,12 +2157,12 @@ public class LocationBarLayout
             }
         }
 
-        mOriginalUrl = url;
+        mOriginalUrl = currentUrl;
         String displayText = getDisplayText();
         if (TextUtils.isEmpty(displayText)) {
             setUrlBarText("", null);
         } else {
-            if (setUrlBarText(url, displayText)) {
+            if (setUrlBarText(currentUrl, displayText)) {
                 emphasizeUrl();
             }
         }
@@ -2278,17 +2278,11 @@ public class LocationBarLayout
             } else {
                 currentTab.loadUrl(loadUrlParams);
             }
-
-            setUrlToPageUrl();
             RecordUserAction.record("MobileOmniboxUse");
-        } else {
-            setUrlToPageUrl();
         }
-
         LocaleManager.getInstance().recordLocaleBasedSearchMetrics(false, url, transition);
 
         focusCurrentTab();
-
         // Prevent any upcoming omnibox suggestions from showing. We have to do this after we load
         // the URL as this will hide the suggestions and trigger a cancel of the prerendered page.
         stopAutocomplete(true);

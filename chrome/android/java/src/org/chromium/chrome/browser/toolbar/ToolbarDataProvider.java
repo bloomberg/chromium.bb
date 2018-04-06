@@ -109,7 +109,7 @@ public interface ToolbarDataProvider {
     int getSecurityIconResource(boolean isTablet);
 
     /**
-     * @return Whether or not we're currently showing a search query instead of a URL.
+     * @return Whether or not we should display search terms instead of a URL for query in omnibox.
      */
-    boolean isDisplayingQueryTerms();
+    boolean shouldDisplaySearchTerms();
 }
