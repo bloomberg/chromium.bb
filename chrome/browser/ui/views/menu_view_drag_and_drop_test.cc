@@ -451,14 +451,9 @@ void MenuViewDragAndDropTestNestedDrag::Step4() {
 // Disabled for being flaky. Tracked in:
 // TODO(erg): Fix DND tests on linux_aura. http://crbug.com/163931.
 // TODO(tapted): De-flake and run on Mac. http://crbug.com/449058.
-#if defined(OS_WIN)
-#define MAYBE_MenuViewDragAndDropNestedDrag MenuViewDragAndDropNestedDrag
-#else
-#define MAYBE_MenuViewDragAndDropNestedDrag \
-  DISABLED_MenuViewDragAndDropNestedDrag
-#endif
+// TODO(crbug.com/829922): Flaky on Windows.
 VIEW_TEST(MenuViewDragAndDropTestNestedDrag,
-          MAYBE_MenuViewDragAndDropNestedDrag)
+          DISABLED_MenuViewDragAndDropNestedDrag)
 
 class MenuViewDragAndDropForDropStayOpen : public MenuViewDragAndDropTest {
  public:
