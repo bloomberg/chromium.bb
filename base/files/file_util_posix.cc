@@ -103,14 +103,12 @@ bool VerifySpecificPathControlledByUser(const FilePath& path,
   }
 
   if (S_ISLNK(stat_info.st_mode)) {
-    DLOG(ERROR) << "Path " << path.value()
-               << " is a symbolic link.";
+    DLOG(ERROR) << "Path " << path.value() << " is a symbolic link.";
     return false;
   }
 
   if (stat_info.st_uid != owner_uid) {
-    DLOG(ERROR) << "Path " << path.value()
-                << " is owned by the wrong user.";
+    DLOG(ERROR) << "Path " << path.value() << " is owned by the wrong user.";
     return false;
   }
 
@@ -122,8 +120,7 @@ bool VerifySpecificPathControlledByUser(const FilePath& path,
   }
 
   if (stat_info.st_mode & S_IWOTH) {
-    DLOG(ERROR) << "Path " << path.value()
-                << " is writable by any user.";
+    DLOG(ERROR) << "Path " << path.value() << " is writable by any user.";
     return false;
   }
 
@@ -227,15 +224,13 @@ bool DoCopyDirectory(const FilePath& from_path,
 
   // This function does not properly handle destinations within the source
   FilePath real_to_path = to_path;
-  if (PathExists(real_to_path)) {
+  if (PathExists(real_to_path))
     real_to_path = MakeAbsoluteFilePath(real_to_path);
-    if (real_to_path.empty())
-      return false;
-  } else {
+  else
     real_to_path = MakeAbsoluteFilePath(real_to_path.DirName());
-    if (real_to_path.empty())
-      return false;
-  }
+  if (real_to_path.empty())
+    return false;
+
   FilePath real_from_path = MakeAbsoluteFilePath(from_path);
   if (real_from_path.empty())
     return false;
@@ -1064,17 +1059,15 @@ namespace internal {
 
 bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
   AssertBlockingAllowed();
-  // Windows compatibility: if to_path exists, from_path and to_path
+  // Windows compatibility: if |to_path| exists, |from_path| and |to_path|
   // must be the same type, either both files, or both directories.
   stat_wrapper_t to_file_info;
   if (CallStat(to_path.value().c_str(), &to_file_info) == 0) {
     stat_wrapper_t from_file_info;
-    if (CallStat(from_path.value().c_str(), &from_file_info) == 0) {
-      if (S_ISDIR(to_file_info.st_mode) != S_ISDIR(from_file_info.st_mode))
-        return false;
-    } else {
+    if (CallStat(from_path.value().c_str(), &from_file_info) != 0)
       return false;
-    }
+    if (S_ISDIR(to_file_info.st_mode) != S_ISDIR(from_file_info.st_mode))
+      return false;
   }
 
   if (rename(from_path.value().c_str(), to_path.value().c_str()) == 0)
