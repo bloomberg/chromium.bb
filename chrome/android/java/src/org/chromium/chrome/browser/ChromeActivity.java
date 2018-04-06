@@ -850,8 +850,15 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (getActivityTab() != null) {
             LaunchMetrics.commitLaunchMetrics(getActivityTab().getWebContents());
         }
-        ContentViewCore cvc = getContentViewCore();
-        if (cvc != null) cvc.onResume();
+
+        for (TabModel model : getTabModelSelector().getModels()) {
+            int count = model.getCount();
+            for (int i = 0; i < count; ++i) {
+                ContentViewCore cvc = model.getTabAt(i).getActiveContentViewCore();
+                if (cvc != null) cvc.onResume();
+            }
+        }
+
         FeatureUtilities.setCustomTabVisible(isCustomTab());
         FeatureUtilities.setIsInMultiWindowMode(
                 MultiWindowUtils.getInstance().isInMultiWindowMode(this));
@@ -882,8 +889,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         RecordUserAction.record("MobileGoToBackground");
         Tab tab = getActivityTab();
         if (tab != null) getTabContentManager().cacheTabThumbnail(tab);
-        ContentViewCore cvc = getContentViewCore();
-        if (cvc != null) cvc.onPause();
+        for (TabModel model : getTabModelSelector().getModels()) {
+            int count = model.getCount();
+            for (int i = 0; i < count; ++i) {
+                ContentViewCore cvc = model.getTabAt(i).getActiveContentViewCore();
+                if (cvc != null) cvc.onPause();
+            }
+        }
         VrShellDelegate.maybeUnregisterVrEntryHook(this);
         markSessionEnd();
         super.onPauseWithNative();
