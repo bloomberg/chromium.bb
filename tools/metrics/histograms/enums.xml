@@ -14968,6 +14968,10 @@ Called by update_net_error_codes.py.-->
   <int value="1232" label="DECLARATIVENETREQUEST_REMOVEWHITELISTEDPAGES"/>
   <int value="1233" label="DECLARATIVENETREQUEST_GETWHITELISTEDPAGES"/>
   <int value="1234" label="DEVELOPERPRIVATE_INSTALLDROPPEDFILE"/>
+  <int value="1235" label="AUTOMATIONINTERNAL_ENABLEFRAME"/>
+  <int value="1236" label="AUTOMATIONINTERNAL_QUERYSELECTOR"/>
+  <int value="1237" label="DEBUGGER_GETTARGETS"/>
+  <int value="1238" label="NOTIFICATIONS_GETPERMISSIONLEVEL"/>
 </enum>
 
 <enum name="ExtensionIconState">
