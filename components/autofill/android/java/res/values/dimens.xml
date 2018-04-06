@@ -6,18 +6,6 @@
 -->
 <resources>
     <!--
-         Fallback values if the corresponding com.android.internal.R dimensions
-         cannot be retrieved by name.
-         Note: Constants taken directly from Android's core/res/values/config.xml.
-    -->
-    <dimen name="keyboard_accessory_chip_height">32dp</dimen>
-    <dimen name="keyboard_accessory_half_padding">4dp</dimen>
-    <dimen name="keyboard_accessory_height">48dp</dimen>
-    <dimen name="keyboard_accessory_padding">8dp</dimen>
-    <dimen name="keyboard_accessory_text_size">14sp</dimen>
-    <dimen name="keyboard_accessory_start_animation_translation">100dp</dimen>
-
-    <!--
          Larger label and icon sizes for Form-Not-Secure experiment
          (warning messages on credit card and password forms when users
          are on HTTP sites).
