@@ -67,19 +67,22 @@ size_t BackUpToLineBegin(const std::string& data, size_t offset) {
 
 // Assumes DoesLineBeginWithComment(), this strips the # character from the
 // beginning and normalizes preceding whitespace.
-std::string StripHashFromLine(const base::StringPiece& line) {
+std::string StripHashFromLine(const base::StringPiece& line, bool pad) {
   // Replace the # sign and everything before it with 3 spaces, so that a
   // normal comment that has a space after the # will be indented 4 spaces
   // (which makes our formatting come out nicely). If the comment is indented
   // from there, we want to preserve that indenting.
-  return "   " + line.substr(line.find('#') + 1).as_string();
+  if (pad)
+    return "   " + line.substr(line.find('#') + 1).as_string();
+  return line.substr(line.find('#') + 1).as_string();
 }
 
 // Tries to find the comment before the setting of the given value.
 void GetContextForValue(const Value& value,
                         std::string* location_str,
                         int* line_no,
-                        std::string* comment) {
+                        std::string* comment,
+                        bool pad_comment=true) {
   Location location = value.origin()->GetRange().begin();
   const InputFile* file = location.file();
   if (!file)
@@ -101,7 +104,7 @@ void GetContextForValue(const Value& value,
     if (!DoesLineBeginWithComment(line))
       break;
 
-    comment->insert(0, StripHashFromLine(line) + "\n");
+    comment->insert(0, StripHashFromLine(line, pad_comment) + "\n");
     line_off = previous_line_offset;
   }
 }
@@ -171,7 +174,8 @@ void BuildArgJson(base::Value& dict,
     if (arg.override_value.origin() && !short_only) {
       int line_no;
       std::string location, comment;
-      GetContextForValue(arg.override_value, &location, &line_no, &comment);
+      GetContextForValue(arg.override_value, &location, &line_no, &comment,
+                         /*pad_comment=*/false);
       // Omit file and line if set with --args (i.e. no file)
       if (!location.empty()) {
         override_dict.SetKey("file", base::Value(location));
@@ -188,7 +192,8 @@ void BuildArgJson(base::Value& dict,
   if (arg.default_value.origin() && !short_only) {
     int line_no;
     std::string location;
-    GetContextForValue(arg.default_value, &location, &line_no, &comment);
+    GetContextForValue(arg.default_value, &location, &line_no, &comment,
+                       /*pad_comment=*/false);
     // Only emit file and line if the value is overridden.
     if (arg.has_override) {
       default_dict.SetKey("file", base::Value(location));
@@ -198,11 +203,6 @@ void BuildArgJson(base::Value& dict,
   dict.SetKey("default", std::move(default_dict));
   if (!comment.empty() && !short_only)
     dict.SetKey("comment", base::Value(comment));
-
-  std::string s;
-  base::JSONWriter::WriteWithOptions(
-      dict, base::JSONWriter::OPTIONS_PRETTY_PRINT, &s);
-  OutputString(s);
 }
 
 int ListArgs(const std::string& build_dir) {
