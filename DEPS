@@ -1259,10 +1259,9 @@ hooks = [
     ],
   },
   {
-    # Ensure that while generating dependencies lists in .gyp files we don't
-    # accidentally reference any .pyc files whose corresponding .py files have
-    # already been deleted.
-    # We should actually try to avoid generating .pyc files, crbug.com/500078.
+    # Ensure that we don't accidentally reference any .pyc files whose
+    # corresponding .py files have since been deleted.
+    # We could actually try to avoid generating .pyc files, crbug.com/500078.
     'name': 'remove_stale_pyc_files',
     'pattern': '.',
     'action': [
