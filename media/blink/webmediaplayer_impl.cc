@@ -791,7 +791,6 @@ void WebMediaPlayerImpl::EnterPictureInPicture() {
 }
 
 void WebMediaPlayerImpl::ExitPictureInPicture() {
-  LOG(ERROR) << "WebMediaPlayerImpl::ExitPictureInPicture";
   // TODO(apacible): Handle ending PiP from a user gesture. This currently
   // handles ending Picture-in-Picture mode from the source.
   // https://crbug.com/823172.
