@@ -810,8 +810,14 @@ void CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie,
   uint32_t result = 0u;
   for (CookieMapItPair its = cookies_.equal_range(GetKey(cookie.Domain()));
        its.first != its.second; ++its.first) {
-    // The creation date acts as the unique index...
-    if (its.first->second->CreationDate() == cookie.CreationDate()) {
+    const std::unique_ptr<CanonicalCookie>& candidate = its.first->second;
+    // Historically, this has refused modification if the cookie has changed
+    // value in between the CanonicalCookie object was returned by a getter
+    // and when this ran.  The later parts of the conditional (everything but
+    // the equivalence check) attempt to preserve this behavior.
+    if (candidate->IsEquivalent(cookie) &&
+        candidate->CreationDate() == cookie.CreationDate() &&
+        candidate->Value() == cookie.Value()) {
       InternalDeleteCookie(its.first, true, DELETE_COOKIE_EXPLICIT);
       result = 1u;
       break;
