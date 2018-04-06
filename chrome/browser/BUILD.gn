@@ -2555,8 +2555,6 @@ jumbo_split_static_library("browser") {
       "metrics/tab_stats_tracker.h",
       "metrics/tab_usage_recorder.cc",
       "metrics/tab_usage_recorder.h",
-      "net/firefox_proxy_settings.cc",
-      "net/firefox_proxy_settings.h",
       "notifications/message_center_notification_manager.cc",
       "notifications/message_center_notification_manager.h",
       "notifications/notification_system_observer.cc",
