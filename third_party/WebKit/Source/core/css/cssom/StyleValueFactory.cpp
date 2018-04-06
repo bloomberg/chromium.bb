@@ -8,6 +8,7 @@
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSValue.h"
+#include "core/css/CSSValuePair.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/cssom/CSSKeywordValue.h"
 #include "core/css/cssom/CSSNumericValue.h"
@@ -45,6 +46,19 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
   // FIXME: We should enforce/document what the possible CSSValue structures
   // are for each property.
   switch (property_id) {
+    case CSSPropertyBorderBottomLeftRadius:
+    case CSSPropertyBorderBottomRightRadius:
+    case CSSPropertyBorderTopLeftRadius:
+    case CSSPropertyBorderTopRightRadius: {
+      // border-radius-* are always stored as pairs, but when both values are
+      // the same, we should reify as a single value.
+      if (const CSSValuePair* pair = ToCSSValuePairOrNull(value)) {
+        if (pair->First() == pair->Second() && !pair->KeepIdenticalValues()) {
+          return CreateStyleValue(pair->First());
+        }
+      }
+      return nullptr;
+    }
     case CSSPropertyCaretColor:
       // caret-color also supports 'auto'
       if (value.IsIdentifierValue() &&
