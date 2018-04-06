@@ -118,7 +118,7 @@ const char kRestoreOnStartup[] = "session.restore_on_startup";
 
 // A boolean pref to indicate whether or not Chrome should be performing
 // tab-under protection (i.e. blocking navigations it detects as tab-unders).
-const char kTabUnderProtection[] = "tab_under_protection";
+const char kTabUnderAllowed[] = "tab_under_allowed";
 
 // The URLs to restore on startup or when the home button is pressed. The URLs
 // are only restored on startup if kRestoreOnStartup is 4.
