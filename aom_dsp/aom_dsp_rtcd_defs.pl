@@ -1358,7 +1358,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     add_proto qw/void aom_highbd_comp_avg_pred/, "uint16_t *comp_pred, const uint8_t *pred8, int width, int height, const uint8_t *ref8, int ref_stride";
 
     add_proto qw/void aom_highbd_jnt_comp_avg_pred/, "uint16_t *comp_pred, const uint8_t *pred8, int width, int height, const uint8_t *ref8, int ref_stride, const JNT_COMP_PARAMS *jcp_param";
-    specialize qw/aom_highbd_jnt_comp_avg_pred c/;
+    specialize qw/aom_highbd_jnt_comp_avg_pred sse2/;
 
     #
     # Subpixel Variance

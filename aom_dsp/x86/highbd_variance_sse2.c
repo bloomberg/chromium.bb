@@ -683,11 +683,12 @@ static INLINE void highbd_compute_jnt_comp_avg(__m128i *p0, __m128i *p1,
                                                const __m128i *w1,
                                                const __m128i *r,
                                                void *const result) {
+  assert(DIST_PRECISION_BITS <= 4);
   __m128i mult0 = _mm_mullo_epi16(*p0, *w0);
   __m128i mult1 = _mm_mullo_epi16(*p1, *w1);
-  __m128i sum = _mm_add_epi16(mult0, mult1);
-  __m128i round = _mm_add_epi16(sum, *r);
-  __m128i shift = _mm_srai_epi16(round, DIST_PRECISION_BITS);
+  __m128i sum = _mm_adds_epu16(mult0, mult1);
+  __m128i round = _mm_adds_epu16(sum, *r);
+  __m128i shift = _mm_srli_epi16(round, DIST_PRECISION_BITS);
 
   xx_storeu_128(result, shift);
 }
@@ -721,6 +722,7 @@ void aom_highbd_jnt_comp_avg_pred_sse2(uint16_t *comp_pred,
 
         comp_pred += 8;
         pred += 8;
+        ref += 8;
       }
       ref += ref_stride - width;
     }

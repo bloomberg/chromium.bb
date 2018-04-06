@@ -214,7 +214,9 @@ if (CONFIG_AV1_ENCODER)
           ${AOM_UNIT_TEST_ENCODER_SOURCES}
           "${AOM_ROOT}/test/av1_convolve_2d_test.cc"
           "${AOM_ROOT}/test/av1_convolve_2d_test_util.cc"
-          "${AOM_ROOT}/test/av1_convolve_2d_test_util.h")
+          "${AOM_ROOT}/test/av1_convolve_2d_test_util.h"
+          "${AOM_ROOT}/test/comp_avg_pred_test.h"
+          "${AOM_ROOT}/test/comp_avg_pred_test.cc")
     endif ()
 
     if (HAVE_SSE4_1)

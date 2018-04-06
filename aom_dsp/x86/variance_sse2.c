@@ -553,10 +553,10 @@ void aom_upsampled_pred_sse2(uint8_t *comp_pred, int width, int height,
       assert(!(height & 3));
       /*Read 4 pixels four rows at a time.*/
       for (i = 0; i < height; i++) {
-        const __m128i row0 = xx_loadl_32(ref + 0 * ref_stride);
-        const __m128i row1 = xx_loadl_32(ref + 1 * ref_stride);
-        const __m128i row2 = xx_loadl_32(ref + 2 * ref_stride);
-        const __m128i row3 = xx_loadl_32(ref + 3 * ref_stride);
+        const __m128i row0 = xx_loadl_64(ref + 0 * ref_stride);
+        const __m128i row1 = xx_loadl_64(ref + 1 * ref_stride);
+        const __m128i row2 = xx_loadl_64(ref + 2 * ref_stride);
+        const __m128i row3 = xx_loadl_64(ref + 3 * ref_stride);
         const __m128i reg = _mm_unpacklo_epi64(_mm_unpacklo_epi32(row0, row1),
                                                _mm_unpacklo_epi32(row2, row3));
         xx_storeu_128(comp_pred, reg);
