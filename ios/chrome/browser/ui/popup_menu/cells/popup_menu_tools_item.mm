@@ -26,6 +26,7 @@ const CGFloat kInnerMargin = 11;
 const CGFloat kMargin = 15;
 const CGFloat kTopMargin = 8;
 const CGFloat kTopMarginBadge = 14;
+const CGFloat kMaxHeight = 100;
 }  // namespace
 
 @implementation PopupMenuToolsItem
@@ -67,10 +68,10 @@ const CGFloat kTopMarginBadge = 14;
   });
 
   [self configureCell:cell withStyler:[[ChromeTableViewStyler alloc] init]];
-  cell.frame = CGRectMake(0, 0, width, 0);
+  cell.frame = CGRectMake(0, 0, width, kMaxHeight);
   [cell setNeedsLayout];
   [cell layoutIfNeeded];
-  return [cell systemLayoutSizeFittingSize:UILayoutFittingCompressedSize];
+  return [cell systemLayoutSizeFittingSize:CGSizeMake(width, kMaxHeight)];
 }
 
 @end

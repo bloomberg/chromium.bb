@@ -10,10 +10,18 @@
 
 // Item used to display an item for a navigation menu.
 @interface PopupMenuNavigationItem : TableViewItem<PopupMenuItem>
+// Title of the navigation item.
+@property(nonatomic, copy) NSString* title;
+// Favicon to be displayed. Set to nil to display the default favicon.
+@property(nonatomic, strong) UIImage* favicon;
 @end
 
 // Associated cell for a PopupMenuNavigationItem.
 @interface PopupMenuNavigationCell : UITableViewCell
+
+- (void)setTitle:(NSString*)title;
+- (void)setFavicon:(UIImage*)favicon;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_CELLS_POPUP_MENU_NAVIGATION_ITEM_H_

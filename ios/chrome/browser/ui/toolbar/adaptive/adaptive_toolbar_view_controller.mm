@@ -262,18 +262,10 @@
     return;
 
   if (gesture.view == self.view.backButton) {
-    if (base::FeatureList::IsEnabled(kNewToolsMenu)) {
-      [self.dispatcher showNavigationHistoryBackPopupMenu];
-    } else {
-      [self.dispatcher showTabHistoryPopupForBackwardHistory];
-    }
+    [self.dispatcher showNavigationHistoryBackPopupMenu];
   } else if (gesture.view == self.view.forwardButton ||
              gesture.view == self.view.forwardButtonTrailingPosition) {
-    if (base::FeatureList::IsEnabled(kNewToolsMenu)) {
-      [self.dispatcher showNavigationHistoryForwardPopupMenu];
-    } else {
-      [self.dispatcher showTabHistoryPopupForForwardHistory];
-    }
+    [self.dispatcher showNavigationHistoryForwardPopupMenu];
   } else if (gesture.view == self.view.tabGridButton) {
     [self.dispatcher showTabGridButtonPopup];
   }

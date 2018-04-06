@@ -71,12 +71,6 @@ using base::UserMetricsAction;
   CGPoint origin = CGPointZero;
   origin = [self popupOriginForNamedGuide:kBackButtonGuide];
 
-  if (IsUIRefreshPhase1Enabled() && origin.y > 200) {
-    // TODO(crbug.com/804772): Remove this workaround once the new navigation
-    // menu popup can be presented from the bottom back/forward arrows.
-    origin.y -= 100;
-  }
-
   [self.tabHistoryUIUpdater
       updateUIForTabHistoryPresentationFrom:ToolbarButtonTypeBack];
   [self presentTabHistoryPopupWithItems:backwardItems origin:origin];
