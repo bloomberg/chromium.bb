@@ -141,8 +141,8 @@ std::unique_ptr<RecyclableCompositorMac> RecyclableCompositorMac::Create() {
   DCHECK(ui::WindowResizeHelperMac::Get()->task_runner());
   if (!g_spare_recyclable_compositors.Get().empty()) {
     std::unique_ptr<RecyclableCompositorMac> result;
-    result = std::move(g_spare_recyclable_compositors.Get().front());
-    g_spare_recyclable_compositors.Get().pop_front();
+    result = std::move(g_spare_recyclable_compositors.Get().back());
+    g_spare_recyclable_compositors.Get().pop_back();
     return result;
   }
   return std::unique_ptr<RecyclableCompositorMac>(new RecyclableCompositorMac);
@@ -321,12 +321,19 @@ void BrowserCompositorMac::SetNSViewAttachedToWindow(bool attached) {
 }
 
 void BrowserCompositorMac::UpdateState() {
-  if (!render_widget_host_is_hidden_)
+  // If the host is visible then a compositor is required.
+  if (!render_widget_host_is_hidden_) {
     TransitionToState(HasAttachedCompositor);
-  else if (ns_view_attached_to_window_)
+    return;
+  }
+  // If the host is not visible but we are attached to a window then keep around
+  // a compositor only if it already exists.
+  if (ns_view_attached_to_window_ && state_ != HasNoCompositor) {
     TransitionToState(HasDetachedCompositor);
-  else
-    TransitionToState(HasNoCompositor);
+    return;
+  }
+  // Otherwise put the compositor up for recycling.
+  TransitionToState(HasNoCompositor);
 }
 
 void BrowserCompositorMac::TransitionToState(State new_state) {
