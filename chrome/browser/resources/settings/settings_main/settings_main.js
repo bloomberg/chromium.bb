@@ -87,7 +87,6 @@ Polymer({
   attached: function() {
     this.listen(this, 'freeze-scroll', 'onFreezeScroll_');
     this.listen(this, 'lazy-loaded', 'onLazyLoaded_');
-    this.registerSearchManagerObserver_();
   },
 
   /** @private */
@@ -251,56 +250,42 @@ Polymer({
     assertNotReached();
   },
 
-  /** @private */
-  registerSearchManagerObserver_: function() {
-    const observer = /** @type {!settings.SearchManagerObserver} */ ({
-      onSearchStart: () => {
-        // Trigger rendering of the basic and advanced pages and search once
-        // ready.
-        this.inSearchMode_ = true;
-        this.toolbarSpinnerActive = true;
-      },
-      onSearchComplete: searchResult => {
-        if (searchResult.canceled) {
-          // Nothing to do here. A previous search request was canceled
-          // because a new search request was issued with a different query
-          // before the previous completed.
-          return;
-        }
-
-        this.toolbarSpinnerActive = false;
-        this.inSearchMode_ = !searchResult.wasClearSearch;
-        this.showNoResultsFound_ =
-            this.inSearchMode_ && !searchResult.didFindMatches;
-        if (this.showNoResultsFound_ &&
-            settings.getCurrentRoute().isSubpage()) {
-          settings.navigateTo(settings.routes.BASIC);
-          this.searchContents(searchResult.rawQuery);
-          return;
-        }
-        if (this.inSearchMode_) {
-          Polymer.IronA11yAnnouncer.requestAvailability();
-          this.fire('iron-announce', {
-            text: this.showNoResultsFound_ ?
-                loadTimeData.getString('searchNoResults') :
-                loadTimeData.getStringF('searchResults', searchResult.rawQuery)
-          });
-        }
-      },
-    });
-    settings.getSearchManager().registerObserver(observer);
-  },
-
   /**
    * @param {string} query
-   * @return {!Promise<!settings.SearchResult>} A promise indicating that
-   * searching finished.
+   * @return {!Promise} A promise indicating that searching finished.
    */
   searchContents: function(query) {
+    // Trigger rendering of the basic and advanced pages and search once ready.
+    this.inSearchMode_ = true;
+    this.toolbarSpinnerActive = true;
+
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        const basicPage = assert(this.getPage_(settings.routes.BASIC));
-        basicPage.searchContents(query).then(resolve);
+        const whenSearchDone =
+            assert(this.getPage_(settings.routes.BASIC)).searchContents(query);
+        whenSearchDone.then(result => {
+          resolve();
+          if (result.canceled) {
+            // Nothing to do here. A previous search request was canceled
+            // because a new search request was issued with a different query
+            // before the previous completed.
+            return;
+          }
+
+          this.toolbarSpinnerActive = false;
+          this.inSearchMode_ = !result.wasClearSearch;
+          this.showNoResultsFound_ =
+              this.inSearchMode_ && !result.didFindMatches;
+
+          if (this.inSearchMode_) {
+            Polymer.IronA11yAnnouncer.requestAvailability();
+            this.fire('iron-announce', {
+              text: this.showNoResultsFound_ ?
+                  loadTimeData.getString('searchNoResults') :
+                  loadTimeData.getStringF('searchResults', query)
+            });
+          }
+        });
       }, 0);
     });
   },

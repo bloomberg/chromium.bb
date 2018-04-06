@@ -22,9 +22,6 @@ cr.define('settings_main_page', function() {
 
       /** @private {?settings.SearchRequest} */
       this.searchRequest_ = null;
-
-      /** @private {?settings.SearchManagerObserver} */
-      this.observer_ = null;
     }
 
     /**
@@ -36,7 +33,6 @@ cr.define('settings_main_page', function() {
 
     /** @override */
     search(text, page) {
-      this.observer_.onSearchStart();
       this.methodCalled('search', text);
 
       if (this.searchRequest_ == null || !this.searchRequest_.isSame(text)) {
@@ -44,14 +40,8 @@ cr.define('settings_main_page', function() {
         this.searchRequest_.finished = true;
         this.searchRequest_.updateMatches(this.matchesFound_);
         this.searchRequest_.resolver.resolve(this.searchRequest_);
-        this.observer_.onSearchComplete(this.searchRequest_.result());
       }
       return this.searchRequest_.resolver.promise;
-    }
-
-    /** @override */
-    registerObserver(observer) {
-      this.observer_ = observer;
     }
   }
 
