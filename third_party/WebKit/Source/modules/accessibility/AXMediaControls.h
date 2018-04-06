@@ -70,7 +70,6 @@ class AccessibilityMediaTimeline final : public AXSlider {
   String Description(AXNameFrom,
                      AXDescriptionFrom&,
                      AXObjectVector* description_objects) const override;
-  String ValueDescription() const override;
 
  private:
   AccessibilityMediaTimeline(LayoutObject*, AXObjectCacheImpl&);

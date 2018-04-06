@@ -1722,6 +1722,11 @@ void MediaControlsImpl::MaybeRecordElementsDisplayed() const {
   overflow_menu_->MaybeRecordDisplayed();
 }
 
+const MediaControlCurrentTimeDisplayElement&
+MediaControlsImpl::CurrentTimeDisplay() const {
+  return *current_time_display_;
+}
+
 void MediaControlsImpl::PositionPopupMenu(Element* popup_menu) {
   // The popup is positioned slightly on the inside of the bottom right corner.
   static constexpr int kPopupMenuMarginPx = 4;
