@@ -33,6 +33,7 @@
   securityDetails.validTo = 2000000000;
   securityDetails.CertificateId = 0;
   securityDetails.signedCertificateTimestampList = [];
+  securityDetails.certificateTransparencyCompliance = Protocol.Network.CertificateTransparencyCompliance.Unknown;
   request3.setSecurityDetails(securityDetails);
   SecurityTestRunner.dispatchRequestFinished(request3);
 

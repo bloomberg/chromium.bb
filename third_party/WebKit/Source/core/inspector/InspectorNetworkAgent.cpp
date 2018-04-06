@@ -149,6 +149,23 @@ bool LoadsFromCacheOnly(const ResourceRequest& request) {
   return false;
 }
 
+protocol::Network::CertificateTransparencyCompliance
+SerializeCTPolicyCompliance(
+    ResourceResponse::CTPolicyCompliance ct_compliance) {
+  switch (ct_compliance) {
+    case ResourceResponse::kCTPolicyComplianceDetailsNotAvailable:
+      return protocol::Network::CertificateTransparencyComplianceEnum::Unknown;
+    case ResourceResponse::kCTPolicyComplies:
+      return protocol::Network::CertificateTransparencyComplianceEnum::
+          Compliant;
+    case ResourceResponse::kCTPolicyDoesNotComply:
+      return protocol::Network::CertificateTransparencyComplianceEnum::
+          NotCompliant;
+  }
+  NOTREACHED();
+  return protocol::Network::CertificateTransparencyComplianceEnum::Unknown;
+}
+
 static std::unique_ptr<protocol::Network::Headers> BuildObjectForHeaders(
     const HTTPHeaderMap& headers) {
   std::unique_ptr<protocol::DictionaryValue> headers_object =
@@ -644,6 +661,8 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
             .setCertificateId(0)  // Keep this in protocol for compatability.
             .setSignedCertificateTimestampList(
                 std::move(signed_certificate_timestamp_list))
+            .setCertificateTransparencyCompliance(
+                SerializeCTPolicyCompliance(response.GetCTPolicyCompliance()))
             .build();
     if (response_security_details->key_exchange_group.length() > 0)
       security_details->setKeyExchangeGroup(
