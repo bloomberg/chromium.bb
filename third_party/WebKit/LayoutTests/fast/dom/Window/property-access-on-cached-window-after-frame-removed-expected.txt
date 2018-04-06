@@ -68,6 +68,7 @@ PASS childWindow.onemptied is null
 PASS childWindow.onended is null
 PASS childWindow.onerror is null
 PASS childWindow.onfocus is null
+PASS childWindow.onformdata is null
 PASS childWindow.onfreeze is null
 PASS childWindow.ongotpointercapture is null
 PASS childWindow.onhashchange is null

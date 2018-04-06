@@ -493,6 +493,7 @@
     },
     {
       name: "FormDataEvent",
+      status: "experimental",
     },
     {
       name: "FractionalMouseEvent",
