@@ -188,6 +188,11 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
 
   // Returns socket-layer connection attempts made for this stream request.
   virtual const ConnectionAttempts& connection_attempts() const = 0;
+
+  // Returns the WebSocketHandshakeStreamBase::CreateHelper for this stream
+  // request.
+  virtual WebSocketHandshakeStreamBase::CreateHelper*
+  websocket_handshake_stream_create_helper() const = 0;
 };
 
 // The HttpStreamFactory defines an interface for creating usable HttpStreams.

@@ -98,9 +98,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   void AddConnectionAttempts(const ConnectionAttempts& attempts);
 
   WebSocketHandshakeStreamBase::CreateHelper*
-  websocket_handshake_stream_create_helper() {
-    return websocket_handshake_stream_create_helper_;
-  }
+  websocket_handshake_stream_create_helper() const override;
 
   void OnStreamReadyOnPooledConnection(const SSLConfig& used_ssl_config,
                                        const ProxyInfo& used_proxy_info,
