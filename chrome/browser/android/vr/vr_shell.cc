@@ -225,12 +225,14 @@ void VrShell::SwapContents(JNIEnv* env,
 
   if (web_contents_) {
     vr_input_connection_.reset(new VrInputConnection(web_contents_));
-    PostToGlThread(FROM_HERE,
-                   base::BindOnce(&VrGLThread::SetInputConnection,
-                                  base::Unretained(gl_thread_.get()),
-                                  vr_input_connection_->GetWeakPtr()));
+    PostToGlThread(FROM_HERE, base::BindOnce(&VrGLThread::SetInputConnection,
+                                             base::Unretained(gl_thread_.get()),
+                                             vr_input_connection_.get()));
   } else {
     vr_input_connection_ = nullptr;
+    PostToGlThread(FROM_HERE,
+                   base::BindOnce(&VrGLThread::SetInputConnection,
+                                  base::Unretained(gl_thread_.get()), nullptr));
   }
 
   vr_web_contents_observer_ = std::make_unique<VrWebContentsObserver>(

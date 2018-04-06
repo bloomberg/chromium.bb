@@ -293,6 +293,9 @@ class VrShell : device::GvrGamepadDataProvider,
   base::android::ScopedJavaGlobalRef<jobject> j_motion_event_synthesizer_;
 
   std::unique_ptr<VrWebContentsObserver> vr_web_contents_observer_;
+  // Note this must be destroyed after VrGLThread is destroyed in the
+  // destruction of VrShell. VrGLThread keeps a raw pointer of VrInputConnection
+  // and uses the pointer on GL thread.
   std::unique_ptr<VrInputConnection> vr_input_connection_;
 
   VrShellDelegate* delegate_provider_ = nullptr;

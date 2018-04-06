@@ -49,10 +49,9 @@ base::WeakPtr<VrShellGl> VrGLThread::GetVrShellGl() {
   return vr_shell_gl_->GetWeakPtr();
 }
 
-void VrGLThread::SetInputConnection(
-    base::WeakPtr<VrInputConnection> weak_connection) {
+void VrGLThread::SetInputConnection(VrInputConnection* input_connection) {
   DCHECK(OnGlThread());
-  weak_input_connection_ = weak_connection;
+  input_connection_ = input_connection;
 }
 
 void VrGLThread::Init() {
@@ -157,20 +156,20 @@ void VrGLThread::ClearFocusedElement() {
 
 void VrGLThread::OnWebInputEdited(const TextEdits& edits) {
   DCHECK(OnGlThread());
-  DCHECK(weak_input_connection_);
-  weak_input_connection_->OnKeyboardEdit(edits);
+  DCHECK(input_connection_);
+  input_connection_->OnKeyboardEdit(edits);
 }
 
 void VrGLThread::SubmitWebInput() {
   DCHECK(OnGlThread());
-  DCHECK(weak_input_connection_);
-  weak_input_connection_->SubmitInput();
+  DCHECK(input_connection_);
+  input_connection_->SubmitInput();
 }
 
 void VrGLThread::RequestWebInputText(TextStateUpdateCallback callback) {
   DCHECK(OnGlThread());
-  DCHECK(weak_input_connection_);
-  weak_input_connection_->RequestTextState(std::move(callback));
+  DCHECK(input_connection_);
+  input_connection_->RequestTextState(std::move(callback));
 }
 
 void VrGLThread::ForwardDialogEvent(
