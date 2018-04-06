@@ -25,8 +25,13 @@ class CookieSettingsTest : public testing::Test {
         kFirstPartySite("http://cool.things.com"),
         kChromeURL("chrome://foo"),
         kExtensionURL("chrome-extension://deadbeef"),
+        kDomain("example.com"),
+        kDotDomain(".example.com"),
+        kSubDomain("www.example.com"),
         kHttpSite("http://example.com"),
         kHttpsSite("https://example.com"),
+        kHttpsSubdomainSite("https://www.example.com"),
+        kHttpsSite8080("https://example.com:8080"),
         kAllHttpsSitesPattern(ContentSettingsPattern::FromString("https://*")) {
     CookieSettings::RegisterProfilePrefs(prefs_.registry());
     HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
@@ -40,6 +45,13 @@ class CookieSettingsTest : public testing::Test {
   ~CookieSettingsTest() override { settings_map_->ShutdownOnUIThread(); }
 
  protected:
+  bool ShouldDeleteCookieOnExit(const std::string& domain, bool is_https) {
+    ContentSettingsForOneType settings;
+    cookie_settings_->GetCookieSettings(&settings);
+    return cookie_settings_->ShouldDeleteCookieOnExit(settings, domain,
+                                                      is_https);
+  }
+
   // There must be a valid ThreadTaskRunnerHandle in HostContentSettingsMap's
   // scope.
   base::MessageLoop message_loop_;
@@ -52,8 +64,13 @@ class CookieSettingsTest : public testing::Test {
   const GURL kFirstPartySite;
   const GURL kChromeURL;
   const GURL kExtensionURL;
+  const std::string kDomain;
+  const std::string kDotDomain;
+  const std::string kSubDomain;
   const GURL kHttpSite;
   const GURL kHttpsSite;
+  const GURL kHttpsSubdomainSite;
+  const GURL kHttpsSite8080;
   ContentSettingsPattern kAllHttpsSitesPattern;
 };
 
@@ -113,27 +130,105 @@ TEST_F(CookieSettingsTest, CookiesExplicitSessionOnly) {
   EXPECT_TRUE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
 }
 
-TEST_F(CookieSettingsTest, CookiesDeleteSessionOnlyAndBlocked) {
-  // Delete blocked cookies.
-  cookie_settings_->SetCookieSetting(kBlockedSite, CONTENT_SETTING_BLOCK);
-  EXPECT_FALSE(cookie_settings_->ShouldDeleteCookieOnExit(kHttpSite));
-  EXPECT_TRUE(cookie_settings_->ShouldDeleteCookieOnExit(kBlockedSite));
+TEST_F(CookieSettingsTest, KeepBlocked) {
+  // Keep blocked cookies.
+  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
+  cookie_settings_->SetCookieSetting(kHttpsSite, CONTENT_SETTING_BLOCK);
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, false));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, true));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, false));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, true));
+}
 
-  // Delete session_only cookies.
-  cookie_settings_->SetCookieSetting(kHttpSite, CONTENT_SETTING_SESSION_ONLY);
+TEST_F(CookieSettingsTest, DeleteSessionOnly) {
+  // Keep session_only http cookies if https is allowed.
+  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
   cookie_settings_->SetCookieSetting(kHttpsSite, CONTENT_SETTING_ALLOW);
-  EXPECT_TRUE(cookie_settings_->ShouldDeleteCookieOnExit(kHttpSite));
-  EXPECT_FALSE(cookie_settings_->ShouldDeleteCookieOnExit(kHttpsSite));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, false));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, true));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, false));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, true));
 
-  // Keep blocked http cookies if https is allowed.
-  cookie_settings_->SetCookieSetting(kHttpSite, CONTENT_SETTING_BLOCK);
-  EXPECT_FALSE(cookie_settings_->ShouldDeleteCookieOnExit(kHttpSite));
-  EXPECT_FALSE(cookie_settings_->ShouldDeleteCookieOnExit(kHttpsSite));
-
-  // Delete cookies if http is blocked and https session only.
+  // Delete cookies if site is session only.
+  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
   cookie_settings_->SetCookieSetting(kHttpsSite, CONTENT_SETTING_SESSION_ONLY);
-  EXPECT_TRUE(cookie_settings_->ShouldDeleteCookieOnExit(kHttpSite));
-  EXPECT_TRUE(cookie_settings_->ShouldDeleteCookieOnExit(kHttpsSite));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDomain, false));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDomain, true));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDotDomain, false));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDotDomain, true));
+
+  // Http blocked, https allowed - keep secure and non secure cookies.
+  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  cookie_settings_->SetCookieSetting(kHttpSite, CONTENT_SETTING_BLOCK);
+  cookie_settings_->SetCookieSetting(kHttpsSite, CONTENT_SETTING_ALLOW);
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, false));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, true));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, false));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, true));
+
+  // Http and https session only, all is deleted.
+  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
+  cookie_settings_->SetCookieSetting(kHttpSite, CONTENT_SETTING_SESSION_ONLY);
+  cookie_settings_->SetCookieSetting(kHttpsSite, CONTENT_SETTING_SESSION_ONLY);
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDomain, false));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDomain, true));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDotDomain, false));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDotDomain, true));
+}
+
+TEST_F(CookieSettingsTest, DeletionWithDifferentPorts) {
+  // Keep cookies for site with special port.
+  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  cookie_settings_->SetCookieSetting(kHttpsSite8080, CONTENT_SETTING_ALLOW);
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, false));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, true));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, false));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, true));
+
+  // Delete cookies with special port.
+  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
+  cookie_settings_->SetCookieSetting(kHttpsSite8080,
+                                     CONTENT_SETTING_SESSION_ONLY);
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDomain, false));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDomain, true));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDotDomain, false));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDotDomain, true));
+}
+
+TEST_F(CookieSettingsTest, DeletionWithSubDomains) {
+  // Cookies accessible by subdomains are kept.
+  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
+  cookie_settings_->SetCookieSetting(kHttpsSubdomainSite,
+                                     CONTENT_SETTING_ALLOW);
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, false));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, true));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDomain, false));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDomain, true));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kSubDomain, false));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kSubDomain, true));
+
+  // Cookies that have a session_only subdomain but are accessible by allowed
+  // domains are kept.
+  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
+  cookie_settings_->SetCookieSetting(kHttpsSubdomainSite,
+                                     CONTENT_SETTING_SESSION_ONLY);
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, false));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, true));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, false));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, true));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kSubDomain, false));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kSubDomain, true));
+
+  // Cookies created by session_only subdomains are deleted.
+  cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
+  cookie_settings_->SetCookieSetting(kHttpsSubdomainSite,
+                                     CONTENT_SETTING_SESSION_ONLY);
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDotDomain, false));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kDotDomain, true));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, false));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, true));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kSubDomain, false));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kSubDomain, true));
 }
 
 TEST_F(CookieSettingsTest, CookiesThirdPartyBlockedExplicitAllow) {

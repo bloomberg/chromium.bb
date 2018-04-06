@@ -33,24 +33,29 @@ QuotaPolicyCookieStore::QuotaPolicyCookieStore(
 }
 
 QuotaPolicyCookieStore::~QuotaPolicyCookieStore() {
+  using CookieOrigin = net::SQLitePersistentCookieStore::CookieOrigin;
   if (!special_storage_policy_.get() ||
       !special_storage_policy_->HasSessionOnlyOrigins()) {
     return;
   }
 
-  std::list<net::SQLitePersistentCookieStore::CookieOrigin>
-      session_only_cookies;
-  for (const auto& cookie : cookies_per_origin_) {
-    if (cookie.second == 0) {
+  std::list<CookieOrigin> session_only_cookies;
+  auto delete_cookie_predicate =
+      special_storage_policy_->CreateDeleteCookieOnExitPredicate();
+  DCHECK(delete_cookie_predicate);
+
+  for (const auto& entry : cookies_per_origin_) {
+    if (entry.second == 0) {
       continue;
     }
-    const GURL url(net::cookie_util::CookieOriginToURL(cookie.first.first,
-                                                       cookie.first.second));
+    const CookieOrigin& cookie = entry.first;
+    const GURL url(
+        net::cookie_util::CookieOriginToURL(cookie.first, cookie.second));
     if (!url.is_valid() ||
-        !special_storage_policy_->ShouldDeleteCookieOnExit(url))
+        !delete_cookie_predicate.Run(cookie.first, cookie.second)) {
       continue;
-
-    session_only_cookies.push_back(cookie.first);
+    }
+    session_only_cookies.push_back(cookie);
   }
 
   persistent_store_->DeleteAllInList(session_only_cookies);

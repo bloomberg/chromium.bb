@@ -250,6 +250,19 @@ TEST(CookieUtilTest, TestGetEffectiveDomain) {
             cookie_util::GetEffectiveDomain("ftp", "www.example.com"));
 }
 
+TEST(CookieUtilTest, TestIsDomainMatch) {
+  EXPECT_TRUE(cookie_util::IsDomainMatch("example.com", "example.com"));
+  EXPECT_FALSE(cookie_util::IsDomainMatch("www.example.com", "example.com"));
+
+  EXPECT_TRUE(cookie_util::IsDomainMatch(".example.com", "example.com"));
+  EXPECT_TRUE(cookie_util::IsDomainMatch(".example.com", "www.example.com"));
+  EXPECT_FALSE(cookie_util::IsDomainMatch(".www.example.com", "example.com"));
+
+  EXPECT_FALSE(cookie_util::IsDomainMatch("example.com", "example.de"));
+  EXPECT_FALSE(cookie_util::IsDomainMatch(".example.com", "example.de"));
+  EXPECT_FALSE(cookie_util::IsDomainMatch(".example.de", "example.de.vu"));
+}
+
 }  // namespace
 
 }  // namespace net

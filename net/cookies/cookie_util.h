@@ -48,6 +48,11 @@ NET_EXPORT base::Time ParseCookieExpirationTime(const std::string& time_string);
 // Convenience for converting a cookie origin (domain and https pair) to a URL.
 NET_EXPORT GURL CookieOriginToURL(const std::string& domain, bool is_https);
 
+// Returns true if the cookie |domain| matches the given |host| as described
+// in section 5.1.3 of RFC 6265.
+NET_EXPORT bool IsDomainMatch(const std::string& domain,
+                              const std::string& host);
+
 // A ParsedRequestCookie consists of the key and value of the cookie.
 typedef std::pair<base::StringPiece, base::StringPiece> ParsedRequestCookie;
 typedef std::vector<ParsedRequestCookie> ParsedRequestCookies;

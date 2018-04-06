@@ -4,7 +4,10 @@
 
 #include "storage/browser/test/mock_special_storage_policy.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/stl_util.h"
+#include "net/cookies/cookie_util.h"
 
 namespace content {
 
@@ -24,8 +27,18 @@ bool MockSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
   return base::ContainsKey(session_only_, origin);
 }
 
-bool MockSpecialStoragePolicy::ShouldDeleteCookieOnExit(const GURL& origin) {
-  return base::ContainsKey(session_only_, origin);
+storage::SpecialStoragePolicy::DeleteCookiePredicate
+MockSpecialStoragePolicy::CreateDeleteCookieOnExitPredicate() {
+  return base::BindRepeating(
+      &MockSpecialStoragePolicy::ShouldDeleteCookieOnExit,
+      base::Unretained(this));
+}
+
+bool MockSpecialStoragePolicy::ShouldDeleteCookieOnExit(
+    const std::string& domain,
+    bool is_https) {
+  GURL origin = net::cookie_util::CookieOriginToURL(domain, is_https);
+  return IsStorageSessionOnly(origin);
 }
 
 bool MockSpecialStoragePolicy::HasIsolatedStorage(const GURL& origin) {

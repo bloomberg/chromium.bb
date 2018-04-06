@@ -22,10 +22,10 @@ class MockSpecialStoragePolicy : public storage::SpecialStoragePolicy {
   bool IsStorageProtected(const GURL& origin) override;
   bool IsStorageUnlimited(const GURL& origin) override;
   bool IsStorageSessionOnly(const GURL& origin) override;
-  bool ShouldDeleteCookieOnExit(const GURL& origin) override;
   bool HasIsolatedStorage(const GURL& origin) override;
   bool HasSessionOnlyOrigins() override;
   bool IsStorageDurable(const GURL& origin) override;
+  DeleteCookiePredicate CreateDeleteCookieOnExitPredicate() override;
 
   void AddProtected(const GURL& origin) { protected_.insert(origin); }
 
@@ -66,6 +66,8 @@ class MockSpecialStoragePolicy : public storage::SpecialStoragePolicy {
   ~MockSpecialStoragePolicy() override;
 
  private:
+  bool ShouldDeleteCookieOnExit(const std::string& domain, bool is_https);
+
   std::set<GURL> protected_;
   std::set<GURL> unlimited_;
   std::set<GURL> session_only_;
