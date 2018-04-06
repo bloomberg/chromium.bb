@@ -47,7 +47,8 @@ void PictureInPictureWindowController::Close() {
   surface_id_ = viz::SurfaceId();
 }
 
-void PictureInPictureWindowController::EmbedSurface(viz::SurfaceId surface_id) {
+void PictureInPictureWindowController::EmbedSurface(
+    const viz::SurfaceId& surface_id) {
   DCHECK(window_);
   DCHECK(surface_id.is_valid());
   surface_id_ = surface_id;

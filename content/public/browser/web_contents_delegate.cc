@@ -270,7 +270,7 @@ bool WebContentsDelegate::DoBrowserControlsShrinkBlinkSize() const {
 }
 
 void WebContentsDelegate::UpdatePictureInPictureSurfaceId(
-    viz::SurfaceId surface_id) {}
+    const viz::SurfaceId& surface_id) {}
 
 void WebContentsDelegate::ExitPictureInPicture() {}
 

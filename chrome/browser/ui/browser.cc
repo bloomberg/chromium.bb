@@ -1403,7 +1403,8 @@ void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
       url, FramebustBlockTabHelper::ClickCallback());
 }
 
-void Browser::UpdatePictureInPictureSurfaceId(viz::SurfaceId surface_id) {
+void Browser::UpdatePictureInPictureSurfaceId(
+    const viz::SurfaceId& surface_id) {
   if (!pip_window_controller_)
     pip_window_controller_.reset(
         PictureInPictureWindowController::GetOrCreateForWebContents(
