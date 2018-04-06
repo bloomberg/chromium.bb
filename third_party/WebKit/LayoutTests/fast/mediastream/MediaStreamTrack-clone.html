@@ -1,7 +1,6 @@
 <!DOCTYPE HTML>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<canvas id="canvas"/>
 <script>
 
 createTrack = function() {
@@ -32,6 +31,42 @@ test(t => {
   assert_not_equals(track.enabled, track_clone.enabled,
                     "Tracks enabled status should not be linked.");
 }, "Clones of disabled MediaStreamTracks are still disabled.");
+
+promise_test(function() {
+  return navigator.mediaDevices.getUserMedia({audio: { echoCancellation: true }})
+    .then(function(s) {
+      track = s.getAudioTracks()[0];
+      constraints = track.getConstraints();
+      assert_equals(Object.keys(constraints).length, 1);
+      assert_true(constraints.hasOwnProperty('echoCancellation'));
+      assert_true(constraints.echoCancellation);
+      cloned_track = track.clone();
+      cloned_track_constraints = cloned_track.getConstraints();
+      assert_equals(Object.keys(cloned_track_constraints).length, Object.keys(constraints).length);
+      assert_true(constraints.hasOwnProperty('echoCancellation'));
+      assert_equals(cloned_track_constraints.echoCancellation, constraints.echoCancellation);
+    });
+}, 'Cloned audio MediaStreamTrack has same constraints');
+
+promise_test(function() {
+  return navigator.mediaDevices.getUserMedia({video: { width: 800, height: 600 }})
+    .then(function(s) {
+      track = s.getVideoTracks()[0];
+      constraints = track.getConstraints();
+      assert_equals(Object.keys(constraints).length, 2);
+      assert_true(constraints.hasOwnProperty('width'));
+      assert_equals(constraints.width, 800);
+      assert_true(constraints.hasOwnProperty('height'));
+      assert_equals(constraints.height, 600);
+      cloned_track = track.clone();
+      cloned_track_constraints = cloned_track.getConstraints();
+      assert_equals(Object.keys(cloned_track_constraints).length, Object.keys(constraints).length);
+      assert_true(constraints.hasOwnProperty('width'));
+      assert_equals(cloned_track_constraints.width, constraints.width);
+      assert_true(constraints.hasOwnProperty('height'));
+      assert_equals(cloned_track_constraints.height, constraints.height);
+    });
+}, 'Cloned video MediaStreamTrack has same constraints');
 
 // TODO(pbos): Add tests that make sure muted and stopped properties are
 // carried over. Part of crbug:669212.
