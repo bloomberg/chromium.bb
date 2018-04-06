@@ -18,17 +18,17 @@ namespace internal {
 // custom execution context.
 //
 // If you're looking for a concrete implementation of PostTaskAndReply, you
-// probably want base::TaskRunner.
-//
-// TODO(fdoray): Move this to the anonymous namespace of base/task_runner.cc.
+// probably want base::TaskRunner or base/task_scheduler/post_task.h
 class BASE_EXPORT PostTaskAndReplyImpl {
  public:
   virtual ~PostTaskAndReplyImpl() = default;
 
-  // Posts |task| by calling PostTask(). On completion, |reply| is posted to the
-  // sequence or thread that called this. Can only be called when
-  // SequencedTaskRunnerHandle::IsSet(). Both |task| and |reply| are guaranteed
-  // to be deleted on the sequence or thread that called this.
+  // Posts |task| by calling PostTask(). On completion, posts |reply| to the
+  // sequence that called this. Can only be called when
+  // SequencedTaskRunnerHandle::IsSet(). |task| is deleted on the target
+  // TaskRunner or on the sequence that called this. |reply| is deleted on the
+  // sequence that called this, or leaked if it can't be deleted before the
+  // sequence stops accepting tasks.
   bool PostTaskAndReply(const Location& from_here,
                         OnceClosure task,
                         OnceClosure reply);
