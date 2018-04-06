@@ -31,8 +31,12 @@ class GestureInterpreter {
     TRACKPAD_INPUT_MODE
   };
 
-  GestureInterpreter(RendererProxy* renderer, ChromotingSession* input_stub);
+  GestureInterpreter();
   ~GestureInterpreter();
+
+  // Sets the context for the interpreter. Both arguments are nullable. If both
+  // are nullptr then methods below will have no effect.
+  void SetContext(RendererProxy* renderer, ChromotingSession* input_stub);
 
   // Must be called right after the renderer is ready.
   void SetInputMode(InputMode mode);
@@ -107,8 +111,8 @@ class GestureInterpreter {
   InputMode input_mode_ = UNDEFINED_INPUT_MODE;
   std::unique_ptr<TouchInputStrategy> input_strategy_;
   DesktopViewport viewport_;
-  RendererProxy* renderer_;
-  ChromotingSession* input_stub_;
+  RendererProxy* renderer_ = nullptr;
+  ChromotingSession* input_stub_ = nullptr;
   TouchInputStrategy::Gesture gesture_in_progress_;
 
   FlingAnimation pan_animation_;

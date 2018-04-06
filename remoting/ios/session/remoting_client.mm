@@ -65,9 +65,9 @@ static void ResolveFeedbackDataCallback(
   std::unique_ptr<remoting::RemotingClientSessonDelegate> _sessonDelegate;
   ClientSessionDetails* _sessionDetails;
   remoting::protocol::SecretFetchedCallback _secretFetchedCallback;
+  remoting::GestureInterpreter _gestureInterpreter;
+  remoting::KeyboardInterpreter _keyboardInterpreter;
   std::unique_ptr<remoting::RendererProxy> _renderer;
-  std::unique_ptr<remoting::GestureInterpreter> _gestureInterpreter;
-  std::unique_ptr<remoting::KeyboardInterpreter> _keyboardInterpreter;
   std::unique_ptr<remoting::AudioPlayerIos> _audioPlayer;
   std::unique_ptr<remoting::ChromotingSession> _session;
 }
@@ -141,9 +141,8 @@ static void ResolveFeedbackDataCallback(
       [_displayHandler CreateVideoRenderer],
       _audioPlayer->GetAudioStreamConsumer(), info));
   _renderer = [_displayHandler CreateRendererProxy];
-  _gestureInterpreter.reset(
-      new remoting::GestureInterpreter(_renderer.get(), _session.get()));
-  _keyboardInterpreter.reset(new remoting::KeyboardInterpreter(_session.get()));
+  _gestureInterpreter.SetContext(_renderer.get(), _session.get());
+  _keyboardInterpreter.SetContext(_session.get());
 
   _session->Connect();
   _audioPlayer->Start();
@@ -167,8 +166,8 @@ static void ResolveFeedbackDataCallback(
     _runtime->display_task_runner()->DeleteSoon(FROM_HERE, _renderer.release());
   }
 
-  _gestureInterpreter.reset();
-  _keyboardInterpreter.reset();
+  _gestureInterpreter.SetContext(nullptr, nullptr);
+  _keyboardInterpreter.SetContext(nullptr);
 }
 
 #pragma mark - Eventing
@@ -195,11 +194,11 @@ static void ResolveFeedbackDataCallback(
 }
 
 - (remoting::GestureInterpreter*)gestureInterpreter {
-  return _gestureInterpreter.get();
+  return &_gestureInterpreter;
 }
 
 - (remoting::KeyboardInterpreter*)keyboardInterpreter {
-  return _keyboardInterpreter.get();
+  return &_keyboardInterpreter;
 }
 
 #pragma mark - ChromotingSession::Delegate
@@ -370,15 +369,11 @@ fetchSecretWithPairingSupported:(BOOL)pairingSupported
 #pragma mark - GlDisplayHandlerDelegate
 
 - (void)canvasSizeChanged:(CGSize)size {
-  if (_gestureInterpreter) {
-    _gestureInterpreter->OnDesktopSizeChanged(size.width, size.height);
-  }
+  _gestureInterpreter.OnDesktopSizeChanged(size.width, size.height);
 }
 
 - (void)rendererTicked {
-  if (_gestureInterpreter) {
-    _gestureInterpreter->ProcessAnimations();
-  }
+  _gestureInterpreter.ProcessAnimations();
 }
 
 @end

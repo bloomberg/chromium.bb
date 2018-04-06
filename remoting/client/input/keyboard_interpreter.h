@@ -19,8 +19,11 @@ class ClientInputInjector;
 // handling of text events to the selected keyboard input strategy.
 class KeyboardInterpreter {
  public:
-  explicit KeyboardInterpreter(ClientInputInjector* input_injector);
+  explicit KeyboardInterpreter();
   ~KeyboardInterpreter();
+
+  // If |input_injector| is nullptr, all methods below will have no effect.
+  void SetContext(ClientInputInjector* input_injector);
 
   // Delegates to |KeyboardInputStrategy| to covert and send the input.
   void HandleTextEvent(const std::string& text, uint8_t modifiers);

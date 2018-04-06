@@ -466,6 +466,8 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
   }
 }
 
+// TODO(yuweih): This method is badly named. Should be changed to
+// "didTapShowMenu".
 - (void)didTap:(id)sender {
   // TODO(nicholss): The FAB is being used to launch an alert window with
   // more options. This is not ideal but it gets us an easy way to make a
