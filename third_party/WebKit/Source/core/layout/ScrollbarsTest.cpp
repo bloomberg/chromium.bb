@@ -7,6 +7,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameImpl.h"
+#include "core/html/HTMLIFrameElement.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/DevToolsEmulator.h"
 #include "core/layout/LayoutScrollbarPart.h"
@@ -1866,6 +1867,60 @@ TEST_P(ScrollbarsTest,
   scrollable_div->SetScrollbarsHiddenIfOverlay(true);
 
   EXPECT_FALSE(scrollable_div->ScrollbarsHiddenIfOverlay());
+}
+
+TEST_P(ScrollbarsTest, OverlayScrollbarHitTest) {
+  WebView().Resize(WebSize(300, 300));
+
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+      height: 2000px;
+    }
+    iframe {
+      height: 200px;
+      width: 200px;
+    }
+    </style>
+    <iframe id='iframe' src='iframe.html'>
+    </iframe>
+  )HTML");
+  Compositor().BeginFrame();
+
+  // Enable the main frame scrollbar.
+  WebView()
+      .MainFrameImpl()
+      ->GetFrameView()
+      ->LayoutViewportScrollableArea()
+      ->SetScrollbarsHiddenIfOverlay(false);
+
+  frame_resource.Complete("<!DOCTYPE html><body style='height: 999px'></body>");
+  Compositor().BeginFrame();
+
+  // Enable the iframe scrollbar.
+  auto* iframe_element =
+      ToHTMLIFrameElement(GetDocument().getElementById("iframe"));
+  iframe_element->contentDocument()
+      ->View()
+      ->LayoutViewportScrollableArea()
+      ->SetScrollbarsHiddenIfOverlay(false);
+
+  // Hit test on and off the main frame scrollbar.
+  HitTestResult hit_test_result = HitTest(295, 5);
+  EXPECT_TRUE(hit_test_result.GetScrollbar());
+  hit_test_result = HitTest(250, 5);
+  EXPECT_FALSE(hit_test_result.GetScrollbar());
+
+  // Hit test on and off the iframe scrollbar.
+  hit_test_result = HitTest(195, 5);
+  EXPECT_TRUE(hit_test_result.GetScrollbar());
+  hit_test_result = HitTest(150, 5);
+  EXPECT_FALSE(hit_test_result.GetScrollbar());
 }
 
 class ScrollbarTrackMarginsTest : public ScrollbarsTest {

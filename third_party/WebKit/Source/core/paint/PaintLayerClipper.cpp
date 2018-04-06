@@ -44,6 +44,7 @@
 
 #include "core/paint/PaintLayerClipper.h"
 
+#include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutView.h"
@@ -514,10 +515,11 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
     // rect if layer_ is the same as the root.
     OverlayScrollbarClipBehavior clip_behavior =
         context.overlay_scrollbar_clip_behavior;
-    if (&layer_ == context.root_layer)
+
+    if (is_clipping_root)
       clip_behavior = kIgnorePlatformOverlayScrollbarSize;
 
-    FloatClipRect clip_rect((FloatRect(LocalVisualRect(context))));
+    FloatClipRect clip_rect(FloatRect(LocalVisualRect(context)));
     clip_rect.MoveBy(FloatPoint(fragment_data.PaintOffset()));
 
     GeometryMapper::LocalToAncestorVisualRect(source_property_tree_state,
@@ -535,6 +537,24 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
   // TODO(chrishtr): generalize to multiple fragments.
   output.MoveBy(
       -context.root_layer->GetLayoutObject().FirstFragment().PaintOffset());
+
+  // The root LayoutView clip node does not store a rect excluding scrollbars
+  // for hit testing (see FragmentPaintPropertyTreeBuilder::UpdateOverflowClip).
+  // To calculate the correct clip at the root, we need to apply the LayoutView
+  // overflow clip excluding scrollbars here.
+  auto& root = context.root_layer->GetLayoutObject();
+  bool is_root_layout_view =
+      root.IsLayoutView() && !root.GetFrame()->Tree().Parent();
+  bool root_should_clip = HasOverflowClip(*context.root_layer) &&
+                          !is_clipping_root &&
+                          context.ShouldRespectRootLayerClip();
+  if (context.overlay_scrollbar_clip_behavior ==
+          kExcludeOverlayScrollbarSizeForHitTesting &&
+      is_root_layout_view && root_should_clip) {
+    ClipRect root_overflow_clip = ToLayoutView(root).OverflowClipRect(
+        LayoutPoint(), kExcludeOverlayScrollbarSizeForHitTesting);
+    output.Intersect(root_overflow_clip);
+  }
 
   output.Move(context.sub_pixel_accumulation);
 }
