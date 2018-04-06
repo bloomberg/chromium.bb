@@ -116,8 +116,8 @@ const base::Feature TabUnderNavigationThrottle::kBlockTabUnders{
 // static
 void TabUnderNavigationThrottle::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kTabUnderProtection,
-                                true /* default_value */);
+  registry->RegisterBooleanPref(prefs::kTabUnderAllowed,
+                                false /* default_value */);
 }
 
 // static
@@ -140,9 +140,9 @@ TabUnderNavigationThrottle::TabUnderNavigationThrottle(
       off_the_record_(
           handle->GetWebContents()->GetBrowserContext()->IsOffTheRecord()),
       block_(base::FeatureList::IsEnabled(kBlockTabUnders) &&
-             user_prefs::UserPrefs::Get(
-                 handle->GetWebContents()->GetBrowserContext())
-                 ->GetBoolean(prefs::kTabUnderProtection)),
+             !user_prefs::UserPrefs::Get(
+                  handle->GetWebContents()->GetBrowserContext())
+                  ->GetBoolean(prefs::kTabUnderAllowed)),
       has_opened_popup_since_last_user_gesture_at_start_(
           HasOpenedPopupSinceLastUserGesture()),
       started_in_foreground_(handle->GetWebContents()->GetVisibility() ==

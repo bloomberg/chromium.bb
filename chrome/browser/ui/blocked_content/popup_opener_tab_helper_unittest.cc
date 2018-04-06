@@ -734,10 +734,10 @@ TEST_F(BlockTabUnderTest, SiteEngagementNoThreshold_Blocks) {
 }
 
 TEST_F(BlockTabUnderTest, ControlledByPrefs) {
-  // Turn feature off via prefs.
+  // Turn feature off via prefs, via allowing tab-unders.
   PrefService* prefs =
       user_prefs::UserPrefs::Get(web_contents()->GetBrowserContext());
-  prefs->SetBoolean(prefs::kTabUnderProtection, false);
+  prefs->SetBoolean(prefs::kTabUnderAllowed, true);
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
   SimulatePopup();
 
@@ -745,7 +745,7 @@ TEST_F(BlockTabUnderTest, ControlledByPrefs) {
   ExpectUIShown(false);
 
   // Turn feature back on.
-  prefs->SetBoolean(prefs::kTabUnderProtection, true);
+  prefs->SetBoolean(prefs::kTabUnderAllowed, false);
   EXPECT_FALSE(NavigateAndCommitWithoutGesture(GURL("https://example.test2/")));
   ExpectUIShown(true);
 }

@@ -53,12 +53,11 @@ class TabUnderBlockerBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
-  void UpdatePolicy(bool enable_protection) {
+  void UpdatePolicy(bool allow_tab_under) {
     policy::PolicyMap policy;
-    policy.Set(policy::key::kTabUnderProtectionEnabled,
-               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(enable_protection),
+    policy.Set(policy::key::kTabUnderAllowed, policy::POLICY_LEVEL_MANDATORY,
+               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(allow_tab_under),
                nullptr /* external_data_fetcher */);
     provider_.UpdateChromePolicy(policy);
   }
@@ -197,8 +196,8 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
                        ControlledByEnterprisePolicy) {
-  // Disable the enterprise policy, should disable tab-under blocking.
-  UpdatePolicy(false /* enable_protection */);
+  // Allow tab-unders via enterprise policy, should disable tab-under blocking.
+  UpdatePolicy(true /* allow_tab_under */);
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));
   content::WebContents* opener =
@@ -223,10 +222,10 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
     EXPECT_FALSE(IsUiShownForUrl(opener, cross_origin_url));
   }
 
-  // Enable the policy and try to tab-under again in the background tab. Should
-  // fail to navigate.
+  // Disallow tab-unders via policy and try to tab-under again in the background
+  // tab. Should fail to navigate.
   {
-    UpdatePolicy(true /* enable_protection */);
+    UpdatePolicy(false /* allow_tab_under */);
     content::TestNavigationObserver tab_under_observer(opener, 1);
     const GURL cross_origin_url =
         embedded_test_server()->GetURL("b.com", "/title1.html");
