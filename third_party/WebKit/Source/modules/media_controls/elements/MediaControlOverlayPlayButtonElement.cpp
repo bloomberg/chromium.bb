@@ -114,7 +114,7 @@ void MediaControlOverlayPlayButtonElement::AnimatedArrow::Trace(
 //   This contains the inner circle with the actual play/pause icon.
 MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
     MediaControlsImpl& media_controls)
-    : MediaControlInputElement(media_controls, kMediaOverlayPlayButton),
+    : MediaControlInputElement(media_controls, kMediaPlayButton),
       tap_timer_(GetDocument().GetTaskRunner(TaskType::kMediaElementEvent),
                  this,
                  &MediaControlOverlayPlayButtonElement::TapTimerFired),
@@ -135,6 +135,10 @@ MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
 void MediaControlOverlayPlayButtonElement::UpdateDisplayType() {
   SetIsWanted(MediaElement().ShouldShowControls() &&
               (MediaControlsImpl::IsModern() || MediaElement().paused()));
+  if (MediaControlsImpl::IsModern()) {
+    SetDisplayType(MediaElement().paused() ? kMediaPlayButton
+                                           : kMediaPauseButton);
+  }
   MediaControlInputElement::UpdateDisplayType();
 }
 

@@ -82,7 +82,6 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaVolumeSlider:
     case kMediaVolumeSliderThumb:
     case kMediaExitFullscreenButton:
-    case kMediaOverlayPlayButton:
     case kMediaCastOffButton:
     case kMediaCastOnButton:
     case kMediaOverlayCastOffButton:
@@ -121,7 +120,6 @@ String AccessibilityMediaControl::TextAlternative(
     case kMediaMuteButton:
       return QueryString(WebLocalizedString::kAXMediaMuteButton);
     case kMediaPlayButton:
-    case kMediaOverlayPlayButton:
       return QueryString(WebLocalizedString::kAXMediaPlayButton);
     case kMediaUnMuteButton:
       return QueryString(WebLocalizedString::kAXMediaUnMuteButton);
@@ -177,7 +175,6 @@ String AccessibilityMediaControl::Description(
     case kMediaMuteButton:
       return QueryString(WebLocalizedString::kAXMediaMuteButtonHelp);
     case kMediaPlayButton:
-    case kMediaOverlayPlayButton:
       return QueryString(WebLocalizedString::kAXMediaPlayButtonHelp);
     case kMediaUnMuteButton:
       return QueryString(WebLocalizedString::kAXMediaUnMuteButtonHelp);
@@ -242,7 +239,6 @@ AccessibilityRole AccessibilityMediaControl::RoleValue() const {
     case kMediaPauseButton:
     case kMediaShowClosedCaptionsButton:
     case kMediaHideClosedCaptionsButton:
-    case kMediaOverlayPlayButton:
     case kMediaOverlayCastOffButton:
     case kMediaOverlayCastOnButton:
     case kMediaOverflowButton:

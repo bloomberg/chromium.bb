@@ -28,7 +28,6 @@ enum MediaControlElementType {
   kMediaVolumeSlider,
   kMediaVolumeSliderThumb,
   kMediaExitFullscreenButton,
-  kMediaOverlayPlayButton,
   kMediaCastOffButton,
   kMediaCastOnButton,
   kMediaOverlayCastOffButton,
