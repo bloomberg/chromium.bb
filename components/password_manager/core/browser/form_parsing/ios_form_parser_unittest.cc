@@ -63,8 +63,6 @@ class IOSFormParserTest : public testing::Test {
   IOSFormParserTest() {}
 
  protected:
-  IOSFormParser form_parser_;
-
   void CheckTestData(const std::vector<FormParsingTestCase>& test_cases);
 };
 
@@ -144,7 +142,7 @@ void IOSFormParserTest::CheckTestData(
           << test_case.description << ", parsing mode = "
           << (mode == FormParsingMode::FILLING ? "Filling" : "Saving"));
       std::unique_ptr<PasswordForm> parsed_form =
-          form_parser_.Parse(form_data, mode);
+          ParseFormData(form_data, mode);
 
       const ParseResultIndices& expected_indices =
           mode == FormParsingMode::FILLING ? test_case.fill_result
