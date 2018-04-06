@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <tuple>
 #include <utility>
 
 #include "base/command_line.h"
@@ -406,17 +407,13 @@ class EncryptedMediaTestExperimentalCdmInterface
 // Note: Only parameterized (*_P) tests can be used. Non-parameterized (*_F)
 // tests will crash at GetParam(). To add non-parameterized tests, use
 // EncryptedMediaTestBase or one of its subclasses (e.g. WVEncryptedMediaTest).
-class EncryptedMediaTest : public EncryptedMediaTestBase,
-                           public testing::WithParamInterface<
-                               std::tr1::tuple<const char*, SrcType>> {
+class EncryptedMediaTest
+    : public EncryptedMediaTestBase,
+      public testing::WithParamInterface<std::tuple<const char*, SrcType>> {
  public:
-  std::string CurrentKeySystem() {
-    return std::tr1::get<0>(GetParam());
-  }
+  std::string CurrentKeySystem() { return std::get<0>(GetParam()); }
 
-  SrcType CurrentSourceType() {
-    return std::tr1::get<1>(GetParam());
-  }
+  SrcType CurrentSourceType() { return std::get<1>(GetParam()); }
 
   void TestSimplePlayback(const std::string& encrypted_media,
                           const std::string& media_type) {

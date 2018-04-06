@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -60,7 +61,7 @@ using ::testing::_;
 ACTION_TEMPLATE(RunCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p0)) {
-  return ::std::tr1::get<k>(args).Run(p0);
+  return std::get<k>(args).Run(p0);
 }
 
 namespace content {

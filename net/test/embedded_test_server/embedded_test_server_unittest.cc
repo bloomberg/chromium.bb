@@ -4,6 +4,7 @@
 
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+#include <tuple>
 #include <utility>
 
 #include "base/macros.h"
@@ -495,8 +496,7 @@ INSTANTIATE_TEST_CASE_P(EmbeddedTestServerTestInstantiation,
 // where there is no MessageLoop available on the thread at EmbeddedTestServer
 // initialization and/or destruction.
 
-typedef std::tr1::tuple<bool, bool, EmbeddedTestServer::Type>
-    ThreadingTestParams;
+typedef std::tuple<bool, bool, EmbeddedTestServer::Type> ThreadingTestParams;
 
 class EmbeddedTestServerThreadingTest
     : public testing::TestWithParam<ThreadingTestParams> {};
@@ -570,9 +570,9 @@ TEST_P(EmbeddedTestServerThreadingTest, RunTest) {
   // of a MessageLoop - the test suite already sets up a MessageLoop for the
   // main test thread.
   base::PlatformThreadHandle thread_handle;
-  EmbeddedTestServerThreadingTestDelegate delegate(
-      std::tr1::get<0>(GetParam()), std::tr1::get<1>(GetParam()),
-      std::tr1::get<2>(GetParam()));
+  EmbeddedTestServerThreadingTestDelegate delegate(std::get<0>(GetParam()),
+                                                   std::get<1>(GetParam()),
+                                                   std::get<2>(GetParam()));
   ASSERT_TRUE(base::PlatformThread::Create(0, &delegate, &thread_handle));
   base::PlatformThread::Join(thread_handle);
 }

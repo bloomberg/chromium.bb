@@ -5,6 +5,7 @@
 #include "extensions/browser/api/document_scan/document_scan_api.h"
 
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "extensions/browser/api/document_scan/mock_document_scan_interface.h"
@@ -45,11 +46,11 @@ class DocumentScanScanFunctionTest : public ApiUnitTest {
 };
 
 ACTION_P2(InvokeListScannersCallback, scanner_list, error) {
-  ::std::tr1::get<0>(args).Run(scanner_list, error);
+  std::get<0>(args).Run(scanner_list, error);
 }
 
 ACTION_P3(InvokeScanCallback, data, mime_type, error) {
-  ::std::tr1::get<3>(args).Run(data, mime_type, error);
+  std::get<3>(args).Run(data, mime_type, error);
 }
 
 TEST_F(DocumentScanScanFunctionTest, GestureRequired) {

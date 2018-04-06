@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <tuple>
 
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -32,19 +33,18 @@ static const int kSampleRate = 48000;
 static const int kSineCycles = 4;
 
 // Tuple of <input rate, output rate, output channel layout, epsilon>.
-typedef std::tr1::tuple<int, int, ChannelLayout, double> AudioConverterTestData;
+typedef std::tuple<int, int, ChannelLayout, double> AudioConverterTestData;
 class AudioConverterTest
     : public testing::TestWithParam<AudioConverterTestData> {
  public:
-  AudioConverterTest()
-      : epsilon_(std::tr1::get<3>(GetParam())) {
+  AudioConverterTest() : epsilon_(std::get<3>(GetParam())) {
     // Create input and output parameters based on test parameters.
     input_parameters_ = AudioParameters(
         AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
-        std::tr1::get<0>(GetParam()), kBitsPerChannel, kHighLatencyBufferSize);
+        std::get<0>(GetParam()), kBitsPerChannel, kHighLatencyBufferSize);
     output_parameters_ = AudioParameters(
-        AudioParameters::AUDIO_PCM_LOW_LATENCY, std::tr1::get<2>(GetParam()),
-        std::tr1::get<1>(GetParam()), 16, kLowLatencyBufferSize);
+        AudioParameters::AUDIO_PCM_LOW_LATENCY, std::get<2>(GetParam()),
+        std::get<1>(GetParam()), 16, kLowLatencyBufferSize);
 
     converter_.reset(new AudioConverter(
         input_parameters_, output_parameters_, false));
@@ -253,14 +253,16 @@ TEST_P(AudioConverterTest, ManyInputs) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-    AudioConverterTest, AudioConverterTest, testing::Values(
+    AudioConverterTest,
+    AudioConverterTest,
+    testing::Values(
         // No resampling. No channel mixing.
-        std::tr1::make_tuple(44100, 44100, CHANNEL_LAYOUT_STEREO, 0.00000048),
+        std::make_tuple(44100, 44100, CHANNEL_LAYOUT_STEREO, 0.00000048),
 
         // Upsampling. Channel upmixing.
-        std::tr1::make_tuple(44100, 48000, CHANNEL_LAYOUT_QUAD, 0.033),
+        std::make_tuple(44100, 48000, CHANNEL_LAYOUT_QUAD, 0.033),
 
         // Downsampling. Channel downmixing.
-        std::tr1::make_tuple(48000, 41000, CHANNEL_LAYOUT_MONO, 0.042)));
+        std::make_tuple(48000, 41000, CHANNEL_LAYOUT_MONO, 0.042)));
 
 }  // namespace media

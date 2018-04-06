@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -48,26 +49,26 @@ const int kTestInput3Rates[] = {22050, 44100, 48000};
 // Tuple of <input sampling rates, number of input sample rates,
 // output sampling rate, epsilon>.
 using AudioRendererMixerTestData =
-    std::tr1::tuple<const int* const, size_t, int, double>;
+    std::tuple<const int* const, size_t, int, double>;
 
 class AudioRendererMixerTest
     : public testing::TestWithParam<AudioRendererMixerTestData>,
       AudioRendererMixerPool {
  public:
   AudioRendererMixerTest()
-      : epsilon_(std::tr1::get<3>(GetParam())), half_fill_(false) {
+      : epsilon_(std::get<3>(GetParam())), half_fill_(false) {
     // Create input parameters based on test parameters.
-    const int* const sample_rates = std::tr1::get<0>(GetParam());
-    size_t sample_rates_count = std::tr1::get<1>(GetParam());
+    const int* const sample_rates = std::get<0>(GetParam());
+    size_t sample_rates_count = std::get<1>(GetParam());
     for (size_t i = 0; i < sample_rates_count; ++i)
       input_parameters_.push_back(AudioParameters(
           AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout, sample_rates[i],
           kBitsPerChannel, kHighLatencyBufferSize));
 
     // Create output parameters based on test parameters.
-    output_parameters_ = AudioParameters(
-        AudioParameters::AUDIO_PCM_LOW_LATENCY, kChannelLayout,
-        std::tr1::get<2>(GetParam()), 16, kLowLatencyBufferSize);
+    output_parameters_ =
+        AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY, kChannelLayout,
+                        std::get<2>(GetParam()), 16, kLowLatencyBufferSize);
 
     sink_ = new MockAudioRendererSink();
     EXPECT_CALL(*sink_.get(), Start());
@@ -520,31 +521,31 @@ INSTANTIATE_TEST_CASE_P(
     AudioRendererMixerTest,
     testing::Values(
         // No resampling, 1 input sample rate.
-        std::tr1::make_tuple(&kTestInputLower, 1, kTestInputLower, 0.00000048),
+        std::make_tuple(&kTestInputLower, 1, kTestInputLower, 0.00000048),
 
         // Upsampling, 1 input sample rate.
-        std::tr1::make_tuple(&kTestInputLower, 1, kTestInputHigher, 0.01),
+        std::make_tuple(&kTestInputLower, 1, kTestInputHigher, 0.01),
 
         // Downsampling, 1 input sample rate.
-        std::tr1::make_tuple(&kTestInputHigher, 1, kTestInputLower, 0.01),
+        std::make_tuple(&kTestInputHigher, 1, kTestInputLower, 0.01),
 
         // Downsampling, multuple input sample rates.
-        std::tr1::make_tuple(static_cast<const int* const>(kTestInput3Rates),
-                             arraysize(kTestInput3Rates),
-                             kTestInput3Rates[0],
-                             0.01),
+        std::make_tuple(static_cast<const int* const>(kTestInput3Rates),
+                        arraysize(kTestInput3Rates),
+                        kTestInput3Rates[0],
+                        0.01),
 
         // Upsampling, multiple sinput sample rates.
-        std::tr1::make_tuple(static_cast<const int* const>(kTestInput3Rates),
-                             arraysize(kTestInput3Rates),
-                             kTestInput3Rates[2],
-                             0.01),
+        std::make_tuple(static_cast<const int* const>(kTestInput3Rates),
+                        arraysize(kTestInput3Rates),
+                        kTestInput3Rates[2],
+                        0.01),
 
         // Both downsampling and upsampling, multiple input sample rates
-        std::tr1::make_tuple(static_cast<const int* const>(kTestInput3Rates),
-                             arraysize(kTestInput3Rates),
-                             kTestInput3Rates[1],
-                             0.01)));
+        std::make_tuple(static_cast<const int* const>(kTestInput3Rates),
+                        arraysize(kTestInput3Rates),
+                        kTestInput3Rates[1],
+                        0.01)));
 
 // Test cases for behavior which is independent of parameters.  Values() doesn't
 // support single item lists and we don't want these test cases to run for every
@@ -554,8 +555,5 @@ INSTANTIATE_TEST_CASE_P(
     AudioRendererMixerBehavioralTest,
     testing::ValuesIn(std::vector<AudioRendererMixerTestData>(
         1,
-        std::tr1::make_tuple(&kTestInputLower,
-                             1,
-                             kTestInputLower,
-                             0.00000048))));
+        std::make_tuple(&kTestInputLower, 1, kTestInputLower, 0.00000048))));
 }  // namespace media

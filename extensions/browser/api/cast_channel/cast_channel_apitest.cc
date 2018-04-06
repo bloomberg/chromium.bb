@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <tuple>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -77,7 +79,7 @@ static void FillCastMessage(const std::string& message,
 ACTION_TEMPLATE(InvokeCompletionCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(result)) {
-  ::std::tr1::get<k>(args).Run(result);
+  std::get<k>(args).Run(result);
 }
 
 }  // namespace

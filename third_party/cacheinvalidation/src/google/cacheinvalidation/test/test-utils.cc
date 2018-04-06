@@ -19,6 +19,7 @@
 #include <stdint.h>
 
 #include <set>
+#include <tuple>
 
 #include "google/cacheinvalidation/impl/proto-converter.h"
 #include "google/cacheinvalidation/test/test-utils.h"
@@ -37,7 +38,7 @@ ACTION_TEMPLATE(
     InvokeNetworkStatusCallback,
     HAS_1_TEMPLATE_PARAMS(int, k),
     AND_0_VALUE_PARAMS()) {
-  std::tr1::get<k>(args)->Run(true);
+  std::get<k>(args)->Run(true);
 }
 
 const char* UnitTestBase::kClientToken = "Dummy";

@@ -5,6 +5,7 @@
 #include "headless/public/util/virtual_time_controller.h"
 
 #include <memory>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
@@ -196,7 +197,7 @@ class MockObserver : public VirtualTimeController::Observer {
 ACTION_TEMPLATE(RunClosure,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_0_VALUE_PARAMS()) {
-  ::std::tr1::get<k>(args).Run();
+  std::get<k>(args).Run();
 }
 
 ACTION_P(RunClosure, closure) {
