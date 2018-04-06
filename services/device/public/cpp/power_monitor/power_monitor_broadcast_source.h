@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/power_monitor/power_monitor_source.h"
@@ -47,16 +46,21 @@ class PowerMonitorBroadcastSource : public base::PowerMonitorSource {
     ~Client() override;
 
     void Init(std::unique_ptr<service_manager::Connector> connector);
-    bool last_reported_battery_power_state();
 
+    bool last_reported_on_battery_power_state() const {
+      return last_reported_on_battery_power_state_;
+    }
+
+    // device::mojom::PowerMonitorClient implementation
     void PowerStateChange(bool on_battery_power) override;
     void Suspend() override;
     void Resume() override;
 
    private:
-    volatile base::subtle::AtomicWord last_reported_battery_power_state_;
     std::unique_ptr<service_manager::Connector> connector_;
     mojo::Binding<device::mojom::PowerMonitorClient> binding_;
+
+    bool last_reported_on_battery_power_state_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(Client);
   };
@@ -70,6 +74,7 @@ class PowerMonitorBroadcastSource : public base::PowerMonitorSource {
   Client* client_for_testing() const { return client_.get(); }
 
   bool IsOnBatteryPowerImpl() override;
+
   std::unique_ptr<Client> client_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
