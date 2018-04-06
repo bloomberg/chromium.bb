@@ -2518,6 +2518,14 @@ bool Internals::isMediaElementSuspended(HTMLMediaElement* media_element) {
   return false;
 }
 
+void Internals::setMediaControlsTestMode(HTMLMediaElement* media_element,
+                                         bool enable) {
+  DCHECK(media_element);
+  MediaControls* media_controls = media_element->GetMediaControls();
+  DCHECK(media_controls);
+  media_controls->SetTestMode(enable);
+}
+
 void Internals::registerURLSchemeAsBypassingContentSecurityPolicy(
     const String& scheme) {
   SchemeRegistry::RegisterURLSchemeAsBypassingContentSecurityPolicy(scheme);

@@ -100,6 +100,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void NetworkStateChanged() override;
   LayoutObject* PanelLayoutObject() override;
   LayoutObject* ContainerLayoutObject() override;
+  void SetTestMode(bool) override;
   // Return the internal elements, which is used by registering clicking
   // EventHandlers from MediaControlsWindowEventListener.
   HTMLDivElement* PanelElement() override;
@@ -109,6 +110,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
     // There is no update because only the overlay is expected to change.
     RefreshCastButtonVisibilityWithoutUpdate();
   }
+
+  bool GetTestMode() const;
 
   // Called by the fullscreen buttons to toggle fulllscreen on/off.
   void EnterFullscreen();
@@ -363,6 +366,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // certain pointer events. In particular, when the user is interacting via
   // touch events, we want to ignore pointerover/pointerout/pointermove events.
   bool is_touch_interaction_ = false;
+
+  bool is_test_mode_ = false;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(MediaControlsImpl, IsMediaControls());

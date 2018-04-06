@@ -240,6 +240,7 @@ enum EffectiveConnectionType {
     void setPersistent(HTMLVideoElement video, boolean persistent);
     void forceStaleStateForMediaElement(HTMLMediaElement mediaElement, long state);
     boolean isMediaElementSuspended(HTMLMediaElement mediaElement);
+    void setMediaControlsTestMode(HTMLMediaElement mediaElement, boolean enable);
 
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme);
     void registerURLSchemeAsBypassingContentSecurityPolicy(DOMString scheme, sequence<DOMString> policyAreas);
