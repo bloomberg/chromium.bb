@@ -133,6 +133,9 @@
       'filepath': 'chromeos/assistant/'\
                   '|chromeos/services/assistant/'
     },
+    'audio_service': {
+      'filepath': 'services/audio/'
+    },
     'aura': {
       'filepath': 'ui/aura/',
     },
@@ -1702,6 +1705,9 @@
     'ash': ['kalyan.kondapally@intel.com',
             'sadrul@chromium.org'],
     'assistant': ['croissant-eng+reviews@chromium.org'],
+    'audio_service': ['marinaciocea+watch@chromium.org',
+                      'maxmorin+watch@chromium.org',
+                      'olka+watch@chromium.org'],
     'aura': ['kalyan.kondapally@intel.com',
              'sadrul@chromium.org'],
     'aura_compositor': ['danakj+watch@chromium.org',
