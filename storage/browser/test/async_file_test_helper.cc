@@ -267,8 +267,8 @@ blink::mojom::QuotaStatusCode AsyncFileTestHelper::GetUsageAndQuota(
   base::RunLoop run_loop;
   quota_manager->GetUsageAndQuota(
       origin, FileSystemTypeToQuotaStorageType(type),
-      base::Bind(&DidGetUsageAndQuota, &status, usage, quota,
-                 run_loop.QuitWhenIdleClosure()));
+      base::BindOnce(&DidGetUsageAndQuota, &status, usage, quota,
+                     run_loop.QuitWhenIdleClosure()));
   run_loop.Run();
   return status;
 }

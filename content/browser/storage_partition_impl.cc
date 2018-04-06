@@ -933,9 +933,10 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
     // ClearQuotaManagedOriginsOnIOThread().
     quota_manager->GetOriginsModifiedSince(
         blink::mojom::StorageType::kPersistent, begin,
-        base::Bind(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
-                   base::Unretained(this), base::RetainedRef(quota_manager),
-                   special_storage_policy, origin_matcher, decrement_callback));
+        base::BindOnce(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
+                       base::Unretained(this), base::RetainedRef(quota_manager),
+                       special_storage_policy, origin_matcher,
+                       decrement_callback));
   }
 
   // Do the same for temporary quota.
@@ -943,9 +944,10 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
     IncrementTaskCountOnIO();
     quota_manager->GetOriginsModifiedSince(
         blink::mojom::StorageType::kTemporary, begin,
-        base::Bind(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
-                   base::Unretained(this), base::RetainedRef(quota_manager),
-                   special_storage_policy, origin_matcher, decrement_callback));
+        base::BindOnce(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
+                       base::Unretained(this), base::RetainedRef(quota_manager),
+                       special_storage_policy, origin_matcher,
+                       decrement_callback));
   }
 
   // Do the same for syncable quota.
@@ -953,10 +955,10 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
     IncrementTaskCountOnIO();
     quota_manager->GetOriginsModifiedSince(
         blink::mojom::StorageType::kSyncable, begin,
-        base::Bind(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
-                   base::Unretained(this), base::RetainedRef(quota_manager),
-                   special_storage_policy, origin_matcher,
-                   std::move(decrement_callback)));
+        base::BindOnce(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
+                       base::Unretained(this), base::RetainedRef(quota_manager),
+                       special_storage_policy, origin_matcher,
+                       std::move(decrement_callback)));
   }
 
   DecrementTaskCountOnIO();
@@ -997,8 +999,8 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
     quota_manager->DeleteOriginData(
         *origin, quota_storage_type,
         StoragePartitionImpl::GenerateQuotaClientMask(remove_mask_),
-        base::Bind(&OnQuotaManagedOriginDeleted, origin->GetOrigin(),
-                   quota_storage_type, deletion_task_count, callback));
+        base::BindOnce(&OnQuotaManagedOriginDeleted, origin->GetOrigin(),
+                       quota_storage_type, deletion_task_count, callback));
   }
   (*deletion_task_count)--;
 

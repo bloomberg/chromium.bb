@@ -186,7 +186,7 @@ void WebDatabaseHostImpl::GetSpaceAvailable(
 
   db_tracker_->quota_manager_proxy()->GetUsageAndQuota(
       db_tracker_->task_runner(), origin, blink::mojom::StorageType::kTemporary,
-      base::Bind(
+      base::BindOnce(
           [](GetSpaceAvailableCallback callback,
              blink::mojom::QuotaStatusCode status, int64_t usage,
              int64_t quota) {
@@ -197,7 +197,7 @@ void WebDatabaseHostImpl::GetSpaceAvailable(
             }
             std::move(callback).Run(available);
           },
-          base::Passed(std::move(callback))));
+          std::move(callback)));
 }
 
 void WebDatabaseHostImpl::DatabaseDeleteFile(

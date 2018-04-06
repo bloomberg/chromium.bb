@@ -174,8 +174,8 @@ void CdmFileImpl::Initialize(OpenFileCallback callback) {
   lock_state_ = LockState::kFileLocked;
   pending_open_callback_ = std::move(callback);
   OpenFile(file_name_, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ,
-           base::Bind(&CdmFileImpl::OnFileOpenedForReading,
-                      weak_factory_.GetWeakPtr()));
+           base::BindOnce(&CdmFileImpl::OnFileOpenedForReading,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void CdmFileImpl::OpenFile(const std::string& file_name,
@@ -248,8 +248,8 @@ void CdmFileImpl::OpenFileForWriting(OpenFileForWritingCallback callback) {
   pending_open_callback_ = std::move(callback);
   OpenFile(temp_file_name_,
            base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE,
-           base::Bind(&CdmFileImpl::OnTempFileOpenedForWriting,
-                      weak_factory_.GetWeakPtr()));
+           base::BindOnce(&CdmFileImpl::OnTempFileOpenedForWriting,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void CdmFileImpl::OnTempFileOpenedForWriting(
@@ -312,7 +312,7 @@ void CdmFileImpl::CommitWrite(CommitWriteCallback callback) {
   file_util->MoveFileLocal(
       std::move(operation_context), src_file_url, dest_file_url,
       storage::FileSystemOperation::OPTION_NONE,
-      base::Bind(&CdmFileImpl::OnFileRenamed, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&CdmFileImpl::OnFileRenamed, weak_factory_.GetWeakPtr()));
 }
 
 void CdmFileImpl::OnFileRenamed(base::File::Error move_result) {
@@ -334,8 +334,8 @@ void CdmFileImpl::OnFileRenamed(base::File::Error move_result) {
   // Reopen the original file for reading. Specifying FLAG_OPEN as the file
   // has to exist or something's wrong.
   OpenFile(file_name_, base::File::FLAG_OPEN | base::File::FLAG_READ,
-           base::Bind(&CdmFileImpl::OnFileOpenedForReading,
-                      weak_factory_.GetWeakPtr()));
+           base::BindOnce(&CdmFileImpl::OnFileOpenedForReading,
+                          weak_factory_.GetWeakPtr()));
 }
 
 storage::FileSystemURL CdmFileImpl::CreateFileSystemURL(

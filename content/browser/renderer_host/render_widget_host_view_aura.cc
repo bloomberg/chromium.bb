@@ -1878,7 +1878,7 @@ void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
       GetWindowTreeClientFromRenderer(),
       ui::mojom::kEmbedFlagEmbedderInterceptsEvents |
           ui::mojom::kEmbedFlagEmbedderControlsVisibility,
-      base::Bind(&EmbedCallback));
+      base::BindOnce(&EmbedCallback));
 }
 
 void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {

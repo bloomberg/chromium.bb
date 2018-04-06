@@ -224,8 +224,8 @@ void ServiceWorkerContextWrapper::DeleteAndStartOver() {
     // here.
     return;
   }
-  context_core_->DeleteAndStartOver(
-      base::Bind(&ServiceWorkerContextWrapper::DidDeleteAndStartOver, this));
+  context_core_->DeleteAndStartOver(base::BindOnce(
+      &ServiceWorkerContextWrapper::DidDeleteAndStartOver, this));
 }
 
 StoragePartitionImpl* ServiceWorkerContextWrapper::storage_partition() const {
@@ -281,7 +281,7 @@ void ServiceWorkerContextWrapper::RegisterServiceWorker(
       net::SimplifyUrlForRequest(options.scope), options.update_via_cache);
   context()->RegisterServiceWorker(
       net::SimplifyUrlForRequest(script_url), options_to_pass,
-      base::Bind(&FinishRegistrationOnIO, base::Passed(std::move(callback))));
+      base::BindOnce(&FinishRegistrationOnIO, std::move(callback)));
 }
 
 void ServiceWorkerContextWrapper::UnregisterServiceWorker(
@@ -302,7 +302,7 @@ void ServiceWorkerContextWrapper::UnregisterServiceWorker(
 
   context()->UnregisterServiceWorker(
       net::SimplifyUrlForRequest(pattern),
-      base::Bind(&FinishUnregistrationOnIO, base::Passed(std::move(callback))));
+      base::BindOnce(&FinishUnregistrationOnIO, std::move(callback)));
 }
 
 bool ServiceWorkerContextWrapper::StartingExternalRequest(

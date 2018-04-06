@@ -94,9 +94,8 @@ void QuotaDispatcherHost::QueryStorageUsageAndQuota(
     QueryStorageUsageAndQuotaCallback callback) {
   quota_manager_->GetUsageAndQuotaForWebApps(
       origin.GetURL(), storage_type,
-      base::Bind(&QuotaDispatcherHost::DidQueryStorageUsageAndQuota,
-                 weak_factory_.GetWeakPtr(),
-                 base::Passed(std::move(callback))));
+      base::BindOnce(&QuotaDispatcherHost::DidQueryStorageUsageAndQuota,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void QuotaDispatcherHost::RequestStorageQuota(
@@ -126,15 +125,15 @@ void QuotaDispatcherHost::RequestStorageQuota(
   if (storage_type == StorageType::kPersistent) {
     quota_manager_->GetUsageAndQuotaForWebApps(
         origin.GetURL(), storage_type,
-        base::Bind(&QuotaDispatcherHost::DidGetPersistentUsageAndQuota,
-                   weak_factory_.GetWeakPtr(), origin, storage_type,
-                   requested_size, base::Passed(std::move(callback))));
+        base::BindOnce(&QuotaDispatcherHost::DidGetPersistentUsageAndQuota,
+                       weak_factory_.GetWeakPtr(), origin, storage_type,
+                       requested_size, std::move(callback)));
   } else {
     quota_manager_->GetUsageAndQuotaForWebApps(
         origin.GetURL(), storage_type,
-        base::Bind(&QuotaDispatcherHost::DidGetTemporaryUsageAndQuota,
-                   weak_factory_.GetWeakPtr(), requested_size,
-                   base::Passed(std::move(callback))));
+        base::BindOnce(&QuotaDispatcherHost::DidGetTemporaryUsageAndQuota,
+                       weak_factory_.GetWeakPtr(), requested_size,
+                       std::move(callback)));
   }
 }
 
@@ -209,9 +208,9 @@ void QuotaDispatcherHost::DidGetPermissionResponse(
   // rewrite to just convert the host to a string directly.
   quota_manager_->SetPersistentHostQuota(
       net::GetHostOrSpecFromURL(origin.GetURL()), requested_quota,
-      base::Bind(&QuotaDispatcherHost::DidSetHostQuota,
-                 weak_factory_.GetWeakPtr(), current_usage,
-                 base::Passed(std::move(callback))));
+      base::BindOnce(&QuotaDispatcherHost::DidSetHostQuota,
+                     weak_factory_.GetWeakPtr(), current_usage,
+                     std::move(callback)));
 }
 
 void QuotaDispatcherHost::DidSetHostQuota(int64_t current_usage,

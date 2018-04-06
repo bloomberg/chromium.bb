@@ -73,8 +73,8 @@ class FileSystemQuotaClientTest : public testing::Test {
                            StorageType type) {
     quota_client->GetOriginUsage(
         url::Origin::Create(GURL(origin_url)), type,
-        base::Bind(&FileSystemQuotaClientTest::OnGetUsage,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&FileSystemQuotaClientTest::OnGetUsage,
+                       weak_factory_.GetWeakPtr()));
   }
 
   int64_t GetOriginUsage(FileSystemQuotaClient* quota_client,
@@ -90,9 +90,8 @@ class FileSystemQuotaClientTest : public testing::Test {
       StorageType type) {
     origins_.clear();
     quota_client->GetOriginsForType(
-        type,
-        base::Bind(&FileSystemQuotaClientTest::OnGetOrigins,
-                   weak_factory_.GetWeakPtr()));
+        type, base::BindOnce(&FileSystemQuotaClientTest::OnGetOrigins,
+                             weak_factory_.GetWeakPtr()));
     base::RunLoop().RunUntilIdle();
     return origins_;
   }
@@ -104,8 +103,8 @@ class FileSystemQuotaClientTest : public testing::Test {
     origins_.clear();
     quota_client->GetOriginsForHost(
         type, host,
-        base::Bind(&FileSystemQuotaClientTest::OnGetOrigins,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&FileSystemQuotaClientTest::OnGetOrigins,
+                       weak_factory_.GetWeakPtr()));
     base::RunLoop().RunUntilIdle();
     return origins_;
   }
@@ -115,8 +114,8 @@ class FileSystemQuotaClientTest : public testing::Test {
                                     StorageType type) {
     quota_client->GetOriginUsage(
         url::Origin::Create(GURL(origin_url)), type,
-        base::Bind(&FileSystemQuotaClientTest::OnGetAdditionalUsage,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&FileSystemQuotaClientTest::OnGetAdditionalUsage,
+                       weak_factory_.GetWeakPtr()));
   }
 
   bool CreateFileSystemDirectory(const base::FilePath& file_path,
@@ -206,8 +205,8 @@ class FileSystemQuotaClientTest : public testing::Test {
     deletion_status_ = blink::mojom::QuotaStatusCode::kUnknown;
     quota_client->DeleteOriginData(
         url::Origin::Create(GURL(origin)), type,
-        base::Bind(&FileSystemQuotaClientTest::OnDeleteOrigin,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&FileSystemQuotaClientTest::OnDeleteOrigin,
+                       weak_factory_.GetWeakPtr()));
   }
 
   int64_t usage() const { return usage_; }

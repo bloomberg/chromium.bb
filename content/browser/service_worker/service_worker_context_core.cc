@@ -153,7 +153,7 @@ class ClearAllServiceWorkersHelper
     for (const auto& registration_info : registrations) {
       context->UnregisterServiceWorker(
           registration_info.pattern,
-          base::Bind(&ClearAllServiceWorkersHelper::OnResult, this));
+          base::BindOnce(&ClearAllServiceWorkersHelper::OnResult, this));
     }
   }
 
@@ -739,8 +739,7 @@ void ServiceWorkerContextCore::CheckHasServiceWorker(
   storage()->FindRegistrationForDocument(
       url, base::BindOnce(&ServiceWorkerContextCore::
                               DidFindRegistrationForCheckHasServiceWorker,
-                          AsWeakPtr(), other_url,
-                          base::Passed(std::move(callback))));
+                          AsWeakPtr(), other_url, std::move(callback)));
 }
 
 void ServiceWorkerContextCore::UpdateVersionFailureCount(

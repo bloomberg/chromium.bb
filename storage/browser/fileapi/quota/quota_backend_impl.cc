@@ -49,9 +49,9 @@ void QuotaBackendImpl::ReserveQuota(const GURL& origin,
   quota_manager_proxy_->GetUsageAndQuota(
       file_task_runner_.get(), url::Origin::Create(origin),
       FileSystemTypeToQuotaStorageType(type),
-      base::Bind(&QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 QuotaReservationInfo(origin, type, delta), callback));
+      base::BindOnce(&QuotaBackendImpl::DidGetUsageAndQuotaForReserveQuota,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     QuotaReservationInfo(origin, type, delta), callback));
 }
 
 void QuotaBackendImpl::ReleaseReservedQuota(const GURL& origin,

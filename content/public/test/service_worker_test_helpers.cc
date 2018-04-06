@@ -102,7 +102,7 @@ void StopServiceWorkerForPattern(ServiceWorkerContext* context,
   context_wrapper->FindReadyRegistrationForPattern(
       pattern, base::BindOnce(&FoundReadyRegistration,
                               base::RetainedRef(context_wrapper),
-                              base::Passed(&completion_callback_ui)));
+                              std::move(completion_callback_ui)));
 }
 
 }  // namespace content

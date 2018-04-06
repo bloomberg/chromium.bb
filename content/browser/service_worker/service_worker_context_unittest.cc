@@ -46,7 +46,7 @@ void SaveResponseCallback(bool* called,
 ServiceWorkerContextCore::RegistrationCallback MakeRegisteredCallback(
     bool* called,
     int64_t* store_registration_id) {
-  return base::Bind(&SaveResponseCallback, called, store_registration_id);
+  return base::BindOnce(&SaveResponseCallback, called, store_registration_id);
 }
 
 void CallCompletedCallback(bool* called, ServiceWorkerStatusCode) {
@@ -55,7 +55,7 @@ void CallCompletedCallback(bool* called, ServiceWorkerStatusCode) {
 
 ServiceWorkerContextCore::UnregistrationCallback MakeUnregisteredCallback(
     bool* called) {
-  return base::Bind(&CallCompletedCallback, called);
+  return base::BindOnce(&CallCompletedCallback, called);
 }
 
 void ExpectRegisteredWorkers(

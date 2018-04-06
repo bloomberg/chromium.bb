@@ -146,8 +146,8 @@ void CreateRegistrationTask::StoreMetadata() {
   service_worker_context()->StoreRegistrationUserData(
       registration_id_.service_worker_registration_id(),
       registration_id_.origin().GetURL(), entries,
-      base::BindRepeating(&CreateRegistrationTask::DidStoreMetadata,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&CreateRegistrationTask::DidStoreMetadata,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void CreateRegistrationTask::DidStoreMetadata(ServiceWorkerStatusCode status) {

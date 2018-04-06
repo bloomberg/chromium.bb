@@ -334,8 +334,8 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
   options.scope = origin;
   embedded_worker_test_helper->context()->RegisterServiceWorker(
       script_url, options,
-      base::Bind(&PlatformNotificationContextTest::DidRegisterServiceWorker,
-                 base::Unretained(this), &service_worker_registration_id));
+      base::BindOnce(&PlatformNotificationContextTest::DidRegisterServiceWorker,
+                     base::Unretained(this), &service_worker_registration_id));
 
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(service_worker_registration_id,
@@ -358,9 +358,9 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
 
   // Now drop the Service Worker registration which owns that notification.
   embedded_worker_test_helper->context()->UnregisterServiceWorker(
-      origin,
-      base::Bind(&PlatformNotificationContextTest::DidUnregisterServiceWorker,
-                 base::Unretained(this), &unregister_status));
+      origin, base::BindOnce(
+                  &PlatformNotificationContextTest::DidUnregisterServiceWorker,
+                  base::Unretained(this), &unregister_status));
 
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(SERVICE_WORKER_OK, unregister_status);

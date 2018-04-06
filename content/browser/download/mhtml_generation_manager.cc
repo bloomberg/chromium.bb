@@ -354,7 +354,7 @@ void MHTMLGenerationManager::Job::CloseFile(
           save_status,
           (save_status == MhtmlSaveStatus::SUCCESS ? mhtml_boundary_marker_
                                                    : std::string()),
-          base::Passed(&browser_file_), base::Passed(&extra_data_parts_)),
+          std::move(browser_file_), std::move(extra_data_parts_)),
       std::move(callback));
 }
 

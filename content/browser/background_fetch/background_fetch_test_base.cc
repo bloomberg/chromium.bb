@@ -95,8 +95,9 @@ int64_t BackgroundFetchTestBase::RegisterServiceWorker() {
     base::RunLoop run_loop;
     embedded_worker_test_helper_.context()->RegisterServiceWorker(
         script_url, options,
-        base::Bind(&DidRegisterServiceWorker, &service_worker_registration_id,
-                   run_loop.QuitClosure()));
+        base::BindOnce(&DidRegisterServiceWorker,
+                       &service_worker_registration_id,
+                       run_loop.QuitClosure()));
 
     run_loop.Run();
   }

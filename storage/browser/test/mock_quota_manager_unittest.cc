@@ -60,8 +60,8 @@ class MockQuotaManagerTest : public testing::Test {
   void GetModifiedOrigins(StorageType type, base::Time since) {
     manager_->GetOriginsModifiedSince(
         type, since,
-        base::Bind(&MockQuotaManagerTest::GotModifiedOrigins,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&MockQuotaManagerTest::GotModifiedOrigins,
+                       weak_factory_.GetWeakPtr()));
   }
 
   void GotModifiedOrigins(const std::set<GURL>& origins, StorageType type) {
@@ -73,8 +73,8 @@ class MockQuotaManagerTest : public testing::Test {
       int quota_client_mask) {
     manager_->DeleteOriginData(
         origin, type, quota_client_mask,
-        base::Bind(&MockQuotaManagerTest::DeletedOriginData,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&MockQuotaManagerTest::DeletedOriginData,
+                       weak_factory_.GetWeakPtr()));
   }
 
   void DeletedOriginData(blink::mojom::QuotaStatusCode status) {

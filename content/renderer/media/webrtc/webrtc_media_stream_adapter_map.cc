@@ -199,8 +199,8 @@ WebRtcMediaStreamAdapterMap::GetOrCreateRemoteStreamAdapter(
         base::BindOnce(
             &WebRtcMediaStreamAdapterMap::OnRemoteStreamAdapterInitialized,
             this,
-            base::Passed(base::WrapUnique(new AdapterRef(
-                this, AdapterRef::Type::kRemote, adapter_entry)))));
+            base::WrapUnique(new AdapterRef(this, AdapterRef::Type::kRemote,
+                                            adapter_entry))));
   }
   return base::WrapUnique(
       new AdapterRef(this, AdapterRef::Type::kRemote, adapter_entry));

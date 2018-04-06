@@ -336,7 +336,7 @@ void PushMessagingManager::Subscribe(int32_t render_frame_id,
       registration_id,
       {kPushRegistrationIdServiceWorkerKey, kPushSenderIdServiceWorkerKey},
       base::BindOnce(&PushMessagingManager::DidCheckForExistingRegistration,
-                     weak_factory_io_to_io_.GetWeakPtr(), base::Passed(&data)));
+                     weak_factory_io_to_io_.GetWeakPtr(), std::move(data)));
 }
 
 void PushMessagingManager::DidCheckForExistingRegistration(
@@ -385,8 +385,7 @@ void PushMessagingManager::DidCheckForExistingRegistration(
     service_worker_context_->GetRegistrationUserData(
         registration_id, {kPushSenderIdServiceWorkerKey},
         base::BindOnce(&PushMessagingManager::DidGetSenderIdFromStorage,
-                       weak_factory_io_to_io_.GetWeakPtr(),
-                       base::Passed(&data)));
+                       weak_factory_io_to_io_.GetWeakPtr(), std::move(data)));
   }
 }
 
@@ -560,9 +559,9 @@ void PushMessagingManager::PersistRegistrationOnIO(
       registration_id, requesting_origin,
       {{kPushRegistrationIdServiceWorkerKey, push_subscription_id},
        {kPushSenderIdServiceWorkerKey, sender_info}},
-      base::Bind(&PushMessagingManager::DidPersistRegistrationOnIO,
-                 weak_factory_io_to_io_.GetWeakPtr(), base::Passed(&data),
-                 push_subscription_id, p256dh, auth, status));
+      base::BindOnce(&PushMessagingManager::DidPersistRegistrationOnIO,
+                     weak_factory_io_to_io_.GetWeakPtr(), std::move(data),
+                     push_subscription_id, p256dh, auth, status));
 }
 
 void PushMessagingManager::DidPersistRegistrationOnIO(
@@ -636,8 +635,8 @@ void PushMessagingManager::Unsubscribe(int64_t service_worker_registration_id,
   service_worker_context_->GetRegistrationUserData(
       service_worker_registration_id, {kPushSenderIdServiceWorkerKey},
       base::BindOnce(&PushMessagingManager::UnsubscribeHavingGottenSenderId,
-                     weak_factory_io_to_io_.GetWeakPtr(),
-                     base::Passed(&callback), service_worker_registration_id,
+                     weak_factory_io_to_io_.GetWeakPtr(), std::move(callback),
+                     service_worker_registration_id,
                      service_worker_registration->pattern().GetOrigin()));
 }
 
@@ -746,8 +745,8 @@ void PushMessagingManager::GetSubscription(
       service_worker_registration_id,
       {kPushRegistrationIdServiceWorkerKey, kPushSenderIdServiceWorkerKey},
       base::BindOnce(&PushMessagingManager::DidGetSubscription,
-                     weak_factory_io_to_io_.GetWeakPtr(),
-                     base::Passed(&callback), service_worker_registration_id));
+                     weak_factory_io_to_io_.GetWeakPtr(), std::move(callback),
+                     service_worker_registration_id));
 }
 
 void PushMessagingManager::DidGetSubscription(

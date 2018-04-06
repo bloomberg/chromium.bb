@@ -47,14 +47,10 @@ int32_t PepperExternalFileRefBackend::Touch(
     PP_Time last_modified_time) {
   IPC::Message reply_msg = PpapiPluginMsg_FileRef_TouchReply();
   base::FileUtilProxy::Touch(
-      task_runner_.get(),
-      path_,
-      ppapi::PPTimeToTime(last_access_time),
+      task_runner_.get(), path_, ppapi::PPTimeToTime(last_access_time),
       ppapi::PPTimeToTime(last_modified_time),
-      base::Bind(&PepperExternalFileRefBackend::DidFinish,
-                 weak_factory_.GetWeakPtr(),
-                 reply_context,
-                 reply_msg));
+      base::BindOnce(&PepperExternalFileRefBackend::DidFinish,
+                     weak_factory_.GetWeakPtr(), reply_context, reply_msg));
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -74,11 +70,9 @@ int32_t PepperExternalFileRefBackend::Rename(
 int32_t PepperExternalFileRefBackend::Query(
     ppapi::host::ReplyMessageContext reply_context) {
   bool ok = base::FileUtilProxy::GetFileInfo(
-      task_runner_.get(),
-      path_,
-      base::Bind(&PepperExternalFileRefBackend::GetMetadataComplete,
-                 weak_factory_.GetWeakPtr(),
-                 reply_context));
+      task_runner_.get(), path_,
+      base::BindOnce(&PepperExternalFileRefBackend::GetMetadataComplete,
+                     weak_factory_.GetWeakPtr(), reply_context));
   DCHECK(ok);
   return PP_OK_COMPLETIONPENDING;
 }

@@ -323,7 +323,7 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::BuildBlobInternal(
             content->ReleasePendingTransportItems(),
             base::BindOnce(&BlobStorageContext::OnEnoughSpaceForTransport,
                            ptr_factory_.GetWeakPtr(), content->uuid_,
-                           base::Passed(&empty_files)));
+                           std::move(empty_files)));
         break;
       }
       case TransportQuotaType::FILE:

@@ -87,7 +87,8 @@ void MusEmbeddedFrame::CreateChildWindowAndEmbed(
   window_tree()->AddWindow(GetAndAdvanceNextChangeId(),
                            renderer_window_tree_client_->root_window_id_,
                            window_id_);
-  window_tree()->EmbedUsingToken(window_id_, token, 0, base::Bind(&OnEmbedAck));
+  window_tree()->EmbedUsingToken(window_id_, token, 0,
+                                 base::BindOnce(&OnEmbedAck));
 }
 
 void MusEmbeddedFrame::OnTreeAvailable() {
