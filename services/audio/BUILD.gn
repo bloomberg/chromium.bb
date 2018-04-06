@@ -37,6 +37,8 @@ source_set("lib") {
     "group_member.h",
     "in_process_audio_manager_accessor.cc",
     "in_process_audio_manager_accessor.h",
+    "input_stream.cc",
+    "input_stream.h",
     "output_controller.cc",
     "output_controller.h",
     "output_stream.cc",
@@ -69,6 +71,7 @@ source_set("tests") {
   sources = [
     "debug_recording_unittest.cc",
     "group_coordinator_unittest.cc",
+    "input_stream_unittest.cc",
     "output_controller_unittest.cc",
     "output_stream_unittest.cc",
     "sync_reader_unittest.cc",

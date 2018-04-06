@@ -81,7 +81,7 @@ class OutputStream final : public media::mojom::AudioOutputStream,
   mojo::Binding<AudioOutputStream> binding_;
   media::mojom::AudioOutputStreamClientPtr client_;
   media::mojom::AudioOutputStreamObserverAssociatedPtr observer_;
-  scoped_refptr<media::mojom::ThreadSafeAudioLogPtr> log_;
+  const scoped_refptr<media::mojom::ThreadSafeAudioLogPtr> log_;
 
   SyncReader reader_;
   OutputController controller_;

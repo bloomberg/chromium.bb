@@ -31,6 +31,12 @@ using testing::_;
 
 namespace audio {
 
+namespace {
+
+// Aliases for use with MockCreatedCallback::Created().
+const bool successfully_ = true;
+const bool unsuccessfully_ = false;
+
 class MockStream : public media::AudioOutputStream {
  public:
   MockStream() {}
@@ -98,13 +104,6 @@ class MockObserver : public media::mojom::AudioOutputStreamObserver {
   DISALLOW_COPY_AND_ASSIGN(MockObserver);
 };
 
-// Aliases for use with MockCreatedCallback::Created().
-
-namespace {
-const bool successfully_ = true;
-const bool unsuccessfully_ = false;
-}  // namespace
-
 class MockCreatedCallback {
  public:
   MockCreatedCallback() {}
@@ -122,6 +121,8 @@ class MockCreatedCallback {
   DISALLOW_COPY_AND_ASSIGN(MockCreatedCallback);
 };
 
+}  // namespace
+
 // Instantiates various classes that we're going to want in most test cases.
 class TestEnvironment {
  public:
@@ -133,7 +134,11 @@ class TestEnvironment {
     mojo::edk::SetDefaultProcessErrorCallback(bad_message_callback_.Get());
   }
 
-  ~TestEnvironment() { audio_manager_.Shutdown(); }
+  ~TestEnvironment() {
+    audio_manager_.Shutdown();
+    mojo::edk::SetDefaultProcessErrorCallback(
+        mojo::edk::ProcessErrorCallback());
+  }
 
   using MockDeleteCallback = base::MockCallback<OutputStream::DeleteCallback>;
   using MockBadMessageCallback =
@@ -178,7 +183,7 @@ class TestEnvironment {
   DISALLOW_COPY_AND_ASSIGN(TestEnvironment);
 };
 
-TEST(OutputStreamTest, ConstructDestruct) {
+TEST(AudioServiceOutputStreamTest, ConstructDestruct) {
   TestEnvironment env;
   MockStream mock_stream;
   EXPECT_CALL(env.created_callback(), Created(successfully_));
@@ -204,7 +209,8 @@ TEST(OutputStreamTest, ConstructDestruct) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST(OutputStreamTest, ConstructStreamAndDestructObserver_DestructsStream) {
+TEST(AudioServiceOutputStreamTest,
+     ConstructStreamAndDestructObserver_DestructsStream) {
   TestEnvironment env;
   MockStream mock_stream;
   env.audio_manager().SetMakeOutputStreamCB(base::BindRepeating(
@@ -231,7 +237,8 @@ TEST(OutputStreamTest, ConstructStreamAndDestructObserver_DestructsStream) {
   Mock::VerifyAndClear(&env.client());
 }
 
-TEST(OutputStreamTest, ConstructStreamAndDestructClient_DestructsStream) {
+TEST(AudioServiceOutputStreamTest,
+     ConstructStreamAndDestructClient_DestructsStream) {
   TestEnvironment env;
   MockStream mock_stream;
   env.audio_manager().SetMakeOutputStreamCB(base::BindRepeating(
@@ -258,7 +265,8 @@ TEST(OutputStreamTest, ConstructStreamAndDestructClient_DestructsStream) {
   Mock::VerifyAndClear(&env.observer());
 }
 
-TEST(OutputStreamTest, ConstructStreamAndReleaseStreamPtr_DestructsStream) {
+TEST(AudioServiceOutputStreamTest,
+     ConstructStreamAndReleaseStreamPtr_DestructsStream) {
   TestEnvironment env;
   MockStream mock_stream;
   env.audio_manager().SetMakeOutputStreamCB(base::BindRepeating(
@@ -287,7 +295,7 @@ TEST(OutputStreamTest, ConstructStreamAndReleaseStreamPtr_DestructsStream) {
   Mock::VerifyAndClear(&env.observer());
 }
 
-TEST(OutputStreamTest, Play_Plays) {
+TEST(AudioServiceOutputStreamTest, Play_Plays) {
   TestEnvironment env;
   MockStream mock_stream;
   EXPECT_CALL(env.created_callback(), Created(successfully_));
@@ -325,7 +333,7 @@ TEST(OutputStreamTest, Play_Plays) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST(OutputStreamTest, PlayAndPause_PlaysAndStops) {
+TEST(AudioServiceOutputStreamTest, PlayAndPause_PlaysAndStops) {
   TestEnvironment env;
   MockStream mock_stream;
   EXPECT_CALL(env.created_callback(), Created(successfully_));
@@ -368,7 +376,7 @@ TEST(OutputStreamTest, PlayAndPause_PlaysAndStops) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST(OutputStreamTest, SetVolume_SetsVolume) {
+TEST(AudioServiceOutputStreamTest, SetVolume_SetsVolume) {
   double new_volume = 0.618;
   TestEnvironment env;
   MockStream mock_stream;
@@ -399,7 +407,7 @@ TEST(OutputStreamTest, SetVolume_SetsVolume) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST(OutputStreamTest, SetNegativeVolume_BadMessage) {
+TEST(AudioServiceOutputStreamTest, SetNegativeVolume_BadMessage) {
   TestEnvironment env;
   MockStream mock_stream;
   EXPECT_CALL(env.created_callback(), Created(successfully_));
@@ -424,7 +432,7 @@ TEST(OutputStreamTest, SetNegativeVolume_BadMessage) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST(OutputStreamTest, SetVolumeGreaterThanOne_BadMessage) {
+TEST(AudioServiceOutputStreamTest, SetVolumeGreaterThanOne_BadMessage) {
   TestEnvironment env;
   MockStream mock_stream;
   EXPECT_CALL(env.created_callback(), Created(successfully_));
@@ -449,7 +457,8 @@ TEST(OutputStreamTest, SetVolumeGreaterThanOne_BadMessage) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST(OutputStreamTest, ConstructWithStreamCreationFailure_SignalsError) {
+TEST(AudioServiceOutputStreamTest,
+     ConstructWithStreamCreationFailure_SignalsError) {
   TestEnvironment env;
 
   // By default, the MockAudioManager fails to create a stream.
@@ -466,7 +475,7 @@ TEST(OutputStreamTest, ConstructWithStreamCreationFailure_SignalsError) {
   Mock::VerifyAndClear(&env.observer());
 }
 
-TEST(OutputStreamTest,
+TEST(AudioServiceOutputStreamTest,
      ConstructWithStreamCreationFailureAndDestructBeforeErrorFires_NoCrash) {
   // The main purpose of this test is to make sure that that delete callback
   // call is deferred, and that it is canceled in case of destruction.

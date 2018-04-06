@@ -209,6 +209,8 @@ scoped_refptr<AudioInputController> AudioInputController::Create(
   DCHECK(sync_writer);
   DCHECK(event_handler);
 
+  // TODO(https://crbug.com/803102): remove check after switching to input
+  // stream factory.
   if (!params.IsValid() || (params.channels() > kMaxInputChannels))
     return nullptr;
 
@@ -231,13 +233,10 @@ scoped_refptr<AudioInputController> AudioInputController::Create(
 
   // Create and open a new audio input stream from the existing
   // audio-device thread. Use the provided audio-input device.
-  if (!controller->task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&AudioInputController::DoCreate, controller,
-                                    base::Unretained(audio_manager), params,
-                                    device_id, enable_agc))) {
-    controller = nullptr;
-  }
-
+  controller->task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&AudioInputController::DoCreate, controller,
+                                base::Unretained(audio_manager), params,
+                                device_id, enable_agc));
   return controller;
 }
 
@@ -271,13 +270,9 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
     return controller;
   }
 
-  if (!controller->task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(&AudioInputController::DoCreateForStream, controller,
-                         stream, false /*enable_agc*/))) {
-    controller = nullptr;
-  }
-
+  controller->task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&AudioInputController::DoCreateForStream,
+                                controller, stream, false /*enable_agc*/));
   return controller;
 }
 
