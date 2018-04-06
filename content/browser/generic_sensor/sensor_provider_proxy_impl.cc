@@ -66,7 +66,8 @@ void SensorProviderProxyImpl::GetSensor(SensorType type,
 }
 
 bool SensorProviderProxyImpl::CheckPermission() const {
-  const GURL& requesting_origin = render_frame_host_->GetLastCommittedURL();
+  const GURL& requesting_origin =
+      render_frame_host_->GetLastCommittedURL().GetOrigin();
 
   blink::mojom::PermissionStatus permission_status =
       permission_manager_->GetPermissionStatusForFrame(
