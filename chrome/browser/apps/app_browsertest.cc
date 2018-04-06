@@ -1399,6 +1399,11 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWindowIframe) {
                            "APP_WINDOW_CREATE_CALLBACK");
 }
 
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, NewWindowWithNonExistingFile) {
+  ASSERT_TRUE(
+      RunPlatformAppTest("platform_apps/new_window_with_non_existing_file"));
+}
+
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, SandboxedLocalFile) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/sandboxed_local_file"));
 }
