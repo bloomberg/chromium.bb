@@ -351,6 +351,10 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // decoder here.
   void ConfigChanged(const Config& config);
 
+  // Sets |support_share_nv12_textures_| to false and updates
+  // |num_picture_buffers_requested_|.
+  void DisableSharedTextureSupport();
+
   uint32_t GetTextureTarget() const;
 
   PictureBufferMechanism GetPictureBufferMechanism() const;
@@ -499,6 +503,10 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
 
   // Supports sharing the decoded NV12 textures with ANGLE
   bool support_share_nv12_textures_;
+
+  // Number of requested picture buffers from the client which are used to hold
+  // the decoded samples.
+  int num_picture_buffers_requested_;
 
   // Supports copying the NV12 texture to another NV12 texture to use in
   // ANGLE.
