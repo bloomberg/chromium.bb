@@ -603,4 +603,9 @@ void GLManager::SetSnapshotRequested() {}
 ContextType GLManager::GetContextType() const {
   return context_type_;
 }
+
+void GLManager::Reset() {
+  Destroy();
+  SetupBaseContext();
+}
 }  // namespace gpu

@@ -163,6 +163,8 @@ class GLManager : private GpuControl {
   size_t GetSharedMemoryBytesAllocated() const;
   ContextType GetContextType() const;
 
+  void Reset();
+
  private:
   void SetupBaseContext();
 
