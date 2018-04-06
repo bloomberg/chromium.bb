@@ -576,7 +576,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                   net::CertStatus cert_status) override;
   void ResourceLoadComplete(
       mojom::ResourceLoadInfoPtr resource_load_information) override;
-  void UpdatePictureInPictureSurfaceId(viz::SurfaceId surface_id) override;
+  void UpdatePictureInPictureSurfaceId(
+      const viz::SurfaceId& surface_id) override;
   void ExitPictureInPicture() override;
 
   // RenderViewHostDelegate ----------------------------------------------------

@@ -4136,7 +4136,7 @@ void WebContentsImpl::PrintCrossProcessSubframe(
 }
 
 void WebContentsImpl::UpdatePictureInPictureSurfaceId(
-    viz::SurfaceId surface_id) {
+    const viz::SurfaceId& surface_id) {
   if (delegate_)
     delegate_->UpdatePictureInPictureSurfaceId(surface_id);
 }

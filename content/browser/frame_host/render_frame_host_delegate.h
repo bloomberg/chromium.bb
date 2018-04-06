@@ -359,7 +359,8 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
   // Updates the Picture-in-Picture controller with the relevant viz::SurfaceId
   // of the video to be in Picture-in-Picture mode.
-  virtual void UpdatePictureInPictureSurfaceId(viz::SurfaceId surface_id) {}
+  virtual void UpdatePictureInPictureSurfaceId(
+      const viz::SurfaceId& surface_id) {}
 
   // Updates the Picture-in-Picture controller with a signal that
   // Picture-in-Picture mode has ended.

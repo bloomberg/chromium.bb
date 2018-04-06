@@ -38,7 +38,7 @@ class PictureInPictureWindowController
 
   void Show();
   void Close();
-  void EmbedSurface(viz::SurfaceId);
+  void EmbedSurface(const viz::SurfaceId& surface_id);
   OverlayWindow* GetWindowForTesting();
 
  private:
