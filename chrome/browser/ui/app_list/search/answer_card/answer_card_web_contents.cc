@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +28,7 @@
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/webview/web_contents_set_background_color.h"
 #include "ui/views/controls/webview/webview.h"
+#include "ui/views/mus/remote_view/remote_view_provider.h"
 #include "ui/views/widget/widget.h"
 
 namespace app_list {
@@ -135,12 +137,12 @@ void ParseResponseHeaders(const net::HttpResponseHeaders* headers,
 }  // namespace
 
 AnswerCardWebContents::AnswerCardWebContents(Profile* profile)
-    : web_view_(std::make_unique<SearchAnswerWebView>(profile)),
-      web_contents_(
+    : web_contents_(
           content::WebContents::Create(content::WebContents::CreateParams(
               profile,
               content::SiteInstance::Create(profile)))),
-      profile_(profile) {
+      profile_(profile),
+      weak_ptr_factory_(this) {
   content::RendererPreferences* renderer_prefs =
       web_contents_->GetMutableRendererPrefs();
   renderer_prefs->can_accept_load_drops = false;
@@ -150,9 +152,6 @@ AnswerCardWebContents::AnswerCardWebContents(Profile* profile)
 
   Observe(web_contents_.get());
   web_contents_->SetDelegate(this);
-  web_view_->set_owned_by_client();
-  web_view_->SetWebContents(web_contents_.get());
-  web_view_->SetResizeBackgroundColor(SK_ColorTRANSPARENT);
 
   // Make the webview transparent since it's going to be shown on top of a
   // highlightable button.
@@ -163,8 +162,17 @@ AnswerCardWebContents::AnswerCardWebContents(Profile* profile)
   if (rvh)
     AttachToHost(rvh->GetWidget());
 
-  if (AnswerCardContentsRegistry::Get())
+  if (AnswerCardContentsRegistry::Get()) {
+    web_view_ = std::make_unique<SearchAnswerWebView>(profile);
+    web_view_->set_owned_by_client();
+    web_view_->SetWebContents(web_contents_.get());
+    web_view_->SetResizeBackgroundColor(SK_ColorTRANSPARENT);
+
     token_ = AnswerCardContentsRegistry::Get()->Register(web_view_.get());
+  } else {
+    remote_view_provider_ = std::make_unique<views::RemoteViewProvider>(
+        web_contents_->GetNativeView());
+  }
 }
 
 AnswerCardWebContents::~AnswerCardWebContents() {
@@ -194,7 +202,10 @@ void AnswerCardWebContents::ResizeDueToAutoResize(
     content::WebContents* web_contents,
     const gfx::Size& new_size) {
   delegate()->UpdatePreferredSize(this);
-  web_view_->SetPreferredSize(new_size);
+  if (web_view_)
+    web_view_->SetPreferredSize(new_size);
+
+  // TODO(https://crbug.com/812434): Support preferred size change for mash.
 }
 
 content::WebContents* AnswerCardWebContents::OpenURLFromTab(
@@ -254,7 +265,14 @@ void AnswerCardWebContents::DidFinishNavigation(
 }
 
 void AnswerCardWebContents::DidStopLoading() {
-  delegate()->DidStopLoading(this);
+  if (!remote_view_provider_) {
+    delegate()->OnContentsReady(this);
+    return;
+  }
+
+  remote_view_provider_->GetEmbedToken(
+      base::BindOnce(&AnswerCardWebContents::OnGotEmbedTokenAndNotify,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AnswerCardWebContents::DidGetUserInteraction(
@@ -296,6 +314,13 @@ void AnswerCardWebContents::DetachFromHost() {
     return;
 
   host_ = nullptr;
+}
+
+void AnswerCardWebContents::OnGotEmbedTokenAndNotify(
+    const base::UnguessableToken& token) {
+  token_ = token;
+  web_contents_->GetNativeView()->Show();
+  delegate()->OnContentsReady(this);
 }
 
 }  // namespace app_list

@@ -36,7 +36,9 @@ class AnswerCardContents {
                                      bool has_answer_card,
                                      const std::string& result_title,
                                      const std::string& issued_query) = 0;
-    virtual void DidStopLoading(const AnswerCardContents* source) = 0;
+
+    // Invoked when |source| is ready to be shown.
+    virtual void OnContentsReady(const AnswerCardContents* source) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
