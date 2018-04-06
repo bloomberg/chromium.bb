@@ -19,6 +19,7 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -3104,6 +3105,47 @@ TEST_F(CookieMonsterTest, SetCanonicalCookieDoesNotBlockForLoadAll) {
     if (command.type == CookieStoreCommand::LOAD)
       command.loaded_callback.Run(
           std::vector<std::unique_ptr<CanonicalCookie>>());
+  }
+}
+
+TEST_F(CookieMonsterTest, DeleteDuplicateCTime) {
+  const char* const kNames[] = {"A", "B", "C"};
+  const size_t kNum = arraysize(kNames);
+
+  // Tests that DeleteCanonicalCookie properly distinguishes different cookies
+  // (e.g. different name or path) with identical ctime on same domain.
+  // This gets tested a few times with different deletion target, to make sure
+  // that the implementation doesn't just happen to pick the right one because
+  // of implementation details.
+  for (size_t run = 0; run < kNum; ++run) {
+    CookieMonster cm(nullptr);
+    Time now = Time::Now();
+    GURL url("http://www.example.com");
+
+    for (size_t i = 0; i < kNum; ++i) {
+      std::string cookie_string =
+          base::StrCat({kNames[i], "=", base::NumberToString(i)});
+      EXPECT_TRUE(SetCookieWithCreationTime(&cm, url, cookie_string, now));
+    }
+
+    // Delete the run'th cookie.
+    CookieList all_cookies =
+        GetAllCookiesForURLWithOptions(&cm, url, CookieOptions());
+    ASSERT_EQ(all_cookies.size(), kNum);
+    for (size_t i = 0; i < kNum; ++i) {
+      const CanonicalCookie& cookie = all_cookies[i];
+      if (cookie.Name() == kNames[run]) {
+        EXPECT_TRUE(DeleteCanonicalCookie(&cm, cookie));
+      }
+    }
+
+    // Check that the right cookie got removed.
+    all_cookies = GetAllCookiesForURLWithOptions(&cm, url, CookieOptions());
+    ASSERT_EQ(all_cookies.size(), kNum - 1);
+    for (size_t i = 0; i < kNum - 1; ++i) {
+      const CanonicalCookie& cookie = all_cookies[i];
+      EXPECT_NE(cookie.Name(), kNames[run]);
+    }
   }
 }
 
