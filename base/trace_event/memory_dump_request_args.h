@@ -53,9 +53,6 @@ enum class MemoryDumpLevelOfDetail : uint32_t {
   // Few entries, typically a fixed number, per dump.
   LIGHT,
 
-  // Retrieve only memory maps. Used only for the heap profiler.
-  VM_REGIONS_ONLY_FOR_HEAP_PROFILER,
-
   // Unrestricted amount of entries per dump.
   DETAILED,
 

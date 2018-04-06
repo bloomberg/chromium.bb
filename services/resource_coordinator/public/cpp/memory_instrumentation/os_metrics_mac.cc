@@ -255,4 +255,19 @@ std::vector<mojom::VmRegionPtr> OSMetrics::GetProcessMemoryMaps(
   return maps;
 }
 
+std::vector<mojom::VmRegionPtr> OSMetrics::GetProcessModules(
+    base::ProcessId pid) {
+  std::vector<mojom::VmRegionPtr> maps;
+
+  std::vector<VMRegion> dyld_regions;
+  if (!GetDyldRegions(&dyld_regions))
+    return maps;
+
+  for (VMRegion& region : dyld_regions) {
+    maps.push_back(VMRegion::New(region));
+  }
+
+  return maps;
+}
+
 }  // namespace memory_instrumentation

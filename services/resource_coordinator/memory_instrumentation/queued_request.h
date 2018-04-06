@@ -74,18 +74,11 @@ struct QueuedRequest {
 
   base::trace_event::MemoryDumpRequestArgs GetRequestArgs();
 
-  bool wants_mmaps() const {
-    return args.level_of_detail == base::trace_event::MemoryDumpLevelOfDetail::
-                                       VM_REGIONS_ONLY_FOR_HEAP_PROFILER ||
-           args.level_of_detail ==
-               base::trace_event::MemoryDumpLevelOfDetail::DETAILED;
-  }
-
-  // We always want to return chrome dumps, with exception of the special
-  // case below for the heap profiler, which cares only about mmaps.
-  bool wants_chrome_dumps() const {
-    return args.level_of_detail != base::trace_event::MemoryDumpLevelOfDetail::
-                                       VM_REGIONS_ONLY_FOR_HEAP_PROFILER;
+  mojom::MemoryMapOption memory_map_option() const {
+    return args.level_of_detail ==
+                   base::trace_event::MemoryDumpLevelOfDetail::DETAILED
+               ? mojom::MemoryMapOption::FULL
+               : mojom::MemoryMapOption::NONE;
   }
 
   bool should_return_summaries() const {
