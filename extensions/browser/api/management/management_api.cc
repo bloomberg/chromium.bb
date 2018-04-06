@@ -547,7 +547,9 @@ ExtensionFunction::ResponseAction ManagementUninstallFunctionBase::Uninstall(
   if (show_confirm_dialog) {
     // We show the programmatic uninstall ui for extensions uninstalling
     // other extensions.
-    bool show_programmatic_uninstall_ui = !self_uninstall && extension();
+    bool show_programmatic_uninstall_ui =
+        !self_uninstall && extension() &&
+        extension()->id() != extensions::kWebStoreAppId;
     AddRef();  // Balanced in OnExtensionUninstallDialogClosed.
     // TODO(devlin): A method called "UninstallFunctionDelegate" does not in
     // any way imply that this actually creates a dialog and runs it.

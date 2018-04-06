@@ -94,20 +94,33 @@ class ManagementUninstallFunctionUninstallDialogDelegate
     extension_uninstall_dialog_.reset(
         extensions::ExtensionUninstallDialog::Create(
             details.GetProfile(), details.GetNativeWindowForUI(), this));
-    extensions::UninstallSource source =
-        function->source_context_type() == extensions::Feature::WEBUI_CONTEXT
-            ? extensions::UNINSTALL_SOURCE_CHROME_EXTENSIONS_PAGE
-            : extensions::UNINSTALL_SOURCE_EXTENSION;
+    bool uninstall_from_webstore =
+        function->extension() &&
+        function->extension()->id() == extensions::kWebStoreAppId;
+    extensions::UninstallSource source;
+    extensions::UninstallReason reason;
+    if (uninstall_from_webstore) {
+      source = extensions::UNINSTALL_SOURCE_CHROME_WEBSTORE;
+      reason = extensions::UNINSTALL_REASON_CHROME_WEBSTORE;
+    } else if (function->source_context_type() ==
+               extensions::Feature::WEBUI_CONTEXT) {
+      source = extensions::UNINSTALL_SOURCE_CHROME_EXTENSIONS_PAGE;
+      // TODO: Update this to a new reason; it shouldn't be lumped in with
+      // other uninstalls if it's from the chrome://extensions page.
+      reason = extensions::UNINSTALL_REASON_MANAGEMENT_API;
+    } else {
+      source = extensions::UNINSTALL_SOURCE_EXTENSION;
+      reason = extensions::UNINSTALL_REASON_MANAGEMENT_API;
+    }
     if (show_programmatic_uninstall_ui) {
       extension_uninstall_dialog_->ConfirmUninstallByExtension(
-          target_extension, function->extension(),
-          extensions::UNINSTALL_REASON_MANAGEMENT_API, source);
+          target_extension, function->extension(), reason, source);
     } else {
-      extension_uninstall_dialog_->ConfirmUninstall(
-          target_extension, extensions::UNINSTALL_REASON_MANAGEMENT_API,
-          source);
+      extension_uninstall_dialog_->ConfirmUninstall(target_extension, reason,
+                                                    source);
     }
   }
+
   ~ManagementUninstallFunctionUninstallDialogDelegate() override {}
 
   // ExtensionUninstallDialog::Delegate implementation.
