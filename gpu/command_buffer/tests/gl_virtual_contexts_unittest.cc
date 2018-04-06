@@ -33,6 +33,7 @@ class GLVirtualContextsTest
     // If the gl_real context is not initialised, switch to ES2 context type
     // and re-initialise
     if (!gl_real_.IsInitialized()) {
+      gl_real_.Reset();  // Must reset object before initializing again
       options.context_type = CONTEXT_TYPE_OPENGLES2;
       gl_real_.InitializeWithWorkarounds(options, workarounds);
     }
