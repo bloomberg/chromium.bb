@@ -1,8 +1,15 @@
 This is a testharness.js-based test.
-Found 70 tests; 53 PASS, 17 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 77 tests; 56 PASS, 21 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Exposed interfaces in a Service Worker.
 FAIL ServiceWorkerRegistration interface: existence and properties of interface object assert_false: expected false got true
-PASS ServiceWorkerGlobalScope interface: existence and properties of interface object
+FAIL ServiceWorkerGlobalScope interface: attribute onbackgroundfetched assert_own_property: self does not have own property "ServiceWorkerGlobalScope" expected property "ServiceWorkerGlobalScope" missing
+PASS Unscopable handled correctly for onbackgroundfetched property on ServiceWorkerGlobalScope
+FAIL ServiceWorkerGlobalScope interface: attribute onbackgroundfetchfail assert_own_property: self does not have own property "ServiceWorkerGlobalScope" expected property "ServiceWorkerGlobalScope" missing
+PASS Unscopable handled correctly for onbackgroundfetchfail property on ServiceWorkerGlobalScope
+FAIL ServiceWorkerGlobalScope interface: attribute onbackgroundfetchabort assert_own_property: self does not have own property "ServiceWorkerGlobalScope" expected property "ServiceWorkerGlobalScope" missing
+PASS Unscopable handled correctly for onbackgroundfetchabort property on ServiceWorkerGlobalScope
+FAIL ServiceWorkerGlobalScope interface: attribute onbackgroundfetchclick assert_own_property: self does not have own property "ServiceWorkerGlobalScope" expected property "ServiceWorkerGlobalScope" missing
+PASS Unscopable handled correctly for onbackgroundfetchclick property on ServiceWorkerGlobalScope
 PASS ExtendableEvent interface: existence and properties of interface object
 PASS BackgroundFetchManager interface: existence and properties of interface object
 PASS BackgroundFetchManager interface object length
