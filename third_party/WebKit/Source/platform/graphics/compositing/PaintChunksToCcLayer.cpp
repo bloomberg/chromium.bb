@@ -345,6 +345,8 @@ void ConversionContext::SwitchToEffect(
   const EffectPaintPropertyNode* lca_effect =
       &LowestCommonAncestor(*target_effect, *current_effect_);
   while (current_effect_ != lca_effect) {
+    // This EndClips() and the later EndEffect() pop to the parent effect.
+    EndClips();
 #if DCHECK_IS_ON()
     DCHECK(state_stack_.size())
         << "Error: Chunk has an effect that escapes layer's effect.\n"
@@ -354,8 +356,6 @@ void ConversionContext::SwitchToEffect(
 #endif
     if (!state_stack_.size())
       break;
-    // Pop to the parent effect.
-    EndClips();
     EndEffect();
   }
 
