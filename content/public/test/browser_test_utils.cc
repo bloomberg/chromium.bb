@@ -1893,6 +1893,14 @@ void RenderFrameSubmissionObserver::WaitForScrollOffset(
   }
 }
 
+void RenderFrameSubmissionObserver::WaitForScrollOffsetAtTop(
+    bool expected_scroll_offset_at_top) {
+  while (render_frame_metadata_provider_->LastRenderFrameMetadata()
+             .is_scroll_offset_at_top != expected_scroll_offset_at_top) {
+    WaitForMetadataChange();
+  }
+}
+
 const cc::RenderFrameMetadata&
 RenderFrameSubmissionObserver::LastRenderFrameMetadata() const {
   return render_frame_metadata_provider_->LastRenderFrameMetadata();

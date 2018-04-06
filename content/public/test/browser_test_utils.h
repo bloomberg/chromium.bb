@@ -713,6 +713,10 @@ class RenderFrameSubmissionObserver
   // scroll offset matches |expected_offset|.
   void WaitForScrollOffset(const gfx::Vector2dF& expected_offset);
 
+  // Blocks the browser ui thread until RenderFrameMetadata arrives where its
+  // scroll offset at top matches |expected_scroll_offset_at_top|.
+  void WaitForScrollOffsetAtTop(bool expected_scroll_offset_at_top);
+
   const cc::RenderFrameMetadata& LastRenderFrameMetadata() const;
 
   // Returns the number of frames submitted since the observer's creation.
