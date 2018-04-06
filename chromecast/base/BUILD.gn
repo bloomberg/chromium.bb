@@ -149,6 +149,7 @@ test("cast_base_unittests") {
     "cast_features_unittest.cc",
     "device_capabilities_impl_unittest.cc",
     "error_codes_unittest.cc",
+    "metrics/cast_metrics_helper_unittest.cc",
     "observer_unittest.cc",
     "path_utils_unittest.cc",
     "process_utils_unittest.cc",

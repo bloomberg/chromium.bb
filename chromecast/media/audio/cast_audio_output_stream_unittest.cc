@@ -10,10 +10,10 @@
 #include <utility>
 
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
-#include "chromecast/base/metrics/cast_metrics_test_helper.h"
+#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
@@ -206,8 +206,6 @@ class CastAudioOutputStreamTest : public ::testing::Test {
 
  protected:
   void SetUp() override {
-    metrics::InitializeMetricsHelperForTesting();
-
     CHECK(media_thread_.Start());
     auto backend_factory = std::make_unique<NiceMock<MockCmaBackendFactory>>();
     ON_CALL(*backend_factory, CreateBackend(_))
@@ -248,12 +246,13 @@ class CastAudioOutputStreamTest : public ::testing::Test {
     base::TimeDelta duration = audio_params.GetBufferDuration() * frames;
 
     base::RunLoop run_loop;
-    message_loop_.task_runner()->PostDelayedTask(
+    scoped_task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), duration);
     run_loop.Run();
   }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  metrics::CastMetricsHelper cast_metrics_helper_;
   base::Thread media_thread_;
   std::unique_ptr<CastAudioManager> audio_manager_;
   FakeCmaBackend* media_pipeline_backend_;

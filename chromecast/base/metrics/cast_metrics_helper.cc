@@ -4,22 +4,18 @@
 
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 
-#include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/json/json_string_value_serializer.h"
+#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
-#include "base/time/time.h"
-#include "base/values.h"
+#include "base/time/tick_clock.h"
 #include "chromecast/base/metrics/cast_histograms.h"
 #include "chromecast/base/metrics/grouped_histogram.h"
 
@@ -27,8 +23,8 @@ namespace chromecast {
 namespace metrics {
 
 // A useful macro to make sure current member function runs on the valid thread.
-#define MAKE_SURE_THREAD(callback, ...)                                    \
-  if (!task_runner_->BelongsToCurrentThread()) {                           \
+#define MAKE_SURE_SEQUENCE(callback, ...)                                  \
+  if (!task_runner_->RunsTasksInCurrentSequence()) {                       \
     task_runner_->PostTask(                                                \
         FROM_HERE, base::BindOnce(&CastMetricsHelper::callback,            \
                                   base::Unretained(this), ##__VA_ARGS__)); \
@@ -37,31 +33,13 @@ namespace metrics {
 
 namespace {
 
-CastMetricsHelper* g_instance = NULL;
+CastMetricsHelper* g_instance = nullptr;
 
 const char kMetricsNameAppInfoDelimiter = '#';
 
-std::unique_ptr<std::string> SerializeToJson(const base::Value& value) {
-  std::unique_ptr<std::string> json_str(new std::string());
-  JSONStringValueSerializer serializer(json_str.get());
-  if (!serializer.Serialize(value))
-    json_str.reset(nullptr);
-  return json_str;
-}
-
-std::unique_ptr<base::DictionaryValue> CreateEventBase(
-    const std::string& name) {
-  std::unique_ptr<base::DictionaryValue> cast_event(
-      new base::DictionaryValue());
-  cast_event->SetString("name", name);
-  cast_event->SetDouble("time", base::TimeTicks::Now().ToInternalValue());
-
-  return cast_event;
-}
+constexpr base::TimeDelta kAppLoadTimeout = base::TimeDelta::FromMinutes(5);
 
 }  // namespace
-
-// static
 
 // NOTE(gfhuang): This is a hacky way to encode/decode app infos into a
 // string. Mainly because it's hard to add another metrics serialization type
@@ -115,53 +93,65 @@ CastMetricsHelper* CastMetricsHelper::GetInstance() {
 }
 
 CastMetricsHelper::CastMetricsHelper(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(task_runner),
-      metrics_sink_(NULL),
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const base::TickClock* tick_clock)
+    : task_runner_(std::move(task_runner)),
+      tick_clock_(tick_clock),
+      metrics_sink_(nullptr),
       logged_first_audio_(false),
       record_action_callback_(
           base::BindRepeating(&base::RecordComputedAction)) {
-  DCHECK(task_runner_.get());
-  DCHECK(!g_instance);
-  g_instance = this;
-}
-
-CastMetricsHelper::CastMetricsHelper()
-    : metrics_sink_(NULL), logged_first_audio_(false) {
+  DCHECK(task_runner_);
   DCHECK(!g_instance);
   g_instance = this;
 }
 
 CastMetricsHelper::~CastMetricsHelper() {
   DCHECK_EQ(g_instance, this);
-  g_instance = NULL;
+  g_instance = nullptr;
 }
 
 void CastMetricsHelper::DidStartLoad(const std::string& app_id) {
-  loading_app_id_ = app_id;
-  app_load_start_time_ = base::TimeTicks::Now();
+  MAKE_SURE_SEQUENCE(DidStartLoad, app_id);
+  const base::TimeTicks now = Now();
+
+  // Remove start times for apps that never became the current app.
+  for (auto it = app_load_start_times_.cbegin();
+       it != app_load_start_times_.cend();) {
+    if (now - it->second >= kAppLoadTimeout) {
+      it = app_load_start_times_.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  app_load_start_times_[app_id] = now;
 }
 
 void CastMetricsHelper::DidCompleteLoad(const std::string& app_id,
                                         const std::string& session_id) {
-  MAKE_SURE_THREAD(DidCompleteLoad, app_id, session_id);
-  DCHECK_EQ(app_id, loading_app_id_);
-  loading_app_id_ = std::string();
+  MAKE_SURE_SEQUENCE(DidCompleteLoad, app_id, session_id);
+  auto it = app_load_start_times_.find(app_id);
+  if (it == app_load_start_times_.end()) {
+    LOG(ERROR) << "No start time for app: app_id=" << app_id;
+    return;
+  }
   app_id_ = app_id;
-  app_start_time_ = app_load_start_time_;
   session_id_ = session_id;
+  app_start_time_ = it->second;
+  app_load_start_times_.erase(it);
   logged_first_audio_ = false;
   TagAppStartForGroupedHistograms(app_id_);
   sdk_version_.clear();
 }
 
 void CastMetricsHelper::UpdateSDKInfo(const std::string& sdk_version) {
-  MAKE_SURE_THREAD(UpdateSDKInfo, sdk_version);
+  MAKE_SURE_SEQUENCE(UpdateSDKInfo, sdk_version);
   sdk_version_ = sdk_version;
 }
 
 void CastMetricsHelper::LogMediaPlay() {
-  MAKE_SURE_THREAD(LogMediaPlay);
+  MAKE_SURE_SEQUENCE(LogMediaPlay);
   RecordSimpleAction(EncodeAppInfoIntoMetricsName(
       "MediaPlay",
       app_id_,
@@ -170,7 +160,7 @@ void CastMetricsHelper::LogMediaPlay() {
 }
 
 void CastMetricsHelper::LogMediaPause() {
-  MAKE_SURE_THREAD(LogMediaPause);
+  MAKE_SURE_SEQUENCE(LogMediaPause);
   RecordSimpleAction(EncodeAppInfoIntoMetricsName(
       "MediaPause",
       app_id_,
@@ -179,10 +169,10 @@ void CastMetricsHelper::LogMediaPause() {
 }
 
 void CastMetricsHelper::LogTimeToFirstPaint() {
-  MAKE_SURE_THREAD(LogTimeToFirstPaint);
+  MAKE_SURE_SEQUENCE(LogTimeToFirstPaint);
   if (app_id_.empty())
     return;
-  base::TimeDelta launch_time = base::TimeTicks::Now() - app_start_time_;
+  base::TimeDelta launch_time = Now() - app_start_time_;
   const std::string uma_name(GetMetricsNameWithAppName("Startup",
                                                        "TimeToFirstPaint"));
   LogMediumTimeHistogramEvent(uma_name, launch_time);
@@ -190,13 +180,12 @@ void CastMetricsHelper::LogTimeToFirstPaint() {
 }
 
 void CastMetricsHelper::LogTimeToFirstAudio() {
-  MAKE_SURE_THREAD(LogTimeToFirstAudio);
+  MAKE_SURE_SEQUENCE(LogTimeToFirstAudio);
   if (logged_first_audio_)
     return;
   if (app_id_.empty())
     return;
-  base::TimeDelta time_to_first_audio =
-      base::TimeTicks::Now() - app_start_time_;
+  base::TimeDelta time_to_first_audio = Now() - app_start_time_;
   const std::string uma_name(
       GetMetricsNameWithAppName("Startup", "TimeToFirstAudio"));
   LogMediumTimeHistogramEvent(uma_name, time_to_first_audio);
@@ -207,8 +196,8 @@ void CastMetricsHelper::LogTimeToFirstAudio() {
 
 void CastMetricsHelper::LogTimeToBufferAv(BufferingType buffering_type,
                                           base::TimeDelta time) {
-  MAKE_SURE_THREAD(LogTimeToBufferAv, buffering_type, time);
-  if (time < base::TimeDelta::FromSeconds(0)) {
+  MAKE_SURE_SEQUENCE(LogTimeToBufferAv, buffering_type, time);
+  if (time < base::TimeDelta()) {
     LOG(WARNING) << "Negative time";
     return;
   }
@@ -234,7 +223,7 @@ void CastMetricsHelper::LogTimeToBufferAv(BufferingType buffering_type,
 std::string CastMetricsHelper::GetMetricsNameWithAppName(
     const std::string& prefix,
     const std::string& suffix) const {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   std::string metrics_name(prefix);
   if (!app_id_.empty()) {
     if (!metrics_name.empty())
@@ -250,22 +239,22 @@ std::string CastMetricsHelper::GetMetricsNameWithAppName(
 }
 
 void CastMetricsHelper::SetMetricsSink(MetricsSink* delegate) {
-  MAKE_SURE_THREAD(SetMetricsSink, delegate);
+  MAKE_SURE_SEQUENCE(SetMetricsSink, delegate);
   metrics_sink_ = delegate;
 }
 
 void CastMetricsHelper::SetRecordActionCallback(RecordActionCallback callback) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   record_action_callback_ = std::move(callback);
 }
 
 void CastMetricsHelper::SetDummySessionIdForTesting() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   session_id_ = "00000000-0000-0000-0000-000000000000";
 }
 
 void CastMetricsHelper::RecordSimpleAction(const std::string& action) {
-  MAKE_SURE_THREAD(RecordSimpleAction, action);
+  MAKE_SURE_SEQUENCE(RecordSimpleAction, action);
 
   if (metrics_sink_) {
     metrics_sink_->OnAction(action);
@@ -276,7 +265,7 @@ void CastMetricsHelper::RecordSimpleAction(const std::string& action) {
 
 void CastMetricsHelper::LogEnumerationHistogramEvent(
     const std::string& name, int value, int num_buckets) {
-  MAKE_SURE_THREAD(LogEnumerationHistogramEvent, name, value, num_buckets);
+  MAKE_SURE_SEQUENCE(LogEnumerationHistogramEvent, name, value, num_buckets);
 
   if (metrics_sink_) {
     metrics_sink_->OnEnumerationEvent(name, value, num_buckets);
@@ -286,11 +275,11 @@ void CastMetricsHelper::LogEnumerationHistogramEvent(
 }
 
 void CastMetricsHelper::LogTimeHistogramEvent(const std::string& name,
-                                              const base::TimeDelta& value,
-                                              const base::TimeDelta& min,
-                                              const base::TimeDelta& max,
+                                              base::TimeDelta value,
+                                              base::TimeDelta min,
+                                              base::TimeDelta max,
                                               int num_buckets) {
-  MAKE_SURE_THREAD(LogTimeHistogramEvent, name, value, min, max, num_buckets);
+  MAKE_SURE_SEQUENCE(LogTimeHistogramEvent, name, value, min, max, num_buckets);
 
   if (metrics_sink_) {
     metrics_sink_->OnTimeEvent(name, value, min, max, num_buckets);
@@ -299,9 +288,8 @@ void CastMetricsHelper::LogTimeHistogramEvent(const std::string& name,
   }
 }
 
-void CastMetricsHelper::LogMediumTimeHistogramEvent(
-    const std::string& name,
-    const base::TimeDelta& value) {
+void CastMetricsHelper::LogMediumTimeHistogramEvent(const std::string& name,
+                                                    base::TimeDelta value) {
   // Follow UMA_HISTOGRAM_MEDIUM_TIMES definition.
   LogTimeHistogramEvent(name, value,
                         base::TimeDelta::FromMilliseconds(10),
@@ -309,33 +297,48 @@ void CastMetricsHelper::LogMediumTimeHistogramEvent(
                         50);
 }
 
+base::Value CastMetricsHelper::CreateEventBase(const std::string& name) {
+  base::Value cast_event(base::Value::Type::DICTIONARY);
+  cast_event.SetKey("name", base::Value(name));
+  const double time = (Now() - base::TimeTicks()).InMicroseconds();
+  cast_event.SetKey("time", base::Value(time));
+  return cast_event;
+}
+
 void CastMetricsHelper::RecordEventWithValue(const std::string& event,
                                              int value) {
-  std::unique_ptr<base::DictionaryValue> cast_event(CreateEventBase(event));
-  cast_event->SetInteger("value", value);
-  const std::string message = *SerializeToJson(*cast_event);
+  base::Value cast_event = CreateEventBase(event);
+  cast_event.SetKey("value", base::Value(value));
+  std::string message;
+  base::JSONWriter::Write(cast_event, &message);
   RecordSimpleAction(message);
 }
 
 void CastMetricsHelper::RecordApplicationEvent(const std::string& event) {
-  std::unique_ptr<base::DictionaryValue> cast_event(CreateEventBase(event));
-  cast_event->SetString("app_id", app_id_);
-  cast_event->SetString("session_id", session_id_);
-  cast_event->SetString("sdk_version", sdk_version_);
-  const std::string message = *SerializeToJson(*cast_event);
+  base::Value cast_event = CreateEventBase(event);
+  cast_event.SetKey("app_id", base::Value(app_id_));
+  cast_event.SetKey("session_id", base::Value(session_id_));
+  cast_event.SetKey("sdk_version", base::Value(sdk_version_));
+  std::string message;
+  base::JSONWriter::Write(cast_event, &message);
   RecordSimpleAction(message);
 }
 
 void CastMetricsHelper::RecordApplicationEventWithValue(
     const std::string& event,
     int value) {
-  std::unique_ptr<base::DictionaryValue> cast_event(CreateEventBase(event));
-  cast_event->SetString("app_id", app_id_);
-  cast_event->SetString("session_id", session_id_);
-  cast_event->SetString("sdk_version", sdk_version_);
-  cast_event->SetInteger("value", value);
-  const std::string message = *SerializeToJson(*cast_event);
+  base::Value cast_event = CreateEventBase(event);
+  cast_event.SetKey("app_id", base::Value(app_id_));
+  cast_event.SetKey("session_id", base::Value(session_id_));
+  cast_event.SetKey("sdk_version", base::Value(sdk_version_));
+  cast_event.SetKey("value", base::Value(value));
+  std::string message;
+  base::JSONWriter::Write(cast_event, &message);
   RecordSimpleAction(message);
+}
+
+base::TimeTicks CastMetricsHelper::Now() {
+  return tick_clock_ ? tick_clock_->NowTicks() : base::TimeTicks::Now();
 }
 
 }  // namespace metrics
