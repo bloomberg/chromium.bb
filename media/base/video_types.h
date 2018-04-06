@@ -73,6 +73,7 @@ enum VideoPixelFormat {
 
 // Color space or color range used for the pixels.
 // Logged to UMA, so never reuse values. Leave gaps if necessary.
+// This enum is deprecated, use VideoColorSpace or gfx::ColorSpace instead.
 enum ColorSpace {
   COLOR_SPACE_UNSPECIFIED = 0,  // In general this is Rec601.
   // The JPEG color space is the combination of Rec.601 and full range colors
