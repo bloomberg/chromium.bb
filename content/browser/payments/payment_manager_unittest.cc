@@ -126,8 +126,8 @@ class PaymentManagerTest : public PaymentAppContentUnitTestBase {
 TEST_F(PaymentManagerTest, SetAndGetPaymentInstrument) {
   PaymentHandlerStatus write_status = PaymentHandlerStatus::NOT_FOUND;
   PaymentInstrumentPtr write_details = PaymentInstrument::New();
-  write_details->name = "Visa ending ****4756",
-  write_details->enabled_methods.push_back("visa");
+  write_details->name = "Visa ending ****4756";
+  write_details->method = "visa";
   write_details->stringified_capabilities = "{}";
   SetPaymentInstrument("test_key", std::move(write_details), &write_status);
   // Write the first instrument of a web payment app will return
@@ -141,8 +141,7 @@ TEST_F(PaymentManagerTest, SetAndGetPaymentInstrument) {
   GetPaymentInstrument("test_key", &read_details, &read_status);
   ASSERT_EQ(PaymentHandlerStatus::SUCCESS, read_status);
   EXPECT_EQ("Visa ending ****4756", read_details->name);
-  ASSERT_EQ(1U, read_details->enabled_methods.size());
-  EXPECT_EQ("visa", read_details->enabled_methods[0]);
+  EXPECT_EQ("visa", read_details->method);
   EXPECT_EQ("{}", read_details->stringified_capabilities);
 }
 
@@ -156,8 +155,8 @@ TEST_F(PaymentManagerTest, GetUnstoredPaymentInstrument) {
 TEST_F(PaymentManagerTest, DeletePaymentInstrument) {
   PaymentHandlerStatus write_status = PaymentHandlerStatus::NOT_FOUND;
   PaymentInstrumentPtr write_details = PaymentInstrument::New();
-  write_details->name = "Visa ending ****4756",
-  write_details->enabled_methods.push_back("visa");
+  write_details->name = "Visa ending ****4756";
+  write_details->method = "visa";
   write_details->stringified_capabilities = "{}";
   SetPaymentInstrument("test_key", std::move(write_details), &write_status);
   // Write the first instrument of a web payment app will return
@@ -183,8 +182,8 @@ TEST_F(PaymentManagerTest, DeletePaymentInstrument) {
 TEST_F(PaymentManagerTest, HasPaymentInstrument) {
   PaymentHandlerStatus write_status = PaymentHandlerStatus::NOT_FOUND;
   PaymentInstrumentPtr write_details = PaymentInstrument::New();
-  write_details->name = "Visa ending ****4756",
-  write_details->enabled_methods.push_back("visa");
+  write_details->name = "Visa ending ****4756";
+  write_details->method = "visa";
   write_details->stringified_capabilities = "{}";
   SetPaymentInstrument("test_key", std::move(write_details), &write_status);
   // Write the first instrument of a web payment app will return

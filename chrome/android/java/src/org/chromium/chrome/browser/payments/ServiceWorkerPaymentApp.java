@@ -328,7 +328,7 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
                     iframeOrigin, id, new HashSet<>(methodData.values()), total,
                     new HashSet<>(modifiers.values()), callback, mAppName,
                     icon == null ? null : icon.getBitmap(), mSwUri, mScope, mUseCache,
-                    mMethodNames);
+                    mMethodNames.toArray(new String[0])[0]);
         } else {
             ServiceWorkerPaymentAppBridge.invokePaymentApp(mWebContents, mRegistrationId, origin,
                     iframeOrigin, id, new HashSet<>(methodData.values()), total,

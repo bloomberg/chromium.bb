@@ -57,7 +57,7 @@ class CONTENT_EXPORT PaymentAppProvider {
       const std::string& sw_js_url,
       const std::string& sw_scope,
       bool sw_use_cache,
-      const std::vector<std::string>& enabled_methods,
+      const std::string& method,
       InvokePaymentAppCallback callback) = 0;
   virtual void CanMakePayment(
       BrowserContext* browser_context,

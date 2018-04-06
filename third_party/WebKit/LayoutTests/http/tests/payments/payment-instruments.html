@@ -40,7 +40,7 @@ promise_test(test => {
                     'purpose': 'any badge'
                   }
                 ],
-                enabledMethods: ['basic-card'],
+                method: 'basic-card',
                 capabilities: {
                   supportedNetworks: ['visa'],
                   supportedTypes: ['credit']
@@ -53,7 +53,7 @@ promise_test(test => {
         })
       .then(stored_instrument => {
           assert_equals(stored_instrument.name, 'Visa ending ****4756');
-          assert_array_equals(stored_instrument.enabledMethods, ['basic-card']);
+          assert_equals(stored_instrument.method, 'basic-card');
           assert_equals(stored_instrument.icons.length, 2);
           assert_object_equals(stored_instrument.icons[0], {
               src: location.origin + '/payments/resources/icon-1x.png',
@@ -112,7 +112,7 @@ promise_test(test => {
               'test_key',
               {
                 name: 'Visa ending ****4756',
-                enabledMethods: ['basic-card'],
+                method: 'basic-card',
                 capabilities: {
                   supportedNetworks: ['visa'],
                   supportedTypes: ['credit']
@@ -152,7 +152,7 @@ promise_test(test => {
               'test_key',
               {
                 name: 'Visa ending ****4756',
-                enabledMethods: ['basic-card'],
+                method: 'basic-card',
                 capabilities: {
                   supportedNetworks: ['visa'],
                   supportedTypes: ['credit']
@@ -193,7 +193,7 @@ promise_test(test => {
               'test_key1',
               {
                 name: 'Visa ending ****4756',
-                enabledMethods: ['basic-card'],
+                method: 'basic-card',
                 capabilities: {
                   supportedNetworks: ['visa'],
                   supportedTypes: ['credit']
@@ -203,7 +203,7 @@ promise_test(test => {
               'test_key2',
               {
                 name: "My Bob Pay Account: john@example.com",
-                enabledMethods: ["https://bobpay.com/"]
+                method: "https://bobpay.com/"
               })
           ];
           return Promise.all(instruments);
@@ -238,7 +238,7 @@ promise_test(test => {
               'test_key1',
               {
                 name: 'Visa ending ****4756',
-                enabledMethods: ['basic-card'],
+                method: 'basic-card',
                 capabilities: {
                   supportedNetworks: ['visa'],
                   supportedTypes: ['credit']
@@ -248,7 +248,7 @@ promise_test(test => {
               'test_key2',
               {
                 name: "My Bob Pay Account: john@example.com",
-                enabledMethods: ["https://bobpay.com/"]
+                method: "https://bobpay.com/"
               })
           ];
           return Promise.all(instruments);
@@ -303,7 +303,7 @@ promise_test(test => {
                     'purpose': 'any badge'
                   }
                 ],
-                enabledMethods: ['basic-card'],
+                method: 'basic-card',
                 capabilities: {
                   supportedNetworks: ['visa'],
                   supportedTypes: ['credit']

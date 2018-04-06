@@ -207,20 +207,19 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      * @param swUri            The URI to get the app's service worker js script.
      * @param scope            The scope of the service worker that should be registered.
      * @param useCache         Whether to use cache when registering the service worker.
-     * @param methodNames      Supported method names of the app.
+     * @param method           Supported method name of the app.
      */
     public static void installAndInvokePaymentApp(WebContents webContents, String origin,
             String iframeOrigin, String paymentRequestId, Set<PaymentMethodData> methodData,
             PaymentItem total, Set<PaymentDetailsModifier> modifiers,
             PaymentInstrument.InstrumentDetailsCallback callback, String appName,
-            @Nullable Bitmap icon, URI swUri, URI scope, boolean useCache,
-            Set<String> methodNames) {
+            @Nullable Bitmap icon, URI swUri, URI scope, boolean useCache, String method) {
         ThreadUtils.assertOnUiThread();
 
         nativeInstallAndInvokePaymentApp(webContents, origin, iframeOrigin, paymentRequestId,
                 methodData.toArray(new PaymentMethodData[0]), total,
                 modifiers.toArray(new PaymentDetailsModifier[0]), callback, appName, icon,
-                swUri.toString(), scope.toString(), useCache, methodNames.toArray(new String[0]));
+                swUri.toString(), scope.toString(), useCache, method);
     }
 
     /**
@@ -427,8 +426,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
             String topLevelOrigin, String paymentRequestOrigin, String paymentRequestId,
             PaymentMethodData[] methodData, PaymentItem total, PaymentDetailsModifier[] modifiers,
             PaymentInstrument.InstrumentDetailsCallback callback, String appName,
-            @Nullable Bitmap icon, String swUrl, String scope, boolean useCache,
-            String[] methodNames);
+            @Nullable Bitmap icon, String swUrl, String scope, boolean useCache, String method);
 
     private static native void nativeAbortPaymentApp(
             WebContents webContents, long registrationId, PaymentInstrument.AbortCallback callback);

@@ -25,7 +25,7 @@ enum PaymentHandlerStatus {
 struct PaymentInstrument {
   string name;
   array<blink.mojom.ManifestIcon> icons;
-  array<string> enabled_methods;
+  string method;
   string stringified_capabilities;
 
   // Parsed basic-card specific capabilities.

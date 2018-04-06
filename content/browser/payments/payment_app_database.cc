@@ -80,8 +80,7 @@ PaymentInstrumentPtr ToPaymentInstrumentForMojo(const std::string& input) {
     }
     instrument->icons.emplace_back(icon);
   }
-  for (const auto& method : instrument_proto.enabled_methods())
-    instrument->enabled_methods.push_back(method);
+  instrument->method = instrument_proto.method();
   instrument->stringified_capabilities =
       instrument_proto.stringified_capabilities();
 
@@ -431,7 +430,7 @@ void PaymentAppDatabase::SetPaymentAppInfoForRegisteredServiceWorker(
     const std::string& instrument_key,
     const std::string& name,
     const std::string& icon,
-    const std::vector<std::string>& enabled_methods,
+    const std::string& method,
     SetPaymentAppInfoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -439,14 +438,14 @@ void PaymentAppDatabase::SetPaymentAppInfoForRegisteredServiceWorker(
       registration_id,
       base::BindOnce(&PaymentAppDatabase::DidFindRegistrationToSetPaymentApp,
                      weak_ptr_factory_.GetWeakPtr(), instrument_key, name, icon,
-                     enabled_methods, std::move(callback)));
+                     method, std::move(callback)));
 }
 
 void PaymentAppDatabase::DidFindRegistrationToSetPaymentApp(
     const std::string& instrument_key,
     const std::string& name,
     const std::string& icon,
-    const std::vector<std::string>& enabled_methods,
+    const std::string& method,
     SetPaymentAppInfoCallback callback,
     ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
@@ -472,16 +471,15 @@ void PaymentAppDatabase::DidFindRegistrationToSetPaymentApp(
       {{CreatePaymentAppKey(registration->pattern().spec()),
         serialized_payment_app}},
       base::Bind(&PaymentAppDatabase::DidWritePaymentAppForSetPaymentApp,
-                 weak_ptr_factory_.GetWeakPtr(), instrument_key,
-                 enabled_methods, base::Passed(std::move(callback)),
-                 std::move(registration)));
+                 weak_ptr_factory_.GetWeakPtr(), instrument_key, method,
+                 base::Passed(std::move(callback)), std::move(registration)));
 
   return;
 }
 
 void PaymentAppDatabase::DidWritePaymentAppForSetPaymentApp(
     const std::string& instrument_key,
-    const std::vector<std::string>& enabled_methods,
+    const std::string& method,
     SetPaymentAppInfoCallback callback,
     scoped_refptr<ServiceWorkerRegistration> registration,
     ServiceWorkerStatusCode status) {
@@ -495,9 +493,7 @@ void PaymentAppDatabase::DidWritePaymentAppForSetPaymentApp(
   StoredPaymentInstrumentProto instrument_proto;
   instrument_proto.set_registration_id(registration->id());
   instrument_proto.set_instrument_key(instrument_key);
-  for (const auto& method : enabled_methods) {
-    instrument_proto.add_enabled_methods(method);
-  }
+  instrument_proto.set_method(method);
 
   std::string serialized_instrument;
   bool success = instrument_proto.SerializeToString(&serialized_instrument);
@@ -582,10 +578,7 @@ void PaymentAppDatabase::DidReadAllPaymentInstruments(
     if (!base::ContainsKey(apps, id))
       continue;
 
-    for (const auto& method : instrument_proto.enabled_methods()) {
-      apps[id]->enabled_methods.push_back(method);
-    }
-
+    apps[id]->enabled_methods.emplace_back(instrument_proto.method());
     apps[id]->capabilities.emplace_back(StoredCapabilities());
     for (const auto& network : instrument_proto.supported_card_networks()) {
       apps[id]->capabilities.back().supported_card_networks.emplace_back(
@@ -773,9 +766,7 @@ void PaymentAppDatabase::DidFindRegistrationToWritePaymentInstrument(
   instrument_proto.set_decoded_instrument_icon(decoded_instrument_icon);
   instrument_proto.set_instrument_key(instrument_key);
   instrument_proto.set_name(instrument->name);
-  for (const auto& method : instrument->enabled_methods) {
-    instrument_proto.add_enabled_methods(method);
-  }
+  instrument_proto.set_method(instrument->method);
   for (const auto& icon : instrument->icons) {
     StoredPaymentInstrumentImageObject* image_object_proto =
         instrument_proto.add_icons();

@@ -39,7 +39,7 @@ class PaymentAppInstaller {
                       const GURL& sw_url,
                       const GURL& scope,
                       bool use_cache,
-                      const std::vector<std::string>& enabled_methods,
+                      const std::string& method,
                       InstallPaymentAppCallback callback);
 
  private:
