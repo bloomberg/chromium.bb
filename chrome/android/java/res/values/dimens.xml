@@ -216,7 +216,7 @@
     <!-- Full Screen Dimensions -->
     <!-- Should match toolbar_height_no_shadow -->
     <dimen name="control_container_height">56dp</dimen>
-    <dimen name="bottom_control_container_peek_height">40dp</dimen>
+    <dimen name="bottom_control_container_peek_height">48dp</dimen>
     <dimen name="custom_tabs_control_container_height">56dp</dimen>
     <dimen name="fullscreen_activity_control_container_height">0dp</dimen>
 
