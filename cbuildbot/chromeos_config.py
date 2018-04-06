@@ -1782,6 +1782,7 @@ def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
 
   return result
 
+
 def CreateInternalBoardConfigs(site_config, boards_dict, ge_build_config):
   """Create mixin templates for each board."""
   result = CreateBoardConfigs(site_config, boards_dict, ge_build_config)
@@ -1791,6 +1792,26 @@ def CreateInternalBoardConfigs(site_config, boards_dict, ge_build_config):
       result[board].apply(site_config.templates.internal,
                           site_config.templates.official_chrome,
                           manifest=constants.OFFICIAL_MANIFEST)
+
+  return result
+
+
+def UpdateBoardConfigs(board_configs, boards, *args, **kwargs):
+  """Update "board_configs" for selected boards.
+
+  Args:
+    board_configs: Dict in CreateBoardConfigs format to filter from.
+    boards: Iterable of boards to update in the dict.
+    args: List of templates to apply.
+    kwargs: Individual keys to update.
+
+  Returns:
+    Copy of board_configs dict with boards boards update with templates
+    and values applied.
+  """
+  result = board_configs.copy()
+  for b in boards:
+    result[b] = result[b].derive(*args, **kwargs)
 
   return result
 
@@ -3064,21 +3085,20 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   # does not wait for them.  http://crbug.com/386214
   # If you want an important PFQ, you'll have to declare it yourself.
 
-  site_config.AddForBoards(
-      'tot-chrome-pfq-informational',
-      _chrome_informational_hwtest_boards,
+  informational_boards = (
+      (boards_dict['all_release_boards'] & _chrome_boards))
+
+  _tot_chrome_pfq_informational_board_configs = UpdateBoardConfigs(
       internal_board_configs,
-      site_config.templates.chrome_pfq_informational,
-      important=False,
+      _chrome_informational_hwtest_boards,
       hw_tests=hw_test_list.DefaultListChromePFQInformational(
           pool=constants.HWTEST_CONTINUOUS_POOL),
   )
-  informational_boards = (
-      (boards_dict['all_release_boards'] & _chrome_boards))
+
   site_config.AddForBoards(
       'tot-chrome-pfq-informational',
-      informational_boards-_chrome_informational_hwtest_boards,
-      internal_board_configs,
+      informational_boards,
+      _tot_chrome_pfq_informational_board_configs,
       site_config.templates.chrome_pfq_informational,
       important=False)
 
