@@ -344,68 +344,37 @@ function switchRemoteStreamWithoutWaitingForPromisesToResolve() {
 // TODO(hbos): Make this a web platform test instead. https://crbug.com/773472
 function trackSwitchingStream() {
   let pc = new RTCPeerConnection();
-  let track1 = null;
+  let track = null;
   let stream1 = null;
   let stream2 = null;
   pc.setRemoteDescription(createOffer([msid('stream1', 'track1')]));
   pc.ontrack = (e) => {
-    track1 = e.track;
+    track = e.track;
     stream1 = e.streams[0];
-    if (stream1.getTracks()[0] != track1)
-      throw failTest('stream1 does not contain track1.');
+    if (stream1.getTracks()[0] != track)
+      throw failTest('stream1 does not contain track.');
     // This should update the associated set of streams for the existing
-    // receiver for track1.
-    pc.setRemoteDescription(createOffer([msid('stream2', 'track1')]));
+    // receiver for track.
+    pc.setRemoteDescription(createOffer([msid('stream2', 'track')]));
     pc.ontrack = (e) => {
-      let originalTrack1 = track1;
-      track1 = e.track;
+      let originalTrack = track;
+      track = e.track;
       stream2 = e.streams[0];
-      // TODO(hbos): A new track should not be created, track1 should simply
+      // TODO(hbos): A new track should not be created, track should simply
       // move. Fix this and update assertion. https://crbug.com/webrtc/8377
-      if (track1 == originalTrack1)
+      if (track == originalTrack)
         throw failTest('A new track was not created.');
-      // TODO(hbos): stream1 should now be empty and track1 muted. Fix this and
-      // update assertions. https://crbug.com/773523
-      if (stream1.getTracks()[0] != originalTrack1)
-        throw failTest('stream1 does not still contain the original track1.');
-      if (track1.muted)
-        throw failTest('The original track1 has been muted.');
-      if (stream2.getTracks()[0] != track1)
-        throw failTest('stream2 does not contain track1.');
+      if (stream1.getTracks().length != 0)
+        throw failTest('stream1 is not empty.')
+      if (!originalTrack.muted)
+        throw failTest('Original track is not muted.');
+      if (track.muted)
+        throw failTest('New track is muted.');
+      if (stream2.getTracks()[0] != track)
+        throw failTest('stream2 does not contain track.');
       returnToTest('ok');
     };
   };
-}
-
-// TODO(hbos): Make this a web platform test instead. https://crbug.com/773472
-function trackAddedToSecondStream() {
-  let pc = new RTCPeerConnection();
-  let track1 = null;
-  let track2 = null;
-  let stream1 = null;
-  let stream2 = null;
-  pc.ontrack = (e) => {
-    track1 = e.track;
-    stream1 = e.streams[0];
-    if (stream1.getTracks()[0] != track1)
-      throw failTest('stream1 does not contain track1.');
-    pc.ontrack = (e) => {
-      let originalTrack1 = track1;
-      track1 = e.track;
-      stream2 = e.streams[0];
-      // TODO(hbos): A new track should not be created, track1 should be added
-      // to both streams. Fix this and update assertion.
-      // https://crbug.com/webrtc/8377
-      if (track1 == originalTrack1)
-        throw failTest('A new track was not created.');
-      if (stream2.getTracks()[0] != track1)
-        throw failTest('stream2 does not contain track1.');
-      returnToTest('ok');
-    };
-    pc.setRemoteDescription(createOffer([ msid('stream1', 'track1'),
-                                          msid('stream2', 'track1') ]));
-  };
-  pc.setRemoteDescription(createOffer([msid('stream1', 'track1')]));
 }
 
 // TODO(hbos): Add a test that verifies a track that is added to two streams can
