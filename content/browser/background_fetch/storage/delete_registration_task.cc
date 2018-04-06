@@ -88,8 +88,8 @@ void DeleteRegistrationTask::DidGetRegistration(
   service_worker_context()->ClearRegistrationUserDataByKeyPrefixes(
       service_worker_registration_id_,
       {RegistrationKey(unique_id_), RequestKeyPrefix(unique_id_)},
-      base::Bind(&DeleteRegistrationTask::DidDeleteRegistration,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&DeleteRegistrationTask::DidDeleteRegistration,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void DeleteRegistrationTask::DidDeleteRegistration(

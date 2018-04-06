@@ -275,7 +275,7 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO(
     CreateGpuMemoryBufferOnIO(
         new_id, request->size, request->format, request->usage,
         request->surface_handle, request->client_id,
-        base::Bind(
+        base::BindOnce(
             &BrowserGpuMemoryBufferManager::HandleGpuMemoryBufferCreatedOnIO,
             base::Unretained(this), base::Unretained(request)));
     return;

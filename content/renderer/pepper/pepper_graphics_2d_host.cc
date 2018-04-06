@@ -788,7 +788,7 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
       viz::RGBA_8888);
   *release_callback = viz::SingleReleaseCallback::Create(base::BindOnce(
       &PepperGraphics2DHost::ReleaseSoftwareCallback, this->AsWeakPtr(),
-      base::Passed(&shared_bitmap), base::Passed(&registration)));
+      std::move(shared_bitmap), std::move(registration)));
   composited_output_modified_ = false;
   return true;
 }

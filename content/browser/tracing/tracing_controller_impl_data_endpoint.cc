@@ -70,7 +70,7 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
         FROM_HERE,
         base::BindOnce(
             &FileTraceDataEndpoint::ReceiveTraceChunkOnBlockingThread, this,
-            base::Passed(std::move(chunk))));
+            std::move(chunk)));
   }
 
   void ReceiveTraceFinalContents(

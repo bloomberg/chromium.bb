@@ -275,7 +275,7 @@ void VideoCaptureGpuJpegDecoder::DidReceiveGPUInfoOnIOThread(
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&VideoCaptureGpuJpegDecoder::FinishInitialization,
-                     weak_this, base::Passed(remote_decoder.PassInterface())));
+                     weak_this, remote_decoder.PassInterface()));
 }
 
 void VideoCaptureGpuJpegDecoder::FinishInitialization(

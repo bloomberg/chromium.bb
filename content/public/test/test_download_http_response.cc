@@ -59,7 +59,7 @@ void OnResponseSentOnServerIOThread(
     const TestDownloadHttpResponse::OnResponseSentCallback& callback,
     std::unique_ptr<TestDownloadHttpResponse::CompletedRequest> request) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback, base::Passed(&request)));
+                          base::BindOnce(callback, std::move(request)));
 }
 
 // The shim response object used by embedded_test_server. After this object is

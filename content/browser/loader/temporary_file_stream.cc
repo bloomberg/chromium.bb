@@ -63,8 +63,8 @@ void CreateTemporaryFileStream(
   base::FileProxy* proxy = file_proxy.get();
   proxy->CreateTemporary(
       base::File::FLAG_ASYNC,
-      base::Bind(&DidCreateTemporaryFile, callback, Passed(&file_proxy),
-                 std::move(task_runner)));
+      base::BindOnce(&DidCreateTemporaryFile, callback, std::move(file_proxy),
+                     std::move(task_runner)));
 }
 
 }  // namespace content

@@ -778,8 +778,9 @@ void WebMediaPlayerMS::OnFrameHidden() {
   // back, so we can't rely on |render_frame_suspended_| being false here.
   if (frame_deliverer_) {
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&FrameDeliverer::SetRenderFrameSuspended,
-                              base::Unretained(frame_deliverer_.get()), true));
+        FROM_HERE,
+        base::BindOnce(&FrameDeliverer::SetRenderFrameSuspended,
+                       base::Unretained(frame_deliverer_.get()), true));
   }
 
 // On Android, substitute the displayed VideoFrame with a copy to avoid holding
@@ -805,8 +806,9 @@ void WebMediaPlayerMS::OnFrameClosed() {
 
   if (frame_deliverer_) {
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&FrameDeliverer::SetRenderFrameSuspended,
-                              base::Unretained(frame_deliverer_.get()), true));
+        FROM_HERE,
+        base::BindOnce(&FrameDeliverer::SetRenderFrameSuspended,
+                       base::Unretained(frame_deliverer_.get()), true));
   }
 }
 
@@ -815,8 +817,9 @@ void WebMediaPlayerMS::OnFrameShown() {
 
   if (frame_deliverer_) {
     io_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&FrameDeliverer::SetRenderFrameSuspended,
-                              base::Unretained(frame_deliverer_.get()), false));
+        FROM_HERE,
+        base::BindOnce(&FrameDeliverer::SetRenderFrameSuspended,
+                       base::Unretained(frame_deliverer_.get()), false));
   }
 
 // On Android, resume playback on visibility. play() clears

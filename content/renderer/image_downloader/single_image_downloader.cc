@@ -24,8 +24,9 @@ void SingleImageDownloader::DownloadImage(
       new ImageDownloaderBase(render_frame.get()));
   ImageDownloaderBase* image_downloader_ptr = image_downloader.get();
   image_downloader_ptr->DownloadImage(
-      url, false, false, base::Bind(&SingleImageDownloader::DidDownloadImage,
-                                    base::Passed(&image_downloader), cb));
+      url, false, false,
+      base::BindOnce(&SingleImageDownloader::DidDownloadImage,
+                     std::move(image_downloader), cb));
 }
 
 // Static

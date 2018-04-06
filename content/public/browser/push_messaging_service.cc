@@ -56,7 +56,7 @@ void ClearPushSubscriptionIdOnIO(
 
   service_worker_context->ClearRegistrationUserData(
       service_worker_registration_id, {kPushRegistrationIdServiceWorkerKey},
-      base::Bind(&CallClosureFromIO, callback));
+      base::BindOnce(&CallClosureFromIO, callback));
 }
 
 void StorePushSubscriptionOnIOForTesting(
@@ -72,7 +72,7 @@ void StorePushSubscriptionOnIOForTesting(
       service_worker_registration_id, origin,
       {{kPushRegistrationIdServiceWorkerKey, subscription_id},
        {kPushSenderIdServiceWorkerKey, sender_id}},
-      base::Bind(&CallClosureFromIO, callback));
+      base::BindOnce(&CallClosureFromIO, callback));
 }
 
 scoped_refptr<ServiceWorkerContextWrapper> GetServiceWorkerContext(

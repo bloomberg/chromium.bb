@@ -523,7 +523,7 @@ void ThrottlingURLLoader::InterceptResponse(
   if (original_client_request)
     *original_client_request = client_binding_.Unbind();
   client_binding_.Bind(std::move(new_client_request));
-  client_binding_.set_connection_error_handler(base::BindRepeating(
+  client_binding_.set_connection_error_handler(base::BindOnce(
       &ThrottlingURLLoader::OnClientConnectionError, base::Unretained(this)));
 }
 

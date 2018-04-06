@@ -280,7 +280,7 @@ FileCreationInfo::~FileCreationInfo() {
   if (file.IsValid()) {
     DCHECK(file_deletion_runner);
     file_deletion_runner->PostTask(
-        FROM_HERE, base::BindOnce(&DestructFile, base::Passed(&file)));
+        FROM_HERE, base::BindOnce(&DestructFile, std::move(file)));
   }
 }
 FileCreationInfo::FileCreationInfo(FileCreationInfo&&) = default;
@@ -473,7 +473,7 @@ class BlobMemoryController::FileQuotaAllocationTask
       controller_->disk_used_ -= allocation_size_;
       controller_->AdjustDiskUsage(static_cast<uint64_t>(avail_disk_space));
       controller_->file_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&DeleteFiles, base::Passed(&result.files)));
+          FROM_HERE, base::BindOnce(&DeleteFiles, std::move(result.files)));
       std::unique_ptr<FileQuotaAllocationTask> this_object =
           std::move(*my_list_position_);
       controller_->pending_file_quota_tasks_.erase(my_list_position_);
@@ -686,8 +686,8 @@ void BlobMemoryController::ShrinkFileAllocation(
   DCHECK_GE(disk_used_, old_length - new_length);
   disk_used_ -= old_length - new_length;
   file_reference->AddFinalReleaseCallback(
-      base::BindRepeating(&BlobMemoryController::OnShrunkenBlobFileDelete,
-                          weak_factory_.GetWeakPtr(), old_length - new_length));
+      base::BindOnce(&BlobMemoryController::OnShrunkenBlobFileDelete,
+                     weak_factory_.GetWeakPtr(), old_length - new_length));
 }
 
 void BlobMemoryController::GrowFileAllocation(
@@ -696,8 +696,8 @@ void BlobMemoryController::GrowFileAllocation(
   DCHECK_LE(delta, GetAvailableFileSpaceForBlobs());
   disk_used_ += delta;
   file_reference->AddFinalReleaseCallback(
-      base::BindRepeating(&BlobMemoryController::OnBlobFileDelete,
-                          weak_factory_.GetWeakPtr(), delta));
+      base::BindOnce(&BlobMemoryController::OnBlobFileDelete,
+                     weak_factory_.GetWeakPtr(), delta));
 }
 
 void BlobMemoryController::NotifyMemoryItemsUsed(

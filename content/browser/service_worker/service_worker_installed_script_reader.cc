@@ -95,8 +95,8 @@ void ServiceWorkerInstalledScriptReader::Start() {
   auto info_buf = base::MakeRefCounted<HttpResponseInfoIOBuffer>();
   reader_->ReadInfo(
       info_buf.get(),
-      base::Bind(&ServiceWorkerInstalledScriptReader::OnReadInfoComplete,
-                 AsWeakPtr(), info_buf));
+      base::BindOnce(&ServiceWorkerInstalledScriptReader::OnReadInfoComplete,
+                     AsWeakPtr(), info_buf));
 }
 
 void ServiceWorkerInstalledScriptReader::OnReadInfoComplete(
@@ -204,8 +204,8 @@ void ServiceWorkerInstalledScriptReader::OnWritableBody(MojoResult) {
           body_pending_write_.get());
   reader_->ReadData(
       buffer.get(), num_bytes,
-      base::Bind(&ServiceWorkerInstalledScriptReader::OnResponseDataRead,
-                 AsWeakPtr()));
+      base::BindOnce(&ServiceWorkerInstalledScriptReader::OnResponseDataRead,
+                     AsWeakPtr()));
 }
 
 void ServiceWorkerInstalledScriptReader::OnResponseDataRead(int read_bytes) {

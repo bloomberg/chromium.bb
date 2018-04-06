@@ -73,8 +73,8 @@ void UpdateRegistrationUITask::UpdateUI(
   service_worker_context()->StoreRegistrationUserData(
       service_worker_registration_id_, origin_.GetURL(),
       {{RegistrationKey(unique_id_), metadata_proto.SerializeAsString()}},
-      base::BindRepeating(&UpdateRegistrationUITask::DidUpdateUI,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&UpdateRegistrationUITask::DidUpdateUI,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void UpdateRegistrationUITask::DidUpdateUI(ServiceWorkerStatusCode status) {

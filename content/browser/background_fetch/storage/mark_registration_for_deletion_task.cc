@@ -77,8 +77,8 @@ void MarkRegistrationForDeletionTask::DidGetActiveUniqueId(
          PendingRequestKeyPrefix(
              metadata_proto.creation_microseconds_since_unix_epoch(),
              registration_id_.unique_id())},
-        base::Bind(&MarkRegistrationForDeletionTask::DidDeactivate,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&MarkRegistrationForDeletionTask::DidDeactivate,
+                       weak_factory_.GetWeakPtr()));
   } else {
     NOTREACHED() << "Database is corrupt";  // TODO(crbug.com/780027): Nuke it.
   }

@@ -241,7 +241,7 @@ TEST_F(ServiceWorkerTimeoutTimerTest, SetIdleTimerDelayToZero) {
     bool is_idle = false;
     ServiceWorkerTimeoutTimer timer(CreateReceiverWithCalledFlag(&is_idle),
                                     task_runner()->GetMockTickClock());
-    int event_id = timer.StartEvent(base::BindRepeating([](int) {}));
+    int event_id = timer.StartEvent(base::BindOnce([](int) {}));
     timer.SetIdleTimerDelayToZero();
     // Nothing happens since there is an inflight event.
     EXPECT_FALSE(is_idle);
@@ -255,8 +255,8 @@ TEST_F(ServiceWorkerTimeoutTimerTest, SetIdleTimerDelayToZero) {
     bool is_idle = false;
     ServiceWorkerTimeoutTimer timer(CreateReceiverWithCalledFlag(&is_idle),
                                     task_runner()->GetMockTickClock());
-    int event_id_1 = timer.StartEvent(base::BindRepeating([](int) {}));
-    int event_id_2 = timer.StartEvent(base::BindRepeating([](int) {}));
+    int event_id_1 = timer.StartEvent(base::BindOnce([](int) {}));
+    int event_id_2 = timer.StartEvent(base::BindOnce([](int) {}));
     timer.SetIdleTimerDelayToZero();
     // Nothing happens since there are two inflight events.
     EXPECT_FALSE(is_idle);

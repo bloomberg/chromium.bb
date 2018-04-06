@@ -142,7 +142,7 @@ void RunCreateOrOpenCallback(FileSystemOperationContext* context,
     // If |callback| been cancelled, free |file| on the correct task runner.
     context->task_runner()->PostTask(
         FROM_HERE,
-        BindOnce([](base::File file) { file.Close(); }, Passed(&file)));
+        BindOnce([](base::File file) { file.Close(); }, std::move(file)));
     return;
   }
 

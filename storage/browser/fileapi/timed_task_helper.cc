@@ -86,8 +86,8 @@ void TimedTaskHelper::OnFired(std::unique_ptr<Tracker> tracker) {
 void TimedTaskHelper::PostDelayedTask(std::unique_ptr<Tracker> tracker,
                                       base::TimeDelta delay) {
   task_runner_->PostDelayedTask(
-      posted_from_,
-      base::BindOnce(&TimedTaskHelper::Fired, base::Passed(&tracker)), delay);
+      posted_from_, base::BindOnce(&TimedTaskHelper::Fired, std::move(tracker)),
+      delay);
 }
 
 }  // namespace storage

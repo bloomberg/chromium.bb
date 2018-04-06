@@ -149,7 +149,8 @@ PaymentManager* PaymentAppContentUnitTestBase::CreatePaymentManager(
   registration_opt.scope = scope_url;
   worker_helper_->context()->RegisterServiceWorker(
       sw_script_url, registration_opt,
-      base::Bind(&RegisterServiceWorkerCallback, &called, &registration_id));
+      base::BindOnce(&RegisterServiceWorkerCallback, &called,
+                     &registration_id));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 
@@ -204,7 +205,7 @@ void PaymentAppContentUnitTestBase::UnregisterServiceWorker(
   // Unregister service worker.
   bool called = false;
   worker_helper_->context()->UnregisterServiceWorker(
-      scope_url, base::Bind(&UnregisterServiceWorkerCallback, &called));
+      scope_url, base::BindOnce(&UnregisterServiceWorkerCallback, &called));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 }

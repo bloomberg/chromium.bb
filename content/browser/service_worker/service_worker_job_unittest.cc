@@ -81,8 +81,8 @@ ServiceWorkerRegisterJob::RegistrationCallback SaveRegistration(
     bool* called,
     scoped_refptr<ServiceWorkerRegistration>* registration) {
   *called = false;
-  return base::Bind(
-      &SaveRegistrationCallback, expected_status, called, registration);
+  return base::BindOnce(&SaveRegistrationCallback, expected_status, called,
+                        registration);
 }
 
 ServiceWorkerStorage::FindRegistrationCallback SaveFoundRegistration(
@@ -106,7 +106,7 @@ ServiceWorkerUnregisterJob::UnregistrationCallback SaveUnregistration(
     ServiceWorkerStatusCode expected_status,
     bool* called) {
   *called = false;
-  return base::Bind(&SaveUnregistrationCallback, expected_status, called);
+  return base::BindOnce(&SaveUnregistrationCallback, expected_status, called);
 }
 
 }  // namespace

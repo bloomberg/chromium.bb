@@ -343,8 +343,8 @@ class RemovePluginPrivateDataTester {
     async_file_util->CreateOrOpen(
         std::move(operation_context), clearkey_file_,
         base::File::FLAG_OPEN | base::File::FLAG_WRITE,
-        base::Bind(&RemovePluginPrivateDataTester::OnFileOpened,
-                   base::Unretained(this), &file, &await_completion));
+        base::BindOnce(&RemovePluginPrivateDataTester::OnFileOpened,
+                       base::Unretained(this), &file, &await_completion));
     await_completion.BlockUntilNotified();
     return file;
   }
@@ -390,8 +390,8 @@ class RemovePluginPrivateDataTester {
         storage::QuotaManager::kNoLimit);
     file_util->EnsureFileExists(
         std::move(operation_context), file_url,
-        base::Bind(&RemovePluginPrivateDataTester::OnFileCreated,
-                   base::Unretained(this), &await_completion));
+        base::BindOnce(&RemovePluginPrivateDataTester::OnFileCreated,
+                       base::Unretained(this), &await_completion));
     await_completion.BlockUntilNotified();
     return file_url;
   }
@@ -405,8 +405,8 @@ class RemovePluginPrivateDataTester {
             filesystem_context_);
     file_util->DeleteFile(
         std::move(operation_context), file_url,
-        base::Bind(&RemovePluginPrivateDataTester::OnFileDeleted,
-                   base::Unretained(this), &await_completion));
+        base::BindOnce(&RemovePluginPrivateDataTester::OnFileDeleted,
+                       base::Unretained(this), &await_completion));
     await_completion.BlockUntilNotified();
   }
 
@@ -420,10 +420,10 @@ class RemovePluginPrivateDataTester {
     std::unique_ptr<storage::FileSystemOperationContext> operation_context =
         std::make_unique<storage::FileSystemOperationContext>(
             filesystem_context_);
-    file_util->Touch(std::move(operation_context), file_url, time_stamp,
-                     time_stamp,
-                     base::Bind(&RemovePluginPrivateDataTester::OnFileTouched,
-                                base::Unretained(this), &await_completion));
+    file_util->Touch(
+        std::move(operation_context), file_url, time_stamp, time_stamp,
+        base::BindOnce(&RemovePluginPrivateDataTester::OnFileTouched,
+                       base::Unretained(this), &await_completion));
     await_completion.BlockUntilNotified();
   }
 

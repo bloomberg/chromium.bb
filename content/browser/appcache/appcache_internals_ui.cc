@@ -298,7 +298,7 @@ void AppCacheInternalsUI::Proxy::OnResponseInfoLoaded(
     reader->ReadData(response_data.get(), amount_to_read,
                      base::BindOnce(&Proxy::OnResponseDataReadComplete, this,
                                     response_enquiry, response_info,
-                                    base::Passed(&reader), response_data));
+                                    std::move(reader), response_data));
   } else {
     OnResponseDataReadComplete(response_enquiry, nullptr, nullptr, nullptr, -1);
   }

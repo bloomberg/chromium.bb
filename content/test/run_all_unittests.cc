@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
   catalog::Catalog::SetDefaultCatalogManifest(
       content::CreateContentUnittestsCatalog());
 
-  return base::LaunchUnitTests(
-      argc, argv, base::Bind(&content::UnitTestTestSuite::Run,
-                             base::Unretained(&test_suite)));
+  return base::LaunchUnitTests(argc, argv,
+                               base::BindOnce(&content::UnitTestTestSuite::Run,
+                                              base::Unretained(&test_suite)));
 }

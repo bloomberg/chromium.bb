@@ -107,9 +107,9 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
         std::make_unique<WebContentsHelper>(top_level_web_content);
 
     top_level_web_content->GetManifest(
-        base::Bind(&PaymentAppInfoFetcher::SelfDeleteFetcher::
-                       FetchPaymentAppManifestCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&PaymentAppInfoFetcher::SelfDeleteFetcher::
+                           FetchPaymentAppManifestCallback,
+                       base::Unretained(this)));
     return;
   }
 

@@ -326,8 +326,8 @@ void PepperCompositorHost::UpdateLayer(
           resource,
           viz::SingleReleaseCallback::Create(base::BindOnce(
               &PepperCompositorHost::ImageReleased, weak_factory_.GetWeakPtr(),
-              new_layer->common.resource_id, base::Passed(&image_shm),
-              base::Passed(&bitmap))));
+              new_layer->common.resource_id, std::move(image_shm),
+              std::move(bitmap))));
       // TODO(penghuang): get a damage region from the application and
       // pass it to SetNeedsDisplayRect().
       image_layer->SetNeedsDisplay();

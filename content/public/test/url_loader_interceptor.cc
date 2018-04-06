@@ -288,8 +288,8 @@ void URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
             &URLLoaderInterceptor::CreateURLLoaderFactoryForSubresources,
-            base::Unretained(this), base::Passed(&request), process_id,
-            base::Passed(&original_factory)));
+            base::Unretained(this), std::move(request), process_id,
+            std::move(original_factory)));
     return;
   }
 

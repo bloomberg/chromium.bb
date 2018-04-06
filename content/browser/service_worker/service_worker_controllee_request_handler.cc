@@ -350,8 +350,8 @@ void ServiceWorkerControlleeRequestHandler::
     context_->UpdateServiceWorker(
         registration.get(), true /* force_bypass_cache */,
         true /* skip_script_comparison */,
-        base::Bind(&self::DidUpdateRegistration, weak_factory_.GetWeakPtr(),
-                   registration));
+        base::BindOnce(&self::DidUpdateRegistration, weak_factory_.GetWeakPtr(),
+                       registration));
     return;
   }
 

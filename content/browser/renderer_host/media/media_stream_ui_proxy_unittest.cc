@@ -315,7 +315,7 @@ class MediaStreamUIProxyFeaturePolicyTest
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
             &MediaStreamUIProxyFeaturePolicyTest::GetResultForRequestOnIOThread,
-            base::Unretained(this), base::Passed(&request)));
+            base::Unretained(this), std::move(request)));
     run_loop.Run();
     *devices_out = devices_;
     *result_out = result_;

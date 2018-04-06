@@ -546,8 +546,9 @@ class CacheStorageManagerTest : public testing::Test {
     quota_manager_proxy_->GetUsageAndQuota(
         base::ThreadTaskRunnerHandle::Get().get(), origin,
         StorageType::kTemporary,
-        base::Bind(&CacheStorageManagerTest::DidGetQuotaOriginUsage,
-                   base::Unretained(this), base::Unretained(&usage), &loop));
+        base::BindOnce(&CacheStorageManagerTest::DidGetQuotaOriginUsage,
+                       base::Unretained(this), base::Unretained(&usage),
+                       &loop));
     loop.Run();
     return usage;
   }

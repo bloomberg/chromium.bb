@@ -196,9 +196,9 @@ void PluginPrivateDataByOriginChecker::OnDirectoryRead(
           std::move(operation_context), file_url,
           storage::FileSystemOperation::GET_METADATA_FIELD_SIZE |
               storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
-          base::Bind(&PluginPrivateDataByOriginChecker::OnFileInfo,
-                     base::Unretained(this),
-                     StringTypeToString(file.name.value())));
+          base::BindOnce(&PluginPrivateDataByOriginChecker::OnFileInfo,
+                         base::Unretained(this),
+                         StringTypeToString(file.name.value())));
     }
   }
 
