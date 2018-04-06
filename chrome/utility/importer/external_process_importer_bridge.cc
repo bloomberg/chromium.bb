@@ -32,12 +32,10 @@ const int kNumAutofillFormDataToSend = 100;
 } // namespace
 
 ExternalProcessImporterBridge::ExternalProcessImporterBridge(
-    const base::DictionaryValue& localized_strings,
+    base::Value localized_strings,
     scoped_refptr<chrome::mojom::ThreadSafeProfileImportObserverPtr> observer)
     : observer_(std::move(observer)) {
-  // Bridge needs to make its own copy because OS 10.6 autoreleases the
-  // localized_strings value that is passed in (see http://crbug.com/46003 ).
-  localized_strings_.reset(localized_strings.DeepCopy());
+  localized_strings_ = std::move(localized_strings);
 }
 
 void ExternalProcessImporterBridge::AddBookmarks(
@@ -179,9 +177,10 @@ void ExternalProcessImporterBridge::NotifyEnded() {
 
 base::string16 ExternalProcessImporterBridge::GetLocalizedString(
     int message_id) {
-  base::string16 message;
-  localized_strings_->GetString(base::IntToString(message_id), &message);
-  return message;
+  base::Value* message_value =
+      localized_strings_.FindKey(base::IntToString(message_id));
+  DCHECK(message_value);
+  return base::UTF8ToUTF16(message_value->GetString());
 }
 
 ExternalProcessImporterBridge::~ExternalProcessImporterBridge() {}

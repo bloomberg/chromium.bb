@@ -29,7 +29,7 @@ ProfileImportImpl::~ProfileImportImpl() {}
 void ProfileImportImpl::StartImport(
     const importer::SourceProfile& source_profile,
     uint16_t items,
-    std::unique_ptr<base::DictionaryValue> localized_strings,
+    base::Value localized_strings,
     chrome::mojom::ProfileImportObserverPtr observer) {
   content::UtilityThread::Get()->EnsureBlinkInitialized();
   importer_ = importer::CreateImporterByType(source_profile.importer_type);
@@ -50,7 +50,7 @@ void ProfileImportImpl::StartImport(
     ImporterCleanup();
   }
   bridge_ = new ExternalProcessImporterBridge(
-      *localized_strings,
+      std::move(localized_strings),
       ThreadSafeProfileImportObserverPtr::Create(std::move(observer)));
   import_thread_->task_runner()->PostTask(
       FROM_HERE,

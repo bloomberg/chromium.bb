@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/common/importer/profile_import.mojom.h"
@@ -18,10 +19,6 @@
 
 class GURL;
 struct ImportedBookmarkEntry;
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace importer {
 #if defined(OS_WIN)
@@ -44,7 +41,7 @@ class ExternalProcessImporterBridge : public ImporterBridge {
  public:
   // |observer| must outlive this object.
   ExternalProcessImporterBridge(
-      const base::DictionaryValue& localized_strings,
+      base::Value localized_strings,
       scoped_refptr<chrome::mojom::ThreadSafeProfileImportObserverPtr>
           observer);
 
@@ -89,7 +86,7 @@ class ExternalProcessImporterBridge : public ImporterBridge {
 
   // Holds strings needed by the external importer because the resource
   // bundle isn't available to the external process.
-  std::unique_ptr<base::DictionaryValue> localized_strings_;
+  base::Value localized_strings_;
 
   scoped_refptr<chrome::mojom::ThreadSafeProfileImportObserverPtr> observer_;
 
