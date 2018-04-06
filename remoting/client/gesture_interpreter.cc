@@ -19,25 +19,30 @@ const float kScrollFlingTimeConstant = 250.f;
 }  // namespace
 
 namespace remoting {
-GestureInterpreter::GestureInterpreter(RendererProxy* renderer,
-                                       ChromotingSession* input_stub)
-    : renderer_(renderer),
-      input_stub_(input_stub),
-      pan_animation_(kOneFingerFlingTimeConstant,
+GestureInterpreter::GestureInterpreter()
+    // TODO(yuweih): These animations are better to take GetWeakPtr().
+    : pan_animation_(kOneFingerFlingTimeConstant,
                      base::Bind(&GestureInterpreter::PanWithoutAbortAnimations,
                                 base::Unretained(this))),
       scroll_animation_(
           kScrollFlingTimeConstant,
           base::Bind(&GestureInterpreter::ScrollWithoutAbortAnimations,
                      base::Unretained(this))),
-      weak_factory_(this) {
-  viewport_.RegisterOnTransformationChangedCallback(
-      base::Bind(&RendererProxy::SetTransformation,
-                 base::Unretained(renderer_)),
-      true);
-}
+      weak_factory_(this) {}
 
 GestureInterpreter::~GestureInterpreter() = default;
+
+void GestureInterpreter::SetContext(RendererProxy* renderer,
+                                    ChromotingSession* input_stub) {
+  renderer_ = renderer;
+  input_stub_ = input_stub;
+  auto transformation_callback =
+      renderer_ ? base::BindRepeating(&RendererProxy::SetTransformation,
+                                      base::Unretained(renderer_))
+                : DesktopViewport::TransformationCallback();
+  viewport_.RegisterOnTransformationChangedCallback(transformation_callback,
+                                                    true);
+}
 
 void GestureInterpreter::SetInputMode(InputMode mode) {
   switch (mode) {
@@ -51,6 +56,9 @@ void GestureInterpreter::SetInputMode(InputMode mode) {
       NOTREACHED();
   }
   input_mode_ = mode;
+  if (!renderer_) {
+    return;
+  }
   renderer_->SetCursorVisibility(input_strategy_->IsCursorVisible());
   ViewMatrix::Point cursor_position = input_strategy_->GetCursorPosition();
   renderer_->SetCursorPosition(cursor_position.x, cursor_position.y);
@@ -100,7 +108,7 @@ void GestureInterpreter::Drag(float x, float y, GestureState state) {
   bool is_dragging_mode = state != GESTURE_ENDED;
   SetGestureInProgress(TouchInputStrategy::DRAG, is_dragging_mode);
 
-  if (!viewport_.IsViewportReady() ||
+  if (!input_stub_ || !viewport_.IsViewportReady() ||
       !input_strategy_->TrackTouchInput({x, y}, viewport_)) {
     return;
   }
@@ -191,17 +199,22 @@ void GestureInterpreter::PanWithoutAbortAnimations(float translation_x,
       // Drag() will inject the position so don't need to do that in that case.
       InjectCursorPosition(cursor_position.x, cursor_position.y);
     }
-    renderer_->SetCursorPosition(cursor_position.x, cursor_position.y);
+    if (renderer_) {
+      renderer_->SetCursorPosition(cursor_position.x, cursor_position.y);
+    }
   }
 }
 
 void GestureInterpreter::InjectCursorPosition(float x, float y) {
+  if (!input_stub_) {
+    return;
+  }
   input_stub_->SendMouseEvent(
       x, y, protocol::MouseEvent_MouseButton_BUTTON_UNDEFINED, false);
 }
 
 void GestureInterpreter::ScrollWithoutAbortAnimations(float dx, float dy) {
-  if (!viewport_.IsViewportReady()) {
+  if (!input_stub_ || !viewport_.IsViewportReady()) {
     return;
   }
   ViewMatrix::Point desktopDelta =
@@ -218,7 +231,7 @@ void GestureInterpreter::InjectMouseClick(
     float touch_x,
     float touch_y,
     protocol::MouseEvent_MouseButton button) {
-  if (!viewport_.IsViewportReady() ||
+  if (!input_stub_ || !viewport_.IsViewportReady() ||
       !input_strategy_->TrackTouchInput({touch_x, touch_y}, viewport_)) {
     return;
   }
@@ -254,7 +267,9 @@ void GestureInterpreter::StartInputFeedback(
     // the *2 logic inside the renderer.
     float diameter_on_desktop =
         2.f * feedback_radius / viewport_.GetTransformation().GetScale();
-    renderer_->StartInputFeedback(cursor_x, cursor_y, diameter_on_desktop);
+    if (renderer_) {
+      renderer_->StartInputFeedback(cursor_x, cursor_y, diameter_on_desktop);
+    }
   }
 }
 

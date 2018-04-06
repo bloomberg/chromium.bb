@@ -95,12 +95,11 @@ fetchSecretWithPairingSupported:(BOOL)pairingSupported
 @property(nonatomic, strong) GlDisplayHandler* displayHandler;
 // The host info used to make the remoting client connection.
 @property(nonatomic, readonly) HostInfo* hostInfo;
-// The gesture interpreter used to handle gestures.
-// This is valid only after the client has connected to the host. Always use
-// RemotingClient.gestureInterpreter instead of storing the pointer separately.
+// The gesture interpreter used to handle gestures. It has no effect if the
+// session is not connected.
 @property(nonatomic, readonly) remoting::GestureInterpreter* gestureInterpreter;
 // The keyboard interpreter used to convert key events and send them to the
-// host.
+// host. It has no effect if the session is not connected.
 @property(nonatomic, readonly)
     remoting::KeyboardInterpreter* keyboardInterpreter;
 

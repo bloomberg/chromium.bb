@@ -117,8 +117,8 @@ void DesktopViewport::RegisterOnTransformationChangedCallback(
     const TransformationCallback& callback,
     bool run_immediately) {
   on_transformation_changed_ = callback;
-  if (IsViewportReady() && run_immediately) {
-    callback.Run(desktop_to_surface_transform_);
+  if (on_transformation_changed_ && IsViewportReady() && run_immediately) {
+    on_transformation_changed_.Run(desktop_to_surface_transform_);
   }
 }
 
