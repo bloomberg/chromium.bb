@@ -330,6 +330,7 @@ class SmoothnessGpuRasterizationToughScrollingCases(_Smoothness):
     return 'smoothness.gpu_rasterization.tough_scrolling_cases'
 
 
+@benchmark.Owner(emails=['vmiura@chromium.org', 'sadrul@chromium.org'])
 class SmoothnessToughImageDecodeCases(_Smoothness):
   page_set = page_sets.ToughImageDecodeCasesPageSet
 

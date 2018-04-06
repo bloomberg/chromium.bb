@@ -35,7 +35,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
     }
     benchmarks = {
         'benchmark_name_1': BenchmarkMetadata('foo@bar.com', None, False),
-        'benchmark_name_2': BenchmarkMetadata(None, None, False),
+        'benchmark_name_2': BenchmarkMetadata('darth@deathstar', None, False),
         'benchmark_name_3': BenchmarkMetadata('neo@matrix.org', None, False)
     }
 

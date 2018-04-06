@@ -989,31 +989,16 @@ def verify_all_tests_in_benchmark_csv(tests, benchmark_metadata):
   _verify_benchmark_owners(benchmark_metadata)
 
 
-UNOWNED_BENCHMARK_FILE = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', 'unowned_benchmarks.txt'))
-
 # Verify that all benchmarks have owners except those on the whitelist.
 def _verify_benchmark_owners(benchmark_metadata):
   unowned_benchmarks = set()
-
   for benchmark_name in benchmark_metadata:
     if benchmark_metadata[benchmark_name].emails == None:
       unowned_benchmarks.add(benchmark_name)
 
-  # Read in the list of benchmarks that do not have owners.
-  # This list will eventually be empty (BUG=575762)
-  with open(UNOWNED_BENCHMARK_FILE) as f:
-    known_unowned_benchmarks = set(f.read().splitlines())
-
-  error_messages = []
-  for test in unowned_benchmarks - known_unowned_benchmarks:
-    error_messages.append('Benchmarks must have owners; Add owner to ' + test)
-  for test in known_unowned_benchmarks - unowned_benchmarks:
-    error_messages.append('Remove ' + test +
-        ' from %s' % UNOWNED_BENCHMARK_FILE)
-
-  assert unowned_benchmarks == known_unowned_benchmarks, (
-      'Please fix the following errors:\n'+ '\n'.join(error_messages))
+  assert not unowned_benchmarks, (
+      'All benchmarks must have owners. Please add owners for the following '
+      'benchmarks:\n%s' % '\n'.join(unowned_benchmarks))
 
 
 def update_benchmark_csv(file_path):
