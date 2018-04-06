@@ -4999,6 +4999,14 @@ domain Page
     parameters
       Network.MonotonicTime timestamp
 
+  # Fired when same-document navigation happens, e.g. due to history API usage or anchor navigation.
+  experimental event navigatedWithinDocument
+    parameters
+      # Id of the frame.
+      FrameId frameId
+      # Frame's new url.
+      string url
+
   # Compressed image data requested by the `startScreencast`.
   experimental event screencastFrame
     parameters
