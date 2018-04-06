@@ -535,7 +535,7 @@ void FrameSchedulerImpl::SetPaused(bool frame_paused) {
 }
 
 void FrameSchedulerImpl::SetPageFrozen(bool frozen) {
-  DCHECK(page_visibility_ == PageVisibilityState::kHidden);
+  DCHECK(!frozen || page_visibility_ == PageVisibilityState::kHidden);
   page_frozen_ = frozen;
   UpdateTaskQueues();
   UpdateThrottlingState();

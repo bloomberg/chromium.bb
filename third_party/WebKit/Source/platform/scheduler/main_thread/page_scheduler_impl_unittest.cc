@@ -80,6 +80,18 @@ class PageSchedulerImplTest : public testing::Test {
     return frame_scheduler_->LoadingTaskQueue();
   }
 
+  scoped_refptr<TaskQueue> DeferrableTaskQueue() {
+    return frame_scheduler_->DeferrableTaskQueue();
+  }
+
+  scoped_refptr<TaskQueue> PausableTaskQueue() {
+    return frame_scheduler_->PausableTaskQueue();
+  }
+
+  scoped_refptr<TaskQueue> UnpausableTaskQueue() {
+    return frame_scheduler_->UnpausableTaskQueue();
+  }
+
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<RendererSchedulerImpl> scheduler_;
@@ -1097,6 +1109,63 @@ TEST_F(PageSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
                   base::TimeTicks() + base::TimeDelta::FromSeconds(134)));
 
   base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+}
+
+namespace {
+void IncrementCounter(int* counter) {
+  ++*counter;
+}
+}  // namespace
+
+TEST_F(PageSchedulerImplTest, PageFreeze) {
+  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
+  ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(true);
+
+  int counter = 0;
+  LoadingTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  ThrottleableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  DeferrableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  PausableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  UnpausableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+
+  page_scheduler_->SetPageVisible(false);
+  EXPECT_EQ(false, page_scheduler_->IsFrozen());
+
+  // In a backgrounded active page, all queues should run.
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_EQ(5, counter);
+
+  LoadingTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  ThrottleableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  DeferrableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  PausableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  UnpausableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  counter = 0;
+
+  page_scheduler_->SetPageFrozen(true);
+  EXPECT_EQ(true, page_scheduler_->IsFrozen());
+
+  // In a backgrounded frozen page, only Unpausable queue should run.
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_EQ(1, counter);
+
+  // A visible page should not be frozen.
+  page_scheduler_->SetPageVisible(true);
+  EXPECT_EQ(false, page_scheduler_->IsFrozen());
+
+  // Once the page is unfrozen, the rest of the queues should run.
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_EQ(5, counter);
 }
 
 }  // namespace page_scheduler_impl_unittest
