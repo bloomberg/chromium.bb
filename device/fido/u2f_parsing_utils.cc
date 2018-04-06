@@ -9,6 +9,16 @@
 namespace device {
 namespace u2f_parsing_utils {
 
+namespace {
+
+constexpr bool AreSpansDisjoint(base::span<const uint8_t> lhs,
+                                base::span<const uint8_t> rhs) {
+  return lhs.data() + lhs.size() <= rhs.data() ||  // [lhs)...[rhs)
+         rhs.data() + rhs.size() <= lhs.data();    // [rhs)...[lhs)
+}
+
+}  // namespace
+
 const uint32_t kU2fResponseKeyHandleLengthPos = 66u;
 const uint32_t kU2fResponseKeyHandleStartPos = 67u;
 const char kEs256[] = "ES256";
@@ -25,6 +35,7 @@ base::Optional<std::vector<uint8_t>> MaterializeOrNull(
 }
 
 void Append(std::vector<uint8_t>* target, base::span<const uint8_t> in_values) {
+  CHECK(AreSpansDisjoint(*target, in_values));
   target->insert(target->end(), in_values.begin(), in_values.end());
 }
 

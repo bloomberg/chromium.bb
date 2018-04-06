@@ -53,6 +53,17 @@ TEST(U2fParsingUtils, Append) {
   EXPECT_THAT(target, ::testing::ElementsAreArray(kOneTwoThree));
 }
 
+TEST(U2fParsingUtils, AppendSelfCrashes) {
+  std::vector<uint8_t> target(std::begin(kOneTwoThree), std::end(kOneTwoThree));
+  auto span = base::make_span(target);
+
+  // Tests the case where |in_values| overlap with the beginning of |*target|.
+  EXPECT_DEATH_IF_SUPPORTED(Append(&target, span.first(1)), "Check failed");
+
+  // Tests the case where |in_values| overlap with the end of |*target|.
+  EXPECT_DEATH_IF_SUPPORTED(Append(&target, span.last(1)), "Check failed");
+}
+
 // ExtractSpan and ExtractSuffixSpan are implicitly tested as they used by
 // the Extract and ExtractSuffix implementations.
 
