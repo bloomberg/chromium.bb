@@ -174,7 +174,6 @@ bool VerifyUsingPathBuilder(
 
   // TODO(mattm): add command line flags to configure using
   // CertIssuerSourceAia
-  // (similar to VERIFY_CERT_IO_ENABLED flag for CertVerifyProc).
   DCHECK(net::GetGlobalCertNetFetcher());
   net::CertIssuerSourceAia aia_cert_issuer_source(
       net::GetGlobalCertNetFetcher());

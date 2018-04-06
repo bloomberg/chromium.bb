@@ -1832,7 +1832,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   }
 
   int load_flags = info.begin_params->load_flags;
-  load_flags |= net::LOAD_VERIFY_EV_CERT;
   if (info.is_main_frame)
     load_flags |= net::LOAD_MAIN_FRAME_DEPRECATED;
 

@@ -891,24 +891,22 @@ int CertVerifyProcWin::VerifyInternal(
   // Get the certificatePolicies extension of the certificate.
   std::unique_ptr<CERT_POLICIES_INFO, base::FreeDeleter> policies_info;
   LPSTR ev_policy_oid = NULL;
-  if (flags & CertVerifier::VERIFY_EV_CERT) {
-    GetCertPoliciesInfo(cert_list.get(), &policies_info);
-    if (policies_info.get()) {
-      EVRootCAMetadata* metadata = EVRootCAMetadata::GetInstance();
-      for (DWORD i = 0; i < policies_info->cPolicyInfo; ++i) {
-        LPSTR policy_oid = policies_info->rgPolicyInfo[i].pszPolicyIdentifier;
-        if (metadata->IsEVPolicyOID(policy_oid)) {
-          ev_policy_oid = policy_oid;
-          chain_para.RequestedIssuancePolicy.dwType = USAGE_MATCH_TYPE_AND;
-          chain_para.RequestedIssuancePolicy.Usage.cUsageIdentifier = 1;
-          chain_para.RequestedIssuancePolicy.Usage.rgpszUsageIdentifier =
-              &ev_policy_oid;
+  GetCertPoliciesInfo(cert_list.get(), &policies_info);
+  if (policies_info) {
+    EVRootCAMetadata* metadata = EVRootCAMetadata::GetInstance();
+    for (DWORD i = 0; i < policies_info->cPolicyInfo; ++i) {
+      LPSTR policy_oid = policies_info->rgPolicyInfo[i].pszPolicyIdentifier;
+      if (metadata->IsEVPolicyOID(policy_oid)) {
+        ev_policy_oid = policy_oid;
+        chain_para.RequestedIssuancePolicy.dwType = USAGE_MATCH_TYPE_AND;
+        chain_para.RequestedIssuancePolicy.Usage.cUsageIdentifier = 1;
+        chain_para.RequestedIssuancePolicy.Usage.rgpszUsageIdentifier =
+            &ev_policy_oid;
 
-          // De-prioritize the CA/Browser forum Extended Validation policy
-          // (2.23.140.1.1). See crbug.com/705285.
-          if (!EVRootCAMetadata::IsCaBrowserForumEvOid(ev_policy_oid))
-            break;
-        }
+        // De-prioritize the CA/Browser forum Extended Validation policy
+        // (2.23.140.1.1). See https://crbug.com/705285.
+        if (!EVRootCAMetadata::IsCaBrowserForumEvOid(ev_policy_oid))
+          break;
       }
     }
   }
@@ -1031,10 +1029,8 @@ int CertVerifyProcWin::VerifyInternal(
 
   if (crl_set_result == kCRLSetRevoked) {
     verify_result->cert_status |= CERT_STATUS_REVOKED;
-  } else if (crl_set_result == kCRLSetUnknown &&
-             (flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED_EV_ONLY) &&
-             !rev_checking_enabled &&
-             ev_policy_oid != NULL) {
+  } else if (crl_set_result == kCRLSetUnknown && !rev_checking_enabled &&
+             ev_policy_oid) {
     // We don't have fresh information about this chain from the CRLSet and
     // it's probably an EV certificate. Retry with online revocation checking.
     rev_checking_enabled = true;

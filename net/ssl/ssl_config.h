@@ -150,15 +150,6 @@ struct NET_EXPORT SSLConfig {
   // True if we should send client_cert to the server.
   bool send_client_cert;
 
-  bool verify_ev_cert;  // True if we should verify the certificate for EV.
-
-  // If cert_io_enabled is false, then certificate verification will not
-  // result in additional HTTP requests. (For example: to fetch missing
-  // intermediates or to perform OCSP/CRL fetches.) It also implies that online
-  // revocation checking is disabled.
-  // NOTE: Only used by NSS.
-  bool cert_io_enabled;
-
   // The list of application level protocols supported with ALPN (Application
   // Layer Protocol Negotation), in decreasing order of preference.  Protocols
   // will be advertised in this order during TLS handshake.

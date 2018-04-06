@@ -303,7 +303,6 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     // because we use self-signed certs. Disable it so that the SSL
     // layer doesn't try to initialize OCSP (OCSP works only on the IO
     // thread).
-    ssl_config.cert_io_enabled = false;
     ssl_config.rev_checking_enabled = false;
     ssl_config.require_ecdhe = true;
 

@@ -3731,12 +3731,10 @@ std::unique_ptr<test_server::HttpResponse> HandleRedirectConnect(
 
 class TestSSLConfigService : public SSLConfigService {
  public:
-  TestSSLConfigService(bool ev_enabled,
-                       bool online_rev_checking,
+  TestSSLConfigService(bool online_rev_checking,
                        bool rev_checking_required_local_anchors,
                        bool token_binding_enabled)
-      : ev_enabled_(ev_enabled),
-        online_rev_checking_(online_rev_checking),
+      : online_rev_checking_(online_rev_checking),
         rev_checking_required_local_anchors_(
             rev_checking_required_local_anchors),
         token_binding_enabled_(token_binding_enabled),
@@ -3750,7 +3748,6 @@ class TestSSLConfigService : public SSLConfigService {
   void GetSSLConfig(SSLConfig* config) override {
     *config = SSLConfig();
     config->rev_checking_enabled = online_rev_checking_;
-    config->verify_ev_cert = ev_enabled_;
     config->rev_checking_required_local_anchors =
         rev_checking_required_local_anchors_;
     config->version_min = min_version_;
@@ -3764,7 +3761,6 @@ class TestSSLConfigService : public SSLConfigService {
   ~TestSSLConfigService() override = default;
 
  private:
-  const bool ev_enabled_;
   const bool online_rev_checking_;
   const bool rev_checking_required_local_anchors_;
   const bool token_binding_enabled_;
@@ -3780,7 +3776,7 @@ class TokenBindingURLRequestTest : public URLRequestTestHTTP {
 
   void SetUp() override {
     default_context_.set_ssl_config_service(
-        new TestSSLConfigService(false, false, false, true));
+        new TestSSLConfigService(false, false, true));
     channel_id_service_.reset(
         new ChannelIDService(new DefaultChannelIDStore(NULL)));
     default_context_.set_channel_id_service(channel_id_service_.get());
@@ -10216,7 +10212,7 @@ class HTTPSFallbackTest : public testing::Test {
  public:
   HTTPSFallbackTest() : context_(true) {
     ssl_config_service_ = new TestSSLConfigService(
-        true /* check for EV */, false /* online revocation checking */,
+        false /* online revocation checking */,
         false /* require rev. checking for local anchors */,
         false /* token binding enabled */);
     context_.set_ssl_config_service(ssl_config_service_.get());
@@ -10507,11 +10503,11 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
   // connetions to testserver. This can be overridden in test subclasses for
   // different behaviour.
   virtual void SetupContext() {
-    context_.set_ssl_config_service(new TestSSLConfigService(
-        true /* check for EV */, true /* online revocation checking */,
-        false /* require rev. checking for local
+    context_.set_ssl_config_service(
+        new TestSSLConfigService(true /* online revocation checking */,
+                                 false /* require rev. checking for local
                                           anchors */,
-        false /* token binding enabled */));
+                                 false /* token binding enabled */));
   }
 
   std::unique_ptr<ScopedTestRoot> test_root_;
@@ -11231,7 +11227,7 @@ class HTTPSAIATest : public HTTPSOCSPTest {
  public:
   void SetupContext() override {
     context_.set_ssl_config_service(new TestSSLConfigService(
-        false /* check for EV */, false /* online revocation checking */,
+        false /* online revocation checking */,
         false /* require rev. checking for local anchors */,
         false /* token binding enabled */));
   }
@@ -11244,6 +11240,10 @@ TEST_F(HTTPSAIATest, AIAFetching) {
       SpawnedTestServer::TYPE_HTTPS, ssl_options,
       base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
+
+  // Unmark the certificate's OID as EV, which will disable revocation
+  // checking.
+  ev_test_policy_.reset();
 
   TestDelegate d;
   d.set_allow_certificate_errors(true);
@@ -11271,9 +11271,8 @@ class HTTPSHardFailTest : public HTTPSOCSPTest {
  protected:
   void SetupContext() override {
     context_.set_ssl_config_service(new TestSSLConfigService(
-        false /* check for EV */, false /* online revocation checking */,
-        true /* require rev. checking for local
-                                         anchors */,
+        false /* online revocation checking */,
+        true /* require rev. checking for local anchors */,
         false /* token binding enabled */));
   }
 };
@@ -11315,11 +11314,11 @@ TEST_F(HTTPSHardFailTest, FailsOnOCSPInvalid) {
 class HTTPSEVCRLSetTest : public HTTPSOCSPTest {
  protected:
   void SetupContext() override {
-    context_.set_ssl_config_service(new TestSSLConfigService(
-        true /* check for EV */, false /* online revocation checking */,
-        false /* require rev. checking for local
+    context_.set_ssl_config_service(
+        new TestSSLConfigService(false /* online revocation checking */,
+                                 false /* require rev. checking for local
                                           anchors */,
-        false /* token binding enabled */));
+                                 false /* token binding enabled */));
   }
 };
 
@@ -11487,41 +11486,22 @@ TEST_F(HTTPSEVCRLSetTest, FreshCRLSetNotCovered) {
             static_cast<bool>(cert_status & CERT_STATUS_REV_CHECKING_ENABLED));
 }
 
-TEST_F(HTTPSEVCRLSetTest, ExpiredCRLSetAndRevokedNonEVCert) {
-  // Test that when EV verification is requested, but online revocation
-  // checking is disabled, and the leaf certificate is not in fact EV, that
-  // no revocation checking actually happens.
-  if (!SystemSupportsOCSP()) {
-    LOG(WARNING) << "Skipping test because system doesn't support OCSP";
-    return;
-  }
-
-  // Unmark the certificate's OID as EV, which should disable revocation
-  // checking (as per the user preference)
-  ev_test_policy_.reset();
-
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO);
-  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_REVOKED;
-  ScopedSetCRLSet set_crlset(CRLSet::ExpiredCRLSetForTesting());
-
-  CertStatus cert_status;
-  DoConnection(ssl_options, &cert_status);
-
-  EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
-
-  EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
-  EXPECT_FALSE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
-}
-
 class HTTPSCRLSetTest : public HTTPSOCSPTest {
  protected:
   void SetupContext() override {
-    context_.set_ssl_config_service(new TestSSLConfigService(
-        false /* check for EV */, false /* online revocation checking */,
-        false /* require rev. checking for local
+    context_.set_ssl_config_service(
+        new TestSSLConfigService(false /* online revocation checking */,
+                                 false /* require rev. checking for local
                                           anchors */,
-        false /* token binding enabled */));
+                                 false /* token binding enabled */));
+  }
+
+  void SetUp() override {
+    HTTPSOCSPTest::SetUp();
+
+    // Unmark the certificate's OID as EV, which should disable revocation
+    // checking (as per the user preference).
+    ev_test_policy_.reset();
   }
 };
 
@@ -11538,6 +11518,28 @@ TEST_F(HTTPSCRLSetTest, ExpiredCRLSet) {
   // If we're not trying EV verification then, even if the CRLSet has expired,
   // we don't fall back to online revocation checks.
   EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
+  EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
+  EXPECT_FALSE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
+}
+
+TEST_F(HTTPSCRLSetTest, ExpiredCRLSetAndRevoked) {
+  // Test that when online revocation checking is disabled, and the leaf
+  // certificate is not EV, that no revocation checking actually happens.
+  if (!SystemSupportsOCSP()) {
+    LOG(WARNING) << "Skipping test because system doesn't support OCSP";
+    return;
+  }
+
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_AUTO);
+  ssl_options.ocsp_status = SpawnedTestServer::SSLOptions::OCSP_REVOKED;
+  ScopedSetCRLSet set_crlset(CRLSet::ExpiredCRLSetForTesting());
+
+  CertStatus cert_status;
+  DoConnection(ssl_options, &cert_status);
+
+  EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
+
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
   EXPECT_FALSE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
@@ -11562,8 +11564,7 @@ TEST_F(HTTPSCRLSetTest, CRLSetRevoked) {
   // reflected without online revocation checking.
   EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
-  EXPECT_FALSE(
-      static_cast<bool>(cert_status & CERT_STATUS_REV_CHECKING_ENABLED));
+  EXPECT_FALSE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
 TEST_F(HTTPSCRLSetTest, CRLSetRevokedBySubject) {
@@ -11589,8 +11590,7 @@ TEST_F(HTTPSCRLSetTest, CRLSetRevokedBySubject) {
     // reflected without online revocation checking.
     EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_ALL_ERRORS);
     EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
-    EXPECT_FALSE(
-        static_cast<bool>(cert_status & CERT_STATUS_REV_CHECKING_ENABLED));
+    EXPECT_FALSE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
   }
 
   const uint8_t kTestServerSPKISHA256[32] = {

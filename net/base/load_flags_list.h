@@ -49,18 +49,15 @@ LOAD_FLAG(DO_NOT_SAVE_COOKIES, 1 << 6)
 // to avoid having a circular dependency.
 LOAD_FLAG(BYPASS_PROXY, 1 << 7)
 
-// Requires EV certificate verification.
-LOAD_FLAG(VERIFY_EV_CERT, 1 << 8)
-
 // This load will not send any cookies.
-LOAD_FLAG(DO_NOT_SEND_COOKIES, 1 << 9)
+LOAD_FLAG(DO_NOT_SEND_COOKIES, 1 << 8)
 
 // This load will not send authentication data (user name/password)
 // to the server (as opposed to the proxy).
-LOAD_FLAG(DO_NOT_SEND_AUTH_DATA, 1 << 10)
+LOAD_FLAG(DO_NOT_SEND_AUTH_DATA, 1 << 9)
 
 // This should only be used for testing (set by HttpNetworkTransaction).
-LOAD_FLAG(IGNORE_ALL_CERT_ERRORS, 1 << 11)
+LOAD_FLAG(IGNORE_ALL_CERT_ERRORS, 1 << 10)
 
 // DO NOT USE THIS FLAG
 // The network stack should not have frame level knowledge.  Any pre-connect
@@ -69,29 +66,29 @@ LOAD_FLAG(IGNORE_ALL_CERT_ERRORS, 1 << 11)
 // Indicate that this is a top level frame, so that we don't assume it is a
 // subresource and speculatively pre-connect or pre-resolve when a referring
 // page is loaded.
-LOAD_FLAG(MAIN_FRAME_DEPRECATED, 1 << 12)
+LOAD_FLAG(MAIN_FRAME_DEPRECATED, 1 << 11)
 
 // Indicates that this load was motivated by the rel=prefetch feature,
 // and is (in theory) not intended for the current frame.
-LOAD_FLAG(PREFETCH, 1 << 13)
+LOAD_FLAG(PREFETCH, 1 << 12)
 
 // Indicates that this load could cause deadlock if it has to wait for another
 // request. Overrides socket limits. Must always be used with MAXIMUM_PRIORITY.
-LOAD_FLAG(IGNORE_LIMITS, 1 << 14)
+LOAD_FLAG(IGNORE_LIMITS, 1 << 13)
 
 // Indicates that the operation is somewhat likely to be due to an
 // explicit user action. This can be used as a hint to treat the
 // request with higher priority.
-LOAD_FLAG(MAYBE_USER_GESTURE, 1 << 15)
+LOAD_FLAG(MAYBE_USER_GESTURE, 1 << 14)
 
 // Indicates that the username:password portion of the URL should not
 // be honored, but that other forms of authority may be used.
-LOAD_FLAG(DO_NOT_USE_EMBEDDED_IDENTITY, 1 << 16)
+LOAD_FLAG(DO_NOT_USE_EMBEDDED_IDENTITY, 1 << 15)
 
 // Indicates that this request is not to be migrated to a new network when QUIC
 // connection migration is enabled.
-LOAD_FLAG(DISABLE_CONNECTION_MIGRATION, 1 << 17)
+LOAD_FLAG(DISABLE_CONNECTION_MIGRATION, 1 << 16)
 
 // Indicates that the cache should not check that the request matches the
 // response's vary header.
-LOAD_FLAG(SKIP_VARY_CHECK, 1 << 18)
+LOAD_FLAG(SKIP_VARY_CHECK, 1 << 17)

@@ -170,7 +170,6 @@ TEST(CertVerifyProcMacTest, MacKeychainReordering) {
                                   CertificateList(), &verify_result);
 
   ASSERT_EQ(OK, error);
-  EXPECT_EQ(0U, verify_result.cert_status);
   EXPECT_FALSE(verify_result.has_sha1);
   ASSERT_TRUE(verify_result.verified_cert.get());
 

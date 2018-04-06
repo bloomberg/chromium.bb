@@ -43,27 +43,9 @@ class NET_EXPORT CertVerifier {
     // certificate chain.
     VERIFY_REV_CHECKING_ENABLED = 1 << 0,
 
-    // If set, and the certificate being verified may be an EV certificate,
-    // attempt to verify the certificate according to the EV processing
-    // guidelines. In order to successfully verify a certificate as EV,
-    // either an online or offline revocation check must be successfully
-    // completed. To ensure it's possible to complete a revocation check,
-    // callers should also specify either VERIFY_REV_CHECKING_ENABLED or
-    // VERIFY_REV_CHECKING_ENABLED_EV_ONLY (to enable online checks), and
-    // VERIFY_CERT_IO_ENABLED (to enable network fetches for online checks).
-    VERIFY_EV_CERT = 1 << 1,
-
-    // If set, permits NSS to use the network when verifying certificates,
-    // such as to fetch missing intermediates or to check OCSP or CRLs.
-    // TODO(rsleevi): http://crbug.com/143300 - Define this flag for all
-    // verification engines with well-defined semantics, rather than being
-    // NSS only.
-    VERIFY_CERT_IO_ENABLED = 1 << 2,
-
-    // If set, enables online revocation checking via CRLs or OCSP when the
-    // chain is not covered by a fresh CRLSet, but only for certificates which
-    // may be EV, and only when VERIFY_EV_CERT is also set.
-    VERIFY_REV_CHECKING_ENABLED_EV_ONLY = 1 << 3,
+    // 1 << 1 is reserved (used to be VERIFY_EV_CERT).
+    // 1 << 2 is reserved (used to be VERIY_CERT_IO_ENABLED).
+    // 1 << 3 is reserved (used to be VERIFY_REV_CHECKING_ENABLED_EV_ONLY).
 
     // If set, this is equivalent to VERIFY_REV_CHECKING_ENABLED, in that it
     // enables online revocation checking via CRLs or OCSP, but only
@@ -80,7 +62,8 @@ class NET_EXPORT CertVerifier {
     // they are issued by non-public trust anchors.
     VERIFY_ENABLE_SHA1_LOCAL_ANCHORS = 1 << 5,
 
-    // 1 << 6 is reserved.
+    // 1 << 6 is reserved (used to be
+    // VERIFY_ENABLE_COMMON_NAME_FALLBACK_LOCAL_ANCHORS).
 
     // If set, disables the policy enforcement described at
     // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html

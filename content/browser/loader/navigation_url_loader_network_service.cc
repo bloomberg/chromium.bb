@@ -244,7 +244,6 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
     new_request->update_first_party_url_on_redirect = true;
 
   int load_flags = request_info->begin_params->load_flags;
-  load_flags |= net::LOAD_VERIFY_EV_CERT;
   if (request_info->is_main_frame)
     load_flags |= net::LOAD_MAIN_FRAME_DEPRECATED;
 

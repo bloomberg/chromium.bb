@@ -69,8 +69,7 @@ function painterTestURLRequest() {
   testCase.tickOffset = '1337911098446';
   testCase.logCreationTime = 1338864634013;
   testCase.loadFlags = LoadFlag.MAIN_FRAME_DEPRECATED |
-                       LoadFlag.MAYBE_USER_GESTURE |
-                       LoadFlag.VERIFY_EV_CERT;
+                       LoadFlag.MAYBE_USER_GESTURE;
 
   testCase.logEntries = [
     {
@@ -617,16 +616,14 @@ function painterTestURLRequest() {
 't=1338864633238 [st= 14]    URL_REQUEST_START_JOB  [dt=8]\n' +
 '                            --> load_flags = ' +
     testCase.loadFlags.toString() +
-    ' (MAIN_FRAME_DEPRECATED | MAYBE_USER_GESTURE ' +
-    '| VERIFY_EV_CERT)\n' +
+    ' (MAIN_FRAME_DEPRECATED | MAYBE_USER_GESTURE)\n' +
 '                            --> method = "GET"\n' +
 '                            --> priority = 4\n' +
 '                            --> url = "http://www.google.com/"\n' +
 't=1338864633248 [st= 24]   +URL_REQUEST_START_JOB  [dt=279]\n' +
 '                            --> load_flags = ' +
     testCase.loadFlags.toString() +
-    ' (MAIN_FRAME_DEPRECATED | MAYBE_USER_GESTURE ' +
-    '| VERIFY_EV_CERT)\n' +
+    ' (MAIN_FRAME_DEPRECATED | MAYBE_USER_GESTURE)\n' +
 '                            --> method = "GET"\n' +
 '                            --> priority = 4\n' +
 '                            --> url = "http://www.google.com/"\n' +
@@ -778,8 +775,7 @@ function painterTestNetError() {
   var testCase = {};
   testCase.tickOffset = '1337911098446';
   testCase.loadFlags = LoadFlag.MAIN_FRAME_DEPRECATED |
-                       LoadFlag.MAYBE_USER_GESTURE |
-                       LoadFlag.VERIFY_EV_CERT;
+                       LoadFlag.MAYBE_USER_GESTURE;
 
   testCase.logEntries = [
     {
@@ -954,16 +950,14 @@ function painterTestNetError() {
 't=1338864773901 [st=  7]    URL_REQUEST_START_JOB  [dt=5]\n' +
 '                            --> load_flags = ' +
         testCase.loadFlags.toString() +
-        ' (MAIN_FRAME_DEPRECATED | MAYBE_USER_GESTURE ' +
-        '| VERIFY_EV_CERT)\n' +
+        ' (MAIN_FRAME_DEPRECATED | MAYBE_USER_GESTURE)\n' +
 '                            --> method = "GET"\n' +
 '                            --> priority = 4\n' +
 '                            --> url = "http://www.doesnotexistdomain.com/"\n' +
 't=1338864773906 [st= 12]   +URL_REQUEST_START_JOB  [dt=245]\n' +
 '                            --> load_flags = ' +
         testCase.loadFlags.toString() +
-        ' (MAIN_FRAME_DEPRECATED | MAYBE_USER_GESTURE ' +
-        '| VERIFY_EV_CERT)\n' +
+        ' (MAIN_FRAME_DEPRECATED | MAYBE_USER_GESTURE)\n' +
 '                            --> method = "GET"\n' +
 '                            --> priority = 4\n' +
 '                            --> url = "http://www.doesnotexistdomain.com/"\n' +
@@ -1669,8 +1663,7 @@ function painterTestInProgressURLRequest() {
   var testCase = {};
   testCase.tickOffset = '1337911098446';
   testCase.loadFlags = LoadFlag.MAIN_FRAME_DEPRECATED |
-                       LoadFlag.MAYBE_USER_GESTURE |
-                       LoadFlag.VERIFY_EV_CERT;
+                       LoadFlag.MAYBE_USER_GESTURE;
 
   testCase.logEntries = [
     {
@@ -1721,8 +1714,7 @@ function painterTestInProgressURLRequest() {
 't=1338864773994 [st=  0] +REQUEST_ALIVE  [dt=375]\n' +
 '                          --> load_flags = ' +
     testCase.loadFlags.toString() +
-    ' (MAIN_FRAME_DEPRECATED | MAYBE_USER_GESTURE ' +
-    '| VERIFY_EV_CERT)\n' +
+    ' (MAIN_FRAME_DEPRECATED | MAYBE_USER_GESTURE)\n' +
 '                          --> load_state = ' + LoadState.READING_RESPONSE +
     ' (READING_RESPONSE)\n' +
 '                          --> method = "GET"\n' +

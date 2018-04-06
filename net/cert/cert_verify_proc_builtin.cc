@@ -185,8 +185,7 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
         !certs.empty() && !ssl_trust_store_->IsKnownRoot(certs.back().get())) {
       RevocationPolicy policy;
       policy.check_revocation = true;
-      policy.networking_allowed =
-          (flags_ & CertVerifier::VERIFY_CERT_IO_ENABLED);
+      policy.networking_allowed = true;
       policy.allow_missing_info = true;
       policy.allow_network_failure = false;
 
@@ -206,12 +205,7 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
 
       RevocationPolicy policy;
       policy.check_revocation = true;
-      // TODO(eroman): This definition for |networking_allowed| is redundant.
-      //               Perhaps VERIFY_EV_CERT should imply revocation checking.
-      policy.networking_allowed =
-          (flags_ & CertVerifier::VERIFY_CERT_IO_ENABLED) &&
-          ((flags_ & CertVerifier::VERIFY_REV_CHECKING_ENABLED) ||
-           (flags_ & CertVerifier::VERIFY_REV_CHECKING_ENABLED_EV_ONLY));
+      policy.networking_allowed = true;
       policy.allow_missing_info = false;
       policy.allow_network_failure = false;
       return policy;
@@ -221,7 +215,7 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
     if (flags_ & CertVerifier::VERIFY_REV_CHECKING_ENABLED) {
       RevocationPolicy policy;
       policy.check_revocation = true;
-      policy.networking_allowed = flags_ & CertVerifier::VERIFY_CERT_IO_ENABLED;
+      policy.networking_allowed = true;
       policy.allow_missing_info = true;
       policy.allow_network_failure = true;
       return policy;
@@ -449,14 +443,11 @@ void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
 
   // Allow the path builder to discover intermediates through AIA fetching.
   std::unique_ptr<CertIssuerSourceAia> aia_cert_issuer_source;
-  if (flags & CertVerifier::VERIFY_CERT_IO_ENABLED) {
-    if (net_fetcher) {
-      aia_cert_issuer_source =
-          std::make_unique<CertIssuerSourceAia>(net_fetcher);
-      path_builder.AddCertIssuerSource(aia_cert_issuer_source.get());
-    } else {
-      LOG(ERROR) << "VERIFY_CERT_IO_ENABLED specified but no net_fetcher";
-    }
+  if (net_fetcher) {
+    aia_cert_issuer_source = std::make_unique<CertIssuerSourceAia>(net_fetcher);
+    path_builder.AddCertIssuerSource(aia_cert_issuer_source.get());
+  } else {
+    LOG(ERROR) << "No net_fetcher for performing AIA chasing.";
   }
 
   path_builder.Run();
@@ -585,10 +576,9 @@ int CertVerifyProcBuiltin::VerifyInternal(
   // setting output flag CERT_STATUS_REV_CHECKING_ENABLED).
   bool checked_revocation_for_some_path = false;
 
-  // Only attempt to build EV paths if it was requested by the caller AND the
-  // target could possibly be an EV certificate.
-  const bool should_try_ev = (flags & CertVerifier::VERIFY_EV_CERT) &&
-                             IsEVCandidate(ev_metadata, target.get());
+  // Only attempt to build EV paths if the target could possibly be an EV
+  // certificate.
+  const bool should_try_ev = IsEVCandidate(ev_metadata, target.get());
 
   // Run path building with the different parameters (attempts) until a valid
   // path is found. Earlier successful attempts have priority over later

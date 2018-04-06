@@ -34,8 +34,6 @@ SSLConfig::SSLConfig()
       false_start_enabled(true),
       require_ecdhe(false),
       send_client_cert(false),
-      verify_ev_cert(false),
-      cert_io_enabled(true),
       renego_allowed_default(false) {}
 
 SSLConfig::SSLConfig(const SSLConfig& other) = default;
@@ -58,10 +56,6 @@ int SSLConfig::GetCertVerifyFlags() const {
   int flags = 0;
   if (rev_checking_enabled)
     flags |= CertVerifier::VERIFY_REV_CHECKING_ENABLED;
-  if (verify_ev_cert)
-    flags |= CertVerifier::VERIFY_EV_CERT;
-  if (cert_io_enabled)
-    flags |= CertVerifier::VERIFY_CERT_IO_ENABLED;
   if (rev_checking_required_local_anchors)
     flags |= CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS;
   if (sha1_local_anchors_enabled)
