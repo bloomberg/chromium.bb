@@ -3593,6 +3593,7 @@ void WebGL2RenderingContextBase::clearBufferiv(GLenum buffer,
 
   ContextGL()->ClearBufferiv(buffer, drawbuffer,
                              value.View()->DataMaybeShared() + src_offset);
+  UpdateBuffersToAutoClear(kClearBufferiv, buffer, drawbuffer);
 }
 
 void WebGL2RenderingContextBase::clearBufferiv(GLenum buffer,
@@ -3607,6 +3608,7 @@ void WebGL2RenderingContextBase::clearBufferiv(GLenum buffer,
                                                    drawing_buffer_.get());
 
   ContextGL()->ClearBufferiv(buffer, drawbuffer, value.data() + src_offset);
+  UpdateBuffersToAutoClear(kClearBufferiv, buffer, drawbuffer);
 }
 
 void WebGL2RenderingContextBase::clearBufferuiv(
@@ -3624,6 +3626,7 @@ void WebGL2RenderingContextBase::clearBufferuiv(
 
   ContextGL()->ClearBufferuiv(buffer, drawbuffer,
                               value.View()->DataMaybeShared() + src_offset);
+  UpdateBuffersToAutoClear(kClearBufferuiv, buffer, drawbuffer);
 }
 
 void WebGL2RenderingContextBase::clearBufferuiv(GLenum buffer,
@@ -3638,6 +3641,7 @@ void WebGL2RenderingContextBase::clearBufferuiv(GLenum buffer,
                                                    drawing_buffer_.get());
 
   ContextGL()->ClearBufferuiv(buffer, drawbuffer, value.data() + src_offset);
+  UpdateBuffersToAutoClear(kClearBufferuiv, buffer, drawbuffer);
 }
 
 void WebGL2RenderingContextBase::clearBufferfv(
@@ -3661,11 +3665,12 @@ void WebGL2RenderingContextBase::clearBufferfv(
 
   ContextGL()->ClearBufferfv(buffer, drawbuffer,
                              value.View()->DataMaybeShared() + src_offset);
-  // The other clearBuffer entry points will currently generate an
-  // error if they're called against the default back buffer. If
-  // support for extended canvas color spaces is added, this call
-  // might need to be added to the other versions.
+  // clearBufferiv and clearBufferuiv will currently generate an error
+  // if they're called against the default back buffer. If support for
+  // extended canvas color spaces is added, this call might need to be
+  // added to the other versions.
   MarkContextChanged(kCanvasChanged);
+  UpdateBuffersToAutoClear(kClearBufferfv, buffer, drawbuffer);
 }
 
 void WebGL2RenderingContextBase::clearBufferfv(GLenum buffer,
@@ -3686,11 +3691,12 @@ void WebGL2RenderingContextBase::clearBufferfv(GLenum buffer,
                                                    drawing_buffer_.get());
 
   ContextGL()->ClearBufferfv(buffer, drawbuffer, value.data() + src_offset);
-  // The other clearBuffer entry points will currently generate an
-  // error if they're called against the default back buffer. If
-  // support for extended canvas color spaces is added, this call
-  // might need to be added to the other versions.
+  // clearBufferiv and clearBufferuiv will currently generate an error
+  // if they're called against the default back buffer. If support for
+  // extended canvas color spaces is added, this call might need to be
+  // added to the other versions.
   MarkContextChanged(kCanvasChanged);
+  UpdateBuffersToAutoClear(kClearBufferfv, buffer, drawbuffer);
 }
 
 void WebGL2RenderingContextBase::clearBufferfi(GLenum buffer,
@@ -3701,6 +3707,81 @@ void WebGL2RenderingContextBase::clearBufferfi(GLenum buffer,
     return;
 
   ContextGL()->ClearBufferfi(buffer, drawbuffer, depth, stencil);
+  // This might have been used to clear the depth and stencil buffers
+  // of the default back buffer.
+  MarkContextChanged(kCanvasChanged);
+  UpdateBuffersToAutoClear(kClearBufferfi, buffer, drawbuffer);
+}
+
+void WebGL2RenderingContextBase::UpdateBuffersToAutoClear(
+    WebGL2RenderingContextBase::ClearBufferCaller caller,
+    GLenum buffer,
+    GLint drawbuffer) {
+  // This method makes sure that we don't auto-clear any buffers which the
+  // user has manually cleared using the new ES 3.0 clearBuffer* APIs.
+
+  // If the user has a framebuffer bound, don't update the auto-clear
+  // state of the built-in back buffer.
+  if (framebuffer_binding_)
+    return;
+
+  // If the scissor test is on, assume that we can't short-circuit
+  // these clears.
+  if (scissor_enabled_)
+    return;
+
+  // The default back buffer only has one color attachment.
+  if (drawbuffer != 0)
+    return;
+
+  // If the call to the driver generated an error, don't claim that
+  // we've auto-cleared these buffers. The early returns below are for
+  // cases where errors will be produced.
+
+  // The default back buffer is currently always RGB(A)8, which
+  // restricts the variants which can legally be used to clear the
+  // color buffer. TODO(crbug.com/829632): this needs to be
+  // generalized.
+  switch (caller) {
+    case kClearBufferiv:
+      if (buffer != GL_STENCIL)
+        return;
+      break;
+    case kClearBufferfv:
+      if (buffer != GL_COLOR && buffer != GL_DEPTH)
+        return;
+      break;
+    case kClearBufferuiv:
+      return;
+    case kClearBufferfi:
+      if (buffer != GL_DEPTH_STENCIL)
+        return;
+      break;
+  }
+
+  GLbitfield buffers_to_clear = 0;
+
+  // Turn it into a bitfield and mask it off.
+  switch (buffer) {
+    case GL_COLOR:
+      buffers_to_clear = GL_COLOR_BUFFER_BIT;
+      break;
+    case GL_DEPTH:
+      buffers_to_clear = GL_DEPTH_BUFFER_BIT;
+      break;
+    case GL_STENCIL:
+      buffers_to_clear = GL_STENCIL_BUFFER_BIT;
+      break;
+    case GL_DEPTH_STENCIL:
+      buffers_to_clear = GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+      break;
+    default:
+      // Illegal value.
+      return;
+  }
+
+  GetDrawingBuffer()->SetBuffersToAutoClear(
+      GetDrawingBuffer()->GetBuffersToAutoClear() & (~buffers_to_clear));
 }
 
 WebGLQuery* WebGL2RenderingContextBase::createQuery() {

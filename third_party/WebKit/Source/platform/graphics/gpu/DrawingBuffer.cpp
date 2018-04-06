@@ -203,16 +203,25 @@ bool DrawingBuffer::MarkContentsChanged() {
   return false;
 }
 
-bool DrawingBuffer::BufferClearNeeded() const {
-  return buffer_clear_needed_;
+void DrawingBuffer::ResetBuffersToAutoClear() {
+  GLuint buffers = GL_COLOR_BUFFER_BIT;
+  if (want_depth_)
+    buffers |= GL_DEPTH_BUFFER_BIT;
+  if (want_stencil_)
+    buffers |= GL_STENCIL_BUFFER_BIT;
+  SetBuffersToAutoClear(buffers);
 }
 
-void DrawingBuffer::SetBufferClearNeeded(bool flag) {
+void DrawingBuffer::SetBuffersToAutoClear(GLbitfield buffers) {
   if (preserve_drawing_buffer_ == kDiscard) {
-    buffer_clear_needed_ = flag;
+    buffers_to_auto_clear_ = buffers;
   } else {
-    DCHECK(!buffer_clear_needed_);
+    DCHECK_EQ(0u, buffers_to_auto_clear_);
   }
+}
+
+GLbitfield DrawingBuffer::GetBuffersToAutoClear() const {
+  return buffers_to_auto_clear_;
 }
 
 gpu::gles2::GLES2Interface* DrawingBuffer::ContextGL() {
@@ -360,9 +369,7 @@ void DrawingBuffer::FinishPrepareTransferableResourceSoftware(
                         WTF::Passed(std::move(registered)));
   *out_release_callback = viz::SingleReleaseCallback::Create(std::move(func));
 
-  if (preserve_drawing_buffer_ == kDiscard) {
-    SetBufferClearNeeded(true);
-  }
+  ResetBuffersToAutoClear();
 }
 
 void DrawingBuffer::FinishPrepareTransferableResourceGpu(
@@ -457,7 +464,7 @@ void DrawingBuffer::FinishPrepareTransferableResourceGpu(
   front_color_buffer_ = color_buffer_for_mailbox;
 
   contents_changed_ = false;
-  SetBufferClearNeeded(true);
+  ResetBuffersToAutoClear();
 }
 
 void DrawingBuffer::MailboxReleasedGpu(scoped_refptr<ColorBuffer> color_buffer,
