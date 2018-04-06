@@ -21,6 +21,7 @@ typedef struct _drmModeModeInfo drmModeModeInfo;
 
 namespace display {
 class DisplayMode;
+class EdidParser;
 }  // namespace display
 
 namespace gfx {
@@ -119,9 +120,9 @@ OverlayStatusList CreateOverlayStatusListFrom(
 std::vector<OverlayCheckReturn_Params> CreateParamsFromOverlayStatusList(
     const OverlayStatusList& returns);
 
-// Parses |edid| to extract a gfx::ColorSpace which will be IsValid() if both
-// gamma and the color primaries were correctly found.
-gfx::ColorSpace GetColorSpaceFromEdid(const std::vector<uint8_t>& edid);
+// Uses |edid_parser| to extract a gfx::ColorSpace which will be IsValid() if
+// both gamma and the color primaries were correctly found.
+gfx::ColorSpace GetColorSpaceFromEdid(const display::EdidParser& edid_parser);
 
 }  // namespace ui
 

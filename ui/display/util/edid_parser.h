@@ -11,77 +11,68 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/optional.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
 #include "ui/display/util/display_util_export.h"
-
-namespace gfx {
-class Size;
-}
-
-struct SkColorSpacePrimaries;
-
-// EDID (Extended Display Identification Data) is a format for monitor
-// metadata. This provides a parser for the data.
+#include "ui/gfx/geometry/size.h"
 
 namespace display {
 
-// Generates the display id and product id for the pair of |edid| and |index|,
-// and store in |display_id_out| and |product_code_out|. Returns true if the
-// display id is successfully generated, or false otherwise.
-DISPLAY_UTIL_EXPORT bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
-                                              uint8_t index,
-                                              int64_t* display_id_out,
-                                              int64_t* product_code_out);
+// This class parses a EDID (Extended Display Identification Data) binary blob
+// passed on constructor, and provides access to the parsed information, plus
+// a few utility postprocessings.
+class DISPLAY_UTIL_EXPORT EdidParser {
+ public:
+  explicit EdidParser(const std::vector<uint8_t>& edid_blob);
+  ~EdidParser();
 
-// Parses |edid| as EDID data and stores extracted data into |manufacturer_id|,
-// |product_id|, |human_readable_name|, |active_pixel_out| and
-// |physical_display_size_out|, then returns true. nullptr can be passed for
-// unwanted output parameters.  Some devices (especially internal displays) may
-// not have the field for |human_readable_name|, and it will return true in
-// that case.
-DISPLAY_UTIL_EXPORT bool ParseOutputDeviceData(
-    const std::vector<uint8_t>& edid,
-    uint16_t* manufacturer_id,
-    uint16_t* product_id,
-    std::string* human_readable_name,
-    gfx::Size* active_pixel_out,
-    gfx::Size* physical_display_size_out);
+  uint16_t manufacturer_id() const { return manufacturer_id_; }
+  uint16_t product_id() const { return product_id_; }
+  const std::string& display_name() const { return display_name_; }
+  const gfx::Size& active_pixel_size() const { return active_pixel_size_; }
+  int32_t year_of_manufacture() const { return year_of_manufacture_; }
+  bool has_overscan_flag() const { return overscan_flag_.has_value(); }
+  bool overscan_flag() const { return overscan_flag_.value(); }
+  double gamma() const { return gamma_; }
+  int32_t bits_per_channel() const { return bits_per_channel_; }
+  const SkColorSpacePrimaries& primaries() const { return primaries_; }
 
-// Splits the |product_code| (as returned by GetDisplayIdFromEDID()) into its
-// constituents |manufacturer_id| and |product_id|.
-DISPLAY_UTIL_EXPORT void SplitProductCodeInManufacturerIdAndProductId(
-    int64_t product_code,
-    uint16_t* manufacturer_id,
-    uint16_t* product_id);
+  // Returns a 32-bit identifier for this display |manufacturer_id_| and
+  // |product_id_|.
+  uint32_t GetProductCode() const;
 
-// Extracts the three letter Manufacturer ID out of |manufacturer_id|.
-DISPLAY_UTIL_EXPORT std::string ManufacturerIdToString(
-    uint16_t manufacturer_id);
+  // Generates a unique display id out of a mix of |manufacturer_id_|, hashed
+  // |display_name_| if available, and |output_index|.
+  int64_t GetDisplayId(uint8_t output_index) const;
 
-// Extracts the 2 Byte Product ID as hex out of |product_id|.
-DISPLAY_UTIL_EXPORT std::string ProductIdToString(uint16_t product_id);
+  // Splits the |product_code| (as returned by GetDisplayId()) into its
+  // constituents |manufacturer_id| and |product_id|.
+  static void SplitProductCodeInManufacturerIdAndProductId(
+      int64_t product_code,
+      uint16_t* manufacturer_id,
+      uint16_t* product_id);
+  // Extracts the three letter Manufacturer ID out of |manufacturer_id|.
+  static std::string ManufacturerIdToString(uint16_t manufacturer_id);
+  // Extracts the 2 Byte Product ID as hex out of |product_id|.
+  static std::string ProductIdToString(uint16_t product_id);
 
-DISPLAY_UTIL_EXPORT bool ParseOutputOverscanFlag(
-    const std::vector<uint8_t>& edid,
-    bool* flag);
+ private:
+  // Parses |edid_blob|, filling up as many as possible fields below.
+  void ParseEdid(const std::vector<uint8_t>& edid);
 
-DISPLAY_UTIL_EXPORT bool ParseYearOfManufacture(
-    const std::vector<uint8_t>& edid,
-    int32_t* year);
+  uint16_t manufacturer_id_;
+  uint16_t product_id_;
+  std::string display_name_;
+  // Active pixel size from the first detailed timing descriptor in the EDID.
+  gfx::Size active_pixel_size_;
+  int32_t year_of_manufacture_;
+  base::Optional<bool> overscan_flag_;
+  double gamma_;
+  int bits_per_channel_;
+  SkColorSpacePrimaries primaries_;
 
-// Extracts from |edid| the |primaries| chromaticity coordinates (CIE xy
-// coordinates for Red, Green and Blue channels and for the White Point).
-DISPLAY_UTIL_EXPORT bool ParseChromaticityCoordinates(
-    const std::vector<uint8_t>& edid,
-    SkColorSpacePrimaries* primaries) WARN_UNUSED_RESULT;
-
-// Extracts the gamma value from |edid| and returns it, or returns 0.0.
-DISPLAY_UTIL_EXPORT bool ParseGammaValue(const std::vector<uint8_t>& edid,
-                                         double* gamma) WARN_UNUSED_RESULT;
-
-// Extracts the bits per channel from |edid| and returns it, or returns 0.
-DISPLAY_UTIL_EXPORT bool ParseBitsPerChannel(const std::vector<uint8_t>& edid,
-                                             int* bits_per_channel)
-    WARN_UNUSED_RESULT;
+  DISALLOW_COPY_AND_ASSIGN(EdidParser);
+};
 
 }  // namespace display
 
