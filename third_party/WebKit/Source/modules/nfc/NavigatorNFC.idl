@@ -8,5 +8,5 @@
     ImplementedAs=NavigatorNFC,
     RuntimeEnabled=WebNFC
 ] partial interface Navigator {
-    readonly attribute NFC nfc;
+    [SecureContext, SameObject] readonly attribute NFC nfc;
 };
