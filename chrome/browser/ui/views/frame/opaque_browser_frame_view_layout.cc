@@ -642,6 +642,7 @@ void OpaqueBrowserFrameViewLayout::SetView(int id, views::View* view) {
 // OpaqueBrowserFrameViewLayout, views::LayoutManager:
 
 void OpaqueBrowserFrameViewLayout::Layout(views::View* host) {
+  TRACE_EVENT0("views.frame", "OpaqueBrowserFrameViewLayout::Layout");
   // Reset all our data so that everything is invisible.
   int top_area_padding = TopAreaPadding();
   leading_button_start_ = top_area_padding;
