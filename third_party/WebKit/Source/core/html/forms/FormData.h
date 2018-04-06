@@ -86,6 +86,11 @@ class CORE_EXPORT FormData final
   void append(const String& name, Blob*, const String& filename = String());
   String Decode(const CString& data) const;
 
+  // This flag is true if this FormData is created with a <form>, and its
+  // associated elements contain a non-empty password field.
+  bool ContainsPasswordData() const { return contains_password_data_; }
+  void SetContainsPasswordData(bool flag) { contains_password_data_ = flag; }
+
   scoped_refptr<EncodedFormData> EncodeFormData(
       EncodedFormData::EncodingType = EncodedFormData::kFormURLEncoded);
   scoped_refptr<EncodedFormData> EncodeMultiPartFormData();
@@ -100,6 +105,7 @@ class CORE_EXPORT FormData final
   WTF::TextEncoding encoding_;
   // Entry pointers in m_entries never be nullptr.
   HeapVector<Member<const Entry>> entries_;
+  bool contains_password_data_ = false;
 };
 
 // Represents entry, which is a pair of a name and a value.

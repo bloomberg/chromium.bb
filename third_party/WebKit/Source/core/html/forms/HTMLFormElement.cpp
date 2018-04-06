@@ -47,10 +47,13 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/forms/FormController.h"
+#include "core/html/forms/FormData.h"
+#include "core/html/forms/FormDataEvent.h"
 #include "core/html/forms/HTMLFormControlsCollection.h"
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/RadioNodeList.h"
 #include "core/html_names.h"
+#include "core/input_type_names.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/FormSubmission.h"
@@ -430,6 +433,31 @@ void HTMLFormElement::Submit(Event* event,
     // protocol.
     ScheduleFormSubmission(form_submission);
   }
+}
+
+void HTMLFormElement::ConstructFormDataSet(
+    HTMLFormControlElement* submit_button,
+    FormData& form_data) {
+  // TODO(tkent): We might move the event dispatching later than the
+  // ListedElements iteration.
+  if (RuntimeEnabledFeatures::FormDataEventEnabled())
+    DispatchEvent(FormDataEvent::Create(form_data));
+
+  if (submit_button)
+    submit_button->SetActivatedSubmit(true);
+  for (ListedElement* control : ListedElements()) {
+    DCHECK(control);
+    HTMLElement& element = ToHTMLElement(*control);
+    if (!element.IsDisabledFormControl())
+      control->AppendToFormData(form_data);
+    if (auto* input = ToHTMLInputElementOrNull(element)) {
+      if (input->type() == InputTypeNames::password &&
+          !input->value().IsEmpty())
+        form_data.SetContainsPasswordData(true);
+    }
+  }
+  if (submit_button)
+    submit_button->SetActivatedSubmit(false);
 }
 
 void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
