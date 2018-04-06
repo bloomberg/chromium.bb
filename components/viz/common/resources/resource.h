@@ -109,6 +109,8 @@ struct VIZ_COMMON_EXPORT Resource {
   // When true, the resource is currently being written to. Used to prevent
   // misuse while the resource is being modified.
   bool locked_for_write : 1;
+  // When true, the resource is currently being used externally.
+  bool locked_for_external_use : 1;
   // When true the resource can not be used and must only be deleted. This is
   // passed along to the |release_callback|.
   bool lost : 1;

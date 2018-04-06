@@ -268,7 +268,8 @@ void DisplayResourceProvider::DeleteAndReturnUnusedResourcesToChild(
 
     bool is_lost = resource.lost ||
                    (resource.is_gpu_resource_type() && lost_context_provider_);
-    if (resource.exported_count > 0 || resource.lock_for_read_count > 0) {
+    if (resource.exported_count > 0 || resource.lock_for_read_count > 0 ||
+        resource.locked_for_external_use) {
       if (style != FOR_SHUTDOWN) {
         // Defer this resource deletion.
         resource.marked_for_deletion = true;
@@ -512,49 +513,8 @@ GLenum DisplayResourceProvider::BindForSampling(viz::ResourceId resource_id,
 
 bool DisplayResourceProvider::InUse(viz::ResourceId id) {
   viz::internal::Resource* resource = GetResource(id);
-  return resource->lock_for_read_count > 0 || resource->lost;
-}
-
-viz::ResourceMetadata
-DisplayResourceProvider::GetResourceMetadataForExternalUse(
-    viz::ResourceId id,
-    const gpu::SyncToken& release_sync_token) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  ResourceMap::iterator it = resources_.find(id);
-  DCHECK(it != resources_.end());
-
-  viz::internal::Resource* resource = &it->second;
-  viz::ResourceMetadata metadata;
-  // TODO(xing.xu): remove locked_for_write.
-  DCHECK(!resource->locked_for_write)
-      << "locked for write: " << resource->locked_for_write;
-  DCHECK_EQ(resource->exported_count, 0);
-  // Uninitialized! Call SetPixels or LockForWrite first.
-  DCHECK(resource->allocated);
-  // TODO(penghuang): support software resource.
-  DCHECK(resource->is_gpu_resource_type());
-
-  metadata.mailbox = resource->mailbox;
-  metadata.backend_format = GrBackendFormat::MakeGL(
-      TextureStorageFormat(resource->format), resource->target);
-  metadata.size = resource->size;
-  metadata.mip_mapped = GrMipMapped::kNo;
-  metadata.origin = kTopLeft_GrSurfaceOrigin;
-  metadata.color_type = ResourceFormatToClosestSkColorType(resource->format);
-  metadata.alpha_type = kPremul_SkAlphaType;
-  metadata.color_space = nullptr;
-  metadata.sync_token = resource->sync_token();
-
-  // Update the resource sync token to |release_sync_token|. When the next frame
-  // is being composited, the DeclareUsedResourcesFromChild() will be called
-  // with resources belong to every child for the next frame. If the resource
-  // is not used by the next frame, the resource will be returned to a child
-  // which owns it with the |release_sync_token|. The child is responsible for
-  // issuing a WaitSyncToken GL command with the |release_sync_token| before
-  // reusing it.
-  resource->UpdateSyncToken(release_sync_token);
-
-  return metadata;
+  return resource->lock_for_read_count > 0 || resource->lost ||
+         resource->locked_for_external_use;
 }
 
 DisplayResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
@@ -641,7 +601,74 @@ void DisplayResourceProvider::UnlockForRead(viz::ResourceId id) {
   DCHECK_GT(resource->lock_for_read_count, 0);
   DCHECK_EQ(resource->exported_count, 0);
   resource->lock_for_read_count--;
-  if (resource->marked_for_deletion && !resource->lock_for_read_count) {
+  TryReleaseResource(it);
+}
+
+viz::ResourceMetadata DisplayResourceProvider::LockForExternalUse(
+    viz::ResourceId id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  ResourceMap::iterator it = resources_.find(id);
+  DCHECK(it != resources_.end());
+
+  viz::internal::Resource* resource = &it->second;
+  viz::ResourceMetadata metadata;
+  // TODO(xing.xu): remove locked_for_write.
+  DCHECK(!resource->locked_for_write)
+      << "locked for write: " << resource->locked_for_write;
+  DCHECK_EQ(resource->exported_count, 0);
+  // Uninitialized! Call SetPixels or LockForWrite first.
+  DCHECK(resource->allocated);
+  // Make sure there is no outstanding LockForExternalUse without calling
+  // UnlockForExternalUse.
+  DCHECK(!resource->locked_for_external_use);
+  // TODO(penghuang): support software resource.
+  DCHECK(resource->is_gpu_resource_type());
+
+  metadata.mailbox = resource->mailbox;
+  metadata.backend_format = GrBackendFormat::MakeGL(
+      TextureStorageFormat(resource->format), resource->target);
+  metadata.size = resource->size;
+  metadata.mip_mapped = GrMipMapped::kNo;
+  metadata.origin = kTopLeft_GrSurfaceOrigin;
+  metadata.color_type = ResourceFormatToClosestSkColorType(resource->format);
+  metadata.alpha_type = kPremul_SkAlphaType;
+  metadata.color_space = nullptr;
+  metadata.sync_token = resource->sync_token();
+
+  resource->locked_for_external_use = true;
+  return metadata;
+}
+
+void DisplayResourceProvider::UnlockForExternalUse(
+    viz::ResourceId id,
+    const gpu::SyncToken& sync_token) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  ResourceMap::iterator it = resources_.find(id);
+  DCHECK(it != resources_.end());
+  DCHECK(sync_token.verified_flush());
+
+  viz::internal::Resource* resource = &it->second;
+  DCHECK(resource->locked_for_external_use);
+  // TODO(penghuang): support software resource.
+  DCHECK(resource->is_gpu_resource_type());
+
+  // Update the resource sync token to |sync_token|. When the next frame is
+  // being composited, the DeclareUsedResourcesFromChild() will be called with
+  // resources belong to every child for the next frame. If the resource is not
+  // used by the next frame, the resource will be returned to a child which
+  // owns it with the |sync_token|. The child is responsible for issuing a
+  // WaitSyncToken GL command with the |sync_token| before reusing it.
+  resource->UpdateSyncToken(sync_token);
+  resource->locked_for_external_use = false;
+
+  TryReleaseResource(it);
+}
+
+void DisplayResourceProvider::TryReleaseResource(ResourceMap::iterator it) {
+  viz::ResourceId id = it->first;
+  viz::internal::Resource* resource = &it->second;
+  if (resource->marked_for_deletion && !resource->lock_for_read_count &&
+      !resource->locked_for_external_use) {
     if (!resource->child_id) {
       // The resource belongs to this ResourceProvider, so it can be destroyed.
 #if defined(OS_ANDROID)
@@ -746,6 +773,30 @@ DisplayResourceProvider::ScopedReadLockSoftware::ScopedReadLockSoftware(
 
 DisplayResourceProvider::ScopedReadLockSoftware::~ScopedReadLockSoftware() {
   resource_provider_->UnlockForRead(resource_id_);
+}
+
+DisplayResourceProvider::LockSetForExternalUse::LockSetForExternalUse(
+    DisplayResourceProvider* resource_provider)
+    : resource_provider_(resource_provider) {}
+
+DisplayResourceProvider::LockSetForExternalUse::~LockSetForExternalUse() {
+  DCHECK(resources_.empty());
+}
+
+viz::ResourceMetadata
+DisplayResourceProvider::LockSetForExternalUse::LockResource(
+    viz::ResourceId id) {
+  DCHECK(std::find(resources_.begin(), resources_.end(), id) ==
+         resources_.end());
+  resources_.push_back(id);
+  return resource_provider_->LockForExternalUse(id);
+}
+
+void DisplayResourceProvider::LockSetForExternalUse::UnlockResources(
+    const gpu::SyncToken& sync_token) {
+  for (const auto& id : resources_)
+    resource_provider_->UnlockForExternalUse(id, sync_token);
+  resources_.clear();
 }
 
 DisplayResourceProvider::SynchronousFence::SynchronousFence(

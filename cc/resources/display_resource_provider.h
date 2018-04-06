@@ -57,14 +57,6 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
   // Checks whether a resource is in use.
   bool InUse(viz::ResourceId id);
 
-  // Get the resource metadata for external use.
-  // The |release_sync_token| should be one that can be waited on in a command
-  // buffer to ensure that any external use of it is completed, before reusing
-  // the resource's backing.
-  viz::ResourceMetadata GetResourceMetadataForExternalUse(
-      viz::ResourceId id,
-      const gpu::SyncToken& release_sync_token);
-
   // The following lock classes are part of the DisplayResourceProvider API and
   // are needed to read the resource contents. The user must ensure that they
   // only use GL locks on GL resources, etc, and this is enforced by assertions.
@@ -155,6 +147,27 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSoftware);
   };
 
+  // Maintains set of lock for external use.
+  class CC_EXPORT LockSetForExternalUse {
+   public:
+    explicit LockSetForExternalUse(DisplayResourceProvider* resource_provider);
+    ~LockSetForExternalUse();
+
+    // Lock a resource for external use.
+    viz::ResourceMetadata LockResource(viz::ResourceId resource_id);
+
+    // Unlock all locked resources with a |sync_token|.
+    // See UnlockForExternalUse for the detail. All resources must be unlocked
+    // before destroying this class.
+    void UnlockResources(const gpu::SyncToken& sync_token);
+
+   private:
+    DisplayResourceProvider* const resource_provider_;
+    std::vector<viz::ResourceId> resources_;
+
+    DISALLOW_COPY_AND_ASSIGN(LockSetForExternalUse);
+  };
+
   // All resources that are returned to children while an instance of this
   // class exists will be stored and returned when the instance is destroyed.
   class CC_EXPORT ScopedBatchReturnResources {
@@ -233,10 +246,20 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
       const viz::ResourceIdSet& resources_from_child);
 
  private:
-  friend class ScopedBatchReturnResources;
-
   const viz::internal::Resource* LockForRead(viz::ResourceId id);
   void UnlockForRead(viz::ResourceId id);
+
+  // Lock a resource for external use.
+  viz::ResourceMetadata LockForExternalUse(viz::ResourceId id);
+
+  // Unlock a resource which locked by LockForExternalUse.
+  // The |sync_token| should be waited on before reusing the resouce's backing
+  // to ensure that any external use of it is completed. This |sync_token|
+  // should have been verified.
+  void UnlockForExternalUse(viz::ResourceId id,
+                            const gpu::SyncToken& sync_token);
+
+  void TryReleaseResource(ResourceMap::iterator it);
   // Binds the given GL resource to a texture target for sampling using the
   // specified filter for both minification and magnification. Returns the
   // texture target used. The resource must be locked for reading.
