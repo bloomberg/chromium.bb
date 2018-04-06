@@ -23,7 +23,9 @@ enum CORSError {
   kDisallowCredentialsNotSetToTrue,
 
   // Preflight
+  // Failed to check HTTP response ok status in CORS-preflight response.
   kPreflightInvalidStatus,
+
   // "Access-Control-Allow-External:"
   // ( https://wicg.github.io/cors-rfc1918/#headers ) specific error
   // conditions:

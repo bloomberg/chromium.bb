@@ -6,9 +6,21 @@
 #define SERVICES_NETWORK_CORS_PREFLIGHT_CONTROLLER_H_
 
 #include <memory>
+#include <string>
 
+#include "base/callback.h"
 #include "base/component_export.h"
+#include "base/containers/unique_ptr_adapters.h"
+#include "base/macros.h"
+#include "base/optional.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/cors/cors_error_status.h"
+#include "services/network/public/cpp/cors/preflight_cache.h"
+#include "services/network/public/cpp/cors/preflight_result.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "url/gurl.h"
 
 namespace network {
 
@@ -18,18 +30,40 @@ namespace cors {
 // its result, and owning a CORS-preflight cache.
 // TODO(toyoshim): Features explained above not fully implemented yet.
 // See also https://crbug.com/803766 to check a design doc.
-class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController {
+class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
  public:
+  using CompletionCallback =
+      base::OnceCallback<void(base::Optional<CORSErrorStatus>)>;
   // Creates a CORS-preflight ResourceRequest for a specified |request| for a
   // URL that is originally requested.
-  // Note: This function is exposed for testing only purpose, and production
-  // code outside this class should not call this function directly.
-  static std::unique_ptr<ResourceRequest> CreatePreflightRequest(
+  static std::unique_ptr<ResourceRequest> CreatePreflightRequestForTesting(
       const ResourceRequest& request);
 
-  // TODO(toyoshim): Implements an asynchronous interface to consult about
-  // CORS-preflight check, that manages a preflight cache, and may make a
-  // preflight request internally.
+  PreflightController();
+  ~PreflightController();
+
+  // Determines if a CORS-preflight request is needed, and checks the cache, or
+  // makes a preflight request if it is needed. A result will be notified
+  // synchronously or asynchronously.
+  void PerformPreflightCheck(
+      CompletionCallback callback,
+      const ResourceRequest& resource_request,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      mojom::URLLoaderFactory* loader_factory);
+
+ private:
+  class PreflightLoader;
+
+  void RemoveLoader(PreflightLoader* loader);
+  void AppendToCache(const url::Origin& origin,
+                     const GURL& url,
+                     std::unique_ptr<PreflightResult> result);
+
+  PreflightCache cache_;
+  std::set<std::unique_ptr<PreflightLoader>, base::UniquePtrComparator>
+      loaders_;
+
+  DISALLOW_COPY_AND_ASSIGN(PreflightController);
 };
 
 }  // namespace cors
