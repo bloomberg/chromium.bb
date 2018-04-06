@@ -387,8 +387,8 @@ void ServiceWorkerNewScriptLoader::WriteData(
   // next time.
   uint32_t bytes_written = std::min<uint32_t>(kReadBufferSize, bytes_available);
 
-  auto buffer = base::MakeRefCounted<network::MojoToNetIOBuffer>(
-      pending_buffer.get(), bytes_written);
+  auto buffer =
+      base::MakeRefCounted<net::WrappedIOBuffer>(pending_buffer->buffer());
   MojoResult result = client_producer_->WriteData(
       buffer->data(), &bytes_written, MOJO_WRITE_DATA_FLAG_NONE);
   switch (result) {
