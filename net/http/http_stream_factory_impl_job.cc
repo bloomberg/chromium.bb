@@ -1377,9 +1377,6 @@ void HttpStreamFactoryImpl::Job::InitSSLConfig(SSLConfig* ssl_config,
     ssl_config->false_start_enabled = false;
   }
 
-  if (request_info_.load_flags & LOAD_VERIFY_EV_CERT)
-    ssl_config->verify_ev_cert = true;
-
   // Disable Channel ID if privacy mode is enabled.
   if (request_info_.privacy_mode == PRIVACY_MODE_ENABLED)
     ssl_config->channel_id_enabled = false;

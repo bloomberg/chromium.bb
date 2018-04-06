@@ -150,8 +150,7 @@ bool VerifyUsingCertVerifyProc(
   }
 
   // TODO(mattm): add command line flags to configure VerifyFlags.
-  int flags = net::CertVerifier::VERIFY_EV_CERT |
-              net::CertVerifier::VERIFY_CERT_IO_ENABLED;
+  int flags = 0;
 
   if (!x509_additional_trust_anchors.empty() &&
       !cert_verify_proc->SupportsAdditionalTrustAnchors()) {

@@ -1003,10 +1003,9 @@ int CertVerifyProcMac::VerifyInternal(
   // verification with different flags.
   const CertVerifyResult input_verify_result(*verify_result);
 
-  // If EV verification is enabled, check for EV policy in leaf cert.
+  // Check for EV policy in leaf cert.
   std::string candidate_ev_policy_oid;
-  if (flags & CertVerifier::VERIFY_EV_CERT)
-    GetCandidateEVPolicy(cert, &candidate_ev_policy_oid);
+  GetCandidateEVPolicy(cert, &candidate_ev_policy_oid);
 
   CRLSetResult completed_chain_crl_result;
   int rv = VerifyWithGivenFlags(cert, hostname, flags, crl_set, verify_result,
@@ -1020,7 +1019,6 @@ int CertVerifyProcMac::VerifyInternal(
     // EV policies check out and the verification succeeded. See if revocation
     // checking still needs to be done before it can be marked as EV.
     if (completed_chain_crl_result == kCRLSetUnknown &&
-        (flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED_EV_ONLY) &&
         !(flags & CertVerifier::VERIFY_REV_CHECKING_ENABLED)) {
       // If this is an EV cert and it wasn't covered by CRLSets and revocation
       // checking wasn't already on, try again with revocation forced on.

@@ -120,9 +120,6 @@ void HttpStreamFactoryImpl::PreconnectStreams(
   SSLConfig server_ssl_config;
   SSLConfig proxy_ssl_config;
   session_->GetSSLConfig(request_info, &server_ssl_config, &proxy_ssl_config);
-  // All preconnects should perform EV certificate verification.
-  server_ssl_config.verify_ev_cert = true;
-  proxy_ssl_config.verify_ev_cert = true;
 
   auto job_controller = std::make_unique<JobController>(
       this, nullptr, session_, job_factory_.get(), request_info,

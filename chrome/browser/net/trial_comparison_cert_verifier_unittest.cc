@@ -670,8 +670,8 @@ TEST_F(TrialComparisonCertVerifierTest, BothVerifiersOkDifferentCertStatus) {
 
   net::CertVerifier::RequestParams params(
       leaf_cert_1_, "127.0.0.1",
-      net::CertVerifier::VERIFY_EV_CERT |
-          net::CertVerifier::VERIFY_REV_CHECKING_ENABLED_EV_ONLY,
+      net::CertVerifier::VERIFY_ENABLE_SHA1_LOCAL_ANCHORS |
+          net::CertVerifier::VERIFY_REV_CHECKING_ENABLED,
       std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
@@ -714,12 +714,12 @@ TEST_F(TrialComparisonCertVerifierTest, BothVerifiersOkDifferentCertStatus) {
   EXPECT_EQ(chrome_browser_ssl::CertLoggerRequest::STATUS_CT_COMPLIANCE_FAILED,
             trial_info.cert_status()[0]);
 
-  ASSERT_EQ(2, trial_info.verify_flags_size());
-  EXPECT_EQ(chrome_browser_ssl::TrialVerificationInfo::VERIFY_EV_CERT,
-            trial_info.verify_flags()[0]);
-  EXPECT_EQ(chrome_browser_ssl::TrialVerificationInfo::
-                VERIFY_REV_CHECKING_ENABLED_EV_ONLY,
-            trial_info.verify_flags()[1]);
+  EXPECT_THAT(
+      trial_info.verify_flags(),
+      testing::UnorderedElementsAre(chrome_browser_ssl::TrialVerificationInfo::
+                                        VERIFY_REV_CHECKING_ENABLED,
+                                    chrome_browser_ssl::TrialVerificationInfo::
+                                        VERIFY_ENABLE_SHA1_LOCAL_ANCHORS));
 
   EXPECT_THAT(report.unverified_cert_chain(), CertChainMatches(leaf_cert_1_));
   EXPECT_THAT(report.cert_chain(), CertChainMatches(cert_chain_1_));
