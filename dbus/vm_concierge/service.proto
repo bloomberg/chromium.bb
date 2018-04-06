@@ -263,26 +263,39 @@ message StartContainerRequest {
   // container has not been created yet.
   string container_username = 3;
 
-  // Whether we should perform setup/startup of the container asynchronously.
-  // If this is false or unspecified, then this call will not return until
-  // container setup/startup has completed or failed. Otherwise, this will
-  // return after initiating the startup process and then D-Bus
-  // ContainerStartedSignal will be sent when startup completes. If async mode
-  // is used, the other D-Bus setup/startup signals should be monitored as well
-  // for progress/failure.
-  // NOTE: It is strongly recommended to use async mode when doing setup of a
-  // container due to the length of time it can take for that operation.
-  bool async = 4;
+  // Async mode is always used now.
+  bool async = 4 [deprecated=true];
+}
+
+enum ContainerStatus {
+  // Unknown status.
+  CONTAINER_STATUS_UNKNOWN = 0;
+
+  // The container is already running.
+  CONTAINER_STATUS_RUNNING = 1;
+
+  // The container is currently starting up.
+  CONTAINER_STATUS_STARTING = 2;
+
+  // The container failed to startup.
+  CONTAINER_STATUS_FAILURE = 3;
 }
 
 // Response sent back by vm_concierge when it receives a StartContaienr D-Bus
 // message.
 message StartContainerResponse {
-  // If true, the requested container was successfully started.
-  bool success = 1;
+  // Use the status field instead.
+  bool success = 1 [deprecated=true];
 
-  // The failure_reason if the requested container could not be started.
+  // The failure_reason if the status is CONTAINER_STATUS_FAILURE.
   string failure_reason = 2;
+
+  // The status of the container as a result of the StartContainer call. If the
+  // status is CONTAINER_STATUS_STARTING then a D-Bus signal will be sent to
+  // indicate whether success or failure occurred. The signal should be
+  // registered for before the StartContainer call is made because it may be
+  // sent before the call returns.
+  ContainerStatus status = 3;
 }
 
 // Request to launch on application in the specified VM/container. Used with the
