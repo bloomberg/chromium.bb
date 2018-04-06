@@ -71,8 +71,10 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
   // ReportingObserver implementation:
   void OnCacheUpdated() override {
-    if (CacheHasReports())
+    if (CacheHasReports() && !timer_->IsRunning()) {
+      SendReports();
       StartTimer();
+    }
   }
 
  private:
