@@ -149,9 +149,8 @@ Polymer({
     const keys = Object.keys(settings.ContentSettingsTypes);
     for (let i = 0; i < keys.length; ++i) {
       const key = settings.ContentSettingsTypes[keys[i]];
-      // Default labels are not applicable to USB and ZOOM.
-      if (key == settings.ContentSettingsTypes.USB_DEVICES ||
-          key == settings.ContentSettingsTypes.ZOOM_LEVELS)
+      // Default labels are not applicable to ZOOM.
+      if (key == settings.ContentSettingsTypes.ZOOM_LEVELS)
         continue;
       // Protocol handlers are not available (and will DCHECK) in guest mode.
       if (this.isGuest_ &&

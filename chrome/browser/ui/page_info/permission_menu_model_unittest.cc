@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,6 +43,7 @@ TEST_F(PermissionMenuModelTest, TestDefault) {
   permission.default_setting = CONTENT_SETTING_ALLOW;
   permission.source = content_settings::SETTING_SOURCE_USER;
   permission.is_incognito = false;
+
   PermissionMenuModel model(profile(), GURL("http://www.google.com"),
                             permission, callback.callback());
   EXPECT_EQ(3, model.GetItemCount());
@@ -81,4 +83,18 @@ TEST_F(PermissionMenuModelTest, TestIncognitoNotifications) {
   PermissionMenuModel incognito_model(profile(), GURL("https://www.google.com"),
                                       permission, callback.callback());
   EXPECT_EQ(2, incognito_model.GetItemCount());
+}
+
+TEST_F(PermissionMenuModelTest, TestUsbGuard) {
+  TestCallback callback;
+  PageInfoUI::PermissionInfo permission;
+  permission.type = CONTENT_SETTINGS_TYPE_USB_GUARD;
+  permission.setting = CONTENT_SETTING_ASK;
+  permission.default_setting = CONTENT_SETTING_ASK;
+  permission.source = content_settings::SETTING_SOURCE_USER;
+  permission.is_incognito = false;
+
+  PermissionMenuModel model(profile(), GURL("http://www.google.com"),
+                            permission, callback.callback());
+  EXPECT_EQ(3, model.GetItemCount());
 }

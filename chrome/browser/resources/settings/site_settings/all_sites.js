@@ -51,7 +51,6 @@ Polymer({
         continue;
       // </if>
       if (type == settings.ContentSettingsTypes.PROTOCOL_HANDLERS ||
-          type == settings.ContentSettingsTypes.USB_DEVICES ||
           type == settings.ContentSettingsTypes.ZOOM_LEVELS) {
         // Some categories store their data in a custom way.
         continue;

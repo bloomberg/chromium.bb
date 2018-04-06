@@ -175,13 +175,15 @@ class ComboboxModelAdapter : public ui::ComboboxModel {
 };
 
 void ComboboxModelAdapter::OnPerformAction(int index) {
-  model_->ExecuteCommand(index, 0);
+  int command_id = model_->GetCommandIdAt(index);
+  model_->ExecuteCommand(command_id, 0);
 }
 
 int ComboboxModelAdapter::GetCheckedIndex() {
   int checked_index = -1;
   for (int i = 0; i < model_->GetItemCount(); ++i) {
-    if (model_->IsCommandIdChecked(i)) {
+    int command_id = model_->GetCommandIdAt(i);
+    if (model_->IsCommandIdChecked(command_id)) {
       // This function keeps track of |checked_index| instead of returning early
       // here so that it can DCHECK that there's exactly one selected item,
       // which is not normally guaranteed by MenuModel, but *is* true of

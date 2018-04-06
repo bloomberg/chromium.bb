@@ -56,14 +56,16 @@
                   '$i18nPolymer{siteSettingsActionAllowDefault}',
                   '$i18nPolymer{siteSettingsActionBlockDefault}')]]
             </option>
-            <option id="allow" value$="[[ContentSetting.ALLOW]]">
+            <option id="allow" value$="[[ContentSetting.ALLOW]]"
+                hidden$="[[!showAllowedSetting_(category)]]">
               $i18n{siteSettingsActionAllow}
             </option>
             <option id="block" value$="[[ContentSetting.BLOCK]]">
               $i18n{siteSettingsActionBlock}
             </option>
             <option id="ask" value$="[[ContentSetting.ASK]]"
-                hidden$="[[!isNonDefaultAsk_(site.setting, site.source)]]">
+                hidden$="[[!showAskSetting_(category, site.setting,
+                                            site.source)]]">
               $i18n{siteSettingsActionAsk}
             </option>
           </select>

@@ -129,6 +129,7 @@ const PermissionsUIInfo kPermissionsUIInfo[] = {
     {CONTENT_SETTINGS_TYPE_SOUND, IDS_PAGE_INFO_TYPE_SOUND},
     {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, IDS_PAGE_INFO_TYPE_CLIPBOARD},
     {CONTENT_SETTINGS_TYPE_SENSORS, IDS_PAGE_INFO_TYPE_SENSORS},
+    {CONTENT_SETTINGS_TYPE_USB_GUARD, IDS_PAGE_INFO_TYPE_USB},
 };
 
 std::unique_ptr<PageInfoUI::SecurityDescription> CreateSecurityDescription(
@@ -474,6 +475,9 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
       break;
     case CONTENT_SETTINGS_TYPE_SENSORS:
       icon = &kSensorsIcon;
+      break;
+    case CONTENT_SETTINGS_TYPE_USB_GUARD:
+      icon = &vector_icons::kUsbIcon;
       break;
     default:
       // All other |ContentSettingsType|s do not have icons on desktop or are

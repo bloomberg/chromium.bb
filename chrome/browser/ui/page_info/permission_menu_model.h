@@ -34,6 +34,9 @@ class PermissionMenuModel : public ui::SimpleMenuModel,
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
+  bool ShouldShowAllow(const GURL& url);
+  bool ShouldShowAsk(const GURL& url);
+
   HostContentSettingsMap* host_content_settings_map_;
 
   // The permission info represented by the menu model.

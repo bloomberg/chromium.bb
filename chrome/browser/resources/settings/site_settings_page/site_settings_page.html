@@ -365,14 +365,23 @@
         <button aria-label="$i18n{siteSettingsZoomLevels}"></button>
       </paper-icon-button-light>
     </div>
-    <div id="usb-devices" class="settings-box"
+    <div id="usb-devices" class="settings-box two-line"
         category$="[[ContentSettingsTypes.USB_DEVICES]]"
         data-route="SITE_SETTINGS_USB_DEVICES" on-click="onTapNavigate_"
         actionable>
       <iron-icon icon="settings:usb"></iron-icon>
-      <div class="middle">$i18n{siteSettingsUsbDevices}</div>
+      <div class="middle">
+        $i18n{siteSettingsUsbDevices}
+        <div class="secondary" id="usbDevicesSecondary">
+          [[defaultSettingLabel_(
+              default_.usbDevices,
+              '$i18nPolymer{siteSettingsUsbDevicesAsk}',
+              '$i18nPolymer{siteSettingsUsbDevicesBlock}')]]
+        </div>
+      </div>
       <paper-icon-button-light class="subpage-arrow">
-        <button aria-label="$i18n{siteSettingsUsbDevices}"></button>
+        <button aria-label="$i18n{siteSettingsUsbDevices}"
+            area-describedby="usbDevicesSecondary"></button>
       </paper-icon-button-light>
     </div>
     <div id="pdf-documents" class="settings-box"

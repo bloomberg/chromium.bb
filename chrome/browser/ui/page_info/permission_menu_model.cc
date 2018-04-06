@@ -73,16 +73,7 @@ PermissionMenuModel::PermissionMenuModel(Profile* profile,
   AddCheckItem(CONTENT_SETTING_DEFAULT, label);
 
   // Retrieve the string to show for allowing the permission.
-  // Notifications does not support CONTENT_SETTING_ALLOW in incognito.
-  bool allow_disabled_for_notifications =
-      permission_.is_incognito &&
-      permission_.type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
-  // Media only supports CONTENT_SETTTING_ALLOW for secure origins.
-  bool is_media_permission =
-      permission_.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
-      permission_.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
-  if (!allow_disabled_for_notifications &&
-      (!is_media_permission || content::IsOriginSecure(url))) {
+  if (ShouldShowAllow(url)) {
     label = l10n_util::GetStringUTF16(IDS_PAGE_INFO_MENU_ITEM_ALLOW);
     if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
       label = PageInfoUI::PermissionActionToUIString(
@@ -113,6 +104,18 @@ PermissionMenuModel::PermissionMenuModel(Profile* profile,
         info.source);
   }
   AddCheckItem(CONTENT_SETTING_BLOCK, label);
+
+  // Retrieve the string to show for allowing the user to be asked about the
+  // permission.
+  if (ShouldShowAsk(url)) {
+    label = l10n_util::GetStringUTF16(IDS_PAGE_INFO_MENU_ITEM_ASK);
+    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      label = PageInfoUI::PermissionActionToUIString(
+          profile, info.type, CONTENT_SETTING_ASK, effective_default_setting,
+          info.source);
+    }
+    AddCheckItem(CONTENT_SETTING_ASK, label);
+  }
 }
 
 PermissionMenuModel::~PermissionMenuModel() {}
@@ -135,4 +138,29 @@ bool PermissionMenuModel::IsCommandIdEnabled(int command_id) const {
 void PermissionMenuModel::ExecuteCommand(int command_id, int event_flags) {
   permission_.setting = static_cast<ContentSetting>(command_id);
   callback_.Run(permission_);
+}
+
+bool PermissionMenuModel::ShouldShowAllow(const GURL& url) {
+  // Notifications does not support CONTENT_SETTING_ALLOW in incognito.
+  if (permission_.is_incognito &&
+      permission_.type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
+    return false;
+  }
+
+  // Media only supports CONTENT_SETTING_ALLOW for secure origins.
+  if ((permission_.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+       permission_.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) &&
+      !content::IsOriginSecure(url)) {
+    return false;
+  }
+
+  // Chooser permissions do not support CONTENT_SETTING_ALLOW.
+  if (permission_.type == CONTENT_SETTINGS_TYPE_USB_GUARD)
+    return false;
+
+  return true;
+}
+
+bool PermissionMenuModel::ShouldShowAsk(const GURL& url) {
+  return permission_.type == CONTENT_SETTINGS_TYPE_USB_GUARD;
 }

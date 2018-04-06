@@ -172,6 +172,32 @@ Polymer({
   },
 
   /**
+   * Returns true if the 'allow' option should be shown.
+   * @param {!settings.ContentSettingsTypes} category The permission type.
+   * @return {boolean}
+   * @private
+   */
+  showAllowedSetting_: function(category) {
+    return category != settings.ContentSettingsTypes.USB_DEVICES;
+  },
+
+  /**
+   * Returns true if the 'ask' option should be shown.
+   * @param {!settings.ContentSettingsTypes} category The permission type.
+   * @param {!settings.ContentSetting} setting The setting of the permission.
+   * @param {!settings.SiteSettingSource} source The source of the permission.
+   * @return {boolean}
+   * @private
+   */
+  showAskSetting_: function(category, setting, source) {
+    // For chooser-based permissions 'ask' takes the place of 'allow'.
+    if (category == settings.ContentSettingsTypes.USB_DEVICES)
+      return true;
+
+    return this.isNonDefaultAsk_(setting, source);
+  },
+
+  /**
    * Returns true if the permission is set to a non-default 'ask'. Currently,
    * this only gets called when |this.site| is updated.
    * @param {!settings.ContentSetting} setting The setting of the permission.

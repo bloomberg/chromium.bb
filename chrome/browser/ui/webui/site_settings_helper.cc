@@ -76,6 +76,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_CLIPBOARD_READ, "clipboard"},
     {CONTENT_SETTINGS_TYPE_SENSORS, "sensors"},
     {CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER, "payment-handler"},
+    {CONTENT_SETTINGS_TYPE_USB_GUARD, "usb-devices"},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required. Note some exceptions, such as
@@ -101,7 +102,6 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_ACCESSIBILITY_EVENTS, nullptr},
     {CONTENT_SETTINGS_TYPE_CLIPBOARD_WRITE, nullptr},
     {CONTENT_SETTINGS_TYPE_PLUGINS_DATA, nullptr},
-    {CONTENT_SETTINGS_TYPE_USB_GUARD, nullptr},
 };
 static_assert(arraysize(kContentSettingsTypeGroupNames) ==
                   // ContentSettingsType starts at -1, so add 1 here.

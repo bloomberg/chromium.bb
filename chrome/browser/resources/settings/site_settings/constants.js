@@ -28,7 +28,7 @@ settings.ContentSettingsTypes = {
   AUTOMATIC_DOWNLOADS: 'multiple-automatic-downloads',
   BACKGROUND_SYNC: 'background-sync',
   MIDI_DEVICES: 'midi-sysex',
-  USB_DEVICES: 'usb-chooser-data',
+  USB_DEVICES: 'usb-devices',
   ZOOM_LEVELS: 'zoom-levels',
   PROTECTED_CONTENT: 'protected-content',
   ADS: 'ads',

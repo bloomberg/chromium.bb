@@ -163,6 +163,8 @@ cr.define('test_util', function() {
         settings.ContentSetting.BLOCK;
     defaults[settings.ContentSettingsTypes.SENSORS].setting =
         settings.ContentSetting.ALLOW;
+    defaults[settings.ContentSettingsTypes.USB_DEVICES].setting =
+        settings.ContentSetting.ASK;
     defaultsList.forEach((override) => {
       defaults[override.setting] = override.value;
     });
