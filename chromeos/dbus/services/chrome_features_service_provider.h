@@ -27,7 +27,7 @@ namespace chromeos {
 // % dbus-send --system --type=method_call --print-reply
 //     --dest=org.chromium.ChromeFeaturesService
 //     /org/chromium/ChromeFeaturesService
-//     org.chromium.ChromeFeaturesService.IsCrostiniEnabled
+//     org.chromium.ChromeFeaturesServiceInterface.IsCrostiniEnabled
 //
 // % (returns true if Crostini is enabled, otherwise returns false)
 class CHROMEOS_EXPORT ChromeFeaturesServiceProvider
