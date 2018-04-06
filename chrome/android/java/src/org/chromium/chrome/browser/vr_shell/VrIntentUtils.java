@@ -55,13 +55,6 @@ public class VrIntentUtils {
          * @return Whether the intent should be allowed to auto-present.
          */
         boolean isTrustedAutopresentIntent(Intent intent);
-
-        /**
-         * Determines whether the installed version of Chrome can handle VR intents.
-         * @param context The context for the caller.
-         * @return Whether VR intents can be handled.
-         */
-        boolean canHandleVrIntent(Context context);
     }
 
     private static VrIntentHandler createInternalVrIntentHandler() {
@@ -81,16 +74,6 @@ public class VrIntentUtils {
                 // we're sure that most clients have the change.
                 return isTrustedDaydreamIntent(intent)
                         && IntentUtils.safeGetBooleanExtra(intent, AUTOPRESENT_WEVBVR_EXTRA, false);
-            }
-
-            @Override
-            public boolean canHandleVrIntent(Context context) {
-                VrClassesWrapper wrapper = VrShellDelegate.getVrClassesWrapper();
-                if (wrapper == null) return false;
-                int supportLevel =
-                        VrShellDelegate.getVrSupportLevel(wrapper.createVrDaydreamApi(context),
-                                wrapper.createVrCoreVersionChecker(), null);
-                return supportLevel == VrSupportLevel.VR_DAYDREAM;
             }
         };
     }
@@ -134,13 +117,6 @@ public class VrIntentUtils {
         if (intent == null) return false;
         return IntentHandler.getUrlFromIntent(intent) != null
                 && getHandlerInstance().isTrustedDaydreamIntent(intent);
-    }
-
-    /**
-     * @return whether the installed version of Chrome can handle VR intents.
-     */
-    public static boolean canHandleVrIntent(Context context) {
-        return getHandlerInstance().canHandleVrIntent(context);
     }
 
     /**
