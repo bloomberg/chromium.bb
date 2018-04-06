@@ -212,10 +212,16 @@ class PermissionsData {
                                     std::string* error) const;
 
   // Returns true if extension is allowed to obtain the contents of a page as
-  // an image. Since a page may contain sensitive information, this is
-  // restricted to the extension's host permissions as well as the extension
-  // page itself.
-  bool CanCaptureVisiblePage(int tab_id, std::string* error) const;
+  // an image. Pages may contain multiple sources (e.g., example.com may embed
+  // google.com), so simply checking the top-frame's URL is insufficient.
+  // Instead:
+  // - If the page is a chrome:// page, require activeTab.
+  // - For all other pages, require host permissions to the document
+  //   (GetPageAccess()) and one of either <all_urls> or granted activeTab.
+  bool CanCaptureVisiblePage(const GURL& document_url,
+                             const Extension* extension,
+                             int tab_id,
+                             std::string* error) const;
 
   const TabPermissionsMap& tab_specific_permissions() const {
     DCHECK(!thread_checker_ || thread_checker_->CalledOnValidThread());

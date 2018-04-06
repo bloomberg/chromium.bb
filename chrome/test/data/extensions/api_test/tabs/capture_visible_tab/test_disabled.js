@@ -16,28 +16,32 @@ var kWindowRect = {
   'height': 400
 };
 
-var fail_url = "file:///nosuch.html";
-
-chrome.test.runTests([
-  function captureVisibleDisabled() {
-    createWindow([fail_url], kWindowRect, pass(function(winId, tabIds) {
-      waitForAllTabs(pass(function() {
-        chrome.tabs.getSelected(winId, pass(function(tab) {
-          assertEq('complete', tab.status);
-          chrome.tabs.captureVisibleTab(winId, fail(
-              'Taking screenshots has been disabled'));
+chrome.test.getConfig((config) => {
+  const kError = 'Taking screenshots has been disabled';
+  const kUrl = `localhost:${config.testServer.port}/simple.html`;
+  chrome.test.runTests([
+    function captureVisibleDisabled() {
+      createWindow([kUrl], kWindowRect, pass(function(winId, tabIds) {
+        waitForAllTabs(pass(function() {
+          chrome.tabs.getSelected(winId, pass(function(tab) {
+            assertEq('complete', tab.status);
+            chrome.tabs.captureVisibleTab(winId, fail(kError));
+          }));
         }));
       }));
-    }));
-  },
+    },
 
-  function captureVisibleDisabledInNullWindow() {
-    chrome.tabs.captureVisibleTab(null, fail(
-        'Taking screenshots has been disabled'));
-  },
+    function captureVisibleDisabledInNullWindow() {
+      chrome.tabs.create({url: kUrl}, pass(() => {
+        waitForAllTabs(pass(() => {
+          chrome.tabs.captureVisibleTab(null, fail(kError));
+        }));
+      }));
+    },
 
-  function captureVisibleDisabledInCurrentWindow() {
-    chrome.tabs.captureVisibleTab(chrome.windows.WINDOW_ID_CURRENT,
-                                  fail('Taking screenshots has been disabled'));
-  }
-]);
+    function captureVisibleDisabledInCurrentWindow() {
+      chrome.tabs.captureVisibleTab(chrome.windows.WINDOW_ID_CURRENT,
+                                    fail(kError));
+    }
+  ]);
+});
