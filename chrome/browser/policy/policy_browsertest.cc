@@ -3836,8 +3836,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 
-  SetShouldRequireCTForTesting(nullptr);
-
   ui_test_utils::NavigateToURL(browser(),
                                https_server_ok.GetURL("/simple.html"));
 
