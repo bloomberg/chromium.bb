@@ -268,10 +268,14 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
         else:
           per_test_results_dir = os.path.join(test_results_root,
                                               vm_test.test_type)
-        with cgroups.SimpleContainChildren('VMTest'):
-          r = ' Reached VMTestStage test run timeout.'
-          with timeout_util.Timeout(vm_test.timeout, reason_message=r):
-            self._RunTest(vm_test, per_test_results_dir)
+        try:
+          with cgroups.SimpleContainChildren('VMTest'):
+            r = ' Reached VMTestStage test run timeout.'
+            with timeout_util.Timeout(vm_test.timeout, reason_message=r):
+              self._RunTest(vm_test, per_test_results_dir)
+        except Exception:
+          if not vm_test.forgiving:
+            raise
 
     except Exception:
       logging.error(_ERROR_MSG % dict(test_name='VMTests',
