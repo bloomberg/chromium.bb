@@ -132,7 +132,7 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
     ASSERT_TRUE(power_button_test_api_->IsMenuOpened());
     // "Power off" item has focus after menu is opened.
     EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                    ->power_off_item()
+                    ->power_off_item_for_test()
                     ->HasFocus());
   }
 
@@ -958,27 +958,27 @@ TEST_F(PowerButtonControllerTest, MenuNavigation) {
   OpenPowerButtonMenu();
   PressKey(ui::VKEY_TAB);
   EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->sign_out_item()
+                  ->sign_out_item_for_test()
                   ->HasFocus());
 
   PressKey(ui::VKEY_LEFT);
   EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->power_off_item()
+                  ->power_off_item_for_test()
                   ->HasFocus());
 
   PressKey(ui::VKEY_RIGHT);
   EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->sign_out_item()
+                  ->sign_out_item_for_test()
                   ->HasFocus());
 
   PressKey(ui::VKEY_UP);
   EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->power_off_item()
+                  ->power_off_item_for_test()
                   ->HasFocus());
 
   PressKey(ui::VKEY_DOWN);
   EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->sign_out_item()
+                  ->sign_out_item_for_test()
                   ->HasFocus());
 }
 

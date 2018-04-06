@@ -489,8 +489,7 @@ void PowerButtonController::SetShowMenuAnimationDone() {
   // Focus on 'Power off' when menu is shown.
   static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
       ->power_button_menu_view()
-      ->power_off_item()
-      ->RequestFocus();
+      ->FocusPowerOffButton();
 
   pre_shutdown_timer_.Start(
       FROM_HERE, kStartShutdownAnimationTimeout,

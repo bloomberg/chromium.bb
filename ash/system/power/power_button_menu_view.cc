@@ -48,6 +48,10 @@ PowerButtonMenuView::PowerButtonMenuView(
 
 PowerButtonMenuView::~PowerButtonMenuView() = default;
 
+void PowerButtonMenuView::FocusPowerOffButton() {
+  power_off_item_->RequestFocus();
+}
+
 void PowerButtonMenuView::ScheduleShowHideAnimation(bool show) {
   // Cancel any previous animation.
   layer()->GetAnimator()->AbortAllAnimations();

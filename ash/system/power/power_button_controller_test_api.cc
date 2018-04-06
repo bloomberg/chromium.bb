@@ -70,7 +70,7 @@ bool PowerButtonControllerTestApi::IsMenuOpened() const {
 }
 
 bool PowerButtonControllerTestApi::MenuHasSignOutItem() const {
-  return IsMenuOpened() && GetPowerButtonMenuView()->sign_out_item();
+  return IsMenuOpened() && GetPowerButtonMenuView()->sign_out_item_for_test();
 }
 
 PowerButtonScreenshotController*

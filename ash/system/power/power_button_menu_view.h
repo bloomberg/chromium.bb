@@ -42,10 +42,15 @@ class ASH_EXPORT PowerButtonMenuView : public views::View,
       PowerButtonController::PowerButtonPosition power_button_position);
   ~PowerButtonMenuView() override;
 
-  // TODO(minch), add FocusPowerOffButton() to help focus power_off_item_. Then
-  // rename two of the get functions here that will only be used by tests.
-  PowerButtonMenuItemView* sign_out_item() const { return sign_out_item_; }
-  PowerButtonMenuItemView* power_off_item() const { return power_off_item_; }
+  PowerButtonMenuItemView* sign_out_item_for_test() const {
+    return sign_out_item_;
+  }
+  PowerButtonMenuItemView* power_off_item_for_test() const {
+    return power_off_item_;
+  }
+
+  // Requests focus for |power_off_item_|.
+  void FocusPowerOffButton();
 
   // Schedules an animation to show or hide the view.
   void ScheduleShowHideAnimation(bool show);
