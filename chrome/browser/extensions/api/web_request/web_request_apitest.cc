@@ -45,9 +45,11 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_type.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/simple_url_loader_test_helper.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/blocked_action_type.h"
@@ -72,6 +74,8 @@
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 #if defined(OS_CHROMEOS)
@@ -908,12 +912,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 }
 
 // Verify that requests to clientsX.google.com are protected properly.
-// First test requests from a standard renderer and a webui renderer.
-// Then test a request from the browser process.
+// First test requests from a standard renderer and then a request from the
+// browser process.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        WebRequestClientsGoogleComProtection) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  int port = embedded_test_server()->port();
 
   // Load an extension that registers a listener for webRequest events, and
   // wait until it's initialized.
@@ -923,96 +926,60 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   ASSERT_TRUE(extension) << message_;
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
-  // Perform requests to https://client1.google.com from renderer processes.
+  EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
 
-  struct TestCase {
-    const char* main_frame_url;
-    bool request_to_clients1_google_com_visible;
-  } testcases[] = {
-      {"http://www.example.com", true}, {"chrome://settings", false},
-  };
+  GURL main_frame_url =
+      embedded_test_server()->GetURL("www.example.com", "/simple.html");
+  NavigateParams params(browser(), main_frame_url, ui::PAGE_TRANSITION_TYPED);
+  ui_test_utils::NavigateToURL(&params);
 
-  // Expected number of requests to clients1.google.com observed so far.
-  int expected_requests_observed = 0;
-  EXPECT_EQ(expected_requests_observed,
-            GetWebRequestCountFromBackgroundPage(extension, profile()));
+  EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
 
-  for (const auto& testcase : testcases) {
-    SCOPED_TRACE(testcase.main_frame_url);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
 
-    GURL url;
-    if (base::StartsWith(testcase.main_frame_url, "chrome://",
-                         base::CompareCase::INSENSITIVE_ASCII)) {
-      url = GURL(testcase.main_frame_url);
-    } else {
-      url = GURL(base::StringPrintf("%s:%d/simple.html",
-                                    testcase.main_frame_url, port));
-    }
+  // Attempt to issue a request to clients1.google.com from the renderer. This
+  // will fail, but should still be visible to the WebRequest API.
+  const char kRequest[] = R"(
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'http://clients1.google.com');
+      xhr.onload = () => {window.domAutomationController.send(true);};
+      xhr.onerror = () => {window.domAutomationController.send(false);};
+      xhr.send();)";
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(web_contents->GetMainFrame(),
+                                          kRequest, &success));
+  // Requests always fail due to cross origin nature.
+  EXPECT_FALSE(success);
 
-    NavigateParams params(browser(), url, ui::PAGE_TRANSITION_TYPED);
-    ui_test_utils::NavigateToURL(&params);
+  EXPECT_EQ(1, GetWebRequestCountFromBackgroundPage(extension, profile()));
 
-    EXPECT_EQ(expected_requests_observed,
-              GetWebRequestCountFromBackgroundPage(extension, profile()));
+  // Now perform a request to client1.google.com from the browser process. This
+  // should *not* be visible to the WebRequest API.
 
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    ASSERT_TRUE(web_contents);
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url =
+      embedded_test_server()->GetURL("clients1.google.com", "/simple.html");
 
-    const char kRequest[] =
-        "var xhr = new XMLHttpRequest();\n"
-        "xhr.open('GET', 'https://clients1.google.com');\n"
-        "xhr.onload = () => {window.domAutomationController.send(true);};\n"
-        "xhr.onerror = () => {window.domAutomationController.send(false);};\n"
-        "xhr.send();\n";
+  auto* url_loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(profile())
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get();
+  content::SimpleURLLoaderTestHelper loader_helper;
+  auto loader = network::SimpleURLLoader::Create(std::move(request),
+                                                 TRAFFIC_ANNOTATION_FOR_TESTS);
+  loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory, loader_helper.GetCallback());
 
-    bool success = false;
-    EXPECT_TRUE(ExecuteScriptAndExtractBool(web_contents->GetMainFrame(),
-                                            kRequest, &success));
-    // Requests always fail due to cross origin nature.
-    EXPECT_FALSE(success);
+  // Wait for the response to complete.
+  loader_helper.WaitForCallback();
+  EXPECT_TRUE(loader_helper.response_body());
+  EXPECT_EQ(200, loader->ResponseInfo()->headers->response_code());
 
-    if (testcase.request_to_clients1_google_com_visible)
-      ++expected_requests_observed;
-
-    EXPECT_EQ(expected_requests_observed,
-              GetWebRequestCountFromBackgroundPage(extension, profile()));
-  }
-
-  // Perform request to https://client1.google.com from browser process.
-
-  class TestURLFetcherDelegate : public net::URLFetcherDelegate {
-   public:
-    explicit TestURLFetcherDelegate(const base::Closure& quit_loop_func)
-        : quit_loop_func_(quit_loop_func) {}
-    ~TestURLFetcherDelegate() override {}
-
-    void OnURLFetchComplete(const net::URLFetcher* source) override {
-      EXPECT_EQ(net::HTTP_OK, source->GetResponseCode());
-      quit_loop_func_.Run();
-    }
-
-   private:
-    base::Closure quit_loop_func_;
-  };
-  base::RunLoop run_loop;
-  TestURLFetcherDelegate delegate(run_loop.QuitClosure());
-
-  net::URLFetcherImplFactory url_fetcher_impl_factory;
-  net::FakeURLFetcherFactory url_fetcher_factory(&url_fetcher_impl_factory);
-  url_fetcher_factory.SetFakeResponse(GURL("https://client1.google.com"),
-                                      "hello my friend", net::HTTP_OK,
-                                      net::URLRequestStatus::SUCCESS);
-  std::unique_ptr<net::URLFetcher> fetcher =
-      url_fetcher_factory.CreateURLFetcher(
-          1, GURL("https://client1.google.com"), net::URLFetcher::GET,
-          &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
-  fetcher->Start();
-  run_loop.Run();
-
-  // This request should not be observed by the extension.
-  EXPECT_EQ(expected_requests_observed,
-            GetWebRequestCountFromBackgroundPage(extension, profile()));
+  // We should still have only seen the single render-initiated request from the
+  // first half of the test.
+  EXPECT_EQ(1, GetWebRequestCountFromBackgroundPage(extension, profile()));
 }
 
 // Verify that requests for PAC scripts are protected properly.
