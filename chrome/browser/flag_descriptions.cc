@@ -2500,13 +2500,6 @@ const char kDcheckIsFatalDescription[] =
 
 #if defined(OS_MACOSX)
 
-const char kAppInfoDialogName[] = "Toolkit-Views App Info Dialog.";
-const char kAppInfoDialogDescription[] =
-    "Makes the Toolkit-Views based App Info dialog accessible from "
-    "chrome://apps or chrome://extensions in place of the native extension "
-    "permissions dialog, or the details link (which is a link to the Web "
-    "Store).";
-
 const char kAppWindowCyclingName[] = "Custom Window Cycling for Chrome Apps.";
 const char kAppWindowCyclingDescription[] =
     "Changes the behavior of Cmd+` when a Chrome App becomes active. When "

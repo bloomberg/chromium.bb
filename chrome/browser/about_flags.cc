@@ -2174,10 +2174,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kTrySupportedChannelLayouts)},
 #endif  // OS_WIN
 #if defined(OS_MACOSX)
-    {"app-info-dialog", flag_descriptions::kAppInfoDialogName,
-     flag_descriptions::kAppInfoDialogDescription, kOsMac,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAppInfoDialogMac,
-                               switches::kDisableAppInfoDialogMac)},
     {"mac-v2-sandbox", flag_descriptions::kMacV2SandboxName,
      flag_descriptions::kMacV2SandboxDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kMacV2Sandbox)},
