@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/CSSValuePair.h"
 #include "core/css/cssom/CSSOMTypes.h"
 #include "core/css/cssom/CSSStyleValue.h"
 #include "core/css/cssom/StyleValueFactory.h"
@@ -53,6 +54,19 @@ const CSSValue* StyleValueToCSSValue(
   // TODO(https://crbug.com/545324): Move this into a method on
   // CSSProperty when there are more of these cases.
   switch (property_id) {
+    case CSSPropertyBorderBottomLeftRadius:
+    case CSSPropertyBorderBottomRightRadius:
+    case CSSPropertyBorderTopLeftRadius:
+    case CSSPropertyBorderTopRightRadius: {
+      // level 1 only accept single <length-percentages>, but border-radius-*
+      // expects pairs.
+      const auto* value = style_value.ToCSSValue();
+      if (value->IsPrimitiveValue()) {
+        return CSSValuePair::Create(value, value,
+                                    CSSValuePair::kDropIdenticalValues);
+      }
+      break;
+    }
     case CSSPropertyGridAutoFlow: {
       // level 1 only accepts single keywords
       const auto* value = style_value.ToCSSValue();

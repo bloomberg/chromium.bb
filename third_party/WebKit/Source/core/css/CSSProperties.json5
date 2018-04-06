@@ -871,6 +871,7 @@
       default_value: "LengthSize(Length(0, kFixed), Length(0, kFixed))",
       type_name: "LengthSize",
       converter: "ConvertRadius",
+      typedom_types: ["Length", "Percentage"],
     },
     {
       name: "border-bottom-right-radius",
@@ -882,6 +883,7 @@
       default_value: "LengthSize(Length(0, kFixed), Length(0, kFixed))",
       type_name: "LengthSize",
       converter: "ConvertRadius",
+      typedom_types: ["Length", "Percentage"],
     },
     {
       name: "border-bottom-style",
@@ -925,17 +927,21 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       custom_apply_functions_all: true,
+      typedom_types: ["Length", "Number"]
     },
     {
       name: "border-image-repeat",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
+      keywords: ["stretch", "repeat", "round", "space"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "border-image-slice",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       custom_apply_functions_all: true,
+      typedom_types: ["Number", "Percentage"],
     },
     {
       name: "border-image-source",
@@ -950,6 +956,8 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       custom_apply_functions_all: true,
+      keywords: ["auto"],
+      typedom_types: ["Keyword", "Length", "Percentage", "Number"],
     },
     {
       name: "border-left-color",
@@ -1057,6 +1065,7 @@
       default_value: "LengthSize(Length(0, kFixed), Length(0, kFixed))",
       type_name: "LengthSize",
       converter: "ConvertRadius",
+      typedom_types: ["Length", "Percentage"],
     },
     {
       name: "border-top-right-radius",
@@ -1068,6 +1077,7 @@
       default_value: "LengthSize(Length(0, kFixed), Length(0, kFixed))",
       type_name: "LengthSize",
       converter: "ConvertRadius",
+      typedom_types: ["Length", "Percentage"],
     },
     {
       name: "border-top-style",
