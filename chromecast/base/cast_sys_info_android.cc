@@ -54,9 +54,9 @@ CastSysInfo::BuildType CastSysInfoAndroid::GetBuildType() {
   if (!base::StringToInt(CAST_BUILD_INCREMENTAL, &build_number))
     build_number = 0;
 
-  // Note: no way to determine which channel was used on play store.
+  const std::string channel(GetSystemReleaseChannel());
   if (strcmp(build_info_->build_type(), kBuildTypeUser) == 0 &&
-      build_number > 0) {
+      build_number > 0 && (channel.empty() || channel == "stable-channel")) {
     return BUILD_PRODUCTION;
   }
 
