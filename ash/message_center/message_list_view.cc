@@ -6,6 +6,7 @@
 
 #include "ash/message_center/message_center_style.h"
 #include "ash/message_center/message_center_view.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -30,10 +31,13 @@ namespace ash {
 namespace {
 const int kAnimateClearingNextNotificationDelayMS = 40;
 
+bool HasBorderPadding() {
+  return !switches::IsSidebarEnabled() &&
+         !features::IsSystemTrayUnifiedEnabled();
+}
+
 int GetMarginBetweenItems() {
-  return switches::IsSidebarEnabled()
-             ? 0
-             : message_center::kMarginBetweenItemsInList;
+  return HasBorderPadding() ? message_center::kMarginBetweenItemsInList : 0;
 }
 
 }  // namespace
@@ -50,7 +54,7 @@ MessageListView::MessageListView()
   layout->SetDefaultFlex(1);
   SetLayoutManager(std::move(layout));
 
-  if (!switches::IsSidebarEnabled()) {
+  if (HasBorderPadding()) {
     SetBorder(views::CreateEmptyBorder(
         gfx::Insets(message_center::kMarginBetweenItemsInList)));
   }

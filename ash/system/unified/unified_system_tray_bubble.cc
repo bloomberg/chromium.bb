@@ -13,6 +13,12 @@
 
 namespace ash {
 
+namespace {
+
+constexpr int kPaddingFromScreenTop = 8;
+
+}  // namespace
+
 UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
     : controller_(std::make_unique<UnifiedSystemTrayController>(
           tray->shelf()->GetStatusAreaWidget()->system_tray())),
@@ -27,7 +33,12 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
       tray->shelf()->GetSystemTrayAnchor()->GetBubbleAnchor();
 
   auto* bubble_view = new views::TrayBubbleView(init_params);
-  bubble_view->AddChildView(controller_->CreateView());
+  int max_height =
+      tray->shelf()->GetUserWorkAreaBounds().height() - kPaddingFromScreenTop;
+  auto* unified_view = controller_->CreateView();
+  unified_view->SetMaxHeight(max_height);
+  bubble_view->SetMaxHeight(max_height);
+  bubble_view->AddChildView(unified_view);
   bubble_view->set_anchor_view_insets(
       tray->shelf()->GetSystemTrayAnchor()->GetBubbleAnchorInsets());
   bubble_view->set_color(SK_ColorTRANSPARENT);
