@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-// https://webaudio.github.io/web-audio-api/#the-audionode-interface
+// See https://webaudio.github.io/web-audio-api/#audionode
 
 enum ChannelCountMode {
     "max",

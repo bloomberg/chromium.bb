@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#the-dynamicscompressornode-interface
+// See https://webaudio.github.io/web-audio-api/#dynamicscompressornode
 [
     Constructor(BaseAudioContext context, optional DynamicsCompressorOptions options),
     RaisesException=Constructor,

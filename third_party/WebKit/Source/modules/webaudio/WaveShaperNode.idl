@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#WaveShaperNode
+// See https://webaudio.github.io/web-audio-api/#waveshapernode
 enum OverSampleType {
     "none",
     "2x",

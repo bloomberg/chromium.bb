@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#the-pannernode-interface
+// See https://webaudio.github.io/web-audio-api/#pannernode
 enum PanningModelType {
     "equalpower",
     "HRTF"

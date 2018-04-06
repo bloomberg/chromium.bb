@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#AudioListener
+// See https://webaudio.github.io/web-audio-api/#audiolistener
 interface AudioListener {
     [RaisesException, MeasureAs=AudioListenerSetPosition] void setPosition(float x, float y, float z);
     [RaisesException, MeasureAs=AudioListenerSetOrientation] void setOrientation(float x, float y, float z, float xUp, float yUp, float zUp);

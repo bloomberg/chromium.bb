@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#the-biquadfilternode-interface
+// See https://webaudio.github.io/web-audio-api/#biquadfilternode
 enum BiquadFilterType {
     "lowpass",
     "highpass",

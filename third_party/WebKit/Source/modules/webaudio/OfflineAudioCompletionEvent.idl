@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#OfflineAudioCompletionEvent 
+// See https://webaudio.github.io/web-audio-api/#offlineaudiocompletionevent
 [
     Constructor(DOMString type, OfflineAudioCompletionEventInit eventInitDict)
 ]

@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#the-oscillatornode-interface
+// See https://webaudio.github.io/web-audio-api/#oscillatornode
 enum OscillatorType {
     "sine",
     "square",

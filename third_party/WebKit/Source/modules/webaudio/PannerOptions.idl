@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// See https://webaudio.github.io/web-audio-api/#panneroptions
+// See https://webaudio.github.io/web-audio-api/#dictdef-panneroptions
 dictionary PannerOptions : AudioNodeOptions {
     PanningModelType panningModel = "equalpower";
     DistanceModelType distanceModel = "inverse";
