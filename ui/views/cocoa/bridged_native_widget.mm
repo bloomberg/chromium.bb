@@ -126,9 +126,6 @@ using NSViewComparatorValue = id;
 using NSViewComparatorValue = __kindof NSView*;
 #endif
 
-const CGFloat kYosemiteMenuOpacity = 245.0 / 255.0;
-const int kYosemiteMenuBlur = 80;
-
 // Margin at edge and corners of the window that trigger resizing. These match
 // actual Cocoa resize margins.
 const int kResizeAreaEdgeSize = 3;
@@ -1454,18 +1451,6 @@ void BridgedNativeWidget::AddCompositorSuperview() {
   base::scoped_nsobject<CALayer> background_layer([[CALayer alloc] init]);
   [background_layer
       setAutoresizingMask:kCALayerWidthSizable | kCALayerHeightSizable];
-
-  if (widget_type_ == Widget::InitParams::TYPE_MENU) {
-    // Giving the canvas opacity messes up subpixel font rendering, so use a
-    // solid background, but make the CALayer transparent.
-    [background_layer setOpacity:kYosemiteMenuOpacity];
-    CGSSetWindowBackgroundBlurRadius(_CGSDefaultConnection(),
-                                     [window_ windowNumber], kYosemiteMenuBlur);
-    // The blur effect does not occur with a fully transparent (or fully
-    // layer-backed) window. Setting a window background will use square
-    // corners, so ask the contentView to draw one instead.
-    [bridged_view_ setDrawMenuBackgroundForBlur:YES];
-  }
 
   // Set the layer first to create a layer-hosting view (not layer-backed).
   [compositor_superview_ setLayer:background_layer];

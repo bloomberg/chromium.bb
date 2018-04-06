@@ -24,19 +24,9 @@
 
 namespace {
 
-// Values calculated by reading pixels and solving simultaneous equations
-// derived from "A over B" alpha compositing. Steps: Sample the semi-transparent
-// pixel over two backgrounds; P1, P2 over backgrounds B1, B2. Use the color
-// value between 0.0 and 1.0 (i.e. divide by 255.0). Then,
-// alpha = (P2 - P1 + B1 - B2) / (B1 - B2)
-// color = (P1 - B1 + alpha * B1) / alpha.
-const SkColor kMenuPopupBackgroundColor = SkColorSetARGB(245, 255, 255, 255);
-const SkColor kMenuSeparatorColor = SkColorSetARGB(255, 217, 217, 217);
+const SkColor kMenuPopupBackgroundColor = SK_ColorWHITE;
+const SkColor kMenuSeparatorColor = SkColorSetA(SK_ColorBLACK, 38);
 const SkColor kMenuBorderColor = SkColorSetARGB(60, 0, 0, 0);
-
-const SkColor kMenuPopupBackgroundColorMavericks =
-    SkColorSetARGB(255, 255, 255, 255);
-const SkColor kMenuSeparatorColorMavericks = SkColorSetARGB(243, 228, 228, 228);
 
 // Hardcoded color used for some existing dialogs in Chrome's Cocoa UI.
 const SkColor kDialogBackgroundColor = SkColorSetRGB(251, 251, 251);
@@ -139,15 +129,22 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_DisabledMenuItemForegroundColor:
       return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
     case kColorId_SelectedMenuItemForegroundColor:
-      return NSSystemColorToSkColor([NSColor selectedMenuItemTextColor]);
+      return SK_ColorBLACK;
     case kColorId_FocusedMenuItemBackgroundColor:
-      return ApplySystemControlTint(
-          NSSystemColorToSkColor([NSColor selectedMenuItemColor]));
+      // It's necessary to use a different alpha for Aqua mode vs Graphite mode,
+      // because the black used as the graphite base shows up well even at low
+      // alphas, but the blue used for Aqua needs a bit more alpha to show up
+      // properly. At the same alpha as the graphite uses, it's difficult to
+      // pick out clearly and looks somewhat like faint lilac instead of blue.
+      return ([NSColor currentControlTint] == NSGraphiteControlTint)
+                 ? SkColorSetA(SK_ColorBLACK, 21)
+                 : SkColorSetA(
+                       NSSystemColorToSkColor([NSColor selectedMenuItemColor]),
+                       45);
     case kColorId_MenuBackgroundColor:
       return kMenuPopupBackgroundColor;
     case kColorId_MenuSeparatorColor:
-      return base::mac::IsOS10_9() ? kMenuSeparatorColorMavericks
-                                   : kMenuSeparatorColor;
+      return kMenuSeparatorColor;
     case kColorId_MenuBorderColor:
       return kMenuBorderColor;
 
@@ -256,10 +253,7 @@ void NativeThemeMac::PaintMenuPopupBackground(
     const MenuBackgroundExtraParams& menu_background) const {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  if (base::mac::IsOS10_9())
-    flags.setColor(kMenuPopupBackgroundColorMavericks);
-  else
-    flags.setColor(kMenuPopupBackgroundColor);
+  flags.setColor(kMenuPopupBackgroundColor);
   const SkScalar radius = SkIntToScalar(menu_background.corner_radius);
   SkRect rect = gfx::RectToSkRect(gfx::Rect(size));
   canvas->drawRoundRect(rect, radius, radius, flags);

@@ -20,10 +20,6 @@ namespace views {
 namespace internal {
 namespace {
 
-// The menu run types that should show a native NSMenu rather than a toolkit-
-// views menu. Only supported when the menu is backed by a ui::MenuModel.
-const int kNativeRunTypes = MenuRunner::CONTEXT_MENU | MenuRunner::COMBOBOX;
-
 const CGFloat kNativeCheckmarkWidth = 18;
 const CGFloat kNativeMenuItemHeight = 18;
 
@@ -118,11 +114,6 @@ MenuRunnerImplInterface* MenuRunnerImplInterface::Create(
     ui::MenuModel* menu_model,
     int32_t run_types,
     const base::Closure& on_menu_closed_callback) {
-  if ((run_types & kNativeRunTypes) != 0 &&
-      (run_types & MenuRunner::IS_NESTED) == 0) {
-    return new MenuRunnerImplCocoa(menu_model, on_menu_closed_callback);
-  }
-
   return new MenuRunnerImplAdapter(menu_model, on_menu_closed_callback);
 }
 
@@ -159,7 +150,6 @@ void MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
                                     const gfx::Rect& bounds,
                                     MenuAnchorPosition anchor,
                                     int32_t run_types) {
-  DCHECK(run_types & kNativeRunTypes);
   DCHECK(!IsRunning());
   DCHECK(parent);
   closing_event_time_ = base::TimeTicks();
