@@ -16,17 +16,12 @@ namespace password_manager {
 
 enum class FormParsingMode { FILLING, SAVING };
 
-class IOSFormParser {
- public:
-  IOSFormParser();
-
-  // Parse DOM information |form_data| to Password Manager form representation
-  // PasswordForm.
-  // Return nullptr when parsing is unsuccessful.
-  std::unique_ptr<autofill::PasswordForm> Parse(
-      const autofill::FormData& form_data,
-      FormParsingMode mode);
-};
+// Parse DOM information |form_data| into Password Manager' form representation
+// PasswordForm.
+// Return nullptr when parsing is unsuccessful.
+std::unique_ptr<autofill::PasswordForm> ParseFormData(
+    const autofill::FormData& form_data,
+    FormParsingMode mode);
 
 }  // namespace password_manager
 

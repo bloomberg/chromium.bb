@@ -272,8 +272,6 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
   AccountSelectFillData fillData_;
 
-  password_manager::IOSFormParser formParser_;
-
   // The WebState this instance is observing. Will be null after
   // -webStateDestroyed: has been called.
   web::WebState* webState_;
@@ -545,7 +543,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
   for (const auto& formData : formsData) {
     std::unique_ptr<PasswordForm> form =
-        formParser_.Parse(formData, password_manager::FormParsingMode::FILLING);
+        ParseFormData(formData, password_manager::FormParsingMode::FILLING);
     if (form)
       forms->push_back(*form);
   }
@@ -582,7 +580,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     }
 
     std::unique_ptr<PasswordForm> form =
-        formParser_.Parse(formData, password_manager::FormParsingMode::SAVING);
+        ParseFormData(formData, password_manager::FormParsingMode::SAVING);
     if (!form) {
       completionHandler(NO, PasswordForm());
       return;
@@ -862,7 +860,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
   }
 
   std::unique_ptr<PasswordForm> form =
-      formParser_.Parse(formData, password_manager::FormParsingMode::SAVING);
+      ParseFormData(formData, password_manager::FormParsingMode::SAVING);
   if (!form)
     return NO;
 

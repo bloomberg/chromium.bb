@@ -307,10 +307,8 @@ void SetFields(const ParseResult& parse_result, PasswordForm* password_form) {
 
 }  // namespace
 
-IOSFormParser::IOSFormParser() = default;
-
-std::unique_ptr<PasswordForm> IOSFormParser::Parse(const FormData& form_data,
-                                                   FormParsingMode mode) {
+std::unique_ptr<PasswordForm> ParseFormData(const FormData& form_data,
+                                            FormParsingMode mode) {
   FieldPointersVector fields = GetNonCreditCardFields(form_data.fields);
 
   // Skip forms without password fields.
