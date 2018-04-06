@@ -1624,7 +1624,7 @@ public class AwContents implements SmartClipProvider {
 
     private static void recordHistoryUrl(@HistoryUrl int value) {
         RecordHistogram.recordEnumeratedHistogram(
-                "WebView.LoadDataWithBaseUrl.HistoryUrl", value, HistoryUrl.COUNT);
+                "Android.WebView.LoadDataWithBaseUrl.HistoryUrl", value, HistoryUrl.COUNT);
     }
 
     /**
