@@ -42,6 +42,8 @@
 #define QUIC_CHROMIUM_DLOG_IF_DFATAL(condition) DLOG_IF(DFATAL, condition)
 
 #define QUIC_DVLOG_IMPL(verbose_level) DVLOG(verbose_level)
+#define QUIC_DVLOG_IF_IMPL(verbose_level, condition) \
+  DVLOG_IF(verbose_level, condition)
 
 #if defined(OS_WIN)
 // wingdi.h defines ERROR to be 0. When we call QUIC_DLOG(ERROR), it gets

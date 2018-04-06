@@ -13,6 +13,8 @@
 // they would simply be translated to LOG.
 
 #define QUIC_DVLOG(verbose_level) QUIC_DVLOG_IMPL(verbose_level)
+#define QUIC_DVLOG_IF(verbose_level, condition) \
+  QUIC_DVLOG_IF_IMPL(verbose_level, condition)
 #define QUIC_DLOG(severity) QUIC_DLOG_IMPL(severity)
 #define QUIC_DLOG_IF(severity, condition) QUIC_DLOG_IF_IMPL(severity, condition)
 #define QUIC_VLOG(verbose_level) QUIC_VLOG_IMPL(verbose_level)
