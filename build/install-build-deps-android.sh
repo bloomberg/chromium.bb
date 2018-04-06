@@ -38,7 +38,7 @@ sudo apt-get -y install libncurses5:i386 libstdc++6:i386 zlib1g:i386
 sudo apt-get -y install bsdiff
 
 # Needed to unpack the profiles we pull with `gclient runhooks`
-sudo apt-get -y install bzip2
+sudo apt-get -y install bzip2 xz-utils
 
 # Do our own error handling for java.
 set +e

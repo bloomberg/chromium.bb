@@ -15,6 +15,7 @@ No authentication is necessary if you pull these profiles directly over
 https."""
 
 import argparse
+import contextlib
 import os
 import subprocess
 import sys
@@ -72,20 +73,32 @@ def CheckCallOrExit(cmd):
 def RetrieveProfile(desired_profile_name, out_path):
   # vpython is > python 2.7.9, so we can expect urllib to validate HTTPS certs
   # properly.
-  compressed_path = out_path + '.bz2'
-  u = urllib2.urlopen(GS_BASE_URL + '/' + desired_profile_name)
-  with open(compressed_path, 'wb') as f:
-    while True:
-      buf = u.read(4096)
-      if not buf:
-        break
-      f.write(buf)
+  ext = os.path.splitext(desired_profile_name)[1]
+  compressed_path = out_path + ext
+  gs_url = GS_BASE_URL + '/' + desired_profile_name
+  with contextlib.closing(urllib2.urlopen(gs_url)) as u:
+    with open(compressed_path, 'wb') as f:
+      while True:
+        buf = u.read(4096)
+        if not buf:
+          break
+        f.write(buf)
 
-  # NOTE: we can't use Python's bzip module, since it doesn't support
-  # multi-stream bzip files. It will silently succeed and give us a garbage
-  # profile.
-  # bzip2 removes the compressed file on success.
-  CheckCallOrExit(['bzip2', '-d', compressed_path])
+  if ext == '.bz2':
+    # NOTE: we can't use Python's bzip module, since it doesn't support
+    # multi-stream bzip files. It will silently succeed and give us a garbage
+    # profile.
+    # bzip2 removes the compressed file on success.
+    CheckCallOrExit(['bzip2', '-d', compressed_path])
+  elif ext == '.xz':
+    # ...And we can't use the `lzma` module, since it was introduced in python3.
+    # xz removes the compressed file on success.
+    CheckCallOrExit(['xz', '-d', compressed_path])
+  else:
+    # Wait until after downloading the file to check the file extension, so the
+    # user has something usable locally if the file extension is unrecognized.
+    raise ValueError(
+        'Only bz2 and xz extensions are supported; "%s" is not' % ext)
 
 
 def CleanProfilesDirectory():
