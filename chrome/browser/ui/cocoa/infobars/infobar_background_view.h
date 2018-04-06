@@ -5,16 +5,10 @@
 #ifndef CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_BACKGROUND_VIEW_H_
 #define CHROME_BROWSER_UI_COCOA_INFOBARS_INFOBAR_BACKGROUND_VIEW_H_
 
-#import "chrome/browser/ui/cocoa/vertical_gradient_view.h"
-#include "third_party/skia/include/core/SkColor.h"
-
 #import <Cocoa/Cocoa.h>
 
-// A custom view that draws the background gradient for an infobar.
-@interface InfoBarBackgroundView : VerticalGradientView
-
-// Sets the infobar background color.
-- (void)setInfobarBackgroundColor:(SkColor)color;
+// A custom view that draws the background for an infobar.
+@interface InfoBarBackgroundView : NSView
 
 @end
 
