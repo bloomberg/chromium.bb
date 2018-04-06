@@ -93,6 +93,7 @@
 #include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/WebKit/public/common/client_hints/client_hints.h"
 #include "third_party/WebKit/public/common/device_memory/approximated_device_memory.h"
 
 namespace blink {
@@ -940,6 +941,36 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.AddHTTPHeaderField(
         "Viewport-Width",
         AtomicString(String::Number(GetFrame()->View()->ViewportWidth())));
+  }
+
+  if (ShouldSendClientHint(mojom::WebClientHintsType::kRtt, hints_preferences,
+                           enabled_hints)) {
+    unsigned long rtt = GetNetworkStateNotifier().RoundRtt(
+        request.Url().Host(), GetNetworkStateNotifier().HttpRtt());
+    request.AddHTTPHeaderField(
+        blink::kClientHintsHeaderMapping[static_cast<size_t>(
+            mojom::WebClientHintsType::kRtt)],
+        AtomicString(String::Number(rtt)));
+  }
+
+  if (ShouldSendClientHint(mojom::WebClientHintsType::kDownlink,
+                           hints_preferences, enabled_hints)) {
+    double mbps = GetNetworkStateNotifier().RoundMbps(
+        request.Url().Host(),
+        GetNetworkStateNotifier().DownlinkThroughputMbps());
+    request.AddHTTPHeaderField(
+        blink::kClientHintsHeaderMapping[static_cast<size_t>(
+            mojom::WebClientHintsType::kDownlink)],
+        AtomicString(String::Number(mbps)));
+  }
+
+  if (ShouldSendClientHint(mojom::WebClientHintsType::kEct, hints_preferences,
+                           enabled_hints)) {
+    request.AddHTTPHeaderField(
+        blink::kClientHintsHeaderMapping[static_cast<size_t>(
+            mojom::WebClientHintsType::kEct)],
+        AtomicString(NetworkStateNotifier::EffectiveConnectionTypeToString(
+            GetNetworkStateNotifier().EffectiveType())));
   }
 }
 

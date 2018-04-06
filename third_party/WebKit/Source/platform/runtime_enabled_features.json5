@@ -748,6 +748,10 @@
       status: "stable",
     },
     {
+      name: "NetInfoDownlinkHeader",
+      status: "experimental",
+    },
+    {
       name: "NetInfoDownlinkMax",
       status: "stable",
     },
@@ -756,8 +760,16 @@
       status: "stable",
     },
     {
+      name: "NetInfoEffectiveTypeHeader",
+      status: "experimental",
+    },
+    {
       name: "NetInfoRtt",
       status: "stable",
+    },
+    {
+      name: "NetInfoRttHeader",
+      status: "experimental",
     },
     {
       name: "NetInfoSaveData",

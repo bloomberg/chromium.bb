@@ -32,6 +32,21 @@ void ParseAcceptChHeader(const String& header_value,
       mojom::WebClientHintsType::kDeviceMemory,
       enabled_hints.IsEnabled(mojom::WebClientHintsType::kDeviceMemory) &&
           RuntimeEnabledFeatures::DeviceMemoryHeaderEnabled());
+
+  enabled_hints.SetIsEnabled(
+      mojom::WebClientHintsType::kRtt,
+      enabled_hints.IsEnabled(mojom::WebClientHintsType::kRtt) &&
+          RuntimeEnabledFeatures::NetInfoRttHeaderEnabled());
+
+  enabled_hints.SetIsEnabled(
+      mojom::WebClientHintsType::kDownlink,
+      enabled_hints.IsEnabled(mojom::WebClientHintsType::kDownlink) &&
+          RuntimeEnabledFeatures::NetInfoDownlinkHeaderEnabled());
+
+  enabled_hints.SetIsEnabled(
+      mojom::WebClientHintsType::kEct,
+      enabled_hints.IsEnabled(mojom::WebClientHintsType::kEct) &&
+          RuntimeEnabledFeatures::NetInfoEffectiveTypeHeaderEnabled());
 }
 
 }  // namespace
