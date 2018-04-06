@@ -82,6 +82,7 @@ static constexpr float kToastYPaddingDMM = 0.02f;
 static constexpr float kToastCornerRadiusDMM = 0.004f;
 static constexpr float kToastTextFontHeightDMM = 0.023f;
 static constexpr int kToastTimeoutSeconds = 6;
+static constexpr float kPlatformToastVerticalOffset = 0.5f;
 
 static constexpr float kSplashScreenTextDistance = 2.5f;
 static constexpr float kSplashScreenTextFontHeightDMM = 0.05f;
