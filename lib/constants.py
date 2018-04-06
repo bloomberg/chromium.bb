@@ -351,7 +351,7 @@ ANDROID_NYC_BUILD_TARGETS = {
     'X86_INTERNAL': ('linux-cheets_x86-user', ANDROID_INTERNAL_PATTERN),
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
     'AOSP_X86_USERDEBUG': ('linux-aosp_cheets_x86-userdebug', r'\.zip$'),
-    'SDK_TOOLS': ('linux-static_sdk_tools', r'/(aapt|adb)$'),
+    'SDK_TOOLS': ('linux-static_sdk_tools', r'/(aapt|adb|zipalign)$'),
     'SDK_GOOGLE_X86_USERDEBUG': ('linux-sdk_google_cheets_x86-userdebug',
                                  r'\.zip$'),
     'SDK_GOOGLE_X86_64_USERDEBUG': ('linux-sdk_google_cheets_x86_64-userdebug',
