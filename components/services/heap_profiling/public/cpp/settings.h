@@ -48,7 +48,10 @@ Mode ConvertStringToMode(const std::string& input);
 mojom::StackMode GetStackModeForStartup();
 mojom::StackMode ConvertStringToStackMode(const std::string& input);
 
-bool GetShouldSampleForStartup();
+// A |sampling_rate| of 1 indicates that all allocations should be recorded.
+// A |sampling_rate| greater than 1 describes the Poisson Process sampling
+// interval. If |sampling_rate| is N, then on average, an allocation will be
+// recorded every N bytes of allocated objects.
 uint32_t GetSamplingRateForStartup();
 
 bool IsBackgroundHeapProfilingEnabled();

@@ -28,6 +28,7 @@
 #include "chrome/browser/tracing/crash_service_uploader.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/services/heap_profiling/public/cpp/controller.h"
 #include "components/services/heap_profiling/public/cpp/sender_pipe.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/services/heap_profiling/public/cpp/switches.h"
@@ -235,24 +236,7 @@ void ProfilingProcessHost::AddClientToProfilingService(
     mojom::ProcessType process_type) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  SenderPipe::PipePair pipes;
-
-  // Passes the client_for_profiling directly to the profiling process.
-  // The client process can not start sending data until the pipe is ready,
-  // so talking to the client is done in the AddSender completion callback.
-  //
-  // This code doesn't actually hang onto the client_for_browser interface
-  // poiner beyond sending this message to start since there are no other
-  // messages we need to send.
-  mojom::ProfilingParamsPtr params = mojom::ProfilingParams::New();
-  params->sampling_rate = should_sample_ ? sampling_rate_ : 1;
-  params->sender_pipe =
-      mojo::WrapPlatformFile(pipes.PassSender().release().handle);
-  params->stack_mode = stack_mode_;
-  profiling_service_->AddProfilingClient(
-      pid, std::move(client),
-      mojo::WrapPlatformFile(pipes.PassReceiver().release().handle),
-      process_type, std::move(params));
+  controller_->StartProfilingClient(std::move(client), pid, process_type);
 }
 
 // static
@@ -260,23 +244,37 @@ ProfilingProcessHost* ProfilingProcessHost::Start(
     content::ServiceManagerConnection* connection,
     Mode mode,
     mojom::StackMode stack_mode,
-    bool should_sample,
     uint32_t sampling_rate) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   CHECK(!has_started_);
   has_started_ = true;
   ProfilingProcessHost* host = GetInstance();
-  host->stack_mode_ = stack_mode;
-  host->should_sample_ = should_sample;
-  host->sampling_rate_ = sampling_rate;
+
+  host->connector_ = connection->GetConnector()->Clone();
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&ProfilingProcessHost::StartServiceOnIOThread,
+                         base::Unretained(host), stack_mode, sampling_rate,
+                         connection->GetConnector()->Clone()));
+
   host->SetMode(mode);
   host->Register();
-  host->MakeConnector(connection);
-  host->LaunchAsService();
   host->ConfigureBackgroundProfilingTriggers();
   host->metrics_timer_.Start(
       FROM_HERE, base::TimeDelta::FromHours(24),
       base::Bind(&ProfilingProcessHost::ReportMetrics, base::Unretained(host)));
+
+  // Start profiling the browser process if desired.
+  if (host->ShouldProfileNonRendererProcessType(
+          content::ProcessType::PROCESS_TYPE_BROWSER)) {
+    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &ProfilingProcessHost::StartProfilingBrowserProcessOnIOThread,
+                base::Unretained(host)));
+  }
 
   return host;
 }
@@ -300,13 +298,6 @@ void ProfilingProcessHost::SaveTraceWithHeapDumpToFile(
     SaveTraceFinishedCallback done,
     bool stop_immediately_after_heap_dump_for_tests) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (!profiling_service_.is_bound()) {
-    DLOG(ERROR)
-        << "Requesting heap dump when profiling process hasn't started.";
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(done), false));
-    return;
-  }
 
   auto finish_trace_callback = base::BindOnce(
       [](base::FilePath dest, SaveTraceFinishedCallback done, bool success,
@@ -357,7 +348,7 @@ void ProfilingProcessHost::RequestProcessReport(std::string trigger_name) {
         }
       },
       base::Unretained(this), std::move(trigger_name),
-      should_sample_ ? sampling_rate_ : 1);
+      controller_->sampling_rate());
   RequestTraceWithHeapDump(std::move(finish_report_callback),
                            true /* anonymize */);
 }
@@ -430,7 +421,7 @@ void ProfilingProcessHost::GetProfiledPids(GetProfiledPidsCallback callback) {
 void ProfilingProcessHost::GetProfiledPidsOnIOThread(
     GetProfiledPidsCallback callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  if (!profiling_service_.is_bound()) {
+  if (!controller_) {
     content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
         ->PostTask(FROM_HERE, base::BindOnce(std::move(callback),
                                              std::vector<base::ProcessId>()));
@@ -445,7 +436,7 @@ void ProfilingProcessHost::GetProfiledPidsOnIOThread(
             ->PostTask(FROM_HERE, base::BindOnce(std::move(callback), result));
       },
       std::move(callback));
-  profiling_service_->GetProfiledPids(std::move(post_result_to_ui_thread));
+  controller_->GetProfiledPids(std::move(post_result_to_ui_thread));
 }
 
 void ProfilingProcessHost::StartManualProfiling(base::ProcessId pid) {
@@ -454,8 +445,7 @@ void ProfilingProcessHost::StartManualProfiling(base::ProcessId pid) {
   if (!has_started_) {
     ProfilingProcessHost::Start(
         content::ServiceManagerConnection::GetForProcess(), Mode::kManual,
-        GetStackModeForStartup(), GetShouldSampleForStartup(),
-        GetSamplingRateForStartup());
+        GetStackModeForStartup(), GetSamplingRateForStartup());
   } else {
     SetMode(Mode::kManual);
   }
@@ -498,7 +488,7 @@ void ProfilingProcessHost::SetKeepSmallAllocations(
     return;
   }
 
-  profiling_service_->SetKeepSmallAllocations(keep_small_allocations);
+  controller_->SetKeepSmallAllocations(keep_small_allocations);
 }
 
 void ProfilingProcessHost::StartProfilingPidOnIOThread(base::ProcessId pid) {
@@ -530,45 +520,22 @@ void ProfilingProcessHost::StartProfilingPidOnIOThread(base::ProcessId pid) {
       << pid;
 }
 
-void ProfilingProcessHost::MakeConnector(
-    content::ServiceManagerConnection* connection) {
-  connector_ = connection->GetConnector()->Clone();
+void ProfilingProcessHost::StartServiceOnIOThread(
+    mojom::StackMode stack_mode,
+    uint32_t sampling_rate,
+    std::unique_ptr<service_manager::Connector> connector) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+
+  controller_.reset(
+      new Controller(std::move(connector), stack_mode, sampling_rate));
 }
 
-void ProfilingProcessHost::LaunchAsService() {
-  // May get called on different threads, we need to be on the IO thread to
-  // work.
-  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
-    content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(&ProfilingProcessHost::LaunchAsService,
-                                  base::Unretained(this)));
-    return;
-  }
-
-  // Bind to the memlog service. This will start it if it hasn't started
-  // already.
-  connector_->BindInterface(mojom::kServiceName, &profiling_service_);
-
-  // Set some state for heap dumps.
-  SetKeepSmallAllocations(ShouldKeepSmallAllocations());
-
-  // Grab a HeapProfiler InterfacePtr and pass that to memory instrumentation.
-  memory_instrumentation::mojom::HeapProfilerPtr heap_profiler;
-  connector_->BindInterface(mojom::kServiceName, &heap_profiler);
-
-  memory_instrumentation::mojom::CoordinatorPtr coordinator;
-  connector_->BindInterface(resource_coordinator::mojom::kServiceName,
-                            &coordinator);
-  coordinator->RegisterHeapProfiler(std::move(heap_profiler));
-
-  // Start profiling the browser if the mode allows.
-  if (ShouldProfileNonRendererProcessType(
-          content::ProcessType::PROCESS_TYPE_BROWSER)) {
-    ProfilingClientBinder client(connector_.get());
-    AddClientToProfilingService(client.take(), base::Process::Current().Pid(),
-                                mojom::ProcessType::BROWSER);
-  }
+void ProfilingProcessHost::StartProfilingBrowserProcessOnIOThread() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  ProfilingClientBinder client(connector_.get());
+  controller_->StartProfilingClient(client.take(),
+                                    base::Process::Current().Pid(),
+                                    mojom::ProcessType::BROWSER);
 }
 
 void ProfilingProcessHost::SaveTraceToFileOnBlockingThread(
