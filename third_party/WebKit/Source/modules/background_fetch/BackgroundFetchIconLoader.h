@@ -68,6 +68,16 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
       IconCallback,
       const WebSize& icon_display_size_pixels);
 
+  // Picks the best icon from the list of developer provided icons, for current
+  // display, given the ideal |icon_display_size_pixels|, and returns its index
+  // in the icons_ array.
+  int PickBestIconForDisplay(ExecutionContext*,
+                             const WebSize& icon_display_size_pixels);
+
+  // Get a score for the given icon, based on ideal_size. The icon with the
+  // highest score is chosen.
+  double GetIconScore(IconDefinition, const int ideal_size);
+
   bool stopped_ = false;
   scoped_refptr<SharedBuffer> data_;
   IconCallback icon_callback_;

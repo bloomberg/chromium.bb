@@ -19,12 +19,16 @@
 #include "public/platform/WebSize.h"
 #include "public/platform/WebURLRequest.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/WebKit/Source/platform/wtf/text/StringImpl.h"
 
 namespace blink {
 
 namespace {
 
 const unsigned long kIconFetchTimeoutInMs = 30000;
+const int kMinimumIconSizeInPx = 16;
+const double kAnySizeScore = 0.8;
+const double kUnspecifiedSizeScore = 0.4;
 
 }  // namespace
 
@@ -34,7 +38,6 @@ BackgroundFetchIconLoader::~BackgroundFetchIconLoader() {
   DCHECK(stopped_ || icon_callback_.is_null());
 }
 
-// TODO(nator): Add functionality to select which icon to load.
 void BackgroundFetchIconLoader::Start(BackgroundFetchBridge* bridge,
                                       ExecutionContext* execution_context,
                                       HeapVector<IconDefinition> icons,
@@ -54,19 +57,20 @@ void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
     ExecutionContext* execution_context,
     IconCallback icon_callback,
     const WebSize& icon_display_size_pixels) {
-  // TODO(nator): Pick the appropriate icon based on display size instead,
-  // and resize it, if needed.
-  if (icon_display_size_pixels.IsEmpty() || !icons_[0].hasSrc()) {
+  if (icon_display_size_pixels.IsEmpty()) {
     std::move(icon_callback).Run(SkBitmap());
     return;
   }
 
-  KURL first_icon_url = execution_context->CompleteURL(icons_[0].src());
-  if (!first_icon_url.IsValid() || first_icon_url.IsEmpty()) {
+  int best_icon_index =
+      PickBestIconForDisplay(execution_context, icon_display_size_pixels);
+  if (best_icon_index < 0) {
+    // None of the icons provided was suitable.
     std::move(icon_callback).Run(SkBitmap());
     return;
   }
-
+  KURL best_icon_url =
+      execution_context->CompleteURL(icons_[best_icon_index].src());
   icon_callback_ = std::move(icon_callback);
 
   ThreadableLoaderOptions threadable_loader_options;
@@ -76,7 +80,7 @@ void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
   if (execution_context->IsWorkerGlobalScope())
     resource_loader_options.request_initiator_context = kWorkerContext;
 
-  ResourceRequest resource_request(first_icon_url);
+  ResourceRequest resource_request(best_icon_url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
   resource_request.SetPriority(ResourceLoadPriority::kMedium);
   resource_request.SetRequestorOrigin(execution_context->GetSecurityOrigin());
@@ -86,6 +90,96 @@ void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
                                                 resource_loader_options);
 
   threadable_loader_->Start(resource_request);
+}
+
+int BackgroundFetchIconLoader::PickBestIconForDisplay(
+    ExecutionContext* execution_context,
+    const WebSize& icon_display_size_pixels) {
+  int best_index = -1;
+  double best_score = 0.0;
+  for (size_t i = 0; i < icons_.size(); ++i) {
+    // If the icon has no or invalid src, move on.
+    if (!icons_[i].hasSrc())
+      continue;
+    KURL icon_url = execution_context->CompleteURL(icons_[i].src());
+    if (!icon_url.IsValid() || icon_url.IsEmpty())
+      continue;
+
+    double score = GetIconScore(icons_[i], icon_display_size_pixels.width);
+    if (!score)
+      continue;
+    // According to the spec, if two icons get the same score, we must use the
+    // one that's declared last. (https://w3c.github.io/manifest/#icons-member).
+    if (score >= best_score) {
+      best_score = score;
+      best_index = i;
+    }
+  }
+  return best_index;
+}
+
+// The scoring works as follows:
+// When the size is "any", the icon size score is kAnySizeScore.
+// If unspecified, use the unspecified size score, kUnspecifiedSizeScore as
+// icon score.
+
+// For other sizes, the icon score lies in [0,1] and is computed by multiplying
+// the dominant size score and aspect ratio score.
+//
+// The dominant size score lies in [0, 1] and is computed using
+// dominant size and and |ideal_size|:
+//   - If dominant_size < kMinimumIconSizeInPx, the size score is 0.0.
+//   - For all other sizes, the score is calculated as
+//     1/(1 + abs(dominant_size-ideal_size))
+//   - If dominant_size < ideal_size, there is an upscaling penalty, which is
+//     dominant_size/ideal_size.
+//
+// The aspect ratio score lies in [0, 1] and is computed by dividing the short
+// edge length by the long edge. (Bias towards square icons assumed).
+//
+// Note: If this is an ico file containing multiple sizes, return the best
+// score.
+double BackgroundFetchIconLoader::GetIconScore(IconDefinition icon,
+                                               const int ideal_size) {
+  // Extract sizes from the icon definition, expressed as "<width>x<height>
+  // <width>x<height> ...."
+  if (!icon.hasSizes() || icon.sizes().IsEmpty())
+    return kUnspecifiedSizeScore;
+
+  String sizes = icon.sizes();
+  // if any size is set to "any" return kAnySizeScore;
+  if (sizes.LowerASCII() == "any")
+    return kAnySizeScore;
+
+  Vector<String> sizes_str;
+  sizes.Split(" ", false /* allow_empty_entries*/, sizes_str);
+
+  // Pick the first size.
+  // TODO(nator): Add support for multiple sizes (.ico files).
+  Vector<String> width_and_height_str;
+  sizes_str[0].Split("x", false /* allow_empty_entries */,
+                     width_and_height_str);
+  // If sizes isn't in this format, consider it as 'unspecified'.
+  if (width_and_height_str.size() != 2)
+    return kUnspecifiedSizeScore;
+  double width = width_and_height_str[0].ToDouble();
+  double height = width_and_height_str[1].ToDouble();
+
+  // Compute dominant size score
+  int dominant_size = std::max(width, height);
+  int short_size = std::min(width, height);
+  if (dominant_size < kMinimumIconSizeInPx)
+    return 0.0;
+
+  double dominant_size_score = 1.0 / (1.0 + abs(dominant_size - ideal_size));
+  if (dominant_size < ideal_size)
+    dominant_size_score = dominant_size_score * dominant_size / ideal_size;
+  // Compute aspect ratio score. If dominant_size is zero, we'd have returned
+  // by now.
+  double aspect_ratio_score = short_size / dominant_size;
+
+  // Compute icon score.
+  return aspect_ratio_score * dominant_size_score;
 }
 
 void BackgroundFetchIconLoader::Stop() {
