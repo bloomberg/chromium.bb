@@ -89,10 +89,10 @@ class VideoDetector::ClientInfo {
 
 VideoDetector::VideoDetector(
     SurfaceManager* surface_manager,
-    std::unique_ptr<const base::TickClock> tick_clock,
+    const base::TickClock* tick_clock,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : tick_clock_(std::move(tick_clock)),
-      video_inactive_timer_(tick_clock_.get()),
+    : tick_clock_(tick_clock),
+      video_inactive_timer_(tick_clock),
       surface_manager_(surface_manager) {
   surface_manager_->AddObserver(this);
   for (auto it : surface_manager_->valid_frame_sink_labels())
