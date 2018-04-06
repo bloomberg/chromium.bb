@@ -94,9 +94,9 @@ class ContextualSuggestionsBridge {
      * Reports an event happening in the context of the current URL.
      *
      * @param webContents Web contents with the document for which event is reported.
-     * @param eventId Id of the reported event.
+     * @param eventId The Id of the reported event as a {@link ContextualSuggestionsEvent} integer.
      */
-    void reportEvent(WebContents webContents, int eventId) {
+    void reportEvent(WebContents webContents, @ContextualSuggestionsEvent int eventId) {
         assert mNativeContextualSuggestionsBridge != 0;
         assert webContents != null && !webContents.isDestroyed();
 

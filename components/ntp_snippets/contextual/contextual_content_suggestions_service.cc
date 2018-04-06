@@ -22,6 +22,8 @@ static const char kSamplePeekText[] = "Peek text";
 static const char kSampleClusterTitle[] = "Cluster title filler";
 }  // namespace
 
+using contextual_suggestions::ContextualSuggestionsMetricsReporter;
+
 ContextualContentSuggestionsService::Cluster::Cluster() = default;
 
 ContextualContentSuggestionsService::Cluster::Cluster(Cluster&& other) =
@@ -33,12 +35,15 @@ ContextualContentSuggestionsService::ContextualContentSuggestionsService(
     std::unique_ptr<ContextualSuggestionsFetcher>
         contextual_suggestions_fetcher,
     std::unique_ptr<CachedImageFetcher> image_fetcher,
-    std::unique_ptr<RemoteSuggestionsDatabase> contextual_suggestions_database)
+    std::unique_ptr<RemoteSuggestionsDatabase> contextual_suggestions_database,
+    std::unique_ptr<ContextualSuggestionsMetricsReporter> metrics_reporter)
     : contextual_suggestions_database_(
           std::move(contextual_suggestions_database)),
       contextual_suggestions_fetcher_(
           std::move(contextual_suggestions_fetcher)),
-      image_fetcher_(std::move(image_fetcher)) {}
+      image_fetcher_(std::move(image_fetcher)),
+      metrics_reporter_(std::move(metrics_reporter)),
+      last_ukm_source_id_(ukm::kInvalidSourceId) {}
 
 ContextualContentSuggestionsService::~ContextualContentSuggestionsService() =
     default;
@@ -82,7 +87,19 @@ void ContextualContentSuggestionsService::FetchContextualSuggestionImage(
 
 void ContextualContentSuggestionsService::ReportEvent(
     ukm::SourceId ukm_source_id,
-    int event_id) {}
+    contextual_suggestions::ContextualSuggestionsEvent event) {
+  DCHECK(ukm_source_id != ukm::kInvalidSourceId);
+
+  // Flush the previous page (if any) and setup the new page.
+  if (ukm_source_id != last_ukm_source_id_) {
+    if (last_ukm_source_id_ != ukm::kInvalidSourceId)
+      metrics_reporter_->Flush();
+    last_ukm_source_id_ = ukm_source_id;
+    metrics_reporter_->SetupForPage(ukm_source_id);
+  }
+
+  metrics_reporter_->RecordEvent(event);
+}
 
 // TODO(gaschler): Cache contextual suggestions at run-time.
 void ContextualContentSuggestionsService::DidFetchContextualSuggestions(
@@ -116,6 +133,12 @@ void ContextualContentSuggestionsService::
     clusters.push_back(std::move(cluster));
   }
   std::move(callback).Run(kSamplePeekText, std::move(clusters));
+}
+
+void ContextualContentSuggestionsService::Shutdown() {
+  if (last_ukm_source_id_ != ukm::kInvalidSourceId)
+    metrics_reporter_->Flush();
+  last_ukm_source_id_ = ukm::kInvalidSourceId;
 }
 
 }  // namespace ntp_snippets
