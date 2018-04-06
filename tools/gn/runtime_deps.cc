@@ -253,7 +253,7 @@ Actions and copies
   many actions into one logic unit, and the "data"-ness of A's dependency is
   lost. Solutions:
 
-   - List the outputs of the action in it's data section (if the results of
+   - List the outputs of the action in its data section (if the results of
      that action are always runtime files).
    - Have B list the action in data_deps (if the outputs of the actions are
      always runtime files).
