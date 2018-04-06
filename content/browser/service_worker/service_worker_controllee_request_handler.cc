@@ -288,7 +288,7 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
   // in redirect case, unassociate it now.
   provider_host_->DisassociateRegistration();
 
-  // Also prevent a registrater job for establishing an association to a new
+  // Also prevent a register job from establishing an association to a new
   // registration while we're finding an existing registration.
   provider_host_->SetAllowAssociation(false);
 
@@ -355,9 +355,8 @@ void ServiceWorkerControlleeRequestHandler::
     return;
   }
 
-  // Initiate activation of a waiting version.
-  // Usually a register job initiates activation but that
-  // doesn't happen if the browser exits prior to activation
+  // Initiate activation of a waiting version. Usually a register job initiates
+  // activation but that doesn't happen if the browser exits prior to activation
   // having occurred. This check handles that case.
   if (registration->waiting_version())
     registration->ActivateWaitingVersionWhenReady();

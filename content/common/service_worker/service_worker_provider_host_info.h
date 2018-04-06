@@ -56,14 +56,14 @@ struct CONTENT_EXPORT ServiceWorkerProviderHostInfo {
 
   // Mojo endpoint to send a message from the renderer to the browser. This
   // will be associated with ServiceWorkerDisptacherHost. |host_request| should
-  // be valid when ServiceWorkerProviderHostInfo is passed to any Mojo methods.
+  // be valid when ServiceWorkerProviderHostInfo is passed to any Mojo method.
   // After used to create the ServiceWorkerProviderHost, this will be invalid.
   mojom::ServiceWorkerContainerHostAssociatedRequest host_request;
 
   // Mojo endpoint to send a message from the browser to the renderer. This
-  // will be associated with ServiceWorkerDisptacherHost. |client_ptr_info|
+  // will be associated with ServiceWorkerDispatcherHost. |client_ptr_info|
   // should be valid when ServiceWorkerProviderHostInfo is passed to any Mojo
-  // methods.
+  // method.
   // After used to create the ServiceWorkerProviderHost, this will be invalid.
   mojom::ServiceWorkerContainerAssociatedPtrInfo client_ptr_info;
 

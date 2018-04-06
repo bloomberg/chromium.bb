@@ -71,10 +71,9 @@ class WebServiceWorkerNetworkProvider {
   // associated with the WebDocumentLoader.
   virtual int64_t ControllerServiceWorkerID() { return -1; }
 
+  // S13nServiceWorker:
   // Returns a URLLoader for the associated context. May return nullptr
   // if this doesn't provide a ServiceWorker specific URLLoader.
-  // Currently this returns non-null only for a controller worker case
-  // and only if servicification is enabled.
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
       const WebURLRequest& request,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) {

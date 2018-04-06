@@ -27,7 +27,7 @@ struct ServiceWorkerProviderInfoForStartWorker {
   associated ServiceWorkerContainerHost host_ptr_info;
   associated ServiceWorkerContainer& client_request;
 
-  // For servicified service worker only.
+  // S13nServiceWorker:
   // The loader to use for loading the worker's main script and
   // importScripts().
   associated network.mojom.URLLoaderFactory? script_loader_factory_ptr_info;

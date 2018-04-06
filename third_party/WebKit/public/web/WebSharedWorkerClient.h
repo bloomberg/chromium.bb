@@ -47,8 +47,7 @@ class WebServiceWorkerNetworkProvider;
 // the Worker object, unless noted.
 //
 // An instance of this class must outlive WebSharedWorker (i.e. must be kept
-// alive until WorkerScriptLoadFailed() or WorkerContextDestroyed() is
-// called).
+// alive until WorkerScriptLoadFailed() or WorkerContextDestroyed() is called).
 class WebSharedWorkerClient {
  public:
   virtual void CountFeature(mojom::WebFeature) = 0;
@@ -68,16 +67,21 @@ class WebSharedWorkerClient {
   virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
       WebApplicationCacheHostClient*) = 0;
 
-  // Called on the main thread during initialization.
+  // Called on the main thread during initialization, before requesting the main
+  // script resource. Creates the ServiceWorkerNetworkProvider which is used for
+  // script loading (i.e., the main script and importScripts). Other requests
+  // (e.g., fetch and XHR) go through WebWorkerFetchContext.
   virtual std::unique_ptr<WebServiceWorkerNetworkProvider>
   CreateServiceWorkerNetworkProvider() = 0;
 
-  // Returns a new WebWorkerFetchContext for the shared worker. Ownership of the
-  // returned object is transferred to the caller.
+  // Called on the main thread during initialization, after the main script
+  // resource finished loading. Creates a new WebWorkerFetchContext for the
+  // shared worker. This is passed to the worker thread and used for non-script
+  // loading requests from the shared worker (e.g., fetch and XHR). Requests for
+  // script loading (i.e., the main script and importScripts) go through
+  // WebServiceWorkerNetworkProvider.
   virtual std::unique_ptr<WebWorkerFetchContext> CreateWorkerFetchContext(
-      WebServiceWorkerNetworkProvider*) {
-    return nullptr;
-  }
+      WebServiceWorkerNetworkProvider*) = 0;
 };
 
 }  // namespace blink

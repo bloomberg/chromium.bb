@@ -109,6 +109,7 @@ class SharedWorkerHost : public mojom::SharedWorkerHost,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
 
   mojo::Binding<mojom::SharedWorkerHost> binding_;
+  // |service_| owns |this|.
   SharedWorkerServiceImpl* service_;
   std::unique_ptr<SharedWorkerInstance> instance_;
   ClientList clients_;
