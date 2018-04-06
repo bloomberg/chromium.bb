@@ -9,7 +9,7 @@ namespace features {
 // Enables sensors based on Generic Sensor API:
 // https://w3c.github.io/sensors/
 const base::Feature kGenericSensor{"GenericSensor",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 // Enables an extra set of concrete sensors classes based on Generic Sensor API,
 // which expose previously unexposed platform features, e.g. ALS or Magnetometer
 const base::Feature kGenericSensorExtraClasses{

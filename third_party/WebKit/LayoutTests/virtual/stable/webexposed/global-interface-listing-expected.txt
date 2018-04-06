@@ -16,6 +16,15 @@ interface AbortSignal : EventTarget
     getter onabort
     method constructor
     setter onabort
+interface AbsoluteOrientationSensor : OrientationSensor
+    attribute @@toStringTag
+    method constructor
+interface Accelerometer : Sensor
+    attribute @@toStringTag
+    getter x
+    getter y
+    getter z
+    method constructor
 interface AnalyserNode : AudioNode
     attribute @@toStringTag
     getter fftSize
@@ -1749,6 +1758,12 @@ interface GamepadButton
 interface GamepadEvent : Event
     attribute @@toStringTag
     getter gamepad
+    method constructor
+interface Gyroscope : Sensor
+    attribute @@toStringTag
+    getter x
+    getter y
+    getter z
     method constructor
 interface HTMLAllCollection
     attribute @@toStringTag
@@ -3559,6 +3574,9 @@ interface KeyboardEvent : UIEvent
     method constructor
     method getModifierState
     method initKeyboardEvent
+interface LinearAccelerationSensor : Accelerometer
+    attribute @@toStringTag
+    method constructor
 interface Location
     attribute @@toStringTag
     method constructor
@@ -4147,6 +4165,11 @@ interface Option
     setter selected
     setter text
     setter value
+interface OrientationSensor : Sensor
+    attribute @@toStringTag
+    getter quaternion
+    method constructor
+    method populateMatrix
 interface OscillatorNode : AudioScheduledSourceNode
     attribute @@toStringTag
     getter detune
@@ -4750,6 +4773,9 @@ interface ReadableStream
     method pipeThrough
     method pipeTo
     method tee
+interface RelativeOrientationSensor : OrientationSensor
+    attribute @@toStringTag
+    method constructor
 interface RemotePlayback : EventTarget
     attribute @@toStringTag
     getter onconnect
@@ -5971,6 +5997,24 @@ interface Selection
     method setBaseAndExtent
     method setPosition
     method toString
+interface Sensor : EventTarget
+    attribute @@toStringTag
+    getter activated
+    getter hasReading
+    getter onactivate
+    getter onerror
+    getter onreading
+    getter timestamp
+    method constructor
+    method start
+    method stop
+    setter onactivate
+    setter onerror
+    setter onreading
+interface SensorErrorEvent : Event
+    attribute @@toStringTag
+    getter error
+    method constructor
 interface ServiceWorker : EventTarget
     attribute @@toStringTag
     getter onerror
