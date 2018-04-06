@@ -49,9 +49,9 @@ class RendererSchedulerImplForTest;
 class RendererSchedulerImplTest;
 FORWARD_DECLARE_TEST(RendererSchedulerImplTest, Tracing);
 }  // namespace renderer_scheduler_impl_unittest
-class RenderWidgetSchedulingState;
 class PageSchedulerImpl;
 class TaskQueueThrottler;
+class WebRenderWidgetSchedulingState;
 
 // TODO(yutak): Rename this class to MainThreadScheduler.
 class PLATFORM_EXPORT RendererSchedulerImpl
@@ -98,8 +98,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   std::unique_ptr<WebThread> CreateMainThread() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
-  std::unique_ptr<RenderWidgetSchedulingState> NewRenderWidgetSchedulingState()
-      override;
+  std::unique_ptr<WebRenderWidgetSchedulingState>
+  NewRenderWidgetSchedulingState() override;
   void WillBeginFrame(const viz::BeginFrameArgs& args) override;
   void BeginFrameNotExpectedSoon() override;
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override;
@@ -297,7 +297,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   }
 
  private:
-  friend class RenderWidgetSchedulingState;
+  friend class WebRenderWidgetSchedulingState;
   friend class RendererMetricsHelper;
 
   friend class RendererMetricsHelperTest;

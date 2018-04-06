@@ -46,7 +46,7 @@ FakeRendererScheduler::IPCTaskRunner() {
   return nullptr;
 }
 
-std::unique_ptr<RenderWidgetSchedulingState>
+std::unique_ptr<WebRenderWidgetSchedulingState>
 FakeRendererScheduler::NewRenderWidgetSchedulingState() {
   return nullptr;
 }

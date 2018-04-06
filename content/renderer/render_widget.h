@@ -74,7 +74,7 @@ class SyncMessageFilter;
 
 namespace blink {
 namespace scheduler {
-class RenderWidgetSchedulingState;
+class WebRenderWidgetSchedulingState;
 }
 struct WebDeviceEmulationParams;
 class WebDragData;
@@ -857,7 +857,7 @@ class CONTENT_EXPORT RenderWidget
   bool has_host_context_menu_location_;
   gfx::Point host_context_menu_location_;
 
-  std::unique_ptr<blink::scheduler::RenderWidgetSchedulingState>
+  std::unique_ptr<blink::scheduler::WebRenderWidgetSchedulingState>
       render_widget_scheduling_state_;
 
   // Mouse Lock dispatcher attached to this view.

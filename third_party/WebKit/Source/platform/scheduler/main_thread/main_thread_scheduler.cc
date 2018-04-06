@@ -728,7 +728,7 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewTimerTaskQueue(
                           .SetCanBeThrottled(true));
 }
 
-std::unique_ptr<RenderWidgetSchedulingState>
+std::unique_ptr<WebRenderWidgetSchedulingState>
 RendererSchedulerImpl::NewRenderWidgetSchedulingState() {
   return render_widget_scheduler_signals_.NewRenderWidgetSchedulingState();
 }

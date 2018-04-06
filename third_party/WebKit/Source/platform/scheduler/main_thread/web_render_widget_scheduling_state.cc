@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/scheduler/render_widget_scheduling_state.h"
+#include "public/platform/scheduler/web_render_widget_scheduling_state.h"
 
 #include "platform/scheduler/renderer/render_widget_signals.h"
 
 namespace blink {
 namespace scheduler {
 
-RenderWidgetSchedulingState::RenderWidgetSchedulingState(
+WebRenderWidgetSchedulingState::WebRenderWidgetSchedulingState(
     RenderWidgetSignals* render_widget_scheduling_signals)
     : render_widget_signals_(render_widget_scheduling_signals),
       hidden_(false),
@@ -17,7 +17,7 @@ RenderWidgetSchedulingState::RenderWidgetSchedulingState(
   render_widget_signals_->IncNumVisibleRenderWidgets();
 }
 
-RenderWidgetSchedulingState::~RenderWidgetSchedulingState() {
+WebRenderWidgetSchedulingState::~WebRenderWidgetSchedulingState() {
   if (hidden_)
     return;
 
@@ -28,7 +28,7 @@ RenderWidgetSchedulingState::~RenderWidgetSchedulingState() {
   }
 }
 
-void RenderWidgetSchedulingState::SetHidden(bool hidden) {
+void WebRenderWidgetSchedulingState::SetHidden(bool hidden) {
   if (hidden_ == hidden)
     return;
 
@@ -47,7 +47,8 @@ void RenderWidgetSchedulingState::SetHidden(bool hidden) {
   }
 }
 
-void RenderWidgetSchedulingState::SetHasTouchHandler(bool has_touch_handler) {
+void WebRenderWidgetSchedulingState::SetHasTouchHandler(
+    bool has_touch_handler) {
   if (has_touch_handler_ == has_touch_handler)
     return;
 
