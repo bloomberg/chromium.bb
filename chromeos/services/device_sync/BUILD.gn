@@ -79,6 +79,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//chromeos/services/device_sync/public/mojom",
+    "//chromeos/services/device_sync/public/mojom:unit_tests",
     "//components/cryptauth",
     "//components/cryptauth:test_support",
     "//mojo/common",

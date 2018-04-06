@@ -11,8 +11,8 @@ import "mojo/public/mojom/base/time.mojom";
 // create the BLE channel, both devices must possess the other's BeaconSeeds.
 struct BeaconSeed {
   string data;
-  mojo_base.mojom.TimeTicks start_time;
-  mojo_base.mojom.TimeTicks end_time;
+  mojo_base.mojom.Time start_time;
+  mojo_base.mojom.Time end_time;
 };
 
 // Metadata describing a remote device with which the current device can
@@ -21,15 +21,15 @@ struct RemoteDevice {
   // Public key used to authenticate a communication channel.
   string public_key;
 
-  // Identifier which is unique to each device.
-  string device_id;
-
   // Identifier for the user to whom this device is registered.
   string user_id;
 
   // Human-readable device name; by default, this is the name of the device
   // model, but this value is editable.
   string device_name;
+
+  // Encryption key used for communication with this device.
+  string persistent_symmetric_key;
 
   // True if this device has the capability of unlocking another device via
   // EasyUnlock.
@@ -38,7 +38,11 @@ struct RemoteDevice {
   // True if this device can enable a Wi-Fi hotspot to support Instant
   // Tethering (i.e., the device supports mobile data and its model supports the
   // feature).
-  bool mobile_hotspot_supported;
+  bool supports_mobile_hotspot;
+
+  // The time at which this device's metadata was last updated on the CryptAuth
+  // back-end.
+  mojo_base.mojom.Time last_update_time;
 
   // Seeds belonging to the device. Each seed has start and end timestamps which
   // indicate how long the seed is valid, and each device has enough associated
