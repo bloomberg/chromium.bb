@@ -78,12 +78,11 @@ for uid in $(find_users_with_active_hosts); do
       context="Aqua"
     fi
 
-    sudo_user="sudo -u #$uid"
     stop="launchctl stop $SERVICE_NAME"
     unload="launchctl unload -w -S $context $PLIST"
 
     if is_el_capitan_or_newer; then
-      boostrap_user="launchctl asuser $uid"
+      bootstrap_user="launchctl asuser $uid"
     else
       # Load the launchd agent in the bootstrap context of user $uid's
       # graphical session, so that screen-capture and input-injection can
@@ -94,6 +93,7 @@ for uid in $(find_users_with_active_hosts); do
       if [[ ! -n "$pid" ]]; then
         exit 1
       fi
+      sudo_user="sudo -u #$uid"
       bootstrap_user="launchctl bsexec $pid"
     fi
 
