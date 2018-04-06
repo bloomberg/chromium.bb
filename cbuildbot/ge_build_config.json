@@ -854,18 +854,6 @@
       ]
     },
     {
-      "name": "lassen",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "lassen",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "leon",
       "configs": [
         {
@@ -1605,18 +1593,6 @@
           "experimental": true,
           "leader_board": false,
           "board_group": "",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "x30evb",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "lassen",
           "arch": "ARM_INTERNAL"
         }
       ]
