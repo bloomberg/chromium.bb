@@ -136,7 +136,6 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
       free_page_pool_(std::make_unique<PagePool>()),
       marking_worklist_(nullptr),
       not_fully_constructed_worklist_(nullptr),
-      post_marking_worklist_(nullptr),
       weak_callback_worklist_(nullptr),
       vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
       current_arena_ages_(0),
@@ -226,7 +225,6 @@ void ThreadHeap::RegisterWeakTable(void* table,
 void ThreadHeap::CommitCallbackStacks() {
   marking_worklist_.reset(new MarkingWorklist());
   not_fully_constructed_worklist_.reset(new NotFullyConstructedWorklist());
-  post_marking_worklist_.reset(new PostMarkingWorklist());
   weak_callback_worklist_.reset(new WeakCallbackWorklist());
   DCHECK(ephemeron_callbacks_.IsEmpty());
 }
@@ -234,7 +232,6 @@ void ThreadHeap::CommitCallbackStacks() {
 void ThreadHeap::DecommitCallbackStacks() {
   marking_worklist_.reset(nullptr);
   not_fully_constructed_worklist_.reset(nullptr);
-  post_marking_worklist_.reset(nullptr);
   weak_callback_worklist_.reset(nullptr);
   ephemeron_callbacks_.clear();
 }
@@ -327,18 +324,6 @@ bool ThreadHeap::AdvanceMarkingStackProcessing(Visitor* visitor,
     // Rerun loop if ephemeron processing queued more objects for tracing.
   } while (!marking_worklist_->IsGlobalEmpty());
   return true;
-}
-
-void ThreadHeap::PostMarkingProcessing(Visitor* visitor) {
-  TRACE_EVENT0("blink_gc", "ThreadHeap::PostMarkingProcessing");
-  // Call post marking callbacks on collection backings to mark them if they are
-  // only reachable from their front objects.
-  CustomCallbackItem item;
-  while (post_marking_worklist_->Pop(WorklistTaskId::MainThread, &item)) {
-    item.callback(visitor, item.object);
-  }
-  // Post marking callbacks should not add any new objects for marking.
-  DCHECK(marking_worklist_->IsGlobalEmpty());
 }
 
 void ThreadHeap::WeakProcessing(Visitor* visitor) {

@@ -59,6 +59,7 @@ namespace blink {
 
 namespace incremental_marking_test {
 class IncrementalMarkingScope;
+class IncrementalMarkingTestDriver;
 }  // namespace incremental_marking_test
 
 class GarbageCollectedMixinConstructorMarkerBase;
@@ -584,6 +585,7 @@ class PLATFORM_EXPORT ThreadState {
  private:
   // Needs to set up visitor for testing purposes.
   friend class incremental_marking_test::IncrementalMarkingScope;
+  friend class incremental_marking_test::IncrementalMarkingTestDriver;
   template <typename T>
   friend class PrefinalizerRegistration;
 

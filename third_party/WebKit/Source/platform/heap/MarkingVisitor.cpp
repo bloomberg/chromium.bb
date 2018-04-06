@@ -20,8 +20,6 @@ MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
                         WorklistTaskId::MainThread),
       not_fully_constructed_worklist_(Heap().GetNotFullyConstructedWorklist(),
                                       WorklistTaskId::MainThread),
-      post_marking_worklist_(Heap().GetPostMarkingWorklist(),
-                             WorklistTaskId::MainThread),
       weak_callback_worklist_(Heap().GetWeakCallbackWorklist(),
                               WorklistTaskId::MainThread),
       marking_mode_(marking_mode) {
@@ -101,11 +99,6 @@ void MarkingVisitor::ConservativelyMarkHeader(HeapObjectHeader* header) {
   } else {
     MarkHeader(header, gc_info->trace_);
   }
-}
-
-void MarkingVisitor::MarkNoTracingCallback(Visitor* visitor, void* object) {
-  reinterpret_cast<MarkingVisitor*>(visitor)->MarkHeaderNoTracing(
-      HeapObjectHeader::FromPayload(object));
 }
 
 void MarkingVisitor::RegisterWeakCallback(void* object, WeakCallback callback) {

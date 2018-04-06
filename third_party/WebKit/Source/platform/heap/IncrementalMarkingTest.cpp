@@ -58,9 +58,12 @@ class BackingVisitor : public Visitor {
   void VisitBackingStoreStrongly(void* object,
                                  void** object_slot,
                                  TraceDescriptor desc) final {}
-  void VisitBackingStoreWeakly(void* object,
-                               void** object_slot,
-                               TraceDescriptor desc) final {}
+  void VisitBackingStoreWeakly(void*,
+                               void**,
+                               TraceDescriptor,
+                               WeakCallback,
+                               void*) final {}
+  void VisitBackingStoreOnly(void*, void**) final {}
   void RegisterBackingStoreCallback(void* backing_store,
                                     MovingObjectCallback,
                                     void* callback_data) final {}
@@ -110,7 +113,6 @@ class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
     thread_state_->DisableIncrementalMarkingBarrier();
     // Need to clear out unused worklists that might have been polluted during
     // test.
-    heap_.GetPostMarkingWorklist()->Clear();
     heap_.GetWeakCallbackWorklist()->Clear();
     thread_state_->SetGCPhase(ThreadState::GCPhase::kSweeping);
     thread_state_->SetGCPhase(ThreadState::GCPhase::kNone);
@@ -1579,6 +1581,81 @@ TEST(IncrementalMarkingTest, OverrideAfterMixinConstruction) {
   HeapObjectHeader* header = mixin->GetHeapObjectHeader();
   const void* uninitialized_value = BlinkGC::kNotFullyConstructedObject;
   EXPECT_NE(uninitialized_value, header);
+}
+
+// =============================================================================
+// Tests that execute complete incremental garbage collections. ================
+// =============================================================================
+
+// Test driver for incremental marking. Assumes that no stack handling is
+// required.
+class IncrementalMarkingTestDriver {
+ public:
+  explicit IncrementalMarkingTestDriver(ThreadState* thread_state)
+      : thread_state_(thread_state) {}
+  ~IncrementalMarkingTestDriver() {
+    if (thread_state_->IsIncrementalMarking())
+      FinishGC();
+  }
+
+  void Start() {
+    thread_state_->ScheduleIncrementalMarkingStart();
+    thread_state_->RunScheduledGC(BlinkGC::kNoHeapPointersOnStack);
+  }
+
+  bool SingleStep() {
+    CHECK(thread_state_->IsIncrementalMarking());
+    if (thread_state_->GcState() ==
+        ThreadState::kIncrementalMarkingStepScheduled) {
+      thread_state_->RunScheduledGC(BlinkGC::kNoHeapPointersOnStack);
+      return true;
+    }
+    return false;
+  }
+
+  void FinishSteps() {
+    CHECK(thread_state_->IsIncrementalMarking());
+    while (SingleStep()) {
+    }
+  }
+
+  void FinishGC() {
+    CHECK(thread_state_->IsIncrementalMarking());
+    FinishSteps();
+    CHECK_EQ(ThreadState::kIncrementalMarkingFinalizeScheduled,
+             thread_state_->GcState());
+    thread_state_->RunScheduledGC(BlinkGC::kNoHeapPointersOnStack);
+    CHECK(!thread_state_->IsIncrementalMarking());
+    thread_state_->CompleteSweep();
+  }
+
+ private:
+  ThreadState* const thread_state_;
+};
+
+TEST(IncrementalMarkingTest, TestDriver) {
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.Start();
+  EXPECT_TRUE(ThreadState::Current()->IsIncrementalMarking());
+  driver.SingleStep();
+  EXPECT_TRUE(ThreadState::Current()->IsIncrementalMarking());
+  driver.FinishGC();
+  EXPECT_FALSE(ThreadState::Current()->IsIncrementalMarking());
+}
+
+TEST(IncrementalMarkingTest, DropBackingStore) {
+  // Regression test: crbug.com/828537
+  using WeakStore = HeapHashCountedSet<WeakMember<Object>>;
+
+  Persistent<WeakStore> persistent(new WeakStore);
+  persistent->insert(Object::Create());
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.Start();
+  driver.FinishSteps();
+  persistent->clear();
+  // Marking verifier should not crash on a black backing store with all
+  // black->white edges.
+  driver.FinishGC();
 }
 
 }  // namespace incremental_marking_test

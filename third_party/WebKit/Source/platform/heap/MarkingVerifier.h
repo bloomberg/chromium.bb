@@ -45,16 +45,15 @@ class MarkingVerifier final : public Visitor {
   }
 
   // Unused overrides.
-  void VisitBackingStoreStrongly(void* object,
-                                 void** object_slot,
-                                 TraceDescriptor desc) final {}
-  void VisitBackingStoreWeakly(void* object,
-                               void** object_slot,
-                               TraceDescriptor desc) final {}
-  void RegisterBackingStoreCallback(void* backing_store,
-                                    MovingObjectCallback,
-                                    void* callback_data) final {}
-  void RegisterWeakCallback(void* closure, WeakCallback) final {}
+  void VisitBackingStoreStrongly(void*, void**, TraceDescriptor) final {}
+  void VisitBackingStoreWeakly(void*,
+                               void**,
+                               TraceDescriptor,
+                               WeakCallback,
+                               void*) final {}
+  void VisitBackingStoreOnly(void*, void**) final {}
+  void RegisterBackingStoreCallback(void*, MovingObjectCallback, void*) final {}
+  void RegisterWeakCallback(void*, WeakCallback) final {}
 
  private:
   void VerifyChild(void* base_object_payload) {

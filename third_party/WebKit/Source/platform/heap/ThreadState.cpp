@@ -1463,7 +1463,6 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
       visitor, std::numeric_limits<double>::infinity()));
 
   VisitWeakPersistents(visitor);
-  Heap().PostMarkingProcessing(visitor);
   Heap().WeakProcessing(visitor);
   Heap().DecommitCallbackStacks();
 
