@@ -4154,7 +4154,7 @@
                 {
                     "name": "VariationsHttpDisabled",
                     "disable_features": [
-                        "VariationsHTTPRetry"
+                        "VariationsHttpRetry"
                     ]
                 }
             ]
