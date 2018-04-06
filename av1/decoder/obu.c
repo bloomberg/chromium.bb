@@ -413,6 +413,10 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     }
 
     if (!cm->is_annexb) {
+      if (data_end < data + obu_header.size) {
+        cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+        return;
+      }
       if (read_obu_size(data + obu_header.size,
                         bytes_available - obu_header.size, &payload_size,
                         &length_field_size) != AOM_CODEC_OK) {
@@ -501,6 +505,10 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           decoded_payload_size = payload_size;
           break;
         }
+        if (data_end < data + payload_size) {
+          cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+          return;
+        }
         decoded_payload_size = read_metadata(data, payload_size);
         break;
       case OBU_PADDING:
@@ -516,6 +524,11 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       return;
     }
 
+    if (data_end < data + payload_size) {
+      cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return;
+    }
+
     // If there are extra padding bytes, they should all be zero
     while (decoded_payload_size < payload_size) {
       uint8_t padding_byte = data[decoded_payload_size++];
@@ -526,9 +539,5 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     }
 
     data += payload_size;
-    if (data_end < data) {
-      cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
-      return;
-    }
   }
 }
