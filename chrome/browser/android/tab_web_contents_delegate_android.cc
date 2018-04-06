@@ -286,6 +286,14 @@ TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
   return app_modal::JavaScriptDialogManager::GetInstance();
 }
 
+void TabWebContentsDelegateAndroid::AdjustPreviewsStateForNavigation(
+    content::WebContents* web_contents,
+    content::PreviewsState* previews_state) {
+  if (GetDisplayMode(web_contents) != blink::kWebDisplayModeBrowser) {
+    *previews_state = content::PREVIEWS_OFF;
+  }
+}
+
 void TabWebContentsDelegateAndroid::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,

@@ -3320,7 +3320,7 @@ bool WebContentsImpl::ShowingInterstitialPage() const {
 void WebContentsImpl::AdjustPreviewsStateForNavigation(
     PreviewsState* previews_state) {
   if (delegate_)
-    delegate_->AdjustPreviewsStateForNavigation(previews_state);
+    delegate_->AdjustPreviewsStateForNavigation(this, previews_state);
 }
 
 InterstitialPageImpl* WebContentsImpl::GetInterstitialPage() const {

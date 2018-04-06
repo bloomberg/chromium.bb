@@ -125,6 +125,7 @@ bool BackgroundLoaderContents::CheckMediaAccessPermission(
 }
 
 void BackgroundLoaderContents::AdjustPreviewsStateForNavigation(
+    content::WebContents* web_contents,
     content::PreviewsState* previews_state) {
   DCHECK(previews_state);
 

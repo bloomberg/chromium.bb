@@ -90,6 +90,7 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
                                   content::MediaStreamType type) override;
 
   void AdjustPreviewsStateForNavigation(
+      content::WebContents* web_contents,
       content::PreviewsState* previews_state) override;
 
  private:
