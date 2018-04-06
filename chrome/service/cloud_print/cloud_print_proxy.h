@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "base/values.h"
 #include "chrome/service/cloud_print/cloud_print_proxy_backend.h"
 #include "chrome/service/cloud_print/cloud_print_wipeout.h"
 
@@ -47,11 +48,10 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
 
   // Enables/disables cloud printing for the user
   void EnableForUser();
-  void EnableForUserWithRobot(
-      const std::string& robot_auth_code,
-      const std::string& robot_email,
-      const std::string& user_email,
-      const base::DictionaryValue& user_settings);
+  void EnableForUserWithRobot(const std::string& robot_auth_code,
+                              const std::string& robot_email,
+                              const std::string& user_email,
+                              base::Value user_settings);
   void UnregisterPrintersAndDisableForUser();
   void DisableForUser();
   // Returns the proxy info.

@@ -55,8 +55,9 @@ bool CloudPrintPrivateSetupConnectorFunction::RunAsync() {
     return true;
   }
 
-  std::unique_ptr<base::DictionaryValue> user_settings(
-      params->user_settings.ToValue());
+  base::Value user_settings_value =
+      base::Value::FromUniquePtrValue(params->user_settings.ToValue());
+
   CloudPrintProxyService* service =
       CloudPrintProxyServiceFactory::GetForProfile(GetProfile());
   if (!service) {
@@ -64,7 +65,8 @@ bool CloudPrintPrivateSetupConnectorFunction::RunAsync() {
     return false;
   }
   service->EnableForUserWithRobot(params->credentials, params->robot_email,
-                                  params->user_email, *user_settings);
+                                  params->user_email,
+                                  std::move(user_settings_value));
   SendResponse(true);
   return true;
 }
