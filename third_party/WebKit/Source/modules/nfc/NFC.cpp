@@ -866,10 +866,6 @@ void NFC::OnWatch(const Vector<uint32_t>& ids,
 
 bool NFC::IsSupportedInContext(ExecutionContext* context,
                                String& error_message) {
-  if (!context->IsSecureContext(error_message)) {
-    return false;
-  }
-
   // https://w3c.github.io/web-nfc/#security-policies
   // WebNFC API must be only accessible from top level browsing context.
   if (!ToDocument(context)->domWindow()->GetFrame() ||
