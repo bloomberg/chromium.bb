@@ -12,6 +12,7 @@ namespace ash {
 class FeaturePodButton;
 class FeaturePodsContainerView;
 class TopShortcutsView;
+class UnifiedMessageCenterView;
 class UnifiedSystemInfoView;
 class UnifiedSystemTrayController;
 
@@ -46,6 +47,9 @@ class UnifiedSystemTrayView : public views::View {
   explicit UnifiedSystemTrayView(UnifiedSystemTrayController* controller);
   ~UnifiedSystemTrayView() override;
 
+  // Set the maximum height that the view can take.
+  void SetMaxHeight(int max_height);
+
   // Add feature pod button to |feature_pods_|.
   void AddFeaturePodButton(FeaturePodButton* button);
 
@@ -64,6 +68,7 @@ class UnifiedSystemTrayView : public views::View {
   UnifiedSystemTrayController* controller_;
 
   // Owned by views hierarchy.
+  UnifiedMessageCenterView* message_center_view_;
   TopShortcutsView* top_shortcuts_view_;
   FeaturePodsContainerView* feature_pods_container_;
   UnifiedSlidersContainerView* sliders_container_;

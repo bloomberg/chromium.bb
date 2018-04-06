@@ -8,9 +8,11 @@
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pods_container_view.h"
 #include "ash/system/unified/top_shortcuts_view.h"
+#include "ash/system/unified/unified_message_center_view.h"
 #include "ash/system/unified/unified_system_info_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ui/app_list/app_list_features.h"
+#include "ui/message_center/message_center.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -62,13 +64,15 @@ void UnifiedSlidersContainerView::UpdateOpacity() {
 UnifiedSystemTrayView::UnifiedSystemTrayView(
     UnifiedSystemTrayController* controller)
     : controller_(controller),
+      message_center_view_(
+          new UnifiedMessageCenterView(message_center::MessageCenter::Get())),
       top_shortcuts_view_(new TopShortcutsView(controller_)),
       feature_pods_container_(new FeaturePodsContainerView()),
       sliders_container_(new UnifiedSlidersContainerView()),
       system_info_view_(new UnifiedSystemInfoView()) {
   DCHECK(controller_);
 
-  SetLayoutManager(
+  auto* layout = SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
   SetBackground(
@@ -78,13 +82,19 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
+  AddChildView(message_center_view_);
   AddChildView(top_shortcuts_view_);
   AddChildView(feature_pods_container_);
   AddChildView(sliders_container_);
   AddChildView(system_info_view_);
+  layout->SetFlexForView(message_center_view_, 1);
 }
 
 UnifiedSystemTrayView::~UnifiedSystemTrayView() = default;
+
+void UnifiedSystemTrayView::SetMaxHeight(int max_height) {
+  message_center_view_->SetMaxHeight(max_height);
+}
 
 void UnifiedSystemTrayView::AddFeaturePodButton(FeaturePodButton* button) {
   feature_pods_container_->AddChildView(button);
@@ -103,6 +113,9 @@ void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
   feature_pods_container_->SetExpandedAmount(expanded_amount);
   sliders_container_->SetExpandedAmount(expanded_amount);
   PreferredSizeChanged();
+  // It is possible that the ratio between |message_center_view_| and others
+  // can change while the bubble size remain unchanged.
+  Layout();
 }
 
 void UnifiedSystemTrayView::OnGestureEvent(ui::GestureEvent* event) {
