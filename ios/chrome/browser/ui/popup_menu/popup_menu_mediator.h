@@ -7,6 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
+namespace feature_engagement {
+class Tracker;
+}
 @protocol BrowserCommands;
 @class PopupMenuTableViewController;
 class ReadingListModel;
@@ -38,6 +41,10 @@ typedef NS_ENUM(NSInteger, PopupMenuType) {
 @property(nonatomic, strong) PopupMenuTableViewController* popupMenu;
 // Dispatcher.
 @property(nonatomic, weak) id<BrowserCommands> dispatcher;
+// Records events for the use of in-product help. The mediator does not take
+// ownership of tracker. Tracker must not be destroyed during lifetime of the
+// object.
+@property(nonatomic, assign) feature_engagement::Tracker* engagementTracker;
 
 // Disconnect the mediator.
 - (void)disconnect;

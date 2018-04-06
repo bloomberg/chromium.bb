@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "components/feature_engagement/public/feature_constants.h"
+#include "components/feature_engagement/public/tracker.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -97,6 +99,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 @synthesize isIncognito = _isIncognito;
 @synthesize popupMenu = _popupMenu;
 @synthesize dispatcher = _dispatcher;
+@synthesize engagementTracker = _engagementTracker;
 @synthesize readingListMenuNotifier = _readingListMenuNotifier;
 @synthesize type = _type;
 @synthesize webState = _webState;
@@ -137,6 +140,16 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
     _webStateObserver.reset();
     _webState = nullptr;
   }
+
+  if (_engagementTracker &&
+      _engagementTracker->ShouldTriggerHelpUI(
+          feature_engagement::kIPHBadgedReadingListFeature)) {
+    _engagementTracker->Dismissed(
+        feature_engagement::kIPHBadgedReadingListFeature);
+    _engagementTracker = nullptr;
+  }
+
+  _readingListMenuNotifier = nil;
 }
 
 #pragma mark - CRWWebStateObserver
@@ -244,6 +257,18 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   _popupMenu.commandHandler = self;
   if (self.webState) {
     [self updatePopupMenu];
+  }
+}
+
+- (void)setEngagementTracker:(feature_engagement::Tracker*)engagementTracker {
+  _engagementTracker = engagementTracker;
+
+  if (self.popupMenu && self.readingList && engagementTracker &&
+      self.engagementTracker->ShouldTriggerHelpUI(
+          feature_engagement::kIPHBadgedReadingListFeature)) {
+    self.readingList.badgeText = l10n_util::GetNSStringWithFixup(
+        IDS_IOS_READING_LIST_CELL_NEW_FEATURE_BADGE);
+    [self.popupMenu reconfigureCellsForItems:@[ self.readingList ]];
   }
 }
 
@@ -515,6 +540,13 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
       @"popup_menu_reading_list", kToolsMenuReadingListId);
   self.readingList.badgeNumber =
       [self.readingListMenuNotifier readingListUnreadCount];
+  if (self.engagementTracker &&
+      self.engagementTracker->ShouldTriggerHelpUI(
+          feature_engagement::kIPHBadgedReadingListFeature)) {
+    self.readingList.badgeText = l10n_util::GetNSStringWithFixup(
+        IDS_IOS_READING_LIST_CELL_NEW_FEATURE_BADGE);
+  }
+
   // TODO(crbug.com/828367): Once the "unseen items effect" is defined,
   // implement it.
 

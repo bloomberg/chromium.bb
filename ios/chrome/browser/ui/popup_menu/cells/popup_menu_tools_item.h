@@ -17,9 +17,10 @@
 @property(nonatomic, strong) UIImage* image;
 // Whether the cell associated with this item should be enabled.
 @property(nonatomic, assign) BOOL enabled;
-// Number to be displayed in the badge.
+// Number to be displayed in the badge. If 0, the badge is hidden.
 @property(nonatomic, assign) NSInteger badgeNumber;
-// Text to be displayed in the badge. Set to nil to hide the badge.
+// Text to be displayed in the badge. Set to nil to hide the badge. The text
+// badge is only displayed if the numbered badge is hidden.
 @property(nonatomic, copy) NSString* badgeText;
 
 @end

@@ -13,8 +13,10 @@ source_set("popup_menu") {
   deps = [
     ":popup_menu_ui",
     "//base",
+    "//components/feature_engagement/public",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/feature_engagement",
     "//ios/chrome/browser/find_in_page",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/ui",
@@ -98,6 +100,7 @@ source_set("unit_tests") {
     ":popup_menu_ui",
     "//base",
     "//base/test:test_support",
+    "//components/feature_engagement/test:test_support",
     "//components/reading_list/core",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/ui/toolbar/test",
@@ -108,6 +111,7 @@ source_set("unit_tests") {
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
+    "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
   ]
