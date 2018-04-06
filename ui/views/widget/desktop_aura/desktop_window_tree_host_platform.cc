@@ -104,7 +104,7 @@ void DesktopWindowTreeHostPlatform::ShowWindowWithState(
     ui::WindowShowState show_state) {
   if (compositor()) {
     platform_window()->Show();
-    compositor()->SetVisible(true);
+    compositor()->SetVisible(show_state != ui::SHOW_STATE_MINIMIZED);
   }
 
   switch (show_state) {
