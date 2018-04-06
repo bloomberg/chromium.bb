@@ -29,7 +29,7 @@ extern "C" int WINAPI wWinMain(HINSTANCE instance,
   // chrome/browser/metrics/chrome_metrics_service_client.cc.
   base::PersistentHistogramStorage persistent_histogram_storage(
       "NotificationHelperMetrics",
-      base::PersistentHistogramStorage::StorageDirCreation::kEnable);
+      base::PersistentHistogramStorage::StorageDirManagement::kCreate);
 
   // Initialize the CommandLine singleton from the environment.
   base::CommandLine::Init(0, nullptr);
@@ -39,6 +39,9 @@ extern "C" int WINAPI wWinMain(HINSTANCE instance,
   // process should exit immediately.
   // https://msdn.microsoft.com/en-us/library/windows/desktop/ms683844.aspx
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch("embedding")) {
+    // Histogram storage is enabled at the very top of this wWinMain. Disable it
+    // in this case as there is no directory in which to write them nor a
+    // browser to subsequently upload them.
     persistent_histogram_storage.Disable();
     return 0;
   }

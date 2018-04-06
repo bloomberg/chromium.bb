@@ -24,8 +24,8 @@ namespace base {
 
 PersistentHistogramStorage::PersistentHistogramStorage(
     StringPiece allocator_name,
-    StorageDirCreation storage_dir_create_action)
-    : storage_dir_create_action_(storage_dir_create_action) {
+    StorageDirManagement storage_dir_management)
+    : storage_dir_management_(storage_dir_management) {
   DCHECK(!allocator_name.empty());
   DCHECK(IsStringASCII(allocator_name));
 
@@ -53,8 +53,8 @@ PersistentHistogramStorage::~PersistentHistogramStorage() {
 
   FilePath storage_dir = storage_base_dir_.AppendASCII(allocator->Name());
 
-  switch (storage_dir_create_action_) {
-    case StorageDirCreation::kEnable:
+  switch (storage_dir_management_) {
+    case StorageDirManagement::kCreate:
       if (!CreateDirectory(storage_dir)) {
         LOG(ERROR)
             << "Could not write \"" << allocator->Name()
@@ -63,11 +63,11 @@ PersistentHistogramStorage::~PersistentHistogramStorage() {
         return;
       }
       break;
-    case StorageDirCreation::kDisable:
+    case StorageDirManagement::kUseExisting:
       if (!DirectoryExists(storage_dir)) {
-        // When the consumer of this class disables storage directory creation
-        // by the class instance, it should ensure the directory's existence if
-        // it's essential.
+        // When the consumer of this class decides to use an existing storage
+        // directory, it should ensure the directory's existence if it's
+        // essential.
         LOG(ERROR)
             << "Could not write \"" << allocator->Name()
             << "\" persistent histograms to file as the storage directory "
