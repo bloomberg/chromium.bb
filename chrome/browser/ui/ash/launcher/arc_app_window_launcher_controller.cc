@@ -36,23 +36,23 @@ namespace {
 constexpr size_t kMaxIconPngSize = 64 * 1024;  // 64 kb
 
 ash::OrientationLockType OrientationLockTypeFromMojo(
-    arc::mojom::OrientationLock orientation_lock) {
+    arc::mojom::OrientationLockDeprecated orientation_lock) {
   switch (orientation_lock) {
-    case arc::mojom::OrientationLock::NONE:
+    case arc::mojom::OrientationLockDeprecated::NONE:
       return ash::OrientationLockType::kAny;
-    case arc::mojom::OrientationLock::CURRENT:
+    case arc::mojom::OrientationLockDeprecated::CURRENT:
       return ash::OrientationLockType::kCurrent;
-    case arc::mojom::OrientationLock::PORTRAIT:
+    case arc::mojom::OrientationLockDeprecated::PORTRAIT:
       return ash::OrientationLockType::kPortrait;
-    case arc::mojom::OrientationLock::LANDSCAPE:
+    case arc::mojom::OrientationLockDeprecated::LANDSCAPE:
       return ash::OrientationLockType::kLandscape;
-    case arc::mojom::OrientationLock::LANDSCAPE_PRIMARY:
+    case arc::mojom::OrientationLockDeprecated::LANDSCAPE_PRIMARY:
       return ash::OrientationLockType::kLandscapePrimary;
-    case arc::mojom::OrientationLock::LANDSCAPE_SECONDARY:
+    case arc::mojom::OrientationLockDeprecated::LANDSCAPE_SECONDARY:
       return ash::OrientationLockType::kLandscapeSecondary;
-    case arc::mojom::OrientationLock::PORTRAIT_PRIMARY:
+    case arc::mojom::OrientationLockDeprecated::PORTRAIT_PRIMARY:
       return ash::OrientationLockType::kPortraitPrimary;
-    case arc::mojom::OrientationLock::PORTRAIT_SECONDARY:
+    case arc::mojom::OrientationLockDeprecated::PORTRAIT_SECONDARY:
       return ash::OrientationLockType::kPortraitSecondary;
   }
   NOTREACHED();
@@ -97,12 +97,13 @@ class ArcAppWindowLauncherController::AppWindowInfo {
     return has_requested_orientation_lock_;
   }
 
-  void set_requested_orientation_lock(arc::mojom::OrientationLock lock) {
+  void set_requested_orientation_lock(
+      arc::mojom::OrientationLockDeprecated lock) {
     has_requested_orientation_lock_ = true;
     requested_orientation_lock_ = lock;
   }
 
-  arc::mojom::OrientationLock requested_orientation_lock() const {
+  arc::mojom::OrientationLockDeprecated requested_orientation_lock() const {
     return requested_orientation_lock_;
   }
 
@@ -119,8 +120,8 @@ class ArcAppWindowLauncherController::AppWindowInfo {
   const std::string launch_intent_;
   bool has_requested_orientation_lock_ = false;
 
-  arc::mojom::OrientationLock requested_orientation_lock_ =
-      arc::mojom::OrientationLock::NONE;
+  arc::mojom::OrientationLockDeprecated requested_orientation_lock_ =
+      arc::mojom::OrientationLockDeprecated::NONE;
   // Keeps overridden window title.
   std::string title_;
   // Keeps overridden window icon.
@@ -377,9 +378,9 @@ void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
   task_id_to_app_window_info_.erase(it);
 }
 
-void ArcAppWindowLauncherController::OnTaskOrientationLockRequested(
+void ArcAppWindowLauncherController::OnTaskOrientationLockRequestedDeprecated(
     int32_t task_id,
-    const arc::mojom::OrientationLock orientation_lock) {
+    const arc::mojom::OrientationLockDeprecated orientation_lock) {
   // Don't save to AppInfo in prefs because this is requested in runtime.
   AppWindowInfo* info = GetAppWindowInfoForTask(task_id);
   DCHECK(info);

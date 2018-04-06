@@ -630,8 +630,9 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
   if (SetNotificationsEnabledDeferred(prefs_).Get(app_id, &deferred))
     notifications_enabled = deferred;
 
-  arc::mojom::OrientationLock orientation_lock =
-      static_cast<arc::mojom::OrientationLock>(orientation_lock_value);
+  arc::mojom::OrientationLockDeprecated orientation_lock =
+      static_cast<arc::mojom::OrientationLockDeprecated>(
+          orientation_lock_value);
 
   return std::make_unique<AppInfo>(
       name, package_name, activity, intent_uri, icon_resource_id,
@@ -818,17 +819,12 @@ void ArcAppListPrefs::RegisterDefaultApps() {
     if (tracked_apps_.count(app_id))
       continue;
     const ArcDefaultAppList::AppInfo& app_info = *default_app.second.get();
-    AddAppAndShortcut(false /* app_ready */,
-                      app_info.name,
-                      app_info.package_name,
-                      app_info.activity,
-                      std::string() /* intent_uri */,
-                      std::string() /* icon_resource_id */,
-                      false /* sticky */,
-                      false /* notifications_enabled */,
-                      false /* shortcut */,
-                      true /* launchable */,
-                      arc::mojom::OrientationLock::NONE);
+    AddAppAndShortcut(
+        false /* app_ready */, app_info.name, app_info.package_name,
+        app_info.activity, std::string() /* intent_uri */,
+        std::string() /* icon_resource_id */, false /* sticky */,
+        false /* notifications_enabled */, false /* shortcut */,
+        true /* launchable */, arc::mojom::OrientationLockDeprecated::NONE);
   }
 }
 
@@ -910,7 +906,7 @@ void ArcAppListPrefs::HandleTaskCreated(const base::Optional<std::string>& name,
                       std::string() /* icon_resource_id */, false /* sticky */,
                       false /* notifications_enabled */, false /* shortcut */,
                       false /* launchable */,
-                      arc::mojom::OrientationLock::NONE);
+                      arc::mojom::OrientationLockDeprecated::NONE);
   }
 }
 
@@ -925,7 +921,7 @@ void ArcAppListPrefs::AddAppAndShortcut(
     const bool notifications_enabled,
     const bool shortcut,
     const bool launchable,
-    const arc::mojom::OrientationLock orientation_lock) {
+    const arc::mojom::OrientationLockDeprecated orientation_lock) {
   const std::string app_id = shortcut ? GetAppId(package_name, intent_uri)
                                       : GetAppId(package_name, activity);
 
@@ -1112,18 +1108,11 @@ void ArcAppListPrefs::OnAppListRefreshed(
   ready_apps_.clear();
   for (const auto& app : apps) {
     // TODO(oshima): Do we have to update orientation?
-    AddAppAndShortcut(
-        true /* app_ready */,
-        app->name,
-        app->package_name,
-        app->activity,
-        std::string() /* intent_uri */,
-        std::string() /* icon_resource_id */,
-        app->sticky,
-        app->notifications_enabled,
-        false /* shortcut */,
-        true /* launchable */,
-        app->orientation_lock);
+    AddAppAndShortcut(true /* app_ready */, app->name, app->package_name,
+                      app->activity, std::string() /* intent_uri */,
+                      std::string() /* icon_resource_id */, app->sticky,
+                      app->notifications_enabled, false /* shortcut */,
+                      true /* launchable */, app->orientation_lock_deprecated);
   }
 
   // Detect removed ARC apps after current refresh.
@@ -1187,17 +1176,12 @@ void ArcAppListPrefs::AddApp(const arc::mojom::AppInfo& app_info) {
     return;
   }
 
-  AddAppAndShortcut(true /* app_ready */,
-                    app_info.name,
-                    app_info.package_name,
-                    app_info.activity,
-                    std::string() /* intent_uri */,
-                    std::string() /* icon_resource_id */,
-                    app_info.sticky,
-                    app_info.notifications_enabled,
-                    false /* shortcut */,
+  AddAppAndShortcut(true /* app_ready */, app_info.name, app_info.package_name,
+                    app_info.activity, std::string() /* intent_uri */,
+                    std::string() /* icon_resource_id */, app_info.sticky,
+                    app_info.notifications_enabled, false /* shortcut */,
                     true /* launchable */,
-                    app_info.orientation_lock);
+                    app_info.orientation_lock_deprecated);
 }
 
 void ArcAppListPrefs::OnAppAddedDeprecated(arc::mojom::AppInfoPtr app) {
@@ -1257,17 +1241,12 @@ void ArcAppListPrefs::OnInstallShortcut(arc::mojom::ShortcutInfoPtr shortcut) {
     return;
   }
 
-  AddAppAndShortcut(true /* app_ready */,
-                    shortcut->name,
-                    shortcut->package_name,
-                    std::string() /* activity */,
-                    shortcut->intent_uri,
-                    shortcut->icon_resource_id,
-                    false /* sticky */,
-                    false /* notifications_enabled */,
-                    true /* shortcut */,
-                    true /* launchable */,
-                    arc::mojom::OrientationLock::NONE);
+  AddAppAndShortcut(true /* app_ready */, shortcut->name,
+                    shortcut->package_name, std::string() /* activity */,
+                    shortcut->intent_uri, shortcut->icon_resource_id,
+                    false /* sticky */, false /* notifications_enabled */,
+                    true /* shortcut */, true /* launchable */,
+                    arc::mojom::OrientationLockDeprecated::NONE);
 }
 
 void ArcAppListPrefs::OnUninstallShortcut(const std::string& package_name,
@@ -1420,11 +1399,12 @@ void ArcAppListPrefs::OnTaskDestroyed(int32_t task_id) {
     observer.OnTaskDestroyed(task_id);
 }
 
-void ArcAppListPrefs::OnTaskOrientationLockRequested(
+void ArcAppListPrefs::OnTaskOrientationLockRequestedDeprecated(
     int32_t task_id,
-    const arc::mojom::OrientationLock orientation_lock) {
+    const arc::mojom::OrientationLockDeprecated orientation_lock) {
   for (auto& observer : observer_list_)
-    observer.OnTaskOrientationLockRequested(task_id, orientation_lock);
+    observer.OnTaskOrientationLockRequestedDeprecated(task_id,
+                                                      orientation_lock);
 }
 
 void ArcAppListPrefs::OnTaskSetActive(int32_t task_id) {
@@ -1611,20 +1591,21 @@ void ArcAppListPrefs::NotifyAppReadyChanged(const std::string& app_id,
     observer.OnAppReadyChanged(app_id, ready);
 }
 
-ArcAppListPrefs::AppInfo::AppInfo(const std::string& name,
-                                  const std::string& package_name,
-                                  const std::string& activity,
-                                  const std::string& intent_uri,
-                                  const std::string& icon_resource_id,
-                                  const base::Time& last_launch_time,
-                                  const base::Time& install_time,
-                                  bool sticky,
-                                  bool notifications_enabled,
-                                  bool ready,
-                                  bool showInLauncher,
-                                  bool shortcut,
-                                  bool launchable,
-                                  arc::mojom::OrientationLock orientation_lock)
+ArcAppListPrefs::AppInfo::AppInfo(
+    const std::string& name,
+    const std::string& package_name,
+    const std::string& activity,
+    const std::string& intent_uri,
+    const std::string& icon_resource_id,
+    const base::Time& last_launch_time,
+    const base::Time& install_time,
+    bool sticky,
+    bool notifications_enabled,
+    bool ready,
+    bool showInLauncher,
+    bool shortcut,
+    bool launchable,
+    arc::mojom::OrientationLockDeprecated orientation_lock)
     : name(name),
       package_name(package_name),
       activity(activity),
