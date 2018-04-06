@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// See https://webaudio.github.io/web-audio-api/#analyseroptions
+// See https://webaudio.github.io/web-audio-api/#dictdef-analyseroptions
 dictionary AnalyserOptions : AudioNodeOptions {
     unsigned long fftSize = 2048;
-    float maxDecibels = -30;
-    float minDecibels = -100;
-    float smoothingTimeConstant = 0.8;
+    double maxDecibels = -30;
+    double minDecibels = -100;
+    double smoothingTimeConstant = 0.8;
 };
