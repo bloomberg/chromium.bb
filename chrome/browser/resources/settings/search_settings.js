@@ -11,6 +11,7 @@ cr.exportPath('settings');
  * @typedef {{
  *   canceled: Boolean,
  *   didFindMatches: Boolean,
+ *   rawQuery: string,
  *   wasClearSearch: Boolean,
  * }}
  */
@@ -49,12 +50,14 @@ cr.define('settings', function() {
    * children's Shadow DOM) and replaces the highlights (yellow rectangle and
    * search bubbles) with the original text node.
    * TODO(dpapad): Consider making this a private method of TopLevelSearchTask.
-   * @param {!Node} node
+   * @param {!Array<!Node>} nodes
    * @private
    */
-  function findAndRemoveHighlights_(node) {
-    cr.search_highlight_utils.findAndRemoveHighlights(node);
-    cr.search_highlight_utils.findAndRemoveBubbles(node);
+  function findAndRemoveHighlights_(nodes) {
+    nodes.forEach(node => {
+      cr.search_highlight_utils.findAndRemoveHighlights(node);
+      cr.search_highlight_utils.findAndRemoveBubbles(node);
+    });
   }
 
   /**
@@ -64,33 +67,36 @@ cr.define('settings', function() {
    * occurred under their subtree.
    *
    * @param {!settings.SearchRequest} request
-   * @param {!Node} root The root of the sub-tree to be searched
+   * @param {!Array<!Node>} roots The roots of the sub-trees to be searched.
+   * @param {!function(!Node): void} addTextObserver
    * @private
    */
-  function findAndHighlightMatches_(request, root) {
+  function findAndHighlightMatches_(request, roots, addTextObserver) {
     let foundMatches = false;
     function doSearch(node) {
       if (node.nodeName == 'TEMPLATE' && node.hasAttribute('route-path') &&
           !node.if && !node.hasAttribute(SKIP_SEARCH_CSS_ATTRIBUTE)) {
-        request.queue_.addRenderTask(new RenderTask(request, node));
-        return;
+        request.queue_.addRenderTask(
+            new RenderTask(request, node, addTextObserver));
+        return false;
       }
 
       if (IGNORED_ELEMENTS.has(node.nodeName))
-        return;
+        return false;
 
       if (node instanceof HTMLElement) {
         const element = /** @type {HTMLElement} */ (node);
         if (element.hasAttribute(SKIP_SEARCH_CSS_ATTRIBUTE) ||
             element.hasAttribute('hidden') || element.style.display == 'none') {
-          return;
+          return false;
         }
       }
 
       if (node.nodeType == Node.TEXT_NODE) {
+        addTextObserver(node);
         const textContent = node.nodeValue.trim();
         if (textContent.length == 0)
-          return;
+          return false;
 
         if (request.regExp.test(textContent)) {
           foundMatches = true;
@@ -106,24 +112,23 @@ cr.define('settings', function() {
           }
         }
         // Returning early since TEXT_NODE nodes never have children.
-        return;
+        return false;
       }
 
-      let child = node.firstChild;
-      while (child !== null) {
-        // Getting a reference to the |nextSibling| before calling doSearch()
-        // because |child| could be removed from the DOM within doSearch().
-        const nextSibling = child.nextSibling;
-        doSearch(child);
-        child = nextSibling;
-      }
-
-      const shadowRoot = node.shadowRoot;
-      if (shadowRoot)
-        doSearch(shadowRoot);
+      return true;
     }
 
-    doSearch(root);
+    const nodes = Array.from(roots);
+    while (nodes.length > 0) {
+      const node = nodes.pop();
+      const continueSearchChildren = doSearch(node);
+      if (continueSearchChildren) {
+        nodes.push(...node.childNodes);
+        if (node.shadowRoot)
+          nodes.push(node.shadowRoot);
+      }
+    }
+
     return foundMatches;
   }
 
@@ -164,14 +169,18 @@ cr.define('settings', function() {
   class Task {
     /**
      * @param {!settings.SearchRequest} request
-     * @param {!Node} node
+     * @param {!Array<!Node>} nodes
+     * @param {!function(!Node): void} addTextObserver
      */
-    constructor(request, node) {
+    constructor(request, nodes, addTextObserver) {
       /** @protected {!settings.SearchRequest} */
       this.request = request;
 
-      /** @protected {!Node} */
-      this.node = node;
+      /** @protected {!Array<!Node>} */
+      this.nodes = nodes;
+
+      /** @protected {!function(!Node): void} */
+      this.addTextObserver = addTextObserver;
     }
 
     /**
@@ -190,29 +199,32 @@ cr.define('settings', function() {
      *
      * @param {!settings.SearchRequest} request
      * @param {!Node} node
+     * @param {!function(!Node): void} addTextObserver
      */
-    constructor(request, node) {
-      super(request, node);
+    constructor(request, node, addTextObserver) {
+      super(request, [node], addTextObserver);
     }
 
     /** @override */
     exec() {
-      const routePath = this.node.getAttribute('route-path');
+      const node = this.nodes[0];
+      const routePath = node.getAttribute('route-path');
       const subpageTemplate =
-          this.node['_content'].querySelector('settings-subpage');
+          node['_content'].querySelector('settings-subpage');
       subpageTemplate.setAttribute('route-path', routePath);
-      assert(!this.node.if);
-      this.node.if = true;
+      assert(!node.if);
+      node.if = true;
 
       return new Promise((resolve, reject) => {
-        const parent = this.node.parentNode;
+        const parent = node.parentNode;
         parent.async(() => {
           const renderedNode =
               parent.querySelector('[route-path="' + routePath + '"]');
           // Register a SearchAndHighlightTask for the part of the DOM that was
           // just rendered.
           this.request.queue_.addSearchAndHighlightTask(
-              new SearchAndHighlightTask(this.request, assert(renderedNode)));
+              new SearchAndHighlightTask(
+                  this.request, assert(renderedNode), this.addTextObserver));
           resolve();
         });
       });
@@ -223,14 +235,16 @@ cr.define('settings', function() {
     /**
      * @param {!settings.SearchRequest} request
      * @param {!Node} node
+     * @param {!function(!Node): void} addTextObserver
      */
-    constructor(request, node) {
-      super(request, node);
+    constructor(request, node, addTextObserver) {
+      super(request, [node], addTextObserver);
     }
 
     /** @override */
     exec() {
-      const foundMatches = findAndHighlightMatches_(this.request, this.node);
+      const foundMatches = findAndHighlightMatches_(
+          this.request, this.nodes, this.addTextObserver);
       this.request.updateMatches(foundMatches);
       return Promise.resolve();
     }
@@ -239,20 +253,21 @@ cr.define('settings', function() {
   class TopLevelSearchTask extends Task {
     /**
      * @param {!settings.SearchRequest} request
-     * @param {!Node} page
+     * @param {!Array<!Node>} pages
      */
-    constructor(request, page) {
-      super(request, page);
+    constructor(request, pages, addTextObserver) {
+      super(request, pages, addTextObserver);
     }
 
     /** @override */
     exec() {
-      findAndRemoveHighlights_(this.node);
+      findAndRemoveHighlights_(this.nodes);
 
       const shouldSearch = this.request.regExp !== null;
       this.setSectionsVisibility_(!shouldSearch);
       if (shouldSearch) {
-        const foundMatches = findAndHighlightMatches_(this.request, this.node);
+        const foundMatches = findAndHighlightMatches_(
+            this.request, this.nodes, this.addTextObserver);
         this.request.updateMatches(foundMatches);
       }
 
@@ -264,10 +279,11 @@ cr.define('settings', function() {
      * @private
      */
     setSectionsVisibility_(visible) {
-      const sections = this.node.querySelectorAll('settings-section');
-
-      for (let i = 0; i < sections.length; i++)
-        sections[i].hiddenBySearch = !visible;
+      this.nodes.forEach(node => {
+        const sections = node.querySelectorAll('settings-section');
+        for (let i = 0; i < sections.length; i++)
+          sections[i].hiddenBySearch = !visible;
+      });
     }
   }
 
@@ -367,14 +383,15 @@ cr.define('settings', function() {
   class SearchRequest {
     /**
      * @param {string} rawQuery
-     * @param {!HTMLElement} root
+     * @param {!Array<!HTMLElement>} roots
+     * @param {!function(!Node): void} addTextObserver
      */
-    constructor(rawQuery, root) {
+    constructor(rawQuery, roots, addTextObserver) {
       /** @private {string} */
       this.rawQuery_ = rawQuery;
 
-      /** @private {!HTMLElement} */
-      this.root_ = root;
+      /** @private {!Array<!HTMLElement>} */
+      this.roots_ = roots;
 
       /** @type {?RegExp} */
       this.regExp = this.generateRegExp_();
@@ -396,6 +413,9 @@ cr.define('settings', function() {
       this.queue_.onEmpty(() => {
         this.resolver.resolve(this);
       });
+
+      /** @private {!function(!Node): void} */
+      this.addTextObserver_ = addTextObserver;
     }
 
     /**
@@ -403,7 +423,7 @@ cr.define('settings', function() {
      */
     start() {
       this.queue_.addTopLevelSearchTask(
-          new TopLevelSearchTask(this, this.root_));
+          new TopLevelSearchTask(this, this.roots_, this.addTextObserver_));
     }
 
     /**
@@ -439,9 +459,14 @@ cr.define('settings', function() {
       this.foundMatches_ = this.foundMatches_ || found;
     }
 
-    /** @return {boolean} Whether any matches were found. */
-    didFindMatches() {
-      return this.foundMatches_;
+    /** @return {!settings.SearchResult} */
+    result() {
+      return /** @type {!settings.SearchResult} */ ({
+        canceled: this.canceled,
+        didFindMatches: this.foundMatches_,
+        rawQuery: this.rawQuery_,
+        wasClearSearch: this.isSame(''),
+      });
     }
   }
 
@@ -449,14 +474,25 @@ cr.define('settings', function() {
   const SANITIZE_REGEX = /[-[\]{}()*+?.,\\^$|#\s]/g;
 
   /** @interface */
+  class SearchManagerObserver {
+    onSearchStart() {}
+
+    /** @param {!settings.SearchResult} searchResult */
+    onSearchComplete(searchResult) {}
+  }
+
+  /** @interface */
   class SearchManager {
     /**
      * @param {string} text The text to search for.
-     * @param {!Node} page
-     * @return {!Promise<!settings.SearchRequest>} A signal indicating that
+     * @param {!Array<!Node>} pages
+     * @return {!Promise<!settings.SearchResult>} A signal indicating that
      *     searching finished.
      */
-    search(text, page) {}
+    search(text, pages) {}
+
+    /** @param {!settings.SearchManagerObserver} observer */
+    registerObserver(observer) {}
   }
 
   /** @implements {SearchManager} */
@@ -467,10 +503,39 @@ cr.define('settings', function() {
 
       /** @private {?string} */
       this.lastSearchedText_ = null;
+
+      /** @private {!Array<!settings.SearchManagerObserver>} */
+      this.observers_ = [];
+
+      /** @private {!Set<!MutationObserver>} */
+      this.textObservers_ = new Set();
+    }
+
+    /**
+     * @param {!function(): void} redoSearch
+     * @return {!function(!Node): void}
+     * @private
+     */
+    getAddTextObserverFunction_(redoSearch) {
+      this.textObservers_.forEach(observer => {
+        observer.disconnect();
+      });
+      this.textObservers_.clear();
+      return node => {
+        const observer = new MutationObserver(mutations => {
+          const oldValue = mutations[0].oldValue.trim();
+          const newValue = mutations[0].target.nodeValue.trim();
+          if (oldValue != newValue)
+            redoSearch();
+        });
+        observer.observe(
+            node, {characterData: true, characterDataOldValue: true});
+        this.textObservers_.add(observer);
+      };
     }
 
     /** @override */
-    search(text, page) {
+    search(text, pages) {
       // Cancel any pending requests if a request with different text is
       // submitted.
       if (text != this.lastSearchedText_) {
@@ -482,14 +547,29 @@ cr.define('settings', function() {
       }
 
       this.lastSearchedText_ = text;
-      const request = new SearchRequest(text, page);
+
+      const addTextObserver = this.getAddTextObserverFunction_(() => {
+        this.search(text, pages);
+      });
+      const request = new SearchRequest(text, pages, addTextObserver);
       this.activeRequests_.add(request);
       request.start();
+      this.observers_.forEach(observer => {
+        observer.onSearchStart.call(observer);
+      });
       return request.resolver.promise.then(() => {
         // Stop tracking requests that finished.
         this.activeRequests_.delete(request);
-        return request;
+        this.observers_.forEach(observer => {
+          observer.onSearchComplete.call(observer, request.result());
+        });
+        return request.result();
       });
+    }
+
+    /** @override */
+    registerObserver(observer) {
+      this.observers_.push(observer);
     }
   }
   cr.addSingletonGetter(SearchManagerImpl);
@@ -510,6 +590,7 @@ cr.define('settings', function() {
   return {
     getSearchManager: getSearchManager,
     setSearchManagerForTesting: setSearchManagerForTesting,
+    SearchManagerObserver: SearchManagerObserver,
     SearchRequest: SearchRequest,
   };
 });

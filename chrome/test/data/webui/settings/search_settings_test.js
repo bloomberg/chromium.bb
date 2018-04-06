@@ -37,29 +37,32 @@ cr.define('settings_test', function() {
       const div = document.querySelector('#mydiv');
 
       assertTrue(section.hiddenBySearch);
-      return searchManager.search('settings', section).then(function() {
-        assertFalse(section.hiddenBySearch);
+      return searchManager.search('settings', [section])
+          .then(function() {
+            assertFalse(section.hiddenBySearch);
 
-        const highlightWrapper = div.querySelector('.search-highlight-wrapper');
-        assertTrue(!!highlightWrapper);
+            const highlightWrapper =
+                div.querySelector('.search-highlight-wrapper');
+            assertTrue(!!highlightWrapper);
 
-        const originalContent = highlightWrapper.querySelector(
-            '.search-highlight-original-content');
-        assertTrue(!!originalContent);
-        assertEquals(optionText, originalContent.textContent);
+            const originalContent = highlightWrapper.querySelector(
+                '.search-highlight-original-content');
+            assertTrue(!!originalContent);
+            assertEquals(optionText, originalContent.textContent);
 
-        const searchHits = highlightWrapper.querySelectorAll(
-            '.search-highlight-hit');
-        assertEquals(1, searchHits.length);
-        assertEquals('Settings', searchHits[0].textContent);
+            const searchHits =
+                highlightWrapper.querySelectorAll('.search-highlight-hit');
+            assertEquals(1, searchHits.length);
+            assertEquals('Settings', searchHits[0].textContent);
 
-        // Check that original DOM structure is restored when search
-        // highlights are cleared.
-        return searchManager.search('', section);
-      }).then(function() {
-        assertEquals(0, div.children.length);
-        assertEquals(optionText, div.textContent);
-      });
+            // Check that original DOM structure is restored when search
+            // highlights are cleared.
+            return searchManager.search('', [section]);
+          })
+          .then(function() {
+            assertEquals(0, div.children.length);
+            assertEquals(optionText, div.textContent);
+          });
     });
 
     /**
@@ -81,23 +84,25 @@ cr.define('settings_test', function() {
       const select = section.querySelector('select');
 
       assertTrue(section.hiddenBySearch);
-      return searchManager.search('settings', section).then(function() {
-        assertFalse(section.hiddenBySearch);
+      return searchManager.search('settings', [section])
+          .then(function() {
+            assertFalse(section.hiddenBySearch);
 
-        const highlightWrapper = select.querySelector(
-            '.search-highlight-wrapper');
-        assertFalse(!!highlightWrapper);
+            const highlightWrapper =
+                select.querySelector('.search-highlight-wrapper');
+            assertFalse(!!highlightWrapper);
 
-        // Check that original DOM structure is present even after search
-        // highlights are cleared.
-        return searchManager.search('', section);
-      }).then(function() {
-        const options = select.querySelectorAll('option');
-        assertEquals(3, options.length);
-        assertEquals('Foo', options[0].textContent);
-        assertEquals('Settings', options[1].textContent);
-        assertEquals('Baz', options[2].textContent);
-      });
+            // Check that original DOM structure is present even after search
+            // highlights are cleared.
+            return searchManager.search('', [section]);
+          })
+          .then(function() {
+            const options = select.querySelectorAll('option');
+            assertEquals(3, options.length);
+            assertEquals('Foo', options[0].textContent);
+            assertEquals('Settings', options[1].textContent);
+            assertEquals('Baz', options[2].textContent);
+          });
     });
 
     test('ignored elements are ignored', function() {
@@ -119,7 +124,7 @@ cr.define('settings_test', function() {
       const section = document.querySelector('settings-section');
       assertTrue(section.hiddenBySearch);
 
-      return searchManager.search(text, section).then(function() {
+      return searchManager.search(text, [section]).then(function() {
         assertTrue(section.hiddenBySearch);
       });
     });
@@ -141,14 +146,94 @@ cr.define('settings_test', function() {
       const sections = Array.prototype.slice.call(
           document.querySelectorAll('settings-section'));
 
-      return Promise.all(sections.map(s => searchManager.search('there', s)))
-          .then(function(requests) {
-            assertTrue(requests[0].didFindMatches());
+      return Promise.all(sections.map(s => searchManager.search('there', [s])))
+          .then(function(results) {
+            assertTrue(results[0].didFindMatches);
             assertFalse(sections[0].hiddenBySearch);
-            assertTrue(requests[1].didFindMatches());
+            assertTrue(results[1].didFindMatches);
             assertFalse(sections[1].hiddenBySearch);
-            assertFalse(requests[2].didFindMatches());
+            assertFalse(results[2].didFindMatches);
             assertTrue(sections[2].hiddenBySearch);
+          });
+    });
+
+    test('search is redone when text is changed', function() {
+      const observer = /** @type {!settings.SearchManagerObserver} */ ((() => {
+        let resolver;
+        return {
+          onSearchStart() {},
+          onSearchComplete(searchResult) {
+            resolver.resolve(searchResult);
+          },
+          waitForSearchComplete(doSearch) {
+            resolver = new PromiseResolver();
+            doSearch();
+            return resolver.promise;
+          }
+        };
+      })());
+      searchManager.registerObserver(observer);
+
+      const originalText = 'FooSettingsFoo';
+
+      document.body.innerHTML = `<settings-section hidden-by-search>
+            <div id="mydiv">${originalText}</div>
+          </settings-section>`;
+
+      const section = document.querySelector('settings-section');
+      const div = document.querySelector('#mydiv');
+      assertTrue(section.hiddenBySearch);
+      return observer
+          .waitForSearchComplete(() => {
+            searchManager.search('settings', [document.body]);
+          })
+          .then(searchResult => {
+            assertFalse(section.hiddenBySearch);
+            const expected = {
+              canceled: false,
+              didFindMatches: true,
+              rawQuery: 'settings',
+              wasClearSearch: false,
+            };
+            assertDeepEquals(expected, searchResult);
+            const highlightWrapper =
+                div.querySelector('.search-highlight-wrapper');
+            assertTrue(!!highlightWrapper);
+            const originalContent = highlightWrapper.querySelector(
+                '.search-highlight-original-content');
+            assertTrue(!!originalContent);
+            return observer.waitForSearchComplete(() => {
+              originalContent.childNodes[0].nodeValue = 'Foo';
+            });
+          })
+          .then(searchResult => {
+            assertTrue(section.hiddenBySearch);
+            const expected = {
+              canceled: false,
+              didFindMatches: false,
+              rawQuery: 'settings',
+              wasClearSearch: false,
+            };
+            assertDeepEquals(expected, searchResult);
+            const highlightWrapper =
+                div.querySelector('.search-highlight-wrapper');
+            assertTrue(!highlightWrapper);
+            return observer.waitForSearchComplete(() => {
+              div.childNodes[0].nodeValue = originalText;
+            });
+          })
+          .then(searchResult => {
+            assertFalse(section.hiddenBySearch);
+            const expected = {
+              canceled: false,
+              didFindMatches: true,
+              rawQuery: 'settings',
+              wasClearSearch: false,
+            };
+            assertDeepEquals(expected, searchResult);
+            const highlightWrapper =
+                div.querySelector('.search-highlight-wrapper');
+            assertTrue(!!highlightWrapper);
           });
     });
   });
