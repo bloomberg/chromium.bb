@@ -128,7 +128,7 @@ TEST(DisplayItemListTest, EmptyUnpairedRangeDoesNotAddVisualRect) {
     list->EndPaintOfUnpaired(layer_rect);
   }
   // No ops.
-  EXPECT_EQ(0u, list->op_count());
+  EXPECT_EQ(0u, list->TotalOpCount());
 
   {
     list->StartPaint();
@@ -137,7 +137,7 @@ TEST(DisplayItemListTest, EmptyUnpairedRangeDoesNotAddVisualRect) {
     list->EndPaintOfUnpaired(layer_rect);
   }
   // Two ops.
-  EXPECT_EQ(2u, list->op_count());
+  EXPECT_EQ(2u, list->TotalOpCount());
 }
 
 TEST(DisplayItemListTest, ClipPairedRange) {
@@ -552,7 +552,7 @@ TEST(DisplayItemListTest, AsValueWithOps) {
 
 TEST(DisplayItemListTest, SizeEmpty) {
   auto list = base::MakeRefCounted<DisplayItemList>();
-  EXPECT_EQ(0u, list->op_count());
+  EXPECT_EQ(0u, list->TotalOpCount());
 }
 
 TEST(DisplayItemListTest, SizeOne) {
@@ -563,7 +563,7 @@ TEST(DisplayItemListTest, SizeOne) {
     list->push<DrawRectOp>(gfx::RectToSkRect(drawing_bounds), PaintFlags());
     list->EndPaintOfUnpaired(drawing_bounds);
   }
-  EXPECT_EQ(1u, list->op_count());
+  EXPECT_EQ(1u, list->TotalOpCount());
 }
 
 TEST(DisplayItemListTest, SizeMultiple) {
@@ -581,7 +581,7 @@ TEST(DisplayItemListTest, SizeMultiple) {
     list->push<RestoreOp>();
     list->EndPaintOfPairedEnd();
   }
-  EXPECT_EQ(3u, list->op_count());
+  EXPECT_EQ(3u, list->TotalOpCount());
 }
 
 TEST(DisplayItemListTest, AppendVisualRectSimple) {
@@ -596,7 +596,7 @@ TEST(DisplayItemListTest, AppendVisualRectSimple) {
     list->EndPaintOfUnpaired(drawing_bounds);
   }
 
-  EXPECT_EQ(1u, list->op_count());
+  EXPECT_EQ(1u, list->TotalOpCount());
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(0));
 }
 
@@ -619,7 +619,7 @@ TEST(DisplayItemListTest, AppendVisualRectEmptyBlock) {
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(3u, list->op_count());
+  EXPECT_EQ(3u, list->TotalOpCount());
   EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(0));
   EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(1));
   EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(2));
@@ -656,7 +656,7 @@ TEST(DisplayItemListTest, AppendVisualRectEmptyBlockContainingEmptyBlock) {
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(5u, list->op_count());
+  EXPECT_EQ(5u, list->TotalOpCount());
   EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(0));
   EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(1));
   EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(2));
@@ -691,7 +691,7 @@ TEST(DisplayItemListTest, AppendVisualRectBlockContainingDrawing) {
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(4u, list->op_count());
+  EXPECT_EQ(4u, list->TotalOpCount());
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(0));
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(1));
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(2));
@@ -725,7 +725,7 @@ TEST(DisplayItemListTest, AppendVisualRectBlockContainingEscapedDrawing) {
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(4u, list->op_count());
+  EXPECT_EQ(4u, list->TotalOpCount());
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(0));
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(1));
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(2));
@@ -768,7 +768,7 @@ TEST(DisplayItemListTest,
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(5u, list->op_count());
+  EXPECT_EQ(5u, list->TotalOpCount());
   EXPECT_RECT_EQ(drawing_a_bounds, list->VisualRectForTesting(0));
   EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(1));
   EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(2));
@@ -824,7 +824,7 @@ TEST(DisplayItemListTest, AppendVisualRectTwoBlocksTwoDrawings) {
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(8u, list->op_count());
+  EXPECT_EQ(8u, list->TotalOpCount());
   gfx::Rect merged_drawing_bounds = gfx::Rect(drawing_a_bounds);
   merged_drawing_bounds.Union(drawing_b_bounds);
   EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
@@ -887,7 +887,7 @@ TEST(DisplayItemListTest,
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(8u, list->op_count());
+  EXPECT_EQ(8u, list->TotalOpCount());
   gfx::Rect merged_drawing_bounds = gfx::Rect(drawing_a_bounds);
   merged_drawing_bounds.Union(drawing_b_bounds);
   EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
@@ -950,7 +950,7 @@ TEST(DisplayItemListTest,
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(8u, list->op_count());
+  EXPECT_EQ(8u, list->TotalOpCount());
   gfx::Rect merged_drawing_bounds = gfx::Rect(drawing_a_bounds);
   merged_drawing_bounds.Union(drawing_b_bounds);
   EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
@@ -1013,7 +1013,7 @@ TEST(DisplayItemListTest,
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(8u, list->op_count());
+  EXPECT_EQ(8u, list->TotalOpCount());
   gfx::Rect merged_drawing_bounds = gfx::Rect(drawing_a_bounds);
   merged_drawing_bounds.Union(drawing_b_bounds);
   EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
@@ -1051,10 +1051,31 @@ TEST(DisplayItemListTest, VisualRectForPairsEnclosingEmptyPainting) {
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(3u, list->op_count());
+  EXPECT_EQ(3u, list->TotalOpCount());
   EXPECT_RECT_EQ(visual_rect, list->VisualRectForTesting(0));
   EXPECT_RECT_EQ(visual_rect, list->VisualRectForTesting(1));
   EXPECT_RECT_EQ(visual_rect, list->VisualRectForTesting(2));
+}
+
+TEST(DisplayItemListTest, TotalOpCount) {
+  auto list = base::MakeRefCounted<DisplayItemList>();
+  auto sub_list = base::MakeRefCounted<DisplayItemList>();
+
+  sub_list->StartPaint();
+  sub_list->push<SaveOp>();
+  sub_list->push<TranslateOp>(10.f, 20.f);
+  sub_list->push<DrawRectOp>(SkRect::MakeWH(10, 20), PaintFlags());
+  sub_list->push<RestoreOp>();
+  sub_list->EndPaintOfUnpaired(gfx::Rect());
+  EXPECT_EQ(4u, sub_list->TotalOpCount());
+
+  list->StartPaint();
+  list->push<SaveOp>();
+  list->push<TranslateOp>(10.f, 20.f);
+  list->push<DrawRecordOp>(sub_list->ReleaseAsRecord());
+  list->push<RestoreOp>();
+  list->EndPaintOfUnpaired(gfx::Rect());
+  EXPECT_EQ(8u, list->TotalOpCount());
 }
 
 }  // namespace cc

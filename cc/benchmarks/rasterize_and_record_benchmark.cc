@@ -170,10 +170,10 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
         if (paint_op_memory_usage) {
           // Verify we are recording the same thing each time.
           DCHECK_EQ(paint_op_memory_usage, display_list->BytesUsed());
-          DCHECK_EQ(paint_op_count, display_list->op_count());
+          DCHECK_EQ(paint_op_count, display_list->TotalOpCount());
         } else {
           paint_op_memory_usage = display_list->BytesUsed();
-          paint_op_count = display_list->op_count();
+          paint_op_count = display_list->TotalOpCount();
         }
 
         timer.NextLap();

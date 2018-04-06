@@ -162,7 +162,7 @@ class CC_PAINT_EXPORT DisplayItemList
   bool HasNonAAPaint() const { return paint_op_buffer_.HasNonAAPaint(); }
 
   // This gives the total number of PaintOps.
-  size_t op_count() const { return paint_op_buffer_.size(); }
+  size_t TotalOpCount() const { return paint_op_buffer_.total_op_count(); }
   size_t BytesUsed() const;
 
   const DiscardableImageMap& discardable_image_map() const {

@@ -141,11 +141,11 @@ void RecordingSource::DetermineIfSolidColor() {
   is_solid_color_ = false;
   solid_color_ = SK_ColorTRANSPARENT;
 
-  if (display_list_->op_count() > kMaxOpsToAnalyzeForLayer)
+  if (display_list_->TotalOpCount() > kMaxOpsToAnalyzeForLayer)
     return;
 
   TRACE_EVENT1("cc", "RecordingSource::DetermineIfSolidColor", "opcount",
-               display_list_->op_count());
+               display_list_->TotalOpCount());
   is_solid_color_ = display_list_->GetColorIfSolidInRect(
       gfx::ScaleToRoundedRect(gfx::Rect(GetSize()), recording_scale_factor_),
       &solid_color_, kMaxOpsToAnalyzeForLayer);

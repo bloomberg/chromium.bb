@@ -3124,4 +3124,20 @@ TEST(PaintOpBufferTest, RecordShadersSerializeScaledImages) {
   EXPECT_EQ(scale.height(), 0.8f);
 }
 
+TEST(PaintOpBufferTest, TotalOpCount) {
+  auto record_buffer = sk_make_sp<PaintOpBuffer>();
+  auto sub_record_buffer = sk_make_sp<PaintOpBuffer>();
+  auto sub_sub_record_buffer = sk_make_sp<PaintOpBuffer>();
+  PushDrawRectOps(sub_sub_record_buffer.get());
+  PushDrawRectOps(sub_record_buffer.get());
+  PushDrawRectOps(record_buffer.get());
+  sub_record_buffer->push<DrawRecordOp>(sub_sub_record_buffer);
+  record_buffer->push<DrawRecordOp>(sub_record_buffer);
+
+  size_t len = std::min(test_rects.size(), test_flags.size());
+  EXPECT_EQ(len, sub_sub_record_buffer->total_op_count());
+  EXPECT_EQ(2 * len + 1, sub_record_buffer->total_op_count());
+  EXPECT_EQ(3 * len + 2, record_buffer->total_op_count());
+}
+
 }  // namespace cc
