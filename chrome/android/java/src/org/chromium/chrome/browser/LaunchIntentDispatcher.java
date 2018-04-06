@@ -214,11 +214,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             return Action.FINISH_ACTIVITY;
         }
 
-        // Ignore this VR intent if we can't handle it in Chrome.
-        if (mIsVrIntent && !VrIntentUtils.canHandleVrIntent(mActivity)) {
-            return Action.FINISH_ACTIVITY;
-        }
-
         // Check if we should push the user through First Run.
         if (FirstRunFlowSequencer.launch(mActivity, mIntent, false /* requiresBroadcast */,
                     false /* preferLightweightFre */)) {
