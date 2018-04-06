@@ -189,7 +189,6 @@ bool StoreDMTokenInRegistry(const std::string& token) {
 }  // namespace
 
 BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   static base::NoDestructor<BrowserDMTokenStorageWin> storage;
   return storage.get();
 }

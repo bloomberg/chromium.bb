@@ -97,6 +97,15 @@ BrowserPolicyConnectorBase::GetHandlerList() const {
   return handler_list_.get();
 }
 
+std::vector<ConfigurationPolicyProvider*>
+BrowserPolicyConnectorBase::GetPolicyProviders() const {
+  std::vector<ConfigurationPolicyProvider*> providers;
+  for (const auto& provider : policy_providers_)
+    providers.push_back(provider.get());
+
+  return providers;
+}
+
 // static
 void BrowserPolicyConnectorBase::SetPolicyProviderForTesting(
     ConfigurationPolicyProvider* provider) {

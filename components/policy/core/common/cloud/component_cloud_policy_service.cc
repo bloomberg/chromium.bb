@@ -283,6 +283,8 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
       io_task_runner_(io_task_runner),
       weak_ptr_factory_(this) {
   DCHECK(policy_type == dm_protocol::kChromeExtensionPolicyType ||
+         policy_type ==
+             dm_protocol::kChromeMachineLevelExtensionCloudPolicyType ||
          policy_type == dm_protocol::kChromeSigninExtensionPolicyType);
   CHECK(!core_->client());
 

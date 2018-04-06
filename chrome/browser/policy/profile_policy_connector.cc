@@ -76,6 +76,19 @@ void ProfilePolicyConnector::Init(
     policy_providers_.push_back(
         connector->GetDeviceActiveDirectoryPolicyManager());
   }
+#else
+  for (auto* provider : connector->GetPolicyProviders()) {
+    // Skip the platform provider since it was already handled above.  The
+    // platform provider should be first in the list so that it always takes
+    // precedence.
+    if (provider == connector->GetPlatformProvider()) {
+      continue;
+    } else {
+      // TODO(zmin): In the future, we may want to have special handling for
+      // the other providers too.
+      policy_providers_.push_back(provider);
+    }
+  }
 #endif
 
   if (configuration_policy_provider)
