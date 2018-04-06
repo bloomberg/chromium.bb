@@ -5,8 +5,9 @@
 import("//build/config/android/rules.gni")
 
 template("unwind_table_asset") {
+  # Note: This file name is used in multiple monochrome build scripts.
+  _asset_path = "${target_gen_dir}/${target_name}/unwind_cfi_32"
   _unwind_action = "${target_name}__extract"
-  _asset_path = "${target_gen_dir}/${target_name}/unwind_cfi"
 
   action(_unwind_action) {
     if (defined(invoker.testonly)) {
