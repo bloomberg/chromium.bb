@@ -23,7 +23,7 @@ MappedReadOnlyRegion ReadOnlySharedMemoryRegion::Create(size_t size) {
   if (!handle.MapAt(0, handle.GetSize(), &memory_ptr, &mapped_size))
     return {};
 
-  WritableSharedMemoryMapping mapping(memory_ptr, mapped_size,
+  WritableSharedMemoryMapping mapping(memory_ptr, size, mapped_size,
                                       handle.GetGUID());
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   handle.ConvertToReadOnly(memory_ptr);
@@ -77,7 +77,8 @@ ReadOnlySharedMemoryMapping ReadOnlySharedMemoryRegion::MapAt(
   if (!handle_.MapAt(offset, size, &memory, &mapped_size))
     return {};
 
-  return ReadOnlySharedMemoryMapping(memory, mapped_size, handle_.GetGUID());
+  return ReadOnlySharedMemoryMapping(memory, size, mapped_size,
+                                     handle_.GetGUID());
 }
 
 bool ReadOnlySharedMemoryRegion::IsValid() const {

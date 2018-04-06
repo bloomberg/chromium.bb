@@ -40,11 +40,20 @@ class BASE_EXPORT SharedMemoryMapping {
   // corresponding area of memory.
   bool IsValid() const { return memory_ != nullptr; }
 
-  // Returns the size of the mapping in bytes. This is page-aligned. This is
-  // undefined for invalid instances.
+  // Returns the logical size of the mapping in bytes. This is precisely the
+  // size requested by whoever created the mapping, and it is always less than
+  // or equal to |mapped_size()|. This is undefined for invalid instances.
   size_t size() const {
     DCHECK(IsValid());
     return size_;
+  }
+
+  // Returns the actual size of the mapping in bytes. This is always at least
+  // as large as |size()| but may be larger due to platform mapping alignment
+  // constraints. This is undefined for invalid instances.
+  size_t mapped_size() const {
+    DCHECK(IsValid());
+    return mapped_size_;
   }
 
   // Returns 128-bit GUID of the region this mapping belongs to.
@@ -54,7 +63,10 @@ class BASE_EXPORT SharedMemoryMapping {
   }
 
  protected:
-  SharedMemoryMapping(void* address, size_t size, const UnguessableToken& guid);
+  SharedMemoryMapping(void* address,
+                      size_t size,
+                      size_t mapped_size,
+                      const UnguessableToken& guid);
   void* raw_memory_ptr() const { return memory_; }
 
  private:
@@ -65,6 +77,7 @@ class BASE_EXPORT SharedMemoryMapping {
 
   void* memory_ = nullptr;
   size_t size_ = 0;
+  size_t mapped_size_ = 0;
   UnguessableToken guid_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedMemoryMapping);
@@ -90,6 +103,7 @@ class BASE_EXPORT ReadOnlySharedMemoryMapping : public SharedMemoryMapping {
   friend class ReadOnlySharedMemoryRegion;
   ReadOnlySharedMemoryMapping(void* address,
                               size_t size,
+                              size_t mapped_size,
                               const UnguessableToken& guid);
 
   DISALLOW_COPY_AND_ASSIGN(ReadOnlySharedMemoryMapping);
@@ -118,6 +132,7 @@ class BASE_EXPORT WritableSharedMemoryMapping : public SharedMemoryMapping {
   friend class UnsafeSharedMemoryRegion;
   WritableSharedMemoryMapping(void* address,
                               size_t size,
+                              size_t mapped_size,
                               const UnguessableToken& guid);
 
   DISALLOW_COPY_AND_ASSIGN(WritableSharedMemoryMapping);
