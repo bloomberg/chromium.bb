@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#the-mediastreamaudiodestinationnode-interface
+// See https://webaudio.github.io/web-audio-api/#mediastreamaudiodestinationnode
 [
     Constructor(BaseAudioContext context, optional AudioNodeOptions options),
     RaisesException=Constructor,

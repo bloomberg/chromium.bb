@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#the-audioprocessingevent-interface---deprecated
+// See https://webaudio.github.io/web-audio-api/#audioprocessingevent
 [
     Constructor(DOMString type, AudioProcessingEventInit eventInitDict)
 ]

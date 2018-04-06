@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#MediaElementAudioSourceNode
+// See https://webaudio.github.io/web-audio-api/#mediaelementaudiosourcenode
 [
     // TODO(rtoy): This should be AudioContext, not BaseAudioContext.
     Constructor(BaseAudioContext context, MediaElementAudioSourceOptions options),

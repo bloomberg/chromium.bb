@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#GainNode
+// See https://webaudio.github.io/web-audio-api/#gainnode
 [
     Constructor(BaseAudioContext context, optional GainOptions options),
     RaisesException=Constructor,

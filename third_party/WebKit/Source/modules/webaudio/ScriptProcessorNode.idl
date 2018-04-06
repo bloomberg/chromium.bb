@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#the-scriptprocessornode-interface---deprecated
+// See https://webaudio.github.io/web-audio-api/#scriptprocessornode
 // For real-time audio stream synthesis/processing in JavaScript
 [
     ActiveScriptWrappable

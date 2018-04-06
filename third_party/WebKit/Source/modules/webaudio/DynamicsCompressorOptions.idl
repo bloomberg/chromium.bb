@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// See https://webaudio.github.io/web-audio-api/#dynamicscompressoroptions
+// See https://webaudio.github.io/web-audio-api/#dictdef-dynamicscompressoroptions
 dictionary DynamicsCompressorOptions : AudioNodeOptions {
     float attack = 0.003;
     float knee = 30;
