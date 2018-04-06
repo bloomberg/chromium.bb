@@ -6697,6 +6697,17 @@ typedef struct {
   InterpFilter single_filter[MB_MODE_COUNT][REF_FRAMES];
 } HandleInterModeArgs;
 
+static INLINE int clamp_and_check_mv(int_mv *out_mv, int_mv in_mv,
+                                     const AV1_COMMON *cm,
+                                     const MACROBLOCK *x) {
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  *out_mv = in_mv;
+  lower_mv_precision(&out_mv->as_mv, cm->allow_high_precision_mv,
+                     cm->cur_frame_force_integer_mv);
+  clamp_mv2(&out_mv->as_mv, xd);
+  return !mv_check_bounds(&x->mv_limits, &out_mv->as_mv);
+}
+
 static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
                             const BLOCK_SIZE bsize,
                             int_mv (*const mode_mv)[REF_FRAMES],
@@ -7486,7 +7497,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   int pred_exists = 1;
   const int bw = block_size_wide[bsize];
   int_mv single_newmv[REF_FRAMES];
-  uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+  const uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
   DECLARE_ALIGNED(32, uint8_t, tmp_buf_[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
   uint8_t *tmp_buf;
   int64_t rd = INT64_MAX;
@@ -7585,74 +7596,73 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     if (this_mode == NEAREST_NEARESTMV) {
       if (mbmi_ext->ref_mv_count[ref_frame_type] > 0) {
-        cur_mv[0] = mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv;
-        cur_mv[1] = mbmi_ext->ref_mv_stack[ref_frame_type][0].comp_mv;
-
-        for (i = 0; i < 2; ++i) {
-          clamp_mv2(&cur_mv[i].as_mv, xd);
-          if (mv_check_bounds(&x->mv_limits, &cur_mv[i].as_mv)) {
-            early_terminate = INT64_MAX;
-            continue;
-          }
-          mbmi->mv[i].as_int = cur_mv[i].as_int;
+        int ret = 1;
+        ret &= clamp_and_check_mv(
+            &cur_mv[0], mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv, cm,
+            x);
+        ret &= clamp_and_check_mv(
+            &cur_mv[1], mbmi_ext->ref_mv_stack[ref_frame_type][0].comp_mv, cm,
+            x);
+        if (ret) {
+          mbmi->mv[0].as_int = cur_mv[0].as_int;
+          mbmi->mv[1].as_int = cur_mv[1].as_int;
+        } else {
+          early_terminate = INT64_MAX;
+          continue;
         }
       }
     }
 
     if (mbmi_ext->ref_mv_count[ref_frame_type] > 0) {
       if (this_mode == NEAREST_NEWMV) {
-        cur_mv[0] = mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv;
-
-        lower_mv_precision(&cur_mv[0].as_mv, cm->allow_high_precision_mv,
-                           cm->cur_frame_force_integer_mv);
-        clamp_mv2(&cur_mv[0].as_mv, xd);
-        if (mv_check_bounds(&x->mv_limits, &cur_mv[0].as_mv)) {
+        const int ret = clamp_and_check_mv(
+            &cur_mv[0], mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv, cm,
+            x);
+        if (ret) {
+          mbmi->mv[0].as_int = cur_mv[0].as_int;
+        } else {
           early_terminate = INT64_MAX;
           continue;
         }
-        mbmi->mv[0].as_int = cur_mv[0].as_int;
       }
 
       if (this_mode == NEW_NEARESTMV) {
-        cur_mv[1] = mbmi_ext->ref_mv_stack[ref_frame_type][0].comp_mv;
-
-        lower_mv_precision(&cur_mv[1].as_mv, cm->allow_high_precision_mv,
-                           cm->cur_frame_force_integer_mv);
-        clamp_mv2(&cur_mv[1].as_mv, xd);
-        if (mv_check_bounds(&x->mv_limits, &cur_mv[1].as_mv)) {
+        const int ret = clamp_and_check_mv(
+            &cur_mv[1], mbmi_ext->ref_mv_stack[ref_frame_type][0].comp_mv, cm,
+            x);
+        if (ret) {
+          mbmi->mv[1].as_int = cur_mv[1].as_int;
+        } else {
           early_terminate = INT64_MAX;
           continue;
         }
-        mbmi->mv[1].as_int = cur_mv[1].as_int;
       }
     }
 
     if (mbmi_ext->ref_mv_count[ref_frame_type] > 1) {
       int ref_mv_idx = mbmi->ref_mv_idx + 1;
       if (this_mode == NEAR_NEWMV || this_mode == NEAR_NEARMV) {
-        cur_mv[0] = mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
-
-        lower_mv_precision(&cur_mv[0].as_mv, cm->allow_high_precision_mv,
-                           cm->cur_frame_force_integer_mv);
-        clamp_mv2(&cur_mv[0].as_mv, xd);
-        if (mv_check_bounds(&x->mv_limits, &cur_mv[0].as_mv)) {
+        const int ret = clamp_and_check_mv(
+            &cur_mv[0],
+            mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv, cm, x);
+        if (ret) {
+          mbmi->mv[0].as_int = cur_mv[0].as_int;
+        } else {
           early_terminate = INT64_MAX;
           continue;
         }
-        mbmi->mv[0].as_int = cur_mv[0].as_int;
       }
 
       if (this_mode == NEW_NEARMV || this_mode == NEAR_NEARMV) {
-        cur_mv[1] = mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv;
-
-        lower_mv_precision(&cur_mv[1].as_mv, cm->allow_high_precision_mv,
-                           cm->cur_frame_force_integer_mv);
-        clamp_mv2(&cur_mv[1].as_mv, xd);
-        if (mv_check_bounds(&x->mv_limits, &cur_mv[1].as_mv)) {
+        const int ret = clamp_and_check_mv(
+            &cur_mv[1],
+            mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv, cm, x);
+        if (ret) {
+          mbmi->mv[1].as_int = cur_mv[1].as_int;
+        } else {
           early_terminate = INT64_MAX;
           continue;
         }
-        mbmi->mv[1].as_int = cur_mv[1].as_int;
       }
     }
 
