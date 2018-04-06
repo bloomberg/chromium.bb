@@ -85,7 +85,7 @@ class XRSession final : public EventTargetWithInlineData {
   // Describes the default scalar to be applied to the ideal framebuffer
   // dimensions when the developer does not specify one. Should be a value that
   // provides a good balance between quality and performance.
-  double DefaultFramebufferScale() const { return 1.0; }
+  double DefaultFramebufferScale() const;
 
   // Describes the ideal dimensions of layer framebuffers, preferrably defined
   // as the size which gives 1:1 pixel ratio at the center of the user's view.

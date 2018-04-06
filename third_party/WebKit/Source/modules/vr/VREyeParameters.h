@@ -19,7 +19,8 @@ class VREyeParameters final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit VREyeParameters(const device::mojom::blink::VREyeParametersPtr&);
+  explicit VREyeParameters(const device::mojom::blink::VREyeParametersPtr&,
+                           double render_scale);
 
   DOMFloat32Array* offset() const { return offset_; }
   VRFieldOfView* FieldOfView() const { return field_of_view_; }

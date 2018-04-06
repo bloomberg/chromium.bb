@@ -40,6 +40,7 @@ function fakeVRDisplays(){
       stageParameters : null,
       leftEye : null,
       rightEye : null,
+      defaultFramebufferScale: 1.0,
     },
 
     FakeRoomScale: {
@@ -60,6 +61,7 @@ function fakeVRDisplays(){
       },
       leftEye : generic_left_eye,
       rightEye : generic_right_eye,
+      defaultFramebufferScale: 1.0,
     },
 
     Pixel: { // Pixel info as of Dec. 22 2016
@@ -79,8 +81,8 @@ function fakeVRDisplays(){
           rightDegrees : 50.899,
         },
         offset : [-0.032, 0, 0],
-        renderWidth : 960,
-        renderHeight : 1080
+        renderWidth : 1920,
+        renderHeight : 2160
       },
       rightEye : {
         fieldOfView : {
@@ -90,9 +92,10 @@ function fakeVRDisplays(){
           rightDegrees: 35.197
         },
         offset : [0.032, 0, 0],
-        renderWidth : 960,
-        renderHeight : 1080
-      }
+        renderWidth : 1920,
+        renderHeight : 2160
+      },
+      defaultFramebufferScale: 0.5,
     }
     // TODO(bsheedy) add more displays like Rift/Vive
   };

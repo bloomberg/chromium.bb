@@ -35,9 +35,10 @@ namespace {
 // uses approximately 0.55 on a Pixel XL.
 static constexpr float kWebVrRecommendedResolutionScale = 0.5;
 
-gfx::Size GetRecommendedWebVrSize(gvr::GvrApi* gvr_api) {
-  // Pick a reasonable default size for the WebVR transfer surface
-  // based on a downscaled 1:1 render resolution. This size will also
+gfx::Size GetMaximumWebVrSize(gvr::GvrApi* gvr_api) {
+  // Get the default, unscaled size for the WebVR transfer surface
+  // based on the optimal 1:1 render resolution. A scalar will be applied to
+  // this value in the renderer to reduce the render load. This size will also
   // be reported to the client via CreateVRDisplayInfo as the
   // client-recommended renderWidth/renderHeight and for the GVR
   // framebuffer. If the client chooses a different size or resizes it
@@ -46,9 +47,7 @@ gfx::Size GetRecommendedWebVrSize(gvr::GvrApi* gvr_api) {
   gvr::Sizei render_target_size =
       gvr_api->GetMaximumEffectiveRenderTargetSize();
 
-  gfx::Size webvr_size(
-      render_target_size.width * kWebVrRecommendedResolutionScale,
-      render_target_size.height * kWebVrRecommendedResolutionScale);
+  gfx::Size webvr_size(render_target_size.width, render_target_size.height);
 
   // Ensure that the width is an even number so that the eyes each
   // get the same size, the recommended renderWidth is per eye
@@ -65,12 +64,12 @@ mojom::VREyeParametersPtr CreateEyeParamater(
     gvr::GvrApi* gvr_api,
     gvr::Eye eye,
     const gvr::BufferViewportList& buffers,
-    const gfx::Size& recommended_size) {
+    const gfx::Size& maximum_size) {
   mojom::VREyeParametersPtr eye_params = mojom::VREyeParameters::New();
   eye_params->fieldOfView = mojom::VRFieldOfView::New();
   eye_params->offset.resize(3);
-  eye_params->renderWidth = recommended_size.width() / 2;
-  eye_params->renderHeight = recommended_size.height();
+  eye_params->renderWidth = maximum_size.width() / 2;
+  eye_params->renderHeight = maximum_size.height();
 
   gvr::BufferViewport eye_viewport = gvr_api->CreateBufferViewport();
   buffers.GetBufferViewport(eye, &eye_viewport);
@@ -108,11 +107,17 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(gvr::GvrApi* gvr_api,
       gvr_api->CreateEmptyBufferViewportList();
   gvr_buffer_viewports.SetToRecommendedBufferViewports();
 
-  gfx::Size recommended_size = GetRecommendedWebVrSize(gvr_api);
+  gfx::Size maximum_size = GetMaximumWebVrSize(gvr_api);
   device->leftEye = CreateEyeParamater(gvr_api, GVR_LEFT_EYE,
-                                       gvr_buffer_viewports, recommended_size);
+                                       gvr_buffer_viewports, maximum_size);
   device->rightEye = CreateEyeParamater(gvr_api, GVR_RIGHT_EYE,
-                                        gvr_buffer_viewports, recommended_size);
+                                        gvr_buffer_viewports, maximum_size);
+
+  // This scalar will be applied in the renderer to the recommended render
+  // target sizes. For WebVR it will always be applied, for WebXR it can be
+  // overridden.
+  device->default_framebuffer_scale = kWebVrRecommendedResolutionScale;
+
   return device;
 }
 

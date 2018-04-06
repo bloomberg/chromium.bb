@@ -86,6 +86,7 @@ function fakeXRDevices() {
       stageParameters: null,
       leftEye: null,
       rightEye: null,
+      defaultFramebufferScale: 1.0,
     },
 
     FakeRoomScale: {
@@ -106,6 +107,7 @@ function fakeXRDevices() {
       },
       leftEye: generic_left_eye,
       rightEye: generic_right_eye,
+      defaultFramebufferScale: 1.0,
     },
 
     FakeGooglePixelPhone: {
@@ -126,8 +128,8 @@ function fakeXRDevices() {
           rightDegrees: 50.899,
         },
         offset: [-0.032, 0, 0],
-        renderWidth: 960,
-        renderHeight: 1080
+        renderWidth: 1920,
+        renderHeight: 2160
       },
       rightEye: {
         fieldOfView: {
@@ -137,9 +139,10 @@ function fakeXRDevices() {
           rightDegrees: 35.197
         },
         offset: [0.032, 0, 0],
-        renderWidth: 960,
-        renderHeight: 1080
-      }
+        renderWidth: 1920,
+        renderHeight: 2160
+      },
+      defaultFramebufferScale: 0.5,
     }
   };
 }
