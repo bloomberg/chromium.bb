@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "public/platform/scheduler/render_widget_scheduling_state.h"
+#include "public/platform/scheduler/web_render_widget_scheduling_state.h"
 
 namespace blink {
 namespace scheduler {
@@ -16,9 +16,9 @@ RenderWidgetSignals::RenderWidgetSignals(Observer* observer)
       num_visible_render_widgets_(0),
       num_visible_render_widgets_with_touch_handlers_(0) {}
 
-std::unique_ptr<RenderWidgetSchedulingState>
+std::unique_ptr<WebRenderWidgetSchedulingState>
 RenderWidgetSignals::NewRenderWidgetSchedulingState() {
-  return base::WrapUnique(new RenderWidgetSchedulingState(this));
+  return base::WrapUnique(new WebRenderWidgetSchedulingState(this));
 }
 
 void RenderWidgetSignals::IncNumVisibleRenderWidgets() {

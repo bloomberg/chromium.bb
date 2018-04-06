@@ -26,8 +26,8 @@ class FakeRendererScheduler : public WebMainThreadScheduler {
   scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
-  std::unique_ptr<RenderWidgetSchedulingState> NewRenderWidgetSchedulingState()
-      override;
+  std::unique_ptr<WebRenderWidgetSchedulingState>
+  NewRenderWidgetSchedulingState() override;
   void WillBeginFrame(const viz::BeginFrameArgs& args) override;
   void BeginFrameNotExpectedSoon() override;
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override;

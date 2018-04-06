@@ -14,7 +14,7 @@
 namespace blink {
 namespace scheduler {
 
-class RenderWidgetSchedulingState;
+class WebRenderWidgetSchedulingState;
 
 class PLATFORM_EXPORT RenderWidgetSignals {
  public:
@@ -37,12 +37,13 @@ class PLATFORM_EXPORT RenderWidgetSignals {
 
   explicit RenderWidgetSignals(Observer* observer);
 
-  std::unique_ptr<RenderWidgetSchedulingState> NewRenderWidgetSchedulingState();
+  std::unique_ptr<WebRenderWidgetSchedulingState>
+  NewRenderWidgetSchedulingState();
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
  private:
-  friend class RenderWidgetSchedulingState;
+  friend class WebRenderWidgetSchedulingState;
 
   void IncNumVisibleRenderWidgets();
   void DecNumVisibleRenderWidgets();

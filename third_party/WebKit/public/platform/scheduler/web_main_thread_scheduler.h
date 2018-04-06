@@ -17,8 +17,8 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebInputEventResult.h"
 #include "public/platform/WebScopedVirtualTimePauser.h"
-#include "public/platform/scheduler/render_widget_scheduling_state.h"
 #include "public/platform/scheduler/single_thread_idle_task_runner.h"
+#include "public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "public/platform/scheduler/web_thread_scheduler.h"
 #include "v8/include/v8.h"
 
@@ -41,7 +41,7 @@ namespace blink {
 namespace scheduler {
 
 enum class RendererProcessType;
-class RenderWidgetSchedulingState;
+class WebRenderWidgetSchedulingState;
 
 class BLINK_PLATFORM_EXPORT WebMainThreadScheduler : public WebThreadScheduler {
  public:
@@ -69,9 +69,9 @@ class BLINK_PLATFORM_EXPORT WebMainThreadScheduler : public WebThreadScheduler {
   // Creates a WebThread implementation for the renderer main thread.
   virtual std::unique_ptr<WebThread> CreateMainThread() = 0;
 
-  // Returns a new RenderWidgetSchedulingState.  The signals from this will be
-  // used to make scheduling decisions.
-  virtual std::unique_ptr<RenderWidgetSchedulingState>
+  // Returns a new WebRenderWidgetSchedulingState.  The signals from this will
+  // be used to make scheduling decisions.
+  virtual std::unique_ptr<WebRenderWidgetSchedulingState>
   NewRenderWidgetSchedulingState() = 0;
 
   // Called to notify about the start of an extended period where no frames

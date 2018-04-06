@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_RENDER_WIDGET_SCHEDULING_STATE_H_
-#define THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_RENDER_WIDGET_SCHEDULING_STATE_H_
+#ifndef THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_WEB_RENDER_WIDGET_SCHEDULING_STATE_H_
+#define THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_WEB_RENDER_WIDGET_SCHEDULING_STATE_H_
 
 #include "public/platform/WebCommon.h"
 
@@ -12,18 +12,17 @@ namespace scheduler {
 
 class RenderWidgetSignals;
 
-// TODO(yutak): Does this class need to have "Web" prefix?
-class BLINK_PLATFORM_EXPORT RenderWidgetSchedulingState {
+class BLINK_PLATFORM_EXPORT WebRenderWidgetSchedulingState {
  public:
   void SetHidden(bool hidden);
   void SetHasTouchHandler(bool has_touch_handler);
 
-  ~RenderWidgetSchedulingState();
+  ~WebRenderWidgetSchedulingState();
 
  private:
   friend class RenderWidgetSignals;
 
-  explicit RenderWidgetSchedulingState(
+  explicit WebRenderWidgetSchedulingState(
       RenderWidgetSignals* render_widget_scheduling_signals);
 
   RenderWidgetSignals* render_widget_signals_;  // NOT OWNED
@@ -34,4 +33,4 @@ class BLINK_PLATFORM_EXPORT RenderWidgetSchedulingState {
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_RENDER_WIDGET_SCHEDULING_STATE_H_
+#endif  // THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_WEB_RENDER_WIDGET_SCHEDULING_STATE_H_

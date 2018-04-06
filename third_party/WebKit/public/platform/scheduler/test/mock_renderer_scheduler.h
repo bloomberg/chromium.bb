@@ -34,7 +34,7 @@ class MockRendererScheduler : public WebMainThreadScheduler {
                scoped_refptr<blink::scheduler::SingleThreadIdleTaskRunner>());
   MOCK_METHOD0(IPCTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD0(NewRenderWidgetSchedulingState,
-               std::unique_ptr<RenderWidgetSchedulingState>());
+               std::unique_ptr<WebRenderWidgetSchedulingState>());
   MOCK_METHOD1(WillBeginFrame, void(const viz::BeginFrameArgs&));
   MOCK_METHOD0(BeginFrameNotExpectedSoon, void());
   MOCK_METHOD1(BeginMainFrameNotExpectedUntil, void(base::TimeTicks));
