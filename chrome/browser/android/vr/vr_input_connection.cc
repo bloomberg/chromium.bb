@@ -19,8 +19,7 @@ using base::android::JavaParamRef;
 
 namespace vr {
 
-VrInputConnection::VrInputConnection(content::WebContents* web_contents)
-    : weak_ptr_factory_(this) {
+VrInputConnection::VrInputConnection(content::WebContents* web_contents) {
   DCHECK(web_contents);
   JNIEnv* env = AttachCurrentThread();
   j_object_.Reset(Java_VrInputConnection_create(
@@ -28,10 +27,6 @@ VrInputConnection::VrInputConnection(content::WebContents* web_contents)
 }
 
 VrInputConnection::~VrInputConnection() {}
-
-base::WeakPtr<VrInputConnection> VrInputConnection::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
 
 void VrInputConnection::OnKeyboardEdit(const TextEdits& edits) {
   JNIEnv* env = base::android::AttachCurrentThread();
