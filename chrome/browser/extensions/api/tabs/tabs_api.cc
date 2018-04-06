@@ -1739,6 +1739,7 @@ WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(
   }
 
   if (!extension()->permissions_data()->CanCaptureVisiblePage(
+          contents->GetLastCommittedURL(), extension(),
           SessionTabHelper::IdForTab(contents).id(), error)) {
     return nullptr;
   }
@@ -1762,9 +1763,8 @@ ExtensionFunction::ResponseAction TabsCaptureVisibleTabFunction::Run() {
 
   std::string error;
   WebContents* contents = GetWebContentsForID(context_id, &error);
-  // TODO(wjmaclean): If |error| was populated, shouldn't we send error
-  // response? Currently doing that will fail
-  // ExtensionApiCaptureTest.CaptureNullWindow test.
+  if (!contents)
+    return RespondNow(Error(error));
 
   const CaptureResult capture_result = CaptureAsync(
       contents, image_details.get(),

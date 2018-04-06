@@ -12,6 +12,10 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_service_test_base.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -24,15 +28,20 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/test/browser_side_navigation_test_utils.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/value_builder.h"
+#include "extensions/test/test_extension_dir.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/run_loop.h"
@@ -152,8 +161,8 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
                                                   nullptr) &&
                   permissions_data->CanRunContentScriptOnPage(
                       extension.get(), url, tab_id, nullptr);
-    bool capture = HasTabsPermission(extension, tab_id) &&
-                   permissions_data->CanCaptureVisiblePage(tab_id, NULL);
+    bool capture = permissions_data->CanCaptureVisiblePage(url, extension.get(),
+                                                           tab_id, NULL);
     switch (feature) {
       case PERMITTED_SCRIPT_ONLY:
         return script && !capture;
@@ -236,7 +245,7 @@ TEST_F(ActiveTabTest, GrantToSinglePage) {
 
   // Other subdomains shouldn't be given access.
   GURL mail_google("http://mail.google.com");
-  EXPECT_TRUE(IsAllowed(extension, mail_google, PERMITTED_CAPTURE_ONLY));
+  EXPECT_TRUE(IsBlocked(extension, mail_google));
   EXPECT_TRUE(IsBlocked(another_extension, mail_google));
   EXPECT_TRUE(IsBlocked(extension_without_active_tab, mail_google));
 
@@ -296,8 +305,8 @@ TEST_F(ActiveTabTest, GrantToSinglePage) {
   active_tab_permission_granter()->GrantIfRequested(
       extension_without_active_tab.get());
 
-  EXPECT_TRUE(IsAllowed(extension, google, PERMITTED_CAPTURE_ONLY));
-  EXPECT_TRUE(IsAllowed(another_extension, google, PERMITTED_CAPTURE_ONLY));
+  EXPECT_TRUE(IsBlocked(extension, google));
+  EXPECT_TRUE(IsBlocked(another_extension, google));
   EXPECT_TRUE(IsBlocked(extension_without_active_tab, google));
 
   EXPECT_TRUE(IsAllowed(extension, chromium));
@@ -316,8 +325,8 @@ TEST_F(ActiveTabTest, GrantToSinglePage) {
   EXPECT_TRUE(IsAllowed(another_extension, google));
   EXPECT_TRUE(IsBlocked(extension_without_active_tab, google));
 
-  EXPECT_TRUE(IsAllowed(extension, chromium, PERMITTED_CAPTURE_ONLY));
-  EXPECT_TRUE(IsAllowed(another_extension, chromium, PERMITTED_CAPTURE_ONLY));
+  EXPECT_TRUE(IsBlocked(extension, chromium));
+  EXPECT_TRUE(IsBlocked(another_extension, chromium));
   EXPECT_TRUE(IsBlocked(extension_without_active_tab, chromium));
 }
 
@@ -530,6 +539,93 @@ TEST_F(ActiveTabTest, DelegateIsSet) {
   chromeos::ChromeUserManager::Get()->Shutdown();
 }
 #endif  // defined(OS_CHROMEOS)
+
+// An active tab test that includes an ExtensionService.
+class ActiveTabWithServiceTest : public ExtensionServiceTestBase {
+ public:
+  ActiveTabWithServiceTest() {}
+
+  void SetUp() override;
+  void TearDown() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ActiveTabWithServiceTest);
+};
+
+void ActiveTabWithServiceTest::SetUp() {
+  ExtensionServiceTestBase::SetUp();
+  content::BrowserSideNavigationSetUp();
+}
+
+void ActiveTabWithServiceTest::TearDown() {
+  content::BrowserSideNavigationTearDown();
+  ExtensionServiceTestBase::TearDown();
+}
+
+// Tests that an extension can only capture file:// URLs with the active tab
+// permission when it has file access granted.
+// Regression test for https://crbug.com/810220.
+TEST_F(ActiveTabWithServiceTest, FileURLs) {
+  InitializeEmptyExtensionService();
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(R"(
+    {
+      "name": "Active Tab Capture With File Urls",
+      "description": "Testing activeTab on file urls",
+      "version": "0.1",
+      "manifest_version": 2,
+      "permissions": ["activeTab"]
+    })");
+
+  ChromeTestExtensionLoader loader(profile());
+  loader.set_allow_file_access(false);
+  scoped_refptr<const Extension> extension =
+      loader.LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+  const std::string id = extension->id();
+  ASSERT_TRUE(registry()->enabled_extensions().Contains(id));
+
+  EXPECT_FALSE(util::AllowFileAccess(id, profile()));
+
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr));
+  ASSERT_TRUE(web_contents);
+
+  const GURL file_url("file:///foo");
+  ASSERT_TRUE(content::WebContentsTester::For(web_contents.get()));
+  content::WebContentsTester::For(web_contents.get())
+      ->NavigateAndCommit(file_url);
+  EXPECT_EQ(file_url, web_contents->GetLastCommittedURL());
+
+  TabHelper::CreateForWebContents(web_contents.get());
+  ActiveTabPermissionGranter* permission_granter =
+      TabHelper::FromWebContents(web_contents.get())
+          ->active_tab_permission_granter();
+  ASSERT_TRUE(permission_granter);
+  const int tab_id = SessionTabHelper::IdForTab(web_contents.get()).id();
+  EXPECT_NE(extension_misc::kUnknownTabId, tab_id);
+
+  EXPECT_FALSE(extension->permissions_data()->CanCaptureVisiblePage(
+      web_contents->GetLastCommittedURL(), extension.get(), tab_id, nullptr));
+
+  permission_granter->GrantIfRequested(extension.get());
+  EXPECT_FALSE(extension->permissions_data()->CanCaptureVisiblePage(
+      web_contents->GetLastCommittedURL(), extension.get(), tab_id, nullptr));
+
+  permission_granter->RevokeForTesting();
+  TestExtensionRegistryObserver observer(registry(), id);
+  // This will reload the extension, so we need to reset the extension pointer.
+  util::SetAllowFileAccess(id, profile(), true);
+  extension = observer.WaitForExtensionLoaded();
+  ASSERT_TRUE(extension);
+
+  EXPECT_FALSE(extension->permissions_data()->CanCaptureVisiblePage(
+      web_contents->GetLastCommittedURL(), extension.get(), tab_id, nullptr));
+  permission_granter->GrantIfRequested(extension.get());
+  EXPECT_TRUE(extension->permissions_data()->CanCaptureVisiblePage(
+      web_contents->GetLastCommittedURL(), extension.get(), tab_id, nullptr));
+}
 
 }  // namespace
 }  // namespace extensions
