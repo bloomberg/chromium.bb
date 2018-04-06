@@ -114,10 +114,13 @@ class TCPSocketWin::Core : public base::RefCounted<Core> {
   // The TCPSocketWin is going away.
   void Detach() { socket_ = NULL; }
 
-  // The separate OVERLAPPED variables for asynchronous operation.
-  // |read_overlapped_| is used for both Connect() and Read().
-  // |write_overlapped_| is only used for Write();
-  OVERLAPPED read_overlapped_;
+  // Event handle for monitoring connect and read events through WSAEventSelect.
+  HANDLE read_event_;
+
+  // OVERLAPPED variable for overlapped writes.
+  // TODO(mmenke): Can writes be switched to WSAEventSelect as well? That would
+  // allow removing this class. The only concern is whether that would have a
+  // negative perf impact.
   OVERLAPPED write_overlapped_;
 
   // The buffers used in Read() and Write().
@@ -174,16 +177,14 @@ class TCPSocketWin::Core : public base::RefCounted<Core> {
 };
 
 TCPSocketWin::Core::Core(TCPSocketWin* socket)
-    : read_buffer_length_(0),
+    : read_event_(WSACreateEvent()),
+      read_buffer_length_(0),
       write_buffer_length_(0),
       non_blocking_reads_initialized_(false),
       socket_(socket),
       reader_(this),
       writer_(this) {
-  memset(&read_overlapped_, 0, sizeof(read_overlapped_));
   memset(&write_overlapped_, 0, sizeof(write_overlapped_));
-
-  read_overlapped_.hEvent = WSACreateEvent();
   write_overlapped_.hEvent = WSACreateEvent();
 }
 
@@ -192,17 +193,15 @@ TCPSocketWin::Core::~Core() {
   read_watcher_.StopWatching();
   write_watcher_.StopWatching();
 
-  WSACloseEvent(read_overlapped_.hEvent);
-  memset(&read_overlapped_, 0xaf, sizeof(read_overlapped_));
+  WSACloseEvent(read_event_);
   WSACloseEvent(write_overlapped_.hEvent);
   memset(&write_overlapped_, 0xaf, sizeof(write_overlapped_));
 }
 
 void TCPSocketWin::Core::WatchForRead() {
-  // We grab an extra reference because there is an IO operation in progress.
-  // Balanced in ReadDelegate::OnObjectSignaled().
-  AddRef();
-  read_watcher_.StartWatchingOnce(read_overlapped_.hEvent, &reader_);
+  // Reads use WSAEventSelect, which closesocket() cancels so unlike writes,
+  // there's no need to increment the reference count here.
+  read_watcher_.StartWatchingOnce(read_event_, &reader_);
 }
 
 void TCPSocketWin::Core::WatchForWrite() {
@@ -213,15 +212,12 @@ void TCPSocketWin::Core::WatchForWrite() {
 }
 
 void TCPSocketWin::Core::ReadDelegate::OnObjectSignaled(HANDLE object) {
-  DCHECK_EQ(object, core_->read_overlapped_.hEvent);
-  if (core_->socket_) {
-    if (core_->socket_->waiting_connect_)
-      core_->socket_->DidCompleteConnect();
-    else
-      core_->socket_->DidSignalRead();
-  }
-
-  core_->Release();
+  DCHECK_EQ(object, core_->read_event_);
+  DCHECK(core_->socket_);
+  if (core_->socket_->waiting_connect_)
+    core_->socket_->DidCompleteConnect();
+  else
+    core_->socket_->DidSignalRead();
 }
 
 void TCPSocketWin::Core::WriteDelegate::OnObjectSignaled(
@@ -230,6 +226,7 @@ void TCPSocketWin::Core::WriteDelegate::OnObjectSignaled(
   if (core_->socket_)
     core_->socket_->DidCompleteWrite();
 
+  // Matches the AddRef() in WatchForWrite().
   core_->Release();
 }
 
@@ -493,7 +490,7 @@ int TCPSocketWin::ReadIfReady(IOBuffer* buf,
   DCHECK(read_if_ready_callback_.is_null());
 
   if (!core_->non_blocking_reads_initialized_) {
-    WSAEventSelect(socket_, core_->read_overlapped_.hEvent, FD_READ | FD_CLOSE);
+    WSAEventSelect(socket_, core_->read_event_, FD_READ | FD_CLOSE);
     core_->non_blocking_reads_initialized_ = true;
   }
   int rv = recv(socket_, buf->data(), buf_len, 0);
@@ -672,8 +669,8 @@ void TCPSocketWin::Close() {
 
   if (!accept_callback_.is_null()) {
     accept_watcher_.StopWatching();
-    accept_socket_ = NULL;
-    accept_address_ = NULL;
+    accept_socket_ = nullptr;
+    accept_address_ = nullptr;
     accept_callback_.Reset();
   }
 
@@ -683,16 +680,12 @@ void TCPSocketWin::Close() {
   }
 
   if (core_.get()) {
-    if (waiting_connect_) {
-      // We closed the socket, so this notification will never come.
-      // From MSDN' WSAEventSelect documentation:
-      // "Closing a socket with closesocket also cancels the association and
-      // selection of network events specified in WSAEventSelect for the
-      // socket".
-      core_->Release();
-    }
     core_->Detach();
-    core_ = NULL;
+    core_ = nullptr;
+
+    // |core_| may still exist and own a reference to itself, if there's a
+    // pending write. It has to stay alive until the operation completes, even
+    // when the socket is closed. This is not the case for reads.
   }
 
   waiting_connect_ = false;
@@ -808,7 +801,7 @@ int TCPSocketWin::DoConnect() {
 
   // WSAEventSelect sets the socket to non-blocking mode as a side effect.
   // Our connect() and recv() calls require that the socket be non-blocking.
-  WSAEventSelect(socket_, core_->read_overlapped_.hEvent, FD_CONNECT);
+  WSAEventSelect(socket_, core_->read_event_, FD_CONNECT);
 
   SockaddrStorage storage;
   if (!peer_address_->ToSockAddr(storage.addr, &storage.addr_len))
@@ -827,7 +820,7 @@ int TCPSocketWin::DoConnect() {
     // and we don't know if it's correct.
     NOTREACHED();
 
-    if (ResetEventIfSignaled(core_->read_overlapped_.hEvent))
+    if (ResetEventIfSignaled(core_->read_event_))
       return OK;
   } else {
     int os_error = WSAGetLastError();
@@ -912,8 +905,7 @@ void TCPSocketWin::DidCompleteConnect() {
   int result;
 
   WSANETWORKEVENTS events;
-  int rv =
-      WSAEnumNetworkEvents(socket_, core_->read_overlapped_.hEvent, &events);
+  int rv = WSAEnumNetworkEvents(socket_, core_->read_event_, &events);
   int os_error = WSAGetLastError();
   if (rv == SOCKET_ERROR) {
     NOTREACHED();
@@ -977,8 +969,7 @@ void TCPSocketWin::DidSignalRead() {
 
   int os_error = 0;
   WSANETWORKEVENTS network_events;
-  int rv = WSAEnumNetworkEvents(socket_, core_->read_overlapped_.hEvent,
-                                &network_events);
+  int rv = WSAEnumNetworkEvents(socket_, core_->read_event_, &network_events);
   os_error = WSAGetLastError();
 
   if (rv == SOCKET_ERROR) {
