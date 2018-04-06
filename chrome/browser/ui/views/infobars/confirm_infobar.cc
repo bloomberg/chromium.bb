@@ -36,7 +36,31 @@ std::unique_ptr<infobars::InfoBar> InfoBarService::CreateConfirmInfoBar(
 // ConfirmInfoBar -------------------------------------------------------------
 
 ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate)
-    : InfoBarView(std::move(delegate)) {}
+    : InfoBarView(std::move(delegate)) {
+  auto* delegate_ptr = GetDelegate();
+  label_ = CreateLabel(delegate_ptr->GetMessageText());
+  AddChildView(label_);
+
+  const auto buttons = delegate_ptr->GetButtons();
+  if (buttons & ConfirmInfoBarDelegate::BUTTON_OK) {
+    ok_button_ = CreateButton(ConfirmInfoBarDelegate::BUTTON_OK);
+    ok_button_->SetProminent(true);
+    if (delegate_ptr->OKButtonTriggersUACPrompt()) {
+      elevation_icon_setter_.reset(new ElevationIconSetter(
+          ok_button_,
+          base::BindOnce(&ConfirmInfoBar::Layout, base::Unretained(this))));
+    }
+  }
+
+  if (buttons & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
+    cancel_button_ = CreateButton(ConfirmInfoBarDelegate::BUTTON_CANCEL);
+    if (buttons == ConfirmInfoBarDelegate::BUTTON_CANCEL)
+      cancel_button_->SetProminent(true);
+  }
+
+  link_ = CreateLink(delegate_ptr->GetLinkText(), this);
+  AddChildView(link_);
+}
 
 ConfirmInfoBar::~ConfirmInfoBar() {
   // Ensure |elevation_icon_setter_| is destroyed before |ok_button_|.
@@ -71,39 +95,6 @@ void ConfirmInfoBar::Layout() {
     cancel_button_->SetPosition(gfx::Point(x, OffsetY(cancel_button_)));
 
   link_->SetPosition(gfx::Point(EndX() - link_->width(), OffsetY(link_)));
-}
-
-void ConfirmInfoBar::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this && (label_ == nullptr)) {
-    ConfirmInfoBarDelegate* delegate = GetDelegate();
-    label_ = CreateLabel(delegate->GetMessageText());
-    AddChildView(label_);
-
-    if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) {
-      ok_button_ = CreateButton(ConfirmInfoBarDelegate::BUTTON_OK);
-      ok_button_->SetProminent(true);
-      if (delegate->OKButtonTriggersUACPrompt()) {
-        elevation_icon_setter_.reset(new ElevationIconSetter(
-            ok_button_,
-            base::BindOnce(&ConfirmInfoBar::Layout, base::Unretained(this))));
-      }
-    }
-
-    if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
-      cancel_button_ = CreateButton(ConfirmInfoBarDelegate::BUTTON_CANCEL);
-      if (delegate->GetButtons() == ConfirmInfoBarDelegate::BUTTON_CANCEL)
-        cancel_button_->SetProminent(true);
-    }
-
-    base::string16 link_text(delegate->GetLinkText());
-    link_ = CreateLink(link_text, this);
-    AddChildView(link_);
-  }
-
-  // This must happen after adding all other children so InfoBarView can ensure
-  // the close button is the last child.
-  InfoBarView::ViewHierarchyChanged(details);
 }
 
 void ConfirmInfoBar::ButtonPressed(views::Button* sender,

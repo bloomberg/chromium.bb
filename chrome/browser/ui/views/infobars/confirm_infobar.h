@@ -31,8 +31,6 @@ class ConfirmInfoBar : public InfoBarView,
  private:
   // InfoBarView:
   void Layout() override;
-  void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
   int ContentMinimumWidth() const override;
 
