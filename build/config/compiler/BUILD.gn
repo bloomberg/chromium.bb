@@ -221,9 +221,19 @@ config("compiler") {
   # In general, Windows is totally different, but all the other builds share
   # some common GCC configuration.
   if (!is_win) {
-    # Common GCC compiler flags setup.
+    # Common POSIX compiler flags setup.
     # --------------------------------
     cflags += [ "-fno-strict-aliasing" ]  # See http://crbug.com/32204
+
+    if (is_clang) {
+      # Enable -fmerge-all-constants. This used to be the default in clang
+      # for over a decade. It makes clang non-conforming, but is fairly safe
+      # in practice and saves some binary size. We might want to consider
+      # disabling this (https://bugs.llvm.org/show_bug.cgi?id=18538#c13),
+      # but for now it looks like our build might rely on it
+      # (https://crbug.com/829795).
+      cflags += [ "-fmerge-all-constants" ]
+    }
 
     # Stack protection.
     if (is_mac) {
