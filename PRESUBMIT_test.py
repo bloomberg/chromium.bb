@@ -1691,6 +1691,11 @@ class CheckUniquePtr(unittest.TestCase):
       MockFile('dir/baz.cc', [
         'std::unique_ptr<T> result = std::make_unique<T>();'
       ]),
+      MockFile('dir/baz2.cc', [
+        'std::unique_ptr<T> result = std::make_unique<T>('
+      ]),
+      MockFile('dir/nested.cc', ['set<std::unique_ptr<T>>();']),
+      MockFile('dir/nested2.cc', ['map<U, std::unique_ptr<T>>();']),
     ]
 
     results = PRESUBMIT._CheckUniquePtr(mock_input_api, MockOutputApi())

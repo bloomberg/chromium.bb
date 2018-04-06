@@ -188,10 +188,10 @@ std::unique_ptr<ChromeSearchResult> WebstoreProvider::CreateResult(
   if (!match.Calculate(query, title))
     return nullptr;
 
-  WebstoreResult* result = new WebstoreResult(profile_, app_id, icon_url,
-                                              is_paid, item_type, controller_);
+  std::unique_ptr<ChromeSearchResult> result = std::make_unique<WebstoreResult>(
+      profile_, app_id, icon_url, is_paid, item_type, controller_);
   result->UpdateFromMatch(title, match);
-  return base::WrapUnique(result);
+  return result;
 }
 
 }  // namespace app_list

@@ -1585,10 +1585,41 @@ def _CheckUniquePtr(input_api, output_api):
       black_list=(_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
                   input_api.DEFAULT_BLACK_LIST),
       white_list=(file_inclusion_pattern,))
-  return_construct_pattern = input_api.re.compile(
-      r'(=|\breturn|^)\s*std::unique_ptr<.*?(?<!])>\(([^)]|$)')
+
+  # Pattern to capture a single "<...>" block of template arguments. It can
+  # handle linearly nested blocks, such as "<std::vector<std::set<T>>>", but
+  # cannot handle branching structures, such as "<pair<set<T>,set<U>>". The
+  # latter would likely require counting that < and > match, which is not
+  # expressible in regular languages. Should the need arise, one can introduce
+  # limited counting (matching up to a total number of nesting depth), which
+  # should cover all practical cases for already a low nesting limit.
+  template_arg_pattern = (
+      r'<[^>]*'       # Opening block of <.
+      r'>([^<]*>)?')  # Closing block of >.
+  # Prefix expressing that whatever follows is not already inside a <...>
+  # block.
+  not_inside_template_arg_pattern = r'(^|[^<,\s]\s*)'
   null_construct_pattern = input_api.re.compile(
-      r'\b(?<!<)std::unique_ptr<[^>]*>([^(<]*>)?\(\)')
+      not_inside_template_arg_pattern
+      + r'\bstd::unique_ptr'
+      + template_arg_pattern
+      + r'\(\)')
+
+  # Same as template_arg_pattern, but excluding type arrays, e.g., <T[]>.
+  template_arg_no_array_pattern = (
+      r'<[^>]*[^]]'        # Opening block of <.
+      r'>([^(<]*[^]]>)?')  # Closing block of >.
+  # Prefix saying that what follows is the start of an expression.
+  start_of_expr_pattern = r'(=|\breturn|^)\s*'
+  # Suffix saying that what follows are call parentheses with a non-empty list
+  # of arguments.
+  nonempty_arg_list_pattern = r'\(([^)]|$)'
+  return_construct_pattern = input_api.re.compile(
+      start_of_expr_pattern
+      + r'std::unique_ptr'
+      + template_arg_no_array_pattern
+      + nonempty_arg_list_pattern)
+
   problems_constructor = []
   problems_nullptr = []
   for f in input_api.AffectedSourceFiles(sources):
