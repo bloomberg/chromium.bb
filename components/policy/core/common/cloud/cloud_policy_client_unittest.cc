@@ -1020,8 +1020,10 @@ TEST_F(CloudPolicyClientTest, UploadChromeDesktopReport) {
   CloudPolicyClient::StatusCallback callback =
       base::Bind(&MockStatusCallbackObserver::OnCallbackComplete,
                  base::Unretained(&callback_observer_));
-  em::ChromeDesktopReportRequest chrome_desktop_report;
-  client_->UploadChromeDesktopReport(chrome_desktop_report, callback);
+  std::unique_ptr<em::ChromeDesktopReportRequest> chrome_desktop_report =
+      std::make_unique<em::ChromeDesktopReportRequest>();
+  client_->UploadChromeDesktopReport(std::move(chrome_desktop_report),
+                                     callback);
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }
 
