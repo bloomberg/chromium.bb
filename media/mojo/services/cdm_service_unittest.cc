@@ -82,9 +82,13 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
 
     auto mock_cdm_service_client = std::make_unique<MockCdmServiceClient>();
     mock_cdm_service_client_ = mock_cdm_service_client.get();
+
+    auto cdm_service =
+        std::make_unique<CdmService>(std::move(mock_cdm_service_client));
+    cdm_service_ = cdm_service.get();
+
     service_context_ = std::make_unique<service_manager::ServiceContext>(
-        std::make_unique<CdmService>(std::move(mock_cdm_service_client)),
-        std::move(request));
+        std::move(cdm_service), std::move(request));
   }
 
   void DestroyService() { service_context_.reset(); }
@@ -92,6 +96,8 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
   MockCdmServiceClient* mock_cdm_service_client() {
     return mock_cdm_service_client_;
   }
+
+  CdmService* cdm_service() { return cdm_service_; }
 
  private:
   void Create(service_manager::mojom::ServiceFactoryRequest request) {
@@ -102,7 +108,8 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
   mojo::BindingSet<service_manager::mojom::ServiceFactory>
       service_factory_bindings_;
   std::unique_ptr<service_manager::ServiceContext> service_context_;
-  MockCdmServiceClient* mock_cdm_service_client_;
+  CdmService* cdm_service_ = nullptr;
+  MockCdmServiceClient* mock_cdm_service_client_ = nullptr;
 };
 
 }  // namespace
@@ -119,18 +126,19 @@ class CdmServiceTest : public service_manager::test::ServiceTest {
   void SetUp() override {
     ServiceTest::SetUp();
 
-    connector()->BindInterface(media::mojom::kCdmServiceName, &cdm_service_);
+    connector()->BindInterface(media::mojom::kCdmServiceName,
+                               &cdm_service_ptr_);
 
     service_manager::mojom::InterfaceProviderPtr interfaces;
     auto provider = std::make_unique<MediaInterfaceProvider>(
         mojo::MakeRequest(&interfaces));
 
-    ASSERT_FALSE(cdm_factory_);
-    cdm_service_->CreateCdmFactory(mojo::MakeRequest(&cdm_factory_),
-                                   std::move(interfaces));
-    cdm_service_.FlushForTesting();
-    ASSERT_TRUE(cdm_factory_);
-    cdm_factory_.set_connection_error_handler(base::BindRepeating(
+    ASSERT_FALSE(cdm_factory_ptr_);
+    cdm_service_ptr_->CreateCdmFactory(mojo::MakeRequest(&cdm_factory_ptr_),
+                                       std::move(interfaces));
+    cdm_service_ptr_.FlushForTesting();
+    ASSERT_TRUE(cdm_factory_ptr_);
+    cdm_factory_ptr_.set_connection_error_handler(base::BindRepeating(
         &CdmServiceTest::CdmFactoryConnectionClosed, base::Unretained(this)));
   }
 
@@ -145,15 +153,15 @@ class CdmServiceTest : public service_manager::test::ServiceTest {
 
   void InitializeCdm(const std::string& key_system, bool expected_result) {
     base::RunLoop run_loop;
-    cdm_factory_->CreateCdm(key_system, mojo::MakeRequest(&cdm_));
-    cdm_.set_connection_error_handler(base::BindRepeating(
+    cdm_factory_ptr_->CreateCdm(key_system, mojo::MakeRequest(&cdm_ptr_));
+    cdm_ptr_.set_connection_error_handler(base::BindRepeating(
         &CdmServiceTest::CdmConnectionClosed, base::Unretained(this)));
     EXPECT_CALL(*this, OnCdmInitializedInternal(expected_result))
         .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-    cdm_->Initialize(key_system, url::Origin::Create(GURL(kSecurityOrigin)),
-                     CdmConfig(),
-                     base::BindRepeating(&CdmServiceTest::OnCdmInitialized,
-                                         base::Unretained(this)));
+    cdm_ptr_->Initialize(key_system, url::Origin::Create(GURL(kSecurityOrigin)),
+                         CdmConfig(),
+                         base::BindRepeating(&CdmServiceTest::OnCdmInitialized,
+                                             base::Unretained(this)));
     run_loop.Run();
   }
 
@@ -163,9 +171,9 @@ class CdmServiceTest : public service_manager::test::ServiceTest {
     return service_test_client;
   }
 
-  mojom::CdmServicePtr cdm_service_;
-  mojom::CdmFactoryPtr cdm_factory_;
-  mojom::ContentDecryptionModulePtr cdm_;
+  mojom::CdmServicePtr cdm_service_ptr_;
+  mojom::CdmFactoryPtr cdm_factory_ptr_;
+  mojom::ContentDecryptionModulePtr cdm_ptr_;
   ServiceTestClient* service_test_client_;
 
  private:
@@ -182,12 +190,12 @@ TEST_F(CdmServiceTest, LoadCdm) {
 
 #if defined(OS_MACOSX)
   // Token provider will not be used since the path is a dummy path.
-  cdm_service_->LoadCdm(cdm_path, nullptr);
+  cdm_service_ptr_->LoadCdm(cdm_path, nullptr);
 #else
-  cdm_service_->LoadCdm(cdm_path);
+  cdm_service_ptr_->LoadCdm(cdm_path);
 #endif
 
-  cdm_service_.FlushForTesting();
+  cdm_service_ptr_.FlushForTesting();
 }
 
 TEST_F(CdmServiceTest, InitializeCdm_Success) {
@@ -200,19 +208,28 @@ TEST_F(CdmServiceTest, InitializeCdm_InvalidKeySystem) {
 
 TEST_F(CdmServiceTest, DestroyAndRecreateCdm) {
   InitializeCdm(kClearKeyKeySystem, true);
-  cdm_.reset();
+  cdm_ptr_.reset();
   InitializeCdm(kClearKeyKeySystem, true);
 }
 
-// CdmFactory connection error will destroy all CDMs.
+// CdmFactory connection error will NOT destroy CDMs. Instead, it will only be
+// destroyed after |cdm_| is reset.
 TEST_F(CdmServiceTest, DestroyCdmFactory) {
-  InitializeCdm(kClearKeyKeySystem, true);
+  auto* service = service_test_client_->cdm_service();
 
-  base::RunLoop run_loop;
-  EXPECT_CALL(*this, CdmConnectionClosed())
-      .WillOnce(Invoke(&run_loop, &base::RunLoop::Quit));
-  cdm_factory_.reset();
-  run_loop.Run();
+  InitializeCdm(kClearKeyKeySystem, true);
+  EXPECT_EQ(service->BoundCdmFactorySizeForTesting(), 1u);
+  EXPECT_EQ(service->UnboundCdmFactorySizeForTesting(), 0u);
+
+  cdm_factory_ptr_.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(service->BoundCdmFactorySizeForTesting(), 0u);
+  EXPECT_EQ(service->UnboundCdmFactorySizeForTesting(), 1u);
+
+  cdm_ptr_.reset();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(service->BoundCdmFactorySizeForTesting(), 0u);
+  EXPECT_EQ(service->UnboundCdmFactorySizeForTesting(), 0u);
 }
 
 // Destroy service will destroy the CdmFactory and all CDMs.

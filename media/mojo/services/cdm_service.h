@@ -11,9 +11,9 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/interfaces/cdm_service.mojom.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
+#include "media/mojo/services/deferred_destroy_strong_binding_set.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -53,6 +53,14 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
   explicit CdmService(std::unique_ptr<Client> client);
   ~CdmService() final;
 
+  size_t BoundCdmFactorySizeForTesting() const {
+    return cdm_factory_bindings_.size();
+  }
+
+  size_t UnboundCdmFactorySizeForTesting() const {
+    return cdm_factory_bindings_.unbound_size();
+  }
+
  private:
   // service_manager::Service implementation.
   void OnStart() final;
@@ -70,7 +78,6 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
 #else
   void LoadCdm(const base::FilePath& cdm_path) final;
 #endif  // defined(OS_MACOSX)
-
   void CreateCdmFactory(
       mojom::CdmFactoryRequest request,
       service_manager::mojom::InterfaceProviderPtr host_interfaces) final;
@@ -78,7 +85,7 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
   std::unique_ptr<Client> client_;
   std::unique_ptr<CdmFactory> cdm_factory_;
-  mojo::StrongBindingSet<mojom::CdmFactory> cdm_factory_bindings_;
+  DeferredDestroyStrongBindingSet<mojom::CdmFactory> cdm_factory_bindings_;
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::CdmService> bindings_;
 };

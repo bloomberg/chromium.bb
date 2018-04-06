@@ -15,11 +15,13 @@ namespace mojo {
 // set, and the interface implementation is deleted. When the StrongBindingSet
 // is destructed, all outstanding bindings in the set are destroyed and all the
 // bound interface implementations are automatically deleted.
-template <typename Interface, typename ContextType = void>
-using StrongBindingSet =
-    BindingSetBase<Interface,
-                   Binding<Interface, UniquePtrImplRefTraits<Interface>>,
-                   ContextType>;
+template <typename Interface,
+          typename ContextType = void,
+          typename Deleter = std::default_delete<Interface>>
+using StrongBindingSet = BindingSetBase<
+    Interface,
+    Binding<Interface, UniquePtrImplRefTraits<Interface, Deleter>>,
+    ContextType>;
 
 }  // namespace mojo
 
