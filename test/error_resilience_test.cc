@@ -310,19 +310,22 @@ TEST_P(ErrorResilienceTestLarge, ParseAbilityTest) {
 
   SetAllowMismatch(1);
 
+  // Note that an E-frame cannot be forced on a frame that is a
+  // show_existing_frame, or a frame that comes directly after an invisible
+  // frame. Currently, this will cause an assertion failure.
   // Set an arbitrary error resilient (E) frame
   unsigned int num_error_resilient_frames = 1;
-  unsigned int error_resilient_frame_list[] = { 6 };
+  unsigned int error_resilient_frame_list[] = { 8 };
   SetErrorResilientFrames(num_error_resilient_frames,
                           error_resilient_frame_list);
   // Set all frames after the error resilient frame to not allow MFMV
-  unsigned int num_nomfmv_frames = 8;
-  unsigned int nomfmv_frame_list[] = { 7, 8, 9, 10, 11, 12, 13, 14 };
+  unsigned int num_nomfmv_frames = 6;
+  unsigned int nomfmv_frame_list[] = { 9, 10, 11, 12, 13, 14 };
   SetNoMFMVFrames(num_nomfmv_frames, nomfmv_frame_list);
 
   // Set a few frames before the E frame that are lost (not decoded)
-  unsigned int num_error_frames = 3;
-  unsigned int error_frame_list[] = { 3, 4, 5 };
+  unsigned int num_error_frames = 5;
+  unsigned int error_frame_list[] = { 3, 4, 5, 6, 7 };
   SetErrorFrames(num_error_frames, error_frame_list);
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
@@ -339,9 +342,7 @@ TEST_P(ErrorResilienceTestLarge, ParseAbilityTest) {
 // Encode an S-frame. If frames are dropped before the S-frame, all frames
 // starting from the S frame should be parse-able.
 TEST_P(ErrorResilienceTestLarge, SFrameTest) {
-  // TODO(sarahparker, debargha): Make control setting work correctly for
-  // lag_in_frames > 0
-  SetupEncoder(500, 0);
+  SetupEncoder(500, 10);
 
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      cfg_.g_timebase.den, cfg_.g_timebase.num,
@@ -349,17 +350,17 @@ TEST_P(ErrorResilienceTestLarge, SFrameTest) {
 
   SetAllowMismatch(1);
 
-  // TODO(sarahparker) This test currently will not pass if an alt-ref frame
-  // is coded along with a visible s_frame. This will be addressed in a follow
-  // up.
+  // Note that an S-frame cannot be forced on a frame that is a
+  // show_existing_frame, or a frame that comes directly after an invisible
+  // frame. Currently, this will cause an assertion failure.
   // Set an arbitrary S-frame
   unsigned int num_s_frames = 1;
-  unsigned int s_frame_list[] = { 7 };
+  unsigned int s_frame_list[] = { 8 };
   SetSFrames(num_s_frames, s_frame_list);
 
   // Set a few frames before the S frame that are lost (not decoded)
-  unsigned int num_error_frames = 4;
-  unsigned int error_frame_list[] = { 3, 4, 5, 6 };
+  unsigned int num_error_frames = 5;
+  unsigned int error_frame_list[] = { 3, 4, 5, 6, 7 };
   SetErrorFrames(num_error_frames, error_frame_list);
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
