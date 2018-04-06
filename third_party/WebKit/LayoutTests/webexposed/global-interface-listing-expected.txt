@@ -1516,6 +1516,7 @@ interface Document : Node
     getter onended
     getter onerror
     getter onfocus
+    getter onformdata
     getter onfullscreenchange
     getter onfullscreenerror
     getter ongotpointercapture
@@ -1702,6 +1703,7 @@ interface Document : Node
     setter onended
     setter onerror
     setter onfocus
+    setter onformdata
     setter onfullscreenchange
     setter onfullscreenerror
     setter ongotpointercapture
@@ -2081,6 +2083,10 @@ interface FormData
     method keys
     method set
     method values
+interface FormDataEvent : Event
+    attribute @@toStringTag
+    getter formData
+    method constructor
 interface GainNode : AudioNode
     attribute @@toStringTag
     getter gain
@@ -2457,6 +2463,7 @@ interface HTMLElement : Element
     getter onended
     getter onerror
     getter onfocus
+    getter onformdata
     getter ongotpointercapture
     getter oninput
     getter oninvalid
@@ -2552,6 +2559,7 @@ interface HTMLElement : Element
     setter onended
     setter onerror
     setter onfocus
+    setter onformdata
     setter ongotpointercapture
     setter oninput
     setter oninvalid
@@ -5684,6 +5692,7 @@ interface SVGElement : Element
     getter onended
     getter onerror
     getter onfocus
+    getter onformdata
     getter ongotpointercapture
     getter oninput
     getter oninvalid
@@ -5766,6 +5775,7 @@ interface SVGElement : Element
     setter onended
     setter onerror
     setter onfocus
+    setter onformdata
     setter ongotpointercapture
     setter oninput
     setter oninvalid
@@ -9325,6 +9335,7 @@ interface webkitURL
     getter onended
     getter onerror
     getter onfocus
+    getter onformdata
     getter onfreeze
     getter ongotpointercapture
     getter onhashchange
@@ -9510,6 +9521,7 @@ interface webkitURL
     setter onended
     setter onerror
     setter onfocus
+    setter onformdata
     setter onfreeze
     setter ongotpointercapture
     setter onhashchange
