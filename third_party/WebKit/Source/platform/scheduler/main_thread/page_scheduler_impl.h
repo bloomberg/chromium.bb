@@ -73,6 +73,8 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // Virtual for testing.
   virtual void ReportIntervention(const std::string& message);
 
+  bool IsFrozen() const;
+
   std::unique_ptr<FrameSchedulerImpl> CreateFrameSchedulerImpl(
       base::trace_event::BlameContext*,
       FrameScheduler::FrameType);
@@ -117,6 +119,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   PageVisibilityState page_visibility_;
   bool disable_background_timer_throttling_;
   bool is_audio_playing_;
+  bool is_frozen_;
   bool reported_background_throttling_since_navigation_;
   bool has_active_connection_;
   bool nested_runloop_;

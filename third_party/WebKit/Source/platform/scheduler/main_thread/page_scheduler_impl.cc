@@ -100,6 +100,7 @@ PageSchedulerImpl::PageSchedulerImpl(PageScheduler::Delegate* delegate,
       page_visibility_(kDefaultPageVisibility),
       disable_background_timer_throttling_(disable_background_timer_throttling),
       is_audio_playing_(false),
+      is_frozen_(false),
       reported_background_throttling_since_navigation_(false),
       has_active_connection_(false),
       nested_runloop_(false),
@@ -134,9 +135,16 @@ void PageSchedulerImpl::SetPageVisible(bool page_visible) {
   page_visibility_ = page_visibility;
 
   UpdateBackgroundThrottlingState();
+
+  // Visible pages should not be frozen.
+  if (page_visibility_ == PageVisibilityState::kVisible && is_frozen_)
+    SetPageFrozen(false);
 }
 
 void PageSchedulerImpl::SetPageFrozen(bool frozen) {
+  if (is_frozen_ == frozen)
+    return;
+  is_frozen_ = frozen;
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
     frame_scheduler->SetPageFrozen(frozen);
   if (delegate_)
@@ -248,6 +256,10 @@ bool PageSchedulerImpl::IsPlayingAudio() const {
   return is_audio_playing_;
 }
 
+bool PageSchedulerImpl::IsFrozen() const {
+  return is_frozen_;
+}
+
 void PageSchedulerImpl::OnConnectionUpdated() {
   bool has_active_connection = false;
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
@@ -274,6 +286,7 @@ void PageSchedulerImpl::AsValueInto(
   state->SetBoolean("disable_background_timer_throttling",
                     disable_background_timer_throttling_);
   state->SetBoolean("is_audio_playing", is_audio_playing_);
+  state->SetBoolean("is_frozen", is_frozen_);
   state->SetBoolean("reported_background_throttling_since_navigation",
                     reported_background_throttling_since_navigation_);
 
