@@ -196,6 +196,10 @@ WebViewFrameWidget::GetActiveWebInputMethodController() const {
   return web_view_->GetActiveWebInputMethodController();
 }
 
+bool WebViewFrameWidget::ScrollFocusedEditableElementIntoView() {
+  return web_view_->ScrollFocusedEditableElementIntoView();
+}
+
 void WebViewFrameWidget::ScheduleAnimation() {
   web_view_->ScheduleAnimationForWidget();
 }

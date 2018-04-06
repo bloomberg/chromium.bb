@@ -93,13 +93,15 @@ WebScrollIntoViewParams::WebScrollIntoViewParams(
     ScrollType scroll_type,
     bool make_visible_in_visual_viewport,
     ScrollBehavior scroll_behavior,
-    bool is_for_scroll_sequence)
+    bool is_for_scroll_sequence,
+    bool zoom_into_rect)
     : align_x(scroll_alignment_x),
       align_y(scroll_alignment_y),
       type(FromScrollType(scroll_type)),
       make_visible_in_visual_viewport(make_visible_in_visual_viewport),
       behavior(FromScrollBehavior(scroll_behavior)),
-      is_for_scroll_sequence(is_for_scroll_sequence) {}
+      is_for_scroll_sequence(is_for_scroll_sequence),
+      zoom_into_rect(zoom_into_rect) {}
 
 ScrollAlignment WebScrollIntoViewParams::GetScrollAlignmentX() const {
   return ToScrollAlignment(align_x);

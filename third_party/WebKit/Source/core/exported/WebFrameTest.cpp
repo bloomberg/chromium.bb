@@ -343,6 +343,20 @@ class WebFrameTest : public testing::Test {
     return node_count;
   }
 
+  static void GetElementAndCaretBonundsForFocusedEditableElement(
+      FrameTestHelpers::WebViewHelper& helper,
+      IntRect& element_bounds,
+      IntRect& caret_bounds) {
+    Element* element = helper.GetWebView()->FocusedElement();
+    WebRect caret_in_viewport, unused;
+    helper.GetWebView()->SelectionBounds(caret_in_viewport, unused);
+    caret_bounds =
+        helper.GetWebView()->GetPage()->GetVisualViewport().ViewportToRootFrame(
+            caret_in_viewport);
+    element_bounds = element->GetDocument().View()->AbsoluteToRootFrame(
+        PixelSnappedIntRect(element->Node::BoundingBox()));
+  }
+
   std::string base_url_;
   std::string not_base_url_;
   std::string chrome_url_;
@@ -4093,7 +4107,10 @@ TEST_P(ParameterizedWebFrameTest, DontZoomInOnFocusedInTouchAction) {
   // Focus the first textbox that's in a touch-action: pan-x ancestor, this
   // shouldn't cause an autozoom since pan-x disables pinch-zoom.
   web_view_helper.GetWebView()->AdvanceFocus(false);
-  web_view_helper.GetWebView()->ScrollFocusedEditableElementIntoView();
+  web_view_helper.GetWebView()
+      ->MainFrameImpl()
+      ->FrameWidget()
+      ->ScrollFocusedEditableElementIntoView();
   EXPECT_EQ(
       web_view_helper.GetWebView()->FakePageScaleAnimationPageScaleForTesting(),
       0);
@@ -4105,7 +4122,10 @@ TEST_P(ParameterizedWebFrameTest, DontZoomInOnFocusedInTouchAction) {
   // Focus the second textbox that's in a touch-action: manipulation ancestor,
   // this should cause an autozoom since it allows pinch-zoom.
   web_view_helper.GetWebView()->AdvanceFocus(false);
-  web_view_helper.GetWebView()->ScrollFocusedEditableElementIntoView();
+  web_view_helper.GetWebView()
+      ->MainFrameImpl()
+      ->FrameWidget()
+      ->ScrollFocusedEditableElementIntoView();
   EXPECT_GT(
       web_view_helper.GetWebView()->FakePageScaleAnimationPageScaleForTesting(),
       initial_scale);
@@ -4118,7 +4138,10 @@ TEST_P(ParameterizedWebFrameTest, DontZoomInOnFocusedInTouchAction) {
   // should cause an autozoom since it's seperated from the node with the
   // touch-action by an overflow:scroll element.
   web_view_helper.GetWebView()->AdvanceFocus(false);
-  web_view_helper.GetWebView()->ScrollFocusedEditableElementIntoView();
+  web_view_helper.GetWebView()
+      ->MainFrameImpl()
+      ->FrameWidget()
+      ->ScrollFocusedEditableElementIntoView();
   EXPECT_GT(
       web_view_helper.GetWebView()->FakePageScaleAnimationPageScaleForTesting(),
       initial_scale);
@@ -4170,9 +4193,12 @@ TEST_P(ParameterizedWebFrameTest, DivScrollIntoEditableTest) {
   float scale;
   IntPoint scroll;
   bool need_animation;
-  web_view_helper.GetWebView()->ComputeScaleAndScrollForFocusedNode(
-      web_view_helper.GetWebView()->FocusedElement(), kAutoZoomToLegibleScale,
-      scale, scroll, need_animation);
+  IntRect element_bounds, caret_bounds;
+  GetElementAndCaretBonundsForFocusedEditableElement(
+      web_view_helper, element_bounds, caret_bounds);
+  web_view_helper.GetWebView()->ComputeScaleAndScrollForEditableElementRects(
+      element_bounds, caret_bounds, kAutoZoomToLegibleScale, scale, scroll,
+      need_animation);
   EXPECT_TRUE(need_animation);
   // The edit box should be left aligned with a margin for possible label.
   int h_scroll = edit_box_with_text.x - left_box_ratio * viewport_width / scale;
@@ -4188,9 +4214,11 @@ TEST_P(ParameterizedWebFrameTest, DivScrollIntoEditableTest) {
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), WebPoint(0, 0),
                              initial_scale);
-  web_view_helper.GetWebView()->ComputeScaleAndScrollForFocusedNode(
-      web_view_helper.GetWebView()->FocusedElement(), kAutoZoomToLegibleScale,
-      scale, scroll, need_animation);
+  GetElementAndCaretBonundsForFocusedEditableElement(
+      web_view_helper, element_bounds, caret_bounds);
+  web_view_helper.GetWebView()->ComputeScaleAndScrollForEditableElementRects(
+      element_bounds, caret_bounds, kAutoZoomToLegibleScale, scale, scroll,
+      need_animation);
   EXPECT_TRUE(need_animation);
   // The caret should be right aligned since the caret would be offscreen when
   // the edit box is left aligned.
@@ -4202,9 +4230,11 @@ TEST_P(ParameterizedWebFrameTest, DivScrollIntoEditableTest) {
                              initial_scale);
   // Move focus to edit box with text.
   web_view_helper.GetWebView()->AdvanceFocus(false);
-  web_view_helper.GetWebView()->ComputeScaleAndScrollForFocusedNode(
-      web_view_helper.GetWebView()->FocusedElement(), kAutoZoomToLegibleScale,
-      scale, scroll, need_animation);
+  GetElementAndCaretBonundsForFocusedEditableElement(
+      web_view_helper, element_bounds, caret_bounds);
+  web_view_helper.GetWebView()->ComputeScaleAndScrollForEditableElementRects(
+      element_bounds, caret_bounds, kAutoZoomToLegibleScale, scale, scroll,
+      need_animation);
   EXPECT_TRUE(need_animation);
   // The edit box should be left aligned.
   h_scroll = edit_box_with_no_text.x;
@@ -4222,9 +4252,11 @@ TEST_P(ParameterizedWebFrameTest, DivScrollIntoEditableTest) {
                              within_tolerance_scale);
   // Move focus back to the second edit box.
   web_view_helper.GetWebView()->AdvanceFocus(false);
-  web_view_helper.GetWebView()->ComputeScaleAndScrollForFocusedNode(
-      web_view_helper.GetWebView()->FocusedElement(), kAutoZoomToLegibleScale,
-      scale, scroll, need_animation);
+  GetElementAndCaretBonundsForFocusedEditableElement(
+      web_view_helper, element_bounds, caret_bounds);
+  web_view_helper.GetWebView()->ComputeScaleAndScrollForEditableElementRects(
+      element_bounds, caret_bounds, kAutoZoomToLegibleScale, scale, scroll,
+      need_animation);
   // The scale should not be adjusted as the zoomed out scale was sufficiently
   // close to the previously focused scale.
   EXPECT_FALSE(need_animation);
@@ -4269,9 +4301,12 @@ TEST_P(ParameterizedWebFrameTest, DivScrollIntoEditablePreservePageScaleTest) {
   float scale;
   IntPoint scroll;
   bool need_animation;
-  web_view_helper.GetWebView()->ComputeScaleAndScrollForFocusedNode(
-      web_view_helper.GetWebView()->FocusedElement(), kAutoZoomToLegibleScale,
-      scale, scroll, need_animation);
+  IntRect element_bounds, caret_bounds;
+  GetElementAndCaretBonundsForFocusedEditableElement(
+      web_view_helper, element_bounds, caret_bounds);
+  web_view_helper.GetWebView()->ComputeScaleAndScrollForEditableElementRects(
+      element_bounds, caret_bounds, kAutoZoomToLegibleScale, scale, scroll,
+      need_animation);
   EXPECT_TRUE(need_animation);
   // Edit box and caret should be left alinged
   int h_scroll = edit_box_with_text.x;
@@ -4287,9 +4322,11 @@ TEST_P(ParameterizedWebFrameTest, DivScrollIntoEditablePreservePageScaleTest) {
   h_scroll = 200;
   SetScaleAndScrollAndLayout(web_view_helper.GetWebView(),
                              WebPoint(h_scroll, 0), new_scale);
-  web_view_helper.GetWebView()->ComputeScaleAndScrollForFocusedNode(
-      web_view_helper.GetWebView()->FocusedElement(), kAutoZoomToLegibleScale,
-      scale, scroll, need_animation);
+  GetElementAndCaretBonundsForFocusedEditableElement(
+      web_view_helper, element_bounds, caret_bounds);
+  web_view_helper.GetWebView()->ComputeScaleAndScrollForEditableElementRects(
+      element_bounds, caret_bounds, kAutoZoomToLegibleScale, scale, scroll,
+      need_animation);
   EXPECT_TRUE(need_animation);
   // Horizontal scroll have to be the same
   EXPECT_NEAR(h_scroll, scroll.X(), 1);
@@ -4343,9 +4380,12 @@ TEST_P(ParameterizedWebFrameTest,
   float scale;
   IntPoint scroll;
   bool need_animation;
-  web_view_helper.GetWebView()->ComputeScaleAndScrollForFocusedNode(
-      web_view_helper.GetWebView()->FocusedElement(), kAutoZoomToLegibleScale,
-      scale, scroll, need_animation);
+  IntRect element_bounds, caret_bounds;
+  GetElementAndCaretBonundsForFocusedEditableElement(
+      web_view_helper, element_bounds, caret_bounds);
+  web_view_helper.GetWebView()->ComputeScaleAndScrollForEditableElementRects(
+      element_bounds, caret_bounds, kAutoZoomToLegibleScale, scale, scroll,
+      need_animation);
 
   // There should be no change in page scale.
   EXPECT_EQ(initial_scale, scale);
@@ -4364,9 +4404,11 @@ TEST_P(ParameterizedWebFrameTest,
   web_view_helper.GetWebView()->AdvanceFocus(true);
   WebRect rect, caret;
   web_view_helper.GetWebView()->SelectionBounds(caret, rect);
-  web_view_helper.GetWebView()->ComputeScaleAndScrollForFocusedNode(
-      web_view_helper.GetWebView()->FocusedElement(), kAutoZoomToLegibleScale,
-      scale, scroll, need_animation);
+  GetElementAndCaretBonundsForFocusedEditableElement(
+      web_view_helper, element_bounds, caret_bounds);
+  web_view_helper.GetWebView()->ComputeScaleAndScrollForEditableElementRects(
+      element_bounds, caret_bounds, kAutoZoomToLegibleScale, scale, scroll,
+      need_animation);
 
   // There should be no change at all since the textbox is fully visible
   // already.
@@ -11748,7 +11790,10 @@ TEST_P(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
 
   ASSERT_EQ(FloatPoint(), visual_viewport.VisibleRectInDocument().Location());
 
-  WebView().ScrollFocusedEditableElementIntoView();
+  WebView()
+      .MainFrameImpl()
+      ->FrameWidget()
+      ->ScrollFocusedEditableElementIntoView();
 
   EXPECT_EQ(1, WebView().FakePageScaleAnimationPageScaleForTesting());
 
@@ -11762,7 +11807,10 @@ TEST_P(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
   WebView().EnableFakePageScaleAnimationForTesting(true);
 
   // This input is already in view, this shouldn't cause a scroll.
-  WebView().ScrollFocusedEditableElementIntoView();
+  WebView()
+      .MainFrameImpl()
+      ->FrameWidget()
+      ->ScrollFocusedEditableElementIntoView();
 
   EXPECT_EQ(0, WebView().FakePageScaleAnimationPageScaleForTesting());
   EXPECT_EQ(IntPoint(),
@@ -11773,7 +11821,10 @@ TEST_P(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
   WebView().ResizeVisualViewport(IntSize(200, 100));
   ASSERT_FALSE(visual_viewport.VisibleRectInDocument().Contains(inputRect));
 
-  WebView().ScrollFocusedEditableElementIntoView();
+  WebView()
+      .MainFrameImpl()
+      ->FrameWidget()
+      ->ScrollFocusedEditableElementIntoView();
   frame_view->GetScrollableArea()->SetScrollOffset(
       ToFloatSize(WebView().FakePageScaleAnimationTargetPositionForTesting()),
       kProgrammaticScroll);

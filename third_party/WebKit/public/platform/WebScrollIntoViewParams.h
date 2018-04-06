@@ -6,8 +6,10 @@
 #define WebScrollIntoViewParams_h
 
 #include "public/platform/WebCommon.h"
+#include "public/platform/WebFloatRect.h"
 
 #if INSIDE_BLINK
+#include "platform/geometry/FloatRect.h"
 #include "platform/scroll/ScrollAlignment.h"
 #include "platform/scroll/ScrollTypes.h"
 #endif
@@ -36,7 +38,7 @@ struct WebScrollIntoViewParams {
   struct Alignment {
     Alignment() = default;
 #if INSIDE_BLINK
-    Alignment(const ScrollAlignment&);
+    BLINK_PLATFORM_EXPORT Alignment(const ScrollAlignment&);
 #endif
     AlignmentBehavior rect_visible = kNoScroll;
     AlignmentBehavior rect_hidden = kCenter;
@@ -69,6 +71,17 @@ struct WebScrollIntoViewParams {
   Behavior behavior = kAuto;
   bool is_for_scroll_sequence = false;
 
+  // If true, once the root frame scrolls into view it will zoom into the scroll
+  // rect.
+  bool zoom_into_rect = false;
+
+  // The following bounds are normalized to the scrolling rect, i.e., to
+  // retrieve the approximate bounds in root layer's document, the relative
+  // bounds should be scaled by the width and height of the scrolling rect in x
+  // and y coordinates respectively (and then offset by the rect's location).
+  WebFloatRect relative_element_bounds = WebFloatRect();
+  WebFloatRect relative_caret_bounds = WebFloatRect();
+
   WebScrollIntoViewParams() = default;
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebScrollIntoViewParams(
@@ -77,7 +90,8 @@ struct WebScrollIntoViewParams {
       ScrollType scroll_type = kProgrammaticScroll,
       bool make_visible_in_visual_viewport = true,
       ScrollBehavior scroll_behavior = kScrollBehaviorAuto,
-      bool is_for_scroll_sequence = false);
+      bool is_for_scroll_sequence = false,
+      bool zoom_into_rect = false);
 
   BLINK_PLATFORM_EXPORT ScrollAlignment GetScrollAlignmentX() const;
 

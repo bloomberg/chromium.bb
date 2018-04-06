@@ -119,6 +119,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void ClearBaseBackgroundColorOverride() override;
   void SetBaseBackgroundColor(WebColor) override;
   WebInputMethodController* GetActiveWebInputMethodController() const override;
+  bool ScrollFocusedEditableElementIntoView() override;
 
   Frame* FocusedCoreFrame() const;
 
@@ -191,6 +192,15 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   PageWidgetEventHandler* GetPageWidgetEventHandler() override;
 
   LocalFrame* FocusedLocalFrameAvailableForIme() const;
+
+  // Finds the parameters required for scrolling the focused editable |element|
+  // into view. |rect_to_scroll| is used for recursive scrolling of the element
+  // into view and contains all or part of element's bounding box and always
+  // includes the caret and is with respect to absolute coordinates.
+  void GetScrollParamsForFocusedEditableElement(
+      const Element& element,
+      LayoutRect& rect_to_scroll,
+      WebScrollIntoViewParams& params);
 
   WebWidgetClient* client_;
 
