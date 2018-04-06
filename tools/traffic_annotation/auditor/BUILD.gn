@@ -61,6 +61,7 @@ source_set("auditor_sources") {
   ]
   data = [
     "safe_list.txt",
+    "traffic_annotation_extractor_switches.txt",
   ]
 
   public_deps = [

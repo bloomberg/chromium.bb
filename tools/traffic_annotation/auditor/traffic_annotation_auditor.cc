@@ -115,8 +115,10 @@ TrafficAnnotationAuditor::TrafficAnnotationAuditor(
   DCHECK(!build_path.empty());
   DCHECK(!clang_tool_path.empty());
 
+  base::FilePath switches_file =
+      base::MakeAbsoluteFilePath(source_path_.Append(kClangToolSwitchesPath));
   std::string file_content;
-  if (base::ReadFileToString(kClangToolSwitchesPath, &file_content)) {
+  if (base::ReadFileToString(switches_file, &file_content)) {
     clang_tool_switches_ = base::SplitString(
         file_content, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   } else {
