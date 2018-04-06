@@ -57,7 +57,7 @@ def main():
       wrapper_utils.CombineResourceWhitelists(
           whitelist_candidates, args.resource_whitelist)
 
-  command = [args.ar] + object_mode + [args.operation]
+  command = [args.ar] + object_mode + args.operation.split()
   if args.plugin is not None:
     command += ['--plugin', args.plugin]
   command.append(args.output)
