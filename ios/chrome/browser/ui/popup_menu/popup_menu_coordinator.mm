@@ -8,6 +8,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -140,6 +141,8 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
            isIncognito:self.browserState->IsOffTheRecord()
       readingListModel:ReadingListModelFactory::GetForBrowserState(
                            self.browserState)];
+  self.mediator.engagementTracker =
+      feature_engagement::TrackerFactory::GetForBrowserState(self.browserState);
   self.mediator.webStateList = self.webStateList;
   self.mediator.popupMenu = tableViewController;
   self.mediator.dispatcher = static_cast<id<BrowserCommands>>(self.dispatcher);

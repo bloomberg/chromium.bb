@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 #include "base/time/default_clock.h"
+#include "components/feature_engagement/test/mock_tracker.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
@@ -17,6 +18,7 @@
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -45,7 +47,7 @@ class PopupMenuMediatorTest : public PlatformTest {
         [[PopupMenuMediator alloc] initWithType:PopupMenuTypeToolsMenu
                                     isIncognito:YES
                                readingListModel:reading_list_model_.get()];
-    mediator_non_incognito_ =
+    mediator_ =
         [[PopupMenuMediator alloc] initWithType:PopupMenuTypeToolsMenu
                                     isIncognito:NO
                                readingListModel:reading_list_model_.get()];
@@ -61,7 +63,7 @@ class PopupMenuMediatorTest : public PlatformTest {
   // observers when web_state_list_ gets dealloc.
   ~PopupMenuMediatorTest() override {
     [mediator_incognito_ disconnect];
-    [mediator_non_incognito_ disconnect];
+    [mediator_ disconnect];
   }
 
  protected:
@@ -96,7 +98,7 @@ class PopupMenuMediatorTest : public PlatformTest {
   void SetUpActiveWebState() { web_state_list_->ActivateWebStateAt(0); }
 
   PopupMenuMediator* mediator_incognito_;
-  PopupMenuMediator* mediator_non_incognito_;
+  PopupMenuMediator* mediator_;
   std::unique_ptr<ReadingListModelImpl> reading_list_model_;
   ToolbarTestWebState* web_state_;
   ToolbarTestNavigationManager* navigation_manager_;
@@ -106,3 +108,16 @@ class PopupMenuMediatorTest : public PlatformTest {
   // Mock refusing all calls except -setPopupMenuItems:.
   id popup_menu_strict_;
 };
+
+// Tests that the feature engagement tracker get notified when the mediator is
+// disconnected and the tracker wants the notification badge displayed.
+TEST_F(PopupMenuMediatorTest, TestFeatureEngagementDisconnect) {
+  feature_engagement::test::MockTracker tracker;
+  EXPECT_CALL(tracker, ShouldTriggerHelpUI(testing::_))
+      .WillRepeatedly(testing::Return(true));
+  mediator_.popupMenu = popup_menu_;
+  mediator_.engagementTracker = &tracker;
+
+  EXPECT_CALL(tracker, Dismissed(testing::_));
+  [mediator_ disconnect];
+}
