@@ -63,6 +63,10 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
   void OnReadAllData(DataCallback callback,
                      const base::Optional<ModelError>& error,
                      std::unique_ptr<ModelTypeStore::RecordList> data_records);
+  void OnReadAllDataToDelete(
+      std::unique_ptr<MetadataChangeList> delete_metadata_change_list,
+      const base::Optional<ModelError>& error,
+      std::unique_ptr<ModelTypeStore::RecordList> data_records);
 
   void HandleGlobalIdChange(int64_t old_global_id, int64_t new_global_id);
 

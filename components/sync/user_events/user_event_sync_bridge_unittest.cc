@@ -36,6 +36,7 @@ using testing::SaveArg;
 using testing::SizeIs;
 using testing::UnorderedElementsAre;
 using testing::_;
+using WriteBatch = ModelTypeStore::WriteBatch;
 
 MATCHER_P(MatchesUserEvent, expected, "") {
   if (!arg.has_user_event()) {
@@ -101,7 +102,7 @@ class UserEventSyncBridgeTest : public testing::Test {
         mock_processor_.CreateForwardingProcessor(), &test_global_id_mapper_);
     ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
     ON_CALL(*processor(), DisableSync()).WillByDefault(Invoke([this]() {
-      bridge_->ApplyDisableSyncChanges({});
+      bridge_->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList());
     }));
   }
 
@@ -195,8 +196,28 @@ TEST_F(UserEventSyncBridgeTest, DisableSync) {
 
   EXPECT_CALL(*processor(), DisableSync());
   bridge()->DisableSync();
+  // The bridge may asynchronously query the store to choose what to delete.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(GetAllData(), IsEmpty());
+}
+
+TEST_F(UserEventSyncBridgeTest, DisableSyncShouldKeepConsents) {
+  UserEventSpecifics user_consent_specifics(CreateSpecifics(2u, 2u, 2u));
+  auto* consent = user_consent_specifics.mutable_user_consent();
+  consent->set_feature(UserEventSpecifics::UserConsent::CHROME_SYNC);
+  bridge()->RecordUserEvent(
+      std::make_unique<UserEventSpecifics>(user_consent_specifics));
+  ASSERT_THAT(GetAllData(), SizeIs(1));
+
+  EXPECT_CALL(*processor(), DisableSync());
+  bridge()->DisableSync();
+  // The bridge may asynchronously query the store to choose what to delete.
+  base::RunLoop().RunUntilIdle();
+
+  // User consent specific must be persisted when sync is disabled.
+  EXPECT_THAT(GetAllData(),
+              ElementsAre(Pair(_, MatchesUserEvent(user_consent_specifics))));
 }
 
 TEST_F(UserEventSyncBridgeTest, MultipleRecords) {
