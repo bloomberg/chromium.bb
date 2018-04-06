@@ -236,7 +236,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       request_routing_token_cb_(params->request_routing_token_cb()),
       overlay_routing_token_(OverlayInfo::RoutingToken()),
       media_metrics_provider_(params->take_metrics_provider()),
-      pip_surface_info_cb_(params->pip_surface_info_cb()) {
+      pip_surface_info_cb_(params->pip_surface_info_cb()),
+      exit_pip_cb_(params->exit_pip_cb()) {
   DVLOG(1) << __func__;
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_selector_);
@@ -318,7 +319,7 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   client_->MediaRemotingStopped(
       blink::WebLocalizedString::kMediaRemotingStopNoText);
 
-  client_->PictureInPictureStopped();
+  ExitPictureInPicture();
 
   if (!surface_layer_for_video_enabled_ && video_weblayer_) {
     static_cast<cc::VideoLayer*>(video_weblayer_->layer())->StopUsingProvider();
@@ -790,6 +791,7 @@ void WebMediaPlayerImpl::EnterPictureInPicture() {
 }
 
 void WebMediaPlayerImpl::ExitPictureInPicture() {
+  LOG(ERROR) << "WebMediaPlayerImpl::ExitPictureInPicture";
   // TODO(apacible): Handle ending PiP from a user gesture. This currently
   // handles ending Picture-in-Picture mode from the source.
   // https://crbug.com/823172.
@@ -799,10 +801,8 @@ void WebMediaPlayerImpl::ExitPictureInPicture() {
   if (!pip_surface_id_.is_valid())
     return;
 
-  // Clears the Picture-in-Picture viz::SurfaceId. The default SurfaceId is not
-  // considered valid as both its FrameSinkId and LocalSurfaceId do not have
-  // have valid values.
-  pip_surface_info_cb_.Run(viz::SurfaceId());
+  // Signals that Picture-in-Picture has ended.
+  exit_pip_cb_.Run();
 
   // Updates the MediaWebContentsObserver with |delegate_id_| to clear the
   // tracked media player that is in Picture-in-Picture mode.

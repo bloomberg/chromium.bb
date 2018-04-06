@@ -1404,18 +1404,17 @@ void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
 }
 
 void Browser::UpdatePictureInPictureSurfaceId(viz::SurfaceId surface_id) {
-  if (!surface_id.is_valid()) {
-    if (pip_window_controller_)
-      pip_window_controller_->Close();
-    return;
-  }
-
   if (!pip_window_controller_)
     pip_window_controller_.reset(
         PictureInPictureWindowController::GetOrCreateForWebContents(
             tab_strip_model_->GetActiveWebContents()));
   pip_window_controller_->EmbedSurface(surface_id);
   pip_window_controller_->Show();
+}
+
+void Browser::ExitPictureInPicture() {
+  if (pip_window_controller_)
+    pip_window_controller_->Close();
 }
 
 bool Browser::IsMouseLocked() const {

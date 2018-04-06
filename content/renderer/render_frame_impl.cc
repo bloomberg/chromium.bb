@@ -7360,6 +7360,10 @@ void RenderFrameImpl::OnPictureInPictureSurfaceIdUpdated(
   GetFrameHost()->OnUpdatePictureInPictureSurfaceId(surface_id);
 }
 
+void RenderFrameImpl::OnExitPictureInPicture() {
+  GetFrameHost()->OnExitPictureInPicture();
+}
+
 void RenderFrameImpl::SetAccessibilityModeForTest(ui::AXMode new_mode) {
   OnSetAccessibilityMode(new_mode);
 }

@@ -501,6 +501,7 @@ class Browser : public TabStripModelObserver,
   void OnDidBlockFramebust(content::WebContents* web_contents,
                            const GURL& url) override;
   void UpdatePictureInPictureSurfaceId(viz::SurfaceId surface_id) override;
+  void ExitPictureInPicture() override;
 
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }

@@ -318,7 +318,8 @@ class WebMediaPlayerImplTest : public testing::Test {
                    base::Unretained(this)),
         viz::TestContextProvider::Create(),
         base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo),
-        base::BindRepeating(pip_surface_info_cb_.Get()));
+        base::BindRepeating(pip_surface_info_cb_.Get()),
+        base::BindRepeating(exit_pip_cb_.Get()));
 
     auto compositor = std::make_unique<StrictMock<MockVideoFrameCompositor>>(
         params->video_frame_compositor_task_runner());
@@ -333,7 +334,6 @@ class WebMediaPlayerImplTest : public testing::Test {
   ~WebMediaPlayerImplTest() override {
     EXPECT_CALL(client_, SetWebLayer(nullptr));
     EXPECT_CALL(client_, MediaRemotingStopped(_));
-    EXPECT_CALL(client_, PictureInPictureStopped());
     // Destruct WebMediaPlayerImpl and pump the message loop to ensure that
     // objects passed to the message loop for destruction are released.
     //
@@ -550,6 +550,8 @@ class WebMediaPlayerImplTest : public testing::Test {
   // Callback used for updating Picture-in-Picture about new Surface info.
   base::MockCallback<WebMediaPlayerParams::PipSurfaceInfoCB>
       pip_surface_info_cb_;
+
+  base::MockCallback<WebMediaPlayerParams::ExitPipCB> exit_pip_cb_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImplTest);
@@ -1143,10 +1145,9 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   testing::Mock::VerifyAndClearExpectations(&client_);
 
   // Upon exiting Picture-in-Picture mode, functions to cleanup are expected to
-  // be called.
-  EXPECT_CALL(pip_surface_info_cb_, Run(viz::SurfaceId()));
+  // be called. ~WMPI calls ExitPictureInPicture().
+  EXPECT_CALL(exit_pip_cb_, Run());
   EXPECT_CALL(delegate_, DidPictureInPictureModeEnd(delegate_.player_id()));
-  wmpi_->ExitPictureInPicture();
 }
 
 class WebMediaPlayerImplBackgroundBehaviorTest

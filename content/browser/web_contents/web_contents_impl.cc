@@ -4141,6 +4141,11 @@ void WebContentsImpl::UpdatePictureInPictureSurfaceId(
     delegate_->UpdatePictureInPictureSurfaceId(surface_id);
 }
 
+void WebContentsImpl::ExitPictureInPicture() {
+  if (delegate_)
+    delegate_->ExitPictureInPicture();
+}
+
 #if defined(OS_ANDROID)
 base::android::ScopedJavaLocalRef<jobject>
 WebContentsImpl::GetJavaRenderFrameHostDelegate() {
