@@ -554,8 +554,9 @@ IdlArray.prototype.is_json_type = function(type)
 
 function exposure_set(object, default_set) {
     var exposed = object.extAttrs.filter(function(a) { return a.name == "Exposed" });
-    if (exposed.length > 1 || exposed.length < 0) {
-        throw new IdlHarnessError("Unexpected Exposed extended attributes on " + memberName + ": " + exposed);
+    if (exposed.length > 1) {
+        throw new IdlHarnessError(
+            `Multiple 'Exposed' extended attributes on ${object.name}`);
     }
 
     if (exposed.length === 0) {
@@ -684,7 +685,7 @@ IdlArray.prototype.test = function()
     this["includes"] = {};
 
     // Assert B defined for A : B
-    for (const member of Object.values(this.members).filter(m => m.base)) {
+    for (var member of Object.values(this.members).filter(m => m.base)) {
         const lhs = member.name;
         const rhs = member.base;
         if (!(rhs in this.members)) throw new IdlHarnessError(`${lhs} inherits ${rhs}, but ${rhs} is undefined.`);
