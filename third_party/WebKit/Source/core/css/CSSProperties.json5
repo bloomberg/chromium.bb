@@ -774,16 +774,29 @@
       name: "background-attachment",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
+      keywords: ["scroll", "fixed", "local"],
+      typedom_types: ["Keyword"],
+      separator: " "
     },
     {
       name: "background-blend-mode",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
+      keywords: [
+        "normal", "multiply", "screen", "overlay", "darken", "lighten",
+        "color-dodge", "color-burn", "hard-light", "soft-light", "difference",
+        "exclusion", "hue", "saturation", "color", "luminosity"
+      ],
+      typedom_types: ["Keyword"],
+      separator: " "
     },
     {
       name: "background-clip",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
+      keywords: ["border-box", "padding-box", "content-box"],
+      typedom_types: ["Keyword"],
+      separator: " "
     },
     {
       name: "background-color",
@@ -812,6 +825,9 @@
       name: "background-origin",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
+      keywords: ["border-box", "padding-box", "content-box"],
+      typedom_types: ["Keyword"],
+      separator: " "
     },
     {
       name: "background-position-x",
@@ -838,6 +854,9 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       custom_apply_functions_all: true,
+      keywords: ["auto", "cover", "contain"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
+      separator: " "
     },
     {
       name: "baseline-shift",
