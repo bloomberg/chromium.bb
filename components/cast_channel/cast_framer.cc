@@ -58,8 +58,13 @@ size_t MessageFramer::MessageHeader::header_size() {
 }
 
 // static
+size_t MessageFramer::MessageHeader::max_body_size() {
+  return 65536;
+}
+
+// static
 size_t MessageFramer::MessageHeader::max_message_size() {
-  return 65535;
+  return header_size() + max_body_size();
 }
 
 std::string MessageFramer::MessageHeader::ToString() {
@@ -73,7 +78,7 @@ bool MessageFramer::Serialize(const CastMessage& message_proto,
   DCHECK(message_data);
   message_proto.SerializeToString(message_data);
   size_t message_size = message_data->size();
-  if (message_size > MessageHeader::max_message_size()) {
+  if (message_size > MessageHeader::max_body_size()) {
     message_data->clear();
     return false;
   }
@@ -98,8 +103,7 @@ size_t MessageFramer::BytesRequested() {
     case BODY:
       bytes_left =
           (body_size_ + MessageHeader::header_size()) - message_bytes_received_;
-      DCHECK_LE(bytes_left, MessageHeader::max_message_size() -
-                                MessageHeader::header_size());
+      DCHECK_LE(bytes_left, MessageHeader::max_body_size());
       VLOG(2) << "Bytes needed for body: " << bytes_left;
       return bytes_left;
     default:
@@ -129,7 +133,7 @@ std::unique_ptr<CastMessage> MessageFramer::Ingest(size_t num_bytes,
       if (BytesRequested() == 0) {
         MessageHeader header;
         MessageHeader::Deserialize(input_buffer_->StartOfBuffer(), &header);
-        if (header.message_size > MessageHeader::max_message_size()) {
+        if (header.message_size > MessageHeader::max_body_size()) {
           VLOG(1) << "Error parsing header (message size too large).";
           *error = ChannelError::INVALID_MESSAGE;
           error_ = true;
