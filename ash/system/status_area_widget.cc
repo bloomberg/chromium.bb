@@ -56,9 +56,11 @@ void StatusAreaWidget::Initialize() {
   }
 
   // Must happen after the widget is initialized so the native window exists.
-  web_notification_tray_ =
-      std::make_unique<WebNotificationTray>(shelf_, GetNativeWindow());
-  status_area_widget_delegate_->AddChildView(web_notification_tray_.get());
+  if (!features::IsSystemTrayUnifiedEnabled()) {
+    web_notification_tray_ =
+        std::make_unique<WebNotificationTray>(shelf_, GetNativeWindow());
+    status_area_widget_delegate_->AddChildView(web_notification_tray_.get());
+  }
 
   palette_tray_ = std::make_unique<PaletteTray>(shelf_);
   status_area_widget_delegate_->AddChildView(palette_tray_.get());
@@ -85,8 +87,12 @@ void StatusAreaWidget::Initialize() {
   status_area_widget_delegate_->UpdateLayout();
 
   // Initialize after all trays have been created.
-  system_tray_->InitializeTrayItems(web_notification_tray_.get());
-  web_notification_tray_->Initialize();
+  if (web_notification_tray_) {
+    system_tray_->InitializeTrayItems(web_notification_tray_.get());
+    web_notification_tray_->Initialize();
+  } else {
+    system_tray_->InitializeTrayItems(nullptr);
+  }
   palette_tray_->Initialize();
   virtual_keyboard_tray_->Initialize();
   ime_menu_tray_->Initialize();
@@ -119,7 +125,8 @@ StatusAreaWidget::~StatusAreaWidget() {
 
 void StatusAreaWidget::UpdateAfterShelfAlignmentChange() {
   system_tray_->UpdateAfterShelfAlignmentChange();
-  web_notification_tray_->UpdateAfterShelfAlignmentChange();
+  if (web_notification_tray_)
+    web_notification_tray_->UpdateAfterShelfAlignmentChange();
   logout_button_tray_->UpdateAfterShelfAlignmentChange();
   virtual_keyboard_tray_->UpdateAfterShelfAlignmentChange();
   ime_menu_tray_->UpdateAfterShelfAlignmentChange();
@@ -171,12 +178,14 @@ bool StatusAreaWidget::ShouldShowShelf() const {
 
 bool StatusAreaWidget::IsMessageBubbleShown() const {
   return system_tray_->IsSystemBubbleVisible() ||
-         web_notification_tray_->IsMessageCenterVisible();
+         (web_notification_tray_ &&
+          web_notification_tray_->IsMessageCenterVisible());
 }
 
 void StatusAreaWidget::SchedulePaint() {
   status_area_widget_delegate_->SchedulePaint();
-  web_notification_tray_->SchedulePaint();
+  if (web_notification_tray_)
+    web_notification_tray_->SchedulePaint();
   system_tray_->SchedulePaint();
   virtual_keyboard_tray_->SchedulePaint();
   logout_button_tray_->SchedulePaint();
@@ -200,7 +209,8 @@ bool StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
 }
 
 void StatusAreaWidget::UpdateShelfItemBackground(SkColor color) {
-  web_notification_tray_->UpdateShelfItemBackground(color);
+  if (web_notification_tray_)
+    web_notification_tray_->UpdateShelfItemBackground(color);
   system_tray_->UpdateShelfItemBackground(color);
   virtual_keyboard_tray_->UpdateShelfItemBackground(color);
   ime_menu_tray_->UpdateShelfItemBackground(color);
