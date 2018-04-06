@@ -30,6 +30,7 @@ class ConversionContext {
         current_transform_(layer_state.Transform()),
         current_clip_(layer_state.Clip()),
         current_effect_(layer_state.Effect()),
+        chunk_to_layer_mapper_(layer_state_, layer_offset_),
         cc_list_(cc_list) {}
   ~ConversionContext();
 
@@ -82,6 +83,15 @@ class ConversionContext {
   void Convert(const Vector<const PaintChunk*>&, const DisplayItemList&);
 
  private:
+  // Adjust the translation of the whole display list relative to layer offset.
+  // It's only called if we actually paint anything.
+  void TranslateForLayerOffsetOnce();
+
+  // Switch the current property tree state to the chunk's state. It's only
+  // called if we actually paint anything, and should execute for a chunk
+  // only once.
+  void SwitchToChunkState(const PaintChunk&);
+
   // Switch the current clip to the target state, staying in the same effect.
   // It is no-op if the context is already in the target state.
   // Otherwise zero or more clips will be popped from or pushed onto the
@@ -108,6 +118,13 @@ class ConversionContext {
   // the output clip of the target effect.
   // The current effect will change to the target effect.
   void SwitchToEffect(const EffectPaintPropertyNode*);
+
+  // Switch the current transform to the target state.
+  void SwitchToTransform(const TransformPaintPropertyNode*);
+  // End the transform state that is estalished by SwitchToTransform().
+  // Called when the next chunk has different property tree state and when we
+  // have processed all chunks.
+  void EndTransform();
 
   // Applies combined transform from |current_transform_| to |target_transform|
   // This function doesn't change |current_transform_|.
@@ -160,10 +177,16 @@ class ConversionContext {
 
   const PropertyTreeState& layer_state_;
   gfx::Vector2dF layer_offset_;
+  bool translated_for_layer_offset_ = false;
 
   const TransformPaintPropertyNode* current_transform_;
   const ClipPaintPropertyNode* current_clip_;
   const EffectPaintPropertyNode* current_effect_;
+
+  // The previous transform state before SwitchToTransform(). When the next
+  // chunk's state is different from the current state we should restore to
+  // this transform.
+  const TransformPaintPropertyNode* previous_transform_ = nullptr;
 
   // State stack.
   // The size of the stack is the number of nested paired items that are
@@ -200,17 +223,46 @@ class ConversionContext {
   };
   Vector<EffectBoundsInfo> effect_bounds_stack_;
 
+  ChunkToLayerMapper chunk_to_layer_mapper_;
+
   cc::DisplayItemList& cc_list_;
 };
 
 ConversionContext::~ConversionContext() {
   // End all states.
+  EndTransform();
   while (state_stack_.size()) {
     if (state_stack_.back().type == StateEntry::kEffect)
       EndEffect();
     else
       EndClip();
   }
+  if (translated_for_layer_offset_)
+    AppendRestore(1);
+}
+
+void ConversionContext::TranslateForLayerOffsetOnce() {
+  if (translated_for_layer_offset_ || layer_offset_.IsZero())
+    return;
+
+  cc_list_.StartPaint();
+  cc_list_.push<cc::SaveOp>();
+  cc_list_.push<cc::TranslateOp>(-layer_offset_.x(), -layer_offset_.y());
+  cc_list_.EndPaintOfPairedBegin();
+  translated_for_layer_offset_ = true;
+}
+
+void ConversionContext::SwitchToChunkState(const PaintChunk& chunk) {
+  chunk_to_layer_mapper_.SwitchToChunk(chunk);
+
+  const auto& chunk_state = chunk.properties.property_tree_state;
+  if (chunk_state.Effect() != current_effect_ ||
+      chunk_state.Clip() != current_clip_ ||
+      chunk_state.Transform() != current_transform_)
+    EndTransform();
+  SwitchToEffect(chunk_state.Effect());
+  SwitchToClip(chunk_state.Clip());
+  SwitchToTransform(chunk_state.Transform());
 }
 
 void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
@@ -529,51 +581,38 @@ void ConversionContext::EndClip() {
   state_stack_.pop_back();
 }
 
+void ConversionContext::SwitchToTransform(
+    const TransformPaintPropertyNode* target_transform) {
+  if (target_transform == current_transform_)
+    return;
+
+  DCHECK_EQ(nullptr, previous_transform_);
+  cc_list_.StartPaint();
+  cc_list_.push<cc::SaveOp>();
+  ApplyTransform(target_transform);
+  cc_list_.EndPaintOfPairedBegin();
+  previous_transform_ = current_transform_;
+  current_transform_ = target_transform;
+}
+
+void ConversionContext::EndTransform() {
+  if (!previous_transform_)
+    return;
+
+  cc_list_.StartPaint();
+  cc_list_.push<cc::RestoreOp>();
+  cc_list_.EndPaintOfPairedEnd();
+  current_transform_ = previous_transform_;
+  previous_transform_ = nullptr;
+}
+
 void ConversionContext::Convert(const Vector<const PaintChunk*>& paint_chunks,
                                 const DisplayItemList& display_items) {
-  bool translated = false;
-  bool need_translate = !layer_offset_.IsZero();
-  // This functor adjust the translation of the whole display list relative to
-  // layer offset. It's only called if we actually paint anything.
-  auto translate_once = [this, &translated, need_translate] {
-    if (translated || !need_translate)
-      return;
-    cc_list_.StartPaint();
-    cc_list_.push<cc::SaveOp>();
-    cc_list_.push<cc::TranslateOp>(-layer_offset_.x(), -layer_offset_.y());
-    cc_list_.EndPaintOfPairedBegin();
-    translated = true;
-  };
-
-  ChunkToLayerMapper mapper(layer_state_, layer_offset_);
-
   for (auto chunk_it = paint_chunks.begin(); chunk_it != paint_chunks.end();
        chunk_it++) {
     const PaintChunk& chunk = **chunk_it;
-    const PropertyTreeState& chunk_state =
-        chunk.properties.property_tree_state.GetPropertyTreeState();
-    bool transformed = false;
-    bool properties_adjusted = false;
-    // This functor adjusts the properties for the current effect and clip once.
-    // It's called if a DrawingDisplayItem draws content or is under an effect
-    // that may draw content.
-    auto adjust_properties_once = [this, &chunk_state, &transformed,
-                                   &properties_adjusted] {
-      if (properties_adjusted)
-        return;
-      SwitchToEffect(chunk_state.Effect());
-      SwitchToClip(chunk_state.Clip());
-      if (chunk_state.Transform() != current_transform_) {
-        transformed = true;
-        cc_list_.StartPaint();
-        cc_list_.push<cc::SaveOp>();
-        ApplyTransform(chunk_state.Transform());
-        cc_list_.EndPaintOfPairedBegin();
-      }
-      properties_adjusted = true;
-    };
-
-    mapper.SwitchToChunk(chunk);
+    const auto& chunk_state = chunk.properties.property_tree_state;
+    bool switched_to_chunk_state = false;
 
     for (const auto& item : display_items.ItemsInPaintChunk(chunk)) {
       DCHECK(item.IsDrawing());
@@ -589,19 +628,20 @@ void ConversionContext::Convert(const Vector<const PaintChunk*>& paint_chunks,
         continue;
       }
 
-      translate_once();
-      adjust_properties_once();
+      TranslateForLayerOffsetOnce();
+      if (!switched_to_chunk_state) {
+        SwitchToChunkState(chunk);
+        switched_to_chunk_state = true;
+      }
+
       cc_list_.StartPaint();
       if (record && record->size() != 0)
         cc_list_.push<cc::DrawRecordOp>(std::move(record));
-      cc_list_.EndPaintOfUnpaired(mapper.MapVisualRect(item.VisualRect()));
+      cc_list_.EndPaintOfUnpaired(
+          chunk_to_layer_mapper_.MapVisualRect(item.VisualRect()));
     }
-    if (transformed)
-      AppendRestore(1);
     UpdateEffectBounds(chunk.bounds, chunk_state.Transform());
   }
-  if (translated)
-    AppendRestore(1);
 }
 
 }  // unnamed namespace

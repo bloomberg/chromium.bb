@@ -824,5 +824,47 @@ TEST_F(PaintChunksToCcLayerTest, CombineClips) {
            cc::PaintOpType::Restore}));                           // </c1+c2>
 }
 
+TEST_F(PaintChunksToCcLayerTest, ChunksSamePropertyTreeState) {
+  auto t1 = TransformPaintPropertyNode::Create(
+      t0(), TransformationMatrix().Scale(2.f), FloatPoint3D());
+  auto t2 = TransformPaintPropertyNode::Create(
+      t1.get(), TransformationMatrix().Scale(3.f), FloatPoint3D());
+  auto c1 = ClipPaintPropertyNode::Create(c0(), t1.get(),
+                                          FloatRoundedRect(0, 0, 100, 100));
+
+  TestChunks chunks;
+  chunks.AddChunk(t0(), c0(), e0());
+  chunks.AddChunk(t1.get(), c0(), e0());
+  chunks.AddChunk(t1.get(), c0(), e0());
+  chunks.AddChunk(t1.get(), c1.get(), e0());
+  chunks.AddChunk(t1.get(), c1.get(), e0());
+  chunks.AddChunk(t2.get(), c1.get(), e0());
+  chunks.AddChunk(t2.get(), c1.get(), e0());
+
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.GetChunkList(), PropertyTreeState(t0(), c0(), e0()),
+          gfx::Vector2dF(), chunks.items,
+          cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make(
+                  {cc::PaintOpType::DrawRecord,                     // <p0/>
+                   cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t1>
+                   cc::PaintOpType::DrawRecord,                     // <p1/>
+                   cc::PaintOpType::DrawRecord,                     // <p2/>
+                   cc::PaintOpType::Restore,                        // </t1>
+                   cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t1>
+                   cc::PaintOpType::ClipRect,                       // <c1>
+                   cc::PaintOpType::DrawRecord,                     // <p3/>
+                   cc::PaintOpType::DrawRecord,                     // <p4/>
+                   cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t2>
+                   cc::PaintOpType::DrawRecord,                     // <p5/>
+                   cc::PaintOpType::DrawRecord,                     // <p6/>
+                   cc::PaintOpType::Restore,                        // </t2>
+                   cc::PaintOpType::Restore}));  // </c1></t1>
+}
+
 }  // namespace
 }  // namespace blink
