@@ -29,9 +29,8 @@ class VideoCaptureClient : public media::mojom::VideoCaptureObserver {
   explicit VideoCaptureClient(media::mojom::VideoCaptureHostPtr host);
   ~VideoCaptureClient() override;
 
-  using FrameDeliverCallback =
-      base::RepeatingCallback<void(scoped_refptr<media::VideoFrame> video_frame,
-                                   base::TimeTicks estimated_capture_time)>;
+  using FrameDeliverCallback = base::RepeatingCallback<void(
+      scoped_refptr<media::VideoFrame> video_frame)>;
   void Start(FrameDeliverCallback deliver_callback,
              base::OnceClosure error_callback);
 

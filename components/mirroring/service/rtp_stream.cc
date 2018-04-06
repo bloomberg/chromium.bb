@@ -175,6 +175,10 @@ void VideoRtpStream::InsertVideoFrame(
   video_sender_->InsertRawVideoFrame(std::move(video_frame), reference_time);
 }
 
+void VideoRtpStream::SetTargetPlayoutDelay(base::TimeDelta playout_delay) {
+  video_sender_->SetTargetPlayoutDelay(playout_delay);
+}
+
 void VideoRtpStream::OnRefreshTimerFired() {
   ++consecutive_refresh_count_;
   if (consecutive_refresh_count_ >= kMaxConsecutiveRefreshFrames)
@@ -209,6 +213,10 @@ std::vector<FrameSenderConfig> AudioRtpStream::GetSupportedConfigs() {
 void AudioRtpStream::InsertAudio(std::unique_ptr<media::AudioBus> audio_bus,
                                  base::TimeTicks capture_time) {
   audio_sender_->InsertAudio(std::move(audio_bus), capture_time);
+}
+
+void AudioRtpStream::SetTargetPlayoutDelay(base::TimeDelta playout_delay) {
+  audio_sender_->SetTargetPlayoutDelay(playout_delay);
 }
 
 }  // namespace mirroring
