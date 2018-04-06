@@ -117,7 +117,9 @@ struct AutocompleteMatch {
   // Gets the vector icon identifier for the icon to be shown for |type|. If
   // |is_bookmark| is true, returns a bookmark icon rather than what the type
   // would determine.
-  static const gfx::VectorIcon& TypeToVectorIcon(Type type, bool is_bookmark);
+  static const gfx::VectorIcon& TypeToVectorIcon(Type type,
+                                                 bool is_bookmark,
+                                                 bool is_tab_match);
 
   // Comparison function for determining when one match is better than another.
   static bool MoreRelevant(const AutocompleteMatch& elem1,
@@ -415,6 +417,9 @@ struct AutocompleteMatch {
 
   // Type of this match.
   Type type;
+
+  // True if we saw a tab that matched this suggestion.
+  bool has_tab_match;
 
   // Used to identify the specific source / type for suggestions by the
   // suggest server. See |result_subtype_identifier| in omnibox.proto for more

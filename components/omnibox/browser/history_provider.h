@@ -45,8 +45,9 @@ class HistoryProvider : public AutocompleteProvider {
 
   AutocompleteProviderClient* client() { return client_; }
 
-  // Converts matches whose URL matches a tab's URL to TAB_SEARCH matches.
-  // Fixes up description as well. |input| can be null; if provided,
+  // Sets |has_tab_match| in matches whose URL matches an open tab's URL.
+  // Also, fixes up the description if not using another UI element to
+  // annotate (e.g. tab switch button). |input| can be null; if provided,
   // the match can be more precise (e.g. scheme presence).
   void ConvertOpenTabMatches(const AutocompleteInput* input);
 

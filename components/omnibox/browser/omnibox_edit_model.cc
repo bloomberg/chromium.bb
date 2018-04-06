@@ -644,6 +644,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
       input_.type(),
       popup_open,
       dropdown_ignored ? 0 : index,
+      disposition,
       !pasted_text.empty(),
       SessionID::InvalidValue(), // don't know tab ID; set later if appropriate
       ClassifyPage(),

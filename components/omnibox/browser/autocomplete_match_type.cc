@@ -97,7 +97,7 @@ base::string16 AutocompleteMatchType::ToAccessibilityLabel(
       0,                               // VOICE_SUGGEST
       0,                               // PHYSICAL_WEB
       0,                               // PHYSICAL_WEB_OVERFLOW
-      IDS_ACC_AUTOCOMPLETE_HISTORY,    // TAB_SEARCH
+      IDS_ACC_AUTOCOMPLETE_HISTORY,    // TAB_SEARCH_DEPRECATED
   };
   static_assert(arraysize(message_ids) == AutocompleteMatchType::NUM_TYPES,
                 "message_ids must have NUM_TYPES elements");

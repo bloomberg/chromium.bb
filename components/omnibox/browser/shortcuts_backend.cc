@@ -124,9 +124,6 @@ void ShortcutsBackend::AddOrUpdateShortcut(const base::string16& text,
 #if DCHECK_IS_ON()
   match.Validate();
 #endif  // DCHECK_IS_ON()
-  // TODO(crbug.com/46623): Let's think twice about saving these.
-  if (match.type == AutocompleteMatchType::TAB_SEARCH)
-    return;
   const base::string16 text_lowercase(base::i18n::ToLower(text));
   const base::Time now(base::Time::Now());
   for (ShortcutMap::const_iterator it(

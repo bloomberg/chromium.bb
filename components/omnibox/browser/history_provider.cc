@@ -110,7 +110,7 @@ void HistoryProvider::ConvertOpenTabMatches(const AutocompleteInput* input) {
   for (auto& match : matches_) {
     // If url is in a tab, change type, update classification.
     if (client()->IsTabOpenWithURL(match.destination_url, input)) {
-      match.type = AutocompleteMatchType::TAB_SEARCH;
+      match.has_tab_match = true;
       if (OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial())
         continue;
       const base::string16 switch_tab_message =

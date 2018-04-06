@@ -87,7 +87,7 @@ const gfx::VectorIcon& TypeToVectorIcon(AutocompleteMatchType::Type type) {
     case AutocompleteMatchType::CLIPBOARD:
     case AutocompleteMatchType::PHYSICAL_WEB:
     case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW:
-    case AutocompleteMatchType::TAB_SEARCH:
+    case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
       return kIcDomainIcon;
 
     case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:

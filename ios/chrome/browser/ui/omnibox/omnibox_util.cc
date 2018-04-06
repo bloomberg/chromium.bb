@@ -28,7 +28,7 @@ int GetIconForAutocompleteMatchType(AutocompleteMatchType::Type type,
     case AutocompleteMatchType::HISTORY_TITLE:
     case AutocompleteMatchType::HISTORY_URL:
     case AutocompleteMatchType::SEARCH_HISTORY:
-    case AutocompleteMatchType::TAB_SEARCH:
+    case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
       return is_incognito ? IDR_IOS_OMNIBOX_HISTORY_INCOGNITO
                           : IDR_IOS_OMNIBOX_HISTORY;
     case AutocompleteMatchType::CONTACT_DEPRECATED:

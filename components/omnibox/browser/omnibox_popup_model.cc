@@ -277,8 +277,8 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
       return favicon;
   }
 
-  const auto& vector_icon_type =
-      AutocompleteMatch::TypeToVectorIcon(match.type, IsStarredMatch(match));
+  const auto& vector_icon_type = AutocompleteMatch::TypeToVectorIcon(
+      match.type, IsStarredMatch(match), match.has_tab_match);
   return edit_model_->client()->GetSizedIcon(vector_icon_type,
                                              vector_icon_color);
 }

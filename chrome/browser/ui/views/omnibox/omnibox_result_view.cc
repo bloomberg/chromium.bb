@@ -243,8 +243,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   keyword_view_->icon()->SetVisible(match_.associated_keyword.get());
 
   if (OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial() &&
-      match.type == AutocompleteMatchType::TAB_SEARCH &&
-      !keyword_view_->icon()->visible()) {
+      match.has_tab_match && !keyword_view_->icon()->visible()) {
     suggestion_tab_switch_button_ =
         std::make_unique<OmniboxTabSwitchButton>(this, GetTextHeight());
     suggestion_tab_switch_button_->set_owned_by_client();

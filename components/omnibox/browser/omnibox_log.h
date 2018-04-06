@@ -13,6 +13,7 @@
 #include "components/sessions/core/session_id.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
+#include "ui/base/window_open_disposition.h"
 
 class AutocompleteResult;
 
@@ -24,6 +25,7 @@ struct OmniboxLog {
              metrics::OmniboxInputType input_type,
              bool is_popup_open,
              size_t selected_index,
+             WindowOpenDisposition disposition,
              bool is_paste_and_go,
              SessionID tab_id,
              metrics::OmniboxEventProto::PageClassification
@@ -50,6 +52,10 @@ struct OmniboxLog {
   // The index of the item selected in the dropdown list.  Set to 0 if the
   // dropdown is closed (and therefore there is only one implicit suggestion).
   size_t selected_index;
+
+  // The disposition used to open the match. Currently, only SWITCH_TO_TAB
+  // is relevant to the log; all other dispositions are treated identically.
+  WindowOpenDisposition disposition;
 
   // True if this is a paste-and-search or paste-and-go omnibox interaction.
   // (The codebase refers to both these types as paste-and-go.)
