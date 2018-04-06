@@ -189,8 +189,9 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
   response_head_.load_timing.request_start = base::TimeTicks::Now();
   response_head_.load_timing.request_start_time = base::Time::Now();
   // base::Unretained() is safe since |url_loader_binding_| is owned by |this|.
-  url_loader_binding_.set_connection_error_handler(base::BindOnce(
-      &ServiceWorkerSubresourceLoader::DeleteSoon, base::Unretained(this)));
+  url_loader_binding_.set_connection_error_handler(
+      base::BindOnce(&ServiceWorkerSubresourceLoader::OnConnectionError,
+                     base::Unretained(this)));
   StartRequest(resource_request);
 }
 
@@ -198,8 +199,8 @@ ServiceWorkerSubresourceLoader::~ServiceWorkerSubresourceLoader() {
   SettleInflightFetchRequestIfNeeded();
 };
 
-void ServiceWorkerSubresourceLoader::DeleteSoon() {
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+void ServiceWorkerSubresourceLoader::OnConnectionError() {
+  delete this;
 }
 
 void ServiceWorkerSubresourceLoader::StartRequest(
@@ -245,7 +246,7 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
           url_loader_binding_.Unbind(), routing_id_, request_id_, options_,
           resource_request_, std::move(url_loader_client_),
           traffic_annotation_);
-      DeleteSoon();
+      delete this;
       return;
     }
     DCHECK_EQ(ControllerServiceWorkerConnector::State::kNoContainerHost,
@@ -402,7 +403,7 @@ void ServiceWorkerSubresourceLoader::OnFallback(
       traffic_annotation_);
   // Per spec, redirects after this point are not intercepted by the service
   // worker again (https://crbug.com/517364). So this loader is done.
-  DeleteSoon();
+  delete this;
 }
 
 void ServiceWorkerSubresourceLoader::StartResponse(
