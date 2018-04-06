@@ -18,6 +18,7 @@ Resource::Resource(const gfx::Size& size,
                    ResourceFormat format,
                    const gfx::ColorSpace& color_space)
     : locked_for_write(false),
+      locked_for_external_use(false),
       lost(false),
       marked_for_deletion(false),
       allocated(false),
