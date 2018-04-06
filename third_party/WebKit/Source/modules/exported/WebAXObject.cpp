@@ -47,6 +47,7 @@
 #include "core/style/ComputedStyle.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/accessibility/AXRange.h"
 #include "modules/accessibility/AXTable.h"
 #include "modules/accessibility/AXTableCell.h"
 #include "modules/accessibility/AXTableColumn.h"
@@ -754,7 +755,7 @@ void WebAXObject::Selection(WebAXObject& anchor_object,
     return;
   }
 
-  AXObject::AXRange ax_selection = private_->Selection();
+  AXObject::AXSelection ax_selection = private_->Selection();
   anchor_object = WebAXObject(ax_selection.anchor_object);
   anchor_offset = ax_selection.anchor_offset;
   anchor_affinity =
@@ -779,9 +780,9 @@ bool WebAXObject::SetSelection(const WebAXObject& anchor_object,
   if (IsDetached())
     return false;
 
-  AXObject::AXRange ax_selection(anchor_object, anchor_offset,
-                                 TextAffinity::kUpstream, focus_object,
-                                 focus_offset, TextAffinity::kDownstream);
+  AXObject::AXSelection ax_selection(anchor_object, anchor_offset,
+                                     TextAffinity::kUpstream, focus_object,
+                                     focus_offset, TextAffinity::kDownstream);
   return private_->RequestSetSelectionAction(ax_selection);
 }
 
@@ -789,7 +790,7 @@ unsigned WebAXObject::SelectionEnd() const {
   if (IsDetached())
     return 0;
 
-  AXObject::AXRange ax_selection = private_->SelectionUnderObject();
+  AXObject::AXSelection ax_selection = private_->SelectionUnderObject();
   if (ax_selection.focus_offset < 0)
     return 0;
 
@@ -800,7 +801,7 @@ unsigned WebAXObject::SelectionStart() const {
   if (IsDetached())
     return 0;
 
-  AXObject::AXRange ax_selection = private_->SelectionUnderObject();
+  AXObject::AXSelection ax_selection = private_->SelectionUnderObject();
   if (ax_selection.anchor_offset < 0)
     return 0;
 
@@ -1346,7 +1347,7 @@ void WebAXObject::Markers(WebVector<WebAXMarkerType>& types,
     return;
 
   Vector<DocumentMarker::MarkerType> marker_types;
-  Vector<AXObject::AXRange> marker_ranges;
+  Vector<AXRange> marker_ranges;
   private_->Markers(marker_types, marker_ranges);
   DCHECK_EQ(marker_types.size(), marker_ranges.size());
 
@@ -1355,9 +1356,11 @@ void WebAXObject::Markers(WebVector<WebAXMarkerType>& types,
   WebVector<int> end_offsets(marker_ranges.size());
   for (size_t i = 0; i < marker_types.size(); ++i) {
     web_marker_types[i] = static_cast<WebAXMarkerType>(marker_types[i]);
-    DCHECK(marker_ranges[i].IsSimple());
-    start_offsets[i] = marker_ranges[i].anchor_offset;
-    end_offsets[i] = marker_ranges[i].focus_offset;
+    DCHECK(marker_ranges[i].IsValid());
+    DCHECK_EQ(marker_ranges[i].Start().ContainerObject(),
+              marker_ranges[i].End().ContainerObject());
+    start_offsets[i] = marker_ranges[i].Start().TextOffset();
+    end_offsets[i] = marker_ranges[i].End().TextOffset();
   }
 
   types.Swap(web_marker_types);
@@ -1384,15 +1387,17 @@ void WebAXObject::GetWordBoundaries(WebVector<int>& starts,
   if (IsDetached())
     return;
 
-  Vector<AXObject::AXRange> word_boundaries;
+  Vector<AXRange> word_boundaries;
   private_->GetWordBoundaries(word_boundaries);
 
   WebVector<int> word_start_offsets(word_boundaries.size());
   WebVector<int> word_end_offsets(word_boundaries.size());
   for (size_t i = 0; i < word_boundaries.size(); ++i) {
-    DCHECK(word_boundaries[i].IsSimple());
-    word_start_offsets[i] = word_boundaries[i].anchor_offset;
-    word_end_offsets[i] = word_boundaries[i].focus_offset;
+    DCHECK(word_boundaries[i].IsValid());
+    DCHECK_EQ(word_boundaries[i].Start().ContainerObject(),
+              word_boundaries[i].End().ContainerObject());
+    word_start_offsets[i] = word_boundaries[i].Start().TextOffset();
+    word_end_offsets[i] = word_boundaries[i].End().TextOffset();
   }
 
   starts.Swap(word_start_offsets);

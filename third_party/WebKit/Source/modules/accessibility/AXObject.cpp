@@ -51,6 +51,7 @@
 #include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/accessibility/AXRange.h"
 #include "modules/accessibility/AXSparseAttributeSetter.h"
 #include "platform/scroll/ScrollAlignment.h"
 #include "platform/text/PlatformLocale.h"
@@ -1475,6 +1476,13 @@ AccessibilityOrientation AXObject::Orientation() const {
   return kAccessibilityOrientationUndefined;
 }
 
+void AXObject::Markers(Vector<DocumentMarker::MarkerType>&,
+                       Vector<AXRange>&) const {}
+
+void AXObject::TextCharacterOffsets(Vector<int>&) const {}
+
+void AXObject::GetWordBoundaries(Vector<AXRange>&) const {}
+
 AXDefaultActionVerb AXObject::Action() const {
   Element* action_element = ActionElement();
   if (!action_element)
@@ -2334,8 +2342,8 @@ bool AXObject::RequestSetSelectedAction(bool selected) {
   return OnNativeSetSelectedAction(selected);
 }
 
-bool AXObject::RequestSetSelectionAction(const AXRange& range) {
-  return OnNativeSetSelectionAction(range);
+bool AXObject::RequestSetSelectionAction(const AXSelection& selection) {
+  return OnNativeSetSelectionAction(selection);
 }
 
 bool AXObject::RequestSetSequentialFocusNavigationStartingPointAction() {
@@ -2446,7 +2454,7 @@ bool AXObject::OnNativeSetSelectedAction(bool) {
   return false;
 }
 
-bool AXObject::OnNativeSetSelectionAction(const AXRange& range) {
+bool AXObject::OnNativeSetSelectionAction(const AXSelection& selection) {
   return false;
 }
 
