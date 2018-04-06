@@ -80,8 +80,8 @@ class UpgradeDetector {
     return upgrade_available_ == UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU;
   }
 
-  // Notifify this object that the user has acknowledged the critical update
-  // so we don't need to complain about it for now.
+  // Notify this object that the user has acknowledged the critical update so we
+  // don't need to complain about it for now.
   void acknowledge_critical_update() {
     critical_update_acknowledged_ = true;
   }
