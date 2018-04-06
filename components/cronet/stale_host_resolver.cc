@@ -128,9 +128,7 @@ class StaleHostResolver::RequestImpl {
     RequestImpl* request_;
   };
 
-  bool have_network_request() const {
-    return network_request_.get() != nullptr;
-  }
+  bool have_network_request() const { return network_request_ != nullptr; }
   bool have_stale_data() const {
     return stale_error_ != net::ERR_DNS_CACHE_MISS;
   }
