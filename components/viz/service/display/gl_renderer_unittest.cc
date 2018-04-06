@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <set>
+#include <tuple>
 #include <vector>
 
 #include "base/location.h"
@@ -410,11 +411,11 @@ INSTANTIATE_TEST_CASE_P(PrecisionShadersCompile,
 class PrecisionBlendShaderPixelTest
     : public GLRendererShaderPixelTest,
       public ::testing::WithParamInterface<
-          std::tr1::tuple<TexCoordPrecision, BlendMode>> {};
+          std::tuple<TexCoordPrecision, BlendMode>> {};
 
 TEST_P(PrecisionBlendShaderPixelTest, ShadersCompile) {
-  TestShadersWithPrecisionAndBlend(std::tr1::get<0>(GetParam()),
-                                   std::tr1::get<1>(GetParam()));
+  TestShadersWithPrecisionAndBlend(std::get<0>(GetParam()),
+                                   std::get<1>(GetParam()));
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -426,11 +427,11 @@ INSTANTIATE_TEST_CASE_P(
 class PrecisionSamplerShaderPixelTest
     : public GLRendererShaderPixelTest,
       public ::testing::WithParamInterface<
-          std::tr1::tuple<TexCoordPrecision, SamplerType>> {};
+          std::tuple<TexCoordPrecision, SamplerType>> {};
 
 TEST_P(PrecisionSamplerShaderPixelTest, ShadersCompile) {
-  TestShadersWithPrecisionAndSampler(std::tr1::get<0>(GetParam()),
-                                     std::tr1::get<1>(GetParam()));
+  TestShadersWithPrecisionAndSampler(std::get<0>(GetParam()),
+                                     std::get<1>(GetParam()));
 }
 
 INSTANTIATE_TEST_CASE_P(PrecisionSamplerShadersCompile,
@@ -441,12 +442,11 @@ INSTANTIATE_TEST_CASE_P(PrecisionSamplerShadersCompile,
 class MaskShaderPixelTest
     : public GLRendererShaderPixelTest,
       public ::testing::WithParamInterface<
-          std::tr1::tuple<TexCoordPrecision, SamplerType, BlendMode, bool>> {};
+          std::tuple<TexCoordPrecision, SamplerType, BlendMode, bool>> {};
 
 TEST_P(MaskShaderPixelTest, ShadersCompile) {
-  TestShadersWithMasks(
-      std::tr1::get<0>(GetParam()), std::tr1::get<1>(GetParam()),
-      std::tr1::get<2>(GetParam()), std::tr1::get<3>(GetParam()));
+  TestShadersWithMasks(std::get<0>(GetParam()), std::get<1>(GetParam()),
+                       std::get<2>(GetParam()), std::get<3>(GetParam()));
 }
 
 INSTANTIATE_TEST_CASE_P(MaskShadersCompile,

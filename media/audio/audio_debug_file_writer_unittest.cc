@@ -44,8 +44,7 @@ base::File OpenFile(const base::FilePath& file_path) {
 }  // namespace
 
 // <channel layout, sample rate, frames per buffer, number of buffer writes
-typedef std::tr1::tuple<ChannelLayout, int, int, int>
-    AudioDebugFileWriterTestData;
+typedef std::tuple<ChannelLayout, int, int, int> AudioDebugFileWriterTestData;
 
 class AudioDebugFileWriterTest
     : public testing::TestWithParam<AudioDebugFileWriterTestData> {
@@ -56,11 +55,11 @@ class AudioDebugFileWriterTest
             base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
             execution_mode),
         params_(AudioParameters::Format::AUDIO_PCM_LINEAR,
-                std::tr1::get<0>(GetParam()),
-                std::tr1::get<1>(GetParam()),
+                std::get<0>(GetParam()),
+                std::get<1>(GetParam()),
                 kBytesPerSample * 8,
-                std::tr1::get<2>(GetParam())),
-        writes_(std::tr1::get<3>(GetParam())),
+                std::get<2>(GetParam())),
+        writes_(std::get<3>(GetParam())),
         source_samples_(params_.frames_per_buffer() * params_.channels() *
                         writes_),
         source_interleaved_(source_samples_ ? new int16_t[source_samples_]
@@ -303,55 +302,53 @@ INSTANTIATE_TEST_CASE_P(
     // Using 10ms frames per buffer everywhere.
     testing::Values(
         // No writes.
-        std::tr1::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
-                             44100,
-                             44100 / 100,
-                             0),
+        std::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
+                        44100,
+                        44100 / 100,
+                        0),
         // 1 write of mono.
-        std::tr1::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
-                             44100,
-                             44100 / 100,
-                             1),
+        std::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
+                        44100,
+                        44100 / 100,
+                        1),
         // 1 second of mono.
-        std::tr1::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
-                             44100,
-                             44100 / 100,
-                             100),
+        std::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
+                        44100,
+                        44100 / 100,
+                        100),
         // 1 second of mono, higher rate.
-        std::tr1::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
-                             48000,
-                             48000 / 100,
-                             100),
+        std::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
+                        48000,
+                        48000 / 100,
+                        100),
         // 1 second of stereo.
-        std::tr1::make_tuple(ChannelLayout::CHANNEL_LAYOUT_STEREO,
-                             44100,
-                             44100 / 100,
-                             100),
+        std::make_tuple(ChannelLayout::CHANNEL_LAYOUT_STEREO,
+                        44100,
+                        44100 / 100,
+                        100),
         // 15 seconds of stereo, higher rate.
-        std::tr1::make_tuple(ChannelLayout::CHANNEL_LAYOUT_STEREO,
-                             48000,
-                             48000 / 100,
-                             1500)));
+        std::make_tuple(ChannelLayout::CHANNEL_LAYOUT_STEREO,
+                        48000,
+                        48000 / 100,
+                        1500)));
 
-INSTANTIATE_TEST_CASE_P(
-    AudioDebugFileWriterBehavioralTest,
-    AudioDebugFileWriterBehavioralTest,
-    // Using 10ms frames per buffer everywhere.
-    testing::Values(
-        // No writes.
-        std::tr1::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
-                             44100,
-                             44100 / 100,
-                             100)));
+INSTANTIATE_TEST_CASE_P(AudioDebugFileWriterBehavioralTest,
+                        AudioDebugFileWriterBehavioralTest,
+                        // Using 10ms frames per buffer everywhere.
+                        testing::Values(
+                            // No writes.
+                            std::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
+                                            44100,
+                                            44100 / 100,
+                                            100)));
 
-INSTANTIATE_TEST_CASE_P(
-    AudioDebugFileWriterSingleThreadTest,
-    AudioDebugFileWriterSingleThreadTest,
-    // Using 10ms frames per buffer everywhere.
-    testing::Values(
-        // No writes.
-        std::tr1::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
-                             44100,
-                             44100 / 100,
-                             100)));
+INSTANTIATE_TEST_CASE_P(AudioDebugFileWriterSingleThreadTest,
+                        AudioDebugFileWriterSingleThreadTest,
+                        // Using 10ms frames per buffer everywhere.
+                        testing::Values(
+                            // No writes.
+                            std::make_tuple(ChannelLayout::CHANNEL_LAYOUT_MONO,
+                                            44100,
+                                            44100 / 100,
+                                            100)));
 }  // namespace media

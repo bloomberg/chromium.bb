@@ -64,7 +64,7 @@ ACTION_TEMPLATE(
     SaveArgToVector,
     HAS_1_TEMPLATE_PARAMS(int, k),
     AND_1_VALUE_PARAMS(vec)) {
-  vec->push_back(std::tr1::get<k>(args));
+  vec->push_back(std::get<k>(args));
 }
 
 // Given the ReadCallback of Storage::ReadKey as argument 1, invokes it with a

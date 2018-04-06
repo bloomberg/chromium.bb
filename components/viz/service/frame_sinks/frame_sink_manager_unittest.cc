@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <tuple>
+
 #include "base/run_loop.h"
 #include "components/viz/common/constants.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -557,7 +559,7 @@ class FrameSinkManagerOrderingTest : public FrameSinkManagerTest {
 class FrameSinkManagerOrderingParamTest
     : public FrameSinkManagerOrderingTest,
       public ::testing::WithParamInterface<
-          std::tr1::tuple<RegisterOrder, UnregisterOrder, BFSOrder>> {};
+          std::tuple<RegisterOrder, UnregisterOrder, BFSOrder>> {};
 
 TEST_P(FrameSinkManagerOrderingParamTest, Ordering) {
   // Test the four permutations of client/hierarchy setting/unsetting and test
@@ -565,9 +567,9 @@ TEST_P(FrameSinkManagerOrderingParamTest, Ordering) {
   // client/hierarchy are less related, so BFS is tested independently instead
   // of every permutation of BFS setting and unsetting.
   // The register/unregister functions themselves test most of the state.
-  RegisterOrder register_order = std::tr1::get<0>(GetParam());
-  UnregisterOrder unregister_order = std::tr1::get<1>(GetParam());
-  BFSOrder bfs_order = std::tr1::get<2>(GetParam());
+  RegisterOrder register_order = std::get<0>(GetParam());
+  UnregisterOrder unregister_order = std::get<1>(GetParam());
+  BFSOrder bfs_order = std::get<2>(GetParam());
 
   // Attach everything up in the specified order.
   if (bfs_order == BFS_FIRST)

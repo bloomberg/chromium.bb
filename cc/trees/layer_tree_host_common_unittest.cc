@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <memory>
 #include <set>
+#include <tuple>
 #include <vector>
 
 #include "base/memory/ptr_util.h"
@@ -4489,7 +4490,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
       active_child->effect_tree_index()));
 }
 
-using LCDTextTestParam = std::tr1::tuple<bool, bool, bool>;
+using LCDTextTestParam = std::tuple<bool, bool, bool>;
 class LCDTextTest : public LayerTreeHostCommonTestBase,
                     public testing::TestWithParam<LCDTextTestParam> {
  public:
@@ -4505,8 +4506,8 @@ class LCDTextTest : public LayerTreeHostCommonTestBase,
   LayerTreeSettings LCDTextTestLayerTreeSettings() {
     LayerTreeSettings settings = VerifyTreeCalcsLayerTreeSettings();
 
-    can_use_lcd_text_ = std::tr1::get<0>(GetParam());
-    layers_always_allowed_lcd_text_ = std::tr1::get<1>(GetParam());
+    can_use_lcd_text_ = std::get<0>(GetParam());
+    layers_always_allowed_lcd_text_ = std::get<1>(GetParam());
     settings.can_use_lcd_text = can_use_lcd_text_;
     settings.layers_always_allowed_lcd_text = layers_always_allowed_lcd_text_;
     return settings;
@@ -4547,8 +4548,7 @@ class LCDTextTest : public LayerTreeHostCommonTestBase,
     child_->SetBounds(gfx::Size(1, 1));
     grand_child_->SetBounds(gfx::Size(1, 1));
 
-    child_->test_properties()->force_render_surface =
-        std::tr1::get<2>(GetParam());
+    child_->test_properties()->force_render_surface = std::get<2>(GetParam());
   }
 
   bool can_use_lcd_text_;

@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <memory>
+#include <tuple>
 
 #include "base/memory/aligned_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -3825,7 +3826,7 @@ TEST_F(GLRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
       cc::ExactPixelComparator(true)));
 }
 
-using ColorSpacePair = std::tr1::tuple<gfx::ColorSpace, gfx::ColorSpace>;
+using ColorSpacePair = std::tuple<gfx::ColorSpace, gfx::ColorSpace>;
 
 class ColorTransformPixelTest
     : public GLRendererPixelTest,
@@ -3836,8 +3837,8 @@ class ColorTransformPixelTest
     // size of LUTs that are created. If we did not match the LUT size exactly,
     // then the error for LUT based transforms is much larger.
     device_viewport_size_ = gfx::Size(17, 4);
-    src_color_space_ = std::tr1::get<0>(GetParam());
-    dst_color_space_ = std::tr1::get<1>(GetParam());
+    src_color_space_ = std::get<0>(GetParam());
+    dst_color_space_ = std::get<1>(GetParam());
     if (!src_color_space_.IsValid()) {
       src_color_space_ =
           gfx::ICCProfileForTestingNoAnalyticTrFn().GetColorSpace();

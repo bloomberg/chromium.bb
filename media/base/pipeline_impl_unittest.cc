@@ -73,7 +73,7 @@ ACTION_TEMPLATE(PostCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p0)) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(::std::tr1::get<k>(args), p0));
+      FROM_HERE, base::Bind(std::get<k>(args), p0));
 }
 
 // TODO(scherkus): even though some filters are initialized on separate

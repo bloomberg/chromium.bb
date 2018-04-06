@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -80,19 +81,19 @@ class BluetoothSocketApiTest : public extensions::ShellApiTest {
 ACTION_TEMPLATE(InvokeCallbackArgument,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_0_VALUE_PARAMS()) {
-  ::std::tr1::get<k>(args).Run();
+  std::get<k>(args).Run();
 }
 
 ACTION_TEMPLATE(InvokeCallbackArgument,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p0)) {
-  ::std::tr1::get<k>(args).Run(p0);
+  std::get<k>(args).Run(p0);
 }
 
 ACTION_TEMPLATE(InvokeCallbackArgument,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_2_VALUE_PARAMS(p0, p1)) {
-  ::std::tr1::get<k>(args).Run(p0, p1);
+  std::get<k>(args).Run(p0, p1);
 }
 
 }  // namespace

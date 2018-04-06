@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <cmath>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -1360,8 +1361,8 @@ class VideoRendererAlgorithmCadenceTest
       public ::testing::WithParamInterface<::testing::tuple<double, double>> {};
 
 TEST_P(VideoRendererAlgorithmCadenceTest, CadenceTest) {
-  double display_rate = std::tr1::get<0>(GetParam());
-  double frame_rate = std::tr1::get<1>(GetParam());
+  double display_rate = std::get<0>(GetParam());
+  double frame_rate = std::get<1>(GetParam());
 
   TickGenerator frame_tg(base::TimeTicks(), frame_rate);
   TickGenerator display_tg(tick_clock_->NowTicks(), display_rate);

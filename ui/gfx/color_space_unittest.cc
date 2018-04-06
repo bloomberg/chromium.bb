@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <cmath>
+#include <tuple>
 
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,13 +81,13 @@ TEST(ColorSpace, RGBToYUV) {
   }
 }
 
-typedef std::tr1::tuple<ColorSpace::TransferID, size_t> TableTestData;
+typedef std::tuple<ColorSpace::TransferID, size_t> TableTestData;
 
 class ColorSpaceTableTest : public testing::TestWithParam<TableTestData> {};
 
 TEST_P(ColorSpaceTableTest, ApproximateTransferFn) {
-  ColorSpace::TransferID transfer_id = std::tr1::get<0>(GetParam());
-  const size_t table_size = std::tr1::get<1>(GetParam());
+  ColorSpace::TransferID transfer_id = std::get<0>(GetParam());
+  const size_t table_size = std::get<1>(GetParam());
 
   gfx::ColorSpace color_space(ColorSpace::PrimaryID::BT709, transfer_id);
   SkColorSpaceTransferFn tr_fn;
