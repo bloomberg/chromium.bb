@@ -1,101 +1,48 @@
-# Running the traffic annotation checkers
+# Network Traffic Annotations
+Network traffic annotations provide transparency and auditability for the data
+that Chrome sends to the network. For an introduction, please see
+`docs/network_traffic_annotations.md`.
+This folder provides tools to ensure that every operation in the code base that
+requires annotation, is annotated, and annotations are sound and complete.
 
-The traffic annotation checkers ensure that every operation in the
-code base that talks to the network is properly annotated in the
-source code, so that we can produce reports of what Chromium talks to
-over the network and why.
-Please see `docs/network_traffic_annotations.md` for an introduction to network
-traffic annotations.
+# Traffic Annotation Auditor
+This is the main executable for all the tests. It runs Traffic Annotation
+Extractor clang tool to check the repository, extract annotations, and perform
+required tests and maintanance. See more details in
+`tools/traffic_annotation/auditor/README.md`.
 
-To run the checkers, you need a populated build directory, and then
-you do:
+# Traffic Annotation Extractor
+Traffic Annotation Auditor uses this clang tool (located in
+`tools\clang\traffic_annotation_extractor`) to parse the code and extract
+required data for testing and maintanance.
 
-```
-$ python tools/annotation_checker/presubmit_checks.py --build-path out/Default
-```
+# Building the Checkers
+We do not want every developer to have to build clang tool and auditor, and so
+we store pre-built binaries in a Google Cloud Storage bucket and retrieve them
+via gclient hooks. The binaries are in `tools/traffic_annotation/bin/[platform]`
+folder. To roll new versions of the binaries, please see
+`tools/traffic_annotation/bin/README.md`.
 
-## Building the annotation checker.
+# Automatic Annotation Tests
+Network traffic annotations are tested in commit queue using
+`tools/traffic_annotation/scripts/check_annotations.py`. This test is currently
+run on Linux and Windows trybots, but may expand in future to other platfroms.
+To perform this test fast enough for a trybot and to avoid spamming the commit
+queue if an unexpected general failure happens (see next item), trybot tests are
+run in error resilient mode and only on the changed files. A more complete test
+runs on an FYI bot using
+`tools/traffic_annotation/scripts/traffic_annotation_auditor_tests.py` and
+alerts if tests are not running as expected.
 
-The annotation checkers are built as Clang tools. We do not want every
-developer to have to build clang, and so we store pre-built binaries
-in a Google Cloud Storage bucket and retrieve them via gclient hooks.
+# Emergency Brake
+In the event that clang changes something that requires the tool to be rebuilt
+(or for some other reason the tests don't work correctly), please disable the
+trybot test by setting the `TEST_IS_ENABLED` flag to False in
+`tools/traffic_annotation/scripts/check_annotations.py`, and file a bug and cc
+the people listed in OWNERS; they'll be on the hook to rebuild and re-enable the
+test.
 
-To roll new versions of the binaries, assuming you have write access
-to the chromium-tools-traffic_annotation bucket, run:
-
-# On Linux:
-```bash
-git new-branch roll_traffic_annotation_tools
-python tools/clang/scripts/update.py --bootstrap --force-local-build \
-    --without-android --extra-tools traffic_annotation_extractor
-cp third_party/llvm-build/Release+Asserts/bin/traffic_annotation_extractor \
-    tools/traffic_annotation/bin/linux64/
-
-# These GN flags produce an optimized, stripped binary that has no dependency
-# on glib.
-gn gen --args='is_official_build=true use_ozone=true' out/Default
-
-ninja -C out/Default traffic_annotation_auditor
-cp -p out/Default/traffic_annotation_auditor \
-    tools/traffic_annotation/bin/linux64
-
-strip tools/traffic_annotation/bin/linux64/traffic_annotation_{auditor,extractor}
-
-third_party/depot_tools/upload_to_google_storage.py \
-    -b chromium-tools-traffic_annotation \
-    tools/traffic_annotation/bin/linux64/traffic_annotation_{auditor,extractor}
-sed -i '/^CLANG_REVISION =/d' tools/traffic_annotation/README.md
-sed -i '/^LASTCHANGE=/d' tools/traffic_annotation/README.md
-grep '^CLANG_REVISION =' tools/clang/scripts/update.py >> tools/traffic_annotation/README.md
-cat build/util/LASTCHANGE >> tools/traffic_annotation/README.md
-git commit -a -m 'Roll traffic_annotation checkers'
-git cl upload
-
-```
-
-# On Windows:
-```bash
-git new-branch roll_traffic_annotation_tools
-python tools/clang/scripts/update.py --bootstrap --force-local-build ^
-    --without-android --extra-tools traffic_annotation_extractor
-cp third_party/llvm-build/Release+Asserts/bin/traffic_annotation_extractor.exe ^
-    tools/traffic_annotation/bin/win32/
-
-# These GN flags produce an optimized, stripped binary that has no dependency
-# on glib.
-gn gen --args="is_official_build=true" out/Default
-
-ninja -C out/Default traffic_annotation_auditor
-cp -p out/Default/traffic_annotation_auditor.exe ^
-    tools/traffic_annotation/bin/win32
-
-python third_party/depot_tools/upload_to_google_storage.py ^
-    -b chromium-tools-traffic_annotation ^
-    tools/traffic_annotation/bin/win32/traffic_annotation_auditor.exe
-python third_party/depot_tools/upload_to_google_storage.py ^
-    -b chromium-tools-traffic_annotation ^
-    tools/traffic_annotation/bin/win32/traffic_annotation_extractor.exe
-sed -i "/^CLANG_REVISION =/d" tools/traffic_annotation/README.md
-sed -i "/^LASTCHANGE=/d" tools/traffic_annotation/README.md
-grep "^CLANG_REVISION =" tools/clang/scripts/update.py >> tools/traffic_annotation/README.md
-cat build/util/LASTCHANGE >> tools/traffic_annotation/README.md
-dos2unix tools/traffic_annotation/README.md
-git commit -a -m 'Roll traffic_annotation checkers'
-git cl upload
-
-```
-
-and land the resulting CL.
-
-The following two lines will be updated by the above script, and the modified
-README should be committed along with the updated .sha1 checksums.
-
-In the event that clang changes something that requires this tool to be
-rebuilt (or for some other reason the tests don't work correctly), please
-disable this test by setting the `TEST_IS_ENABLED` flag to False in
-//tools/traffic_annotation/scripts_check_annotation.py, and file a bug
-and cc the people listed in OWNERS; they'll be on the hook to rebuild and
-re-enable the test.
-
-CLANG_REVISION = '328716'
-LASTCHANGE=71d65441b6c5409be898a817066b60d063380aa9-refs/heads/master@{#547990}
+# Annotations Summary
+`tools/traffic_annotation/summary/annotations.xml` keeps an up to date summary
+of all annotations in the repository. This file is automatically updated by
+Traffic Annotation Auditor.
