@@ -25,6 +25,7 @@ from chromite.lib import gs
 from chromite.lib import moblab_vm
 from chromite.lib import osutils
 from chromite.lib import path_util
+from chromite.lib import results_lib
 
 
 # pylint: disable=too-many-ancestors
@@ -162,6 +163,33 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     ]
     self._run.config['vm_test_report_to_dashboards'] = True
     self.RunStage()
+
+  def testForgivingVMTest(self):
+    """Test if a test is warn-only, it actually warns."""
+    self._run.config['vm_tests'] = [
+        config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                warn_only=True, test_suite='bvt-perbuild'),
+        config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
+                                warn_only=False, test_suite='bvt-arc')
+    ]
+
+    # pylint: disable=unused-argument
+    def _MockRunTestSuite(buildroot, board, image_path, results_dir,
+                          test_config, *args, **kwargs):
+      # Only raise exception in one test.
+      if test_config.test_suite == 'bvt-perbuild':
+        raise Exception()
+    # pylint: enable=unused-argument
+
+    self.PatchObject(vm_test_stages, 'RunTestSuite',
+                     autospec=True, side_effect=_MockRunTestSuite)
+    results_lib.Results.Clear()
+    self.RunStage()
+    result = results_lib.Results.Get()[0]
+    self.assertEqual(result.result, results_lib.Results.FORGIVEN)
+    # Make sure that all tests were actually run.
+    self.assertEqual(vm_test_stages.RunTestSuite.call_count,
+                     len(self._run.config['vm_tests']))
 
 
 class MoblabVMTestStageTestCase(

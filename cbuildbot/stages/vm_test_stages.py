@@ -89,6 +89,8 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
     self._vm_tests = vm_tests
     self._ssh_port = ssh_port
     self._test_basename = test_basename
+    self._stage_exception_handler = super(
+        VMTestStage, self)._HandleStageException
     super(VMTestStage, self).__init__(builder_run, board, **kwargs)
 
   def _PrintFailedTests(self, results_path, test_basename):
@@ -260,6 +262,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
       if not self._vm_tests:
         self._vm_tests = self._run.config.vm_tests
 
+      failed_tests = []
       for vm_test in self._vm_tests:
         logging.info('Running VM test %s.', vm_test.test_type)
         if vm_test.test_type == constants.VM_SUITE_TEST_TYPE:
@@ -268,20 +271,37 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
         else:
           per_test_results_dir = os.path.join(test_results_root,
                                               vm_test.test_type)
-        with cgroups.SimpleContainChildren('VMTest'):
-          r = ' Reached VMTestStage test run timeout.'
-          with timeout_util.Timeout(vm_test.timeout, reason_message=r):
-            self._RunTest(vm_test, per_test_results_dir)
+        try:
+          with cgroups.SimpleContainChildren('VMTest'):
+            r = ' Reached VMTestStage test run timeout.'
+            with timeout_util.Timeout(vm_test.timeout, reason_message=r):
+              self._RunTest(vm_test, per_test_results_dir)
+        except Exception:
+          failed_tests.append(vm_test)
+          if vm_test.warn_only:
+            logging.warning('Optional test failed. Forgiving the failure.')
+          else:
+            raise
 
-    except Exception:
-      logging.error(_ERROR_MSG % dict(test_name='VMTests',
-                                      test_results=test_basename))
+      if failed_tests:
+        # If any of the tests failed but not raise an exception, mark
+        # the stage as warning.
+        self._stage_exception_handler = self._HandleExceptionAsWarning
+        raise failures_lib.TestWarning(
+            'VMTestStage succeeded, but some optional tests failed.')
+    except Exception as e:
+      if type(e) is not failures_lib.TestWarning:
+        logging.error(_ERROR_MSG % dict(test_name='VMTests',
+                                        test_results=test_basename))
       self._ArchiveVMFiles(test_results_root)
       raise
     finally:
       if self._run.config.vm_test_report_to_dashboards:
         self._ReportResultsToDashboards(test_results_root)
       self._ArchiveTestResults(test_results_root, test_basename)
+
+  def _HandleStageException(self, exc_info):
+    return self._stage_exception_handler(exc_info)
 
 
 class ForgivenVMTestStage(VMTestStage, generic_stages.ForgivingBuilderStage):
