@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="1005145902654145231">Failed to rename the session.</translation>
 <translation id="1008557486741366299">Not Now</translation>
 <translation id="1015730422737071372">Provide additional details.</translation>
 <translation id="1021110881106174305">Accepted cards</translation>
@@ -42,13 +43,22 @@
 <translation id="1228893227497259893">Wrong entity identifier</translation>
 <translation id="1232569758102978740">Untitled</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (synced)</translation>
+<translation id="1256368399071562588">&lt;p&gt;If you try to visit a website and it doesn’t open, first try to fix the error with these troubleshooting steps:&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Check the web address for typos.&lt;/li&gt;
+    &lt;li&gt;Make sure that your Internet connection is working normally.&lt;/li&gt;
+    &lt;li&gt;Contact the website owner.&lt;/li&gt;
+    &lt;/ol&gt;</translation>
 <translation id="1263231323834454256">Reading list</translation>
 <translation id="1264126396475825575">Crash report captured on <ph name="CRASH_TIME" /> (not yet uploaded or ignored)</translation>
 <translation id="1270502636509132238">Pickup Method</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
+<translation id="1292701964462482250">'Software on your computer is stopping Chrome from safely connecting to the web' (Windows computers only)</translation>
 <translation id="1294154142200295408">Command-line variations</translation>
 <translation id="129553762522093515">Recently closed</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Try clearing your cookies<ph name="END_LINK" /></translation>
+<translation id="1314614906530272393">The selected session does not exist.</translation>
+<translation id="1323433172918577554">Show More</translation>
 <translation id="1333989956347591814">Your activity <ph name="BEGIN_EMPHASIS" />might still be visible<ph name="END_EMPHASIS" /> to:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />Websites that you visit
@@ -60,6 +70,7 @@
 <translation id="1348198688976932919">The site ahead contains dangerous apps</translation>
 <translation id="1374468813861204354">suggestions</translation>
 <translation id="1375198122581997741">About Version</translation>
+<translation id="1376836354785490390">Show Less</translation>
 <translation id="1377321085342047638">Card Number</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> didn’t send any data.</translation>
 <translation id="1407135791313364759">Open all</translation>
@@ -69,6 +80,8 @@
 <translation id="1430915738399379752">Print</translation>
 <translation id="1484290072879560759">Choose delivery address</translation>
 <translation id="1506687042165942984">Show a saved (i.e. known to be out of date) copy of this page.</translation>
+<translation id="1507202001669085618">&lt;p&gt;You'll see this error if you're using a Wi-Fi portal where you have to sign in before you can get online.&lt;/p&gt;
+    &lt;p&gt;To fix the error, click &lt;strong&gt;Connect&lt;/strong&gt; on the page that you're trying to open.&lt;/p&gt;</translation>
 <translation id="1517433312004943670">Phone number required</translation>
 <translation id="1517500485252541695">Accepted credit and debit cards</translation>
 <translation id="1519264250979466059">Build Date</translation>
@@ -132,6 +145,7 @@
 <translation id="1898423065542865115">Filtering</translation>
 <translation id="1916770123977586577">To apply your updated settings to this site, reload this page</translation>
 <translation id="1919345977826869612">Ads</translation>
+<translation id="1919367280705858090">Get help with a specific error message</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{None}=1{1 site}other{# sites}}</translation>
 <translation id="1927235823738766038">Accepted Credit and Debit Cards</translation>
 <translation id="194030505837763158">Go to <ph name="LINK" /></translation>
@@ -420,6 +434,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{None}=1{From 1 site }other{From # sites }}</translation>
 <translation id="397105322502079400">Calculating...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> is blocked</translation>
+<translation id="3984550557525787191">This session name already exists.</translation>
 <translation id="3987940399970879459">Less than 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 web page nearby}other{# web pages nearby}}</translation>
 <translation id="4030383055268325496">&amp;Undo add</translation>
@@ -450,6 +465,23 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Checking firewall and antivirus configurations<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Crashes</translation>
 <translation id="422022731706691852">Attackers on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> might attempt to trick you into installing programs that harm your browsing experience (for example, by changing your homepage or showing extra ads on sites that you visit). <ph name="BEGIN_LEARN_MORE_LINK" />Learn more<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4221630205957821124">&lt;h4&gt;Step 1: Sign in to the portal&lt;/h4&gt;
+    &lt;p&gt;Wi-Fi networks at places such as cafés or airports need you to sign in. To see the sign-in page, visit a page that uses &lt;code&gt;http://&lt;/code&gt;.&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Go to any website starting with &lt;code&gt;http://&lt;/code&gt;, such as &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;On the sign-in page that opens, sign in to use the Internet.&lt;/li&gt;
+    &lt;/ol&gt;
+    &lt;h4&gt;Step 2: Open the page in Incognito mode (computer only)&lt;/h4&gt;
+    &lt;p&gt;Open the page that you were visiting in an Incognito window.&lt;/p&gt;
+    &lt;p&gt;If the page opens, a Chrome extension isn't working properly. To fix the error, turn off the extension.&lt;/p&gt;
+    &lt;h4&gt;Step 3: Update your operating system&lt;/h4&gt;
+    &lt;p&gt;Make sure that your device is up to date.&lt;/p&gt;
+    &lt;h4&gt;Step 4: Temporarily turn off your antivirus&lt;/h4&gt;
+    &lt;p&gt;You'll see this error if you have antivirus software that provides 'HTTPS protection' or 'HTTPS scanning'. The antivirus is preventing Chrome from providing security.&lt;/p&gt;
+    &lt;p&gt;To fix the problem, turn off your antivirus software. If the page works after turning off the software, turn off this software when you use secure sites.&lt;/p&gt;
+    &lt;p&gt;Remember to turn your antivirus program back on when you've finished.&lt;/p&gt;
+    &lt;h4&gt;Step 5: Get extra help&lt;/h4&gt;
+    &lt;p&gt;If you still see the error, contact the website owner.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Try running Network Diagnostics<ph name="END_LINK" />.</translation>
 <translation id="4235360514405112390">Valid</translation>
 <translation id="4250431568374086873">Your connection to this site is not fully secure</translation>
@@ -465,6 +497,7 @@
 <translation id="4325863107915753736">Failed to find article</translation>
 <translation id="4326324639298822553">Check your expiry date and try again</translation>
 <translation id="4331708818696583467">Not Secure</translation>
+<translation id="4340982228985273705">This computer is not detected as enterprise managed, so policy can only automatically install extensions hosted on the Chrome Web Store. The Chrome Web Store update URL is '<ph name="CWS_UPDATE_URL" />'.</translation>
 <translation id="4346197816712207223">Accepted Credit Cards</translation>
 <translation id="4356973930735388585">Attackers on this site might attempt to install dangerous programs on your computer that steal or delete your information (for example, photos, passwords, messages and credit cards).</translation>
 <translation id="4372948949327679948">Expected <ph name="VALUE_TYPE" /> value.</translation>
@@ -566,6 +599,7 @@
 <translation id="5222812217790122047">Email (required)</translation>
 <translation id="522700295135997067">This site may have just stolen your password</translation>
 <translation id="5230733896359313003">Delivery Address</translation>
+<translation id="5250209940322997802">'Connect to network'</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Follow these steps to temporarily disable the software so that you can get on the web. You'll need administrator privileges.<ph name="END_PARAGRAPH" />
 
@@ -589,6 +623,7 @@
 <translation id="5332219387342487447">Delivery Method</translation>
 <translation id="5355557959165512791">You cannot visit <ph name="SITE" /> right now because its certificate has been revoked. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="536296301121032821">Failed to store policy settings</translation>
+<translation id="5377026284221673050">'Your clock is behind' or 'Your clock is ahead' or "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">The certificate chain for this site contains a certificate signed using SHA-1.</translation>
 <translation id="5402410679244714488">Exp: <ph name="EXPIRATION_DATE_ABBR" />, last used over a year ago</translation>
 <translation id="540969355065856584">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not valid at this time. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
@@ -841,6 +876,7 @@
 <translation id="7542403920425041731">Once you confirm, your card details will be shared with this site.</translation>
 <translation id="7542995811387359312">Automatic credit card filling is disabled because this form does not use a secure connection.</translation>
 <translation id="7543525346216957623">Ask your parent</translation>
+<translation id="7548892272833184391">Fix connection errors</translation>
 <translation id="7549584377607005141">This web page requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed.</translation>
 <translation id="7552846755917812628">Try the following tips:</translation>
 <translation id="7554791636758816595">New Tab</translation>
@@ -848,6 +884,7 @@
 <translation id="7567204685887185387">This server could not prove that it is <ph name="DOMAIN" />; its security certificate might have been issued fraudulently. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="7568593326407688803">This page is in<ph name="ORIGINAL_LANGUAGE" />Would you like to translate it?</translation>
 <translation id="7569952961197462199">Remove credit card from Chrome?</translation>
+<translation id="7575800019233204241">'Your connection is not private' or "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" or "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" or "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" or 'SSL certificate error'</translation>
 <translation id="7578104083680115302">Pay quickly on sites and apps across devices using cards that you have saved with Google.</translation>
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7592362899630581445">Server's certificate violates name constraints.</translation>
@@ -1069,6 +1106,8 @@
 <translation id="973773823069644502">Add delivery address</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{None}=1{1 item}other{# items}}</translation>
 <translation id="981121421437150478">Offline</translation>
+<translation id="985199708454569384">&lt;p&gt;You'll see this error if your computer or mobile device's date and time are inaccurate.&lt;/p&gt;
+    &lt;p&gt;To fix the error, open your device's clock. Make sure that the time and date are correct.&lt;/p&gt;</translation>
 <translation id="988159990683914416">Developer Build</translation>
 <translation id="989988560359834682">Edit Address</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>
