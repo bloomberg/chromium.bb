@@ -66,9 +66,9 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   // The delta from upgrade detection until high annoyance level is reached.
   base::TimeDelta high_threshold_;
 
-  // After we detect an upgrade we start a recurring timer to see if enough time
-  // has passed and we should start notifying the user.
-  base::RepeatingTimer upgrade_notification_timer_;
+  // A timer used to move through the various upgrade notification stages and
+  // call UpgradeDetector::NotifyUpgrade.
+  base::OneShotTimer upgrade_notification_timer_;
   bool initialized_;
 
   base::WeakPtrFactory<UpgradeDetectorChromeos> weak_factory_;

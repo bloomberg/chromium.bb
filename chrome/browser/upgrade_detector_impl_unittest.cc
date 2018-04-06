@@ -4,8 +4,13 @@
 
 #include "chrome/browser/upgrade_detector_impl.h"
 
+#include <initializer_list>
+#include <utility>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/time/tick_clock.h"
 #include "chrome/browser/upgrade_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -27,6 +32,7 @@ class TestUpgradeDetectorImpl : public UpgradeDetectorImpl {
   using UpgradeDetectorImpl::OnExperimentChangesDetected;
   using UpgradeDetectorImpl::NotifyOnUpgradeWithTimePassed;
   using UpgradeDetectorImpl::GetThresholdForLevel;
+  using UpgradeDetectorImpl::tick_clock;
 
   // UpgradeDetector:
   void TriggerCriticalUpdate() override {
@@ -251,7 +257,11 @@ TEST_F(UpgradeDetectorImplTest, TestPeriodChanges) {
   EXPECT_EQ(upgrade_detector.upgrade_notification_stage(),
             UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
 
-  // Bring it back up.
+  // Expect no new notifications even if some time passes.
+  FastForwardBy(base::TimeDelta::FromHours(1));
+  ::testing::Mock::VerifyAndClear(&mock_observer);
+
+  // Bring the period back up.
   EXPECT_CALL(mock_observer, OnUpgradeRecommended());
   SetNotificationPeriodPref(base::TimeDelta());
   ::testing::Mock::VerifyAndClear(&mock_observer);
@@ -276,4 +286,105 @@ TEST_F(UpgradeDetectorImplTest, TestPeriodChanges) {
   ::testing::Mock::VerifyAndClear(&mock_observer);
   EXPECT_EQ(upgrade_detector.upgrade_notification_stage(),
             UpgradeDetector::UPGRADE_ANNOYANCE_NONE);
+}
+
+// Appends the time and stage from detector to |notifications|.
+ACTION_P2(AppendTicksAndStage, detector, notifications) {
+  notifications->emplace_back(detector->tick_clock()->NowTicks(),
+                              detector->upgrade_notification_stage());
+}
+
+// A value parameterized test fixture for running tests with different
+// RelaunchNotificationPeriod settings.
+class UpgradeDetectorImplTimerTest : public UpgradeDetectorImplTest,
+                                     public ::testing::WithParamInterface<int> {
+ protected:
+  UpgradeDetectorImplTimerTest() {
+    const int period_ms = GetParam();
+    if (period_ms)
+      SetNotificationPeriodPref(base::TimeDelta::FromMilliseconds(period_ms));
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorImplTimerTest);
+};
+
+INSTANTIATE_TEST_CASE_P(,
+                        UpgradeDetectorImplTimerTest,
+                        ::testing::Values(0,           // Default period of 7d.
+                                          11100000));  // 3:05:00.
+
+// Tests that the notification timer is handled as desired.
+TEST_P(UpgradeDetectorImplTimerTest, TestNotificationTimer) {
+  using TimeAndStage =
+      std::pair<base::TimeTicks,
+                UpgradeDetector::UpgradeNotificationAnnoyanceLevel>;
+  using Notifications = std::vector<TimeAndStage>;
+
+  // Fast forward a little bit to get away from zero ticks, which has special
+  // meaning in the detector.
+  FastForwardBy(base::TimeDelta::FromHours(1));
+
+  TestUpgradeDetectorImpl detector(GetMockTickClock());
+  ::testing::StrictMock<MockUpgradeObserver> mock_observer(&detector);
+
+  // Cache the thresholds for the detector's annoyance levels.
+  const base::TimeDelta thresholds[3] = {
+      detector.GetThresholdForLevel(UpgradeDetector::UPGRADE_ANNOYANCE_LOW),
+      detector.GetThresholdForLevel(
+          UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED),
+      detector.GetThresholdForLevel(UpgradeDetector::UPGRADE_ANNOYANCE_HIGH),
+  };
+
+  // Pretend that there's an update.
+  detector.UpgradeDetected(TestUpgradeDetectorImpl::UPGRADE_AVAILABLE_REGULAR);
+  ::testing::Mock::VerifyAndClear(&mock_observer);
+
+  // Fast foward to the time that low annoyance should be reached. One
+  // notification should come in at exactly the low annoyance threshold.
+  Notifications notifications;
+  EXPECT_CALL(mock_observer, OnUpgradeRecommended())
+      .WillOnce(AppendTicksAndStage(&detector, &notifications));
+  FastForwardBy(thresholds[0]);
+  ::testing::Mock::VerifyAndClear(&mock_observer);
+  EXPECT_THAT(notifications,
+              ::testing::ContainerEq(Notifications({TimeAndStage(
+                  detector.upgrade_detected_time() + thresholds[0],
+                  UpgradeDetector::UPGRADE_ANNOYANCE_LOW)})));
+
+  // Move to the time that elevated annoyance should be reached. Notifications
+  // at low annoyance should arrive every 20 minutes with one final notification
+  // at elevated annoyance.
+  notifications.clear();
+  EXPECT_CALL(mock_observer, OnUpgradeRecommended())
+      .WillRepeatedly(AppendTicksAndStage(&detector, &notifications));
+  FastForwardBy(thresholds[1] - thresholds[0]);
+  ::testing::Mock::VerifyAndClear(&mock_observer);
+  EXPECT_THAT(notifications.size(), ::testing::Gt(1U));
+  EXPECT_THAT((notifications.end() - 2)->second,
+              ::testing::Eq(UpgradeDetector::UPGRADE_ANNOYANCE_LOW));
+  EXPECT_THAT(notifications.back(),
+              ::testing::Eq(
+                  TimeAndStage(detector.upgrade_detected_time() + thresholds[1],
+                               UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED)));
+
+  // Move to the time that high annoyance should be reached. Notifications at
+  // elevated annoyance should arrive every 20 minutes with one final
+  // notification at high annoyance.
+  notifications.clear();
+  EXPECT_CALL(mock_observer, OnUpgradeRecommended())
+      .WillRepeatedly(AppendTicksAndStage(&detector, &notifications));
+  FastForwardBy(thresholds[2] - thresholds[1]);
+  ::testing::Mock::VerifyAndClear(&mock_observer);
+  EXPECT_THAT(notifications.size(), ::testing::Gt(1U));
+  EXPECT_THAT((notifications.end() - 2)->second,
+              ::testing::Eq(UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED));
+  EXPECT_THAT(notifications.back(),
+              ::testing::Eq(
+                  TimeAndStage(detector.upgrade_detected_time() + thresholds[2],
+                               UpgradeDetector::UPGRADE_ANNOYANCE_HIGH)));
+
+  // No new notifications after high annoyance has been reached.
+  FastForwardBy(thresholds[2]);
+  ::testing::Mock::VerifyAndClear(&mock_observer);
 }

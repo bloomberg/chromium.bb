@@ -161,26 +161,35 @@ void UpgradeDetectorChromeos::OnUpdateOverCellularOneTimePermissionGranted() {
 }
 
 void UpgradeDetectorChromeos::NotifyOnUpgrade() {
+  const base::TimeDelta elevated_threshold =
+      high_threshold_ * kElevatedScaleFactor;
   base::TimeDelta delta = tick_clock()->NowTicks() - upgrade_detected_time();
+  // The delay from now until the next highest notification stage is reached, or
+  // zero if the highest notification stage has been reached.
+  base::TimeDelta next_delay;
 
   // These if statements must be sorted (highest interval first).
-  if (delta >= high_threshold_)
+  if (delta >= high_threshold_) {
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_HIGH);
-  else if (delta >= high_threshold_ * kElevatedScaleFactor)
+  } else if (delta >= elevated_threshold) {
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_ELEVATED);
-  else
+    next_delay = high_threshold_ - delta;
+  } else {
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_LOW);
+    next_delay = elevated_threshold - delta;
+  }
 
-  // Stop the timer if the highest threshold has been reached. Otherwise, make
-  // sure it is running. It is possible that a change in the notification period
-  // (via administrative policy) has moved the detector from high annoyance back
-  // down to a lower level, in which case the timer must be restarted.
-  if (upgrade_notification_stage() == UPGRADE_ANNOYANCE_HIGH) {
-    upgrade_notification_timer_.Stop();
-  } else if (!upgrade_notification_timer_.IsRunning()) {
+  if (!next_delay.is_zero()) {
+    // Schedule the next wakeup in 20 minutes or when the next change to the
+    // notification stage should take place.
     upgrade_notification_timer_.Start(
-        FROM_HERE, kNotifyCycleDelta, this,
+        FROM_HERE, std::min(next_delay, kNotifyCycleDelta), this,
         &UpgradeDetectorChromeos::NotifyOnUpgrade);
+  } else if (upgrade_notification_timer_.IsRunning()) {
+    // Explicitly stop the timer in case this call is due to a
+    // RelaunchNotificationPeriod change that brought the instance up to the
+    // "high" annoyance level.
+    upgrade_notification_timer_.Stop();
   }
 
   NotifyUpgrade();
@@ -196,10 +205,6 @@ void UpgradeDetectorChromeos::OnChannelsReceived(std::string current_channel,
 
   // ChromeOS shows upgrade arrow once the upgrade becomes available.
   NotifyOnUpgrade();
-
-  // Setup timer to to move along the upgrade advisory system.
-  upgrade_notification_timer_.Start(FROM_HERE, kNotifyCycleDelta, this,
-                                    &UpgradeDetectorChromeos::NotifyOnUpgrade);
 }
 
 // static
