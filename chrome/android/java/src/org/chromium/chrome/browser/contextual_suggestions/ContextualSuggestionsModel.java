@@ -4,10 +4,14 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
+import android.support.annotation.Nullable;
 import android.view.View.OnClickListener;
 
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
+import org.chromium.chrome.browser.ntp.cards.NodeParent;
+import org.chromium.chrome.browser.ntp.cards.TreeNode;
 
 import java.util.Collections;
 
@@ -24,22 +28,49 @@ class ContextualSuggestionsModel
     }
 
     /** A {@link ListObservable} containing the current cluster list. */
-    class ClusterListObservable extends ListObservable {
+    class ClusterListObservable extends ListObservable implements NodeParent {
         ClusterList mClusterList = new ClusterList(Collections.emptyList());
+
+        /** Constructor to initialize parent of cluster list. */
+        ClusterListObservable() {
+            mClusterList.setParent(this);
+        }
 
         private void setClusterList(ClusterList clusterList) {
             assert clusterList != null;
 
-            int oldLength = getItemCount();
-            mClusterList = clusterList;
+            // Destroy the old cluster list.
+            mClusterList.destroy();
 
-            if (oldLength != 0) notifyItemRangeRemoved(0, oldLength);
+            mClusterList = clusterList;
+            mClusterList.setParent(this);
+
             if (getItemCount() != 0) notifyItemRangeInserted(0, getItemCount());
         }
 
         @Override
         public int getItemCount() {
             return mClusterList.getItemCount();
+        }
+
+        // NodeParent implementations.
+        @Override
+        public void onItemRangeChanged(TreeNode child, int index, int count,
+                @Nullable NewTabPageViewHolder.PartialBindCallback callback) {
+            assert child == mClusterList;
+            notifyItemRangeChanged(index, count, callback);
+        }
+
+        @Override
+        public void onItemRangeInserted(TreeNode child, int index, int count) {
+            assert child == mClusterList;
+            notifyItemRangeInserted(index, count);
+        }
+
+        @Override
+        public void onItemRangeRemoved(TreeNode child, int index, int count) {
+            assert child == mClusterList;
+            notifyItemRangeRemoved(index, count);
         }
     }
 
@@ -48,7 +79,7 @@ class ContextualSuggestionsModel
     private String mTitle;
     private boolean mToolbarShadowVisibility;
 
-    /** @param suggestions The current list of clusters. */
+    /** @param clusterList The current list of clusters. */
     void setClusterList(ClusterList clusterList) {
         mClusterListObservable.setClusterList(clusterList);
     }

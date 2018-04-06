@@ -9,9 +9,11 @@ import org.chromium.chrome.browser.ntp.cards.InnerNode;
 import java.util.List;
 
 /**
- * A node in a tree containing a list of {@link ContextualSuggestionCluster}s.
+ * A node in a tree containing a list of {@link ContextualSuggestionsCluster}s.
  */
 class ClusterList extends InnerNode {
+    private boolean mIsDestroyed;
+
     /**
      * Construct a new {@link ClusterList}.
      * @param clusters The list of clusters held by this ClusterList.
@@ -20,5 +22,13 @@ class ClusterList extends InnerNode {
         for (ContextualSuggestionsCluster cluster : clusters) {
             addChild(cluster);
         }
+    }
+
+    /** Remove all clusters and detach itself from its parent. */
+    void destroy() {
+        assert !mIsDestroyed;
+        mIsDestroyed = true;
+        removeChildren();
+        detach();
     }
 }

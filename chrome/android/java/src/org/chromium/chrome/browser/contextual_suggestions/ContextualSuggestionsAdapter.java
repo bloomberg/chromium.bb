@@ -20,6 +20,8 @@ import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
+import java.util.List;
+
 /**
  * An adapter that contains the view binder for the content component.
  */
@@ -102,5 +104,17 @@ class ContextualSuggestionsAdapter
     @Override
     public void onViewRecycled(NewTabPageViewHolder holder) {
         holder.recycle();
+    }
+
+    @Override
+    public void onBindViewHolder(NewTabPageViewHolder holder, int position, List<Object> payloads) {
+        if (payloads.isEmpty()) {
+            onBindViewHolder(holder, position);
+            return;
+        }
+
+        for (Object payload : payloads) {
+            ((NewTabPageViewHolder.PartialBindCallback) payload).onResult(holder);
+        }
     }
 }
