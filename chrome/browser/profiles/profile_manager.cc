@@ -56,7 +56,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -1335,21 +1334,6 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // Generates notifications from the above, if experiment is enabled.
   ContentSuggestionsNotifierServiceFactory::GetForProfile(profile);
 #endif
-
-  // TODO(crbug.com/709094, crbug.com/761485): UserEventServiceFactory
-  // initializes asynchronously, but it needs to be ready to receive user
-  // events in order for ConsentAuditor to record consents when the user
-  // signs in, which means that it needs to be initialized early enough in
-  // the Profile lifetime.
-  //
-  // This early initialization can be removed once the linked bugs are fixed
-  // and UserEventService is able to initialize synchronously.
-  //
-  // Note also that this code is technically not necessary, as UserEventService
-  // already happens to be initialized early in practice through other
-  // components that use it, but ConsentAuditor should not depend on that.
-  if (!go_off_the_record)
-    browser_sync::UserEventServiceFactory::GetForProfile(profile);
 }
 
 void ProfileManager::DoFinalInitLogging(Profile* profile) {
