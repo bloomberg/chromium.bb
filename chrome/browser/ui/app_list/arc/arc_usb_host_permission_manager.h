@@ -118,7 +118,16 @@ class ArcUsbHostPermissionManager : public ArcAppListPrefs::Observer,
                               const std::string& guid,
                               const base::string16& serial_number,
                               uint16_t vendor_id,
-                              uint16_t product_id) override;
+                              uint16_t product_id) const override;
+  void GrantUsbAccessPermission(const std::string& package_name,
+                                const std::string& guid,
+                                uint16_t vendor_id,
+                                uint16_t product_id) override;
+  std::unordered_set<std::string> GetEventPackageList(
+      const std::string& guid,
+      const base::string16& serial_number,
+      uint16_t vendor_id,
+      uint16_t product_id) const override;
   void DeviceRemoved(const std::string& guid) override;
   void ClearPermissionRequests() override;
 
@@ -156,7 +165,7 @@ class ArcUsbHostPermissionManager : public ArcAppListPrefs::Observer,
   bool HasUsbScanDeviceListPermission(const std::string& package_name) const;
 
   bool HasUsbAccessPermission(const std::string& package_name,
-                              const UsbDeviceEntry& usb_device_entry);
+                              const UsbDeviceEntry& usb_device_entry) const;
 
   // Callback for UI permission dialog.
   void OnUsbPermissionReceived(UsbPermissionRequest request, bool allowed);
