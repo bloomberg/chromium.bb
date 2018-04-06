@@ -233,6 +233,38 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
   EXPECT_TRUE(model.Backspace());
   EXPECT_EQ(base::WideToUTF16(L"\x002C\x0020\x05D1\x05BC\x05B7\x05E9"),
             model.text());
+
+  // Halfwidth katakana ﾀﾞ:
+  // "HALFWIDTH KATAKANA LETTER TA" + "HALFWIDTH KATAKANA VOICED SOUND MARK"
+  // ("ABC" prefix as sanity check that the entire string isn't deleted).
+  model.SetText(base::WideToUTF16(L"ABC\xFF80\xFF9E"));
+  MoveCursorTo(model, model.text().length());
+  model.Backspace();
+#if defined(OS_MACOSX)
+  // On Mac, the entire cluster should be deleted to match
+  // NSTextField behavior.
+  EXPECT_EQ(base::WideToUTF16(L"ABC"), model.text());
+  EXPECT_EQ(3U, model.GetCursorPosition());
+#else
+  EXPECT_EQ(base::WideToUTF16(L"ABC\xFF80"), model.text());
+  EXPECT_EQ(4U, model.GetCursorPosition());
+#endif
+
+  // Emoji with Fitzpatrick modifier:
+  // 'BOY' + 'EMOJI MODIFIER FITZPATRICK TYPE-5'
+  model.SetText(base::WideToUTF16(L"\U0001F466\U0001F3FE"));
+  MoveCursorTo(model, model.text().length());
+  model.Backspace();
+#if defined(OS_MACOSX)
+  // On Mac, the entire emoji should be deleted to match NSTextField
+  // behavior.
+  EXPECT_EQ(base::WideToUTF16(L""), model.text());
+  EXPECT_EQ(0U, model.GetCursorPosition());
+#else
+  // https://crbug.com/829040
+  EXPECT_EQ(base::WideToUTF16(L"\U0001F466"), model.text());
+  EXPECT_EQ(2U, model.GetCursorPosition());
+#endif
 }
 
 TEST_F(TextfieldModelTest, EmptyString) {
