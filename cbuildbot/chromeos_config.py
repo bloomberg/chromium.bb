@@ -1505,6 +1505,7 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.default_hw_tests_override,
       display_label=config_lib.DISPLAY_LABEL_RELEASE,
       build_type=constants.CANARY_TYPE,
+      chroot_use_image=False,
       suite_scheduling=True,
       build_timeout=12 * 60 * 60 if is_release_branch else (7 * 60 + 50) * 60,
       useflags=append_useflags(['-cros-debug']),

@@ -171,9 +171,12 @@ def WipeOldOutput(buildroot):
   osutils.RmDir(image_dir, ignore_missing=True, sudo=True)
 
 
-def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None):
+def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None,
+               use_image=False):
   """Wrapper around make_chroot."""
-  cmd = ['cros_sdk', '--buildbot-log-version', '--nouse-image']
+  cmd = ['cros_sdk', '--buildbot-log-version']
+  if not use_image:
+    cmd.append('--nouse-image')
   cmd.append('--create' if use_sdk else '--bootstrap')
 
   if replace:
@@ -193,7 +196,7 @@ def RunChrootUpgradeHooks(buildroot, chrome_root=None, extra_env=None):
     chrome_root: The directory where chrome is stored.
     extra_env: A dictionary of environment variables to set.
   """
-  chroot_args = ['--nouse-image']
+  chroot_args = []
   if chrome_root:
     chroot_args.append('--chrome_root=%s' % chrome_root)
 

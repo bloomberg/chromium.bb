@@ -755,6 +755,10 @@ def DefaultSettings():
       # Wipe and replace chroot, but not source.
       chroot_replace=True,
 
+      # Create the chroot on a loopback-mounted chroot.img instead of a bare
+      # directory.  Required for snapshots; otherwise optional.
+      chroot_use_image=True,
+
       # Uprevs the local ebuilds to build new changes since last stable.
       # build.  If master then also pushes these changes on success. Note that
       # we uprev on just about every bot config because it gives us a more
