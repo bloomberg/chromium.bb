@@ -15,6 +15,7 @@ let fakeDisplay = fakeDisplays["Pixel"];
 vr_test( (t) => {
   return navigator.getVRDisplays().then( (displays) => {
     let display = displays[0];
+    let scale = fakeDisplay.defaultFramebufferScale;
 
     function compareEyes(actual, expected) {
       t.step( () => {
@@ -24,8 +25,8 @@ vr_test( (t) => {
               FLOAT_EPSILON);
         }
 
-        assert_equals(actual.renderWidth, expected.renderWidth);
-        assert_equals(actual.renderHeight, expected.renderHeight);
+        assert_equals(actual.renderWidth, expected.renderWidth * scale);
+        assert_equals(actual.renderHeight, expected.renderHeight * scale);
       }, "Returned eye parameters match provided parameters");
     }
 

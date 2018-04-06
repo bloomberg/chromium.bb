@@ -25,7 +25,7 @@ namespace blink {
 namespace {
 
 const double kFramebufferMinScale = 0.2;
-const double kFramebufferMaxScale = 1.2;
+const double kFramebufferMaxScale = 1.0;
 
 const double kViewportMinScale = 0.2;
 const double kViewportMaxScale = 1.0;

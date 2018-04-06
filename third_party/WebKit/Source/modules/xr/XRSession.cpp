@@ -258,6 +258,12 @@ void XRSession::ForceEnd() {
   DispatchEvent(XRSessionEvent::Create(EventTypeNames::end, this));
 }
 
+double XRSession::DefaultFramebufferScale() const {
+  if (exclusive_)
+    return device_->xrDisplayInfoPtr()->default_framebuffer_scale;
+  return 1.0;
+}
+
 DoubleSize XRSession::IdealFramebufferSize() const {
   if (!exclusive_) {
     return OutputCanvasSize();

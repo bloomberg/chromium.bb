@@ -7,7 +7,8 @@
 namespace blink {
 
 VREyeParameters::VREyeParameters(
-    const device::mojom::blink::VREyeParametersPtr& eye_parameters) {
+    const device::mojom::blink::VREyeParametersPtr& eye_parameters,
+    double render_scale) {
   // TODO(offenwanger): Convert this into initializers.
   offset_ = DOMFloat32Array::Create(3);
   field_of_view_ = new VRFieldOfView();
@@ -21,8 +22,8 @@ VREyeParameters::VREyeParameters(
   field_of_view_->SetLeftDegrees(eye_parameters->fieldOfView->leftDegrees);
   field_of_view_->SetRightDegrees(eye_parameters->fieldOfView->rightDegrees);
 
-  render_width_ = eye_parameters->renderWidth;
-  render_height_ = eye_parameters->renderHeight;
+  render_width_ = eye_parameters->renderWidth * render_scale;
+  render_height_ = eye_parameters->renderHeight * render_scale;
 }
 
 void VREyeParameters::Trace(blink::Visitor* visitor) {
