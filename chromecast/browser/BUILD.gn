@@ -122,6 +122,7 @@ cast_source_set("browser") {
     "//components/network_session_configurator/common",
     "//components/prefs",
     "//components/proxy_config",
+    "//components/viz/service",
     "//content",
     "//content/public/browser",
     "//content/public/common",
@@ -138,6 +139,7 @@ cast_source_set("browser") {
     "//ui/compositor",
     "//ui/display",
     "//ui/events",
+    "//ui/events/devices",
     "//ui/gl",
   ]
 

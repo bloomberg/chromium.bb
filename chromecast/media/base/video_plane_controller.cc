@@ -38,6 +38,30 @@ bool ResolutionSizeValid(const Size& s) {
   return s.width >= 0 && s.height >= 0;
 }
 
+// Translates a gfx::OverlayTransform into a VideoPlane::Transform.
+// Could be just a lookup table once we have unit tests for this code
+// to ensure it stays in sync with OverlayTransform.
+chromecast::media::VideoPlane::Transform ConvertTransform(
+    gfx::OverlayTransform transform) {
+  switch (transform) {
+    case gfx::OVERLAY_TRANSFORM_NONE:
+      return chromecast::media::VideoPlane::TRANSFORM_NONE;
+    case gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL:
+      return chromecast::media::VideoPlane::FLIP_HORIZONTAL;
+    case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL:
+      return chromecast::media::VideoPlane::FLIP_VERTICAL;
+    case gfx::OVERLAY_TRANSFORM_ROTATE_90:
+      return chromecast::media::VideoPlane::ROTATE_90;
+    case gfx::OVERLAY_TRANSFORM_ROTATE_180:
+      return chromecast::media::VideoPlane::ROTATE_180;
+    case gfx::OVERLAY_TRANSFORM_ROTATE_270:
+      return chromecast::media::VideoPlane::ROTATE_270;
+    default:
+      NOTREACHED();
+      return chromecast::media::VideoPlane::TRANSFORM_NONE;
+  }
+}
+
 }  // namespace
 
 // Helper class for calling VideoPlane::SetGeometry with rate-limiting.
@@ -154,6 +178,13 @@ VideoPlaneController::VideoPlaneController(
           new RateLimitedSetVideoPlaneGeometry(media_task_runner_)) {}
 
 VideoPlaneController::~VideoPlaneController() {}
+
+void VideoPlaneController::SetGeometryGfx(const gfx::RectF& display_rect,
+                                          gfx::OverlayTransform transform) {
+  chromecast::RectF rect(display_rect.x(), display_rect.y(),
+                         display_rect.width(), display_rect.height());
+  SetGeometry(rect, ConvertTransform(transform));
+}
 
 void VideoPlaneController::SetGeometry(const RectF& display_rect,
                                        VideoPlane::Transform transform) {

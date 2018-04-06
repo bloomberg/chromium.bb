@@ -5,11 +5,18 @@
 #include "components/viz/service/display/overlay_strategy_underlay_cast.h"
 
 #include "base/containers/adapters.h"
+#include "base/lazy_instance.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {
+namespace {
+
+base::LazyInstance<OverlayStrategyUnderlayCast::OverlayCompositedCallback>::
+    DestructorAtExit g_overlay_composited_callback = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 OverlayStrategyUnderlayCast::OverlayStrategyUnderlayCast(
     OverlayCandidateValidator* capability_checker)
@@ -23,10 +30,10 @@ bool OverlayStrategyUnderlayCast::Attempt(
     RenderPass* render_pass,
     cc::OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
-  const QuadList& const_quad_list = render_pass->quad_list;
+  QuadList& quad_list = render_pass->quad_list;
   bool found_underlay = false;
   gfx::Rect content_rect;
-  for (const auto* quad : base::Reversed(const_quad_list)) {
+  for (const auto* quad : base::Reversed(quad_list)) {
     if (cc::OverlayCandidate::IsInvisibleQuad(quad))
       continue;
 
@@ -55,15 +62,37 @@ bool OverlayStrategyUnderlayCast::Attempt(
     }
   }
 
-  const bool result = OverlayStrategyUnderlay::Attempt(
-      output_color_matrix, resource_provider, render_pass, candidate_list,
-      content_bounds);
+  if (found_underlay) {
+    for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
+      cc::OverlayCandidate candidate;
+      if (!cc::OverlayCandidate::FromDrawQuad(
+              resource_provider, output_color_matrix, *it, &candidate)) {
+        continue;
+      }
+
+      render_pass->quad_list.ReplaceExistingQuadWithOpaqueTransparentSolidColor(
+          it);
+
+      if (!g_overlay_composited_callback.Get().is_null()) {
+        g_overlay_composited_callback.Get().Run(candidate.display_rect,
+                                                candidate.transform);
+      }
+
+      break;
+    }
+  }
+
   DCHECK(content_bounds && content_bounds->empty());
-  DCHECK(result == found_underlay);
   if (found_underlay) {
     content_bounds->push_back(content_rect);
   }
-  return result;
+  return found_underlay;
+}
+
+// static
+void OverlayStrategyUnderlayCast::SetOverlayCompositedCallback(
+    const OverlayCompositedCallback& cb) {
+  g_overlay_composited_callback.Get() = cb;
 }
 
 }  // namespace viz
