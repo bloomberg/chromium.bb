@@ -4,6 +4,14 @@
 
 import("//build/config/ios/asset_catalog.gni")
 
+imageset("identity_picker_view_arrow_down") {
+  sources = [
+    "identity_picker_view_arrow_down.imageset/Contents.json",
+    "identity_picker_view_arrow_down.imageset/identity_picker_view_arrow_down.png",
+    "identity_picker_view_arrow_down.imageset/identity_picker_view_arrow_down@2x.png",
+    "identity_picker_view_arrow_down.imageset/identity_picker_view_arrow_down@3x.png",
+  ]
+}
 imageset("signin_confirmation_more") {
   sources = [
     "signin_confirmation_more.imageset/Contents.json",

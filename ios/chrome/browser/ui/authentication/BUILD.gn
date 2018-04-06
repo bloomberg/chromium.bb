@@ -31,6 +31,7 @@ source_set("authentication") {
   ]
   deps = [
     ":authentication_ui",
+    "resources:identity_picker_view_arrow_down",
     "resources:signin_confirmation_more",
     "resources:signin_promo_close_gray",
     "//base",
