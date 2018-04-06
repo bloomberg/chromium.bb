@@ -1523,9 +1523,6 @@ extern const char kDcheckIsFatalDescription[];
 
 #if defined(OS_MACOSX)
 
-extern const char kAppInfoDialogName[];
-extern const char kAppInfoDialogDescription[];
-
 extern const char kAppWindowCyclingName[];
 extern const char kAppWindowCyclingDescription[];
 

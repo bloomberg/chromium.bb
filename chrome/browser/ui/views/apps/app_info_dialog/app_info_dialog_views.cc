@@ -50,24 +50,11 @@ namespace {
 // list's app_list::kDialogSeparatorColor
 const SkColor kDialogSeparatorColor = SkColorSetRGB(0xD1, 0xD1, 0xD1);
 
-#if defined(OS_MACOSX)
-bool IsAppInfoDialogMacEnabled() {
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableAppInfoDialogMac))
-    return false;
-  if (command_line->HasSwitch(switches::kEnableAppInfoDialogMac))
-    return true;
-  return false;  // Current default.
-}
-#endif
-
 }  // namespace
 
 bool CanShowAppInfoDialog() {
 #if defined(OS_MACOSX)
-  static const bool can_show = IsAppInfoDialogMacEnabled();
-  return can_show;
+  return false;
 #else
   return true;
 #endif
