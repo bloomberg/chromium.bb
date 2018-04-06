@@ -668,12 +668,14 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
                 tab.getContentViewCore() != null && !tab.isShowingSadTab() && !isNativePage;
 
         boolean isNtp = tab.getNativePage() instanceof NewTabPage;
+        boolean isLocationBarShownInNtp =
+                isNtp ? ((NewTabPage) tab.getNativePage()).isLocationBarShownInNTP() : false;
         boolean useModernDesign = FeatureUtilities.isChromeModernDesignEnabled()
                 && tab.getActivity() != null && tab.getActivity().supportsModernDesign();
         boolean needsUpdate = layoutTab.initFromHost(tab.getBackgroundColor(), tab.shouldStall(),
                 canUseLiveTexture, themeColor,
-                ColorUtils.getTextBoxColorForToolbarBackground(
-                        mContext.getResources(), isNtp, themeColor, useModernDesign),
+                ColorUtils.getTextBoxColorForToolbarBackground(mContext.getResources(),
+                        isLocationBarShownInNtp, themeColor, useModernDesign),
                 ColorUtils.getTextBoxAlphaForToolbarBackground(tab));
         if (needsUpdate) requestUpdate();
 
