@@ -1848,6 +1848,11 @@ const MediaControlDownloadButtonElement& MediaControlsImpl::DownloadButton()
   return *download_button_;
 }
 
+const MediaControlOverflowMenuButtonElement& MediaControlsImpl::OverflowButton()
+    const {
+  return *overflow_menu_;
+}
+
 void MediaControlsImpl::DidDismissDownloadInProductHelp() {
   StartHideMediaControlsIfNecessary();
 }

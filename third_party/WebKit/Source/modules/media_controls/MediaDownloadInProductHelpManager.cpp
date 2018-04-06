@@ -7,6 +7,7 @@
 #include "core/frame/LocalFrameClient.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/media_controls/elements/MediaControlDownloadButtonElement.h"
+#include "modules/media_controls/elements/MediaControlOverflowMenuButtonElement.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
@@ -66,7 +67,9 @@ void MediaDownloadInProductHelpManager::
 
   // If the button is not in the viewport, don't show the in-product-help.
   IntRect button_rect =
-      controls_->DownloadButton().VisibleBoundsInVisualViewport();
+      controls_->IsModern()
+          ? controls_->OverflowButton().VisibleBoundsInVisualViewport()
+          : controls_->DownloadButton().VisibleBoundsInVisualViewport();
   if (button_rect.IsEmpty())
     return;
 

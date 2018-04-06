@@ -20,7 +20,7 @@ class MODULES_EXPORT MediaControlDownloadButtonElement final
 
   // Returns true if the download button should be shown. We should
   // show the button for only non-MSE, non-EME, and non-MediaStream content.
-  bool ShouldDisplayDownloadButton();
+  bool ShouldDisplayDownloadButton() const;
 
   // MediaControlInputElement overrides.
   // TODO(mlamouri): add WillRespondToMouseClickEvents
