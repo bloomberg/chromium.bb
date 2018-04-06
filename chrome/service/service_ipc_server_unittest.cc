@@ -22,9 +22,7 @@
 namespace {
 
 void PumpCurrentLoop() {
-  base::MessageLoop::ScopedNestableTaskAllower nestable_task_allower(
-      base::MessageLoop::current());
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
 }
 
 class FakeServiceIPCServerClient : public ServiceIPCServer::Client {
