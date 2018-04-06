@@ -118,6 +118,9 @@ class SupervisedUserInterstitial : public content::InterstitialPageDelegate,
   // Interstitials behave very differently in those cases.
   bool initial_page_load_;
 
+  // True if we have already called Proceed() on the interstitial page.
+  bool proceeded_;
+
   base::Callback<void(bool)> callback_;
 
   ScopedObserver<SupervisedUserService, SupervisedUserInterstitial>
