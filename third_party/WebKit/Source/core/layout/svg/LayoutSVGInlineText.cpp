@@ -173,7 +173,7 @@ PositionWithAffinity LayoutSVGInlineText::PositionForPoint(
   absolute_point.MoveBy(containing_block->Location());
 
   float closest_distance = std::numeric_limits<float>::max();
-  float closest_distance_position = 0;
+  float position_in_fragment = 0;
   const SVGTextFragment* closest_distance_fragment = nullptr;
   SVGInlineTextBox* closest_distance_box = nullptr;
 
@@ -193,7 +193,13 @@ PositionWithAffinity LayoutSVGInlineText::PositionForPoint(
         closest_distance = distance;
         closest_distance_box = text_box;
         closest_distance_fragment = &fragment;
-        closest_distance_position = fragment_rect.X();
+        // TODO(fs): This only works (reasonably) well for text with trivial
+        // transformations. For improved fidelity in the other cases we ought
+        // to apply the inverse transformation for the fragment and then map
+        // against the (untransformed) fragment rect.
+        position_in_fragment = fragment.is_vertical
+                                   ? absolute_point.Y() - fragment_rect.Y()
+                                   : absolute_point.X() - fragment_rect.X();
       }
     }
   }
@@ -202,8 +208,7 @@ PositionWithAffinity LayoutSVGInlineText::PositionForPoint(
     return CreatePositionWithAffinity(0);
 
   int offset = closest_distance_box->OffsetForPositionInFragment(
-      *closest_distance_fragment,
-      absolute_point.X() - closest_distance_position);
+      *closest_distance_fragment, position_in_fragment);
   return CreatePositionWithAffinity(offset + closest_distance_box->Start(),
                                     offset > 0
                                         ? TextAffinity::kUpstreamIfPossible
