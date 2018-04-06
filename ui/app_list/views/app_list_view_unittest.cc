@@ -21,6 +21,7 @@
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/app_list/answer_card_contents_registry.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/test/app_list_test_model.h"
@@ -43,6 +44,7 @@
 #include "ui/app_list/views/search_result_view.h"
 #include "ui/app_list/views/suggestions_container_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
+#include "ui/aura/env.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/compositor/layer_animator.h"
@@ -194,6 +196,19 @@ class AppListViewFocusTest : public views::ViewsTestBase,
         base::i18n::SetICUDefaultLocale("he");
     }
 
+    // Creates AnswerCardContentsRegistry and registers a fake answer card
+    // view for classic ash. Otherwise, the answer card view will not be
+    // created. Revisit this when the test runs in mash.
+    if (aura::Env::GetInstanceDontCreate() &&
+        aura::Env::GetInstanceDontCreate()->mode() == aura::Env::Mode::LOCAL) {
+      answer_card_contents_registry_ =
+          std::make_unique<AnswerCardContentsRegistry>();
+      fake_answer_card_view_ = std::make_unique<views::View>();
+      fake_answer_card_view_->set_owned_by_client();
+      fake_answer_card_token_ = answer_card_contents_registry_->Register(
+          fake_answer_card_view_.get());
+    }
+
     // Initialize app list view.
     delegate_.reset(new AppListTestViewDelegate);
     view_ = new AppListView(delegate_.get());
@@ -277,6 +292,8 @@ class AppListViewFocusTest : public views::ViewsTestBase,
             std::make_unique<TestSearchResult>();
         result->set_display_type(data.first);
         result->set_relevance(relevance);
+        if (data.first == ash::SearchResultDisplayType::kCard)
+          result->set_answer_card_contents_token(fake_answer_card_token_);
         results->Add(std::move(result));
       }
     }
@@ -461,6 +478,11 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   std::unique_ptr<AppsGridViewTestApi> test_api_;
   // Restores the locale to default when destructor is called.
   base::test::ScopedRestoreICUDefaultLocale restore_locale_;
+
+  std::unique_ptr<AnswerCardContentsRegistry> answer_card_contents_registry_;
+  std::unique_ptr<views::View> fake_answer_card_view_;
+  base::UnguessableToken fake_answer_card_token_;
+
   DISALLOW_COPY_AND_ASSIGN(AppListViewFocusTest);
 };
 

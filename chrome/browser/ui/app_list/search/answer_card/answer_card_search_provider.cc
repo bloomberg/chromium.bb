@@ -162,7 +162,7 @@ void AnswerCardSearchProvider::DidFinishNavigation(
                       base::TimeTicks::Now() - server_request_start_time_);
 }
 
-void AnswerCardSearchProvider::DidStopLoading(
+void AnswerCardSearchProvider::OnContentsReady(
     const AnswerCardContents* source) {
   NavigationContext& context_for_loading = GetNavigationContextForLoading();
   DCHECK_EQ(source, context_for_loading.contents.get());

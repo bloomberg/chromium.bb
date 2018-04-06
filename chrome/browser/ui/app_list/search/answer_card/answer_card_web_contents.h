@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_contents.h"
 #include "content/public/browser/render_widget_host.h"
@@ -16,6 +17,7 @@
 class Profile;
 
 namespace views {
+class RemoteViewProvider;
 class WebView;
 }
 
@@ -55,18 +57,30 @@ class AnswerCardWebContents : public AnswerCardContents,
   void AttachToHost(content::RenderWidgetHost* host);
   void DetachFromHost();
 
-  // Web view for the web contents managed by this class.
-  const std::unique_ptr<views::WebView> web_view_;
+  void OnGotEmbedTokenAndNotify(const base::UnguessableToken& token);
 
   // Web contents managed by this class.
   const std::unique_ptr<content::WebContents> web_contents_;
+
+  // Web view for the web contents managed by this class.
+  // Note this is only used for classic ash.
+  std::unique_ptr<views::WebView> web_view_;
 
   // Current widget host.
   content::RenderWidgetHost* host_ = nullptr;
 
   Profile* const profile_;  // Unowned
 
+  // Token to embed the web contents. On classic ash, it is a token registered
+  // with AnswerCardContentsRegistry. On mash, it is the embedding token for
+  // the native window of |web_contents_|.
   base::UnguessableToken token_;
+
+  // Helper to prepare the native view of |web_contents_| to be embedded under
+  // mash.
+  std::unique_ptr<views::RemoteViewProvider> remote_view_provider_;
+
+  base::WeakPtrFactory<AnswerCardWebContents> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AnswerCardWebContents);
 };

@@ -3573,6 +3573,7 @@ split_static_library("ui") {
     deps += [
       "//ui/app_list",
       "//ui/app_list/vector_icons",
+      "//ui/views/mus/remote_view:remote_view_provider",
     ]
 
     if (is_chromeos) {

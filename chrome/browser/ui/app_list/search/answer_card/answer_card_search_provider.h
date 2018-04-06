@@ -43,7 +43,7 @@ class AnswerCardSearchProvider : public SearchProvider,
                            bool has_answer_card,
                            const std::string& result_title,
                            const std::string& issued_query) override;
-  void DidStopLoading(const AnswerCardContents* source) override;
+  void OnContentsReady(const AnswerCardContents* source) override;
 
  private:
   enum class RequestState {
