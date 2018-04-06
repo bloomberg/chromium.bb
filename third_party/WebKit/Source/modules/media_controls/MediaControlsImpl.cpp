@@ -1796,25 +1796,7 @@ bool MediaControlsImpl::ShouldShowDisabledControls() const {
          !is_acting_as_audio_controls_;
 }
 
-void MediaControlsImpl::Invalidate(Element* element) {
-  if (!element)
-    return;
-
-  if (LayoutObject* layout_object = element->GetLayoutObject()) {
-    layout_object
-        ->SetShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
-  }
-}
-
 void MediaControlsImpl::NetworkStateChanged() {
-  Invalidate(play_button_);
-  Invalidate(overlay_play_button_);
-  Invalidate(mute_button_);
-  Invalidate(fullscreen_button_);
-  Invalidate(download_button_);
-  Invalidate(timeline_);
-  Invalidate(volume_slider_);
-
   // Update the display state of the download button in case we now have a
   // source or no longer have a source.
   download_button_->SetIsWanted(

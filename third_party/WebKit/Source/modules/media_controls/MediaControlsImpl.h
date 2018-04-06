@@ -204,8 +204,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   class MediaControlsResizeObserverDelegate;
   class MediaElementMutationCallback;
 
-  void Invalidate(Element*);
-
   // Notify us that our controls enclosure has changed size.
   void NotifyElementSizeChanged(DOMRectReadOnly* new_size);
 
