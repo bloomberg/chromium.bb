@@ -52,6 +52,7 @@
       'target_name': 'password_list_item',
       'dependencies': [
         '../compiled_resources2.gyp:focus_row_behavior',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         'show_password_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
