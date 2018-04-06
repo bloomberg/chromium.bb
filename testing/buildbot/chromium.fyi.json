@@ -2214,7 +2214,7 @@
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 10
+          "shards": 12
         }
       },
       {
@@ -5549,7 +5549,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "shards": 10
+          "shards": 12
         }
       },
       {
@@ -6070,7 +6070,7 @@
               "os": "Ubuntu-14.04"
             }
           ],
-          "shards": 6
+          "shards": 12
         }
       }
     ]
@@ -8835,7 +8835,7 @@
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 6
+          "shards": 12
         }
       }
     ]
@@ -9000,7 +9000,7 @@
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 6
+          "shards": 12
         }
       }
     ]

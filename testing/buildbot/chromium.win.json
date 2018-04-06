@@ -1728,7 +1728,7 @@
         "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 10
+          "shards": 12
         }
       },
       {
@@ -2933,7 +2933,7 @@
               "os": "Windows-7-SP1"
             }
           ],
-          "shards": 10
+          "shards": 12
         }
       },
       {
