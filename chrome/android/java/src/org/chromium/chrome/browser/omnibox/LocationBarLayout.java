@@ -560,8 +560,10 @@ public class LocationBarLayout
             int availableViewportHeight =
                     Math.min(mTempRect.height(), decorHeight) + additionalHeightForBottomNavMenu;
             int availableListHeight = availableViewportHeight - anchorBottomRelativeToContent;
-            // If the bottom sheet is used, the suggestions should consume all available space.
-            int desiredHeight = Math.min(availableListHeight, getIdealHeight());
+            // The suggestions should consume all available space in Modern on phone.
+            int desiredHeight = useModernDesign() && !mIsTablet
+                    ? availableListHeight
+                    : Math.min(availableListHeight, getIdealHeight());
             if (layoutParams.height != desiredHeight) {
                 layoutParams.height = desiredHeight;
                 updateLayout = true;
