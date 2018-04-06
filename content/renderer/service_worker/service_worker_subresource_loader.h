@@ -61,7 +61,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
  private:
   class StreamWaiter;
 
-  void DeleteSoon();
+  void OnConnectionError();
 
   void StartRequest(const network::ResourceRequest& resource_request);
   void DispatchFetchEvent();
