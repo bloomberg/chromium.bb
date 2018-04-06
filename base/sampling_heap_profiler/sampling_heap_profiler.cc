@@ -279,6 +279,8 @@ void SamplingHeapProfiler::RecordAlloc(void* address,
                                        uint32_t skip_frames) {
   if (UNLIKELY(!base::subtle::NoBarrier_Load(&g_running)))
     return;
+  if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
+    return;
 
   // TODO(alph): On MacOS it may call the hook several times for a single
   // allocation. Handle the case.
@@ -363,6 +365,8 @@ void SamplingHeapProfiler::RecordFree(void* address) {
 }
 
 void SamplingHeapProfiler::DoRecordFree(void* address) {
+  if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
+    return;
   if (entered_.Get())
     return;
   base::AutoLock lock(mutex_);
