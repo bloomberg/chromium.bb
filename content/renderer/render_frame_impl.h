@@ -880,6 +880,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // Send SurfaceId information to FrameHost to use for Picture-in-Picture.
   void OnPictureInPictureSurfaceIdUpdated(const viz::SurfaceId& surface_id);
 
+  // Send signal that Picture-in-Picture mode has ended.
+  void OnExitPictureInPicture();
+
  protected:
   explicit RenderFrameImpl(CreateParams params);
 

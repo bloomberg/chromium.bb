@@ -112,6 +112,8 @@ class MockFrameHost : public mojom::FrameHost {
   void OnUpdatePictureInPictureSurfaceId(
       const viz::SurfaceId& surface_id) override {}
 
+  void OnExitPictureInPicture() override {}
+
  private:
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
       last_commit_params_;

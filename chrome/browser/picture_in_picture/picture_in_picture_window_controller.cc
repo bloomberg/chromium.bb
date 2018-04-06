@@ -41,7 +41,7 @@ void PictureInPictureWindowController::Show() {
 }
 
 void PictureInPictureWindowController::Close() {
-  if (window_->IsActive())
+  if (window_)
     window_->Close();
 
   surface_id_ = viz::SurfaceId();
