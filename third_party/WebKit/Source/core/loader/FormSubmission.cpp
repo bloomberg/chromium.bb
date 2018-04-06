@@ -34,13 +34,10 @@
 #include "core/dom/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/forms/FormData.h"
-#include "core/html/forms/FormDataEvent.h"
 #include "core/html/forms/HTMLFormControlElement.h"
 #include "core/html/forms/HTMLFormElement.h"
-#include "core/html/forms/HTMLInputElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html_names.h"
-#include "core/input_type_names.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/heap/Handle.h"
@@ -226,29 +223,7 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
                 copied_attributes.AcceptCharset(), document.Encoding());
   FormData* dom_form_data =
       FormData::Create(data_encoding.EncodingForFormSubmission());
-
-  // TODO(tkent): We might move the event dispatching later than the
-  // ListedElements iteration.
-  if (RuntimeEnabledFeatures::FormDataEventEnabled())
-    form->DispatchEvent(FormDataEvent::Create(*dom_form_data));
-
-  if (submit_button)
-    submit_button->SetActivatedSubmit(true);
-  bool contains_password_data = false;
-  for (unsigned i = 0; i < form->ListedElements().size(); ++i) {
-    ListedElement* control = form->ListedElements()[i];
-    DCHECK(control);
-    HTMLElement& element = ToHTMLElement(*control);
-    if (!element.IsDisabledFormControl())
-      control->AppendToFormData(*dom_form_data);
-    if (auto* input = ToHTMLInputElementOrNull(element)) {
-      if (input->type() == InputTypeNames::password &&
-          !input->value().IsEmpty())
-        contains_password_data = true;
-    }
-  }
-  if (submit_button)
-    submit_button->SetActivatedSubmit(false);
+  form->ConstructFormDataSet(submit_button, *dom_form_data);
 
   scoped_refptr<EncodedFormData> form_data;
   String boundary;
@@ -269,7 +244,7 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
   }
 
   form_data->SetIdentifier(GenerateFormDataIdentifier());
-  form_data->SetContainsPasswordData(contains_password_data);
+  form_data->SetContainsPasswordData(dom_form_data->ContainsPasswordData());
   AtomicString target_or_base_target = copied_attributes.Target().IsEmpty()
                                            ? document.BaseTarget()
                                            : copied_attributes.Target();

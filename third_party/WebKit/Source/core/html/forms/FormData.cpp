@@ -34,7 +34,6 @@
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/File.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/forms/FormDataEvent.h"
 #include "core/html/forms/HTMLFormElement.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/network/FormDataEncoder.h"
@@ -84,18 +83,8 @@ class FormDataIterationSource final
 FormData::FormData(const WTF::TextEncoding& encoding) : encoding_(encoding) {}
 
 FormData::FormData(HTMLFormElement* form) : encoding_(UTF8Encoding()) {
-  if (!form)
-    return;
-
-  // TODO(tkent): Share the following code with FormSubmission::Create().
-  if (RuntimeEnabledFeatures::FormDataEventEnabled())
-    form->DispatchEvent(FormDataEvent::Create(*this));
-
-  for (unsigned i = 0; i < form->ListedElements().size(); ++i) {
-    ListedElement* element = form->ListedElements()[i];
-    if (!ToHTMLElement(element)->IsDisabledFormControl())
-      element->AppendToFormData(*this);
-  }
+  if (form)
+    form->ConstructFormDataSet(nullptr, *this);
 }
 
 void FormData::Trace(blink::Visitor* visitor) {

@@ -107,6 +107,11 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   void AnonymousNamedGetter(const AtomicString& name, RadioNodeListOrElement&);
   void InvalidateDefaultButtonStyle() const;
 
+  // 'construct the form data set'
+  // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constructing-the-form-data-set
+  void ConstructFormDataSet(HTMLFormControlElement* submit_button,
+                            FormData& form_data);
+
  private:
   explicit HTMLFormElement(Document&);
 
