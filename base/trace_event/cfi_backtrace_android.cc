@@ -114,7 +114,7 @@ static_assert(
 }  // namespace
 
 // static
-CFIBacktraceAndroid* CFIBacktraceAndroid::GetInstance() {
+CFIBacktraceAndroid* CFIBacktraceAndroid::GetInitializedInstance() {
   static CFIBacktraceAndroid* instance = new CFIBacktraceAndroid();
   return instance;
 }

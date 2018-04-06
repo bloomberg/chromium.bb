@@ -31,8 +31,9 @@ namespace trace_event {
 // data.
 class BASE_EXPORT CFIBacktraceAndroid {
  public:
-  // Creates and initializes the unwinder on first call.
-  static CFIBacktraceAndroid* GetInstance();
+  // Creates and initializes by memory mapping the unwind tables from apk assets
+  // on first call.
+  static CFIBacktraceAndroid* GetInitializedInstance();
 
   // Returns true if stack unwinding is possible using CFI unwind tables in apk.
   // There is no need to check this before each unwind call. Will always return

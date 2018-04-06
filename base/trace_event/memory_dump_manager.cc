@@ -280,8 +280,8 @@ bool MemoryDumpManager::EnableHeapProfiling(HeapProfilingMode profiling_mode) {
     case kHeapProfilingModeNative:
 #if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE)
     {
-      bool can_unwind =
-          CFIBacktraceAndroid::GetInstance()->can_unwind_stack_frames();
+      bool can_unwind = CFIBacktraceAndroid::GetInitializedInstance()
+                            ->can_unwind_stack_frames();
       DCHECK(can_unwind);
     }
 #endif
