@@ -4,10 +4,30 @@
 
 import("//testing/test.gni")
 
+source_set("interface") {
+  sources = [
+    "interface.h",
+  ]
+
+  public_deps = [
+    "//base",
+  ]
+
+  deps = [
+    "//media/capture/mojom:video_capture",
+    "//media/cast:common",
+    "//media/mojo/interfaces",
+    "//net",
+    "//services/network/public/mojom",
+  ]
+}
+
 source_set("service") {
   sources = [
     "rtp_stream.cc",
     "rtp_stream.h",
+    "session.cc",
+    "session.h",
     "udp_socket_client.cc",
     "udp_socket_client.h",
     "video_capture_client.cc",
@@ -19,6 +39,7 @@ source_set("service") {
   ]
 
   deps = [
+    ":interface",
     "//media",
     "//media/capture/mojom:video_capture",
     "//media/cast:common",
@@ -26,6 +47,7 @@ source_set("service") {
     "//media/cast:sender",
     "//media/mojo/common:common",
     "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/system",
     "//net",
     "//services/network/public/mojom",
     "//ui/gfx",
@@ -37,12 +59,16 @@ source_set("unittests") {
   sources = [
     "fake_network_service.cc",
     "fake_network_service.h",
+    "fake_video_capture_host.cc",
+    "fake_video_capture_host.h",
     "rtp_stream_unittest.cc",
+    "session_unittest.cc",
     "udp_socket_client_unittest.cc",
     "video_capture_client_unittest.cc",
   ]
 
   deps = [
+    ":interface",
     ":service",
     "//base",
     "//base/test:test_support",
@@ -51,6 +77,7 @@ source_set("unittests") {
     "//media/cast:common",
     "//media/cast:net",
     "//media/cast:sender",
+    "//media/cast:test_support",
     "//media/cast:test_support",
     "//mojo/public/cpp/bindings",
     "//net",

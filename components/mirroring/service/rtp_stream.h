@@ -78,6 +78,12 @@ class VideoRtpStream {
   // |video_frame| is required to provide REFERENCE_TIME in the metadata.
   void InsertVideoFrame(scoped_refptr<media::VideoFrame> video_frame);
 
+  base::WeakPtr<VideoRtpStream> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
+  void SetTargetPlayoutDelay(base::TimeDelta playout_delay);
+
  private:
   void OnRefreshTimerFired();
 
@@ -114,6 +120,8 @@ class AudioRtpStream {
   // Called by AudioCaptureClient when new audio data is available.
   void InsertAudio(std::unique_ptr<media::AudioBus> audio_bus,
                    base::TimeTicks estimated_capture_time);
+
+  void SetTargetPlayoutDelay(base::TimeDelta playout_delay);
 
  private:
   const std::unique_ptr<media::cast::AudioSender> audio_sender_;

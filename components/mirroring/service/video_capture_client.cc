@@ -203,7 +203,7 @@ void VideoCaptureClient::OnBufferReady(int32_t buffer_id,
 
   frame->metadata()->MergeInternalValuesFrom(*info->metadata);
 
-  frame_deliver_callback_.Run(frame, reference_time);
+  frame_deliver_callback_.Run(frame);
 }
 
 void VideoCaptureClient::OnBufferDestroyed(int32_t buffer_id) {
