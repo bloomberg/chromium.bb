@@ -22,6 +22,8 @@ const char* TaskQueue::PriorityToString(TaskQueue::QueuePriority priority) {
   switch (priority) {
     case kControlPriority:
       return "control";
+    case kHighestPriority:
+      return "highest";
     case kHighPriority:
       return "high";
     case kNormalPriority:
@@ -251,7 +253,8 @@ TaskQueueImpl::PostTaskResult TaskQueueImpl::PostDelayedTaskImpl(
 }
 
 void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
-    Task pending_task, base::TimeTicks now) {
+    Task pending_task,
+    base::TimeTicks now) {
   main_thread_only().task_queue_manager->DidQueueTask(pending_task);
   main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
 

@@ -21,7 +21,7 @@ namespace base {
 namespace trace_event {
 class BlameContext;
 }
-}
+}  // namespace base
 
 namespace blink {
 namespace scheduler {
@@ -80,11 +80,15 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
     // private queues which perform control operations.
     kControlPriority,
 
-    // The selector will prioritize high over normal and low and normal over
-    // low. However it will ensure neither of the lower priority queues can be
-    // completely starved by higher priority tasks. All three of these queues
-    // will always take priority over and can starve the best effort queue.
+    // The selector will prioritize highest over high, normal and low; and
+    // high over normal and low; and normal over low. However it will ensure
+    // neither of the lower priority queues can be completely starved by higher
+    // priority tasks. All three of these queues will always take priority over
+    // and can starve the best effort queue.
+    kHighestPriority,
+
     kHighPriority,
+
     // Queues with normal priority are the default.
     kNormalPriority,
     kLowPriority,
