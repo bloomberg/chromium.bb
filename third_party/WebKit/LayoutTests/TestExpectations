@@ -4034,3 +4034,6 @@ crbug.com/826936 external/wpt/webauthn/getcredential-badargs-userverification.ht
 crbug.com/826936 external/wpt/webauthn/getcredential-extensions.https.html [ Pass Timeout ]
 crbug.com/826936 external/wpt/webauthn/getcredential-passing.https.html [ Pass Timeout ]
 crbug.com/826936 external/wpt/webauthn/getcredential-timeout.https.html [ Pass Timeout ]
+
+# Flaky on all platforms
+crbug.com/829761 external/wpt/cookie-store/cookieStore_special_names.tentative.https.html [ Pass Failure ]
