@@ -9,6 +9,7 @@
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/render_frame_proxy.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
