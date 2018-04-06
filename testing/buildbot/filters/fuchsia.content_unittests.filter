@@ -55,6 +55,7 @@
 -WebContentsAudioInputStreamTest.MirroringOneStreamAfterTargetChange*
 
 # Flaky, https://crbug.com/802375 and https://crbug.com/776424.
+-RenderWidgetHostViewAuraOverscrollTest.GestureScrollDebounceOverscrolls
 -RenderWidgetHostViewAuraOverscrollTest.GestureScrollDebounceTimerOverscroll
 -RenderWidgetHostViewAuraOverscrollTest.TouchGestureEndDispatchedAfterOverscrollComplete
 -RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest.TimerBasedWheelEventPhaseInfo
