@@ -17,6 +17,7 @@
 #include "components/ntp_snippets/callbacks.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace ntp_snippets {
@@ -47,7 +48,10 @@ class ContextualContentSuggestionsService : public KeyedService {
           contextual_suggestions_fetcher,
       std::unique_ptr<CachedImageFetcher> image_fetcher,
       std::unique_ptr<RemoteSuggestionsDatabase>
-          contextual_suggestions_database);
+          contextual_suggestions_database,
+      std::unique_ptr<
+          contextual_suggestions::ContextualSuggestionsMetricsReporter>
+          metrics_reporter);
   ~ContextualContentSuggestionsService() override;
 
   using FetchContextualSuggestionsCallback =
@@ -75,8 +79,11 @@ class ContextualContentSuggestionsService : public KeyedService {
       ImageFetchedCallback callback);
 
   // Used to report events using various metrics (e.g. UMA, UKM).
-  // TODO(donnd): Change type of event ID, implement.
-  void ReportEvent(ukm::SourceId sourceId, int event_id);
+  void ReportEvent(ukm::SourceId sourceId,
+                   contextual_suggestions::ContextualSuggestionsEvent event);
+
+  // KeyedService overrides.
+  void Shutdown() override;
 
  private:
   void DidFetchContextualSuggestions(
@@ -98,6 +105,13 @@ class ContextualContentSuggestionsService : public KeyedService {
   std::unique_ptr<ContextualSuggestionsFetcher> contextual_suggestions_fetcher_;
 
   std::unique_ptr<CachedImageFetcher> image_fetcher_;
+
+  std::unique_ptr<contextual_suggestions::ContextualSuggestionsMetricsReporter>
+      metrics_reporter_;
+
+  // The most recent SourceId in use by metrics_reporter_, or
+  // ukm::kInvalidSourceId.
+  ukm::SourceId last_ukm_source_id_;
 
   // Look up by ContentSuggestion::ID::id_within_category() aka std::string to
   // get image URL.

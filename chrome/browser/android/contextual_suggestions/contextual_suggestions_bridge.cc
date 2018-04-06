@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ContextualSuggestionsBridge_jni.h"
@@ -138,8 +139,10 @@ void ContextualSuggestionsBridge::ReportEvent(
   ukm::SourceId ukm_source_id =
       ukm::GetSourceIdForWebContentsDocument(web_contents);
 
-  contextual_content_suggestions_service_->ReportEvent(ukm_source_id,
-                                                       j_event_id);
+  contextual_suggestions::ContextualSuggestionsEvent event =
+      static_cast<contextual_suggestions::ContextualSuggestionsEvent>(
+          j_event_id);
+  contextual_content_suggestions_service_->ReportEvent(ukm_source_id, event);
 }
 
 void ContextualSuggestionsBridge::OnSuggestionsAvailable(
