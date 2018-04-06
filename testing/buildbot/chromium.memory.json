@@ -731,26 +731,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cronet_tests"
-      },
-      {
-        "args": [
-          "--test-launcher-batch-limit=1",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "cronet_unittests"
-      },
-      {
-        "args": [
-          "--test-launcher-batch-limit=1",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "crypto_unittests"
       },
       {
@@ -1212,18 +1192,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "content_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "cronet_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "cronet_unittests"
       },
       {
         "swarming": {
@@ -2882,18 +2850,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "content_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "cronet_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "cronet_unittests"
       },
       {
         "swarming": {

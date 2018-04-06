@@ -1352,8 +1352,6 @@
 
   'non_android_and_cast_and_chromeos_chromium_gtests': {
     'blink_platform_unittests': {},
-    'cronet_tests': {},
-    'cronet_unittests': {},
   },
 
   'non_android_and_cast_and_chromeos_and_clang_and_mac_fyi_chromium_gtests': {

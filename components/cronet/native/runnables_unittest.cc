@@ -144,7 +144,6 @@ TEST_F(RunnablesTest, TestRunCallbackOnExecutor) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback_called());
   Cronet_Executor_Destroy(executor);
-  Cronet_UrlRequestCallback_Destroy(callback);
 }
 
 // Example of posting application callback to the executor using OneClosure.
@@ -168,7 +167,6 @@ TEST_F(RunnablesTest, TestRunOnceClosureOnExecutor) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback_called());
   Cronet_Executor_Destroy(executor);
-  Cronet_UrlRequestCallback_Destroy(callback);
 }
 
 // Example of posting application callback to the executor and passing
@@ -197,7 +195,6 @@ TEST_F(RunnablesTest, TestCronetBuffer) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(callback_called());
   Cronet_Executor_Destroy(executor);
-  Cronet_UrlRequestCallback_Destroy(callback);
 }
 
 }  // namespace
