@@ -33,7 +33,8 @@ TEST(PreflightControllerCreatePreflightRequestTest, LexicographicalOrder) {
   request.headers.SetHeader("Orange", "Orange");
   request.headers.SetHeader("Apple", "Red");
   request.headers.SetHeader("Kiwifruit", "Green");
-  request.headers.SetHeader("Content-Type", "application/octet-stream");
+  request.headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                            "application/octet-stream");
   request.headers.SetHeader("Strawberry", "Red");
 
   std::unique_ptr<ResourceRequest> preflight =
@@ -53,7 +54,8 @@ TEST(PreflightControllerCreatePreflightRequestTest, ExcludeSimpleHeaders) {
   ResourceRequest request;
   request.request_initiator = url::Origin();
   request.headers.SetHeader("Accept", "everything");
-  request.headers.SetHeader("Accept-Language", "everything");
+  request.headers.SetHeader(net::HttpRequestHeaders::kAcceptLanguage,
+                            "everything");
   request.headers.SetHeader("Content-Language", "everything");
   request.headers.SetHeader("Save-Data", "on");
 
@@ -72,7 +74,8 @@ TEST(PreflightControllerCreatePreflightRequestTest,
      ExcludeSimpleContentTypeHeader) {
   ResourceRequest request;
   request.request_initiator = url::Origin();
-  request.headers.SetHeader("Content-Type", "text/plain");
+  request.headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                            "text/plain");
 
   std::unique_ptr<ResourceRequest> preflight =
       PreflightController::CreatePreflightRequestForTesting(request);
@@ -101,7 +104,8 @@ TEST(PreflightControllerCreatePreflightRequestTest,
      IncludeNonSimpleContentTypeHeader) {
   ResourceRequest request;
   request.request_initiator = url::Origin();
-  request.headers.SetHeader("Content-Type", "application/octet-stream");
+  request.headers.SetHeader(net::HttpRequestHeaders::kContentType,
+                            "application/octet-stream");
 
   std::unique_ptr<ResourceRequest> preflight =
       PreflightController::CreatePreflightRequestForTesting(request);
@@ -191,9 +195,9 @@ class PreflightControllerTest : public testing::Test {
       url::Origin origin = url::Origin::Create(test_server_.base_url());
       response->AddCustomHeader(cors::header_names::kAccessControlAllowOrigin,
                                 origin.Serialize());
-      // TODO(toyoshim): Define header names in public/cpp/cors/cors.h
-      response->AddCustomHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-      response->AddCustomHeader("Access-Control-Max-Age", "1000");
+      response->AddCustomHeader(header_names::kAccessControlAllowMethods,
+                                "GET, OPTIONS");
+      response->AddCustomHeader(header_names::kAccessControlMaxAge, "1000");
       response->AddCustomHeader(net::HttpRequestHeaders::kCacheControl,
                                 "no-store");
     }
