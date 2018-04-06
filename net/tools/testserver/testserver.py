@@ -124,6 +124,13 @@ class HTTPServer(testserver_base.ClientRestrictingServerMixIn,
 
   pass
 
+class ThreadingHTTPServer(SocketServer.ThreadingMixIn,
+                          HTTPServer):
+  """This variant of HTTPServer creates a new thread for every connection. It
+  should only be used with handlers that are known to be threadsafe."""
+
+  pass
+
 class OCSPServer(testserver_base.ClientRestrictingServerMixIn,
                  testserver_base.BrokenPipeHandlerMixIn,
                  BaseHTTPServer.HTTPServer):
@@ -2119,7 +2126,7 @@ class ServerRunner(testserver_base.TestServerRunner):
     elif self.options.server_type == SERVER_BASIC_AUTH_PROXY:
       BasicAuthProxyRequestHandler.redirect_connect_to_localhost = \
           self.options.redirect_connect_to_localhost
-      server = HTTPServer((host, port), BasicAuthProxyRequestHandler)
+      server = ThreadingHTTPServer((host, port), BasicAuthProxyRequestHandler)
       print 'BasicAuthProxy server started on port %d...' % server.server_port
       server_data['port'] = server.server_port
     elif self.options.server_type == SERVER_FTP:
