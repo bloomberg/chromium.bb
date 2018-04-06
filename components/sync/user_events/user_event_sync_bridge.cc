@@ -152,8 +152,41 @@ void UserEventSyncBridge::ApplyDisableSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   // Sync can only be disabled after initialization.
   DCHECK(deferred_user_events_while_initializing_.empty());
-  // No data should be retained through sign out.
-  store_->DeleteAllDataAndMetadata(base::DoNothing());
+  // Delete everything except user consents. With DICE the signout may happen
+  // frequently. It is important to report all user consents, thus, they are
+  // persisted for some time even after signout.
+  store_->ReadAllData(base::BindOnce(
+      &UserEventSyncBridge::OnReadAllDataToDelete, base::AsWeakPtr(this),
+      std::move(delete_metadata_change_list)));
+}
+
+void UserEventSyncBridge::OnReadAllDataToDelete(
+    std::unique_ptr<MetadataChangeList> delete_metadata_change_list,
+    const base::Optional<ModelError>& error,
+    std::unique_ptr<RecordList> data_records) {
+  if (error) {
+    LOG(WARNING) << "OnReadAllDataToDelete received a model error: "
+                 << error->ToString();
+    return;
+  }
+
+  std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+  // We delete all the metadata (even for consents), because it may become
+  // invalid when the sync is reenabled. This may lead to the same consent
+  // being reported multiple times, which is allowed.
+  batch->TakeMetadataChangesFrom(std::move(delete_metadata_change_list));
+
+  UserEventSpecifics specifics;
+  for (const Record& r : *data_records) {
+    if (!specifics.ParseFromString(r.value) ||
+        specifics.event_case() != UserEventSpecifics::EventCase::kUserConsent) {
+      batch->DeleteData(r.id);
+    }
+  }
+
+  store_->CommitWriteBatch(
+      std::move(batch),
+      base::BindOnce(&UserEventSyncBridge::OnCommit, base::AsWeakPtr(this)));
 }
 
 void UserEventSyncBridge::RecordUserEvent(
@@ -215,6 +248,10 @@ void UserEventSyncBridge::OnStoreCreated(
     change_processor()->ReportError(*error);
     return;
   }
+
+  // TODO(vitaliii): Attempt to resubmit persistently stored user consents
+  // (probably not immediately on startup).
+  // TODO(vitaliii): Garbage collect old user consents if sync is disabled.
 
   store_ = std::move(store);
   store_->ReadAllMetadata(base::BindOnce(
