@@ -836,8 +836,12 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateVASurface() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
 
-  if (available_va_surfaces_.empty())
+  if (available_va_surfaces_.empty()) {
+    VLOGF(4)
+        << "There is not available VASurface. The number of total surfaces is "
+        << picture_map_.size();
     return nullptr;
+  }
 
   DCHECK(!awaiting_va_surfaces_recycle_);
   scoped_refptr<VASurface> va_surface(new VASurface(
