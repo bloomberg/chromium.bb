@@ -19,6 +19,8 @@ source_set("fakes") {
     "fake_pass_kit_tab_helper_delegate.mm",
     "fake_store_kit_launcher.h",
     "fake_store_kit_launcher.mm",
+    "fake_ui_view_controller.h",
+    "fake_ui_view_controller.mm",
   ]
 
   deps = [

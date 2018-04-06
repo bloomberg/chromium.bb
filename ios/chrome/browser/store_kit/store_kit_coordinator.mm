@@ -26,7 +26,9 @@
 - (void)start {
   DCHECK(self.iTunesProductParameters
              [SKStoreProductParameterITunesItemIdentifier]);
-  DCHECK(!_viewController);
+  // StoreKit shouldn't be launched, if there is one already presented.
+  if (_viewController)
+    return;
   _viewController = [[SKStoreProductViewController alloc] init];
   _viewController.delegate = self;
   [_viewController loadProductWithParameters:self.iTunesProductParameters
@@ -37,7 +39,7 @@
 }
 
 - (void)stop {
-  [_viewController dismissViewControllerAnimated:YES completion:nil];
+  [self.baseViewController dismissViewControllerAnimated:YES completion:nil];
   _viewController = nil;
 }
 
