@@ -155,19 +155,6 @@
     return highWaterMark;
   }
 
-  // TODO(ricea): Remove this once all its callers have been updated to use
-  // ValidateAndNormalizeHighWaterMark instead.
-  function ValidateAndNormalizeQueuingStrategy(size, highWaterMark) {
-    if (size !== undefined && typeof size !== 'function') {
-      throw new TypeError(binding.streamErrors.sizeNotAFunction);
-    }
-
-    highWaterMark = ValidateAndNormalizeHighWaterMark(highWaterMark);
-
-    return {size, highWaterMark};
-  }
-
-
   // Unlike the version in the standard, this implementation returns the
   // original function as-is if it is set. This means users of the return value
   // need to be careful to explicitly set |this| when calling it.
@@ -271,15 +258,6 @@
     return callFunction(method, O, arg0);
   }
 
-  // Modified from PromiseInvokeOrNoop in spec. Takes 1 argument.
-  function PromiseCallOrNoop1(O, P, arg0, nameForError) {
-    try {
-      return Promise_resolve(CallOrNoop1(O, P, arg0, nameForError));
-    } catch (e) {
-      return Promise_reject(e);
-    }
-  }
-
   function PromiseCall0(F, V) {
     // assert(typeof F === 'function', 'IsCallable(F) is true.');
     // assert(V !== undefined, 'V is not undefined.');
@@ -325,10 +303,8 @@
     PeekQueueValue,
     ResetQueue,
     ValidateAndNormalizeHighWaterMark,
-    ValidateAndNormalizeQueuingStrategy,
     MakeSizeAlgorithmFromSizeFunction,
     CallOrNoop1,
-    PromiseCallOrNoop1,
     PromiseCall2
   };
 });

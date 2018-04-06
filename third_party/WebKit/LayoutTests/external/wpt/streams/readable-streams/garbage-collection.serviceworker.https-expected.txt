@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS Service worker test setup
-FAIL ReadableStreamController methods should continue working properly when scripts lose their reference to the readable stream promise_test: Unhandled rejection with value: object "TypeError: Cannot error a close readable stream"
-PASS ReadableStream closed promise should fulfill even if the stream and reader JS references are lost
-PASS ReadableStream closed promise should reject even if stream and reader JS references are lost
-PASS Garbage-collecting a ReadableStreamDefaultReader should not unlock its stream
-Harness: the test ran to completion.
-

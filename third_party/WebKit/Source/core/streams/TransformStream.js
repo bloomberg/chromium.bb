@@ -176,18 +176,15 @@
     stream[_writable] = binding.CreateWritableStream(
         startAlgorithm, writeAlgorithm, closeAlgorithm, abortAlgorithm,
         writableHighWaterMark, writableSizeAlgorithm);
-    // TODO(ricea): Use CreateReadableStream() once it is implemented.
-    stream[_readable] = new binding.ReadableStream({
-      start: startAlgorithm,
-      pull() {
-        return TransformStreamDefaultSourcePullAlgorithm(stream);
-      },
-      cancel(reason) {
-        TransformStreamErrorWritableAndUnblockWrite(stream, reason);
-        return Promise_resolve();
-      },
-      type: undefined,
-    }, {highWaterMark: readableHighWaterMark, size: readableSizeAlgorithm});
+    const pullAlgorithm = () =>
+          TransformStreamDefaultSourcePullAlgorithm(stream);
+    const cancelAlgorithm = reason => {
+      TransformStreamErrorWritableAndUnblockWrite(stream, reason);
+      return Promise_resolve(undefined);
+    };
+    stream[_readable] = binding.CreateReadableStream(
+        startAlgorithm, pullAlgorithm, cancelAlgorithm, readableHighWaterMark,
+        readableSizeAlgorithm, false);
     stream[_backpressure] = undefined;
     stream[_backpressureChangePromise] = undefined;
     TransformStreamSetBackpressure(stream, true);
