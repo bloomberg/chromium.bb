@@ -182,17 +182,18 @@ void MediaControlOverlayPlayButtonElement::MaybeJump(int seconds) {
     auto* style = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
     style->setTextContent(
         MediaControlsResourceLoader::GetOverlayPlayStyleSheet());
-    shadow_root->AppendChild(style);
+    shadow_root->ParserAppendChild(style);
 
     // Insert the left jump arrow to the left of the play button.
     left_jump_arrow_ = new MediaControlOverlayPlayButtonElement::AnimatedArrow(
         "left-arrow", GetDocument());
-    shadow_root->InsertBefore(left_jump_arrow_, shadow_root->firstChild());
+    shadow_root->ParserInsertBefore(left_jump_arrow_,
+                                    *shadow_root->firstChild());
 
     // Insert the right jump arrow to the right of the play button.
     right_jump_arrow_ = new MediaControlOverlayPlayButtonElement::AnimatedArrow(
         "right-arrow", GetDocument());
-    shadow_root->AppendChild(right_jump_arrow_);
+    shadow_root->ParserAppendChild(right_jump_arrow_);
   }
 
   DCHECK(left_jump_arrow_ && right_jump_arrow_);

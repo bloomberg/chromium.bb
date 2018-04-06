@@ -66,15 +66,15 @@ HTMLElement* MediaControlInputElement::CreateOverflowElement(
       AtomicString("-internal-media-controls-overflow-menu-list-item"));
   // Appending a button to a label element ensures that clicks on the label
   // are passed down to the button, performing the action we'd expect.
-  element->AppendChild(button);
+  element->ParserAppendChild(button);
 
   if (MediaControlsImpl::IsModern()) {
     overflow_menu_container_ = HTMLDivElement::Create(GetDocument());
-    overflow_menu_container_->AppendChild(overflow_menu_text_);
+    overflow_menu_container_->ParserAppendChild(overflow_menu_text_);
     UpdateOverflowSubtitleElement(button->GetOverflowMenuSubtitleString());
-    element->AppendChild(overflow_menu_container_);
+    element->ParserAppendChild(overflow_menu_container_);
   } else {
-    element->AppendChild(overflow_menu_text_);
+    element->ParserAppendChild(overflow_menu_text_);
   }
 
   // Initialize the internal states of the main element and the overflow one.
@@ -108,7 +108,7 @@ void MediaControlInputElement::UpdateOverflowSubtitleElement(String text) {
     overflow_menu_subtitle_->setInnerText(text, ASSERT_NO_EXCEPTION);
     overflow_menu_subtitle_->setAttribute("class", kOverflowSubtitleCSSClass);
 
-    overflow_menu_container_->AppendChild(overflow_menu_subtitle_);
+    overflow_menu_container_->ParserAppendChild(overflow_menu_subtitle_);
     overflow_menu_container_->setAttribute(
         "class", kOverflowContainerWithSubtitleCSSClass);
   }

@@ -32,7 +32,7 @@ void MediaControlScrubbingMessageElement::PopulateChildren() {
       HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
   style->setTextContent(
       MediaControlsResourceLoader::GetScrubbingMessageStyleSheet());
-  shadow_root->AppendChild(style);
+  shadow_root->ParserAppendChild(style);
 
   HTMLDivElement* arrow_left_div1 =
       MediaControlElementsHelper::CreateDivWithId("arrow-left1", shadow_root);
