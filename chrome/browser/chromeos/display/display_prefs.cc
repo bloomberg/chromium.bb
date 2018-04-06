@@ -23,7 +23,6 @@
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
-#include "ui/display/manager/display_pref_util.h"
 #include "ui/display/manager/json_converter.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/insets.h"
@@ -34,14 +33,14 @@ namespace chromeos {
 
 namespace {
 
-const char kInsetsTopKey[] = "insets_top";
-const char kInsetsLeftKey[] = "insets_left";
-const char kInsetsBottomKey[] = "insets_bottom";
-const char kInsetsRightKey[] = "insets_right";
+constexpr char kInsetsTopKey[] = "insets_top";
+constexpr char kInsetsLeftKey[] = "insets_left";
+constexpr char kInsetsBottomKey[] = "insets_bottom";
+constexpr char kInsetsRightKey[] = "insets_right";
 
-const char kTouchCalibrationWidth[] = "touch_calibration_width";
-const char kTouchCalibrationHeight[] = "touch_calibration_height";
-const char kTouchCalibrationPointPairs[] = "touch_calibration_point_pairs";
+constexpr char kTouchCalibrationWidth[] = "touch_calibration_width";
+constexpr char kTouchCalibrationHeight[] = "touch_calibration_height";
+constexpr char kTouchCalibrationPointPairs[] = "touch_calibration_point_pairs";
 
 constexpr char kTouchAssociationTimestamp[] = "touch_association_timestamp";
 constexpr char kTouchAssociationCalibrationData[] =
@@ -51,6 +50,12 @@ constexpr char kMirroringSourceId[] = "mirroring_source_id";
 constexpr char kMirroringDestinationIds[] = "mirroring_destination_ids";
 
 constexpr char kDisplayZoom[] = "display_zoom";
+
+constexpr char kDisplayPowerAllOn[] = "all_on";
+constexpr char kDisplayPowerInternalOffExternalOn[] =
+    "internal_off_external_on";
+constexpr char kDisplayPowerInternalOnExternalOff[] =
+    "internal_on_external_off";
 
 // This kind of boilerplates should be done by base::JSONValueConverter but it
 // doesn't support classes like gfx::Insets for now.
@@ -512,35 +517,40 @@ void StoreCurrentDisplayProperties(PrefService* local_state) {
   }
 }
 
-typedef std::map<chromeos::DisplayPowerState, std::string>
-    DisplayPowerStateToStringMap;
-
-const DisplayPowerStateToStringMap* GetDisplayPowerStateToStringMap() {
-  // Don't save or retore ALL_OFF state. http://crbug.com/318456.
-  static const DisplayPowerStateToStringMap* map = display::CreateToStringMap(
-      chromeos::DISPLAY_POWER_ALL_ON, "all_on",
-      chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-      "internal_off_external_on",
-      chromeos::DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF,
-      "internal_on_external_off");
-  return map;
-}
-
-bool GetDisplayPowerStateFromString(const base::StringPiece& state,
-                                    chromeos::DisplayPowerState* field) {
-  if (display::ReverseFind(GetDisplayPowerStateToStringMap(), state, field))
-    return true;
-  LOG(ERROR) << "Invalid display power state value:" << state;
-  return false;
+bool GetDisplayPowerStateFromString(const std::string& state_string,
+                                    chromeos::DisplayPowerState* power_state) {
+  if (state_string == kDisplayPowerAllOn) {
+    *power_state = chromeos::DISPLAY_POWER_ALL_ON;
+  } else if (state_string == kDisplayPowerInternalOffExternalOn) {
+    *power_state = chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON;
+  } else if (state_string == kDisplayPowerInternalOnExternalOff) {
+    *power_state = chromeos::DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF;
+  } else {
+    // Don't restore ALL_OFF state. http://crbug.com/318456.
+    return false;
+  }
+  return true;
 }
 
 void StoreDisplayPowerState(PrefService* local_state,
                             DisplayPowerState power_state) {
-  const DisplayPowerStateToStringMap* map = GetDisplayPowerStateToStringMap();
-  DisplayPowerStateToStringMap::const_iterator iter = map->find(power_state);
-  if (iter != map->end()) {
-    local_state->SetString(prefs::kDisplayPowerState, iter->second);
+  const char* state_string = nullptr;
+  switch (power_state) {
+    case chromeos::DISPLAY_POWER_ALL_ON:
+      state_string = kDisplayPowerAllOn;
+      break;
+    case chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON:
+      state_string = kDisplayPowerInternalOffExternalOn;
+      break;
+    case chromeos::DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF:
+      state_string = kDisplayPowerInternalOnExternalOff;
+      break;
+    case chromeos::DISPLAY_POWER_ALL_OFF:
+      // Don't store ALL_OFF state. http://crbug.com/318456.
+      break;
   }
+  if (state_string)
+    local_state->SetString(prefs::kDisplayPowerState, state_string);
 }
 
 void StoreCurrentDisplayPowerState(PrefService* local_state) {
@@ -672,9 +682,7 @@ void DisplayPrefs::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   // Per-display preference.
   registry->RegisterDictionaryPref(prefs::kSecondaryDisplays);
   registry->RegisterDictionaryPref(prefs::kDisplayProperties);
-  DisplayPowerStateToStringMap::const_iterator iter =
-      GetDisplayPowerStateToStringMap()->find(chromeos::DISPLAY_POWER_ALL_ON);
-  registry->RegisterStringPref(prefs::kDisplayPowerState, iter->second);
+  registry->RegisterStringPref(prefs::kDisplayPowerState, kDisplayPowerAllOn);
   registry->RegisterDictionaryPref(prefs::kDisplayRotationLock);
   registry->RegisterDictionaryPref(prefs::kDisplayTouchAssociations);
   registry->RegisterListPref(prefs::kExternalDisplayMirrorInfo);

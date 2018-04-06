@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "ui/display/display_layout.h"
-#include "ui/display/manager/display_pref_util.h"
 
 namespace display {
 
