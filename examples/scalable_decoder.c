@@ -121,16 +121,17 @@ int main(int argc, char **argv) {
   if (aom_codec_dec_init(&codec, decoder->codec_interface(), NULL, 0))
     die_codec(&codec, "Failed to initialize decoder.");
 
-  if (!file_is_obu(&obu_ctx))
-    die_codec(&codec, "Input is not a valid obu file");
-
   // peak sequence header OBU to get enhancement layer count, if any
   const size_t ret = fread(tmpbuf, 1, 32, inputfile);
   if (ret != 32) die_codec(&codec, "Input is not a valid obu file");
+  si.is_annexb = 0;
   if (aom_codec_peek_stream_info(decoder->codec_interface(), tmpbuf, 32, &si)) {
     die_codec(&codec, "Input is not a valid obu file");
   }
   fseek(inputfile, -32, SEEK_CUR);
+
+  if (!file_is_obu(&obu_ctx))
+    die_codec(&codec, "Input is not a valid obu file");
 
   // open output yuv files
   for (i = 0; i <= si.enhancement_layers_cnt; i++) {
@@ -147,14 +148,19 @@ int main(int argc, char **argv) {
       die_codec(&codec, "Failed to decode frame.");
 
     while ((img = aom_codec_get_frame(&codec, &iter)) != NULL) {
+      aom_image_t *img_shifted =
+          aom_img_alloc(NULL, AOM_IMG_FMT_I420, img->d_w, img->d_h, 16);
+      img_shifted->bit_depth = 8;
+      aom_img_downshift(img_shifted, img,
+                        img->bit_depth - img_shifted->bit_depth);
       if (img->enhancement_id == 0) {
         printf("Writing       base layer 0 %d\n", frame_cnt);
-        aom_img_write(img, outfile[0]);
+        aom_img_write(img_shifted, outfile[0]);
         obu_ctx.last_layer_id++;
       } else if (img->enhancement_id <= (int)si.enhancement_layers_cnt) {
         printf("Writing enhancemnt layer %d %d\n", img->enhancement_id,
                frame_cnt);
-        aom_img_write(img, outfile[img->enhancement_id]);
+        aom_img_write(img_shifted, outfile[img->enhancement_id]);
         if (img->enhancement_id == (int)si.enhancement_layers_cnt)
           obu_ctx.last_layer_id = 0;
         else

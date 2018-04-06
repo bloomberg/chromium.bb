@@ -163,13 +163,14 @@ static size_t get_obu_length_field_size(const uint8_t *data, size_t data_sz) {
   return length_field_size;
 }
 
-static void parse_operating_points(struct aom_read_bit_buffer *rb,
-                                   int red_hdr) {
+static void parse_operating_points(struct aom_read_bit_buffer *rb, int red_hdr,
+                                   aom_codec_stream_info_t *si) {
   if (red_hdr) {
     aom_rb_read_literal(rb, LEVEL_BITS);  // level
   } else {
     const uint8_t operating_points_minus1_cnt =
         aom_rb_read_literal(rb, OP_POINTS_MINUS1_BITS);
+    si->enhancement_layers_cnt = operating_points_minus1_cnt;
     for (int i = 0; i < operating_points_minus1_cnt + 1; i++) {
       aom_rb_read_literal(rb, OP_POINTS_IDC_BITS);  // idc
       aom_rb_read_literal(rb, LEVEL_BITS);          // level
@@ -244,7 +245,7 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
     return AOM_CODEC_UNSUP_BITSTREAM;
   }
 
-  parse_operating_points(&rb, reduced_still_picture_hdr);
+  parse_operating_points(&rb, reduced_still_picture_hdr, si);
 
   int num_bits_width = aom_rb_read_literal(&rb, 4) + 1;
   int num_bits_height = aom_rb_read_literal(&rb, 4) + 1;
