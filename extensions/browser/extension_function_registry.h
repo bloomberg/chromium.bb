@@ -42,6 +42,7 @@ class ExtensionFunctionRegistry {
     extensions::functions::HistogramValue histogram_value_ =
         extensions::functions::UNKNOWN;
   };
+  using FactoryMap = std::map<std::string, FactoryEntry>;
 
   static ExtensionFunctionRegistry& GetInstance();
   ExtensionFunctionRegistry();
@@ -63,8 +64,9 @@ class ExtensionFunctionRegistry {
                           T::histogram_value()));
   }
 
+  const FactoryMap& GetFactoriesForTesting() const { return factories_; }
+
  private:
-  typedef std::map<std::string, FactoryEntry> FactoryMap;
   FactoryMap factories_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFunctionRegistry);

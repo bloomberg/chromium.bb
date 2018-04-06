@@ -135,7 +135,7 @@ class NotificationsGetPermissionLevelFunction
 
  private:
   DECLARE_EXTENSION_FUNCTION("notifications.getPermissionLevel",
-                             NOTIFICATIONS_GET_ALL)
+                             NOTIFICATIONS_GETPERMISSIONLEVEL)
 };
 
 }  // namespace extensions

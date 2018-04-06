@@ -56,7 +56,8 @@ class AutomationInternalPerformActionFunction
 
 class AutomationInternalEnableFrameFunction : public UIThreadExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("automationInternal.enableFrame",
-                             AUTOMATIONINTERNAL_PERFORMACTION)
+                             AUTOMATIONINTERNAL_ENABLEFRAME)
+
  protected:
   ~AutomationInternalEnableFrameFunction() override {}
 
@@ -76,7 +77,7 @@ class AutomationInternalEnableDesktopFunction
 class AutomationInternalQuerySelectorFunction
     : public UIThreadExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("automationInternal.querySelector",
-                             AUTOMATIONINTERNAL_ENABLEDESKTOP)
+                             AUTOMATIONINTERNAL_QUERYSELECTOR)
 
  public:
   typedef base::Callback<void(const std::string& error,
