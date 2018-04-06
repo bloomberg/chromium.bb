@@ -1954,6 +1954,25 @@
             ]
         }
     ],
+    "NTPArticleSuggestionsNowStream": [
+        {
+            "platforms": [
+                "android",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "content_suggestions_backend": "https://chromefeedcontentsuggestions-pa.googleapis.com/v2/suggestions/fetch"
+                    },
+                    "enable_features": [
+                        "NTPArticleSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
     "NTPBreakingNewsPush": [
         {
             "platforms": [
