@@ -484,7 +484,7 @@ camera.views.Browser.prototype.updateElementSize = function(wrapper) {
   var maxHeight = wrapper.parentElement.clientHeight * 0.72;
 
   camera.views.GalleryBase.prototype.updateElementSize.call(
-      this, wrapper, maxWidth, maxHeight);
+      this, wrapper, maxWidth, maxHeight, false);
 };
 
 /**
