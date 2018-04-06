@@ -156,7 +156,7 @@ bool ImageLayerBridge::PrepareTransferableResource(
                   image_for_compositor->height()),
         viz::RGBA_8888);
     auto func = WTF::Bind(&ImageLayerBridge::ResourceReleasedSoftware,
-                          WrapWeakPersistent(this), base::Passed(&bitmap),
+                          WrapWeakPersistent(this), std::move(bitmap),
                           image_for_compositor->Size());
     *out_release_callback = viz::SingleReleaseCallback::Create(std::move(func));
   }

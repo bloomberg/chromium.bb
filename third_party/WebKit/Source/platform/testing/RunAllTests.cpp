@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
         testIoThread.task_runner(),
         mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
     result = base::LaunchUnitTests(
-        argc, argv, base::Bind(runTestSuite, base::Unretained(&testSuite)));
+        argc, argv, base::BindOnce(runTestSuite, base::Unretained(&testSuite)));
   }
   return result;
 }
