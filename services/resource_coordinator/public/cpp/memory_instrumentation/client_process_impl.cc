@@ -136,11 +136,11 @@ void ClientProcessImpl::EnableHeapProfiling(
 }
 
 void ClientProcessImpl::RequestOSMemoryDump(
-    bool want_mmaps,
+    mojom::MemoryMapOption mmap_option,
     const std::vector<base::ProcessId>& pids,
     const RequestOSMemoryDumpCallback& callback) {
   OSMemoryDumpArgs args;
-  args.want_mmaps = want_mmaps;
+  args.mmap_option = mmap_option;
   args.pids = pids;
   args.callback = callback;
 
@@ -166,8 +166,10 @@ void ClientProcessImpl::PerformOSMemoryDump(OSMemoryDumpArgs args) {
     mojom::RawOSMemDumpPtr result = mojom::RawOSMemDump::New();
     result->platform_private_footprint = mojom::PlatformPrivateFootprint::New();
     bool success = OSMetrics::FillOSMemoryDump(pid, result.get());
-    if (args.want_mmaps)
-      success = success && OSMetrics::FillProcessMemoryMaps(pid, result.get());
+    if (args.mmap_option != mojom::MemoryMapOption::NONE) {
+      success = success && OSMetrics::FillProcessMemoryMaps(
+                               pid, args.mmap_option, result.get());
+    }
     if (success)
       results[pid] = std::move(result);
     global_success = global_success && success;

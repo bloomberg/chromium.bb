@@ -38,6 +38,19 @@ enum HeapProfilingMode {
   NATIVE_STACK
 };
 
+enum MemoryMapOption {
+  // Do not fetch any information about mapped regions in the virtual address
+  // space.
+  NONE,
+
+  // Only fetch information on code modules, e.g. Chrome Binary, system
+  // libraries.
+  MODULES,
+
+  // Fetch information for every single mapped region.
+  FULL
+};
+
 // These structs are internal only (only for the communication between
 // the service and the ClientProcess library).
 // See corresponding types in //base/trace_event for comments.
@@ -213,7 +226,7 @@ interface ClientProcess {
   // On Linux we call this once on the browser process ClientProcess passing
   // the pids for all processes.
   // See crbug.com/461788
-  RequestOSMemoryDump(bool want_mmaps, array<mojo_base.mojom.ProcessId> pids) =>
+  RequestOSMemoryDump(MemoryMapOption option, array<mojo_base.mojom.ProcessId> pids) =>
       (bool success, map<mojo_base.mojom.ProcessId, RawOSMemDump> dumps);
 };
 
