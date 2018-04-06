@@ -56,13 +56,6 @@ bool InvokeShellExecute(const base::string16 path,
 
 }  // namespace
 
-bool OpenAnyViaShell(const base::string16& full_path,
-                     const base::string16& directory,
-                     const base::string16& args,
-                     DWORD mask) {
-  return InvokeShellExecute(full_path, directory, args, base::string16(), mask);
-}
-
 bool OpenFileViaShell(const base::FilePath& full_path) {
   // Invoke the default verb on the file with no arguments.
   return InvokeShellExecute(full_path.value(), full_path.DirName().value(),
