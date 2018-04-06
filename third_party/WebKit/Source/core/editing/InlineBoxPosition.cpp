@@ -165,6 +165,9 @@ InlineBoxPosition AdjustInlineBoxPositionForTextDirectionInternal(
     InlineBox* inline_box,
     int caret_offset,
     UnicodeBidi unicode_bidi) {
+  DCHECK(caret_offset == inline_box->CaretLeftmostOffset() ||
+         caret_offset == inline_box->CaretRightmostOffset());
+
   const TextDirection primary_direction =
       inline_box->Root().Block().Style()->Direction();
   if (inline_box->Direction() == primary_direction)
