@@ -36,7 +36,6 @@ jumbo_component("manager") {
     "display_manager_export.h",
     "display_manager_utilities.cc",
     "display_manager_utilities.h",
-    "display_pref_util.h",
     "fake_display_delegate.cc",
     "fake_display_delegate.h",
     "fake_display_snapshot.cc",
