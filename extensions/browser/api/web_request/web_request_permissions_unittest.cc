@@ -58,12 +58,16 @@ TEST(ExtensionWebRequestPermissions, IsSensitiveURL) {
     GURL url(test.url);
     EXPECT_TRUE(url.is_valid()) << test.url;
     EXPECT_EQ(test.is_sensitive_if_request_from_common_renderer,
-              IsSensitiveURL(
-                  url, false /* is_request_from_browser_or_webui_renderer */))
+              IsSensitiveURL(url, url::Origin::Create(url),
+                             false /* is_request_from_browser */,
+                             false /* is_request_from_web_ui_renderer */))
         << test.url;
-    EXPECT_EQ(test.is_sensitive_if_request_from_browser_or_webui_renderer,
-              IsSensitiveURL(
-                  url, true /* is_request_from_browser_or_webui_renderer */))
+
+    const bool supported_in_webui_renderers = !url.SchemeIsHTTPOrHTTPS();
+    EXPECT_EQ(
+        test.is_sensitive_if_request_from_browser_or_webui_renderer,
+        IsSensitiveURL(url, base::nullopt, true /* is_request_from_browser */,
+                       supported_in_webui_renderers))
         << test.url;
   }
 }
