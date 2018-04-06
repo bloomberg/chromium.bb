@@ -29,4 +29,22 @@ Polymer({
     this.fire(
         'password-menu-tap', {target: this.$.passwordMenu, listItem: this});
   },
+
+  /**
+   * Get the aria label for the More Actions button on this row.
+   * @param {{
+   *    entry: !chrome.passwordsPrivate.PasswordUiEntry,
+   *    password: string
+   * }} item This row's item.
+   * @private
+   */
+  getMoreActionsLabel_: function(item) {
+    // Avoid using I18nBehavior.i18n, because it will filter sequences, which
+    // are otherwise not illegal for usernames. Polymer still protects against
+    // XSS injection.
+    return loadTimeData.getStringF(
+        (item.entry.federationText) ? 'passwordRowFederatedMoreActionsButton' :
+                                      'passwordRowMoreActionsButton',
+        item.entry.loginPair.username, item.entry.loginPair.urls.shown);
+  },
 });
