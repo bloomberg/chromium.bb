@@ -470,14 +470,12 @@ public class OfflinePageUtils {
     public static void sharePublishedPage(OfflinePageItem page, final Activity activity,
             final Callback<ShareParams> shareCallback) {
         if (page == null) {
-            // Set the source component name to null to indicate failure, causing ShareHelper.share
-            // to return.
-            ShareParams shareParams =
-                    new ShareParams.Builder(activity, page.getTitle(), page.getUrl())
-                            .setShareDirectly(false)
-                            .setOfflineUri(Uri.parse(page.getUrl()))
-                            .setSourcePackageName(null)
-                            .build();
+            // Set share directly to true and the source component name to null to indicate failure,
+            // causing ShareHelper.share() to return.
+            ShareParams shareParams = new ShareParams.Builder(activity, "", "")
+                                              .setShareDirectly(true)
+                                              .setSourcePackageName(null)
+                                              .build();
             shareCallback.onResult(shareParams);
             return;
         }
