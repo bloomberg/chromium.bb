@@ -5346,9 +5346,8 @@ static int check_best_zero_mv(const AV1_COMP *const cpi,
 
   if ((this_mode == NEARMV || this_mode == NEARESTMV ||
        this_mode == GLOBALMV) &&
-      frame_mv[this_mode][ref_frames[0]].as_int == zeromv[0].as_int &&
-      (ref_frames[1] <= INTRA_FRAME ||
-       frame_mv[this_mode][ref_frames[1]].as_int == zeromv[1].as_int)) {
+      frame_mv[this_mode][ref_frames[0]].as_int == zeromv[0].as_int) {
+    assert(ref_frames[1] == NONE_FRAME);
     int16_t rfc = av1_mode_context_analyzer(mode_context, ref_frames);
     int c1 = cost_mv_ref(x, NEARMV, rfc);
     int c2 = cost_mv_ref(x, NEARESTMV, rfc);
@@ -5360,17 +5359,9 @@ static int check_best_zero_mv(const AV1_COMP *const cpi,
       if (c2 > c3) return 0;
     } else {
       assert(this_mode == GLOBALMV);
-      if (ref_frames[1] <= INTRA_FRAME) {
-        if ((c3 >= c2 && frame_mv[NEARESTMV][ref_frames[0]].as_int == 0) ||
-            (c3 >= c1 && frame_mv[NEARMV][ref_frames[0]].as_int == 0))
-          return 0;
-      } else {
-        if ((c3 >= c2 && frame_mv[NEARESTMV][ref_frames[0]].as_int == 0 &&
-             frame_mv[NEARESTMV][ref_frames[1]].as_int == 0) ||
-            (c3 >= c1 && frame_mv[NEARMV][ref_frames[0]].as_int == 0 &&
-             frame_mv[NEARMV][ref_frames[1]].as_int == 0))
-          return 0;
-      }
+      if ((c3 >= c2 && frame_mv[NEARESTMV][ref_frames[0]].as_int == 0) ||
+          (c3 >= c1 && frame_mv[NEARMV][ref_frames[0]].as_int == 0))
+        return 0;
     }
   } else if ((this_mode == NEAREST_NEARESTMV || this_mode == NEAR_NEARMV ||
               this_mode == GLOBAL_GLOBALMV) &&
