@@ -41,12 +41,7 @@
           {name: 'fftSize', value: 2048},
           {name: 'frequencyBinCount', value: 1024},
           {name: 'minDecibels', value: -100}, {name: 'maxDecibels', value: -30},
-          {
-            // Compare against the single-precision float value since 0.8 isn't
-            // exactly representable as a float.
-            name: 'smoothingTimeConstant',
-            value: Math.fround(0.8)
-          }
+          {name: 'smoothingTimeConstant', value: 0.8}
         ]);
 
         task.done();
