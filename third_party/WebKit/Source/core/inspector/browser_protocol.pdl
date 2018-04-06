@@ -3435,6 +3435,15 @@ domain Network
       TimeSinceEpoch validTo
       # List of signed certificate timestamps (SCTs).
       array of SignedCertificateTimestamp signedCertificateTimestampList
+      # Whether the request complied with Certificate Transparency policy
+      CertificateTransparencyCompliance certificateTransparencyCompliance
+
+  # Whether the request complied with Certificate Transparency policy.
+  type CertificateTransparencyCompliance extends string
+    enum
+      unknown
+      not-compliant
+      compliant
 
   # The reason why request was blocked.
   type BlockedReason extends string

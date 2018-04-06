@@ -44,6 +44,7 @@
 #include "content/public/common/content_switches.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_sct_to_string.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_store.h"
@@ -78,6 +79,26 @@ using ClearBrowserCookiesCallback =
 
 const char kDevToolsEmulateNetworkConditionsClientId[] =
     "X-DevTools-Emulate-Network-Conditions-Client-Id";
+
+Network::CertificateTransparencyCompliance SerializeCTPolicyCompliance(
+    net::ct::CTPolicyCompliance ct_compliance) {
+  switch (ct_compliance) {
+    case net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS:
+      return Network::CertificateTransparencyComplianceEnum::Compliant;
+    case net::ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS:
+    case net::ct::CTPolicyCompliance::CT_POLICY_NOT_DIVERSE_SCTS:
+      return Network::CertificateTransparencyComplianceEnum::NotCompliant;
+    case net::ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY:
+    case net::ct::CTPolicyCompliance::
+        CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE:
+      return Network::CertificateTransparencyComplianceEnum::Unknown;
+    case net::ct::CTPolicyCompliance::CT_POLICY_MAX:
+      NOTREACHED();
+      return Network::CertificateTransparencyComplianceEnum::Unknown;
+  }
+  NOTREACHED();
+  return Network::CertificateTransparencyComplianceEnum::Unknown;
+}
 
 std::unique_ptr<Network::Cookie> BuildCookie(
     const net::CanonicalCookie& cookie) {
@@ -1302,6 +1323,8 @@ std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
           .SetCertificateId(0)  // Keep this in protocol for compatability.
           .SetSignedCertificateTimestampList(
               std::move(signed_certificate_timestamp_list))
+          .SetCertificateTransparencyCompliance(
+              SerializeCTPolicyCompliance(ssl_info.ct_policy_compliance))
           .Build();
 
   if (ssl_info.key_exchange_group != 0) {
@@ -1312,6 +1335,7 @@ std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
   }
   if (mac)
     security_details->SetMac(mac);
+
   return security_details;
 }
 
