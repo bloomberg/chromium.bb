@@ -128,7 +128,7 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
         &USB::OnChooserServiceConnectionError, WrapWeakPersistent(this)));
   }
 
-  if (!Frame::ConsumeTransientUserActivation(frame)) {
+  if (!Frame::HasTransientUserActivation(frame)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(

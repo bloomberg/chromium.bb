@@ -169,7 +169,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
   // If the algorithm is not allowed to show a popup, reject promise with a
   // SecurityError and abort these steps.
   Document* doc = ToDocumentOrNull(context);
-  if (!Frame::ConsumeTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
+  if (!Frame::HasTransientUserActivation(doc ? doc->GetFrame() : nullptr)) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
