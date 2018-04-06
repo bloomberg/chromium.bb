@@ -334,13 +334,21 @@ template("gcc_toolchain") {
       # POSIX-like toolchains such as NaCl on Windows).
       ar_wrapper =
           rebase_path("//build/toolchain/gcc_ar_wrapper.py", root_build_dir)
-      if (current_os == "aix") {
-        # We use slightly different arflags for AIX.
-        extra_arflags = "rcsT"
-      } else {
+
+      # TODO(thomasanderson): Remove the special ChromeOS case once
+      # https://crbug.com/829956 is fixed.
+      if (default_toolchain == "//build/toolchain/cros:target") {
         extra_arflags = "rcsD"
+      } else if (current_os == "aix") {
+        # We use slightly different arflags for AIX.
+        extra_arflags = "-r -c -s"
+      } else {
+        extra_arflags = "-r -c -s -D"
       }
-      command = "$python_path \"$ar_wrapper\"$whitelist_flag --output={{output}} --ar=\"$ar\" {{arflags}} $extra_arflags @\"$rspfile\""
+
+      # Almost all targets build with //build/config/compiler:thin_archive which
+      # adds -T to arflags.
+      command = "$python_path \"$ar_wrapper\"$whitelist_flag --output={{output}} --ar=\"$ar\" \"{{arflags}} $extra_arflags\" @\"$rspfile\""
       description = "AR {{output}}"
       rspfile_content = "{{inputs}}"
       outputs = [
