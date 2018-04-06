@@ -455,6 +455,7 @@ bool OpaqueBrowserFrameView::UseCustomFrame() const {
 
 // views::View:
 void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
+  TRACE_EVENT0("views.frame", "OpaqueBrowserFrameView::OnPaint");
   if (frame()->IsFullscreen())
     return;  // Nothing is visible, so don't bother to paint.
 
