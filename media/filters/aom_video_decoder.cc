@@ -96,13 +96,6 @@ static VideoPixelFormat AomImgFmtToVideoPixelFormat(const aom_image_t* img) {
           return PIXEL_FORMAT_UNKNOWN;
       }
 
-    case AOM_IMG_FMT_I440:
-    case AOM_IMG_FMT_I44016:
-      // TODO(dalecurtis): We'll need to add support for these to handle the
-      // full range of expected AOM content.
-      NOTIMPLEMENTED();
-      break;
-
     default:
       break;
   }
