@@ -366,13 +366,7 @@ config("cfi_linker") {
   # turned on either.
   # CFG seems to lead to random corruption with incremental linking so turn off
   # CFG in component builds. https://crbug.com/812421
-  # CFG, ThinLTO and RTTI don't currently work together, so turn off
-  # CFG for that combination. We detect RTTI by looking for
-  # use_cfi_diag || is_ubsan_vptr || is_ubsan_security, as per
-  # //build/config/compiler/BUILD.gn.
-  # TODO(inglorion): Re-enable once figured out, bug https://crbug.com/818086
-  if (!is_debug && !is_component_build &&
-      !(use_thin_lto && (use_cfi_diag || is_ubsan_vptr || is_ubsan_security))) {
+  if (!is_debug && !is_component_build) {
     # Turn on CFG in msvc linker, regardless of compiler used. Turn off CFG for
     # longjmp (new in VS 2017) because it relies on compiler support which we do
     # not have enabled.
