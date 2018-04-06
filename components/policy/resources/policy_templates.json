@@ -9827,7 +9827,7 @@
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:53-'],
       'features': {
-        'dynamic_refresh': True,
+        'dynamic_refresh': False,
         'per_profile': False,
       },
       'example_value': False,
@@ -9849,7 +9849,7 @@
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome_os:57-'],
       'features': {
-        'dynamic_refresh': True,
+        'dynamic_refresh': False,
         'per_profile': False,
       },
       'example_value': False,

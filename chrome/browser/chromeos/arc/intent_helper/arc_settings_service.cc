@@ -150,10 +150,6 @@ class ArcSettingsServiceImpl
   // Android boot after AppInstance is ready and send it to Android.
   // TODO(crbug.com/762553): Sync settings at proper time.
   void SyncAppTimeSettings();
-  // Determine whether a particular setting needs to be synced to Android.
-  // Keep these lines ordered lexicographically.
-  bool ShouldSyncBackupEnabled() const;
-  bool ShouldSyncLocationServiceEnabled() const;
   // Send particular settings to Android.
   // Keep these lines ordered lexicographically.
   void SyncAccessibilityLargeMouseCursorEnabled() const;
@@ -270,12 +266,6 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
     SyncSwitchAccessEnabled();
   } else if (pref_name == ash::prefs::kAccessibilityVirtualKeyboardEnabled) {
     SyncAccessibilityVirtualKeyboardEnabled();
-  } else if (pref_name == prefs::kArcBackupRestoreEnabled) {
-    if (ShouldSyncBackupEnabled())
-      SyncBackupEnabled();
-  } else if (pref_name == prefs::kArcLocationServiceEnabled) {
-    if (ShouldSyncLocationServiceEnabled())
-      SyncLocationServiceEnabled();
   } else if (pref_name == ::prefs::kApplicationLocale ||
              pref_name == ::prefs::kLanguagePreferredLanguages) {
     SyncLocale();
@@ -329,8 +319,6 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   AddPrefToObserve(ash::prefs::kAccessibilitySpokenFeedbackEnabled);
   AddPrefToObserve(ash::prefs::kAccessibilitySwitchAccessEnabled);
   AddPrefToObserve(ash::prefs::kAccessibilityVirtualKeyboardEnabled);
-  AddPrefToObserve(prefs::kArcBackupRestoreEnabled);
-  AddPrefToObserve(prefs::kArcLocationServiceEnabled);
   AddPrefToObserve(prefs::kSmsConnectEnabled);
   AddPrefToObserve(::prefs::kResolveTimezoneByGeolocationMethod);
   AddPrefToObserve(::prefs::kUse24HourClock);
@@ -340,6 +328,10 @@ void ArcSettingsServiceImpl::StartObservingSettingsChanges() {
   AddPrefToObserve(proxy_config::prefs::kProxy);
   AddPrefToObserve(onc::prefs::kDeviceOpenNetworkConfiguration);
   AddPrefToObserve(onc::prefs::kOpenNetworkConfiguration);
+
+  // Note that some preferences, such as kArcBackupRestoreEnabled and
+  // kArcLocationServiceEnabled, are not dynamically updated after initial
+  // ARC setup and therefore are not observed here.
 
   reporting_consent_subscription_ = CrosSettings::Get()->AddSettingsObserver(
       chromeos::kStatsReportingPref,
@@ -391,11 +383,6 @@ void ArcSettingsServiceImpl::SyncBootTimeSettings() const {
   SyncTimeZone();
   SyncTimeZoneByGeolocation();
   SyncUse24HourClock();
-
-  if (ShouldSyncBackupEnabled())
-    SyncBackupEnabled();
-  if (ShouldSyncLocationServiceEnabled())
-    SyncLocationServiceEnabled();
 }
 
 void ArcSettingsServiceImpl::SyncAppTimeSettings() {
@@ -408,22 +395,6 @@ void ArcSettingsServiceImpl::SyncAppTimeSettings() {
   // (b/6773449, b/65385376).
   AddPrefToObserve(::prefs::kApplicationLocale);
   AddPrefToObserve(::prefs::kLanguagePreferredLanguages);
-}
-
-bool ArcSettingsServiceImpl::ShouldSyncBackupEnabled() const {
-  // Always sync the managed setting. Also sync when the pref is unset, which
-  // normally happens once after the pref changes from the managed state to
-  // unmanaged.
-  return GetPrefs()->IsManagedPreference(prefs::kArcBackupRestoreEnabled) ||
-         !GetPrefs()->HasPrefPath(prefs::kArcBackupRestoreEnabled);
-}
-
-bool ArcSettingsServiceImpl::ShouldSyncLocationServiceEnabled() const {
-  // Always sync the managed setting. Also sync when the pref is unset, which
-  // normally happens once after the pref changes from the managed state to
-  // unmanaged.
-  return GetPrefs()->IsManagedPreference(prefs::kArcLocationServiceEnabled) ||
-         !GetPrefs()->HasPrefPath(prefs::kArcLocationServiceEnabled);
 }
 
 void ArcSettingsServiceImpl::SyncAccessibilityLargeMouseCursorEnabled() const {
@@ -449,16 +420,6 @@ void ArcSettingsServiceImpl::SyncBackupEnabled() const {
     DCHECK(value->is_bool());
     backup_settings->SetBackupEnabled(value->GetBool(),
                                       !pref->IsUserModifiable());
-  }
-
-  if (GetPrefs()->IsManagedPreference(prefs::kArcBackupRestoreEnabled)) {
-    // Unset the user pref so that if the pref becomes unmanaged at some point,
-    // this change will be synced.
-    GetPrefs()->ClearPref(prefs::kArcBackupRestoreEnabled);
-  } else if (!GetPrefs()->HasPrefPath(prefs::kArcBackupRestoreEnabled)) {
-    // Set the pref value in order to prevent the subsequent syncing. The
-    // "false" value is a safe default from the legal/privacy perspective.
-    GetPrefs()->SetBoolean(prefs::kArcBackupRestoreEnabled, false);
   }
 }
 
@@ -518,15 +479,6 @@ void ArcSettingsServiceImpl::SyncLocationServiceEnabled() const {
   SendBoolPrefSettingsBroadcast(
       prefs::kArcLocationServiceEnabled,
       "org.chromium.arc.intent_helper.SET_LOCATION_SERVICE_ENABLED");
-  if (GetPrefs()->IsManagedPreference(prefs::kArcLocationServiceEnabled)) {
-    // Unset the user pref so that if the pref becomes unmanaged at some point,
-    // this change will be synced.
-    GetPrefs()->ClearPref(prefs::kArcLocationServiceEnabled);
-  } else if (!GetPrefs()->HasPrefPath(prefs::kArcLocationServiceEnabled)) {
-    // Set the pref value in order to prevent the subsequent syncing. The
-    // "false" value is a safe default from the legal/privacy perspective.
-    GetPrefs()->SetBoolean(prefs::kArcLocationServiceEnabled, false);
-  }
 }
 
 void ArcSettingsServiceImpl::SyncProxySettings() const {
