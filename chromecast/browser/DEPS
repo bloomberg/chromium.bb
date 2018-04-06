@@ -51,4 +51,9 @@ include_rules = [
 
   # TODO(slan): Remove this when the network service is shipped on Cast.
   "+services/network",
+
+  # Needed to insert video plane callback.
+  # TODO(halliwell): Need to re-work this dependency otherwise Cast can't run
+  # with Viz out of process.
+  "+components/viz/service/display/overlay_strategy_underlay_cast.h",
 ]

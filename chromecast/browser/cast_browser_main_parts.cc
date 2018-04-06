@@ -90,8 +90,8 @@
 // callback.
 #include "chromecast/browser/cast_display_configurator.h"
 #include "chromecast/graphics/cast_screen.h"
+#include "components/viz/service/display/overlay_strategy_underlay_cast.h"  // nogncheck
 #include "ui/display/screen.h"
-#include "ui/ozone/platform/cast/overlay_manager_cast.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
@@ -518,9 +518,9 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
   video_plane_controller_.reset(new media::VideoPlaneController(
       Size(display_size.width(), display_size.height()), GetMediaTaskRunner()));
-  ui::OverlayManagerCast::SetOverlayCompositedCallback(
-      base::Bind(&media::VideoPlaneController::SetGeometry,
-                 base::Unretained(video_plane_controller_.get())));
+  viz::OverlayStrategyUnderlayCast::SetOverlayCompositedCallback(
+      base::BindRepeating(&media::VideoPlaneController::SetGeometryGfx,
+                          base::Unretained(video_plane_controller_.get())));
 #endif
 
   window_manager_ = CastWindowManager::Create(
