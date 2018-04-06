@@ -81,6 +81,21 @@ EphemeralRange PlainTextRange::CreateRangeForSelectionIndexing(
   return CreateRangeFor(scope, behavior);
 }
 
+static Position CreatePositionInTextRun(size_t offset_in_run,
+                                        const Position& text_run_start_position,
+                                        const Position& text_run_end_position) {
+  if (text_run_start_position.ComputeContainerNode()->IsTextNode()) {
+    // TODO(editing-dev): DCHECK |offset_in_run| falls in int value range.
+    const int offset = offset_in_run;
+    return Position(text_run_start_position.ComputeContainerNode(),
+                    offset + text_run_start_position.OffsetInContainerNode());
+  }
+
+  if (!offset_in_run)
+    return text_run_start_position;
+  return text_run_end_position;
+}
+
 EphemeralRange PlainTextRange::CreateRangeFor(
     const ContainerNode& scope,
     const TextIteratorBehavior& behavior) const {
@@ -92,9 +107,7 @@ EphemeralRange PlainTextRange::CreateRangeFor(
   Position text_run_start_position;
   Position text_run_end_position;
 
-  auto range = EphemeralRange::RangeOfContents(scope);
-
-  TextIterator it(range.StartPosition(), range.EndPosition(), behavior);
+  TextIterator it(EphemeralRange::RangeOfContents(scope), behavior);
 
   // FIXME: the atEnd() check shouldn't be necessary, workaround for
   // <http://bugs.webkit.org/show_bug.cgi?id=6289>.
@@ -105,14 +118,14 @@ EphemeralRange PlainTextRange::CreateRangeFor(
   Position result_end = result_start;
 
   for (; !it.AtEnd(); it.Advance()) {
-    int len = it.length();
+    const int len = it.length();
 
     text_run_start_position = it.StartPositionInCurrentContainer();
     text_run_end_position = it.EndPositionInCurrentContainer();
 
-    bool found_start =
+    const bool found_start =
         Start() >= doc_text_position && Start() <= doc_text_position + len;
-    bool found_end =
+    const bool found_end =
         End() >= doc_text_position && End() <= doc_text_position + len;
 
     // Fix textRunRange->endPosition(), but only if foundStart || foundEnd,
@@ -138,34 +151,19 @@ EphemeralRange PlainTextRange::CreateRangeFor(
 
     if (found_start) {
       start_range_found = true;
-      if (text_run_start_position.ComputeContainerNode()->IsTextNode()) {
-        int offset = Start() - doc_text_position;
-        result_start =
-            Position(text_run_start_position.ComputeContainerNode(),
-                     offset + text_run_start_position.OffsetInContainerNode());
-      } else {
-        if (Start() == doc_text_position)
-          result_start = text_run_start_position;
-        else
-          result_start = text_run_end_position;
-      }
+      result_start = CreatePositionInTextRun(Start() - doc_text_position,
+                                             text_run_start_position,
+                                             text_run_end_position);
     }
 
     if (found_end) {
-      if (text_run_start_position.ComputeContainerNode()->IsTextNode()) {
-        int offset = End() - doc_text_position;
-        result_end =
-            Position(text_run_start_position.ComputeContainerNode(),
-                     offset + text_run_start_position.OffsetInContainerNode());
-      } else {
-        if (End() == doc_text_position)
-          result_end = text_run_start_position;
-        else
-          result_end = text_run_end_position;
-      }
+      result_end = CreatePositionInTextRun(End() - doc_text_position,
+                                           text_run_start_position,
+                                           text_run_end_position);
       doc_text_position += len;
       break;
     }
+
     doc_text_position += len;
   }
 
