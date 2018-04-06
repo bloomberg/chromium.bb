@@ -184,8 +184,8 @@ class OmniboxViewViewsTest : public ChromeViewsTestBase {
   OmniboxViewViewsTest();
 
   TestToolbarModel* toolbar_model() { return &toolbar_model_; }
-  TestingOmniboxView* omnibox_view() { return omnibox_view_.get(); }
-  views::Textfield* omnibox_textfield() { return omnibox_view(); }
+  TestingOmniboxView* omnibox_view() const { return omnibox_view_.get(); }
+  views::Textfield* omnibox_textfield() const { return omnibox_view(); }
   ui::TextEditCommand scheduled_text_edit_command() const {
     return test_api_->scheduled_text_edit_command();
   }
@@ -436,6 +436,17 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
     ExpectElidedUrlDisplayed();
   }
 
+  bool IsSelectAll() const { return omnibox_view()->IsSelectAll(); }
+
+  void FocusAndSelectAll() {
+    omnibox_textfield()->OnFocus();
+    EXPECT_EQ(OMNIBOX_FOCUS_VISIBLE, omnibox_view()->model()->focus_state());
+
+    omnibox_view()->SelectAll(true);
+    EXPECT_TRUE(omnibox_view()->IsSelectAll());
+    ExpectElidedUrlDisplayed();
+  }
+
   void ExpectFullUrlDisplayed() {
     EXPECT_EQ(base::ASCIIToUTF16("https://example.com"),
               omnibox_view()->text());
@@ -463,12 +474,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, StayElidedOnFocus) {
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnArrowKey) {
-  omnibox_textfield()->OnFocus();
-  EXPECT_EQ(OMNIBOX_FOCUS_VISIBLE, omnibox_view()->model()->focus_state());
-
-  omnibox_view()->SelectAll(true);
-  EXPECT_TRUE(omnibox_view()->IsSelectAll());
-  ExpectElidedUrlDisplayed();
+  FocusAndSelectAll();
 
   // Right key should unelide and move the cursor to the end.
   omnibox_textfield_view()->OnKeyPressed(
@@ -481,9 +487,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnArrowKey) {
 
   // Blur and restore the elided URL.
   omnibox_textfield()->OnBlur();
-  omnibox_textfield()->OnFocus();
-  omnibox_view()->SelectAll(true);
-  ExpectElidedUrlDisplayed();
+  FocusAndSelectAll();
 
   // Left key should unelide and move the cursor to the beginning of the elided
   // part.
@@ -493,4 +497,37 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnArrowKey) {
   omnibox_view()->GetSelectionBounds(&start, &end);
   EXPECT_EQ(8U, start);
   EXPECT_EQ(8U, end);
+}
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnHomeKey) {
+  FocusAndSelectAll();
+
+  // Home key should unelide and move the cursor to the beginning of the full
+  // unelided URL.
+  omnibox_textfield_view()->OnKeyPressed(
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_HOME, 0));
+  ExpectFullUrlDisplayed();
+  size_t start, end;
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(0U, start);
+  EXPECT_EQ(0U, end);
+}
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, GestureTaps) {
+  ui::GestureEvent tap_down(0, 0, 0, ui::EventTimeForNow(),
+                            ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
+  omnibox_textfield_view()->OnGestureEvent(&tap_down);
+
+  // Select all on first tap.
+  ui::GestureEventDetails tap_details(ui::ET_GESTURE_TAP);
+  tap_details.set_tap_count(1);
+  ui::GestureEvent tap(0, 0, 0, ui::EventTimeForNow(), tap_details);
+  omnibox_textfield_view()->OnGestureEvent(&tap);
+
+  EXPECT_TRUE(IsSelectAll());
+  ExpectElidedUrlDisplayed();
+
+  // Unelide on second tap (cursor placement).
+  omnibox_textfield_view()->OnGestureEvent(&tap);
+  ExpectFullUrlDisplayed();
 }
