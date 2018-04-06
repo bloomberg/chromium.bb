@@ -17,6 +17,9 @@ enum WebClientHintsType {
   kDpr = 1,
   kResourceWidth = 2,
   kViewportWidth = 3,
+  kRtt = 4,
+  kDownlink = 5,
+  kEct = 6,
 
   // Warning: Before adding a new client hint, read the warning at the top.
 };

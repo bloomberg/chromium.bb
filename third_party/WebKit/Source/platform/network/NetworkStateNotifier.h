@@ -124,7 +124,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   WebEffectiveConnectionType EffectiveType() const {
     MutexLocker locker(mutex_);
     const NetworkState& state = has_override_ ? override_ : state_;
-    DCHECK(state.on_line_initialized);
+    // TODO (tbansal): Add a DCHECK to check that |state.on_line_initialized| is
+    // true once https://crbug.com/728771 is fixed.
     return state.effective_type;
   }
 
@@ -133,7 +134,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   Optional<TimeDelta> HttpRtt() const {
     MutexLocker locker(mutex_);
     const NetworkState& state = has_override_ ? override_ : state_;
-    DCHECK(state.on_line_initialized);
+    // TODO (tbansal): Add a DCHECK to check that |state.on_line_initialized| is
+    // true once https://crbug.com/728771 is fixed.
     return state.http_rtt;
   }
 
@@ -151,7 +153,8 @@ class PLATFORM_EXPORT NetworkStateNotifier {
   Optional<double> DownlinkThroughputMbps() const {
     MutexLocker locker(mutex_);
     const NetworkState& state = has_override_ ? override_ : state_;
-    DCHECK(state.on_line_initialized);
+    // TODO (tbansal): Add a DCHECK to check that |state.on_line_initialized| is
+    // true once https://crbug.com/728771 is fixed.
     return state.downlink_throughput_mbps;
   }
 

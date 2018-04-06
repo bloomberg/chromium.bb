@@ -18156,6 +18156,9 @@ Called by update_net_error_codes.py.-->
   <int value="2401" label="TransformStreamConstructor"/>
   <int value="2402" label="NegativeBackgroundSize"/>
   <int value="2403" label="NegativeMaskSize"/>
+  <int value="2404" label="ClientHintsRtt"/>
+  <int value="2405" label="ClientHintsDownlink"/>
+  <int value="2406" label="ClientHintsEct"/>
 </enum>
 
 <enum name="FeedbackSource">

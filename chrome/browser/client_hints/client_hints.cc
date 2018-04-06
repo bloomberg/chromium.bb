@@ -10,6 +10,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
+#include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/client_hints/client_hints.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -20,6 +22,7 @@
 #include "content/public/common/origin_util.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
+#include "net/nqe/effective_connection_type.h"
 #include "net/url_request/url_request.h"
 #include "third_party/WebKit/public/common/client_hints/client_hints.h"
 #include "third_party/WebKit/public/common/device_memory/approximated_device_memory.h"
@@ -170,12 +173,53 @@ GetAdditionalNavigationRequestClientHintsHeaders(
     }
   }
 
+  UINetworkQualityEstimatorService* estimator =
+      UINetworkQualityEstimatorServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(context));
+
+  // TODO(crbug.com/826950): Add host specific noise and bucketization to RTT
+  // and downlink values.
+  if (web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kRtt)) {
+    if (estimator->GetHttpRTT()) {
+      additional_headers->SetHeader(
+          blink::kClientHintsHeaderMapping[static_cast<int>(
+              blink::mojom::WebClientHintsType::kRtt)],
+          base::NumberToString(estimator->GetHttpRTT()->InMilliseconds()));
+    }
+  }
+
+  if (web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kDownlink)) {
+    if (estimator->GetDownstreamThroughputKbps()) {
+      additional_headers->SetHeader(
+          blink::kClientHintsHeaderMapping[static_cast<int>(
+              blink::mojom::WebClientHintsType::kDownlink)],
+          base::NumberToString(
+              ((double)estimator->GetDownstreamThroughputKbps().value()) /
+              1024));
+    }
+  }
+
+  if (web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kEct)) {
+    DCHECK_EQ(blink::kWebEffectiveConnectionTypeMappingCount,
+              net::EFFECTIVE_CONNECTION_TYPE_4G + 1u);
+    DCHECK_EQ(blink::kWebEffectiveConnectionTypeMappingCount,
+              net::EFFECTIVE_CONNECTION_TYPE_LAST);
+
+    int effective_connection_type =
+        static_cast<int>(estimator->GetEffectiveConnectionType());
+
+    additional_headers->SetHeader(
+        blink::kClientHintsHeaderMapping[static_cast<int>(
+            blink::mojom::WebClientHintsType::kEct)],
+        blink::kWebEffectiveConnectionTypeMapping[effective_connection_type]);
+  }
+
   // Static assert that triggers if a new client hint header is added. If a
   // new client hint header is added, the following assertion should be updated.
   // If possible, logic should be added above so that the request headers for
   // the newly added client hint can be added to the request.
   static_assert(
-      blink::mojom::WebClientHintsType::kViewportWidth ==
+      blink::mojom::WebClientHintsType::kEct ==
           blink::mojom::WebClientHintsType::kMaxValue,
       "Consider adding client hint request headers from the browser process");
 

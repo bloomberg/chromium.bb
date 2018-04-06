@@ -601,6 +601,16 @@ class FrameFetchContextHintsTest : public FrameFetchContextTest {
     EXPECT_EQ(is_present ? String(header_value) : String(),
               resource_request.HttpHeaderField(header_name));
   }
+
+  String GetHeaderValue(const char* input, const char* header_name) {
+    ClientHintsPreferences hints_preferences;
+    FetchParameters::ResourceWidth resource_width;
+    const KURL input_url(input);
+    ResourceRequest resource_request(input_url);
+    fetch_context->AddClientHintsIfNecessary(hints_preferences, resource_width,
+                                             resource_request);
+    return resource_request.HttpHeaderField(header_name);
+  }
 };
 
 // Verify that the client hints should be attached for subresources fetched
@@ -786,6 +796,9 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   ExpectHeader("https://www.example.com/1.gif", "DPR", false, "");
   ExpectHeader("https://www.example.com/1.gif", "Viewport-Width", false, "");
   ExpectHeader("https://www.example.com/1.gif", "Width", false, "");
+  ExpectHeader("https://www.example.com/1.gif", "rtt", false, "");
+  ExpectHeader("https://www.example.com/1.gif", "downlink", false, "");
+  ExpectHeader("https://www.example.com/1.gif", "ect", false, "");
 
   ClientHintsPreferences preferences;
   preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDeviceMemory);
@@ -794,12 +807,33 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
       mojom::WebClientHintsType::kResourceWidth);
   preferences.SetShouldSendForTesting(
       mojom::WebClientHintsType::kViewportWidth);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kRtt);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kDownlink);
+  preferences.SetShouldSendForTesting(mojom::WebClientHintsType::kEct);
   ApproximatedDeviceMemory::SetPhysicalMemoryMBForTesting(4096);
   document->GetClientHintsPreferences().UpdateFrom(preferences);
   ExpectHeader("https://www.example.com/1.gif", "Device-Memory", true, "4");
   ExpectHeader("https://www.example.com/1.gif", "DPR", true, "1");
   ExpectHeader("https://www.example.com/1.gif", "Width", true, "400", 400);
   ExpectHeader("https://www.example.com/1.gif", "Viewport-Width", true, "500");
+
+  // Value of network quality client hints may vary, so only check if the
+  // header is present and the values are non-negative/non-empty.
+  bool conversion_ok = false;
+  int rtt_header_value = GetHeaderValue("https://www.example.com/1.gif", "rtt")
+                             .ToIntStrict(&conversion_ok);
+  EXPECT_TRUE(conversion_ok);
+  EXPECT_LE(0, rtt_header_value);
+
+  float downlink_header_value =
+      GetHeaderValue("https://www.example.com/1.gif", "downlink")
+          .ToFloat(&conversion_ok);
+  EXPECT_TRUE(conversion_ok);
+  EXPECT_LE(0, downlink_header_value);
+
+  EXPECT_LT(
+      0u,
+      GetHeaderValue("https://www.example.com/1.gif", "ect").Ascii().length());
 }
 
 TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {

@@ -8,8 +8,9 @@
 
 namespace blink {
 
-const char* const kClientHintsHeaderMapping[] = {"device-memory", "dpr",
-                                                 "width", "viewport-width"};
+const char* const kClientHintsHeaderMapping[] = {
+    "device-memory", "dpr",      "width", "viewport-width",
+    "rtt",           "downlink", "ect"};
 
 const size_t kClientHintsHeaderMappingCount =
     arraysize(kClientHintsHeaderMapping);

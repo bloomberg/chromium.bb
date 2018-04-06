@@ -13,9 +13,13 @@ namespace {
 // Mapping from WebClientHintsType to WebFeature. The ordering should match the
 // ordering of enums in WebClientHintsType.
 static constexpr WebFeature kWebFeatureMapping[] = {
-    WebFeature::kClientHintsDeviceMemory, WebFeature::kClientHintsDPR,
+    WebFeature::kClientHintsDeviceMemory,
+    WebFeature::kClientHintsDPR,
     WebFeature::kClientHintsResourceWidth,
     WebFeature::kClientHintsViewportWidth,
+    WebFeature::kClientHintsRtt,
+    WebFeature::kClientHintsDownlink,
+    WebFeature::kClientHintsEct,
 };
 
 static_assert(static_cast<int>(mojom::WebClientHintsType::kMaxValue) + 1 ==
