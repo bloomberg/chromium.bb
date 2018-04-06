@@ -189,7 +189,7 @@ InlineBoxPosition AdjustInlineBoxPositionForTextDirectionInternal(
     }
 
     if (prev_box->BidiLevel() <= level)
-      return InlineBoxPosition(inline_box, caret_offset);
+      return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
     // Right edge of a "tertiary" run. Set to the left edge of that run.
     InlineBox* const result_box =
         InlineBoxTraversal::FindLeftBoundaryOfBidiRunIgnoringLineBreak(
@@ -208,7 +208,7 @@ InlineBoxPosition AdjustInlineBoxPositionForTextDirectionInternal(
   }
 
   if (next_box->BidiLevel() <= level)
-    return InlineBoxPosition(inline_box, caret_offset);
+    return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
 
   // Left edge of a "tertiary" run. Set to the right edge of that run.
   InlineBox* const result_box =
