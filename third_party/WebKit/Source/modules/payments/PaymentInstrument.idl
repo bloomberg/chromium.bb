@@ -7,6 +7,6 @@
 dictionary PaymentInstrument {
     required DOMString name;
     sequence<ImageObject> icons;
-    sequence<DOMString> enabledMethods;
+    DOMString method;
     object capabilities;
 };

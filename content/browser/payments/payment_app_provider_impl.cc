@@ -410,7 +410,7 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
     const std::string& sw_js_url,
     const std::string& sw_scope,
     bool sw_use_cache,
-    const std::vector<std::string>& enabled_methods,
+    const std::string& method,
     InvokePaymentAppCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -418,7 +418,7 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
   GURL url = GURL(sw_js_url);
   DCHECK(base::IsStringUTF8(sw_scope));
   GURL scope = GURL(sw_scope);
-  if (!url.is_valid() || !scope.is_valid() || enabled_methods.size() == 0) {
+  if (!url.is_valid() || !scope.is_valid() || method.empty()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(std::move(callback),
@@ -438,7 +438,7 @@ void PaymentAppProviderImpl::InstallAndInvokePaymentApp(
 
   PaymentAppInstaller::Install(
       web_contents, app_name, string_encoded_icon, url, scope, sw_use_cache,
-      enabled_methods,
+      method,
       base::BindOnce(&OnInstallPaymentApp, std::move(event_data),
                      std::move(callback)));
 }

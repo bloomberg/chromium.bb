@@ -467,7 +467,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
     const JavaParamRef<jstring>& jsw_js_url,
     const JavaParamRef<jstring>& jsw_scope,
     jboolean juse_cache,
-    const JavaParamRef<jobjectArray>& jmethod_names) {
+    const JavaParamRef<jstring>& jmethod) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
@@ -476,9 +476,6 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
     icon_bitmap = gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(jicon));
   }
 
-  std::vector<std::string> enabled_methods;
-  base::android::AppendJavaStringArrayToStringVector(env, jmethod_names,
-                                                     &enabled_methods);
   content::PaymentAppProvider::GetInstance()->InstallAndInvokePaymentApp(
       web_contents,
       ConvertPaymentRequestEventDataFromJavaToNative(
@@ -486,7 +483,8 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
           jmethod_data, jtotal, jmodifiers),
       ConvertJavaStringToUTF8(env, japp_name), icon_bitmap,
       ConvertJavaStringToUTF8(env, jsw_js_url),
-      ConvertJavaStringToUTF8(env, jsw_scope), juse_cache, enabled_methods,
+      ConvertJavaStringToUTF8(env, jsw_scope), juse_cache,
+      ConvertJavaStringToUTF8(env, jmethod),
       base::BindOnce(&OnPaymentAppInvoked,
                      ScopedJavaGlobalRef<jobject>(env, jweb_contents),
                      ScopedJavaGlobalRef<jobject>(env, jcallback)));

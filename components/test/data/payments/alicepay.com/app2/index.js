@@ -54,7 +54,7 @@ function install(method) {  // eslint-disable-line no-unused-vars
               }
 
               registration.paymentManager.instruments
-                  .set('123456', {name: 'Alice Pay', enabledMethods: [method]})
+                  .set('123456', {name: 'Alice Pay', method: method})
                   .then(() => {
                     output(
                         'instruments.set()',

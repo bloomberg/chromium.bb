@@ -202,8 +202,7 @@ void ServiceWorkerPaymentInstrument::InvokePaymentApp(Delegate* delegate) {
             : *(installable_web_app_info_->icon),
         installable_web_app_info_->sw_js_url,
         installable_web_app_info_->sw_scope,
-        installable_web_app_info_->sw_use_cache,
-        std::vector<std::string>(1, installable_enabled_method_),
+        installable_web_app_info_->sw_use_cache, installable_enabled_method_,
         base::BindOnce(&ServiceWorkerPaymentInstrument::OnPaymentAppInvoked,
                        weak_ptr_factory_.GetWeakPtr()));
   } else {

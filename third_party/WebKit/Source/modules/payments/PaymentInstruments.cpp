@@ -249,9 +249,8 @@ void PaymentInstruments::OnRequestPermission(
     }
   }
 
-  if (details.hasEnabledMethods()) {
-    instrument->enabled_methods = details.enabledMethods();
-  }
+  instrument->method =
+      details.hasMethod() ? details.method() : WTF::g_empty_string;
 
   if (details.hasCapabilities()) {
     v8::Local<v8::String> value;
@@ -264,7 +263,7 @@ void PaymentInstruments::OnRequestPermission(
       return;
     }
     instrument->stringified_capabilities = ToCoreString(value);
-    if (instrument->enabled_methods.Contains("basic-card")) {
+    if (instrument->method == "basic-card") {
       ExceptionState exception_state(resolver->GetScriptState()->GetIsolate(),
                                      ExceptionState::kSetterContext,
                                      "PaymentInstruments", "set");
@@ -326,13 +325,7 @@ void PaymentInstruments::onGetPaymentInstrument(
     icons.emplace_back(image_object);
   }
   instrument.setIcons(icons);
-
-  Vector<String> enabled_methods;
-  for (const auto& method : stored_instrument->enabled_methods) {
-    enabled_methods.push_back(method);
-  }
-
-  instrument.setEnabledMethods(enabled_methods);
+  instrument.setMethod(stored_instrument->method);
   if (!stored_instrument->stringified_capabilities.IsEmpty()) {
     ExceptionState exception_state(resolver->GetScriptState()->GetIsolate(),
                                    ExceptionState::kGetterContext,
