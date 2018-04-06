@@ -5,16 +5,21 @@
 #ifndef CHROMECAST_BASE_METRICS_CAST_METRICS_HELPER_H_
 #define CHROMECAST_BASE_METRICS_CAST_METRICS_HELPER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/values.h"
 
 namespace base {
-class SingleThreadTaskRunner;
-}
+class SequencedTaskRunner;
+class TickClock;
+}  // namespace base
 
 namespace chromecast {
 namespace metrics {
@@ -35,15 +40,15 @@ class CastMetricsHelper {
 
   class MetricsSink {
    public:
-    virtual ~MetricsSink() {}
+    virtual ~MetricsSink() = default;
 
     virtual void OnAction(const std::string& action) = 0;
     virtual void OnEnumerationEvent(const std::string& name,
                                     int value, int num_buckets) = 0;
     virtual void OnTimeEvent(const std::string& name,
-                             const base::TimeDelta& value,
-                             const base::TimeDelta& min,
-                             const base::TimeDelta& max,
+                             base::TimeDelta value,
+                             base::TimeDelta min,
+                             base::TimeDelta max,
                              int num_buckets) = 0;
   };
 
@@ -59,8 +64,9 @@ class CastMetricsHelper {
 
   static CastMetricsHelper* GetInstance();
 
-  explicit CastMetricsHelper(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  CastMetricsHelper(scoped_refptr<base::SequencedTaskRunner> task_runner =
+                        base::SequencedTaskRunnerHandle::Get(),
+                    const base::TickClock* tick_clock = nullptr);
   virtual ~CastMetricsHelper();
 
   // This records the startup time of an app load (note: another app
@@ -119,12 +125,6 @@ class CastMetricsHelper {
   // Sets an all-0's session ID for running browser tests.
   void SetDummySessionIdForTesting();
 
- protected:
-  // Creates a CastMetricsHelper instance with no task runner. This should only
-  // be used by tests, since invoking any non-overridden methods on this
-  // instance will cause a failure.
-  CastMetricsHelper();
-
  private:
   static std::string EncodeAppInfoIntoMetricsName(
       const std::string& action_name,
@@ -135,24 +135,24 @@ class CastMetricsHelper {
   void LogEnumerationHistogramEvent(const std::string& name,
                                     int value, int num_buckets);
   void LogTimeHistogramEvent(const std::string& name,
-                             const base::TimeDelta& value,
-                             const base::TimeDelta& min,
-                             const base::TimeDelta& max,
+                             base::TimeDelta value,
+                             base::TimeDelta min,
+                             base::TimeDelta max,
                              int num_buckets);
   void LogMediumTimeHistogramEvent(const std::string& name,
-                                   const base::TimeDelta& value);
+                                   base::TimeDelta value);
+  base::Value CreateEventBase(const std::string& name);
+  base::TimeTicks Now();
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  const base::TickClock* const tick_clock_;
 
-  // Start time for loading the next app.
-  base::TimeTicks app_load_start_time_;
+  // Start times for loading the next apps.
+  base::flat_map<std::string /* app_id */, base::TimeTicks>
+      app_load_start_times_;
+
   // Start time for the currently running app.
   base::TimeTicks app_start_time_;
-
-  // The app id for the app that is currently loading and, if the load is
-  // successful, will replace the currently running app.  The currently running
-  // app is still collecting metrics.
-  std::string loading_app_id_;
 
   // Currently running app id. Used to construct histogram name.
   std::string app_id_;
