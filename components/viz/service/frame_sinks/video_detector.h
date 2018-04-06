@@ -28,10 +28,10 @@ class VideoDetectorTest;
 // fooled by things like continuous scrolling of a page.
 class VIZ_SERVICE_EXPORT VideoDetector : public SurfaceObserver {
  public:
-  VideoDetector(SurfaceManager* surface_manager,
-                std::unique_ptr<const base::TickClock> tick_clock =
-                    std::make_unique<base::DefaultTickClock>(),
-                scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr);
+  VideoDetector(
+      SurfaceManager* surface_manager,
+      const base::TickClock* tick_clock = base::DefaultTickClock::GetInstance(),
+      scoped_refptr<base::SequencedTaskRunner> task_runner = nullptr);
   virtual ~VideoDetector();
 
   // Adds an observer. The observer can be removed by closing the mojo
@@ -87,7 +87,7 @@ class VIZ_SERVICE_EXPORT VideoDetector : public SurfaceObserver {
   bool video_is_playing_ = false;
 
   // Provides the current time.
-  std::unique_ptr<const base::TickClock> tick_clock_;
+  const base::TickClock* tick_clock_;
 
   // Calls OnVideoActivityEnded() after |kVideoTimeout|. Uses |tick_clock_| to
   // measure time.

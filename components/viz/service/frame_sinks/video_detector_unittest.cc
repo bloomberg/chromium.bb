@@ -86,7 +86,7 @@ class VideoDetectorTest : public testing::Test {
         base::TimeTicks() + base::TimeDelta::FromSeconds(1));
 
     detector_ = frame_sink_manager_.CreateVideoDetectorForTesting(
-        mock_task_runner_->DeprecatedGetMockTickClock(), mock_task_runner_);
+        mock_task_runner_->GetMockTickClock(), mock_task_runner_);
 
     mojom::VideoDetectorObserverPtr video_detector_observer;
     observer_.Bind(mojo::MakeRequest(&video_detector_observer));

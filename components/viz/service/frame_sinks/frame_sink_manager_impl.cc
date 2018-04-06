@@ -538,11 +538,11 @@ void FrameSinkManagerImpl::OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
 }
 
 VideoDetector* FrameSinkManagerImpl::CreateVideoDetectorForTesting(
-    std::unique_ptr<base::TickClock> tick_clock,
+    const base::TickClock* tick_clock,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   DCHECK(!video_detector_);
-  video_detector_ = std::make_unique<VideoDetector>(
-      surface_manager(), std::move(tick_clock), task_runner);
+  video_detector_ = std::make_unique<VideoDetector>(surface_manager(),
+                                                    tick_clock, task_runner);
   return video_detector_.get();
 }
 
