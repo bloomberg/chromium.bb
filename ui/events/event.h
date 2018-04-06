@@ -993,16 +993,15 @@ class EVENTS_EXPORT ScrollEvent : public MouseEvent {
  public:
   explicit ScrollEvent(const PlatformEvent& native_event);
   template <class T>
-  ScrollEvent(const ScrollEvent& model,
-              T* source,
-              T* target)
+  ScrollEvent(const ScrollEvent& model, T* source, T* target)
       : MouseEvent(model, source, target),
         x_offset_(model.x_offset_),
         y_offset_(model.y_offset_),
         x_offset_ordinal_(model.x_offset_ordinal_),
         y_offset_ordinal_(model.y_offset_ordinal_),
-        finger_count_(model.finger_count_){
-  }
+        finger_count_(model.finger_count_),
+        momentum_phase_(model.momentum_phase_),
+        scroll_event_phase_(model.scroll_event_phase_) {}
 
   ScrollEvent(EventType type,
               const gfx::Point& location,
@@ -1044,10 +1043,10 @@ class EVENTS_EXPORT ScrollEvent : public MouseEvent {
 
   // For non-fling events, provides momentum information (e.g. for the case
   // where the device provides continuous event updates during a fling).
-  EventMomentumPhase momentum_phase_;
+  EventMomentumPhase momentum_phase_ = EventMomentumPhase::NONE;
 
   // Provides phase information if device can provide.
-  ScrollEventPhase scroll_event_phase_;
+  ScrollEventPhase scroll_event_phase_ = ScrollEventPhase::kNone;
 };
 
 class EVENTS_EXPORT GestureEvent : public LocatedEvent {
