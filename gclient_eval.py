@@ -690,3 +690,49 @@ def SetRevision(gclient_dict, dep_name, new_revision):
     _UpdateRevision(gclient_dict['deps'][dep_name], 'url', new_revision)
   else:
     _UpdateRevision(gclient_dict['deps'], dep_name, new_revision)
+
+
+def GetVar(gclient_dict, var_name):
+  if 'vars' not in gclient_dict or var_name not in gclient_dict['vars']:
+    raise KeyError(
+        "Could not find any variable called %s." % var_name)
+
+  return gclient_dict['vars'][var_name]
+
+
+def GetCIPD(gclient_dict, dep_name, package_name):
+  if 'deps' not in gclient_dict or dep_name not in gclient_dict['deps']:
+    raise KeyError(
+        "Could not find any dependency called %s." % dep_name)
+
+  # Find the package with the given name
+  packages = [
+      package
+      for package in gclient_dict['deps'][dep_name]['packages']
+      if package['package'] == package_name
+  ]
+  if len(packages) != 1:
+    raise ValueError(
+        "There must be exactly one package with the given name (%s), "
+        "%s were found." % (package_name, len(packages)))
+
+  return packages[0]['version'][len('version:'):]
+
+
+def GetRevision(gclient_dict, dep_name):
+  if 'deps' not in gclient_dict or dep_name not in gclient_dict['deps']:
+    raise KeyError(
+        "Could not find any dependency called %s." % dep_name)
+
+  dep = gclient_dict['deps'][dep_name]
+  if dep is None:
+    return None
+  elif isinstance(dep, basestring):
+    _, _, revision = dep.partition('@')
+    return revision or None
+  elif isinstance(dep, collections.Mapping) and 'url' in dep:
+    _, _, revision = dep['url'].partition('@')
+    return revision or None
+  else:
+    raise ValueError(
+        '%s is not a valid git dependency.' % dep_name)

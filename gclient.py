@@ -2936,6 +2936,48 @@ def CMDrevinfo(parser, args):
   return 0
 
 
+def CMDgetdep(parser, args):
+  """Gets revision information and variable values from a DEPS file."""
+  parser.add_option('--var', action='append',
+                    dest='vars', metavar='VAR', default=[],
+                    help='Gets the value of a given variable.')
+  parser.add_option('-r', '--revision', action='append',
+                    dest='revisions', metavar='DEP', default=[],
+                    help='Gets the revision/version for the given dependency. '
+                         'If it is a git dependency, dep must be a path. If it '
+                         'is a CIPD dependency, dep must be of the form '
+                         'path:package.')
+  parser.add_option('--deps-file', default='DEPS',
+                    # TODO(ehmaldonado): Try to find the DEPS file pointed by
+                    # .gclient first.
+                    help='The DEPS file to be edited. Defaults to the DEPS '
+                         'file in the current directory.')
+  (options, args) = parser.parse_args(args)
+
+  if not os.path.isfile(options.deps_file):
+    raise gclient_utils.Error(
+        'DEPS file %s does not exist.' % options.deps_file)
+  with open(options.deps_file) as f:
+    contents = f.read()
+  local_scope = gclient_eval.Parse(
+      contents, expand_vars=True, validate_syntax=True,
+      filename=options.deps_file)
+
+  for var in options.vars:
+    print(gclient_eval.GetVar(local_scope, var))
+
+  for name in options.revisions:
+    if ':' in name:
+      name, _, package = name.partition(':')
+      if not name or not package:
+        parser.error(
+            'Wrong CIPD format: %s:%s should be of the form path:pkg.'
+            % (name, package))
+      print(gclient_eval.GetCIPD(local_scope, name, package))
+    else:
+      print(gclient_eval.GetRevision(local_scope, name))
+
+
 def CMDsetdep(parser, args):
   """Modifies dependency revisions and variable values in a DEPS file"""
   parser.add_option('--var', action='append',
