@@ -339,7 +339,18 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
 }
 
 bool VrShellGl::WebVrCanProcessFrame() {
-  return mailbox_bridge_ready_ && !webvr_frame_processing_;
+  if (!mailbox_bridge_ready_) {
+    // Can't copy onto the transfer surface without mailbox_bridge_.
+    DVLOG(2) << __FUNCTION__ << ": waiting for mailbox bridge";
+    return false;
+  }
+
+  if (webvr_frame_processing_) {
+    DVLOG(2) << __FUNCTION__ << ": waiting for previous processing frame";
+    return false;
+  }
+
+  return true;
 }
 
 void VrShellGl::WebVrTryDeferredProcessing() {
@@ -393,13 +404,13 @@ void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
 }
 
 bool VrShellGl::IsSubmitFrameExpected(int16_t frame_index) {
-  TRACE_EVENT0("gpu", "VrShellGl::SubmitWebVRFrame");
-
   // submit_client_ could be null when we exit presentation, if there were
   // pending SubmitFrame messages queued.  VRDisplayClient::OnExitPresent
   // will clean up state in blink, so it doesn't wait for
-  // OnSubmitFrameTransferred or OnSubmitFrameRendered.
-  if (!submit_client_.get())
+  // OnSubmitFrameTransferred or OnSubmitFrameRendered. Similarly,
+  // the animating frame state is cleared when exiting presentation,
+  // and we should ignore a leftover queued SubmitFrame.
+  if (!submit_client_.get() || !webvr_frame_animating_)
     return false;
 
   if (frame_index < 0 ||
@@ -415,6 +426,8 @@ bool VrShellGl::IsSubmitFrameExpected(int16_t frame_index) {
 
 void VrShellGl::SubmitFrameMissing(int16_t frame_index,
                                    const gpu::SyncToken& sync_token) {
+  TRACE_EVENT1("gpu", "VrShellGl::SubmitWebVRFrame", "frame", frame_index);
+
   if (!IsSubmitFrameExpected(frame_index))
     return;
 
@@ -425,12 +438,14 @@ void VrShellGl::SubmitFrameMissing(int16_t frame_index,
     mailbox_bridge_->WaitSyncToken(sync_token);
 
   DVLOG(2) << __FUNCTION__ << ": recycle unused animating frame";
-  webvr_frame_oustanding_[frame_index % kPoseRingBufferSize] = false;
+  webvr_frame_animating_ = false;
 }
 
 void VrShellGl::SubmitFrame(int16_t frame_index,
                             const gpu::MailboxHolder& mailbox,
                             base::TimeDelta time_waited) {
+  TRACE_EVENT1("gpu", "VrShellGl::SubmitWebVRFrame", "frame", frame_index);
+
   if (!IsSubmitFrameExpected(frame_index))
     return;
 
@@ -474,11 +489,21 @@ void VrShellGl::ProcessWebVrFrame(int16_t frame_index,
                                   const gpu::MailboxHolder& mailbox) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   // Transition frame from "animating" to "processing" state.
+  DCHECK(webvr_frame_animating_);
+  DCHECK(!webvr_frame_processing_);
+  webvr_frame_animating_ = false;
   webvr_frame_processing_ = true;
 
-  // Swapping twice on a Surface without calling updateTexImage in
-  // between can lose frames, so don't draw+swap if we already have
-  // a pending frame we haven't consumed yet.
+  // LIFECYCLE: pending_frames_ should be empty when there's no processing
+  // frame. It gets one element here, and then is emptied again before leaving
+  // processing state. Swapping twice on a Surface without calling
+  // updateTexImage in between can lose frames, so don't draw+swap if we
+  // already have a pending frame we haven't consumed yet.
+  DCHECK(pending_frames_.empty());
+
+  // LIFECYCLE: We shouldn't have gotten here unless mailbox_bridge_ is ready.
+  DCHECK(mailbox_bridge_ready_);
+
   bool swapped = false;
   if (pending_frames_.empty()) {
     swapped = mailbox_bridge_->CopyMailboxToSurfaceAndSwap(mailbox);
@@ -488,6 +513,12 @@ void VrShellGl::ProcessWebVrFrame(int16_t frame_index,
       pending_frames_.emplace(frame_index);
     }
   }
+  // Swapping should never fail, we waited for mailbox_bridge_ready_.
+  DCHECK(swapped);
+
+  // LIFECYCLE: we should always have a pending frame now.
+  DCHECK_EQ(pending_frames_.size(), 1U);
+
   // Always notify the client that we're done with the mailbox even
   // if we haven't drawn it, so that it's eligible for destruction.
   submit_client_->OnSubmitFrameTransferred(true);
@@ -615,12 +646,31 @@ void VrShellGl::OnWebVRFrameAvailable() {
   // an incoming SubmitFrame call.
   DCHECK(!pending_frames_.empty()) << ": Frame arrived before SubmitFrame";
 
+  // LIFECYCLE: we should have exactly one pending frame. This is true
+  // even after exiting a session with a not-yet-surfaced frame.
+  DCHECK_EQ(pending_frames_.size(), 1U);
+
   webvr_surface_texture_->UpdateTexImage();
   int frame_index = pending_frames_.front();
   TRACE_EVENT1("gpu", "VrShellGl::OnWebVRFrameAvailable", "frame", frame_index);
   pending_frames_.pop();
 
-  DrawFrame(frame_index, base::TimeTicks::Now());
+  // LIFECYCLE: we should be in processing state.
+  DCHECK(webvr_frame_processing_);
+
+  if (ShouldDrawWebVr()) {
+    DrawFrame(frame_index, base::TimeTicks::Now());
+  } else {
+    // Silently consume a frame if we don't want to draw it. This can happen
+    // due to an active exclusive UI such as a permission prompt, or after
+    // exiting a presentation session when a pending frame arrives late.
+    DVLOG(1) << __FUNCTION__ << ": discarding frame, "
+             << (web_vr_mode_ ? "UI is active" : "not presenting");
+    WebVrCancelProcessingFrameAfterTransfer();
+    // We're no longer in processing state, unblock WebVrCanProcessFrame which
+    // may be waiting for this.
+    WebVrTryDeferredProcessing();
+  }
 }
 
 void VrShellGl::OnNewWebVRFrame() {
@@ -1048,23 +1098,24 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
     // We're in a WebVR session, but don't want to draw WebVR frames, i.e.
     // because UI has taken over for a permissions prompt. Do state cleanup if
     // needed.
-    if (webvr_deferred_start_processing_) {
+    if (webvr_frame_animating_ && webvr_deferred_start_processing_) {
       // We have an animating frame that's waiting to start processing. Cancel
       // that.
       DVLOG(1) << __FUNCTION__ << ": cancel waiting WebVR frame, UI is active";
       WebVrCancelAnimatingFrame();
       webvr_deferred_start_processing_.Reset();
     }
-    if (frame_index >= 0) {
-      // This draw is for an incoming processing WebVR frame that we don't want
-      // to draw. Discard it. It's coming from OnWebVRFrameAvailable, so
-      // we already notified the Renderer that it was transferred.
-      DVLOG(1) << __FUNCTION__ << ": discarding WebVR frame, UI is active";
-      DCHECK(webvr_frame_processing_);
-      WebVrCancelProcessingFrameAfterTransfer();
-      return;
-    }
   }
+
+  // From this point on, the current frame is either a pure UI frame
+  // (frame_index==-1), or a WebVR frame (frame_index >= 0). If it's a WebVR
+  // frame, it must be the current processing frame, and ShouldDrawWebVr() must
+  // be true (not in UI-only mode). Careful, we may still have a processing
+  // frame in UI mode that couldn't be cancelled yet. Also, WebVR frames
+  // can still have overlay UI drawn on top of them.
+  bool is_webvr_frame = frame_index >= 0;
+  DCHECK_EQ(is_webvr_frame, ShouldDrawWebVr());
+  DCHECK(!is_webvr_frame || webvr_frame_processing_);
 
   CHECK(!acquired_frame_);
 
@@ -1079,7 +1130,7 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
 
   // If needed, resize the primary buffer for use with WebVR. Resizing
   // needs to happen before acquiring a frame.
-  if (ShouldDrawWebVr()) {
+  if (is_webvr_frame) {
     if (!ResizeForWebVR(frame_index)) {
       // We don't have a valid size yet, can't draw.
       return;
@@ -1103,7 +1154,7 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   // submitting. Technically we don't need a pose if not reprojecting,
   // but keeping it uninitialized seems likely to cause problems down
   // the road. Copying it is cheaper than fetching a new one.
-  if (ShouldDrawWebVr()) {
+  if (is_webvr_frame) {
     static_assert(!((kPoseRingBufferSize - 1) & kPoseRingBufferSize),
                   "kPoseRingBufferSize must be a power of 2");
     // Copy into render info for overlay UI. WebVR doesn't use this.
@@ -1123,7 +1174,7 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
 
   // WebVR handles controller input in OnVsync.
   base::TimeDelta controller_time = base::TimeDelta();
-  if (!ShouldDrawWebVr()) {
+  if (!is_webvr_frame) {
     TRACE_EVENT0("gpu", "Controller");
     base::TimeTicks controller_start = base::TimeTicks::Now();
     UpdateController(render_info_primary_, current_time);
@@ -1146,7 +1197,7 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
                                              render_info_primary_.head_pose,
                                              kRedrawSceneAngleDeltaDegrees);
 
-  bool dirty = ShouldDrawWebVr() || head_moved || redraw_needed;
+  bool dirty = is_webvr_frame || head_moved || redraw_needed;
 
   base::TimeDelta scene_time = base::TimeTicks::Now() - scene_start;
   // Don't double-count the controller time that was part of the scene time.
@@ -1171,6 +1222,10 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
                                       base::TimeTicks current_time) {
   TRACE_EVENT1("gpu", "VrShellGl::DrawIntoAcquiredFrame", "frame", frame_index);
 
+  bool is_webvr_frame = frame_index >= 0;
+  DCHECK_EQ(is_webvr_frame, ShouldDrawWebVr());
+  DCHECK(!is_webvr_frame || webvr_frame_processing_);
+
   last_used_head_pose_ = render_info_primary_.head_pose;
 
   acquired_frame_.BindBuffer(kFramePrimaryBuffer);
@@ -1183,7 +1238,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
   // it's not supported on older devices such as Nexus 5X.
   glClear(GL_COLOR_BUFFER_BIT);
 
-  if (ShouldDrawWebVr())
+  if (is_webvr_frame)
     DrawWebVr();
 
   UpdateEyeInfos(render_info_primary_.head_pose, kViewportListPrimaryOffset,
@@ -1196,8 +1251,9 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
   // At this point, we draw non-WebVR content that could, potentially, fill the
   // viewport.  NB: this is not just 2d browsing stuff, we may have a splash
   // screen showing in WebVR mode that must also fill the screen. That said,
-  // while the splash screen is up ShouldDrawWebVr() will return false.
-  if (!ShouldDrawWebVr()) {
+  // while the splash screen is up ShouldDrawWebVr() will return false,
+  // and we only draw UI frames, not WebVR frames.
+  if (!is_webvr_frame) {
     ui_->ui_renderer()->Draw(render_info_primary_);
   }
 
@@ -1205,13 +1261,13 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
   acquired_frame_.Unbind();
 
   std::vector<const UiElement*> overlay_elements;
-  if (ShouldDrawWebVr()) {
+  if (is_webvr_frame) {
     overlay_elements = ui_->scene()->GetVisibleWebVrOverlayElementsToDraw();
   }
 
   TRACE_COUNTER1("gpu", "VR overlay element count", overlay_elements.size());
 
-  if (!overlay_elements.empty() && ShouldDrawWebVr()) {
+  if (!overlay_elements.empty() && is_webvr_frame) {
     // WebVR content may use an arbitray size buffer. We need to draw browser UI
     // on a different buffer to make sure that our UI has enough resolution.
     acquired_frame_.BindBuffer(kFrameWebVrBrowserUiBuffer);
@@ -1267,7 +1323,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
 
   // GVR submit needs the exact head pose that was used for rendering.
   gfx::Transform submit_head_pose;
-  if (ShouldDrawWebVr()) {
+  if (is_webvr_frame) {
     // Don't use render_info_primary_.head_pose here, that may have been
     // overwritten by OnVSync's controller handling. We need the pose that was
     // sent to JS.
@@ -1276,7 +1332,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
     submit_head_pose = render_info_primary_.head_pose;
   }
   std::unique_ptr<gl::GLFenceEGL> fence = nullptr;
-  if (ShouldDrawWebVr() && surfaceless_rendering_) {
+  if (is_webvr_frame && surfaceless_rendering_) {
     webvr_time_copied_[frame_index % kPoseRingBufferSize] =
         base::TimeTicks::Now();
     if (webvr_use_gpu_fence_) {
@@ -1411,6 +1467,10 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
                                    const gfx::Transform& head_pose) {
   TRACE_EVENT1("gpu", "VrShellGl::DrawFrameSubmitNow", "frame", frame_index);
 
+  bool is_webvr_frame = frame_index >= 0;
+  DCHECK_EQ(is_webvr_frame, ShouldDrawWebVr());
+  DCHECK(!is_webvr_frame || webvr_frame_processing_);
+
   gvr::Mat4f mat;
   TransformToGvrMat(head_pose, &mat);
   {
@@ -1429,13 +1489,13 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
     surface_->SwapBuffers(base::DoNothing());
   }
 
-  // Report rendering completion to WebVR so that it's permitted to submit
-  // a fresh frame. We could do this earlier, as soon as the frame got pulled
-  // off the transfer surface, but that appears to result in overstuffed
-  // buffers.
-  WebVrSendRenderNotification(true);
+  if (is_webvr_frame) {
+    // Report rendering completion to the Renderer so that it's permitted to
+    // submit a fresh frame. We could do this earlier, as soon as the frame got
+    // pulled off the transfer surface, but that results in overstuffed
+    // buffers.
+    WebVrSendRenderNotification(true);
 
-  if (ShouldDrawWebVr()) {
     base::TimeTicks pose_time =
         webvr_time_pose_[frame_index % kPoseRingBufferSize];
     base::TimeTicks js_submit_time =
@@ -1448,12 +1508,8 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
       webvr_render_time_.AddSample(now - js_submit_time);
     }
 
-    // Only mark processing as complete if this was a WebVR frame.
-    // We shouldn't be getting UI frames while ShouldDrawWebVr() is true,
-    // but the logic is a bit complicated.
-    if (frame_index >= 0) {
-      webvr_frame_processing_ = false;
-    }
+    // Mark this WebVR frame's processing as complete.
+    webvr_frame_processing_ = false;
   }
 
   // After saving the timestamp, fps will be available via GetFPS().
@@ -1466,10 +1522,16 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
                  "controller",
                  ui_controller_update_time_.GetAverage().InMicroseconds());
 
-  if (ShouldDrawWebVr()) {
+  if (is_webvr_frame) {
     // We finished processing a frame, this may make pending WebVR
     // work eligible to proceed.
     WebVrTryDeferredProcessing();
+  }
+
+  if (ShouldDrawWebVr()) {
+    // See if we can animate a new WebVR frame. Intentionally using
+    // ShouldDrawWebVr here since we also want to run this check after
+    // UI frames, i.e. transitioning from transient UI to WebVR.
     WebVrTryStartAnimatingFrame(false);
   }
 }
@@ -1535,13 +1597,29 @@ void VrShellGl::SetWebVrMode(bool enabled) {
     browser_->ToggleCardboardGamepad(enabled);
 
   if (!web_vr_mode_) {
+    // Closing presentation bindings ensures we won't get any mojo calls such
+    // as SubmitFrame from this session anymore. This makes it legal to cancel
+    // an outstanding animating frame (if any).
     ClosePresentationBindings();
     // Ensure that re-entering VR later gets a fresh start by clearing out the
-    // current session's animating and processing frame state.
+    // current session's animating frame state.
     webvr_frame_oustanding_.assign(kPoseRingBufferSize, false);
     webvr_deferred_start_processing_.Reset();
-    webvr_frame_processing_ = false;
+    webvr_frame_animating_ = false;
     last_ui_allows_sending_webvr_vsync_ = false;
+    // Do not clear pending_frames_ here, need to track Surface state across
+    // sessions.
+    if (pending_frames_.empty()) {
+      // Safe to cancel a processing frame (if any) since it's fully
+      // transferred.
+      webvr_frame_processing_ = false;
+    } else {
+      // There's a leftover pending frame. Need to wait for that to arrive on
+      // the Surface, and that will clear webvr_frame_processing_ once it's
+      // done. Until then, webvr_frame_processing_ will stay true to block a
+      // new session from starting processing.
+      DCHECK(webvr_frame_processing_);
+    }
   }
 }
 
@@ -1598,15 +1676,12 @@ bool VrShellGl::WebVrCanAnimateFrame(bool is_from_onvsync) {
     return false;
   }
 
-  // If the previous frame deferred starting processing, that frame is still
-  // considered the current animating frame, so we must wait for that to
-  // transition to processing before sending the next VSync. Don't check
-  // WebVrCanProcessFrame() here - we intentionally want to allow the first
-  // VSync to go out before mailbox_bridge_ready_ becomes true. The first
-  // SubmitFrame will be deferred if needed.
-  if (webvr_deferred_start_processing_) {
+  // If we already have a JS frame that's animating, don't send another one.
+  // This check depends on the Renderer calling either SubmitFrame or
+  // SubmitFrameMissing for each animated frame.
+  if (webvr_frame_animating_) {
     DVLOG(2) << __FUNCTION__
-             << ": waiting for previous frame to start processing";
+             << ": waiting for current animating frame to start processing";
     return false;
   }
 
@@ -1636,7 +1711,7 @@ void VrShellGl::WebVrTryStartAnimatingFrame(bool is_from_onvsync) {
 }
 
 void VrShellGl::WebVrCancelAnimatingFrame() {
-  // TODO(klausw): webvr_frame_animating_ = false
+  webvr_frame_animating_ = false;
   if (submit_client_) {
     // We haven't written to the Surface yet. Mark as transferred and rendered.
     submit_client_->OnSubmitFrameTransferred(true);
@@ -1701,6 +1776,7 @@ void VrShellGl::GetVSync(GetVSyncCallback callback) {
     ClosePresentationBindings();
     return;
   }
+
   get_vsync_callback_ = std::move(callback);
   WebVrTryStartAnimatingFrame(false);
 }
@@ -1878,6 +1954,9 @@ void VrShellGl::SendVSync() {
   // won't be sequential, and "previous frame" based on index could be a stale
   // frame.
   webvr_time_js_submit_[frame_index % kPoseRingBufferSize] = base::TimeTicks();
+
+  DCHECK(!webvr_frame_animating_);
+  webvr_frame_animating_ = true;
 
   base::ResetAndReturn(&get_vsync_callback_)
       .Run(std::move(pose), pending_time_ - base::TimeTicks(), frame_index,

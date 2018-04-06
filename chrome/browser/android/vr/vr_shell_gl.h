@@ -66,6 +66,49 @@ struct WebVrBounds {
   gfx::Size source_size;
 };
 
+// WebVR/WebXR frames go through a three-stage pipeline: Animating, Processing,
+// and Rendering. There's also an Idle state used as the starting state before
+// Animating and ending state after Rendering.
+//
+// The stages can overlap, but we enforce that there isn't more than one
+// frame in a given non-Idle state at any one time.
+//
+//       <- GetVSync
+//   Idle
+//       SendVSync
+//   Animating
+//       <- UpdateLayerBounds (optional)
+//       <- GetVSync
+//       <- SubmitFrame
+//       ProcessWebVrFrame
+//   Processing
+//       <- OnWebVrFrameAvailable
+//       DrawFrame
+//       DrawFrameSubmitWhenReady
+//       <= poll prev_frame_completion_fence_
+//       DrawFrameSubmitNow
+//   Rendering
+//       <= prev_frame_completion_fence_ signals
+//       DrawFrameSubmitNow (of next frame)
+//   Idle
+//
+// Note that the frame is considered to still be in "Animating" state until
+// ProcessWebVrFrame is called. If the current processing frame isn't done yet
+// at the time the incoming SubmitFrame arrives, we defer ProcessWebVrFrame
+// until that finishes.
+//
+// The renderer may call SubmitFrameMissing instead of SubmitFrame. In that
+// case, the frame transitions from Animating back to Idle.
+//
+//       <- GetVSync
+//   Idle
+//       SendVSync
+//   Animating
+//       <- UpdateLayerBounds (optional)
+//       <- GetVSync
+//       <- SubmitFrameMissing
+//   Idle
+
 // This class manages all GLThread owned objects and GL rendering for VrShell.
 // It is not threadsafe and must only be used on the GL thread.
 class VrShellGl : public device::mojom::VRPresentationProvider {
@@ -375,9 +418,13 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
       void(int16_t, const gfx::Transform&, std::unique_ptr<gl::GLFenceEGL>)>
       webvr_delayed_gvr_submit_;
 
-  // We only want one frame at a time in the lifecycle from
-  // mojo SubmitFrame until we submit to GVR. This flag is true
-  // for that timespan.
+  // We only want one "animating" frame at a time in the lifecycle from
+  // SendVSync to ProcessWebVrFrame.
+  bool webvr_frame_animating_ = false;
+
+  // We only want one "processing" frame at a time in the lifecycle from
+  // ProcessWebVrFrame until we submit to GVR. This flag is true for that
+  // timespan.
   bool webvr_frame_processing_ = false;
 
   // If we receive a new SubmitFrame when we're not ready, defer start of
