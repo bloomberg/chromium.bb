@@ -38,7 +38,7 @@
 
 - (void)autofillController:(CWVAutofillController*)autofillController
     didFocusOnFieldWithName:(NSString*)fieldName
-             withIdentifier:(NSString*)fieldIdentifier
+            fieldIdentifier:(NSString*)fieldIdentifier
                    formName:(NSString*)formName
                       value:(NSString*)value {
   _autofillController = autofillController;
@@ -82,6 +82,7 @@
 
 - (void)autofillController:(CWVAutofillController*)autofillController
     didInputInFieldWithName:(NSString*)fieldName
+            fieldIdentifier:(NSString*)fieldIdentifier
                    formName:(NSString*)formName
                       value:(NSString*)value {
   // Not implemented.
@@ -89,11 +90,19 @@
 
 - (void)autofillController:(CWVAutofillController*)autofillController
     didBlurOnFieldWithName:(NSString*)fieldName
+           fieldIdentifier:(NSString*)fieldIdentifier
                   formName:(NSString*)formName
                      value:(NSString*)value {
   [_alertController dismissViewControllerAnimated:YES completion:nil];
   _alertController = nil;
   _autofillController = nil;
+}
+
+- (void)autofillController:(CWVAutofillController*)autofillController
+     didSubmitFormWithName:(NSString*)formName
+             userInitiated:(BOOL)userInitiated
+               isMainFrame:(BOOL)isMainFrame {
+  // Not implemented.
 }
 
 #pragma mark - Private Methods
