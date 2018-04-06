@@ -722,6 +722,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
 
   InputHandlerProxy::EventDisposition result = DID_NOT_HANDLE;
   scroll_sequence_ignored_ = false;
+  in_inertial_scrolling_ = false;
   switch (scroll_status.thread) {
     case cc::InputHandler::SCROLL_ON_IMPL_THREAD:
       TRACE_EVENT_INSTANT0("input",
@@ -772,6 +773,7 @@ InputHandlerProxy::HandleGestureScrollUpdate(
     return DID_NOT_HANDLE;
 
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
+  in_inertial_scrolling_ = scroll_state.is_in_inertial_phase();
   gfx::PointF scroll_point(gesture_event.PositionInWidget());
 
   if (ShouldAnimate(gesture_event.data.scroll_update.delta_units !=
@@ -1023,9 +1025,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
     result = DID_HANDLE_NON_BLOCKING;
   }
 
-  bool is_flinging_on_impl =
-      fling_curve_ && !fling_may_be_active_on_main_thread_;
-  if (is_flinging_on_impl && is_touching_scrolling_layer)
+  bool is_in_inertial_scrolling_on_impl =
+      in_inertial_scrolling_ && gesture_scroll_on_impl_thread_;
+  if (is_in_inertial_scrolling_on_impl && is_touching_scrolling_layer)
     result = DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING;
 
   client_->SetWhiteListedTouchAction(white_listed_touch_action,
