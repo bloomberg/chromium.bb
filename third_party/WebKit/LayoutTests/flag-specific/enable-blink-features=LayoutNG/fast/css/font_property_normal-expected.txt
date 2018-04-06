@@ -13,8 +13,8 @@ layer at (0,0) size 800x578
         LayoutText {#text} at (0,0) size 292x36
           text run at (0,0) width 292: "24pt italic Arial = 24pt"
       LayoutNGBlockFlow {P} at (0,190) size 784x20
-        LayoutText {#text} at (0,0) size 185x19
-          text run at (0,0) width 185: "24pt italic 'Arial' = 24pt Arial"
+        LayoutText {#text} at (0,0) size 184x19
+          text run at (0,0) width 184: "24pt italic 'Arial' = 24pt Arial"
       LayoutNGBlockFlow {P} at (0,226) size 784x20
         LayoutText {#text} at (0,0) size 105x19
           text run at (0,0) width 105: "italic 24pt = fails"

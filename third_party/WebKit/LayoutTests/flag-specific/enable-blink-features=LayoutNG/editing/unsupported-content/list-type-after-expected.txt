@@ -18,14 +18,14 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 59x26
             text run at (0,0) width 59: "Tests:"
           LayoutBR {BR} at (59,0) size 0x0
-          LayoutText {#text} at (0,27) size 658x20
-            text run at (0,27) width 658: "Our ability to \"edit around\" content the HTML editing code does not yet handle very well."
-          LayoutBR {BR} at (658,27) size 0x0
+          LayoutText {#text} at (0,27) size 657x20
+            text run at (0,27) width 657: "Our ability to \"edit around\" content the HTML editing code does not yet handle very well."
+          LayoutBR {BR} at (657,27) size 0x0
           LayoutInline {I} at (0,0) size 99x20
             LayoutText {#text} at (0,48) size 99x20
               text run at (0,48) width 99: "For this test: "
-          LayoutText {#text} at (99,48) size 221x20
-            text run at (99,48) width 221: "Test typing at the end of a list."
+          LayoutText {#text} at (99,48) size 222x20
+            text run at (99,48) width 222: "Test typing at the end of a list."
         LayoutNGBlockFlow (anonymous) at (20,89) size 744x21
           LayoutBR {BR} at (0,0) size 0x0
         LayoutNGBlockFlow {DIV} at (20,110) size 744x90
@@ -39,8 +39,8 @@ layer at (0,0) size 800x600
           LayoutInline {I} at (0,0) size 99x20
             LayoutText {#text} at (0,69) size 99x20
               text run at (0,69) width 99: "For this test: "
-          LayoutText {#text} at (99,69) size 422x20
-            text run at (99,69) width 422: "Typed text should appear after (on the line below) the list."
+          LayoutText {#text} at (99,69) size 423x20
+            text run at (99,69) width 423: "Typed text should appear after (on the line below) the list."
       LayoutNGBlockFlow {DIV} at (0,230) size 784x136 [border: (2px solid #008000)]
         LayoutNGBlockFlow {UL} at (2,26) size 780x84
           LayoutNGListItem {LI} at (40,0) size 740x28

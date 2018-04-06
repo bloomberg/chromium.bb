@@ -4,15 +4,15 @@ layer at (0,0) size 800x600
   LayoutNGBlockFlow {HTML} at (0,0) size 800x600
     LayoutNGBlockFlow {BODY} at (8,8) size 784x576
       LayoutNGBlockFlow {H1} at (0,0) size 784x37
-        LayoutText {#text} at (0,0) size 359x36
-          text run at (0,0) width 359: "Meters with border values"
+        LayoutText {#text} at (0,0) size 358x36
+          text run at (0,0) width 358: "Meters with border values"
       LayoutNGBlockFlow {UL} at (0,58.44) size 784x300
         LayoutNGListItem {LI} at (40,0) size 744x20
           LayoutNGListMarker (anonymous) at (-18,0) size 10x20
             LayoutText (anonymous) at (0,0) size 10x19
               text run at (0,0) width 10: "\x{2022} "
-          LayoutText {#text} at (0,0) size 164x19
-            text run at (0,0) width 164: "min,low,optimal,high,max"
+          LayoutText {#text} at (0,0) size 165x19
+            text run at (0,0) width 165: "min,low,optimal,high,max"
         LayoutNGListItem {LI} at (40,20) size 744x20
           LayoutNGListMarker (anonymous) at (-18,0) size 10x20
             LayoutText (anonymous) at (0,0) size 10x19
