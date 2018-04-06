@@ -338,6 +338,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
       frame_->IsLocalRoot());
   GetLocalFrameClient().DispatchDidNavigateWithinPage(
       history_item_.Get(), commit_type, initiating_document);
+  probe::didNavigateWithinDocument(frame_);
 }
 
 const KURL& DocumentLoader::UrlForHistory() const {

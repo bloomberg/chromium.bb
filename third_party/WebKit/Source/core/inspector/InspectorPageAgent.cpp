@@ -775,6 +775,14 @@ Response InspectorPageAgent::setDocumentContent(const String& frame_id,
   return Response::OK();
 }
 
+void InspectorPageAgent::DidNavigateWithinDocument(LocalFrame* frame) {
+  Document* document = frame->GetDocument();
+  if (document) {
+    return GetFrontend()->navigatedWithinDocument(
+        IdentifiersFactory::FrameId(frame), document->Url());
+  }
+}
+
 void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
   if (!GetFrontend())
     return;

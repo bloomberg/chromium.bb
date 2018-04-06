@@ -123,6 +123,7 @@ interface CoreProbes {
   void frameDetachedFromParent([Keep] LocalFrame*);
   void willCommitLoad([Keep] LocalFrame*, DocumentLoader*);
   void didCommitLoad([Keep] LocalFrame*, DocumentLoader*);
+  void didNavigateWithinDocument([Keep] LocalFrame*);
   void frameDocumentUpdated([Keep] LocalFrame*);
   void frameOwnerContentUpdated([Keep] LocalFrame*, HTMLFrameOwnerElement*);
   void frameStartedLoading([Keep] LocalFrame*, FrameLoadType);

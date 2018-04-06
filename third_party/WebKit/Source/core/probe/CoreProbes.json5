@@ -146,6 +146,7 @@
       probes: [
         "didChangeViewport",
         "didClearDocumentOfWindowObject",
+        "didNavigateWithinDocument",
         "willCommitLoad",
         "didResizeMainFrame",
         "didRunJavaScriptDialog",
