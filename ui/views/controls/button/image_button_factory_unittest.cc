@@ -5,6 +5,7 @@
 #include "ui/views/controls/button/image_button_factory.h"
 
 #include "components/vector_icons/vector_icons.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/controls/button/button.h"
@@ -31,9 +32,9 @@ TEST_F(ImageButtonFactoryTest, SetImageFromVectorIcon) {
   EXPECT_EQ(color_utils::DeriveDefaultIconColor(SK_ColorRED),
             button->GetInkDropBaseColor());
 
-  // Default to black.
+  // Default to GoogleGrey900.
   SetImageFromVectorIcon(button, vector_icons::kClose16Icon);
-  EXPECT_EQ(color_utils::DeriveDefaultIconColor(SK_ColorBLACK),
+  EXPECT_EQ(color_utils::DeriveDefaultIconColor(gfx::kGoogleGrey900),
             button->GetInkDropBaseColor());
   delete button;
 }

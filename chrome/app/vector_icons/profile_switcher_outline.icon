@@ -5,7 +5,6 @@
 // This is a copy of account_circle.icon with an added path for an outline.
 // Outline:
 STROKE, 3,
-PATH_COLOR_ARGB, 0xff, 0x5a, 0x5a, 0x5a,
 MOVE_TO, 24, 4,
 CUBIC_TO, 12.95f, 4, 4, 12.95f, 4, 24,
 R_CUBIC_TO, 0, 11.05f, 8.95f, 20, 20, 20,

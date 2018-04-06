@@ -336,15 +336,9 @@ bool IsInvertedColorScheme() {
 #endif  // !defined(OS_WIN)
 
 SkColor DeriveDefaultIconColor(SkColor text_color) {
-  // Lighten a dark color but leave it fully opaque.
-  if (IsDark(text_color)) {
-    // For black text, this comes out to kChromeIconGrey.
-    return color_utils::AlphaBlend(SK_ColorWHITE, text_color,
-                                   SkColorGetR(gfx::kChromeIconGrey));
-  }
-  // For a light color, just reduce opacity.
-  return SkColorSetA(text_color,
-                     static_cast<int>(0.8f * SkColorGetA(text_color)));
+  // Lighten dark colors and brighten light colors. The alpha value here (0x4c)
+  // is chosen to generate a value close to GoogleGrey700 from GoogleGrey900.
+  return BlendTowardOppositeLuma(text_color, 0x4c);
 }
 
 std::string SkColorToRgbaString(SkColor color) {

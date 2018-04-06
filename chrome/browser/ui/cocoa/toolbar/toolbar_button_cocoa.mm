@@ -15,6 +15,7 @@
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -232,7 +233,7 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
   return themeIsDark ? SK_ColorWHITE
                      : (provider && provider->ShouldIncreaseContrast()
                             ? SK_ColorBLACK
-                            : SkColorSetRGB(0x5A, 0x5A, 0x5A));
+                            : gfx::kChromeIconGrey);
 }
 
 - (NSImage*)browserToolsIconForFillColor:(SkColor)fillColor {

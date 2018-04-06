@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_BUTTON_IMAGE_BUTTON_FACTORY_H_
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -28,7 +29,7 @@ VIEWS_EXPORT ImageButton* CreateVectorImageButton(ButtonListener* listener);
 VIEWS_EXPORT void SetImageFromVectorIcon(
     ImageButton* button,
     const gfx::VectorIcon& icon,
-    SkColor related_text_color = SK_ColorBLACK);
+    SkColor related_text_color = gfx::kGoogleGrey900);
 
 }  // namespace views
 
