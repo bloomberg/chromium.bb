@@ -766,34 +766,39 @@ void MediaDevicesManager::NotifyDeviceChangeSubscribers(
   DCHECK(IsValidMediaDeviceType(type));
 
   for (auto& subscription : subscriptions_) {
-    SubscriptionRequest* request = &subscription.second;
-    if (request->subscribe_types[type]) {
+    const SubscriptionRequest& request = subscription.second;
+    if (request.subscribe_types[type]) {
       base::PostTaskAndReplyWithResult(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get(),
           FROM_HERE,
-          base::BindOnce(salt_and_origin_callback_, request->render_process_id,
-                         request->render_frame_id),
+          base::BindOnce(salt_and_origin_callback_, request.render_process_id,
+                         request.render_frame_id),
           base::BindOnce(&MediaDevicesManager::CheckPermissionForDeviceChange,
-                         weak_factory_.GetWeakPtr(), request, type, snapshot));
+                         weak_factory_.GetWeakPtr(), subscription.first,
+                         request.render_process_id, request.render_frame_id,
+                         type, snapshot));
     }
   }
 }
 
 void MediaDevicesManager::CheckPermissionForDeviceChange(
-    SubscriptionRequest* request,
+    uint32_t subscription_id,
+    int render_process_id,
+    int render_frame_id,
     MediaDeviceType type,
     const MediaDeviceInfoArray& device_infos,
     const std::pair<std::string, url::Origin>& salt_and_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   permission_checker_->CheckPermission(
-      type, request->render_process_id, request->render_frame_id,
+      type, render_process_id, render_frame_id,
       base::BindOnce(&MediaDevicesManager::NotifyDeviceChange,
-                     weak_factory_.GetWeakPtr(), request, type, device_infos,
-                     salt_and_origin.first, salt_and_origin.second));
+                     weak_factory_.GetWeakPtr(), subscription_id, type,
+                     device_infos, salt_and_origin.first,
+                     salt_and_origin.second));
 }
 
 void MediaDevicesManager::NotifyDeviceChange(
-    SubscriptionRequest* request,
+    uint32_t subscription_id,
     MediaDeviceType type,
     const MediaDeviceInfoArray& device_infos,
     std::string device_id_salt,
@@ -801,8 +806,13 @@ void MediaDevicesManager::NotifyDeviceChange(
     bool has_permission) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(IsValidMediaDeviceType(type));
-  std::string group_id_salt = request->group_id_salt_base + device_id_salt;
-  request->listener->OnDevicesChanged(
+  auto it = subscriptions_.find(subscription_id);
+  if (it == subscriptions_.end())
+    return;
+
+  const SubscriptionRequest& request = it->second;
+  std::string group_id_salt = request.group_id_salt_base + device_id_salt;
+  request.listener->OnDevicesChanged(
       type, TranslateMediaDeviceInfoArray(has_permission, device_id_salt,
                                           group_id_salt, security_origin,
                                           device_infos));

@@ -233,11 +233,13 @@ class CONTENT_EXPORT MediaDevicesManager
   void NotifyDeviceChangeSubscribers(MediaDeviceType type,
                                      const MediaDeviceInfoArray& snapshot);
   void CheckPermissionForDeviceChange(
-      SubscriptionRequest* request,
+      uint32_t subscription_id,
+      int render_process_id,
+      int render_frame_id,
       MediaDeviceType type,
       const MediaDeviceInfoArray& device_infos,
       const std::pair<std::string, url::Origin>& salt_and_origin);
-  void NotifyDeviceChange(SubscriptionRequest* request,
+  void NotifyDeviceChange(uint32_t subscription_id,
                           MediaDeviceType type,
                           const MediaDeviceInfoArray& device_infos,
                           std::string device_id_salt,
