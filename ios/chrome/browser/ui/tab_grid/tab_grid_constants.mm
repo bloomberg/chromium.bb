@@ -18,6 +18,8 @@ NSString* const kTabGridRemoteTabsPageButtonIdentifier =
 NSString* const kTabGridDoneButtonIdentifier = @"TabGridDoneButtonIdentifier";
 NSString* const kTabGridCloseAllButtonIdentifier =
     @"TabGridCloseAllButtonIdentifier";
+NSString* const kTabGridUndoCloseAllButtonIdentifier =
+    @"TabGridUndoCloseAllButtonIdentifier";
 NSString* const kTabGridIncognitoTabsEmptyStateIdentifier =
     @"TabGridIncognitoTabsEmptyStateIdentifier";
 NSString* const kTabGridRegularTabsEmptyStateIdentifier =

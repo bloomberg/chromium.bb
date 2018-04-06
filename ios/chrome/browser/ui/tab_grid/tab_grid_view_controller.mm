@@ -37,6 +37,18 @@ TabGridPage GetPageFromScrollView(UIScrollView* scrollView) {
   float fractionalPage = scrollView.contentOffset.x / pageWidth;
   return static_cast<TabGridPage>(lround(fractionalPage));
 }
+
+// Temporary alert used while building this feature.
+UIAlertController* NotImplementedAlert() {
+  UIAlertController* alert =
+      [UIAlertController alertControllerWithTitle:@"Not implemented"
+                                          message:nil
+                                   preferredStyle:UIAlertControllerStyleAlert];
+  [alert addAction:[UIAlertAction actionWithTitle:@"OK"
+                                            style:UIAlertActionStyleCancel
+                                          handler:nil]];
+  return alert;
+}
 }  // namespace
 
 @interface TabGridViewController ()<GridViewControllerDelegate,
@@ -50,8 +62,9 @@ TabGridPage GetPageFromScrollView(UIScrollView* scrollView) {
 @property(nonatomic, weak) UIView* scrollContentView;
 @property(nonatomic, weak) TabGridTopToolbar* topToolbar;
 @property(nonatomic, weak) TabGridBottomToolbar* bottomToolbar;
-@property(nonatomic, weak) UIButton* closeAllButton;
 @property(nonatomic, weak) UIButton* doneButton;
+@property(nonatomic, weak) UIButton* closeAllButton;
+@property(nonatomic, assign) BOOL undoCloseAllAvailable;
 // Clang does not allow property getters to start with the reserved word "new",
 // but provides a workaround. The getter must be set before the property is
 // declared.
@@ -81,8 +94,9 @@ TabGridPage GetPageFromScrollView(UIScrollView* scrollView) {
 @synthesize scrollContentView = _scrollContentView;
 @synthesize topToolbar = _topToolbar;
 @synthesize bottomToolbar = _bottomToolbar;
-@synthesize closeAllButton = _closeAllButton;
 @synthesize doneButton = _doneButton;
+@synthesize closeAllButton = _closeAllButton;
+@synthesize undoCloseAllAvailable = _undoCloseAllAvailable;
 @synthesize newTabButton = _newTabButton;
 @synthesize floatingButton = _floatingButton;
 @synthesize configuration = _configuration;
@@ -124,6 +138,7 @@ TabGridPage GetPageFromScrollView(UIScrollView* scrollView) {
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
+  self.undoCloseAllAvailable = NO;
   if (animated && self.transitionCoordinator) {
     [self animateToolbarsForDisappearance];
   }
@@ -552,9 +567,6 @@ TabGridPage GetPageFromScrollView(UIScrollView* scrollView) {
 
   [self.doneButton setTitle:l10n_util::GetNSString(IDS_IOS_TAB_GRID_DONE_BUTTON)
                    forState:UIControlStateNormal];
-  [self.closeAllButton
-      setTitle:l10n_util::GetNSString(IDS_IOS_TAB_GRID_CLOSE_ALL_BUTTON)
-      forState:UIControlStateNormal];
   self.doneButton.titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
   self.closeAllButton.titleLabel.font =
@@ -562,8 +574,6 @@ TabGridPage GetPageFromScrollView(UIScrollView* scrollView) {
   self.doneButton.titleLabel.adjustsFontForContentSizeCategory = YES;
   self.closeAllButton.titleLabel.adjustsFontForContentSizeCategory = YES;
   self.doneButton.accessibilityIdentifier = kTabGridDoneButtonIdentifier;
-  self.closeAllButton.accessibilityIdentifier =
-      kTabGridCloseAllButtonIdentifier;
   [self.doneButton addTarget:self
                       action:@selector(doneButtonTapped:)
             forControlEvents:UIControlEventTouchUpInside];
@@ -580,28 +590,48 @@ TabGridPage GetPageFromScrollView(UIScrollView* scrollView) {
   self.newTabButton.page = self.currentPage;
   switch (self.originalPage) {
     case TabGridPageIncognitoTabs:
-      self.doneButton.enabled = !self.incognitoTabsViewController.isGridEmpty;
+      self.doneButton.enabled = !self.incognitoTabsViewController.gridEmpty;
       break;
     case TabGridPageRegularTabs:
-      self.doneButton.enabled = !self.regularTabsViewController.isGridEmpty;
+      self.doneButton.enabled = !self.regularTabsViewController.gridEmpty;
       break;
     case TabGridPageRemoteTabs:
       NOTREACHED() << "It is not possible to have entered tab grid directly "
                       "into remote tabs.";
       break;
   }
+  [self configureCloseAllButtonForCurrentPageAndUndoAvailability];
+}
+
+- (void)configureCloseAllButtonForCurrentPageAndUndoAvailability {
+  if (self.undoCloseAllAvailable &&
+      self.currentPage == TabGridPageRegularTabs) {
+    // Setup closeAllButton as undo button.
+    self.closeAllButton.enabled = YES;
+    [self.closeAllButton
+        setTitle:l10n_util::GetNSString(IDS_IOS_TAB_GRID_UNDO_CLOSE_ALL_BUTTON)
+        forState:UIControlStateNormal];
+    self.closeAllButton.accessibilityIdentifier =
+        kTabGridUndoCloseAllButtonIdentifier;
+    return;
+  }
+  // Otherwise setup as a Close All button.
   switch (self.currentPage) {
     case TabGridPageIncognitoTabs:
-      self.closeAllButton.enabled =
-          !self.incognitoTabsViewController.isGridEmpty;
+      self.closeAllButton.enabled = !self.incognitoTabsViewController.gridEmpty;
       break;
     case TabGridPageRegularTabs:
-      self.closeAllButton.enabled = !self.regularTabsViewController.isGridEmpty;
+      self.closeAllButton.enabled = !self.regularTabsViewController.gridEmpty;
       break;
     case TabGridPageRemoteTabs:
       self.closeAllButton.enabled = NO;
       break;
   }
+  [self.closeAllButton
+      setTitle:l10n_util::GetNSString(IDS_IOS_TAB_GRID_CLOSE_ALL_BUTTON)
+      forState:UIControlStateNormal];
+  self.closeAllButton.accessibilityIdentifier =
+      kTabGridCloseAllButtonIdentifier;
 }
 
 // Translates the toolbar views offscreen and then animates them back in using
@@ -723,8 +753,19 @@ TabGridPage GetPageFromScrollView(UIScrollView* scrollView) {
       [self.incognitoTabsDelegate closeAllItems];
       break;
     case TabGridPageRegularTabs:
-      [self.incognitoTabsDelegate closeAllItems];
-      [self.regularTabsDelegate closeAllItems];
+      DCHECK_EQ(self.undoCloseAllAvailable,
+                self.regularTabsViewController.gridEmpty);
+      if (self.undoCloseAllAvailable) {
+        // TODO(crbug.com/804567) : Implement Undo Close All.
+        [self presentViewController:NotImplementedAlert()
+                           animated:YES
+                         completion:nil];
+      } else {
+        [self.incognitoTabsDelegate closeAllItems];
+        [self.regularTabsDelegate closeAllItems];
+      }
+      self.undoCloseAllAvailable = !self.undoCloseAllAvailable;
+      [self configureCloseAllButtonForCurrentPageAndUndoAvailability];
       break;
     case TabGridPageRemoteTabs:
       NOTREACHED() << "It is invalid to call close all tabs on remote tabs.";
