@@ -259,7 +259,13 @@ void TrafficAnnotationAuditor::GenerateFilesListForClangTool(
   // to the running script and the files in the safe list will be later removed
   // from the results.
   if (!filter_files_based_on_heuristics || use_compile_commands) {
-    *file_paths = path_filters;
+    // If no path filter is specified, return current location. The clang tool
+    // will be run from the repository 'src' folder and hence this will point to
+    // repository root.
+    if (path_filters.empty())
+      file_paths->push_back("./");
+    else
+      *file_paths = path_filters;
     return;
   }
 
