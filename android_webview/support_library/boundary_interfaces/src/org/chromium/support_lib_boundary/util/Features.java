@@ -28,4 +28,52 @@ public class Features {
 
     // WebViewClientCompat#shouldOverrideUrlLoading
     public static final String SHOULD_OVERRIDE_WITH_REDIRECTS = "SHOULD_OVERRIDE_WITH_REDIRECTS";
+
+    // WebSettingsCompat.getOffscreenPreRaster
+    // WebSettingsCompat.setOffscreenPreRaster
+    public static final String OFF_SCREEN_PRERASTER = "OFF_SCREEN_PRERASTER";
+
+    // WebSettingsCompat.getSafeBrowsingEnabled
+    // WebSettingsCompat.setSafeBrowsingEnabled
+    public static final String SAFE_BROWSING_ENABLE = "SAFE_BROWSING_ENABLE";
+
+    // WebSettingsCompat.getDisabledActionModeMenuItems
+    // WebSettingsCompat.setDisabledActionModeMenuItems
+    public static final String DISABLED_ACTION_MODE_MENU_ITEMS = "DISABLED_ACTION_MODE_MENU_ITEMS";
+
+    // WebViewCompat.startSafeBrowsing
+    public static final String START_SAFE_BROWSING = "START_SAFE_BROWSING";
+
+    // WebViewCompat.setSafeBrowsingWhitelist
+    public static final String SAFE_BROWSING_WHITELIST = "SAFE_BROWSING_WHITELIST";
+
+    // WebViewCompat.getSafeBrowsingPrivacyPolicyUrl
+    public static final String SAFE_BROWSING_PRIVACY_POLICY_URL =
+            "SAFE_BROWSING_PRIVACY_POLICY_URL";
+
+    // ServiceWorkerControllerCompat.getInstance
+    // ServiceWorkerControllerCompat.getServiceWorkerWebSettings
+    // ServiceWorkerControllerCompat.setServiceWorkerClient
+    public static final String SERVICE_WORKER_BASIC_USAGE = "SERVICE_WORKER_BASIC_USAGE";
+
+    // ServiceWorkerClientCompat.shouldInterceptRequest
+    public static final String SERVICE_WORKER_SHOULD_INTERCEPT_REQUEST =
+            "SERVICE_WORKER_SHOULD_INTERCEPT_REQUEST";
+
+    // ServiceWorkerWebSettingsCompat.getCacheMode
+    // ServiceWorkerWebSettingsCompat.setCacheMode
+    public static final String SERVICE_WORKER_CACHE_MODE = "SERVICE_WORKER_CACHE_MODE";
+
+    // ServiceWorkerWebSettingsCompat.getAllowContentAccess
+    // ServiceWorkerWebSettingsCompat.setAllowContentAccess
+    public static final String SERVICE_WORKER_CONTENT_ACCESS = "SERVICE_WORKER_CONTENT_ACCESS";
+
+    // ServiceWorkerWebSettingsCompat.getAllowFileAccess
+    // ServiceWorkerWebSettingsCompat.setAllowFileAccess
+    public static final String SERVICE_WORKER_FILE_ACCESS = "SERVICE_WORKER_FILE_ACCESS";
+
+    // ServiceWorkerWebSettingsCompat.getBlockNetworkLoads
+    // ServiceWorkerWebSettingsCompat.setBlockNetworkLoads
+    public static final String SERVICE_WORKER_BLOCK_NETWORK_LOADS =
+            "SERVICE_WORKER_BLOCK_NETWORK_LOADS";
 }
