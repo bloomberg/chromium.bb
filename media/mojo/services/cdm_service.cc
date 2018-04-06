@@ -58,7 +58,25 @@ class DelayedReleaseServiceContextRef {
   DISALLOW_COPY_AND_ASSIGN(DelayedReleaseServiceContextRef);
 };
 
-class CdmFactoryImpl : public mojom::CdmFactory {
+// Implementation of mojom::CdmFactory that creates and hosts MojoCdmServices
+// which then host CDMs created by the media::CdmFactory provided by the
+// CdmService::Client.
+//
+// Lifetime Note:
+// 1. CdmFactoryImpl instances are owned by a DeferredDestroyStrongBindingSet
+//    directly, which is owned by CdmService.
+// 2. Note that CdmFactoryImpl also holds a ServiceContextRef to the CdmService.
+// 3. CdmFactoryImpl is destroyed in any of the following two cases:
+//   - CdmService is destroyed. Because of (2) this should not happen except for
+//     during browser shutdown, when the ServiceContext could be destroyed
+//     directly which will then destroy CdmService, ignoring any outstanding
+//     ServiceContextRefs.
+//   - mojo::CdmFactory connection error happens, AND CdmFactoryImpl doesn't own
+//     any CDMs (|cdm_bindings_| is empty). This is to prevent destroying the
+//     CDMs too early (e.g. during page navigation) which could cause errors
+//     (session closed) on the client side. See https://crbug.com/821171 for
+//     details.
+class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
  public:
   CdmFactoryImpl(
       CdmService::Client* client,
@@ -69,6 +87,12 @@ class CdmFactoryImpl : public mojom::CdmFactory {
         connection_ref_(std::make_unique<DelayedReleaseServiceContextRef>(
             std::move(connection_ref))) {
     DVLOG(1) << __func__;
+
+    // base::Unretained is safe because |cdm_bindings_| is owned by |this|. If
+    // |this| is destructed, |cdm_bindings_| will be destructed as well and the
+    // error handler should never be called.
+    cdm_bindings_.set_connection_error_handler(base::BindRepeating(
+        &CdmFactoryImpl::OnBindingConnectionError, base::Unretained(this)));
   }
 
   ~CdmFactoryImpl() final { DVLOG(1) << __func__; }
@@ -87,6 +111,14 @@ class CdmFactoryImpl : public mojom::CdmFactory {
         std::move(request));
   }
 
+  // DeferredDestroy<mojom::CdmFactory> implemenation.
+  void OnDestroyPending(base::OnceClosure destroy_cb) final {
+    destroy_cb_ = std::move(destroy_cb);
+    if (cdm_bindings_.empty())
+      std::move(destroy_cb_).Run();
+    // else the callback will be called when |cdm_bindings_| become empty.
+  }
+
  private:
   media::CdmFactory* GetCdmFactory() {
     if (!cdm_factory_) {
@@ -94,6 +126,11 @@ class CdmFactoryImpl : public mojom::CdmFactory {
       DLOG_IF(ERROR, !cdm_factory_) << "CdmFactory not available.";
     }
     return cdm_factory_.get();
+  }
+
+  void OnBindingConnectionError() {
+    if (destroy_cb_ && cdm_bindings_.empty())
+      std::move(destroy_cb_).Run();
   }
 
   // Must be declared before the bindings below because the bound objects might
@@ -106,6 +143,7 @@ class CdmFactoryImpl : public mojom::CdmFactory {
   mojo::StrongBindingSet<mojom::ContentDecryptionModule> cdm_bindings_;
   std::unique_ptr<DelayedReleaseServiceContextRef> connection_ref_;
   std::unique_ptr<media::CdmFactory> cdm_factory_;
+  base::OnceClosure destroy_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmFactoryImpl);
 };

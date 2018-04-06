@@ -9,9 +9,9 @@ namespace mojo {
 
 // Traits for a binding's implementation reference type.
 // This corresponds to a unique_ptr reference type.
-template <typename Interface>
+template <typename Interface, typename Deleter = std::default_delete<Interface>>
 struct UniquePtrImplRefTraits {
-  using PointerType = std::unique_ptr<Interface>;
+  using PointerType = std::unique_ptr<Interface, Deleter>;
 
   static bool IsNull(const PointerType& ptr) { return !ptr; }
   static Interface* GetRawPointer(PointerType* ptr) { return ptr->get(); }
