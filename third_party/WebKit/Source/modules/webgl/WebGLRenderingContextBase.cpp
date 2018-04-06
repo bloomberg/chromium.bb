@@ -1360,8 +1360,10 @@ WebGLRenderingContextBase::ClearIfComposited(GLbitfield mask) {
   if (isContextLost())
     return kSkipped;
 
-  if (!GetDrawingBuffer()->BufferClearNeeded() ||
-      (mask && framebuffer_binding_))
+  GLbitfield buffers_needing_clearing =
+      GetDrawingBuffer()->GetBuffersToAutoClear();
+
+  if (buffers_needing_clearing == 0 || (mask && framebuffer_binding_))
     return kSkipped;
 
   Optional<WebGLContextAttributes> context_attributes;
@@ -1407,14 +1409,17 @@ WebGLRenderingContextBase::ClearIfComposited(GLbitfield mask) {
   ContextGL()->ColorMask(
       true, true, true,
       !GetDrawingBuffer()->DefaultBufferRequiresAlphaChannelToBePreserved());
-  GetDrawingBuffer()->ClearFramebuffers(clear_mask);
+  // If the WebGL 2.0 clearBuffer APIs already have been used to
+  // selectively clear some of the buffers, don't destroy those
+  // results.
+  GetDrawingBuffer()->ClearFramebuffers(clear_mask & buffers_needing_clearing);
 
   // Call the DrawingBufferClient method to restore scissor test, mask, and
   // clear values, because we dirtied them above.
   DrawingBufferClientRestoreScissorTest();
   DrawingBufferClientRestoreMaskAndClearValues();
 
-  GetDrawingBuffer()->SetBufferClearNeeded(false);
+  GetDrawingBuffer()->SetBuffersToAutoClear(0);
 
   return combined_clear ? kCombinedClear : kJustClear;
 }
@@ -1461,7 +1466,7 @@ void WebGLRenderingContextBase::RestoreColorMask() {
 
 void WebGLRenderingContextBase::MarkLayerComposited() {
   if (!isContextLost())
-    GetDrawingBuffer()->SetBufferClearNeeded(true);
+    GetDrawingBuffer()->ResetBuffersToAutoClear();
 }
 
 void WebGLRenderingContextBase::SetIsHidden(bool hidden) {

@@ -170,8 +170,14 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // Returns false if the contents had previously been marked as changed and
   // have not yet been resolved.
   bool MarkContentsChanged();
-  void SetBufferClearNeeded(bool);
-  bool BufferClearNeeded() const;
+
+  // Maintenance of auto-clearing of color/depth/stencil buffers. The
+  // Reset method is present to keep calling code simpler, so it
+  // doesn't have to know which buffers were allocated.
+  void ResetBuffersToAutoClear();
+  void SetBuffersToAutoClear(GLbitfield bitmask);
+  GLbitfield GetBuffersToAutoClear() const;
+
   void SetIsHidden(bool);
   void SetFilterQuality(SkFilterQuality);
 
@@ -520,7 +526,11 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // True if resolveIfNeeded() has been called since the last time
   // markContentsChanged() had been called.
   bool contents_change_resolved_ = false;
-  bool buffer_clear_needed_ = false;
+
+  // A bitmask of GL buffer bits (GL_COLOR_BUFFER_BIT,
+  // GL_DEPTH_BUFFER_BIT, GL_STENCIL_BUFFER_BIT) which need to be
+  // auto-cleared.
+  GLbitfield buffers_to_auto_clear_ = 0;
 
   // Whether the client wants a depth or stencil buffer.
   const bool want_depth_;
