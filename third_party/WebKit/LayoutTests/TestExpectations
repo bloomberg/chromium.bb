@@ -956,7 +956,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/vertical-lr/break-
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/vertical-lr/caret-range-anonymous-block-rtl.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/vertical-lr/caret-range-anonymous-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/vertical-lr/caret-range-outside-columns-rtl.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/vertical-lr/caret-range-outside-columns.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/vertical-lr/caret-range-outside-columns.html [ Timeout Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/vertical-lr/client-rect-after-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/vertical-lr/client-rects-crossing-boundaries-nested.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/vertical-lr/column-break-with-balancing.html [ Failure ]
