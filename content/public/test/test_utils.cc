@@ -28,6 +28,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
@@ -194,8 +195,7 @@ std::unique_ptr<base::Value> ExecuteScriptAndGetValue(
 }
 
 bool AreAllSitesIsolatedForTesting() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSitePerProcess);
+  return SiteIsolationPolicy::UseDedicatedProcessesForAllSites();
 }
 
 void IsolateAllSitesForTesting(base::CommandLine* command_line) {

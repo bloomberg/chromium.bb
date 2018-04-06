@@ -383,12 +383,14 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldLockToOrigin(
     if (extension && extension->is_hosted_app())
       return false;
 
-    // http://crbug.com/600441 workaround: Extension process reuse, implemented
-    // in ShouldTryToUseExistingProcessHost(), means that extension processes
-    // aren't always actually dedicated to a single origin.
-    // TODO(nick): Fix this.
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            ::switches::kSitePerProcess))
+    // Extensions are allowed to share processes, even in --site-per-process
+    // currently. See https://crbug.com/600441#c1 for some background on the
+    // intersection of extension process reuse and site isolation.
+    //
+    // TODO(nick): Fix this, possibly by revamping the extensions process model
+    // so that sharing is determined by privilege level, as described in
+    // https://crbug.com/766267
+    if (extension)
       return false;
   }
   return true;

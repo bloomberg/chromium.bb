@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SITE_ISOLATION_POLICY_H_
-#define CONTENT_BROWSER_SITE_ISOLATION_POLICY_H_
+#ifndef CONTENT_PUBLIC_BROWSER_SITE_ISOLATION_POLICY_H_
+#define CONTENT_PUBLIC_BROWSER_SITE_ISOLATION_POLICY_H_
 
 #include <vector>
 
@@ -43,6 +43,10 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // Returns true if isolated origins feature is enabled.
   static bool AreIsolatedOriginsEnabled();
 
+  // Returns true if the PDF compositor should be enabled to allow out-of-
+  // process iframes (OOPIF's) to print properly.
+  static bool ShouldPdfCompositorBeEnabledForOopifs();
+
   // Returns the origins to isolate.  See also AreIsolatedOriginsEnabled.
   // This list applies globally to the whole browser in all profiles.
   static std::vector<url::Origin> GetIsolatedOrigins();
@@ -70,4 +74,4 @@ class CONTENT_EXPORT SiteIsolationPolicy {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SITE_ISOLATION_POLICY_H_
+#endif  // CONTENT_PUBLIC_BROWSER_SITE_ISOLATION_POLICY_H_

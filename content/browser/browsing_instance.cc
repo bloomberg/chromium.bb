@@ -7,9 +7,9 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/browser/site_isolation_policy.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/site_isolation_policy.h"
+#include "content/public/browser/site_isolation_policy.h"
 
 #include <algorithm>
 #include <iterator>
@@ -40,7 +40,8 @@ bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
   // ContentBrowserClient consults a base::Feature, then it will activate the
   // field trial and assigns the client either to a control or an experiment
   // group - such assignment should be final.
-  return GetContentClient()->browser()->ShouldEnableStrictSiteIsolation();
+  return GetContentClient() &&
+         GetContentClient()->browser()->ShouldEnableStrictSiteIsolation();
 }
 
 // static
@@ -78,6 +79,9 @@ bool SiteIsolationPolicy::IsTopDocumentIsolationEnabled() {
 
 // static
 bool SiteIsolationPolicy::AreIsolatedOriginsEnabled() {
+  // NOTE: Because it is possible for --isolate-origins to be isolating origins
+  // at a finer-than-site granularity, we do not suppress --isolate-origins when
+  // --site-per-process is also enabled.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kIsolateOrigins)) {
     return true;
@@ -92,6 +96,19 @@ bool SiteIsolationPolicy::AreIsolatedOriginsEnabled() {
   // activates the field trial and assigns the client either to a control or an
   // experiment group - such assignment should be final.
   return base::FeatureList::IsEnabled(features::kIsolateOrigins);
+}
+
+// static
+
+bool SiteIsolationPolicy::ShouldPdfCompositorBeEnabledForOopifs() {
+  // TODO(weili): We only create pdf compositor client and use pdf compositor
+  // service when site-per-process or isolate-origins flag/feature is enabled,
+  // or top-document-isolation feature is enabled. This may not cover all cases
+  // where OOPIF is used such as isolate-extensions, but should be good for
+  // feature testing purpose. Eventually, we will remove this check and use pdf
+  // compositor service by default for printing.
+  return AreIsolatedOriginsEnabled() || IsTopDocumentIsolationEnabled() ||
+         UseDedicatedProcessesForAllSites();
 }
 
 // static

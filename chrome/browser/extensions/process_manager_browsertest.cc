@@ -59,6 +59,12 @@ namespace extensions {
 
 namespace {
 
+bool IsExtensionProcessSharingAllowed() {
+  // TODO(nick): Currently, process sharing is allowed even in
+  // --site-per-process. Lock this down.  https://crbug.com/766267
+  return true;
+}
+
 void AddFrameToSet(std::set<content::RenderFrameHost*>* frames,
                    content::RenderFrameHost* rfh) {
   if (rfh->IsRenderFrameLive())
@@ -719,10 +725,9 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, ExtensionProcessReuse) {
 
   EXPECT_EQ(kNumExtensions, installed_extensions.size());
 
-  if (content::AreAllSitesIsolatedForTesting()) {
+  if (!IsExtensionProcessSharingAllowed()) {
     EXPECT_EQ(kNumExtensions, processes.size()) << "Extension process reuse is "
-                                                   "expected to be disabled in "
-                                                   "--site-per-process.";
+                                                   "expected to be disabled.";
   } else {
     EXPECT_LT(processes.size(), kNumExtensions)
         << "Expected extension process reuse, but none happened.";
