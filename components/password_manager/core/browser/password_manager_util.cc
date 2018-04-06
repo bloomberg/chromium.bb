@@ -169,6 +169,8 @@ bool ShowAllSavedPasswordsContextMenuEnabled() {
 
 void UserTriggeredShowAllSavedPasswordsFromContextMenu(
     autofill::AutofillClient* autofill_client) {
+  if (!autofill_client)
+    return;
   autofill_client->ExecuteCommand(
       autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
   password_manager::metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
