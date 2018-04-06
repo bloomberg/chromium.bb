@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/cert/sth_distributor.h"
+#include "components/certificate_transparency/sth_distributor.h"
 
 #include <map>
 #include <string>
 
 #include "base/test/histogram_tester.h"
+#include "components/certificate_transparency/sth_observer.h"
 #include "crypto/sha2.h"
 #include "net/cert/signed_tree_head.h"
-#include "net/cert/sth_observer.h"
 #include "net/test/ct_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
-
-namespace ct {
+namespace certificate_transparency {
 
 namespace {
 
@@ -24,11 +22,11 @@ namespace {
 // observed STHs, keyed by log ID.
 class StoringSTHObserver : public STHObserver {
  public:
-  void NewSTHObserved(const SignedTreeHead& sth) override {
+  void NewSTHObserved(const net::ct::SignedTreeHead& sth) override {
     sths[sth.log_id] = sth;
   }
 
-  std::map<std::string, SignedTreeHead> sths;
+  std::map<std::string, net::ct::SignedTreeHead> sths;
 };
 
 class STHDistributorTest : public ::testing::Test {
@@ -37,12 +35,12 @@ class STHDistributorTest : public ::testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(GetSampleSignedTreeHead(&sample_sth_));
-    sample_sth_.log_id = GetTestPublicKeyId();
+    sample_sth_.log_id = net::ct::GetTestPublicKeyId();
   }
 
  protected:
   STHDistributor distributor_;
-  SignedTreeHead sample_sth_;
+  net::ct::SignedTreeHead sample_sth_;
 };
 
 // Test that when a new observer is registered, the STHDistributor notifies it
@@ -52,7 +50,7 @@ TEST_F(STHDistributorTest, NotifiesOfExistingSTHs) {
   // Create an STH that differs from the |sample_sth_| by belonging to a
   // different log.
   const std::string other_log = "another log";
-  SignedTreeHead second_sth(sample_sth_);
+  net::ct::SignedTreeHead second_sth(sample_sth_);
   second_sth.log_id = other_log;
 
   // Notify |distributor_| of both STHs.
@@ -101,30 +99,30 @@ TEST_F(STHDistributorTest, UpdatesObservedSTHData) {
   distributor_.NewSTHObserved(sample_sth_);
 
   EXPECT_EQ(1u, observer.sths.size());
-  EXPECT_EQ(sample_sth_, observer.sths[GetTestPublicKeyId()]);
+  EXPECT_EQ(sample_sth_, observer.sths[net::ct::GetTestPublicKeyId()]);
 
   // Observe a new STH. "new" simply means that it is a more recently observed
   // SignedTreeHead for the given log ID, not necessarily that it's newer
   // chronologically (the timestamp) or the log state (the tree size).
   // To make sure the more recently observed SignedTreeHead is returned, just
   // modify some fields.
-  SignedTreeHead new_sth = sample_sth_;
+  net::ct::SignedTreeHead new_sth = sample_sth_;
   new_sth.tree_size++;
   new_sth.timestamp -= base::TimeDelta::FromSeconds(3);
 
   distributor_.NewSTHObserved(new_sth);
   // The STH should have been broadcast to existing observers.
   EXPECT_EQ(1u, observer.sths.size());
-  EXPECT_NE(sample_sth_, observer.sths[GetTestPublicKeyId()]);
-  EXPECT_EQ(new_sth, observer.sths[GetTestPublicKeyId()]);
+  EXPECT_NE(sample_sth_, observer.sths[net::ct::GetTestPublicKeyId()]);
+  EXPECT_EQ(new_sth, observer.sths[net::ct::GetTestPublicKeyId()]);
 
   // Registering a new observer should only receive the most recently observed
   // STH.
   StoringSTHObserver new_observer;
   distributor_.RegisterObserver(&new_observer);
   EXPECT_EQ(1u, new_observer.sths.size());
-  EXPECT_NE(sample_sth_, new_observer.sths[GetTestPublicKeyId()]);
-  EXPECT_EQ(new_sth, new_observer.sths[GetTestPublicKeyId()]);
+  EXPECT_NE(sample_sth_, new_observer.sths[net::ct::GetTestPublicKeyId()]);
+  EXPECT_EQ(new_sth, new_observer.sths[net::ct::GetTestPublicKeyId()]);
 
   distributor_.UnregisterObserver(&new_observer);
   distributor_.UnregisterObserver(&observer);
@@ -132,6 +130,4 @@ TEST_F(STHDistributorTest, UpdatesObservedSTHData) {
 
 }  // namespace
 
-}  // namespace ct
-
-}  // namespace net
+}  // namespace certificate_transparency

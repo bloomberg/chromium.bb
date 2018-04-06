@@ -2,21 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_CERT_STH_REPORTER_H_
-#define NET_CERT_STH_REPORTER_H_
+#ifndef COMPONENTS_CERTIFICATE_TRANSPARENCY_STH_REPORTER_H_
+#define COMPONENTS_CERTIFICATE_TRANSPARENCY_STH_REPORTER_H_
 
 #include <set>
 
-#include "net/base/net_export.h"
-
-namespace net {
-
-namespace ct {
+namespace certificate_transparency {
 
 class STHObserver;
 
 // Interface for registering/unregistering observers.
-class NET_EXPORT STHReporter {
+class STHReporter {
  public:
   virtual ~STHReporter() {}
 
@@ -24,8 +20,6 @@ class NET_EXPORT STHReporter {
   virtual void UnregisterObserver(STHObserver* observer) = 0;
 };
 
-}  // namespace ct
+}  // namespace certificate_transparency
 
-}  // namespace net
-
-#endif  // NET_CERT_STH_REPORTER_H_
+#endif  // COMPONENTS_CERTIFICATE_TRANSPARENCY_STH_REPORTER_H_

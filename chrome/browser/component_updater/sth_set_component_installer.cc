@@ -19,13 +19,13 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/net/sth_distributor_provider.h"
+#include "components/certificate_transparency/sth_distributor.h"
+#include "components/certificate_transparency/sth_observer.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
 #include "net/cert/ct_log_response_parser.h"
 #include "net/cert/signed_tree_head.h"
-#include "net/cert/sth_distributor.h"
-#include "net/cert/sth_observer.h"
 
 using component_updater::ComponentUpdateService;
 
@@ -52,7 +52,7 @@ const uint8_t kSthSetPublicKeySHA256[32] = {
 const char kSTHSetFetcherManifestName[] = "Signed Tree Heads";
 
 STHSetComponentInstallerPolicy::STHSetComponentInstallerPolicy(
-    net::ct::STHObserver* sth_observer)
+    certificate_transparency::STHObserver* sth_observer)
     : sth_observer_(sth_observer), weak_ptr_factory_(this) {}
 
 STHSetComponentInstallerPolicy::~STHSetComponentInstallerPolicy() {}
@@ -185,7 +185,7 @@ void STHSetComponentInstallerPolicy::OnJsonParseSuccess(
   content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
       ->PostTask(
           FROM_HERE,
-          base::BindOnce(&net::ct::STHObserver::NewSTHObserved,
+          base::BindOnce(&certificate_transparency::STHObserver::NewSTHObserved,
                          base::Unretained(sth_observer_), signed_tree_head));
 }
 
@@ -200,7 +200,7 @@ void RegisterSTHSetComponent(ComponentUpdateService* cus,
                              const base::FilePath& user_data_dir) {
   DVLOG(1) << "Registering STH Set fetcher component.";
 
-  net::ct::STHDistributor* distributor =
+  certificate_transparency::STHDistributor* distributor =
       chrome_browser_net::GetGlobalSTHDistributor();
   // The global STHDistributor should have been created by this point.
   DCHECK(distributor);

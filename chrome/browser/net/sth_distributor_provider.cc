@@ -5,21 +5,21 @@
 #include "chrome/browser/net/sth_distributor_provider.h"
 
 #include "base/lazy_instance.h"
-#include "net/cert/sth_distributor.h"
+#include "components/certificate_transparency/sth_distributor.h"
 
 namespace chrome_browser_net {
 
 namespace {
-base::LazyInstance<std::unique_ptr<net::ct::STHDistributor>>::DestructorAtExit
-    global_sth_distributor = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::unique_ptr<certificate_transparency::STHDistributor>>::
+    DestructorAtExit global_sth_distributor = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
 void SetGlobalSTHDistributor(
-    std::unique_ptr<net::ct::STHDistributor> distributor) {
+    std::unique_ptr<certificate_transparency::STHDistributor> distributor) {
   global_sth_distributor.Get().swap(distributor);
 }
 
-net::ct::STHDistributor* GetGlobalSTHDistributor() {
+certificate_transparency::STHDistributor* GetGlobalSTHDistributor() {
   CHECK(global_sth_distributor.Get());
   return global_sth_distributor.Get().get();
 }
