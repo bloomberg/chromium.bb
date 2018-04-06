@@ -89,7 +89,10 @@ void SuccessReportingCallback(
 bool IsSameOriginClientProviderHost(const GURL& origin,
                                     ServiceWorkerProviderHost* host) {
   return host->IsProviderForClient() &&
-         host->document_url().GetOrigin() == origin;
+         host->document_url().GetOrigin() == origin &&
+         // Don't expose "reserved" clients (clients that are not yet execution
+         // ready) to the Clients API.
+         host->is_execution_ready();
 }
 
 bool IsSameOriginWindowProviderHost(const GURL& origin,

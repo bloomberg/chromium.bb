@@ -36,6 +36,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "core/CoreExport.h"
 #include "core/exported/WorkerShadowPage.h"
 #include "core/workers/SharedWorkerReportingProxy.h"
@@ -110,6 +111,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
 
   void DidReceiveScriptLoaderResponse();
   void OnScriptLoaderFinished();
+  void ContinueOnScriptLoaderFinished();
 
   void ConnectTaskOnWorkerThread(MessagePortChannel);
 
@@ -142,6 +144,8 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       pending_interface_provider_;
+
+  base::WeakPtrFactory<WebSharedWorkerImpl> weak_ptr_factory_;
 };
 
 }  // namespace blink

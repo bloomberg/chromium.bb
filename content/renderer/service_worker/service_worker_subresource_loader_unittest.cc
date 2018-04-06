@@ -314,6 +314,7 @@ class FakeServiceWorkerContainerHost
       mojom::ServiceWorkerContainerHostRequest request) override {
     NOTIMPLEMENTED();
   }
+  void Ping(PingCallback callback) override { NOTIMPLEMENTED(); }
 
   int get_controller_service_worker_count_ = 0;
   FakeControllerServiceWorker* fake_controller_;
