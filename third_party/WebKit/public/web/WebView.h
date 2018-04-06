@@ -175,10 +175,6 @@ class WebView : protected WebWidget {
   // send it.
   virtual void ClearFocusedElement() = 0;
 
-  // If it is editable, scrolls the element currently in focus into view.
-  // Returns false if there is currently no currently focused element.
-  virtual bool ScrollFocusedEditableElementIntoView() { return false; }
-
   // Smooth scroll the root layer to |targetX|, |targetY| in |durationMs|.
   virtual void SmoothScroll(int target_x, int target_y, long duration_ms) {}
 

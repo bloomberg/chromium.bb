@@ -135,6 +135,11 @@ class WebFrameWidget : public WebWidget {
   // WebFrameWidget. That is a WebLocalFrame which is focused and shares the
   // same LocalRoot() as this WebFrameWidget's LocalRoot().
   virtual WebLocalFrame* FocusedWebLocalFrameInWidget() const = 0;
+
+  // Scrolls the editable element which is currently focused in (a focused frame
+  // inside) this widget into view. The scrolling might end with a final zooming
+  // into the editable region which is performed in the main frame process.
+  virtual bool ScrollFocusedEditableElementIntoView() = 0;
 };
 
 }  // namespace blink

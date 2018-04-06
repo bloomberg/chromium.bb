@@ -172,7 +172,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void FocusDocumentView(WebFrame*) override;
   void SetInitialFocus(bool reverse) override;
   void ClearFocusedElement() override;
-  bool ScrollFocusedEditableElementIntoView() override;
   void SmoothScroll(int target_x, int target_y, long duration_ms) override;
   void ZoomToFindInPageRect(const WebRect&);
   void AdvanceFocus(bool reverse) override;
@@ -370,12 +369,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void EnableTapHighlightAtPoint(
       const GestureEventWithHitTestResults& targeted_tap_event);
   void EnableTapHighlights(HeapVector<Member<Node>>&);
-  void ComputeScaleAndScrollForFocusedNode(Node* focused_node,
-                                           bool zoom_in_to_legible_scale,
-                                           float& scale,
-                                           IntPoint& scroll,
-                                           bool& need_animation);
-
   void AnimateDoubleTapZoom(const IntPoint&);
 
   void ResolveTapDisambiguation(double timestamp_seconds,
@@ -464,7 +457,20 @@ class CORE_EXPORT WebViewImpl final : public WebView,
     last_hidden_page_popup_ = page_popup;
   }
 
+  bool ShouldZoomToLegibleScale(const Element&);
+  void ZoomAndScrollToFocusedEditableElementRect(
+      const IntRect& element_bounds_in_document,
+      const IntRect& caret_bounds_in_document,
+      bool zoom_into_legible_scale);
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(ParameterizedWebFrameTest,
+                           DivScrollIntoEditableTest);
+  FRIEND_TEST_ALL_PREFIXES(ParameterizedWebFrameTest,
+                           DivScrollIntoEditablePreservePageScaleTest);
+  FRIEND_TEST_ALL_PREFIXES(ParameterizedWebFrameTest,
+                           DivScrollIntoEditableTestZoomToLegibleScaleDisabled);
+
   void SetPageScaleFactorAndLocation(float, const FloatPoint&);
   void PropagateZoomFactorToLocalFrameRoots(Frame*, float);
 
@@ -551,6 +557,22 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // dereferenced on the returned |mutator_task_runner|.
   base::WeakPtr<CompositorMutatorImpl> EnsureCompositorMutator(
       scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner);
+
+  bool ScrollFocusedEditableElementIntoView();
+  // Finds the zoom and scroll parameters for zooming into an editable element
+  // with bounds |element_bounds_in_document| and caret bounds
+  // |caret_bounds_in_document|. If the original element belongs to the local
+  // root of MainFrameImpl(), then the bounds are exactly those of the element
+  // and caret. Otherwise (when the editable element is inside an OOPIF), the
+  // bounds are projection of the original element's bounds in the main frame
+  // which is inside the layout area of some remote frame in this frame tree.
+  void ComputeScaleAndScrollForEditableElementRects(
+      const IntRect& element_bounds_in_document,
+      const IntRect& caret_bounds_in_document,
+      bool zoom_into_legible_scale,
+      float& scale,
+      IntPoint& scroll,
+      bool& need_animation);
 
   WebViewClient* client_;  // Can be 0 (e.g. unittests, shared workers, etc.)
 

@@ -41,6 +41,15 @@
 
 namespace blink {
 
+namespace {
+FloatRect DeNormalizeRect(const WebFloatRect& normalized, const IntRect& base) {
+  FloatRect result = normalized;
+  result.Scale(base.Width(), base.Height());
+  result.MoveBy(base.Location());
+  return result;
+}
+}  // namespace
+
 WebRemoteFrame* WebRemoteFrame::Create(WebTreeScopeType scope,
                                        WebRemoteFrameClient* client) {
   return WebRemoteFrameImpl::Create(scope, client);
@@ -344,12 +353,33 @@ void WebRemoteFrameImpl::ScrollRectToVisible(
   }
 
   // Schedule the scroll.
-  LayoutRect new_rect_to_scroll = EnclosingLayoutRect(
+  LayoutRect absolute_rect = EnclosingLayoutRect(
       owner_object
           ->LocalToAncestorQuad(FloatRect(rect_to_scroll), owner_object->View(),
-                                kUseTransforms | kTraverseDocumentBoundaries)
+                                kUseTransforms)
           .BoundingBox());
-  owner_object->ScrollRectToVisible(new_rect_to_scroll, params);
+
+  if (!params.zoom_into_rect ||
+      !owner_object->GetDocument().GetFrame()->LocalFrameRoot().IsMainFrame()) {
+    owner_object->ScrollRectToVisible(absolute_rect, params);
+    return;
+  }
+
+  // This is due to something such as scroll focused editable element into
+  // view on Android which also requires an automatic zoom into legible scale.
+  // This is handled by main frame's WebView.
+  WebViewImpl* view_impl = static_cast<WebViewImpl*>(View());
+  IntRect rect_in_document =
+      view_impl->MainFrameImpl()->GetFrame()->View()->RootFrameToDocument(
+          EnclosingIntRect(
+              owner_element->GetDocument().View()->AbsoluteToRootFrame(
+                  absolute_rect)));
+  IntRect element_bounds_in_document = EnclosingIntRect(
+      DeNormalizeRect(params.relative_element_bounds, rect_in_document));
+  IntRect caret_bounds_in_document = EnclosingIntRect(
+      DeNormalizeRect(params.relative_caret_bounds, rect_in_document));
+  view_impl->ZoomAndScrollToFocusedEditableElementRect(
+      element_bounds_in_document, caret_bounds_in_document, true);
 }
 
 void WebRemoteFrameImpl::IntrinsicSizingInfoChanged(

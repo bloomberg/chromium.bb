@@ -27,7 +27,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 #include "core/exported/WebViewImpl.h"
 
 #include <algorithm>
@@ -2397,59 +2396,64 @@ static bool IsElementEditable(const Element* element) {
 }
 
 bool WebViewImpl::ScrollFocusedEditableElementIntoView() {
-  Frame* frame = GetPage()->MainFrame();
-  if (!frame)
+  DCHECK(MainFrameImpl());
+  LocalFrameView* main_frame_view = MainFrameImpl()->GetFrame()->View();
+  if (!main_frame_view)
     return false;
 
   Element* element = FocusedElement();
   if (!element || !IsElementEditable(element))
     return false;
 
-  if (frame->IsRemoteFrame()) {
-    // The rest of the logic here is not implemented for OOPIFs. For now instead
-    // of implementing the logic below (which involves finding the scale and
-    // scrolling point), editable elements inside OOPIFs are scrolled into view
-    // instead. However, a common logic should be implemented for both OOPIFs
-    // and in-process frames to assure a consistent behavior across all frame
-    // types (https://crbug.com/784982).
-    LayoutObject* layout_object = element->GetLayoutObject();
-    if (!layout_object)
-      return false;
-    layout_object->ScrollRectToVisible(element->BoundingBoxForScrollIntoView(),
-                                       WebScrollIntoViewParams());
-    return true;
-  }
-
-  if (!frame->View())
-    return false;
-
   element->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  bool zoom_in_to_legible_scale =
+  ZoomAndScrollToFocusedEditableElementRect(
+      main_frame_view->RootFrameToDocument(
+          element->GetDocument().View()->AbsoluteToRootFrame(
+              element->GetLayoutObject()->AbsoluteBoundingBoxRect())),
+      main_frame_view->RootFrameToDocument(
+          element->GetDocument().View()->AbsoluteToRootFrame(
+              element->GetDocument()
+                  .GetFrame()
+                  ->Selection()
+                  .AbsoluteCaretBounds())),
+      ShouldZoomToLegibleScale(*element));
+
+  return true;
+}
+
+bool WebViewImpl::ShouldZoomToLegibleScale(const Element& element) {
+  bool zoom_into_legible_scale =
       web_settings_->AutoZoomFocusedNodeToLegibleScale() &&
       !GetPage()->GetVisualViewport().ShouldDisableDesktopWorkarounds();
 
-  if (zoom_in_to_legible_scale) {
+  if (zoom_into_legible_scale) {
     // When deciding whether to zoom in on a focused text box, we should
     // decide not to zoom in if the user won't be able to zoom out. e.g if the
     // textbox is within a touch-action: none container the user can't zoom
     // back out.
-    TouchAction action = TouchActionUtil::ComputeEffectiveTouchAction(*element);
+    TouchAction action = TouchActionUtil::ComputeEffectiveTouchAction(element);
     if (!(action & TouchAction::kTouchActionPinchZoom))
-      zoom_in_to_legible_scale = false;
+      zoom_into_legible_scale = false;
   }
 
+  return zoom_into_legible_scale;
+}
+
+void WebViewImpl::ZoomAndScrollToFocusedEditableElementRect(
+    const IntRect& element_bounds_in_document,
+    const IntRect& caret_bounds_in_document,
+    bool zoom_into_legible_scale) {
   float scale;
   IntPoint scroll;
-  bool need_animation;
-  ComputeScaleAndScrollForFocusedNode(element, zoom_in_to_legible_scale, scale,
-                                      scroll, need_animation);
+  bool need_animation = false;
+  ComputeScaleAndScrollForEditableElementRects(
+      element_bounds_in_document, caret_bounds_in_document,
+      zoom_into_legible_scale, scale, scroll, need_animation);
   if (need_animation) {
     StartPageScaleAnimation(scroll, false, scale,
                             scrollAndScaleAnimationDurationInSeconds);
   }
-
-  return true;
 }
 
 void WebViewImpl::SmoothScroll(int target_x, int target_y, long duration_ms) {
@@ -2458,41 +2462,29 @@ void WebViewImpl::SmoothScroll(int target_x, int target_y, long duration_ms) {
                           (double)duration_ms / 1000);
 }
 
-void WebViewImpl::ComputeScaleAndScrollForFocusedNode(
-    Node* focused_node,
-    bool zoom_in_to_legible_scale,
+void WebViewImpl::ComputeScaleAndScrollForEditableElementRects(
+    const IntRect& element_bounds_in_document,
+    const IntRect& caret_bounds_in_document,
+    bool zoom_into_legible_scale,
     float& new_scale,
     IntPoint& new_scroll,
     bool& need_animation) {
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
-  LocalFrameView* main_frame_view = MainFrameImpl()->GetFrameView();
 
-  WebRect caret_in_viewport, unused_end;
-  SelectionBounds(caret_in_viewport, unused_end);
-
-  // 'caretInDocument' is rect encompassing the blinking cursor relative to the
-  // root document.
-  IntRect caret_in_document = main_frame_view->RootFrameToDocument(
-      visual_viewport.ViewportToRootFrame(caret_in_viewport));
-
-  LocalFrameView* textbox_view = focused_node->GetDocument().View();
-  IntRect textbox_rect_in_document =
-      main_frame_view->RootFrameToDocument(textbox_view->AbsoluteToRootFrame(
-          PixelSnappedIntRect(focused_node->Node::BoundingBox())));
-
-  if (!zoom_in_to_legible_scale) {
+  if (!zoom_into_legible_scale) {
     new_scale = PageScaleFactor();
   } else {
     // Pick a scale which is reasonably readable. This is the scale at which
     // the caret height will become minReadableCaretHeightForNode (adjusted
     // for dpi and font scale factor).
     const int min_readable_caret_height_for_node =
-        textbox_rect_in_document.Height() >= 2 * caret_in_document.Height()
+        element_bounds_in_document.Height() >=
+                2 * caret_bounds_in_document.Height()
             ? minReadableCaretHeightForTextArea
             : minReadableCaretHeight;
     new_scale = ClampPageScaleFactorToLimits(
         MaximumLegiblePageScale() * min_readable_caret_height_for_node /
-        caret_in_document.Height());
+        caret_bounds_in_document.Height());
     new_scale = std::max(new_scale, PageScaleFactor());
   }
   const float delta_scale = new_scale / PageScaleFactor();
@@ -2506,17 +2498,18 @@ void WebViewImpl::ComputeScaleAndScrollForFocusedNode(
     new_scale = PageScaleFactor();
 
   // If the caret is offscreen, then animate.
-  if (!visual_viewport.VisibleRectInDocument().Contains(caret_in_document))
+  if (!visual_viewport.VisibleRectInDocument().Contains(
+          caret_bounds_in_document))
     need_animation = true;
 
   // If the box is partially offscreen and it's possible to bring it fully
   // onscreen, then animate.
   if (visual_viewport.VisibleRect().Width() >=
-          textbox_rect_in_document.Width() &&
+          element_bounds_in_document.Width() &&
       visual_viewport.VisibleRect().Height() >=
-          textbox_rect_in_document.Height() &&
+          element_bounds_in_document.Height() &&
       !visual_viewport.VisibleRectInDocument().Contains(
-          textbox_rect_in_document))
+          element_bounds_in_document))
     need_animation = true;
 
   if (!need_animation)
@@ -2525,37 +2518,37 @@ void WebViewImpl::ComputeScaleAndScrollForFocusedNode(
   FloatSize target_viewport_size(visual_viewport.Size());
   target_viewport_size.Scale(1 / new_scale);
 
-  if (textbox_rect_in_document.Width() <= target_viewport_size.Width()) {
+  if (element_bounds_in_document.Width() <= target_viewport_size.Width()) {
     // Field is narrower than screen. Try to leave padding on left so field's
     // label is visible, but it's more important to ensure entire field is
     // onscreen.
     int ideal_left_padding = target_viewport_size.Width() * leftBoxRatio;
     int max_left_padding_keeping_box_onscreen =
-        target_viewport_size.Width() - textbox_rect_in_document.Width();
-    new_scroll.SetX(textbox_rect_in_document.X() -
+        target_viewport_size.Width() - element_bounds_in_document.Width();
+    new_scroll.SetX(element_bounds_in_document.X() -
                     std::min<int>(ideal_left_padding,
                                   max_left_padding_keeping_box_onscreen));
   } else {
     // Field is wider than screen. Try to left-align field, unless caret would
     // be offscreen, in which case right-align the caret.
-    new_scroll.SetX(std::max<int>(textbox_rect_in_document.X(),
-                                  caret_in_document.X() +
-                                      caret_in_document.Width() + caretPadding -
-                                      target_viewport_size.Width()));
+    new_scroll.SetX(std::max<int>(
+        element_bounds_in_document.X(),
+        caret_bounds_in_document.X() + caret_bounds_in_document.Width() +
+            caretPadding - target_viewport_size.Width()));
   }
-  if (textbox_rect_in_document.Height() <= target_viewport_size.Height()) {
+  if (element_bounds_in_document.Height() <= target_viewport_size.Height()) {
     // Field is shorter than screen. Vertically center it.
     new_scroll.SetY(
-        textbox_rect_in_document.Y() -
-        (target_viewport_size.Height() - textbox_rect_in_document.Height()) /
+        element_bounds_in_document.Y() -
+        (target_viewport_size.Height() - element_bounds_in_document.Height()) /
             2);
   } else {
     // Field is taller than screen. Try to top align field, unless caret would
     // be offscreen, in which case bottom-align the caret.
-    new_scroll.SetY(
-        std::max<int>(textbox_rect_in_document.Y(),
-                      caret_in_document.Y() + caret_in_document.Height() +
-                          caretPadding - target_viewport_size.Height()));
+    new_scroll.SetY(std::max<int>(
+        element_bounds_in_document.Y(),
+        caret_bounds_in_document.Y() + caret_bounds_in_document.Height() +
+            caretPadding - target_viewport_size.Height()));
   }
 }
 

@@ -2021,8 +2021,14 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
     RenderWidget::OnResize(params);
   }
 
-  if (params.scroll_focused_node_into_view)
-    webview()->ScrollFocusedEditableElementIntoView();
+  if (!params.scroll_focused_node_into_view)
+    return;
+
+  if (WebLocalFrame* focused_frame = GetWebView()->FocusedFrame()) {
+    focused_frame->LocalRoot()
+        ->FrameWidget()
+        ->ScrollFocusedEditableElementIntoView();
+  }
 }
 
 void RenderViewImpl::OnSetBackgroundOpaque(bool opaque) {

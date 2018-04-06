@@ -75,13 +75,30 @@
 #include "platform/graphics/CompositorMutatorImpl.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/Optional.h"
+#include "public/platform/WebScrollIntoViewParams.h"
 #include "public/web/WebAutofillClient.h"
+#include "public/web/WebElement.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebRange.h"
 #include "public/web/WebWidgetClient.h"
 #include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-blink.h"
 
 namespace blink {
+namespace {
+const int kCaretPadding = 10;
+const float kIdealPaddingRatio = 0.3f;
+
+// Returns a rect which is offset and scaled accordingly to |base_rect|'s
+// location and size.
+FloatRect NormalizeRect(const FloatRect& to_normalize,
+                        const FloatRect& base_rect) {
+  FloatRect result(to_normalize);
+  result.SetLocation(to_normalize.Location() + (-base_rect.Location()));
+  result.Scale(1.0 / base_rect.Width(), 1.0 / base_rect.Height());
+  return result;
+}
+
+}  // namespace
 
 // WebFrameWidget ------------------------------------------------------------
 
@@ -518,6 +535,21 @@ WebFrameWidgetImpl::GetActiveWebInputMethodController() const {
   WebLocalFrameImpl* local_frame =
       WebLocalFrameImpl::FromFrame(FocusedLocalFrameInWidget());
   return local_frame ? local_frame->GetInputMethodController() : nullptr;
+}
+
+bool WebFrameWidgetImpl::ScrollFocusedEditableElementIntoView() {
+  Element* element = FocusedElement();
+  if (!element || !WebElement(element).IsEditable())
+    return false;
+
+  if (!element->GetLayoutObject())
+    return false;
+
+  LayoutRect rect_to_scroll;
+  WebScrollIntoViewParams params;
+  GetScrollParamsForFocusedEditableElement(*element, rect_to_scroll, params);
+  element->GetLayoutObject()->ScrollRectToVisible(rect_to_scroll, params);
+  return true;
 }
 
 void WebFrameWidgetImpl::ScheduleAnimation() {
@@ -1124,6 +1156,54 @@ void WebFrameWidgetImpl::DidCreateLocalRootView() {
     did_suspend_parsing_ = true;
     local_root_->GetFrame()->Loader().GetDocumentLoader()->BlockParser();
   }
+}
+
+void WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
+    const Element& element,
+    LayoutRect& rect_to_scroll,
+    WebScrollIntoViewParams& params) {
+  LocalFrameView& frame_view = *element.GetDocument().View();
+  IntRect absolute_element_bounds =
+      element.GetLayoutObject()->AbsoluteBoundingBoxRect();
+  IntRect absolute_caret_bounds =
+      element.GetDocument().GetFrame()->Selection().AbsoluteCaretBounds();
+  // Ideally, the chosen rectangle includes the element box and caret bounds
+  // plus some margin on the left. If this does not work (i.e., does not fit
+  // inside the frame view), then choose a subrect which includes the caret
+  // bounds. It is preferrable to also include element bounds' location and left
+  // align the scroll. If this cant be satisfied, the scroll will be right
+  // aligned.
+  IntRect maximal_rect =
+      UnionRect(absolute_element_bounds, absolute_caret_bounds);
+
+  // Set the ideal margin.
+  maximal_rect.ShiftXEdgeTo(
+      maximal_rect.X() -
+      static_cast<int>(kIdealPaddingRatio * absolute_element_bounds.Width()));
+
+  bool maximal_rect_fits_in_frame =
+      !(frame_view.Size() - maximal_rect.Size()).IsEmpty();
+
+  if (!maximal_rect_fits_in_frame) {
+    IntRect frame_rect(maximal_rect.Location(), frame_view.Size());
+    maximal_rect.Intersect(frame_rect);
+    IntPoint point_forced_to_be_visible =
+        absolute_caret_bounds.MaxXMaxYCorner() +
+        IntSize(kCaretPadding, kCaretPadding);
+    if (!maximal_rect.Contains(point_forced_to_be_visible)) {
+      // Move the rect towards the point until the point is barely contained.
+      maximal_rect.Move(point_forced_to_be_visible -
+                        maximal_rect.MaxXMaxYCorner());
+    }
+  }
+
+  params.zoom_into_rect = View()->ShouldZoomToLegibleScale(element);
+  params.relative_element_bounds = NormalizeRect(
+      Intersection(absolute_element_bounds, maximal_rect), maximal_rect);
+  params.relative_caret_bounds = NormalizeRect(
+      Intersection(absolute_caret_bounds, maximal_rect), maximal_rect);
+  params.behavior = WebScrollIntoViewParams::kInstant;
+  rect_to_scroll = LayoutRect(maximal_rect);
 }
 
 }  // namespace blink

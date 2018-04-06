@@ -233,33 +233,6 @@ double GetPageScaleFactor(Shell* shell) {
       .page_scale_factor;
 }
 
-// Helper function to retrieve the bounding client rect of the element
-// identified by |sel| inside |rfh|.
-gfx::Rect GetBoundingClientRect(RenderFrameHostImpl* rfh,
-                                const std::string& sel) {
-  std::string result;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      rfh,
-      base::StringPrintf(
-          "{"
-          "  let rect = document.querySelector('%s').getBoundingClientRect();"
-          "  let msg = `${rect.x},${rect.y},${rect.width},${rect.height}`;"
-          "  window.domAutomationController.send(msg);"
-          "}",
-          sel.c_str()),
-      &result));
-  std::vector<std::string> tokens = base::SplitString(
-      result, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  EXPECT_EQ(4U, tokens.size());
-  double x = 0.0, y = 0.0, width = 0.0, height = 0.0;
-  EXPECT_TRUE(base::StringToDouble(tokens[0], &x));
-  EXPECT_TRUE(base::StringToDouble(tokens[1], &y));
-  EXPECT_TRUE(base::StringToDouble(tokens[2], &width));
-  EXPECT_TRUE(base::StringToDouble(tokens[3], &height));
-  return {static_cast<int>(x), static_cast<int>(y), static_cast<int>(width),
-          static_cast<int>(height)};
-}
-
 class RedirectNotificationObserver : public NotificationObserver {
  public:
   // Register to listen for notifications of the given type from either a
@@ -718,6 +691,102 @@ class SitePerProcessEmbedderCSPEnforcementBrowserTest
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "EmbedderCSPEnforcement");
   }
+};
+
+// SitePerProcessProgrammaticScrollTest.
+
+class SitePerProcessProgrammaticScrollTest : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessProgrammaticScrollTest()
+      : kInfinity(1000000U), kPositiveXYPlane(0, 0, kInfinity, kInfinity) {}
+
+ protected:
+  const size_t kInfinity;
+  const std::string kIframeOutOfViewHTML = "/iframe_out_of_view.html";
+  const std::string kIframeSelector = "iframe";
+  const std::string kInputSelector = "input";
+  const gfx::Rect kPositiveXYPlane;
+
+  // Waits until the |load| handle is called inside the frame.
+  void WaitForOnLoad(FrameTreeNode* node) {
+    RunCommandAndWaitForResponse(node, "notifyWhenLoaded();", "LOADED");
+  }
+
+  void WaitForElementVisible(FrameTreeNode* node, const std::string& sel) {
+    RunCommandAndWaitForResponse(
+        node,
+        base::StringPrintf("notifyWhenVisible(document.querySelector('%s'));",
+                           sel.c_str()),
+        "VISIBLE");
+  }
+
+  void AddFocusedInputField(FrameTreeNode* node) {
+    ASSERT_TRUE(ExecuteScript(node, "addFocusedInputField();"));
+  }
+
+  void SetWindowScroll(FrameTreeNode* node, int x, int y) {
+    ASSERT_TRUE(ExecuteScript(
+        node, base::StringPrintf("window.scrollTo(%d, %d);", x, y)));
+  }
+
+  // Helper function to retrieve the bounding client rect of the element
+  // identified by |sel| inside |rfh|.
+  gfx::Rect GetBoundingClientRect(FrameTreeNode* node, const std::string& sel) {
+    std::string result;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        node,
+        base::StringPrintf(
+            "window.domAutomationController.send(rectAsString("
+            "    document.querySelector('%s').getBoundingClientRect()));",
+            sel.c_str()),
+        &result));
+    return GetRectFromString(result);
+  }
+
+  // Returns a rect representing the current |visualViewport| in the main frame
+  // of |contents|.
+  gfx::Rect GetVisualViewport(FrameTreeNode* node) {
+    std::string result;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        node,
+        "window.domAutomationController.send("
+        "    rectAsString(visualViewportAsRect()));",
+        &result));
+    return GetRectFromString(result);
+  }
+
+  float GetVisualViewportScale(FrameTreeNode* node) {
+    double scale;
+    EXPECT_TRUE(ExecuteScriptAndExtractDouble(
+        node, "window.domAutomationController.send(visualViewport.scale);",
+        &scale));
+    return static_cast<float>(scale);
+  }
+
+ private:
+  void RunCommandAndWaitForResponse(FrameTreeNode* node,
+                                    const std::string& command,
+                                    const std::string& response) {
+    std::string msg_from_renderer;
+    ASSERT_TRUE(
+        ExecuteScriptAndExtractString(node, command, &msg_from_renderer));
+    ASSERT_EQ(response, msg_from_renderer);
+  }
+
+  gfx::Rect GetRectFromString(const std::string& str) {
+    std::vector<std::string> tokens = base::SplitString(
+        str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    EXPECT_EQ(4U, tokens.size());
+    double x = 0.0, y = 0.0, width = 0.0, height = 0.0;
+    EXPECT_TRUE(base::StringToDouble(tokens[0], &x));
+    EXPECT_TRUE(base::StringToDouble(tokens[1], &y));
+    EXPECT_TRUE(base::StringToDouble(tokens[2], &width));
+    EXPECT_TRUE(base::StringToDouble(tokens[3], &height));
+    return {static_cast<int>(x), static_cast<int>(y), static_cast<int>(width),
+            static_cast<int>(height)};
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(SitePerProcessProgrammaticScrollTest);
 };
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
@@ -1714,50 +1783,37 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollLocalSubframeInOOPIF) {
 #define MAYBE_ScrollElementIntoView ScrollElementIntoView
 #endif
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_ScrollElementIntoView) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
+                       MAYBE_ScrollElementIntoView) {
   const GURL url_a(
-      embedded_test_server()->GetURL("a.com", "/iframe_out_of_view.html"));
+      embedded_test_server()->GetURL("a.com", kIframeOutOfViewHTML));
   const GURL url_b(
-      embedded_test_server()->GetURL("b.com", "/iframe_out_of_view.html"));
+      embedded_test_server()->GetURL("b.com", kIframeOutOfViewHTML));
   const GURL url_c(
-      embedded_test_server()->GetURL("c.com", "/iframe_out_of_view.html"));
+      embedded_test_server()->GetURL("c.com", kIframeOutOfViewHTML));
 
-  // Script which runs and returns with a |kRendererMsgLoaded| when load handler
-  // is called. This is a good point to read bounding client rect values as
-  // basic layout has already been completed.
-  const std::string kWaitForFrameLoadScript = "notifyWhenLoaded();";
-  const std::string kRendererMsgLoaded = "LOADED";
   // Number of <iframe>'s which will not be empty. The actual frame tree has two
   // more nodes one for root and one for the inner-most empty <iframe>.
   const size_t kNonEmptyIframesCount = 5;
-  // Sent in 'load' handlers.
-  const std::string kIframeSelector = "iframe";
-  const int kRectDimensionErrorTolerance = 0;
-  const int kInfinity = 1000000;
-  const gfx::Rect kPositiveXYPlane(0, 0, kInfinity, kInfinity);
   const std::string kScrollIntoViewScript =
       "document.body.scrollIntoView({'behavior' : 'instant'});";
-  std::string msg_from_renderer;
+  const int kRectDimensionErrorTolerance = 0;
 
   // First, recursively set the |scrollTop| and |scrollLeft| of |document.body|
   // to its maximum and then navigate the <iframe> to |url_a|. The page will be
   // structured as a(a(a(a(a(a(a)))))) where the inner-most <iframe> is empty.
   ASSERT_TRUE(NavigateToURL(shell(), url_a));
   FrameTreeNode* node = web_contents()->GetFrameTree()->root();
-  ASSERT_TRUE(ExecuteScriptAndExtractString(node, kWaitForFrameLoadScript,
-                                            &msg_from_renderer));
-  ASSERT_EQ(kRendererMsgLoaded, msg_from_renderer);
+  WaitForOnLoad(node);
   std::vector<gfx::Rect> reference_page_bounds_before_scroll = {
-      GetBoundingClientRect(node->current_frame_host(), kIframeSelector)};
+      GetBoundingClientRect(node, kIframeSelector)};
   node = node->child_at(0);
   for (size_t index = 0; index < kNonEmptyIframesCount; ++index) {
     NavigateFrameToURL(node, url_a);
-    ASSERT_TRUE(ExecuteScriptAndExtractString(node, kWaitForFrameLoadScript,
-                                              &msg_from_renderer));
-    ASSERT_EQ(kRendererMsgLoaded, msg_from_renderer);
+    WaitForOnLoad(node);
     // Store |document.querySelector('iframe').getBoundingClientRect()|.
     reference_page_bounds_before_scroll.push_back(
-        GetBoundingClientRect(node->current_frame_host(), kIframeSelector));
+        GetBoundingClientRect(node, kIframeSelector));
     node = node->child_at(0);
   }
   // Sanity-check: If the page is setup properly then all the <iframe>s should
@@ -1771,11 +1827,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_ScrollElementIntoView) {
   // page which contains OOPIFs.
   node = web_contents()->GetFrameTree()->root();
   std::vector<gfx::Rect> reference_page_bounds_after_scroll = {
-      GetBoundingClientRect(node->current_frame_host(), kIframeSelector)};
+      GetBoundingClientRect(node, kIframeSelector)};
   node = node->child_at(0);
   for (size_t index = 0; index < kNonEmptyIframesCount; ++index) {
     reference_page_bounds_after_scroll.push_back(
-        GetBoundingClientRect(node->current_frame_host(), kIframeSelector));
+        GetBoundingClientRect(node, kIframeSelector));
     node = node->child_at(0);
   }
 
@@ -1783,20 +1839,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_ScrollElementIntoView) {
   // structured as b(b(a(c(a(a(a)))))) where the inner-most <iframe> is empty.
   ASSERT_TRUE(NavigateToURL(shell(), url_b));
   node = web_contents()->GetFrameTree()->root();
-  ASSERT_TRUE(ExecuteScriptAndExtractString(node, kWaitForFrameLoadScript,
-                                            &msg_from_renderer));
-  ASSERT_EQ(kRendererMsgLoaded, msg_from_renderer);
+  WaitForOnLoad(node);
   std::vector<gfx::Rect> test_page_bounds_before_scroll = {
-      GetBoundingClientRect(node->current_frame_host(), kIframeSelector)};
+      GetBoundingClientRect(node, kIframeSelector)};
   const GURL iframe_urls[] = {url_b, url_a, url_c, url_a, url_a};
   node = node->child_at(0);
   for (size_t index = 0; index < kNonEmptyIframesCount; ++index) {
     NavigateFrameToURL(node, iframe_urls[index]);
-    ASSERT_TRUE(ExecuteScriptAndExtractString(node, kWaitForFrameLoadScript,
-                                              &msg_from_renderer));
-    ASSERT_EQ(kRendererMsgLoaded, msg_from_renderer);
+    WaitForOnLoad(node);
     test_page_bounds_before_scroll.push_back(
-        GetBoundingClientRect(node->current_frame_host(), kIframeSelector));
+        GetBoundingClientRect(node, kIframeSelector));
     node = node->child_at(0);
   }
   // Sanity-check: The bounds should match those from non-OOPIF page.
@@ -1813,7 +1865,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_ScrollElementIntoView) {
   RenderFrameHostImpl* current_rfh = node->current_frame_host()->GetParent();
   while (current_rfh) {
     gfx::Rect current_bounds =
-        GetBoundingClientRect(current_rfh, kIframeSelector);
+        GetBoundingClientRect(current_rfh->frame_tree_node(), kIframeSelector);
     gfx::Rect reference_bounds = reference_page_bounds_after_scroll[index];
     if (current_bounds.ApproximatelyEqual(reference_bounds,
                                           kRectDimensionErrorTolerance)) {
@@ -1828,55 +1880,98 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_ScrollElementIntoView) {
   }
 }
 
-// This test verifies that Scrolling a focused editable element into view works
-// when the element is inside an OOPIF.
-// Flaky test, see crbug.com/793616
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       DISABLED_ScrollFocusedEditableElementIntoView) {
-  GURL main_frame_url(
-      embedded_test_server()->GetURL("a.com", "/iframe_out_of_view.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
+// This test verifies that ScrollFocusedEditableElementIntoView works correctly
+// for OOPIFs. Essentially, the test verifies that in a similar setup, the
+// resultant page scale factor is the same for OOPIF and non-OOPIF cases. This
+// also verifies that in response to the scroll command, the root-layer scrolls
+// correctly and the <input> is visible in visual viewport.
+IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
+                       ScrollFocusedEditableElementIntoView) {
+  GURL url_a(embedded_test_server()->GetURL("a.com", kIframeOutOfViewHTML));
+  GURL url_b(embedded_test_server()->GetURL("b.com", kIframeOutOfViewHTML));
+
+#if defined(OS_ANDROID)
+  // The reason for Android specific code is that
+  // AutoZoomFocusedNodeToLegibleScale is in blink's WebSettings and difficult
+  // to access from here. It so happens that the setting is on for Android.
+
+  // A lower bound on the ratio of page scale factor after scroll. The actual
+  // value depends on minReadableCaretHeight / caret_bounds.Height(). The page
+  // is setup so caret height is quite small so the expected scale should be
+  // larger than 2.0.
+  float kLowerBoundOnScaleAfterScroll = 2.0;
+  float kEpsilon = 0.1;
+#endif
+
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  WaitForOnLoad(root);
+  NavigateFrameToURL(root->child_at(0), url_a);
+  WaitForOnLoad(root->child_at(0));
+#if defined(OS_ANDROID)
+  float scale_before_scroll_nonoopif = GetVisualViewportScale(root);
+#endif
+  AddFocusedInputField(root->child_at(0));
+  // Focusing <input> causes scrollIntoView(). The following line makes sure
+  // that the <iframe> is out of view again.
+  SetWindowScroll(root, 0, 0);
+  ASSERT_FALSE(GetVisualViewport(root).Intersects(
+      GetBoundingClientRect(root, kIframeSelector)));
+  root->child_at(0)
+      ->current_frame_host()
+      ->GetFrameInputHandler()
+      ->ScrollFocusedEditableNodeIntoRect(gfx::Rect());
+  WaitForElementVisible(root, kIframeSelector);
+#if defined(OS_ANDROID)
+  float scale_after_scroll_nonoopif = GetVisualViewportScale(root);
+  // Increased scale means zoom triggered correctly.
+  EXPECT_GT(scale_after_scroll_nonoopif - scale_before_scroll_nonoopif,
+            kEpsilon);
+  EXPECT_GT(scale_after_scroll_nonoopif, kLowerBoundOnScaleAfterScroll);
+#endif
 
-  GURL child_frame_url(
-      embedded_test_server()->GetURL("b.com", "/page_with_input_field.html"));
-  NavigateFrameToURL(root->child_at(0), child_frame_url);
-
-  RenderFrameHostImpl* main_frame = root->current_frame_host();
-  RenderFrameHostImpl* child_frame = root->child_at(0)->current_frame_host();
-
-  // Focus the input field.
-  std::string result;
+  // Retry the test on an OOPIF page.
+  Shell* new_shell = CreateBrowser();
+  ASSERT_TRUE(NavigateToURL(new_shell, url_b));
+  root = static_cast<WebContentsImpl*>(new_shell->web_contents())
+             ->GetFrameTree()
+             ->root();
+  WaitForOnLoad(root);
+#if defined(OS_ANDROID)
+  float scale_before_scroll_oopif = GetVisualViewportScale(root);
+  // Sanity-check:
+  ASSERT_NEAR(scale_before_scroll_oopif, scale_before_scroll_nonoopif,
+              kEpsilon);
+#endif
+  NavigateFrameToURL(root->child_at(0), url_a);
+  WaitForOnLoad(root->child_at(0));
+  AddFocusedInputField(root->child_at(0));
+  SetWindowScroll(root, 0, 0);
+  ASSERT_FALSE(GetVisualViewport(root).Intersects(
+      GetBoundingClientRect(root, kIframeSelector)));
+  root->child_at(0)
+      ->current_frame_host()
+      ->GetFrameInputHandler()
+      ->ScrollFocusedEditableNodeIntoRect(gfx::Rect());
+  WaitForElementVisible(root, kIframeSelector);
+#if defined(OS_ANDROID)
+  float scale_after_scroll_oopif = GetVisualViewportScale(root);
+  EXPECT_GT(scale_after_scroll_oopif - scale_before_scroll_oopif, kEpsilon);
+  EXPECT_GT(scale_after_scroll_oopif, kLowerBoundOnScaleAfterScroll);
+  // The scale is based on the caret height and it should be the same in both
+  // OOPIF and non-OOPIF pages.
+  EXPECT_NEAR(scale_after_scroll_oopif, scale_after_scroll_nonoopif, kEpsilon);
+#endif
+  // Make sure the <input> is at least partly visible in the |visualViewport|.
+  gfx::Rect final_visual_viewport_oopif = GetVisualViewport(root);
+  gfx::Rect iframe_bounds_after_scroll_oopif =
+      GetBoundingClientRect(root, kIframeSelector);
+  gfx::Rect input_bounds_after_scroll_oopif =
+      GetBoundingClientRect(root->child_at(0), kInputSelector);
+  input_bounds_after_scroll_oopif +=
+      iframe_bounds_after_scroll_oopif.OffsetFromOrigin();
   ASSERT_TRUE(
-      ExecuteScriptAndExtractString(child_frame, "focusInputField()", &result));
-  ASSERT_EQ(result, "input-focus");
-
-  // Wait and verify that before scrolling the child <iframe> is not visible.
-  while (main_frame->GetView()->GetViewBounds().Intersects(
-      child_frame->GetView()->GetViewBounds())) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
-
-  child_frame->GetFrameInputHandler()->ScrollFocusedEditableNodeIntoRect(
-      gfx::Rect());
-
-  // Wait until the child frame is visible.
-  while (!root->current_frame_host()->GetView()->GetViewBounds().Intersects(
-      child_frame->GetView()->GetViewBounds())) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
-    run_loop.Run();
-  }
-
-  // Verify that the bounding box of the <input> is visible inside the main
-  // frame.
-  gfx::Rect test_rect = GetBoundingClientRect(child_frame, "input");
-  test_rect += child_frame->GetView()->GetViewBounds().OffsetFromOrigin();
-  EXPECT_TRUE(main_frame->GetView()->GetViewBounds().Intersects(test_rect));
+      final_visual_viewport_oopif.Intersects(input_bounds_after_scroll_oopif));
 }
 
 // Tests OOPIF rendering by checking that the RWH of the iframe generates
