@@ -19,7 +19,7 @@ void* GetPC() {
 }  // namespace
 
 TEST(CFIBacktraceAndroidTest, TestUnwinding) {
-  auto* unwinder = CFIBacktraceAndroid::GetInstance();
+  auto* unwinder = CFIBacktraceAndroid::GetInitializedInstance();
   EXPECT_TRUE(unwinder->can_unwind_stack_frames());
   EXPECT_GT(unwinder->executable_start_addr_, 0u);
   EXPECT_GT(unwinder->executable_end_addr_, unwinder->executable_start_addr_);
@@ -46,7 +46,7 @@ TEST(CFIBacktraceAndroidTest, TestUnwinding) {
 }
 
 TEST(CFIBacktraceAndroidTest, TestFindCFIRow) {
-  auto* unwinder = CFIBacktraceAndroid::GetInstance();
+  auto* unwinder = CFIBacktraceAndroid::GetInitializedInstance();
   /* Input is generated from the CFI file:
   STACK CFI INIT 1000 500
   STACK CFI 1002 .cfa: sp 272 + .ra: .cfa -4 + ^ r4: .cfa -16 +

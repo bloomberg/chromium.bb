@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_CLIENT_H_
 #define COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_CLIENT_H_
 
+#include "base/memory/weak_ptr.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/handle.h"
@@ -29,6 +30,8 @@ class Client : public mojom::ProfilingClient {
   void BindToInterface(mojom::ProfilingClientRequest request);
 
  private:
+  void InitAllocatorShimOnUIThread(mojom::ProfilingParamsPtr params);
+
   // Ideally, this would be a mojo::Binding that would only keep alive one
   // client request. However, the service that makes the client requests
   // [content_browser] is different from the service that dedupes the client
@@ -40,6 +43,8 @@ class Client : public mojom::ProfilingClient {
   bool started_profiling_;
 
   std::unique_ptr<SenderPipe> sender_pipe_;
+
+  base::WeakPtrFactory<Client> weak_factory_;
 };
 
 }  // namespace heap_profiling

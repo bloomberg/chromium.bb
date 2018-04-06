@@ -34,6 +34,11 @@
 #include <sys/prctl.h>
 #endif
 
+#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
+    defined(OFFICIAL_BUILD)
+#include "base/trace_event/cfi_backtrace_android.h"
+#endif
+
 using base::trace_event::AllocationContext;
 using base::trace_event::AllocationContextTracker;
 using CaptureMode = base::trace_event::AllocationContextTracker::CaptureMode;
@@ -728,18 +733,24 @@ void SerializeFramesFromAllocationContext(FrameSerializer* serializer,
 }
 
 void SerializeFramesFromBacktrace(FrameSerializer* serializer) {
-#if BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
+#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
+    defined(OFFICIAL_BUILD)
+  const void* frames[kMaxStackEntries - 1];
+  size_t frame_count =
+      base::trace_event::CFIBacktraceAndroid::GetInitializedInstance()->Unwind(
+          frames, kMaxStackEntries - 1);
+#elif BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
   const void* frames[kMaxStackEntries - 1];
   size_t frame_count = base::debug::TraceStackFramePointers(
       frames, kMaxStackEntries - 1,
       1);  // exclude this function from the trace.
-#else      // BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
+#else
   // Fall-back to capturing the stack with base::debug::StackTrace,
   // which is likely slower, but more reliable.
   base::debug::StackTrace stack_trace(kMaxStackEntries - 1);
   size_t frame_count = 0u;
   const void* const* frames = stack_trace.Addresses(&frame_count);
-#endif     // BUILDFLAG(CAN_UNWIND_WITH_FRAME_POINTERS)
+#endif
 
   serializer->AddAllInstructionPointers(frame_count, frames);
 

@@ -6,6 +6,8 @@
 
 #include "base/allocator/allocator_interception_mac.h"
 #include "base/files/platform_file.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/trace_event/malloc_dump_provider.h"
 #include "build/build_config.h"
 #include "components/services/heap_profiling/public/cpp/allocator_shim.h"
@@ -13,13 +15,32 @@
 #include "components/services/heap_profiling/public/cpp/stream.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
+#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
+    defined(OFFICIAL_BUILD)
+#include "base/trace_event/cfi_backtrace_android.h"
+#endif
+
 namespace heap_profiling {
 
 namespace {
 const int kTimeoutDurationMs = 10000;
+
+#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
+    defined(OFFICIAL_BUILD)
+void EnsureCFIInitializedOnBackgroundThread(
+    scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner,
+    base::OnceClosure callback) {
+  bool can_unwind =
+      base::trace_event::CFIBacktraceAndroid::GetInitializedInstance()
+          ->can_unwind_stack_frames();
+  DCHECK(can_unwind);
+  callback_task_runner->PostTask(FROM_HERE, std::move(callback));
+}
+#endif
+
 }  // namespace
 
-Client::Client() : started_profiling_(false) {}
+Client::Client() : started_profiling_(false), weak_factory_(this) {}
 
 Client::~Client() {
   StopAllocatorShimDangerous();
@@ -67,11 +88,32 @@ void Client::StartProfiling(mojom::ProfilingParamsPtr params) {
   base::allocator::PeriodicallyShimNewMallocZones();
 #endif
 
+#if defined(OS_ANDROID) && BUILDFLAG(CAN_UNWIND_WITH_CFI_TABLE) && \
+    defined(OFFICIAL_BUILD)
+  // On Android the unwinder initialization requires file reading before
+  // initializing shim. So, post task on background thread.
+  auto init_callback =
+      base::BindOnce(&Client::InitAllocatorShimOnUIThread,
+                     weak_factory_.GetWeakPtr(), std::move(params));
+
+  auto background_task = base::BindOnce(&EnsureCFIInitializedOnBackgroundThread,
+                                        base::ThreadTaskRunnerHandle::Get(),
+                                        std::move(init_callback));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::TaskPriority::BACKGROUND, base::MayBlock(),
+                            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+                           std::move(background_task));
+#else
   InitAllocatorShim(sender_pipe_.get(), std::move(params));
+#endif
 }
 
 void Client::FlushMemlogPipe(uint32_t barrier_id) {
   AllocatorShimFlushPipe(barrier_id);
+}
+
+void Client::InitAllocatorShimOnUIThread(mojom::ProfilingParamsPtr params) {
+  InitAllocatorShim(sender_pipe_.get(), std::move(params));
 }
 
 }  // namespace heap_profiling
