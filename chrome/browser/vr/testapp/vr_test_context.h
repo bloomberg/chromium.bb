@@ -72,7 +72,8 @@ class VrTestContext : public vr::UiBrowserInterface {
   RenderInfo GetRenderInfo() const;
   gfx::Transform ProjectionMatrix() const;
   gfx::Transform ViewProjectionMatrix() const;
-  ControllerModel UpdateController(const RenderInfo& render_info);
+  ControllerModel UpdateController(const RenderInfo& render_info,
+                                   base::TimeTicks current_time);
   gfx::Point3F LaserOrigin() const;
   void LoadAssets();
 
@@ -101,8 +102,6 @@ class VrTestContext : public vr::UiBrowserInterface {
   bool voice_search_enabled_ = false;
   bool touching_touchpad_ = false;
   base::TimeTicks page_load_start_;
-
-  ControllerModel last_controller_model_;
 
   std::unique_ptr<TextInputDelegate> text_input_delegate_;
   std::unique_ptr<TestKeyboardDelegate> keyboard_delegate_;

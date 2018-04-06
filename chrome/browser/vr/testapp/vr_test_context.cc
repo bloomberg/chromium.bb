@@ -127,22 +127,24 @@ void VrTestContext::DrawFrame() {
 
   RenderInfo render_info = GetRenderInfo();
 
-  UpdateController(render_info);
-
   // Update the render position of all UI elements (including desktop).
   ui_->scene()->OnBeginFrame(current_time, head_pose_);
   ui_->OnProjMatrixChanged(render_info.left_eye_model.proj_matrix);
+
+  UpdateController(render_info, current_time);
+
+  ui_->scene()->UpdateTextures();
+
+  auto load_progress = (current_time - page_load_start_).InMilliseconds() /
+                       kPageLoadTimeMilliseconds;
+  ui_->SetLoading(load_progress < 1.0f);
+  ui_->SetLoadProgress(std::min(load_progress, 1.0f));
 
   if (web_vr_mode_ && ui_->ShouldRenderWebVr() && webvr_frames_received_) {
     ui_->ui_renderer()->DrawWebVrOverlayForeground(render_info);
   } else {
     ui_->ui_renderer()->Draw(render_info);
   }
-
-  auto load_progress = (current_time - page_load_start_).InMilliseconds() /
-                       kPageLoadTimeMilliseconds;
-  ui_->SetLoading(load_progress < 1.0f);
-  ui_->SetLoadProgress(std::min(load_progress, 1.0f));
 }
 
 void VrTestContext::HandleInput(ui::Event* event) {
@@ -297,10 +299,10 @@ void VrTestContext::HandleInput(ui::Event* event) {
   head_pose_.RotateAboutYAxis(-head_angle_y_degrees_);
 
   last_mouse_point_ = gfx::Point(mouse_event->x(), mouse_event->y());
-  last_controller_model_ = UpdateController(GetRenderInfo());
 }
 
-ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info) {
+ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info,
+                                                base::TimeTicks current_time) {
   // We could map mouse position to controller position, and skip this logic,
   // but it will make targeting elements with a mouse feel strange and not
   // mouse-like. Instead, we make the reticle track the mouse position linearly
@@ -348,9 +350,8 @@ ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info) {
   // Hit testing is done in terms of this synthesized controller model.
   GestureList gesture_list;
   ReticleModel reticle_model;
-  ui_->input_manager()->HandleInput(base::TimeTicks::Now(), render_info,
-                                    controller_model, &reticle_model,
-                                    &gesture_list);
+  ui_->input_manager()->HandleInput(current_time, render_info, controller_model,
+                                    &reticle_model, &gesture_list);
 
   // Now that we have accurate hit information, we use this to construct a
   // controller model for display.
