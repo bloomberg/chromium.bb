@@ -136,7 +136,7 @@ std::vector<ThresholdResult> StreamAnalyzer::ComputeThresholds() const {
 
 PercentileResults StreamAnalyzer::ComputePercentiles() const {
   PercentileResults result;
-  result = histogram_->CalculatePercentiles();
+  result = histogram_->ComputePercentiles();
   for (size_t i = 0; i < PercentileResults::kCount; i++) {
     result.values[i] = client_->TransformResult(result.values[i]);
   }

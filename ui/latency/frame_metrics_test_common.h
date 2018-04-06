@@ -156,7 +156,7 @@ class TestHistogram : public Histogram {
 
   // Histogram interface.
   void AddSample(uint32_t value, uint32_t weight) override;
-  PercentileResults CalculatePercentiles() const override;
+  PercentileResults ComputePercentiles() const override;
   void Reset() override{};
 
   // Test interface.

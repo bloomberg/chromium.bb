@@ -33,11 +33,12 @@ TEST(FrameMetricsWindowedAnalyzerTest, AllResultsTheSame) {
         AddSamplesHelper(&analyzer, value, weight, samples);
         uint64_t expected_value =
             value * TestWindowedAnalyzerClient::result_scale;
-        EXPECT_EQ(analyzer.WorstMean().value, expected_value)
+        EXPECT_EQ(analyzer.ComputeWorstMean().value, expected_value)
             << value << " x " << weight;
-        EXPECT_EQ(analyzer.WorstRMS().value, expected_value)
+        EXPECT_EQ(analyzer.ComputeWorstRMS().value, expected_value)
             << value << " x " << weight;
-        EXPECT_NEAR_SMR(analyzer.WorstSMR().value, expected_value, weight)
+        EXPECT_NEAR_SMR(analyzer.ComputeWorstSMR().value, expected_value,
+                        weight)
             << value << " x " << weight;
       }
     }
@@ -54,11 +55,11 @@ TEST(FrameMetricsWindowedAnalyzerTest, AllResultsTheSame) {
       uint64_t expected_value =
           value * TestWindowedAnalyzerClient::result_scale;
       // Makes sure our precision is good enough.
-      EXPECT_EQ(analyzer.WorstMean().value, expected_value)
+      EXPECT_EQ(analyzer.ComputeWorstMean().value, expected_value)
           << value << " x " << weight;
-      EXPECT_EQ(analyzer.WorstRMS().value, expected_value)
+      EXPECT_EQ(analyzer.ComputeWorstRMS().value, expected_value)
           << value << " x " << weight;
-      EXPECT_NEAR_SMR(analyzer.WorstSMR().value, expected_value, weight)
+      EXPECT_NEAR_SMR(analyzer.ComputeWorstSMR().value, expected_value, weight)
           << value << " x " << weight;
     }
   }
@@ -118,17 +119,17 @@ TEST(FrameMetricsWindowedAnalyzerTest, AllResultsDifferent) {
   AddPatternHelper(&shared_client, &analyzer, pattern_max_rms, kSampleWeight);
   AddPatternHelper(&shared_client, &analyzer, pattern_clear, kSampleWeight);
 
-  FrameRegionResult worst_mean = analyzer.WorstMean();
+  FrameRegionResult worst_mean = analyzer.ComputeWorstMean();
   EXPECT_DOUBLE_EQ(expected_worst_mean, worst_mean.value);
   EXPECT_EQ(worst_mean_client.window_begin, worst_mean.window_begin);
   EXPECT_EQ(worst_mean_client.window_end, worst_mean.window_end);
 
-  FrameRegionResult worst_smr = analyzer.WorstSMR();
+  FrameRegionResult worst_smr = analyzer.ComputeWorstSMR();
   EXPECT_NEAR_SMR(expected_worst_smr, worst_smr.value, kSampleWeight);
   EXPECT_EQ(worst_smr_client.window_begin, worst_smr.window_begin);
   EXPECT_EQ(worst_smr_client.window_end, worst_smr.window_end);
 
-  FrameRegionResult worst_rms = analyzer.WorstRMS();
+  FrameRegionResult worst_rms = analyzer.ComputeWorstRMS();
   EXPECT_DOUBLE_EQ(expected_worst_rms, worst_rms.value);
   EXPECT_EQ(worst_rms_client.window_begin, worst_rms.window_begin);
   EXPECT_EQ(worst_rms_client.window_end, worst_rms.window_end);
@@ -152,17 +153,17 @@ TEST(FrameMetricsWindowedAnalyzerTest, SmallSampleSize) {
   AddPatternHelper(&shared_client, &analyzer, pattern_short, kSampleWeight);
   SharedWindowedAnalyzerClient short_client(shared_client);
 
-  FrameRegionResult worst_mean = analyzer.WorstMean();
+  FrameRegionResult worst_mean = analyzer.ComputeWorstMean();
   EXPECT_DOUBLE_EQ(expected_initial_value, worst_mean.value);
   EXPECT_EQ(short_client.window_begin, worst_mean.window_begin);
   EXPECT_EQ(short_client.window_end, worst_mean.window_end);
 
-  FrameRegionResult worst_smr = analyzer.WorstSMR();
+  FrameRegionResult worst_smr = analyzer.ComputeWorstSMR();
   EXPECT_NEAR_SMR(expected_initial_value, worst_smr.value, kSampleWeight);
   EXPECT_EQ(short_client.window_begin, worst_smr.window_begin);
   EXPECT_EQ(short_client.window_end, worst_smr.window_end);
 
-  FrameRegionResult worst_rms = analyzer.WorstRMS();
+  FrameRegionResult worst_rms = analyzer.ComputeWorstRMS();
   EXPECT_DOUBLE_EQ(expected_initial_value, worst_rms.value);
   EXPECT_EQ(short_client.window_begin, worst_rms.window_begin);
   EXPECT_EQ(short_client.window_end, worst_rms.window_end);
@@ -189,17 +190,17 @@ TEST(FrameMetricsWindowedAnalyzerTest, BadFirstSamples) {
   AddPatternHelper(&shared_client, &analyzer, pattern_short, kSampleWeight);
   SharedWindowedAnalyzerClient short_client(shared_client);
 
-  worst_mean = analyzer.WorstMean();
+  worst_mean = analyzer.ComputeWorstMean();
   EXPECT_DOUBLE_EQ(expected_initial_value, worst_mean.value);
   EXPECT_EQ(short_client.window_begin, worst_mean.window_begin);
   EXPECT_EQ(short_client.window_end, worst_mean.window_end);
 
-  worst_smr = analyzer.WorstSMR();
+  worst_smr = analyzer.ComputeWorstSMR();
   EXPECT_NEAR_SMR(expected_initial_value, worst_smr.value, kSampleWeight);
   EXPECT_EQ(short_client.window_begin, worst_smr.window_begin);
   EXPECT_EQ(short_client.window_end, worst_smr.window_end);
 
-  worst_rms = analyzer.WorstRMS();
+  worst_rms = analyzer.ComputeWorstRMS();
   EXPECT_DOUBLE_EQ(expected_initial_value, worst_rms.value);
   EXPECT_EQ(short_client.window_begin, worst_rms.window_begin);
   EXPECT_EQ(short_client.window_end, worst_rms.window_end);
@@ -215,17 +216,17 @@ TEST(FrameMetricsWindowedAnalyzerTest, BadFirstSamples) {
   AddPatternHelper(&shared_client, &analyzer, pattern_long, kSampleWeight);
   SharedWindowedAnalyzerClient long_client(shared_client);
 
-  worst_mean = analyzer.WorstMean();
+  worst_mean = analyzer.ComputeWorstMean();
   EXPECT_DOUBLE_EQ(expected_final_value, worst_mean.value);
   EXPECT_EQ(long_client.window_begin, worst_mean.window_begin);
   EXPECT_EQ(long_client.window_end, worst_mean.window_end);
 
-  worst_smr = analyzer.WorstSMR();
+  worst_smr = analyzer.ComputeWorstSMR();
   EXPECT_NEAR_SMR(expected_final_value, worst_smr.value, kSampleWeight);
   EXPECT_EQ(long_client.window_begin, worst_smr.window_begin);
   EXPECT_EQ(long_client.window_end, worst_smr.window_end);
 
-  worst_rms = analyzer.WorstRMS();
+  worst_rms = analyzer.ComputeWorstRMS();
   EXPECT_DOUBLE_EQ(expected_final_value, worst_rms.value);
   EXPECT_EQ(long_client.window_begin, worst_rms.window_begin);
   EXPECT_EQ(long_client.window_end, worst_rms.window_end);
@@ -250,17 +251,17 @@ TEST(FrameMetricsWindowedAnalyzerTest, ResetWorstValues) {
   AddPatternHelper(&shared_client, &analyzer, pattern1, kSampleWeight);
   SharedWindowedAnalyzerClient initial_client(shared_client);
 
-  worst_mean = analyzer.WorstMean();
+  worst_mean = analyzer.ComputeWorstMean();
   EXPECT_DOUBLE_EQ(expected_initial_value, worst_mean.value);
   EXPECT_EQ(initial_client.window_begin, worst_mean.window_begin);
   EXPECT_EQ(initial_client.window_end, worst_mean.window_end);
 
-  worst_smr = analyzer.WorstSMR();
+  worst_smr = analyzer.ComputeWorstSMR();
   EXPECT_NEAR_SMR(expected_initial_value, worst_smr.value, kSampleWeight);
   EXPECT_EQ(initial_client.window_begin, worst_smr.window_begin);
   EXPECT_EQ(initial_client.window_end, worst_smr.window_end);
 
-  worst_rms = analyzer.WorstRMS();
+  worst_rms = analyzer.ComputeWorstRMS();
   EXPECT_DOUBLE_EQ(expected_initial_value, worst_rms.value);
   EXPECT_EQ(initial_client.window_begin, worst_rms.window_begin);
   EXPECT_EQ(initial_client.window_end, worst_rms.window_end);
@@ -270,17 +271,17 @@ TEST(FrameMetricsWindowedAnalyzerTest, ResetWorstValues) {
   const std::vector<uint32_t> pattern2 = {4, 4, 4, 4, 4, 4};
   AddPatternHelper(&shared_client, &analyzer, pattern2, kSampleWeight);
 
-  worst_mean = analyzer.WorstMean();
+  worst_mean = analyzer.ComputeWorstMean();
   EXPECT_DOUBLE_EQ(expected_initial_value, worst_mean.value);
   EXPECT_EQ(initial_client.window_begin, worst_mean.window_begin);
   EXPECT_EQ(initial_client.window_end, worst_mean.window_end);
 
-  worst_smr = analyzer.WorstSMR();
+  worst_smr = analyzer.ComputeWorstSMR();
   EXPECT_NEAR_SMR(expected_initial_value, worst_smr.value, kSampleWeight);
   EXPECT_EQ(initial_client.window_begin, worst_smr.window_begin);
   EXPECT_EQ(initial_client.window_end, worst_smr.window_end);
 
-  worst_rms = analyzer.WorstRMS();
+  worst_rms = analyzer.ComputeWorstRMS();
   EXPECT_DOUBLE_EQ(expected_initial_value, worst_rms.value);
   EXPECT_EQ(initial_client.window_begin, worst_rms.window_begin);
   EXPECT_EQ(initial_client.window_end, worst_rms.window_end);
@@ -301,17 +302,17 @@ TEST(FrameMetricsWindowedAnalyzerTest, ResetWorstValues) {
   const std::vector<uint32_t> pattern4 = {1, 1, 1, 1, 1, 1};
   AddPatternHelper(&shared_client, &analyzer, pattern4, kSampleWeight);
 
-  worst_mean = analyzer.WorstMean();
+  worst_mean = analyzer.ComputeWorstMean();
   EXPECT_DOUBLE_EQ(expected_final_value, worst_mean.value);
   EXPECT_EQ(final_client.window_begin, worst_mean.window_begin);
   EXPECT_EQ(final_client.window_end, worst_mean.window_end);
 
-  worst_smr = analyzer.WorstSMR();
+  worst_smr = analyzer.ComputeWorstSMR();
   EXPECT_NEAR_SMR(expected_final_value, worst_smr.value, kSampleWeight);
   EXPECT_EQ(final_client.window_begin, worst_smr.window_begin);
   EXPECT_EQ(final_client.window_end, worst_smr.window_end);
 
-  worst_rms = analyzer.WorstRMS();
+  worst_rms = analyzer.ComputeWorstRMS();
   EXPECT_DOUBLE_EQ(expected_final_value, worst_rms.value);
   EXPECT_EQ(final_client.window_begin, worst_rms.window_begin);
   EXPECT_EQ(final_client.window_end, worst_rms.window_end);

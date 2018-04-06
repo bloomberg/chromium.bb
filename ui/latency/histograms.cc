@@ -225,7 +225,7 @@ void RatioHistogram::AddSample(uint32_t ratio, uint32_t weight) {
   total_samples_ += weight;
 }
 
-PercentileResults RatioHistogram::CalculatePercentiles() const {
+PercentileResults RatioHistogram::ComputePercentiles() const {
   RatioBoundaryIterator i;
   return PercentilesHelper(&i, buckets_.data(),
                            buckets_.data() + buckets_.size(), total_samples_);
@@ -370,7 +370,7 @@ void VSyncHistogram::AddSample(uint32_t microseconds, uint32_t weight) {
   total_samples_ += weight;
 }
 
-PercentileResults VSyncHistogram::CalculatePercentiles() const {
+PercentileResults VSyncHistogram::ComputePercentiles() const {
   VSyncBoundaryIterator i;
   return PercentilesHelper(&i, buckets_.data(),
                            buckets_.data() + buckets_.size(), total_samples_);

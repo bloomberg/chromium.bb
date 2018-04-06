@@ -32,9 +32,9 @@ class Histogram {
   // Increases the bucket that contains |value| by |weight|.
   virtual void AddSample(uint32_t value, uint32_t weight) = 0;
 
-  // Calculates and returns the approximate percentiles based on the
+  // Computes and returns the approximate percentiles based on the
   // histogram distribution.
-  virtual PercentileResults CalculatePercentiles() const = 0;
+  virtual PercentileResults ComputePercentiles() const = 0;
 
   // Resets all buckets in the histogram to 0.
   // Higher level logic may periodically reset the the counts after it
@@ -52,7 +52,7 @@ class RatioHistogram : public Histogram {
   RatioHistogram();
   ~RatioHistogram() override;
   void AddSample(uint32_t ratio, uint32_t weight) override;
-  PercentileResults CalculatePercentiles() const override;
+  PercentileResults ComputePercentiles() const override;
   void Reset() override;
 
  private:
@@ -72,7 +72,7 @@ class VSyncHistogram : public Histogram {
   VSyncHistogram();
   ~VSyncHistogram() override;
   void AddSample(uint32_t microseconds, uint32_t weight) override;
-  PercentileResults CalculatePercentiles() const override;
+  PercentileResults ComputePercentiles() const override;
   void Reset() override;
 
  private:

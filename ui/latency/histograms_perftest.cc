@@ -39,7 +39,7 @@ class RatioHistogramBaseline : public Histogram {
     sample_vector_.Accumulate(microseconds, weight);
   }
 
-  PercentileResults CalculatePercentiles() const override {
+  PercentileResults ComputePercentiles() const override {
     return PercentileResults();
   }
   void Reset() override {}
@@ -157,7 +157,7 @@ class VSyncHistogramBaseline : public Histogram {
     sample_vector_.Accumulate(microseconds, weight);
   }
 
-  PercentileResults CalculatePercentiles() const override {
+  PercentileResults ComputePercentiles() const override {
     return PercentileResults();
   }
   void Reset() override {}

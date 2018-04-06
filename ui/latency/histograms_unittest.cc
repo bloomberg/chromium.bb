@@ -55,7 +55,7 @@ void BoundaryTestCommon(const ReferenceBoundaryT& reference_boundaries,
     uint32_t stride = std::max<uint32_t>(1u, (bucket_end - bucket_start) / 8);
     for (uint64_t value = bucket_start; value < bucket_end; value += stride) {
       histogram->AddSample(value, 1);
-      percentiles = histogram->CalculatePercentiles();
+      percentiles = histogram->ComputePercentiles();
       histogram->Reset();
       EXPECT_LE(bucket_start, percentiles.values[0]);
       EXPECT_GT(bucket_end, percentiles.values[0]);
@@ -63,7 +63,7 @@ void BoundaryTestCommon(const ReferenceBoundaryT& reference_boundaries,
 
     // Verify the value just before the next bucket doesn't affect percentile.
     histogram->AddSample(bucket_end - 1, 1);
-    percentiles = histogram->CalculatePercentiles();
+    percentiles = histogram->ComputePercentiles();
     histogram->Reset();
     EXPECT_LE(bucket_start, percentiles.values[0]);
     EXPECT_GT(bucket_end, percentiles.values[0]);
@@ -112,7 +112,7 @@ void PercentilesTestCommon(const ReferenceBoundaryT& reference_boundaries,
                            samples_added_outside - samples_added_left);
     }
 
-    percentiles = histogram->CalculatePercentiles();
+    percentiles = histogram->ComputePercentiles();
     histogram->Reset();
 
     double index = (samples_added_inside + samples_added_outside) * percentile -
