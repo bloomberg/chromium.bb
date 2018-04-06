@@ -111,11 +111,6 @@ class PLATFORM_EXPORT MediaStreamComponent final
 
  private:
   MediaStreamComponent(const String& id, MediaStreamSource*);
-  MediaStreamComponent(const String& id,
-                       MediaStreamSource*,
-                       bool enabled,
-                       bool muted,
-                       WebMediaStreamTrack::ContentHintType);
 
   // AudioSourceProviderImpl wraps a WebAudioSourceProvider::provideInput()
   // calls into chromium to get a rendered audio stream.
@@ -143,9 +138,10 @@ class PLATFORM_EXPORT MediaStreamComponent final
   Member<MediaStreamSource> source_;
   String id_;
   int unique_id_;
-  bool enabled_;
-  bool muted_;
-  WebMediaStreamTrack::ContentHintType content_hint_;
+  bool enabled_ = true;
+  bool muted_ = false;
+  WebMediaStreamTrack::ContentHintType content_hint_ =
+      WebMediaStreamTrack::ContentHintType::kNone;
   WebMediaConstraints constraints_;
   std::unique_ptr<TrackData> track_data_;
 };
