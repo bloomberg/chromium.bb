@@ -1927,7 +1927,7 @@ hooks = [
     'action': [
       'src/third_party/chromite/bin/cros',
       'chrome-sdk',
-      '--nostart-goma',
+      '--nogoma',
       '--use-external-config',
       '--nogn-gen',
       '--download-vm',
