@@ -1807,7 +1807,8 @@ class SoftwareTextureLayerLoseFrameSinkTest : public SoftwareTextureLayerTest {
   void* first_frame_sink_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(SoftwareTextureLayerLoseFrameSinkTest);
+// TODO(crbug.com/829923): Flaky with a heap-use-after-free.
+// SINGLE_AND_MULTI_THREAD_TEST_F(SoftwareTextureLayerLoseFrameSinkTest);
 
 class SoftwareTextureLayerUnregisterRegisterTest
     : public SoftwareTextureLayerTest {
