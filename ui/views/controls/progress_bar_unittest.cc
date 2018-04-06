@@ -9,10 +9,13 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/test/views_test_base.h"
 
 namespace views {
 
-TEST(ProgressBarTest, Accessibility) {
+using ProgressBarTest = ViewsTestBase;
+
+TEST_F(ProgressBarTest, Accessibility) {
   ProgressBar bar;
   bar.SetValue(0.62);
 
@@ -26,7 +29,7 @@ TEST(ProgressBarTest, Accessibility) {
 }
 
 // Test that default colors can be overridden. Used by Chromecast.
-TEST(ProgressBarTest, OverrideDefaultColors) {
+TEST_F(ProgressBarTest, OverrideDefaultColors) {
   ProgressBar bar;
   EXPECT_NE(SK_ColorRED, bar.GetForegroundColor());
   EXPECT_NE(SK_ColorGREEN, bar.GetBackgroundColor());
