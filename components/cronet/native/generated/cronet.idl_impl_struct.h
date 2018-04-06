@@ -60,7 +60,7 @@ struct Cronet_PublicKeyPins {
   std::string host;
   std::vector<std::string> pins_sha256;
   bool include_subdomains = false;
-  int64_t expiration_date;
+  int64_t expiration_date = 0;
 
  private:
   DISALLOW_ASSIGN(Cronet_PublicKeyPins);
@@ -118,13 +118,13 @@ struct Cronet_UrlResponseInfo {
 
   std::string url;
   std::vector<std::string> url_chain;
-  int32_t http_status_code;
+  int32_t http_status_code = 0;
   std::string http_status_text;
   std::vector<Cronet_HttpHeader> all_headers_list;
-  bool was_cached;
+  bool was_cached = false;
   std::string negotiated_protocol;
   std::string proxy_server;
-  int64_t received_byte_count;
+  int64_t received_byte_count = 0;
 
  private:
   DISALLOW_ASSIGN(Cronet_UrlResponseInfo);
@@ -143,8 +143,8 @@ struct Cronet_UrlRequestParams {
   bool disable_cache = false;
   Cronet_UrlRequestParams_REQUEST_PRIORITY priority =
       Cronet_UrlRequestParams_REQUEST_PRIORITY_REQUEST_PRIORITY_MEDIUM;
-  Cronet_UploadDataProviderPtr upload_data_provider;
-  Cronet_ExecutorPtr upload_data_provider_executor;
+  Cronet_UploadDataProviderPtr upload_data_provider = nullptr;
+  Cronet_ExecutorPtr upload_data_provider_executor = nullptr;
   bool allow_direct_executor = false;
   std::vector<Cronet_RawDataPtr> annotations;
 

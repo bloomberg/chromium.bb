@@ -430,7 +430,7 @@ struct PublicKeyPins {
   /**
    * The expiration date for the pins in milliseconds since epoch (as in java.util.Date).
    */
-  int64 expiration_date;
+  int64 expiration_date = 0;
 };
 
 /**
@@ -577,7 +577,7 @@ struct UrlResponseInfo {
    * The HTTP status code. When a resource is retrieved from the cache,
    * whether it was revalidated or not, the original status code is returned.
    */
-  int32 http_status_code;
+  int32 http_status_code = 0;
 
   /**
    * The HTTP status text of the status line. For example, if the
@@ -596,7 +596,7 @@ struct UrlResponseInfo {
    * requests that were revalidated over the network before being retrieved
    * from the cache, failed otherwise.
    */
-  bool was_cached;
+  bool was_cached = false;
 
   /**
    * The protocol (for example 'quic/1+spdy/3') negotiated with the server.
@@ -617,7 +617,7 @@ struct UrlResponseInfo {
    * taken prior to decompression (for example GZIP and Brotli) and includes
    * headers and data from all redirects.
    */
-  int64 received_byte_count;
+  int64 received_byte_count = 0;
 };
 
 /**
@@ -1087,12 +1087,12 @@ struct UrlRequestParams {
    * Upload data provider. Setting this value switches method to "POST" if not
    * explicitly set. Starting the request will fail if a Content-Type header is not set.
    */
-  UploadDataProvider upload_data_provider;
+  UploadDataProvider? upload_data_provider;
 
   /**
    * Upload data provider executor that will be used to invoke uploadDataProvider.
    */
-  Executor upload_data_provider_executor;
+  Executor? upload_data_provider_executor;
 
   /**
    * Marks that the executors this request will use to notify callbacks (for
