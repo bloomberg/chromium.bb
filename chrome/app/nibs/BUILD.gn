@@ -14,11 +14,6 @@ translated_xibs = [
   "CookieDetailsView.xib",
   "DownloadItem.xib",
   "DownloadShelf.xib",
-  "ExtensionInstallPrompt.xib",
-  "ExtensionInstallPromptNoWarnings.xib",
-  "ExtensionInstallPromptWebstoreData.xib",
-  "ExtensionInstalledBubble.xib",
-  "HttpAuthLoginSheet.xib",
   "HungRendererDialog.xib",
   "MainMenu.xib",
   "OneClickSigninBubble.xib",
@@ -42,6 +37,11 @@ if (!mac_views_browser) {
     "ContentBlockedPopups.xib",
     "ContentBlockedSimple.xib",
     "ContentProtocolHandlers.xib",
+    "ExtensionInstallPrompt.xib",
+    "ExtensionInstallPromptNoWarnings.xib",
+    "ExtensionInstallPromptWebstoreData.xib",
+    "ExtensionInstalledBubble.xib",
+    "HttpAuthLoginSheet.xib",
   ]
 }
 

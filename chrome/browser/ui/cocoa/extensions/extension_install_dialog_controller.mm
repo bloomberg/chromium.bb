@@ -99,15 +99,6 @@ void ExtensionInstallDialogController::OnPromptButtonClicked(
 
 // static
 ExtensionInstallPrompt::ShowDialogCallback
-ExtensionInstallPrompt::GetDefaultShowDialogCallbackCocoa() {
-  if (chrome::ShowAllDialogsWithViewsToolkit())
-    return ExtensionInstallPrompt::GetViewsShowDialogCallback();
-  return base::Bind(&ShowExtensionInstallDialogImpl);
-}
-
-#if !BUILDFLAG(MAC_VIEWS_BROWSER)
-ExtensionInstallPrompt::ShowDialogCallback
 ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
-  return GetDefaultShowDialogCallbackCocoa();
+  return base::BindRepeating(&ShowExtensionInstallDialogImpl);
 }
-#endif

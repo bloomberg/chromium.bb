@@ -44,16 +44,6 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_window,
                                   configuration);
 }
 
-// static
-ExtensionInstallPrompt::ShowDialogCallback
-ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
-#if defined(OS_MACOSX)
-  if (views_mode_controller::IsViewsBrowserCocoa())
-    return GetDefaultShowDialogCallbackCocoa();
-#endif
-  return ExtensionInstallPrompt::GetViewsShowDialogCallback();
-}
-
 void ChromeDevicePermissionsPrompt::ShowDialog() {
   ShowDialogViews();
 }
