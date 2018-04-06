@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_item.h"
+#import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_navigation_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notification_delegate.h"
@@ -21,13 +22,16 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
+#include "ios/web/public/favicon_status.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
+#include "ios/web/public/navigation_manager.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_client.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -250,8 +254,10 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
         [self createToolsMenuItems];
         break;
       case PopupMenuTypeNavigationForward:
+        [self createNavigationItemsForType:PopupMenuTypeNavigationForward];
         break;
       case PopupMenuTypeNavigationBackward:
+        [self createNavigationItemsForType:PopupMenuTypeNavigationBackward];
         break;
       case PopupMenuTypeTabGrid:
         [self createTabGridMenuItems];
@@ -364,6 +370,34 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 }
 
 #pragma mark - Item creation (Private)
+
+- (void)createNavigationItemsForType:(PopupMenuType)type {
+  DCHECK(type == PopupMenuTypeNavigationForward ||
+         type == PopupMenuTypeNavigationBackward);
+  if (!self.webState)
+    return;
+
+  web::NavigationManager* navigationManager =
+      self.webState->GetNavigationManager();
+  std::vector<web::NavigationItem*> navigationItems;
+  if (type == PopupMenuTypeNavigationForward) {
+    navigationItems = navigationManager->GetForwardItems();
+  } else {
+    navigationItems = navigationManager->GetBackwardItems();
+  }
+  NSMutableArray* items = [NSMutableArray array];
+  for (web::NavigationItem* navigationItem : navigationItems) {
+    PopupMenuNavigationItem* item =
+        [[PopupMenuNavigationItem alloc] initWithType:kItemTypeEnumZero];
+    item.title = base::SysUTF16ToNSString(navigationItem->GetTitleForDisplay());
+    const gfx::Image& image = navigationItem->GetFavicon().image;
+    if (!image.IsEmpty())
+      item.favicon = image.ToUIImage();
+    [items addObject:item];
+  }
+
+  self.items = @[ items ];
+}
 
 // Creates the menu items for the tab grid menu.
 - (void)createTabGridMenuItems {

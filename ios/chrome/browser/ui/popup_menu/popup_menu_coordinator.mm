@@ -75,82 +75,32 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 - (void)showNavigationHistoryBackPopupMenu {
   base::RecordAction(
       base::UserMetricsAction("MobileToolbarShowTabHistoryMenu"));
-  UIViewController* viewController = [[UIViewController alloc] init];
-  UILabel* label = [[UILabel alloc] init];
-  label.text = @"Back";
-  viewController.view = label;
-  // TODO(crbug.com/804779): Use the Navigation menu instead of a label.
-  [self presentPopupForContent:viewController
-                        ofType:PopupMenuTypeNavigationBackward
-                fromNamedGuide:kBackButtonGuide];
+  [self presentPopupOfType:PopupMenuTypeNavigationBackward
+            fromNamedGuide:kBackButtonGuide];
 }
 
 - (void)showNavigationHistoryForwardPopupMenu {
   base::RecordAction(
       base::UserMetricsAction("MobileToolbarShowTabHistoryMenu"));
-  UIViewController* viewController = [[UIViewController alloc] init];
-  UILabel* label = [[UILabel alloc] init];
-  label.text = @"Forward";
-  viewController.view = label;
-  // TODO(crbug.com/804779): Use the Navigation menu instead of a label.
-  [self presentPopupForContent:viewController
-                        ofType:PopupMenuTypeNavigationForward
-                fromNamedGuide:kForwardButtonGuide];
+  [self presentPopupOfType:PopupMenuTypeNavigationForward
+            fromNamedGuide:kForwardButtonGuide];
 }
 
 - (void)showToolsMenuPopup {
-  PopupMenuTableViewController* tableViewController =
-      [[PopupMenuTableViewController alloc]
-          initWithStyle:UITableViewStyleGrouped];
-  tableViewController.dispatcher =
-      static_cast<id<ApplicationCommands, BrowserCommands>>(self.dispatcher);
-  tableViewController.baseViewController = self.baseViewController;
-
-  self.mediator = [[PopupMenuMediator alloc]
-          initWithType:PopupMenuTypeToolsMenu
-           isIncognito:self.browserState->IsOffTheRecord()
-      readingListModel:ReadingListModelFactory::GetForBrowserState(
-                           self.browserState)];
-  self.mediator.webStateList = self.webStateList;
-  self.mediator.popupMenu = tableViewController;
-  self.mediator.dispatcher = static_cast<id<BrowserCommands>>(self.dispatcher);
-
-  [self presentPopupForContent:tableViewController
-                        ofType:PopupMenuTypeToolsMenu
-                fromNamedGuide:kToolsMenuGuide];
+  // The metric is registered at the toolbar level.
+  [self presentPopupOfType:PopupMenuTypeToolsMenu
+            fromNamedGuide:kToolsMenuGuide];
 }
 
 - (void)showTabGridButtonPopup {
   base::RecordAction(base::UserMetricsAction("MobileToolbarShowTabGridMenu"));
-  PopupMenuTableViewController* tableViewController =
-      [[PopupMenuTableViewController alloc] init];
-  tableViewController.dispatcher =
-      static_cast<id<ApplicationCommands, BrowserCommands>>(self.dispatcher);
-  tableViewController.baseViewController = self.baseViewController;
-
-  self.mediator = [[PopupMenuMediator alloc]
-          initWithType:PopupMenuTypeTabGrid
-           isIncognito:self.browserState->IsOffTheRecord()
-      readingListModel:ReadingListModelFactory::GetForBrowserState(
-                           self.browserState)];
-  self.mediator.webStateList = self.webStateList;
-  self.mediator.popupMenu = tableViewController;
-
-  [self presentPopupForContent:tableViewController
-                        ofType:PopupMenuTypeTabGrid
-                fromNamedGuide:kTabSwitcherGuide];
+  [self presentPopupOfType:PopupMenuTypeTabGrid
+            fromNamedGuide:kTabSwitcherGuide];
 }
 
 - (void)searchButtonPopup {
   base::RecordAction(base::UserMetricsAction("MobileToolbarShowSearchMenu"));
-  UIViewController* viewController = [[UIViewController alloc] init];
-  UILabel* label = [[UILabel alloc] init];
-  label.text = @"Search";
-  viewController.view = label;
-  // TODO(crbug.com/821560): Use the search menu instead of a label.
-  [self presentPopupForContent:viewController
-                        ofType:PopupMenuTypeSearch
-                fromNamedGuide:nil];
+  [self presentPopupOfType:PopupMenuTypeSearch fromNamedGuide:nil];
 }
 
 - (void)dismissPopupMenu {
@@ -168,21 +118,36 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 
 #pragma mark - Private
 
-// Presents the |content| of type |type| with an animation starting from
+// Presents a popup menu of type |type| with an animation starting from
 // |guideName|.
-- (void)presentPopupForContent:(UIViewController*)content
-                        ofType:(PopupMenuType)type
-                fromNamedGuide:(GuideName*)guideName {
+- (void)presentPopupOfType:(PopupMenuType)type
+            fromNamedGuide:(GuideName*)guideName {
   DCHECK(!self.presenter);
   id<BrowserCommands> callableDispatcher =
       static_cast<id<BrowserCommands>>(self.dispatcher);
   [callableDispatcher
       prepareForPopupMenuPresentation:CommandTypeFromPopupType(type)];
 
+  PopupMenuTableViewController* tableViewController =
+      [[PopupMenuTableViewController alloc]
+          initWithStyle:UITableViewStyleGrouped];
+  tableViewController.dispatcher =
+      static_cast<id<ApplicationCommands, BrowserCommands>>(self.dispatcher);
+  tableViewController.baseViewController = self.baseViewController;
+
+  self.mediator = [[PopupMenuMediator alloc]
+          initWithType:type
+           isIncognito:self.browserState->IsOffTheRecord()
+      readingListModel:ReadingListModelFactory::GetForBrowserState(
+                           self.browserState)];
+  self.mediator.webStateList = self.webStateList;
+  self.mediator.popupMenu = tableViewController;
+  self.mediator.dispatcher = static_cast<id<BrowserCommands>>(self.dispatcher);
+
   self.presenter = [[PopupMenuPresenter alloc] init];
   self.presenter.baseViewController = self.baseViewController;
   self.presenter.commandHandler = self;
-  self.presenter.presentedViewController = content;
+  self.presenter.presentedViewController = tableViewController;
   self.presenter.guideName = guideName;
 
   [self.presenter prepareForPresentation];
