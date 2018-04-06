@@ -145,7 +145,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 434
+#   For your editing convenience: highest ID currently used: 436
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -8936,6 +8936,69 @@
       This policy allows certificates for the hostnames in the specified URLs to not be disclosed via Certificate Transparency. This allows certificates that would otherwise be untrusted, because they were not properly publicly disclosed, to continue to be used, but makes it harder to detect misissued certificates for those hosts.
 
       A URL pattern is formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format. However, because certificates are valid for a given hostname independent of the scheme, port, or path, only the hostname portion of the URL is considered. Wildcard hosts are not supported.
+
+      If this policy is not set, any certificate that is required to be disclosed via Certificate Transparency will be treated as untrusted if it is not disclosed according to the Certificate Transparency policy.''',
+    },
+    {
+      'name': 'CertificateTransparencyEnforcementDisabledForCas',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': [
+        'chrome.*:67-',
+        'chrome_os:67-',
+        'android:67-',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['sha256/AAAAAAAAAAAAAAAAAAAAAA==', 'sha256//////////////////////w=='],
+      'id': 435,
+      'caption': '''Disable Certificate Transparency enforcement for a list of subjectPublicKeyInfo hashes''',
+      'tags': ['system-security'],
+      'desc': '''Disables enforcing Certificate Transparency requirements for a list of subjectPublicKeyInfo hashes.
+
+      This policy allows disabling Certificate Transparency disclosure requirements for certificate chains that contain certificates with one of the specified subjectPublicKeyInfo hashes. This allows certificates that would otherwise be untrusted, because they were not properly publicly disclosed, to continue to be used for Enterprise hosts.
+
+      In order for Certificate Transparency enforcement to be disabled when this policy is set, one of the following conditions must be met:
+      1. The hash is of the server certificate's subjectPublicKeyInfo.
+      2. The hash is of a subjectPublicKeyInfo that appears in a CA certificate in the certificate chain, that CA certificate is constrained via the X.509v3 nameConstraints extension, one or more directoryName nameConstraints are present in the permittedSubtrees, and the directoryName contains an organizationName attribute.
+      3. The hash is of a subjectPublicKeyInfo that appears in a CA certificate in the certificate chain, the CA certificate has one or more organizationName attributes in the certificate Subject, and the server's certificate contains the same number of organizationName attributes, in the same order, and with byte-for-byte identical values.
+
+      A subjectPublicKeyInfo hash is specified by concatenating the hash algorithm name, the "/" character, and the Base64 encoding of that hash algorithm applied to the DER-encoded subjectPublicKeyInfo of the specified certificate. This Base64 encoding is the same format as an SPKI Fingerprint, as defined in RFC 7469, Section 2.4. Unrecognized hash algorithms are ignored. The only supported hash algorithm at this time is "sha256".
+
+      If this policy is not set, any certificate that is required to be disclosed via Certificate Transparency will be treated as untrusted if it is not disclosed according to the Certificate Transparency policy.''',
+    },
+    {
+      'name': 'CertificateTransparencyEnforcementDisabledForLegacyCas',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': [
+        'chrome.*:67-',
+        'chrome_os:67-',
+        'android:67-',
+      ],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['sha256/AAAAAAAAAAAAAAAAAAAAAA==', 'sha256//////////////////////w=='],
+      'id': 436,
+      'caption': '''Disable Certificate Transparency enforcement for a list of Legacy Certificate Authorities''',
+      'tags': ['system-security'],
+      'desc': '''Disables enforcing Certificate Transparency requirements for a list of Legacy Certificate Authorities.
+
+      This policy allows disabling Certificate Transparency disclosure requirements for certificate chains that contain certificates with one of the specified subjectPublicKeyInfo hashes. This allows certificates that would otherwise be untrusted, because they were not properly publicly disclosed, to continue to be used for Enterprise hosts.
+
+      In order for Certificate Transparency enforcement to be disabled when this policy is set, the hash must be of a subjectPublicKeyInfo appearing in a CA certificate that is recognized as a Legacy Certificate Authority (CA). A Legacy CA is a CA that has been publicly trusted by default one or more operating systems supported by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, but is not trusted by the Android Open Source Project or <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
+
+      A subjectPublicKeyInfo hash is specified by concatenating the hash algorithm name, the "/" character, and the Base64 encoding of that hash algorithm applied to the DER-encoded subjectPublicKeyInfo of the specified certificate. This Base64 encoding is the same format as an SPKI Fingerprint, as defined in RFC 7469, Section 2.4. Unrecognized hash algorithms are ignored. The only supported hash algorithm at this time is "sha256".
 
       If this policy is not set, any certificate that is required to be disclosed via Certificate Transparency will be treated as untrusted if it is not disclosed according to the Certificate Transparency policy.''',
     },

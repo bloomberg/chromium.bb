@@ -12826,6 +12826,9 @@ Called by update_net_error_codes.py.-->
   <int value="432" label="TabUnderProtectionEnabled"/>
   <int value="433" label="UserNativePrintersAllowed"/>
   <int value="434" label="DefaultWebUsbGuardSetting"/>
+  <int value="435" label="CertificateTransparencyEnforcementDisabledForCas"/>
+  <int value="436"
+      label="CertificateTransparencyEnforcementDisabledForLegacyCas"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
