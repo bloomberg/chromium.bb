@@ -2768,7 +2768,6 @@ def _CommonChecks(input_api, output_api):
           source_file_filter=lambda x: x.LocalPath().endswith('.grd')))
   results.extend(_CheckSpamLogging(input_api, output_api))
   results.extend(_CheckForAnonymousVariables(input_api, output_api))
-  results.extend(_CheckUniquePtr(input_api, output_api))
   results.extend(_CheckUserActionUpdate(input_api, output_api))
   results.extend(_CheckNoDeprecatedCss(input_api, output_api))
   results.extend(_CheckNoDeprecatedJs(input_api, output_api))
@@ -3168,6 +3167,7 @@ def CheckChangeOnUpload(input_api, output_api):
   results.extend(_CheckSyslogUseWarning(input_api, output_api))
   results.extend(_CheckGoogleSupportAnswerUrl(input_api, output_api))
   results.extend(_CheckCrbugLinksHaveHttps(input_api, output_api))
+  results.extend(_CheckUniquePtr(input_api, output_api))
   return results
 
 
