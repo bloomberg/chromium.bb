@@ -216,7 +216,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                           const ui::LatencyInfo& latency,
                           const base::Optional<gfx::PointF>& target_location);
   // Assumes |gesture_event| has coordinates in root view's coordinate space.
-  void VerifyViewInMap(RenderWidgetHostViewBase* view, std::string src) const;
   void DispatchTouchscreenGestureEvent(
       RenderWidgetHostViewBase* root_view,
       RenderWidgetHostViewBase* target,
