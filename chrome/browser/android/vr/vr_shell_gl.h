@@ -219,6 +219,15 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void ProcessWebVrFrame(int16_t frame_index,
                          const gpu::MailboxHolder& mailbox);
 
+  // Used for discarding unwanted WebVR frames while UI is showing. We can't
+  // safely cancel frames from processing start until they show up in
+  // OnWebVRFrameAvailable, so only support cancelling them before or after
+  // that lifecycle segment.
+  void WebVrCancelAnimatingFrame();
+  void WebVrCancelProcessingFrameAfterTransfer();
+
+  void WebVrSendRenderNotification(bool was_rendered);
+
   void ClosePresentationBindings();
 
   device::mojom::XRInputSourceStatePtr GetGazeInputSourceState();
@@ -372,7 +381,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   bool webvr_frame_processing_ = false;
 
   // If we receive a new SubmitFrame when we're not ready, defer start of
-  // processing for later.
+  // processing for later. Canceled if UI takes over while processing.
   base::OnceClosure webvr_deferred_start_processing_;
 
   std::vector<gvr::BufferSpec> specs_;
