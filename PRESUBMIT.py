@@ -1610,15 +1610,15 @@ def _CheckUniquePtr(input_api, output_api):
           '%s:%d\n    %s' % (local_path, line_number, line.strip()))
 
   errors = []
-  if problems_constructor:
+  if problems_nullptr:
     errors.append(output_api.PresubmitError(
         'The following files use std::unique_ptr<T>(). Use nullptr instead.',
-        problems_constructor))
-  if problems_nullptr:
+        problems_nullptr))
+  if problems_constructor:
     errors.append(output_api.PresubmitError(
         'The following files use explicit std::unique_ptr constructor.'
         'Use std::make_unique<T>() instead.',
-        problems_nullptr))
+        problems_constructor))
   return errors
 
 
