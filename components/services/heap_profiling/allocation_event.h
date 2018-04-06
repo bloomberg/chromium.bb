@@ -13,7 +13,7 @@
 #include "components/services/heap_profiling/backtrace_storage.h"
 #include "components/services/heap_profiling/public/cpp/stream.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 // This class is copyable and assignable.
 //
@@ -49,7 +49,7 @@ class AllocationEvent {
 
   struct HashByAddress {
     size_t operator()(const AllocationEvent& event) const {
-      std::hash<profiling::Address> hasher;
+      std::hash<Address> hasher;
       return hasher(event.address());
     }
   };
@@ -98,6 +98,6 @@ using AllocationCountMap =
 // in the set with that metadata.
 AllocationCountMap AllocationEventSetToCountMap(const AllocationEventSet& set);
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // COMPONENTS_SERVICES_HEAP_PROFILING_ALLOCATION_EVENT_H_

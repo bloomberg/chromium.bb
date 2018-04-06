@@ -22,14 +22,14 @@ void ChromeBrowserMainExtraPartsProfiling::ServiceManagerConnectionStarted(
   // memlog and memory sanitizers are compatible and can run at the same time.
   (void)connection;  // Unused variable.
 #else
-  profiling::ProfilingProcessHost::Mode mode =
-      profiling::ProfilingProcessHost::GetModeForStartup();
-  if (mode != profiling::ProfilingProcessHost::Mode::kNone) {
-    profiling::ProfilingProcessHost::Start(
+  heap_profiling::ProfilingProcessHost::Mode mode =
+      heap_profiling::ProfilingProcessHost::GetModeForStartup();
+  if (mode != heap_profiling::ProfilingProcessHost::Mode::kNone) {
+    heap_profiling::ProfilingProcessHost::Start(
         connection, mode,
-        profiling::ProfilingProcessHost::GetStackModeForStartup(),
-        profiling::ProfilingProcessHost::GetShouldSampleForStartup(),
-        profiling::ProfilingProcessHost::GetSamplingRateForStartup());
+        heap_profiling::ProfilingProcessHost::GetStackModeForStartup(),
+        heap_profiling::ProfilingProcessHost::GetShouldSampleForStartup(),
+        heap_profiling::ProfilingProcessHost::GetSamplingRateForStartup());
   }
 #endif
 }

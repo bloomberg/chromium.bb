@@ -14,7 +14,7 @@
 #include "components/services/heap_profiling/receiver_pipe.h"
 #include "components/services/heap_profiling/stream_receiver.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 ReceiverPipe::ReceiverPipe(mojo::edk::ScopedPlatformHandle handle)
     : ReceiverPipeBase(std::move(handle)),
@@ -81,4 +81,4 @@ void ReceiverPipe::OnIOCompleted(base::MessagePumpForIO::IOContext* context,
   ReadUntilBlocking();
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

@@ -8,7 +8,7 @@
           "chrome::mojom::ProfileImport",
           "chrome::mojom::ShellHandler",
           "payments::mojom::PaymentManifestParser",
-          "profiling::mojom::ProfilingClient",
+          "heap_profiling::mojom::ProfilingClient",
           "proxy_resolver::mojom::ProxyResolverFactory",
           "safe_json::mojom::SafeJsonParser"
         ]

@@ -40,7 +40,7 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 
-using profiling::ProfilingProcessHost;
+using heap_profiling::ProfilingProcessHost;
 
 namespace {
 

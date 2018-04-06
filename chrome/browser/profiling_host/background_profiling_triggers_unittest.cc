@@ -29,7 +29,7 @@ using ProcessMemoryDumpPtr =
 using OSMemDumpPtr = memory_instrumentation::mojom::OSMemDumpPtr;
 using ProcessType = memory_instrumentation::mojom::ProcessType;
 
-namespace profiling {
+namespace heap_profiling {
 namespace {
 
 constexpr uint32_t kProcessMallocTriggerKb = 2 * 1024 * 1024;  // 2 Gig
@@ -270,4 +270,4 @@ TEST_F(BackgroundProfilingTriggersTest, IsAllowedToUpload_Incognito) {
   EXPECT_TRUE(triggers_.IsAllowedToUpload());
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

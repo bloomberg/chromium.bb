@@ -14,7 +14,7 @@
 #include "components/services/heap_profiling/public/mojom/heap_profiling_service.mojom.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 // Configuration passed to the export functions because they take many
 // arguments. All parameters must be set.
@@ -69,6 +69,6 @@ struct ExportParams {
 void ExportMemoryMapsAndV2StackTraceToJSON(ExportParams* params,
                                            std::ostream& out);
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // COMPONENTS_SERVICES_HEAP_PROFILING_JSON_EXPORTER_H_

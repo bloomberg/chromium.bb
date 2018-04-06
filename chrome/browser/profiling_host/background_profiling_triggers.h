@@ -11,7 +11,7 @@
 #include "base/timer/timer.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 class ProfilingProcessHost;
 
@@ -70,6 +70,6 @@ class BackgroundProfilingTriggers {
   DISALLOW_COPY_AND_ASSIGN(BackgroundProfilingTriggers);
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // CHROME_BROWSER_PROFILING_HOST_BACKGROUND_PROFILING_TRIGGERS_H_

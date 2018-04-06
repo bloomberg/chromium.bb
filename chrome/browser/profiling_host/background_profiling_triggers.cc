@@ -15,7 +15,7 @@
 #include "content/public/common/process_type.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 namespace {
 // Check memory usage every hour. Trigger slow report if needed.
@@ -177,4 +177,4 @@ void BackgroundProfilingTriggers::TriggerMemoryReport() {
   host_->RequestProcessReport("MEMLOG_BACKGROUND_TRIGGER");
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

@@ -15,7 +15,7 @@
 #include "build/build_config.h"
 #include "components/services/heap_profiling/public/cpp/stream.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 SenderPipe::PipePair::PipePair() {
   // We create a pipe() rather than a socketpair(). On macOS, this causes writes
@@ -105,4 +105,4 @@ void SenderPipe::Close() {
   file_.reset();
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

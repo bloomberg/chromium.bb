@@ -6,7 +6,7 @@
       "provides": {
         "browser": [
           "chrome::mojom::SearchBouncer",
-          "profiling::mojom::ProfilingClient"
+          "heap_profiling::mojom::ProfilingClient"
         ]
       }
     },

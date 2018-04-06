@@ -77,7 +77,7 @@ base::trace_event::TraceConfig GetBackgroundTracingConfig(bool anonymize) {
 
 }  // namespace
 
-namespace profiling {
+namespace heap_profiling {
 
 const base::Feature kOOPHeapProfilingFeature{"OOPHeapProfiling",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
@@ -244,9 +244,9 @@ void ProfilingProcessHost::Observe(
 }
 
 void ProfilingProcessHost::AddClientToProfilingService(
-    profiling::mojom::ProfilingClientPtr client,
+    mojom::ProfilingClientPtr client,
     base::ProcessId pid,
-    profiling::mojom::ProcessType process_type) {
+    mojom::ProcessType process_type) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   SenderPipe::PipePair pipes;
@@ -273,21 +273,21 @@ void ProfilingProcessHost::AddClientToProfilingService(
 ProfilingProcessHost::Mode ProfilingProcessHost::GetModeForStartup() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  if (cmdline->HasSwitch(heap_profiling::kMemlog) ||
+  if (cmdline->HasSwitch(kMemlog) ||
       base::FeatureList::IsEnabled(kOOPHeapProfilingFeature)) {
     if (cmdline->HasSwitch(switches::kEnableHeapProfiling)) {
       // PartitionAlloc doesn't support chained allocation hooks so we can't
       // run both heap profilers at the same time.
       LOG(ERROR) << "--" << switches::kEnableHeapProfiling
-                 << " specified with --" << heap_profiling::kMemlog
+                 << " specified with --" << kMemlog
                  << "which are not compatible. Memlog will be disabled.";
       return Mode::kNone;
     }
 
     std::string mode;
     // Respect the commandline switch above the field trial.
-    if (cmdline->HasSwitch(heap_profiling::kMemlog)) {
-      mode = cmdline->GetSwitchValueASCII(heap_profiling::kMemlog);
+    if (cmdline->HasSwitch(kMemlog)) {
+      mode = cmdline->GetSwitchValueASCII(kMemlog);
     } else {
       mode = base::GetFieldTrialParamValueByFeature(
           kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureMode);
@@ -297,8 +297,8 @@ ProfilingProcessHost::Mode ProfilingProcessHost::GetModeForStartup() {
   }
   return Mode::kNone;
 #else
-  LOG_IF(ERROR, cmdline->HasSwitch(heap_profiling::kMemlog))
-      << "--" << heap_profiling::kMemlog
+  LOG_IF(ERROR, cmdline->HasSwitch(kMemlog))
+      << "--" << kMemlog
       << " specified but it will have no effect because the use_allocator_shim "
       << "is not available in this build.";
   return Mode::kNone;
@@ -308,33 +308,33 @@ ProfilingProcessHost::Mode ProfilingProcessHost::GetModeForStartup() {
 // static
 ProfilingProcessHost::Mode ProfilingProcessHost::ConvertStringToMode(
     const std::string& mode) {
-  if (mode == heap_profiling::kMemlogModeAll)
+  if (mode == kMemlogModeAll)
     return Mode::kAll;
-  if (mode == heap_profiling::kMemlogModeAllRenderers)
+  if (mode == kMemlogModeAllRenderers)
     return Mode::kAllRenderers;
-  if (mode == heap_profiling::kMemlogModeManual)
+  if (mode == kMemlogModeManual)
     return Mode::kManual;
-  if (mode == heap_profiling::kMemlogModeMinimal)
+  if (mode == kMemlogModeMinimal)
     return Mode::kMinimal;
-  if (mode == heap_profiling::kMemlogModeBrowser)
+  if (mode == kMemlogModeBrowser)
     return Mode::kBrowser;
-  if (mode == heap_profiling::kMemlogModeGpu)
+  if (mode == kMemlogModeGpu)
     return Mode::kGpu;
-  if (mode == heap_profiling::kMemlogModeRendererSampling)
+  if (mode == kMemlogModeRendererSampling)
     return Mode::kRendererSampling;
   DLOG(ERROR) << "Unsupported value: \"" << mode << "\" passed to --"
-              << heap_profiling::kMemlog;
+              << kMemlog;
   return Mode::kNone;
 }
 
 // static
-profiling::mojom::StackMode ProfilingProcessHost::GetStackModeForStartup() {
+mojom::StackMode ProfilingProcessHost::GetStackModeForStartup() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   std::string stack_mode;
 
   // Respect the commandline switch above the field trial.
-  if (cmdline->HasSwitch(heap_profiling::kMemlogStackMode)) {
-    stack_mode = cmdline->GetSwitchValueASCII(heap_profiling::kMemlogStackMode);
+  if (cmdline->HasSwitch(kMemlogStackMode)) {
+    stack_mode = cmdline->GetSwitchValueASCII(kMemlogStackMode);
   } else {
     stack_mode = base::GetFieldTrialParamValueByFeature(
         kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureStackMode);
@@ -346,23 +346,23 @@ profiling::mojom::StackMode ProfilingProcessHost::GetStackModeForStartup() {
 // static
 mojom::StackMode ProfilingProcessHost::ConvertStringToStackMode(
     const std::string& input) {
-  if (input == heap_profiling::kMemlogStackModeNative)
-    return profiling::mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES;
-  if (input == heap_profiling::kMemlogStackModeNativeWithThreadNames)
-    return profiling::mojom::StackMode::NATIVE_WITH_THREAD_NAMES;
-  if (input == heap_profiling::kMemlogStackModePseudo)
-    return profiling::mojom::StackMode::PSEUDO;
-  if (input == heap_profiling::kMemlogStackModeMixed)
-    return profiling::mojom::StackMode::MIXED;
+  if (input == kMemlogStackModeNative)
+    return mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES;
+  if (input == kMemlogStackModeNativeWithThreadNames)
+    return mojom::StackMode::NATIVE_WITH_THREAD_NAMES;
+  if (input == kMemlogStackModePseudo)
+    return mojom::StackMode::PSEUDO;
+  if (input == kMemlogStackModeMixed)
+    return mojom::StackMode::MIXED;
   DLOG(ERROR) << "Unsupported value: \"" << input << "\" passed to --"
-              << heap_profiling::kMemlogStackMode;
-  return profiling::mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES;
+              << kMemlogStackMode;
+  return mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES;
 }
 
 // static
 bool ProfilingProcessHost::GetShouldSampleForStartup() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(heap_profiling::kMemlogSampling))
+  if (cmdline->HasSwitch(kMemlogSampling))
     return true;
 
   return base::GetFieldTrialParamByFeatureAsBool(
@@ -373,9 +373,9 @@ bool ProfilingProcessHost::GetShouldSampleForStartup() {
 // static
 uint32_t ProfilingProcessHost::GetSamplingRateForStartup() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(heap_profiling::kMemlogSamplingRate)) {
+  if (cmdline->HasSwitch(kMemlogSamplingRate)) {
     std::string rate_as_string =
-        cmdline->GetSwitchValueASCII(heap_profiling::kMemlogSamplingRate);
+        cmdline->GetSwitchValueASCII(kMemlogSamplingRate);
     int rate_as_int = 1;
     if (!base::StringToInt(rate_as_string, &rate_as_int)) {
       LOG(ERROR) << "Could not parse sampling rate: " << rate_as_string;
@@ -589,7 +589,7 @@ void ProfilingProcessHost::StartManualProfiling(base::ProcessId pid) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (!has_started_) {
-    profiling::ProfilingProcessHost::Start(
+    ProfilingProcessHost::Start(
         content::ServiceManagerConnection::GetForProcess(), Mode::kManual,
         GetStackModeForStartup(), GetShouldSampleForStartup(),
         GetSamplingRateForStartup());
@@ -645,7 +645,7 @@ void ProfilingProcessHost::StartProfilingPidOnIOThread(base::ProcessId pid) {
   if (pid == base::GetCurrentProcId()) {
     ProfilingClientBinder client(connector_.get());
     AddClientToProfilingService(client.take(), base::Process::Current().Pid(),
-                                profiling::mojom::ProcessType::BROWSER);
+                                mojom::ProcessType::BROWSER);
     return;
   }
 
@@ -685,18 +685,17 @@ void ProfilingProcessHost::LaunchAsService() {
 
   // Bind to the memlog service. This will start it if it hasn't started
   // already.
-  connector_->BindInterface(profiling::mojom::kServiceName,
-                            &profiling_service_);
+  connector_->BindInterface(mojom::kServiceName, &profiling_service_);
 
   // Set some state for heap dumps.
   bool keep_small_allocations =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          heap_profiling::kMemlogKeepSmallAllocations);
+          kMemlogKeepSmallAllocations);
   SetKeepSmallAllocations(keep_small_allocations);
 
   // Grab a HeapProfiler InterfacePtr and pass that to memory instrumentation.
   memory_instrumentation::mojom::HeapProfilerPtr heap_profiler;
-  connector_->BindInterface(profiling::mojom::kServiceName, &heap_profiler);
+  connector_->BindInterface(mojom::kServiceName, &heap_profiler);
 
   memory_instrumentation::mojom::CoordinatorPtr coordinator;
   connector_->BindInterface(resource_coordinator::mojom::kServiceName,
@@ -708,7 +707,7 @@ void ProfilingProcessHost::LaunchAsService() {
           content::ProcessType::PROCESS_TYPE_BROWSER)) {
     ProfilingClientBinder client(connector_.get());
     AddClientToProfilingService(client.take(), base::Process::Current().Pid(),
-                                profiling::mojom::ProcessType::BROWSER);
+                                mojom::ProcessType::BROWSER);
   }
 }
 
@@ -814,10 +813,10 @@ bool ProfilingProcessHost::ShouldProfileNewRenderer(
 void ProfilingProcessHost::StartProfilingNonRendererChild(
     const content::ChildProcessData& data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  profiling::mojom::ProcessType process_type =
+  mojom::ProcessType process_type =
       (data.process_type == content::ProcessType::PROCESS_TYPE_GPU)
-          ? profiling::mojom::ProcessType::GPU
-          : profiling::mojom::ProcessType::OTHER;
+          ? mojom::ProcessType::GPU
+          : mojom::ProcessType::OTHER;
 
   content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
       ->PostTask(
@@ -831,7 +830,7 @@ void ProfilingProcessHost::StartProfilingNonRendererChild(
 void ProfilingProcessHost::StartProfilingNonRendererChildOnIOThread(
     int child_process_id,
     base::ProcessId proc_id,
-    profiling::mojom::ProcessType process_type) {
+    mojom::ProcessType process_type) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   content::BrowserChildProcessHost* host =
@@ -857,7 +856,7 @@ void ProfilingProcessHost::StartProfilingRenderer(
           base::BindOnce(&ProfilingProcessHost::AddClientToProfilingService,
                          base::Unretained(this), client.take(),
                          base::GetProcId(host->GetHandle()),
-                         profiling::mojom::ProcessType::RENDERER));
+                         mojom::ProcessType::RENDERER));
 }
 
 bool ProfilingProcessHost::TakingTraceForUpload() {
@@ -872,4 +871,4 @@ bool ProfilingProcessHost::SetTakingTraceForUpload(bool new_state) {
   return ret;
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

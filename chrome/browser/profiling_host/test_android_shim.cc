@@ -34,12 +34,12 @@ jboolean TestAndroidShim::RunTestForMode(
     const base::android::JavaParamRef<jstring>& stack_mode,
     jboolean should_sample,
     jboolean sample_everything) {
-  profiling::ProfilingTestDriver driver;
-  profiling::ProfilingTestDriver::Options options;
-  options.mode = profiling::ProfilingProcessHost::ConvertStringToMode(
+  heap_profiling::ProfilingTestDriver driver;
+  heap_profiling::ProfilingTestDriver::Options options;
+  options.mode = heap_profiling::ProfilingProcessHost::ConvertStringToMode(
       base::android::ConvertJavaStringToUTF8(mode));
   options.stack_mode =
-      profiling::ProfilingProcessHost::ConvertStringToStackMode(
+      heap_profiling::ProfilingProcessHost::ConvertStringToStackMode(
           base::android::ConvertJavaStringToUTF8(stack_mode));
   options.profiling_already_started = !dynamically_start_profiling;
   options.should_sample = should_sample;

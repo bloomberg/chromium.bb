@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/services/heap_profiling/public/cpp/stream.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 namespace {
 
@@ -172,4 +172,4 @@ void SenderPipe::Close() {
   file_.Close();
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

@@ -56,7 +56,7 @@ namespace prerender {
 bool IsOmniboxEnabled(Profile* profile);
 }
 
-namespace profiling {
+namespace heap_profiling {
 class BackgroundProfilingTriggers;
 }
 
@@ -117,7 +117,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
       const OnMetricsReportingCallbackType&);
   friend class options::BrowserOptionsHandler;
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
-  friend class profiling::BackgroundProfilingTriggers;
+  friend class heap_profiling::BackgroundProfilingTriggers;
   friend class settings::MetricsReportingHandler;
   friend class speech::ChromeSpeechRecognitionManagerDelegate;
   friend class system_logs::ChromeInternalLogSource;

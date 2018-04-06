@@ -34,7 +34,7 @@ namespace content {
 class RenderProcessHost;
 }  // namespace content
 
-namespace profiling {
+namespace heap_profiling {
 
 extern const base::Feature kOOPHeapProfilingFeature;
 extern const char kOOPHeapProfilingFeatureMode[];
@@ -209,9 +209,9 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   void DumpProcessFinishedUIThread();
 
   // Sends the end of the data pipe to the profiling service.
-  void AddClientToProfilingService(profiling::mojom::ProfilingClientPtr client,
+  void AddClientToProfilingService(mojom::ProfilingClientPtr client,
                                    base::ProcessId pid,
-                                   profiling::mojom::ProcessType process_type);
+                                   mojom::ProcessType process_type);
 
   void SaveTraceToFileOnBlockingThread(base::FilePath dest,
                                        std::string trace,
@@ -228,7 +228,7 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   void StartProfilingNonRendererChildOnIOThread(
       int child_process_id,
       base::ProcessId proc_id,
-      profiling::mojom::ProcessType process_type);
+      mojom::ProcessType process_type);
 
   void StartProfilingRenderer(content::RenderProcessHost* host);
 
@@ -258,7 +258,7 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
 
   // The stack mode determines the type of information that is stored for each
   // stack.
-  profiling::mojom::StackMode stack_mode_;
+  mojom::StackMode stack_mode_;
 
   bool should_sample_ = false;
   uint32_t sampling_rate_ = 1;
@@ -292,6 +292,6 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   DISALLOW_COPY_AND_ASSIGN(ProfilingProcessHost);
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // CHROME_BROWSER_PROFILING_HOST_PROFILING_PROCESS_HOST_H_

@@ -13,7 +13,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 // Service implementation for Profiling. This will be called in the profiling
 // process (which is a sandboxed utility process created on demand by the
@@ -81,6 +81,6 @@ class HeapProfilingService
   base::WeakPtrFactory<HeapProfilingService> weak_factory_;
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // COMPONENTS_SERVICES_HEAP_PROFILING_HEAP_PROFILING_SERVICE_H_

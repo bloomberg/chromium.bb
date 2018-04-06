@@ -13,7 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "components/services/heap_profiling/backtrace.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 // Backtraces are stored effectively as atoms, and this class is the backing
 // store for the atoms. When you insert a backtrace, it will get de-duped with
@@ -102,6 +102,6 @@ class BacktraceStorage {
   DISALLOW_COPY_AND_ASSIGN(BacktraceStorage);
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // COMPONENTS_SERVICES_HEAP_PROFILING_BACKTRACE_STORAGE_H_

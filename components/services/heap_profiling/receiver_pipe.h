@@ -13,7 +13,7 @@ namespace base {
 class TaskRunner;
 }
 
-namespace profiling {
+namespace heap_profiling {
 
 class StreamReceiver;
 
@@ -49,7 +49,7 @@ class ReceiverPipeBase : public base::RefCountedThreadSafe<ReceiverPipeBase> {
   mojo::edk::ScopedPlatformHandle handle_;
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 // Define the platform-specific specialization.
 #if defined(OS_WIN)

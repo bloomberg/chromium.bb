@@ -4,7 +4,7 @@
 
 #include "components/services/heap_profiling/allocation_event.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 AllocationEvent::AllocationEvent(AllocatorType allocator,
                                  Address addr,
@@ -26,4 +26,4 @@ AllocationCountMap AllocationEventSetToCountMap(const AllocationEventSet& set) {
   return map;
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

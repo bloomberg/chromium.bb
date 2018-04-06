@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 // A stream receiver is a sink for unparsed bytes. See also LogReceiver.
 class StreamReceiver : public base::RefCountedThreadSafe<StreamReceiver> {
@@ -30,6 +30,6 @@ class StreamReceiver : public base::RefCountedThreadSafe<StreamReceiver> {
   virtual ~StreamReceiver() {}
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // COMPONENTS_SERVICES_HEAP_PROFILING_STREAM_RECEIVER_H_

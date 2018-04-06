@@ -11,7 +11,7 @@
 #include "components/services/heap_profiling/address.h"
 #include "components/services/heap_profiling/public/cpp/stream.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 // A log receiver is a sink for parsed allocation events. See also
 // StreamReceiver which is for the unparsed data blocks.
@@ -30,6 +30,6 @@ class Receiver {
   virtual void OnComplete() = 0;
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // COMPONENTS_SERVICES_HEAP_PROFILING_RECEIVER_H_

@@ -12,7 +12,7 @@
 
 #include "build/build_config.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 // These values should be kept in sync with
 // chrome/profiling/stream_fuzzer.dict to ensure efficient fuzzer
@@ -87,6 +87,6 @@ struct StringMappingPacket {
 
 #pragma pack(pop)
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_STREAM_H_

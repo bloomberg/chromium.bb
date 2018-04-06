@@ -11,7 +11,7 @@
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 HeapProfilingService::HeapProfilingService()
     : binding_(this), heap_profiler_binding_(this), weak_factory_(this) {}
@@ -104,4 +104,4 @@ void HeapProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing(
       std::move(callback), std::move(vm_regions));
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling
