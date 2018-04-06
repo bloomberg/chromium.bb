@@ -2232,6 +2232,22 @@
     ]
   },
 
+  "CertificateTransparencyEnforcementDisabledForCas": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "CertificateTransparencyEnforcementDisabledForCas": ["sha256/AAAAAAAAAAAAAAAAAAAAAA=="] },
+    "pref_mappings": [
+      { "pref": "certificate_transparency.excluded_spkis" }
+    ]
+  },
+
+  "CertificateTransparencyEnforcementDisabledForLegacyCas": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "CertificateTransparencyEnforcementDisabledForLegacyCas": ["sha256/AAAAAAAAAAAAAAAAAAAAAA=="] },
+    "pref_mappings": [
+      { "pref": "certificate_transparency.excluded_legacy_spkis" }
+    ]
+  },
+
   "RC4Enabled": {
     "note": "This policy is retired, see https://crbug.com/375342."
   },

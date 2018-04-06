@@ -191,8 +191,10 @@
 #include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
 #include "media/media_buildflags.h"
+#include "net/base/hash_value.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
+#include "net/cert/x509_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/transport_security_state.h"
@@ -3833,6 +3835,58 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   policies.Set(key::kCertificateTransparencyEnforcementDisabledForUrls,
                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::move(disabled_urls), nullptr);
+  UpdateProviderPolicy(policies);
+  FlushBlacklistPolicy();
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_ok.GetURL("/simple.html"));
+
+  // There should be no interstitial after the page loads.
+  interstitial = content::InterstitialPage::GetInterstitialPage(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_FALSE(interstitial);
+
+  EXPECT_EQ(base::UTF8ToUTF16("OK"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest,
+                       CertificateTransparencyEnforcementDisabledForCas) {
+  net::EmbeddedTestServer https_server_ok(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server_ok.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  https_server_ok.ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(https_server_ok.Start());
+
+  // Require CT for all hosts (in the absence of policy).
+  bool required = true;
+  SetShouldRequireCTForTesting(&required);
+
+  ui_test_utils::NavigateToURL(browser(), https_server_ok.GetURL("/"));
+
+  // The page should initially be blocked.
+  const content::InterstitialPage* interstitial =
+      content::InterstitialPage::GetInterstitialPage(
+          browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_TRUE(interstitial);
+  ASSERT_TRUE(content::WaitForRenderFrameReady(interstitial->GetMainFrame()));
+
+  EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
+      interstitial->GetMainFrame(), "proceed-link"));
+  EXPECT_NE(base::UTF8ToUTF16("OK"),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+
+  // Now exempt the leaf SPKI from being blocked by setting policy.
+  net::HashValue leaf_hash;
+  ASSERT_TRUE(net::x509_util::CalculateSha256SpkiHash(
+      https_server_ok.GetCertificate()->cert_buffer(), &leaf_hash));
+  std::unique_ptr<base::ListValue> disabled_spkis =
+      std::make_unique<base::ListValue>();
+  disabled_spkis->AppendString(leaf_hash.ToString());
+
+  PolicyMap policies;
+  policies.Set(key::kCertificateTransparencyEnforcementDisabledForCas,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               std::move(disabled_spkis), nullptr);
   UpdateProviderPolicy(policies);
   FlushBlacklistPolicy();
 
