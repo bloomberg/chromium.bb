@@ -121,8 +121,7 @@ class OmniboxViewViews : public OmniboxView,
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, MaintainCursorAfterFocusCycle);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, OnBlur);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, DoNotNavigateOnDrop);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
-                           UnelideOnArrowKey);
+  friend class OmniboxViewViewsSteadyStateElisionsTest;
 
   // Update the field with |text| and set the selection.
   void SetTextAndSelectedRange(const base::string16& text,

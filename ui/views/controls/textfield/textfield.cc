@@ -537,7 +537,8 @@ void Textfield::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
 }
 
 void Textfield::ShowImeIfNeeded() {
-  if (enabled() && !read_only())
+  // GetInputMethod() may return nullptr in tests.
+  if (enabled() && !read_only() && GetInputMethod())
     GetInputMethod()->ShowImeIfNeeded();
 }
 
