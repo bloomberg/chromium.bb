@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/cloud_print.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -24,10 +25,6 @@
 
 class Profile;
 class ServiceProcessControl;
-
-namespace base {
-class DictionaryValue;
-}  // namespace base
 
 // Layer between the browser user interface and the cloud print proxy code
 // running in the service process.
@@ -47,11 +44,10 @@ class CloudPrintProxyService : public KeyedService {
   void GetPrinters(const PrintersCallback& callback);
 
   // Enables/disables cloud printing for the user
-  virtual void EnableForUserWithRobot(
-      const std::string& robot_auth_code,
-      const std::string& robot_email,
-      const std::string& user_email,
-      const base::DictionaryValue& user_settings);
+  virtual void EnableForUserWithRobot(const std::string& robot_auth_code,
+                                      const std::string& robot_email,
+                                      const std::string& user_email,
+                                      base::Value user_settings);
   virtual void DisableForUser();
 
   // Query the service process for the status of the cloud print proxy and
@@ -68,11 +64,10 @@ class CloudPrintProxyService : public KeyedService {
   // Methods that send an IPC to the service.
   void GetCloudPrintProxyPrinters(const PrintersCallback& callback);
   void RefreshCloudPrintProxyStatus();
-  void EnableCloudPrintProxyWithRobot(
-      const std::string& robot_auth_code,
-      const std::string& robot_email,
-      const std::string& user_email,
-      const base::DictionaryValue* user_preferences);
+  void EnableCloudPrintProxyWithRobot(const std::string& robot_auth_code,
+                                      const std::string& robot_email,
+                                      const std::string& user_email,
+                                      base::Value user_preferences);
   void DisableCloudPrintProxy();
 
   // Callback that gets the cloud print proxy info.
@@ -83,7 +78,7 @@ class CloudPrintProxyService : public KeyedService {
   // Invoke a task that gets run after the service process successfully
   // launches. The task typically involves sending an IPC to the service
   // process.
-  bool InvokeServiceTask(const base::Closure& task);
+  bool InvokeServiceTask(base::OnceClosure task);
 
   // Checks the policy. Returns true if nothing needs to be done (the policy is
   // not set or the connector is not enabled).

@@ -159,7 +159,7 @@ void ServiceProcessControl::RunConnectDoneTasks() {
 void ServiceProcessControl::RunAllTasksHelper(TaskList* task_list) {
   TaskList::iterator index = task_list->begin();
   while (index != task_list->end()) {
-    (*index).Run();
+    std::move(*index).Run();
     index = task_list->erase(index);
   }
 }
@@ -168,16 +168,15 @@ bool ServiceProcessControl::IsConnected() const {
   return !!service_process_;
 }
 
-void ServiceProcessControl::Launch(const base::Closure& success_task,
-                                   const base::Closure& failure_task) {
+void ServiceProcessControl::Launch(base::OnceClosure success_task,
+                                   base::OnceClosure failure_task) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::Closure failure = failure_task;
-  if (!success_task.is_null())
-    connect_success_tasks_.push_back(success_task);
+  if (success_task)
+    connect_success_tasks_.emplace_back(std::move(success_task));
 
-  if (!failure.is_null())
-    connect_failure_tasks_.push_back(failure);
+  if (failure_task)
+    connect_failure_tasks_.emplace_back(std::move(failure_task));
 
   // If we already in the process of launching, then we are done.
   if (launcher_.get())

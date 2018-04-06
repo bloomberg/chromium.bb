@@ -87,8 +87,8 @@ class ServiceProcessControl : public UpgradeObserver {
   // Note that if we are already connected to service process then
   // |success_task| can be invoked in the context of the Launch call.
   // Virtual for testing.
-  virtual void Launch(const base::Closure& success_task,
-                      const base::Closure& failure_task);
+  virtual void Launch(base::OnceClosure success_task,
+                      base::OnceClosure failure_task);
 
   // Disconnect the IPC channel from the service process.
   // Virtual for testing.
@@ -155,7 +155,7 @@ class ServiceProcessControl : public UpgradeObserver {
 
   friend struct base::DefaultSingletonTraits<ServiceProcessControl>;
 
-  typedef std::vector<base::Closure> TaskList;
+  using TaskList = std::vector<base::OnceClosure>;
 
   void OnChannelConnected();
   void OnChannelError();

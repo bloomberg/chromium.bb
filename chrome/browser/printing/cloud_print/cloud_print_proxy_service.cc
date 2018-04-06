@@ -93,16 +93,16 @@ void CloudPrintProxyService::EnableForUserWithRobot(
     const std::string& robot_auth_code,
     const std::string& robot_email,
     const std::string& user_email,
-    const base::DictionaryValue& user_preferences) {
+    base::Value user_preferences) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
                             ServiceProcessControl::SERVICE_EVENT_ENABLE,
                             ServiceProcessControl::SERVICE_EVENT_MAX);
   if (profile_->GetPrefs()->GetBoolean(prefs::kCloudPrintProxyEnabled)) {
     InvokeServiceTask(
-        base::Bind(&CloudPrintProxyService::EnableCloudPrintProxyWithRobot,
-                   weak_factory_.GetWeakPtr(), robot_auth_code, robot_email,
-                   user_email, base::Owned(user_preferences.DeepCopy())));
+        base::BindOnce(&CloudPrintProxyService::EnableCloudPrintProxyWithRobot,
+                       weak_factory_.GetWeakPtr(), robot_auth_code, robot_email,
+                       user_email, std::move(user_preferences)));
   }
 }
 
@@ -195,12 +195,11 @@ void CloudPrintProxyService::EnableCloudPrintProxyWithRobot(
     const std::string& robot_auth_code,
     const std::string& robot_email,
     const std::string& user_email,
-    const base::DictionaryValue* user_preferences) {
+    base::Value user_preferences) {
   ServiceProcessControl* process_control = GetServiceProcessControl();
   DCHECK(process_control->IsConnected());
   GetCloudPrintProxy().EnableCloudPrintProxyWithRobot(
-      robot_auth_code, robot_email, user_email,
-      std::move(*user_preferences->CreateDeepCopy()));
+      robot_auth_code, robot_email, user_email, std::move(user_preferences));
 
   // Assume the IPC worked.
   profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, user_email);
@@ -226,8 +225,8 @@ void CloudPrintProxyService::ProxyInfoCallback(bool enabled,
   ApplyCloudPrintConnectorPolicy();
 }
 
-bool CloudPrintProxyService::InvokeServiceTask(const base::Closure& task) {
-  GetServiceProcessControl()->Launch(task, base::Closure());
+bool CloudPrintProxyService::InvokeServiceTask(base::OnceClosure task) {
+  GetServiceProcessControl()->Launch(std::move(task), base::OnceClosure());
   return true;
 }
 

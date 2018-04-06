@@ -73,11 +73,10 @@ void CloudPrintProxy::EnableForUser() {
   }
 }
 
-void CloudPrintProxy::EnableForUserWithRobot(
-    const std::string& robot_auth_code,
-    const std::string& robot_email,
-    const std::string& user_email,
-    const base::DictionaryValue& user_settings) {
+void CloudPrintProxy::EnableForUserWithRobot(const std::string& robot_auth_code,
+                                             const std::string& robot_email,
+                                             const std::string& user_email,
+                                             base::Value user_settings) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   ShutdownBackend();
