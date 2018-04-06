@@ -49,7 +49,7 @@ class WebViewInternalExtensionFunction : public UIThreadExtensionFunction {
 };
 
 class WebViewInternalCaptureVisibleRegionFunction
-    : public LegacyWebViewInternalExtensionFunction,
+    : public WebViewInternalExtensionFunction,
       public WebContentsCaptureClient {
  public:
   DECLARE_EXTENSION_FUNCTION("webViewInternal.captureVisibleRegion",
@@ -59,17 +59,17 @@ class WebViewInternalCaptureVisibleRegionFunction
  protected:
   ~WebViewInternalCaptureVisibleRegionFunction() override {}
 
- private:
-  // LegacyWebViewInternalExtensionFunction implementation.
-  bool RunAsyncSafe(WebViewGuest* guest) override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 
+ private:
   // extensions::WebContentsCaptureClient:
   bool IsScreenshotEnabled() const override;
   bool ClientAllowsTransparency() override;
   void OnCaptureSuccess(const SkBitmap& bitmap) override;
   void OnCaptureFailure(CaptureResult result) override;
 
-  void SetErrorMessage(CaptureResult result);
+  std::string GetErrorMessage(CaptureResult result);
 
   bool is_guest_transparent_;
 

@@ -299,8 +299,8 @@ WebViewInternalCaptureVisibleRegionFunction::
     WebViewInternalCaptureVisibleRegionFunction()
     : is_guest_transparent_(false) {}
 
-bool WebViewInternalCaptureVisibleRegionFunction::RunAsyncSafe(
-    WebViewGuest* guest) {
+ExtensionFunction::ResponseAction
+WebViewInternalCaptureVisibleRegionFunction::Run() {
   using api::extension_types::ImageDetails;
 
   std::unique_ptr<web_view_internal::CaptureVisibleRegion::Params> params(
@@ -314,16 +314,18 @@ bool WebViewInternalCaptureVisibleRegionFunction::RunAsyncSafe(
     image_details = ImageDetails::FromValue(*spec);
   }
 
-  is_guest_transparent_ = guest->allow_transparency();
+  is_guest_transparent_ = guest_->allow_transparency();
   const CaptureResult capture_result = CaptureAsync(
-      guest->web_contents(), image_details.get(),
+      guest_->web_contents(), image_details.get(),
       base::BindOnce(
           &WebViewInternalCaptureVisibleRegionFunction::CopyFromSurfaceComplete,
           this));
-  if (capture_result == OK)
-    return true;
-  SetErrorMessage(capture_result);
-  return false;
+  if (capture_result == OK) {
+    // CaptureAsync may have responded synchronously.
+    return did_respond() ? AlreadyResponded() : RespondLater();
+  }
+
+  return RespondNow(Error(GetErrorMessage(capture_result)));
 }
 bool WebViewInternalCaptureVisibleRegionFunction::IsScreenshotEnabled() const {
   // TODO(wjmaclean): Is it ok to always return true here?
@@ -342,17 +344,15 @@ void WebViewInternalCaptureVisibleRegionFunction::OnCaptureSuccess(
     return;
   }
 
-  SetResult(std::make_unique<base::Value>(base64_result));
-  SendResponse(true);
+  Respond(OneArgument(std::make_unique<base::Value>(base64_result)));
 }
 
 void WebViewInternalCaptureVisibleRegionFunction::OnCaptureFailure(
     CaptureResult result) {
-  SetErrorMessage(result);
-  SendResponse(false);
+  Respond(Error(GetErrorMessage(result)));
 }
 
-void WebViewInternalCaptureVisibleRegionFunction::SetErrorMessage(
+std::string WebViewInternalCaptureVisibleRegionFunction::GetErrorMessage(
     CaptureResult result) {
   const char* reason_description = "internal error";
   switch (result) {
@@ -371,11 +371,11 @@ void WebViewInternalCaptureVisibleRegionFunction::SetErrorMessage(
       break;
     case OK:
       NOTREACHED()
-          << "SetErrorMessage should not be called with a successful result";
-      return;
+          << "GetErrorMessage should not be called with a successful result";
+      return "";
   }
-  error_ = ErrorUtils::FormatErrorMessage("Failed to capture webview: *",
-                                          reason_description);
+  return ErrorUtils::FormatErrorMessage("Failed to capture webview: *",
+                                        reason_description);
 }
 
 ExtensionFunction::ResponseAction WebViewInternalNavigateFunction::Run() {

@@ -1725,25 +1725,27 @@ bool TabsCaptureVisibleTabFunction::ClientAllowsTransparency() {
   return false;
 }
 
-WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(int window_id) {
+WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(
+    int window_id,
+    std::string* error) {
   Browser* browser = NULL;
-  if (!GetBrowserFromWindowID(chrome_details_, window_id, &browser, &error_))
-    return NULL;
+  if (!GetBrowserFromWindowID(chrome_details_, window_id, &browser, error))
+    return nullptr;
 
   WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
   if (!contents) {
-    error_ = "No active web contents to capture";
-    return NULL;
+    *error = "No active web contents to capture";
+    return nullptr;
   }
 
   if (!extension()->permissions_data()->CanCaptureVisiblePage(
-          SessionTabHelper::IdForTab(contents).id(), &error_)) {
-    return NULL;
+          SessionTabHelper::IdForTab(contents).id(), error)) {
+    return nullptr;
   }
   return contents;
 }
 
-bool TabsCaptureVisibleTabFunction::RunAsync() {
+ExtensionFunction::ResponseAction TabsCaptureVisibleTabFunction::Run() {
   using api::extension_types::ImageDetails;
 
   EXTENSION_FUNCTION_VALIDATE(args_);
@@ -1758,16 +1760,22 @@ bool TabsCaptureVisibleTabFunction::RunAsync() {
     image_details = ImageDetails::FromValue(*spec);
   }
 
-  WebContents* contents = GetWebContentsForID(context_id);
+  std::string error;
+  WebContents* contents = GetWebContentsForID(context_id, &error);
+  // TODO(wjmaclean): If |error| was populated, shouldn't we send error
+  // response? Currently doing that will fail
+  // ExtensionApiCaptureTest.CaptureNullWindow test.
 
   const CaptureResult capture_result = CaptureAsync(
       contents, image_details.get(),
       base::BindOnce(&TabsCaptureVisibleTabFunction::CopyFromSurfaceComplete,
                      this));
-  if (capture_result == OK)
-    return true;
-  SetErrorMessage(capture_result);
-  return false;
+  if (capture_result == OK) {
+    // CopyFromSurfaceComplete might have already responded.
+    return did_respond() ? AlreadyResponded() : RespondLater();
+  }
+
+  return RespondNow(Error(CaptureResultToErrorMessage(capture_result)));
 }
 
 void TabsCaptureVisibleTabFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
@@ -1777,16 +1785,16 @@ void TabsCaptureVisibleTabFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
     return;
   }
 
-  SetResult(std::make_unique<base::Value>(base64_result));
-  SendResponse(true);
+  Respond(OneArgument(std::make_unique<base::Value>(base64_result)));
 }
 
 void TabsCaptureVisibleTabFunction::OnCaptureFailure(CaptureResult result) {
-  SetErrorMessage(result);
-  SendResponse(false);
+  Respond(Error(CaptureResultToErrorMessage(result)));
 }
 
-void TabsCaptureVisibleTabFunction::SetErrorMessage(CaptureResult result) {
+// static.
+std::string TabsCaptureVisibleTabFunction::CaptureResultToErrorMessage(
+    CaptureResult result) {
   const char* reason_description = "internal error";
   switch (result) {
     case FAILURE_REASON_READBACK_FAILED:
@@ -1799,15 +1807,14 @@ void TabsCaptureVisibleTabFunction::SetErrorMessage(CaptureResult result) {
       reason_description = "view is invisible";
       break;
     case FAILURE_REASON_SCREEN_SHOTS_DISABLED:
-      error_ = keys::kScreenshotsDisabled;
-      return;
+      return keys::kScreenshotsDisabled;
     case OK:
-      NOTREACHED()
-          << "SetErrorMessage should not be called with a successful result";
-      return;
+      NOTREACHED() << "CaptureResultToErrorMessage should not be called"
+                      " with a successful result";
+      return kUnknownErrorDoNotUse;
   }
-  error_ = ErrorUtils::FormatErrorMessage("Failed to capture tab: *",
-                                          reason_description);
+  return ErrorUtils::FormatErrorMessage("Failed to capture tab: *",
+                                        reason_description);
 }
 
 void TabsCaptureVisibleTabFunction::RegisterProfilePrefs(
