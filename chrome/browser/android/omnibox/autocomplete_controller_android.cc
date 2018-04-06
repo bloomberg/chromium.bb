@@ -54,6 +54,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/device_form_factor.h"
+#include "ui/base/window_open_disposition.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -256,6 +257,7 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
       input_.type(),
       true,
       selected_index,
+      WindowOpenDisposition::CURRENT_TAB,
       false,
       SessionTabHelper::IdForTab(web_contents),
       current_page_classification,

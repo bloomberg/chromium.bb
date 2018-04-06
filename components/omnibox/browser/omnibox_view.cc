@@ -89,7 +89,7 @@ void OmniboxView::OpenMatch(const AutocompleteMatch& match,
     return;
   // Unless user requests navigation, change disposition for this match type
   // so downstream will switch tabs.
-  if (match.type == AutocompleteMatchType::TAB_SEARCH) {
+  if (match.has_tab_match) {
     // "with-button" option inverts default action.
     bool invert = OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial();
     if (disposition == WindowOpenDisposition::CURRENT_TAB &&
@@ -114,7 +114,7 @@ const gfx::VectorIcon& OmniboxView::GetVectorIcon() const {
   return AutocompleteMatch::TypeToVectorIcon(
       model_ ? model_->CurrentTextType()
              : AutocompleteMatchType::URL_WHAT_YOU_TYPED,
-      /*is_bookmark=*/false);
+      /*is_bookmark=*/false, /*is_tab_match=*/false);
 }
 
 void OmniboxView::SetUserText(const base::string16& text) {

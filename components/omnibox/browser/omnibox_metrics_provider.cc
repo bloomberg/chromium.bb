@@ -68,14 +68,11 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
       return OmniboxEventProto::Suggestion::PHYSICAL_WEB;
     case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW:
       return OmniboxEventProto::Suggestion::PHYSICAL_WEB_OVERFLOW;
-    case AutocompleteMatchType::TAB_SEARCH:
-      // TODO(crbug.com/46672): Create a specific type and move this result
-      // under it.
-      return OmniboxEventProto::Suggestion::UNKNOWN_RESULT_TYPE;
     case AutocompleteMatchType::VOICE_SUGGEST:
       // VOICE_SUGGEST matches are only used in Java and are not logged,
       // so we should never reach this case.
     case AutocompleteMatchType::CONTACT_DEPRECATED:
+    case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
     case AutocompleteMatchType::NUM_TYPES:
       break;
   }
@@ -130,6 +127,8 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
   omnibox_event->set_just_deleted_text(log.just_deleted_text);
   omnibox_event->set_num_typed_terms(static_cast<int>(terms.size()));
   omnibox_event->set_selected_index(log.selected_index);
+  omnibox_event->set_selected_tab_match(log.disposition ==
+                                        WindowOpenDisposition::SWITCH_TO_TAB);
   if (log.completed_length != base::string16::npos)
     omnibox_event->set_completed_length(log.completed_length);
   const base::TimeDelta default_time_delta =
@@ -166,6 +165,7 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
       suggestion->set_typed_count(i->typed_count);
     if (i->subtype_identifier > 0)
       suggestion->set_result_subtype_identifier(i->subtype_identifier);
+    suggestion->set_has_tab_match(i->has_tab_match);
   }
   for (ProvidersInfo::const_iterator i(log.providers_info.begin());
        i != log.providers_info.end(); ++i) {

@@ -92,6 +92,7 @@ AutocompleteMatch::AutocompleteMatch()
       swap_contents_and_description(false),
       transition(ui::PAGE_TRANSITION_GENERATED),
       type(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED),
+      has_tab_match(false),
       subtype_identifier(0),
       from_previous(false) {}
 
@@ -107,6 +108,7 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
       swap_contents_and_description(false),
       transition(ui::PAGE_TRANSITION_TYPED),
       type(type),
+      has_tab_match(false),
       subtype_identifier(0),
       from_previous(false) {}
 
@@ -130,6 +132,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       answer(SuggestionAnswer::copy(match.answer.get())),
       transition(match.transition),
       type(match.type),
+      has_tab_match(match.has_tab_match),
       subtype_identifier(match.subtype_identifier),
       associated_keyword(match.associated_keyword.get()
                              ? new AutocompleteMatch(*match.associated_keyword)
@@ -170,6 +173,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   answer = SuggestionAnswer::copy(match.answer.get());
   transition = match.transition;
   type = match.type;
+  has_tab_match = match.has_tab_match;
   subtype_identifier = match.subtype_identifier;
   associated_keyword.reset(
       match.associated_keyword.get()
@@ -188,7 +192,8 @@ AutocompleteMatch& AutocompleteMatch::operator=(
 
 // static
 const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
-                                                           bool is_bookmark) {
+                                                           bool is_bookmark,
+                                                           bool is_tab_match) {
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
   const bool is_touch_ui =
       ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
@@ -196,13 +201,11 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
   if (is_bookmark)
     return is_touch_ui ? omnibox::kTouchableBookmarkIcon : omnibox::kStarIcon;
 
+  if (is_tab_match &&
+      !OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial()) {
+    return omnibox::kTabIcon;
+  }
   switch (type) {
-    case Type::TAB_SEARCH:
-      if (!OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial())
-        return omnibox::kTabIcon;
-      // Behave like history match.
-      FALLTHROUGH;
-
     case Type::URL_WHAT_YOU_TYPED:
     case Type::HISTORY_URL:
     case Type::HISTORY_TITLE:
@@ -214,6 +217,7 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
     case Type::CLIPBOARD:
     case Type::PHYSICAL_WEB:
     case Type::PHYSICAL_WEB_OVERFLOW:
+    case Type::TAB_SEARCH_DEPRECATED:
       return is_touch_ui ? omnibox::kTouchablePageIcon : omnibox::kHttpIcon;
 
     case Type::SEARCH_WHAT_YOU_TYPED:
