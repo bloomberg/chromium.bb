@@ -28,6 +28,9 @@ enum class BackgroundFetchLoadState {
 constexpr char kBackgroundFetchImageLoaderBaseUrl[] = "http://test.com/";
 constexpr char kBackgroundFetchImageLoaderBaseDir[] = "notifications/";
 constexpr char kBackgroundFetchImageLoaderIcon500x500[] = "500x500.png";
+constexpr char kBackgroundFetchImageLoaderIcon48x48[] = "48x48.png";
+constexpr char kBackgroundFetchImageLoaderIcon3000x2000[] = "3000x2000.png";
+constexpr char kBackgroundFetchImageLoaderIcon[] = "3000x2000.png";
 
 }  // namespace
 
@@ -60,6 +63,21 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
       loaded_ = BackgroundFetchLoadState::kLoadFailed;
   }
 
+  IconDefinition CreateTestIcon(const String& url_str, const String& size) {
+    KURL url = RegisterMockedURL(url_str);
+    IconDefinition icon;
+    icon.setSrc(url.GetString());
+    icon.setType("image/png");
+    icon.setSizes(size);
+    return icon;
+  }
+
+  int PickRightIcon(HeapVector<IconDefinition> icons,
+                    const WebSize& ideal_display_size) {
+    loader_->icons_ = std::move(icons);
+    return loader_->PickBestIconForDisplay(GetContext(), ideal_display_size);
+  }
+
   void LoadIcon(const KURL& url) {
     IconDefinition icon;
     icon.setSrc(url.GetString());
@@ -88,6 +106,56 @@ TEST_F(BackgroundFetchIconLoaderTest, SuccessTest) {
   LoadIcon(url);
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   EXPECT_EQ(BackgroundFetchLoadState::kLoadSuccessful, loaded_);
+}
+
+TEST_F(BackgroundFetchIconLoaderTest, PickRightIconTest) {
+  IconDefinition icon0 =
+      CreateTestIcon(kBackgroundFetchImageLoaderIcon500x500, "500x500");
+  IconDefinition icon1 =
+      CreateTestIcon(kBackgroundFetchImageLoaderIcon48x48, "48x48");
+  IconDefinition icon2 =
+      CreateTestIcon(kBackgroundFetchImageLoaderIcon3000x2000, "3000x2000");
+
+  HeapVector<IconDefinition> icons;
+  icons.push_back(icon0);
+  icons.push_back(icon1);
+  icons.push_back(icon2);
+
+  int index = PickRightIcon(std::move(icons), WebSize(50, 50));
+  EXPECT_EQ(index, 1);
+}
+
+TEST_F(BackgroundFetchIconLoaderTest, PickRightIconGivenAnyTest) {
+  IconDefinition icon0 =
+      CreateTestIcon(kBackgroundFetchImageLoaderIcon500x500, "500x500");
+  IconDefinition icon1 =
+      CreateTestIcon(kBackgroundFetchImageLoaderIcon48x48, "48x48");
+  IconDefinition icon2 = CreateTestIcon(kBackgroundFetchImageLoaderIcon, "any");
+
+  HeapVector<IconDefinition> icons;
+  icons.push_back(icon0);
+  icons.push_back(icon1);
+  icons.push_back(icon2);
+
+  int index = PickRightIcon(std::move(icons), WebSize(50, 50));
+  EXPECT_EQ(index, 2);
+}
+
+TEST_F(BackgroundFetchIconLoaderTest, PickRightIconWithTieBreakTest) {
+  // Test that if two icons get the same score, the one declared last gets
+  // picked.
+  IconDefinition icon0 =
+      CreateTestIcon(kBackgroundFetchImageLoaderIcon500x500, "500x500");
+  IconDefinition icon1 =
+      CreateTestIcon(kBackgroundFetchImageLoaderIcon48x48, "48x48");
+  IconDefinition icon2 =
+      CreateTestIcon(kBackgroundFetchImageLoaderIcon3000x2000, "48x48");
+  HeapVector<IconDefinition> icons;
+  icons.push_back(icon0);
+  icons.push_back(icon1);
+  icons.push_back(icon2);
+  int index = PickRightIcon(std::move(icons), WebSize(50, 50));
+  EXPECT_EQ(index, 2);
 }
 
 }  // namespace blink
