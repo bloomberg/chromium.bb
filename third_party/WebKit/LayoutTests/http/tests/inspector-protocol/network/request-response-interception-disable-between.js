@@ -16,7 +16,10 @@
   await session.protocol.Network.setCacheDisabled({cacheDisabled: true});
   session.protocol.Network.enable();
   testRunner.log('Network agent enabled');
-  await session.protocol.Network.setRequestInterception({patterns: [{urlPattern: "*", interceptionStage: 'Request'}, {urlPattern: "*", interceptionStage: 'HeadersReceived'}]});
+  await session.protocol.Network.setRequestInterception({patterns: [
+      {urlPattern: "*", interceptionStage: 'Request'},
+      {urlPattern: "*", interceptionStage: 'HeadersReceived'}
+  ]});
 
   var responseContent = await session.evaluateAsync(`fetch('/devtools/network/resources/resource.php?size=10').then(response => response.text())`);
   testRunner.log('Body: ');
