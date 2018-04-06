@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "ui/views/controls/menu/menu_image_util.h"
 #include "ui/views/round_rect_painter.h"
-
 namespace views {
 
 MenuConfig::MenuConfig()
@@ -19,6 +18,8 @@ MenuConfig::MenuConfig()
       item_bottom_margin(3),
       item_no_icon_top_margin(4),
       item_no_icon_bottom_margin(4),
+      fixed_text_item_height(0),
+      fixed_menu_width(0),
       item_left_margin(10),
       touchable_item_left_margin(16),
       label_to_arrow_padding(10),

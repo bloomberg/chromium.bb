@@ -138,6 +138,7 @@ class VIEWS_EXPORT MenuController
   base::TimeTicks closing_event_time() const { return closing_event_time_; }
 
   void set_is_combobox(bool is_combobox) { is_combobox_ = is_combobox; }
+  bool is_combobox() const { return is_combobox_; }
 
   // Various events, forwarded from the submenu.
   //
