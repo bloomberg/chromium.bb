@@ -4,8 +4,8 @@ layer at (0,0) size 785x837 backgroundClip at (0,0) size 785x600 clip at (0,0) s
   LayoutNGBlockFlow {HTML} at (0,0) size 785x837
     LayoutNGBlockFlow {BODY} at (8,32) size 769x773
       LayoutNGBlockFlow {P} at (32,0) size 705x113 [color=#000080]
-        LayoutText {#text} at (0,2) size 673x110
-          text run at (0,2) width 673: "\x{21E9} The following blue box should be exactly half the"
+        LayoutText {#text} at (0,2) size 672x110
+          text run at (0,2) width 672: "\x{21E9} The following blue box should be exactly half the"
           text run at (0,39) width 641: "width of the viewport, on the left of the 50% ruler"
           text run at (0,76) width 74: "mark."
       LayoutNGBlockFlow (floating) {DIV} at (0,145) size 384.50x380 [color=#FFFFFF] [bgcolor=#0000FF]
@@ -28,7 +28,7 @@ layer at (0,0) size 785x837 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           text run at (0,300) width 385: "float text ignore this float text ignore this float text"
           text run at (0,320) width 385: "ignore this float text ignore this float text ignore this"
           text run at (0,340) width 385: "float text ignore this float text ignore this float text"
-          text run at (0,360) width 255: "ignore this float text ignore this float"
+          text run at (0,360) width 257: "ignore this float text ignore this float"
       LayoutNGBlockFlow {DIV} at (0,145) size 769x520 [color=#C0C0C0]
         LayoutText {#text} at (384,0) size 769x519
           text run at (384,0) width 385: "this is some dummy text this is some dummy text this is"

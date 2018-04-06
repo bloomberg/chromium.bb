@@ -48,8 +48,8 @@ layer at (0,0) size 785x849 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutNGListMarker (anonymous) at (-18,0) size 10x20
                 LayoutText (anonymous) at (0,0) size 10x19
                   text run at (0,0) width 10: "\x{25E6} "
-              LayoutText {#text} at (0,0) size 188x19
-                text run at (0,0) width 188: "This list item should be gray..."
+              LayoutText {#text} at (0,0) size 189x19
+                text run at (0,0) width 189: "This list item should be gray..."
             LayoutNGListItem {LI} at (40,20) size 689x20 [color=#808080]
               LayoutNGListMarker (anonymous) at (-18,0) size 10x20
                 LayoutText (anonymous) at (0,0) size 10x19
@@ -81,8 +81,8 @@ layer at (0,0) size 785x849 backgroundClip at (0,0) size 785x600 clip at (0,0) s
           LayoutText {#text} at (0,0) size 96x19
             text run at (0,0) width 96: "...and this blue."
       LayoutNGBlockFlow {P} at (0,419) size 769x20 [color=#0000FF]
-        LayoutText {#text} at (0,0) size 279x19
-          text run at (0,0) width 279: "This sentence should be blue (STYLE attr.)."
+        LayoutText {#text} at (0,0) size 278x19
+          text run at (0,0) width 278: "This sentence should be blue (STYLE attr.)."
       LayoutNGBlockFlow {P} at (0,455) size 769x20 [color=#800080]
         LayoutText {#text} at (0,0) size 204x19
           text run at (0,0) width 204: "This sentence should be purple ["
@@ -98,9 +98,9 @@ layer at (0,0) size 785x849 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,1) size 703x304
           LayoutTableRow {TR} at (0,0) size 703x28
             LayoutNGTableCell {TD} at (0,0) size 703x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x19
+                LayoutText {#text} at (4,4) size 161x19
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 703x276
             LayoutNGTableCell {TD} at (0,152) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,128) size 4x19
@@ -125,8 +125,8 @@ layer at (0,0) size 785x849 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                       LayoutNGListMarker (anonymous) at (-18,0) size 10x20
                         LayoutText (anonymous) at (0,0) size 10x19
                           text run at (0,0) width 10: "\x{25E6} "
-                      LayoutText {#text} at (0,0) size 188x19
-                        text run at (0,0) width 188: "This list item should be gray..."
+                      LayoutText {#text} at (0,0) size 189x19
+                        text run at (0,0) width 189: "This list item should be gray..."
                     LayoutNGListItem {LI} at (40,20) size 603x20 [color=#808080]
                       LayoutNGListMarker (anonymous) at (-18,0) size 10x20
                         LayoutText (anonymous) at (0,0) size 10x19
@@ -158,8 +158,8 @@ layer at (0,0) size 785x849 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                   LayoutText {#text} at (0,0) size 96x19
                     text run at (0,0) width 96: "...and this blue."
               LayoutNGBlockFlow {P} at (4,180) size 683x20 [color=#0000FF]
-                LayoutText {#text} at (0,0) size 279x19
-                  text run at (0,0) width 279: "This sentence should be blue (STYLE attr.)."
+                LayoutText {#text} at (0,0) size 278x19
+                  text run at (0,0) width 278: "This sentence should be blue (STYLE attr.)."
               LayoutNGBlockFlow {P} at (4,216) size 683x20 [color=#800080]
                 LayoutText {#text} at (0,0) size 204x19
                   text run at (0,0) width 204: "This sentence should be purple ["

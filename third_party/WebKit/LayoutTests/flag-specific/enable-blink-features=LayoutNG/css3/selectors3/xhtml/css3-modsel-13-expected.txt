@@ -20,7 +20,7 @@ layer at (0,0) size 800x92
           LayoutNGListMarker (anonymous) at (-18,0) size 10x20
             LayoutText (anonymous) at (0,0) size 10x19
               text run at (0,0) width 10: "\x{2022} "
-          LayoutInline {span} at (0,0) size 595x19
-            LayoutText {#text} at (0,0) size 595x19
-              text run at (0,0) width 595: "This list item should have green background because the inner SPAN does not match SPAN.t3"
+          LayoutInline {span} at (0,0) size 597x19
+            LayoutText {#text} at (0,0) size 597x19
+              text run at (0,0) width 597: "This list item should have green background because the inner SPAN does not match SPAN.t3"
           LayoutText {#text} at (0,0) size 0x0

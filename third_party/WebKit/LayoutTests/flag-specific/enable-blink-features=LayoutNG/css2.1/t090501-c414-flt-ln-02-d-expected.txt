@@ -9,18 +9,18 @@ layer at (0,0) size 800x550
           text run at (0,20) width 778: "enough room for the big box to fit on the small box's line after the small box, in which case the big box should be as high as"
           text run at (0,40) width 191: "possible below the small box)."
       LayoutNGBlockFlow {DIV} at (16,76) size 752x442 [color=#C0C0C0] [border: (5px solid #800080)]
-        LayoutText {#text} at (21,21) size 553x19
-          text run at (21,21) width 553: "dummy text dummy text dummy text dummy text dummy text dummy text dummy text "
+        LayoutText {#text} at (21,21) size 552x19
+          text run at (21,21) width 552: "dummy text dummy text dummy text dummy text dummy text dummy text dummy text "
         LayoutInline {SPAN} at (0,0) size 17x25 [color=#FFFFFF] [bgcolor=#008080] [border: (3px solid #00FFFF)]
-          LayoutText {#text} at (577,21) size 11x19
-            text run at (577,21) width 11: "A"
-        LayoutText {#text} at (591,21) size 4x19
-          text run at (591,21) width 4: " "
+          LayoutText {#text} at (576,21) size 11x19
+            text run at (576,21) width 11: "A"
+        LayoutText {#text} at (590,21) size 4x19
+          text run at (590,21) width 4: " "
         LayoutNGBlockFlow (floating) {P} at (21,41) size 150x58 [color=#FFFFFF] [bgcolor=#008080] [border: (3px solid #00FFFF)]
           LayoutText {#text} at (19,19) size 48x19
             text run at (19,19) width 48: "AAAA"
-        LayoutText {#text} at (595,21) size 551x39
-          text run at (595,21) width 127: "dummy text dummy"
+        LayoutText {#text} at (594,21) size 550x39
+          text run at (594,21) width 127: "dummy text dummy"
           text run at (171,41) width 343: "text dummy text dummy text dummy text dummy text "
         LayoutInline {SPAN} at (0,0) size 17x25 [color=#FFFFFF] [bgcolor=#800080] [border: (3px solid #FF00FF)]
           LayoutText {#text} at (517,41) size 11x19

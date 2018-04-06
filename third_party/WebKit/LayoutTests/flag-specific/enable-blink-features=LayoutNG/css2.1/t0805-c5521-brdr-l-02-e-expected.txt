@@ -4,8 +4,8 @@ layer at (0,0) size 800x308
   LayoutNGBlockFlow {HTML} at (0,0) size 800x308
     LayoutNGBlockFlow {BODY} at (8,16) size 784x276 [color=#0000FF]
       LayoutNGBlockFlow {P} at (0,0) size 784x20
-        LayoutText {#text} at (0,0) size 737x19
-          text run at (0,0) width 737: "There should be a solid line to the left of the text below, having three segments each of a different colour as indicated."
+        LayoutText {#text} at (0,0) size 738x19
+          text run at (0,0) width 738: "There should be a solid line to the left of the text below, having three segments each of a different colour as indicated."
       LayoutNGBlockFlow {UL} at (0,36) size 784x240
         LayoutNGListItem {LI} at (40,0) size 744x80 [border: none (3px solid #FFA500)]
           LayoutNGListMarker (anonymous) at (-18,0) size 10x20
@@ -43,11 +43,11 @@ layer at (0,0) size 800x308
           LayoutNGListMarker (anonymous) at (-18,0) size 10x20
             LayoutText (anonymous) at (0,0) size 10x19
               text run at (0,0) width 10: "\x{2022} "
-          LayoutText {#text} at (3,0) size 703x139
+          LayoutText {#text} at (3,0) size 704x139
             text run at (3,0) width 703: "Yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow"
             text run at (3,20) width 701: "yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow"
             text run at (3,40) width 701: "yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow"
             text run at (3,60) width 701: "yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow"
             text run at (3,80) width 701: "yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow"
             text run at (3,100) width 701: "yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow"
-            text run at (3,120) width 703: "yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow."
+            text run at (3,120) width 704: "yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow yellow."

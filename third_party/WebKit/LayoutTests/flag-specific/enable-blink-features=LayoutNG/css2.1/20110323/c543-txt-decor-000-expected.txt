@@ -13,8 +13,8 @@ layer at (0,0) size 800x454
         LayoutText {#text} at (0,0) size 232x19
           text run at (0,0) width 232: "This sentence should be stricken out."
       LayoutNGBlockFlow {P} at (0,108) size 784x20 [color=#000080]
-        LayoutText {#text} at (0,0) size 369x19
-          text run at (0,0) width 369: "This sentence should be blinking (if the UA supports that)."
+        LayoutText {#text} at (0,0) size 368x19
+          text run at (0,0) width 368: "This sentence should be blinking (if the UA supports that)."
       LayoutNGBlockFlow {P} at (0,144) size 784x20 [color=#000080]
         LayoutText {#text} at (0,0) size 227x19
           text run at (0,0) width 227: "The sentence should be underlined. "

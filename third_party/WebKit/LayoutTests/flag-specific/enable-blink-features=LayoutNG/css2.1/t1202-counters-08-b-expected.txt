@@ -1,4 +1,4 @@
-layer at (0,0) size 800x600 scrollWidth 954
+layer at (0,0) size 800x600 scrollWidth 953
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x100
   LayoutNGBlockFlow {HTML} at (0,0) size 800x100
@@ -85,41 +85,41 @@ layer at (0,0) size 800x100
               text run at (349,0) width 48: "I.XLIX"
         LayoutText {#text} at (397,0) size 4x19
           text run at (397,0) width 4: " "
-        LayoutInline {SPAN} at (0,0) size 19x19
-          LayoutInline {<pseudo:before>} at (0,0) size 19x19
-            LayoutCounter (anonymous) at (401,0) size 19x19
-              text run at (401,0) width 19: "I.L"
-        LayoutText {#text} at (420,0) size 4x19
-          text run at (420,0) width 4: " "
+        LayoutInline {SPAN} at (0,0) size 18x19
+          LayoutInline {<pseudo:before>} at (0,0) size 18x19
+            LayoutCounter (anonymous) at (401,0) size 18x19
+              text run at (401,0) width 18: "I.L"
+        LayoutText {#text} at (419,0) size 4x19
+          text run at (419,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 105x19
           LayoutInline {<pseudo:before>} at (0,0) size 105x19
-            LayoutCounter (anonymous) at (424,0) size 105x19
-              text run at (424,0) width 105: "I.CCCLXXXIX"
-        LayoutText {#text} at (529,0) size 4x19
-          text run at (529,0) width 4: " "
+            LayoutCounter (anonymous) at (423,0) size 105x19
+              text run at (423,0) width 105: "I.CCCLXXXIX"
+        LayoutText {#text} at (528,0) size 4x19
+          text run at (528,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 65x19
           LayoutInline {<pseudo:before>} at (0,0) size 65x19
-            LayoutCounter (anonymous) at (533,0) size 65x19
-              text run at (533,0) width 65: "I.CCCXC"
-        LayoutText {#text} at (598,0) size 4x19
-          text run at (598,0) width 4: " "
+            LayoutCounter (anonymous) at (532,0) size 65x19
+              text run at (532,0) width 65: "I.CCCXC"
+        LayoutText {#text} at (597,0) size 4x19
+          text run at (597,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 137x19
           LayoutInline {<pseudo:before>} at (0,0) size 137x19
-            LayoutCounter (anonymous) at (602,0) size 137x19
-              text run at (602,0) width 137: "I.MMMCDLXXXIX"
-        LayoutText {#text} at (739,0) size 4x19
-          text run at (739,0) width 4: " "
+            LayoutCounter (anonymous) at (601,0) size 137x19
+              text run at (601,0) width 137: "I.MMMCDLXXXIX"
+        LayoutText {#text} at (738,0) size 4x19
+          text run at (738,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 97x19
           LayoutInline {<pseudo:before>} at (0,0) size 97x19
-            LayoutCounter (anonymous) at (743,0) size 97x19
-              text run at (743,0) width 97: "I.MMMCDXC"
-        LayoutText {#text} at (840,0) size 4x19
-          text run at (840,0) width 4: " "
+            LayoutCounter (anonymous) at (742,0) size 97x19
+              text run at (742,0) width 97: "I.MMMCDXC"
+        LayoutText {#text} at (839,0) size 4x19
+          text run at (839,0) width 4: " "
         LayoutInline {SPAN} at (0,0) size 102x19
           LayoutInline {<pseudo:before>} at (0,0) size 102x19
-            LayoutCounter (anonymous) at (844,0) size 102x19
-              text run at (844,0) width 102: "I.MMMCDXCI"
+            LayoutCounter (anonymous) at (843,0) size 102x19
+              text run at (843,0) width 102: "I.MMMCDXCI"
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {DIV} at (0,56) size 784x20
-        LayoutText {#text} at (0,0) size 946x19
-          text run at (0,0) width 946: "I.I I.II I.III I.IV I.V I.VI I.VII I.VIII I.IX I.X I.XI I.XII I.XLIX I.L I.CCCLXXXIX I.CCCXC I.MMMCDLXXXIX I.MMMCDXC I.MMMCDXCI"
+        LayoutText {#text} at (0,0) size 945x19
+          text run at (0,0) width 945: "I.I I.II I.III I.IV I.V I.VI I.VII I.VIII I.IX I.X I.XI I.XII I.XLIX I.L I.CCCLXXXIX I.CCCXC I.MMMCDLXXXIX I.MMMCDXC I.MMMCDXCI"
