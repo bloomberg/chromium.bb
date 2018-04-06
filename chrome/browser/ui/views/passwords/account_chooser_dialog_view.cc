@@ -46,12 +46,6 @@ views::StyledLabel::RangeStyleInfo GetLinkStyle() {
   return result;
 }
 
-Profile* GetProfileFromWebContents(content::WebContents* web_contents) {
-  if (!web_contents)
-    return nullptr;
-  return Profile::FromBrowserContext(web_contents->GetBrowserContext());
-}
-
 // Creates a list view of credentials in |forms|.
 views::ScrollView* CreateCredentialsView(
     const PasswordDialogController::FormsVector& forms,
@@ -192,12 +186,12 @@ void AccountChooserDialogView::ButtonPressed(views::Button* sender,
 
 void AccountChooserDialogView::InitWindow() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  AddChildView(
-      CreateCredentialsView(controller_->GetLocalForms(), this,
-                            content::BrowserContext::GetDefaultStoragePartition(
-                                GetProfileFromWebContents(web_contents_))
-                                ->GetURLLoaderFactoryForBrowserProcess()
-                                .get()));
+  AddChildView(CreateCredentialsView(
+      controller_->GetLocalForms(), this,
+      content::BrowserContext::GetDefaultStoragePartition(
+          Profile::FromBrowserContext(web_contents_->GetBrowserContext()))
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get()));
 }
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
