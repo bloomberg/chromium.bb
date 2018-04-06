@@ -88,7 +88,7 @@ void WindowedAnalyzer::AddSample(uint32_t value,
   }
 }
 
-FrameRegionResult WindowedAnalyzer::WorstMean() const {
+FrameRegionResult WindowedAnalyzer::ComputeWorstMean() const {
   FrameRegionResult result;
   if (results_) {
     result = results_->mean;
@@ -99,7 +99,7 @@ FrameRegionResult WindowedAnalyzer::WorstMean() const {
   return result;
 }
 
-FrameRegionResult WindowedAnalyzer::WorstRMS() const {
+FrameRegionResult WindowedAnalyzer::ComputeWorstRMS() const {
   FrameRegionResult result;
   if (results_) {
     result = results_->square;
@@ -110,7 +110,7 @@ FrameRegionResult WindowedAnalyzer::WorstRMS() const {
   return result;
 }
 
-FrameRegionResult WindowedAnalyzer::WorstSMR() const {
+FrameRegionResult WindowedAnalyzer::ComputeWorstSMR() const {
   FrameRegionResult result;
   if (results_) {
     result = results_->root;
@@ -126,17 +126,17 @@ void WindowedAnalyzer::AsValueInto(
     base::trace_event::TracedValue* state) const {
   FrameRegionResult region;
 
-  region = WorstMean();
+  region = ComputeWorstMean();
   state->BeginDictionary("worst_mean");
   region.AsValueInto(state);
   state->EndDictionary();
 
-  region = WorstSMR();
+  region = ComputeWorstSMR();
   state->BeginDictionary("worst_smr");
   region.AsValueInto(state);
   state->EndDictionary();
 
-  region = WorstRMS();
+  region = ComputeWorstRMS();
   state->BeginDictionary("worst_rms");
   region.AsValueInto(state);
   state->EndDictionary();

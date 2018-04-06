@@ -99,9 +99,9 @@ class WindowedAnalyzer {
                  const Accumulator96b& weighted_square);
 
   // Returns the worst regions encountered so far.
-  FrameRegionResult WorstMean() const;
-  FrameRegionResult WorstRMS() const;
-  FrameRegionResult WorstSMR() const;
+  FrameRegionResult ComputeWorstMean() const;
+  FrameRegionResult ComputeWorstRMS() const;
+  FrameRegionResult ComputeWorstSMR() const;
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 

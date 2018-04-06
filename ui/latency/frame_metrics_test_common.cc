@@ -75,7 +75,7 @@ void TestHistogram::AddSample(uint32_t value, uint32_t weight) {
   added_samples_.push_back({value, weight});
 }
 
-PercentileResults TestHistogram::CalculatePercentiles() const {
+PercentileResults TestHistogram::ComputePercentiles() const {
   return results_;
 }
 

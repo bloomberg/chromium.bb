@@ -64,10 +64,10 @@ TEST_F(StreamAnalyzerTest, AllResultsTheSame) {
                                      expected_value, weight);
 
         // Verify values are forwarded to the WindowedAnalyzer.
-        EXPECT_EQ(expected_value, analyzer_->window().WorstMean().value);
-        EXPECT_EQ(expected_value, analyzer_->window().WorstRMS().value);
-        EXPECT_NEAR_SMR(expected_value, analyzer_->window().WorstSMR().value,
-                        weight);
+        EXPECT_EQ(expected_value, analyzer_->window().ComputeWorstMean().value);
+        EXPECT_EQ(expected_value, analyzer_->window().ComputeWorstRMS().value);
+        EXPECT_NEAR_SMR(expected_value,
+                        analyzer_->window().ComputeWorstSMR().value, weight);
       }
     }
   }
@@ -90,10 +90,10 @@ TEST_F(StreamAnalyzerTest, AllResultsTheSame) {
                                    expected_value, weight);
 
       // Verify values are forwarded to the WindowedAnalyzer.
-      EXPECT_EQ(expected_value, analyzer_->window().WorstMean().value);
-      EXPECT_EQ(expected_value, analyzer_->window().WorstRMS().value);
-      EXPECT_NEAR_SMR(expected_value, analyzer_->window().WorstSMR().value,
-                      weight);
+      EXPECT_EQ(expected_value, analyzer_->window().ComputeWorstMean().value);
+      EXPECT_EQ(expected_value, analyzer_->window().ComputeWorstRMS().value);
+      EXPECT_NEAR_SMR(expected_value,
+                      analyzer_->window().ComputeWorstSMR().value, weight);
     }
   }
 }
