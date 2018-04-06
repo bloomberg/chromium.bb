@@ -140,7 +140,10 @@ bool IsTabDiscarded(content::WebContents* web_contents) {
 class TabManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   TabManagerTest()
-      : scoped_set_tick_clock_for_testing_(task_runner_->GetMockTickClock()) {
+      : scoped_context_(
+            std::make_unique<base::TestMockTimeTaskRunner::ScopedContext>(
+                task_runner_)),
+        scoped_set_tick_clock_for_testing_(task_runner_->GetMockTickClock()) {
     base::MessageLoop::current()->SetTaskRunner(task_runner_);
   }
 
@@ -174,7 +177,8 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
     contents2_.reset();
     contents3_.reset();
 
-    base::MessageLoop::current()->SetTaskRunner(original_task_runner_);
+    task_runner_->RunUntilIdle();
+    scoped_context_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -243,10 +247,6 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
     }
   }
 
- private:
-  scoped_refptr<base::SingleThreadTaskRunner> original_task_runner_ =
-      base::ThreadTaskRunnerHandle::Get();
-
  protected:
   std::unique_ptr<NavigationHandle> CreateTabAndNavigation(const char* url) {
     content::WebContents* web_contents = CreateTestWebContents();
@@ -258,6 +258,7 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
   TabManager* tab_manager_ = nullptr;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_ =
       base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  std::unique_ptr<base::TestMockTimeTaskRunner::ScopedContext> scoped_context_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
   std::unique_ptr<BackgroundTabNavigationThrottle> throttle1_;
   std::unique_ptr<BackgroundTabNavigationThrottle> throttle2_;

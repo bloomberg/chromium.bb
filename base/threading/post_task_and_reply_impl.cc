@@ -10,7 +10,6 @@
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
@@ -18,56 +17,87 @@ namespace base {
 
 namespace {
 
-// This relay class remembers the sequence that it was created on, and ensures
-// that both the |task| and |reply| Closures are deleted on this same sequence.
-// Also, |task| is guaranteed to be deleted before |reply| is run or deleted.
-//
-// If RunReplyAndSelfDestruct() doesn't run because the originating execution
-// context is no longer available, then the |task| and |reply| Closures are
-// leaked. Leaking is considered preferable to having a thread-safetey
-// violations caused by invoking the Closure destructor on the wrong sequence.
 class PostTaskAndReplyRelay {
  public:
   PostTaskAndReplyRelay(const Location& from_here,
                         OnceClosure task,
                         OnceClosure reply)
-      : sequence_checker_(),
-        from_here_(from_here),
-        origin_task_runner_(SequencedTaskRunnerHandle::Get()),
-        reply_(std::move(reply)),
-        task_(std::move(task)) {}
+      : from_here_(from_here),
+        task_(std::move(task)),
+        reply_(std::move(reply)) {}
+  PostTaskAndReplyRelay(PostTaskAndReplyRelay&&) = default;
 
   ~PostTaskAndReplyRelay() {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    // This destructor can run:
+    // 1) On origin sequence, when:
+    //    1a) Posting |task_| fails.
+    //    1b) |reply_| is cancelled before running.
+    //    1c) |reply_| completes.
+    // 2) On destination sequence, when:
+    //    2a) |task_| is cancelled before running.
+    //    2b) Posting |reply_| fails.
+
+    // |task_| can still be alive if the destination task runner was no longer
+    // accepting tasks or if it was cancelled before being run. Destroy it ahead
+    // of |reply_| to keep happens-before expectations sane. |task_| can be
+    // safely destroyed on origin or destination sequence per being constructed
+    // on the former and designed to be ran on the latter.
+    DCHECK(task_.is_null() || !reply_.is_null());
+    task_.Reset();
+
+    if (reply_) {
+      if (reply_task_runner_->RunsTasksInCurrentSequence()) {
+        // Case 1a) or 1b).
+        reply_.Reset();
+      } else {
+        // Case 2a) or 2b).
+        // Destroy |reply_| asynchronously on |reply_task_runner_| since it can
+        // rightfully be affine to it. As always, DeleteSoon() might leak its
+        // argument if the target execution environment is shutdown (e.g.
+        // MessageLoop deleted, TaskScheduler shutdown).
+        auto reply_to_delete = std::make_unique<OnceClosure>(std::move(reply_));
+        ANNOTATE_LEAKING_OBJECT_PTR(reply_to_delete.get());
+        reply_task_runner_->DeleteSoon(from_here_, std::move(reply_to_delete));
+      }
+    }
   }
 
-  void RunTaskAndPostReply() {
-    std::move(task_).Run();
-    origin_task_runner_->PostTask(
-        from_here_, BindOnce(&PostTaskAndReplyRelay::RunReplyAndSelfDestruct,
-                             base::Unretained(this)));
+  // No assignment operator because of const members.
+  PostTaskAndReplyRelay& operator=(PostTaskAndReplyRelay&&) = delete;
+
+  // Static function is used because it is not possible to bind a method call to
+  // a non-pointer type.
+  static void RunTaskAndPostReply(PostTaskAndReplyRelay relay) {
+    DCHECK(relay.task_);
+    std::move(relay.task_).Run();
+
+    // Keep a reference to the reply TaskRunner for the PostTask() call before
+    // |relay| is moved into a callback.
+    scoped_refptr<SequencedTaskRunner> reply_task_runner =
+        relay.reply_task_runner_;
+
+    reply_task_runner->PostTask(
+        relay.from_here_,
+        BindOnce(&PostTaskAndReplyRelay::RunReply, std::move(relay)));
   }
 
  private:
-  void RunReplyAndSelfDestruct() {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
-
-    // Ensure |task_| has already been released before |reply_| to ensure that
-    // no one accidentally depends on |task_| keeping one of its arguments alive
-    // while |reply_| is executing.
-    DCHECK(!task_);
-
-    std::move(reply_).Run();
-
-    // Cue mission impossible theme.
-    delete this;
+  // Static function is used because it is not possible to bind a method call to
+  // a non-pointer type.
+  static void RunReply(PostTaskAndReplyRelay relay) {
+    DCHECK(!relay.task_);
+    DCHECK(relay.reply_);
+    // Case 1c).
+    std::move(relay.reply_).Run();
   }
 
-  const SequenceChecker sequence_checker_;
   const Location from_here_;
-  const scoped_refptr<SequencedTaskRunner> origin_task_runner_;
-  OnceClosure reply_;
   OnceClosure task_;
+  OnceClosure reply_;
+  const scoped_refptr<SequencedTaskRunner> reply_task_runner_ =
+      SequencedTaskRunnerHandle::Get();
+
+  DISALLOW_COPY_AND_ASSIGN(PostTaskAndReplyRelay);
 };
 
 }  // namespace
@@ -77,23 +107,13 @@ namespace internal {
 bool PostTaskAndReplyImpl::PostTaskAndReply(const Location& from_here,
                                             OnceClosure task,
                                             OnceClosure reply) {
-  DCHECK(!task.is_null()) << from_here.ToString();
-  DCHECK(!reply.is_null()) << from_here.ToString();
-  PostTaskAndReplyRelay* relay =
-      new PostTaskAndReplyRelay(from_here, std::move(task), std::move(reply));
-  // PostTaskAndReplyRelay self-destructs after executing |reply|. On the flip
-  // side though, it is intentionally leaked if the |task| doesn't complete
-  // before the origin sequence stops executing tasks. Annotate |relay| as leaky
-  // to avoid having to suppress every callsite which happens to flakily trigger
-  // this race.
-  ANNOTATE_LEAKING_OBJECT_PTR(relay);
-  if (!PostTask(from_here, BindOnce(&PostTaskAndReplyRelay::RunTaskAndPostReply,
-                                    Unretained(relay)))) {
-    delete relay;
-    return false;
-  }
+  DCHECK(task) << from_here.ToString();
+  DCHECK(reply) << from_here.ToString();
 
-  return true;
+  return PostTask(from_here,
+                  BindOnce(&PostTaskAndReplyRelay::RunTaskAndPostReply,
+                           PostTaskAndReplyRelay(from_here, std::move(task),
+                                                 std::move(reply))));
 }
 
 }  // namespace internal
