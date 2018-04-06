@@ -127,6 +127,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionTest, ResetStateForRestart);
+  FRIEND_TEST_ALL_PREFIXES(HttpNetworkTransactionTest,
+                           CreateWebSocketHandshakeStream);
   FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest, WindowUpdateReceived);
   FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest, WindowUpdateSent);
   FRIEND_TEST_ALL_PREFIXES(SpdyNetworkTransactionTest, WindowUpdateOverflow);

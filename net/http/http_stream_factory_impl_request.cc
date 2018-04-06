@@ -110,4 +110,10 @@ void HttpStreamFactoryImpl::Request::AddConnectionAttempts(
     connection_attempts_.push_back(attempt);
 }
 
+WebSocketHandshakeStreamBase::CreateHelper*
+HttpStreamFactoryImpl::Request::websocket_handshake_stream_create_helper()
+    const {
+  return websocket_handshake_stream_create_helper_;
+}
+
 }  // namespace net

@@ -593,6 +593,43 @@ TEST_F(SpdyNetworkTransactionTest, Get) {
   EXPECT_EQ("hello!", out.response_data);
 }
 
+TEST_F(SpdyNetworkTransactionTest, SetPriority) {
+  for (bool set_priority_before_starting_transaction : {true, false}) {
+    SpdyTestUtil spdy_test_util;
+    SpdySerializedFrame req(
+        spdy_test_util.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
+    MockWrite writes[] = {CreateMockWrite(req, 0)};
+
+    SpdySerializedFrame resp(
+        spdy_test_util.ConstructSpdyGetReply(nullptr, 0, 1));
+    SpdySerializedFrame body(spdy_test_util.ConstructSpdyDataFrame(1, true));
+    MockRead reads[] = {CreateMockRead(resp, 1), CreateMockRead(body, 2),
+                        MockRead(ASYNC, 0, 3)};
+
+    SequencedSocketData data(reads, arraysize(reads), writes,
+                             arraysize(writes));
+    NormalSpdyTransactionHelper helper(request_, HIGHEST, log_, nullptr);
+    helper.RunPreTestSetup();
+    helper.AddData(&data);
+
+    if (set_priority_before_starting_transaction) {
+      helper.trans()->SetPriority(LOWEST);
+      EXPECT_TRUE(helper.StartDefaultTest());
+    } else {
+      EXPECT_TRUE(helper.StartDefaultTest());
+      helper.trans()->SetPriority(LOWEST);
+    }
+
+    helper.FinishDefaultTest();
+    helper.VerifyDataConsumed();
+
+    TransactionHelperResult out = helper.output();
+    EXPECT_THAT(out.rv, IsOk());
+    EXPECT_EQ("HTTP/1.1 200", out.status_line);
+    EXPECT_EQ("hello!", out.response_data);
+  }
+}
+
 TEST_F(SpdyNetworkTransactionTest, GetAtEachPriority) {
   for (RequestPriority p = MINIMUM_PRIORITY; p <= MAXIMUM_PRIORITY;
        p = RequestPriority(p + 1)) {
