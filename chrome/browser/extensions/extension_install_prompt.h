@@ -260,15 +260,6 @@ class ExtensionInstallPrompt {
   // Callback to show the default extension install dialog.
   // The implementations of this function are platform-specific.
   static ShowDialogCallback GetDefaultShowDialogCallback();
-#if defined(OS_MACOSX)
-  // Temporary shim for Polychrome. See bottom of first comment in
-  // https://crbug.com/804950 for details
-  static ShowDialogCallback GetDefaultShowDialogCallbackCocoa();
-#endif
-
-  // Callback to show the Views extension install dialog. Don't use this; it is
-  // a temporary hack for MacViews.
-  static ShowDialogCallback GetViewsShowDialogCallback();
 
   // Returns the appropriate prompt type for the given |extension|.
   // TODO(devlin): This method is yucky - callers probably only care about one

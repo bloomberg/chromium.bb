@@ -635,6 +635,6 @@ void ExpandableContainerView::ToggleDetailLevel() {
 
 // static
 ExtensionInstallPrompt::ShowDialogCallback
-ExtensionInstallPrompt::GetViewsShowDialogCallback() {
+ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
   return base::Bind(&ShowExtensionInstallDialogImpl);
 }
