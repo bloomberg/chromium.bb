@@ -42,6 +42,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.net.NetworkChangeNotifier;
 
 /**
@@ -170,6 +171,9 @@ public class WebViewChromiumAwInit {
                 });
 
         mStarted = true;
+
+        RecordHistogram.recordSparseSlowlyHistogram(
+                "Android.WebView.TargetSdkVersion", context.getApplicationInfo().targetSdkVersion);
 
         // Initialize thread-unsafe singletons.
         AwBrowserContext awBrowserContext = getBrowserContextOnUiThread();
