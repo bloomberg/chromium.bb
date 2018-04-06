@@ -852,7 +852,6 @@ ExtensionFunction::ResponseAction EasyUnlockPrivateGetUserInfoFunction::Run() {
         cryptauth::CryptAuthDeviceIdProviderImpl::GetInstance()->GetDeviceId(),
         account_id.GetUserEmail());
 
-    user.ble_discovery_enabled = true;
     users.push_back(std::move(user));
   }
   return RespondNow(
