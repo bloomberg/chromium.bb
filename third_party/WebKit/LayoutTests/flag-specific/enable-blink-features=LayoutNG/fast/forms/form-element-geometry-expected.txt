@@ -4,8 +4,8 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
   LayoutNGBlockFlow {HTML} at (0,0) size 800x652.88
     LayoutNGBlockFlow {BODY} at (8,8) size 784x636.88
       LayoutNGBlockFlow {H1} at (0,0) size 784x37
-        LayoutText {#text} at (0,0) size 419x36
-          text run at (0,0) width 419: "Form Element Geometry Tests"
+        LayoutText {#text} at (0,0) size 418x36
+          text run at (0,0) width 418: "Form Element Geometry Tests"
       LayoutNGBlockFlow {P} at (0,58.44) size 784x20
         LayoutText {#text} at (0,0) size 540x19
           text run at (0,0) width 540: "These tests help us tune the widget classes in KWQ to have all the right fudge factors."
@@ -101,8 +101,8 @@ layer at (0,0) size 800x653 backgroundClip at (0,0) size 800x600 clip at (0,0) s
             LayoutNGTableCell {TD} at (403,2) size 185x42 [r=0 c=3 rs=1 cs=1]
               LayoutNGBlockFlow {DIV} at (1,1) size 183x40 [border: (2px solid #0000FF)]
       LayoutNGBlockFlow {H2} at (0,341.16) size 784x27
-        LayoutText {#text} at (0,0) size 198x26
-          text run at (0,0) width 198: "Baseline Alignment"
+        LayoutText {#text} at (0,0) size 199x26
+          text run at (0,0) width 199: "Baseline Alignment"
       LayoutNGBlockFlow {DIV} at (0,388.06) size 784x28
         LayoutInline {FONT} at (0,0) size 205x27
           LayoutText {#text} at (0,0) size 43x27
