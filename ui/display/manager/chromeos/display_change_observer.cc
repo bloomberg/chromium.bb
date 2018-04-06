@@ -317,10 +317,11 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
   if (snapshot->product_code() != DisplaySnapshot::kInvalidProductCode) {
     uint16_t manufacturer_id = 0;
     uint16_t product_id = 0;
-    SplitProductCodeInManufacturerIdAndProductId(snapshot->product_code(),
-                                                 &manufacturer_id, &product_id);
-    new_info.set_manufacturer_id(ManufacturerIdToString(manufacturer_id));
-    new_info.set_product_id(ProductIdToString(product_id));
+    EdidParser::SplitProductCodeInManufacturerIdAndProductId(
+        snapshot->product_code(), &manufacturer_id, &product_id);
+    new_info.set_manufacturer_id(
+        EdidParser::ManufacturerIdToString(manufacturer_id));
+    new_info.set_product_id(EdidParser::ProductIdToString(product_id));
   }
   new_info.set_year_of_manufacture(snapshot->year_of_manufacture());
 

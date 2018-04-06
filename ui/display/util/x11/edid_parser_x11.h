@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/util/display_util_export.h"
+#include "ui/display/util/edid_parser.h"
 
 typedef unsigned long XID;
 typedef XID RROutput;
@@ -31,22 +32,11 @@ class DISPLAY_UTIL_EXPORT EDIDParserX11 {
   // Returns true if successful, false otherwise.
   bool GetDisplayId(uint8_t index, int64_t* out_display_id) const;
 
-  // Generate the human readable string from EDID obtained from |output|.
-  // Returns an empty string upon error.
-  std::string GetDisplayName() const;
-
-  // Gets the overscan flag and stores to |out_flag|. Returns true if the flag
-  // is found. Otherwise returns false and doesn't touch |out_flag|. The output
-  // will produce overscan if |out_flag| is set to true, but the output may
-  // still produce overscan even though it returns true and |out_flag| is set to
-  // false.
-  bool GetOutputOverscanFlag(bool* out_flag) const;
-
   XID output_id() const { return output_id_; }
   const std::vector<uint8_t>& edid() const { return edid_; }
 
  private:
-  XID output_id_;
+  const XID output_id_;
 
   // This will be an empty vector upon failure to get the EDID from the
   // |output_id_|.
