@@ -47,10 +47,25 @@ namespace blink {
 
 MediaControlOverlayPlayButtonElement::AnimatedArrow::AnimatedArrow(
     const AtomicString& id,
-    ContainerNode& parent)
-    : HTMLDivElement(parent.GetDocument()) {
+    Document& document)
+    : HTMLDivElement(document) {
   setAttribute("id", id);
-  parent.AppendChild(this);
+}
+
+void MediaControlOverlayPlayButtonElement::AnimatedArrow::HideInternal() {
+  DCHECK(!hidden_);
+  svg_container_->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
+  hidden_ = true;
+}
+
+void MediaControlOverlayPlayButtonElement::AnimatedArrow::ShowInternal() {
+  DCHECK(hidden_);
+  hidden_ = false;
+
+  if (svg_container_) {
+    svg_container_->RemoveInlineStyleProperty(CSSPropertyDisplay);
+    return;
+  }
 
   SetInnerHTMLFromString(MediaControlsResourceLoader::GetJumpSVGImage());
 
@@ -58,24 +73,19 @@ MediaControlOverlayPlayButtonElement::AnimatedArrow::AnimatedArrow(
   svg_container_ = getElementById("jump");
 
   event_listener_ = new MediaControlAnimationEventListener(this);
-  svg_container_->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
 }
 
 void MediaControlOverlayPlayButtonElement::AnimatedArrow::
     OnAnimationIteration() {
   counter_--;
 
-  if (counter_ == 0) {
-    svg_container_->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
-    hidden_ = true;
-  }
+  if (counter_ == 0)
+    HideInternal();
 }
 
 void MediaControlOverlayPlayButtonElement::AnimatedArrow::Show() {
-  if (hidden_) {
-    svg_container_->RemoveInlineStyleProperty(CSSPropertyDisplay);
-    hidden_ = false;
-  }
+  if (hidden_)
+    ShowInternal();
 
   counter_++;
 }
@@ -116,24 +126,9 @@ MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
   SetShadowPseudoId(AtomicString("-webkit-media-controls-overlay-play-button"));
 
   if (MediaControlsImpl::IsModern()) {
-    ShadowRoot* shadow_root = GetShadowRoot();
-
-    // This stylesheet element and will contain rules that are specific to the
-    // loading panel. The shadow DOM protects these rules from the parent DOM
-    // from bleeding across the shadow DOM boundary.
-    auto* style = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
-    style->setTextContent(
-        MediaControlsResourceLoader::GetOverlayPlayStyleSheet());
-    shadow_root->AppendChild(style);
-
-    left_jump_arrow_ = new MediaControlOverlayPlayButtonElement::AnimatedArrow(
-        "left-arrow", *shadow_root);
-
     internal_button_ = MediaControlElementsHelper::CreateDiv(
-        "-internal-media-controls-overlay-play-button-internal", shadow_root);
-
-    right_jump_arrow_ = new MediaControlOverlayPlayButtonElement::AnimatedArrow(
-        "right-arrow", *shadow_root);
+        "-internal-media-controls-overlay-play-button-internal",
+        GetShadowRoot());
   }
 }
 
@@ -172,6 +167,31 @@ void MediaControlOverlayPlayButtonElement::MaybePlayPause() {
 }
 
 void MediaControlOverlayPlayButtonElement::MaybeJump(int seconds) {
+  // Load the arrow icons and associate CSS the first time we jump.
+  if (!left_jump_arrow_) {
+    DCHECK(!right_jump_arrow_);
+    ShadowRoot* shadow_root = GetShadowRoot();
+
+    // This stylesheet element and will contain rules that are specific to the
+    // jump arrows. The shadow DOM protects these rules from the parent DOM
+    // from bleeding across the shadow DOM boundary.
+    auto* style = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
+    style->setTextContent(
+        MediaControlsResourceLoader::GetOverlayPlayStyleSheet());
+    shadow_root->AppendChild(style);
+
+    // Insert the left jump arrow to the left of the play button.
+    left_jump_arrow_ = new MediaControlOverlayPlayButtonElement::AnimatedArrow(
+        "left-arrow", GetDocument());
+    shadow_root->InsertBefore(left_jump_arrow_, shadow_root->firstChild());
+
+    // Insert the right jump arrow to the right of the play button.
+    right_jump_arrow_ = new MediaControlOverlayPlayButtonElement::AnimatedArrow(
+        "right-arrow", GetDocument());
+    shadow_root->AppendChild(right_jump_arrow_);
+  }
+
+  DCHECK(left_jump_arrow_ && right_jump_arrow_);
   double new_time = std::max(0.0, MediaElement().currentTime() + seconds);
   new_time = std::min(new_time, MediaElement().duration());
   MediaElement().setCurrentTime(new_time);

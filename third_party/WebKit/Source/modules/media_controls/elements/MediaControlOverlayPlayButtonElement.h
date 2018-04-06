@@ -17,7 +17,6 @@ class AtomicString;
 
 namespace blink {
 
-class ContainerNode;
 class Event;
 class MediaControlsImpl;
 
@@ -49,7 +48,7 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
     USING_GARBAGE_COLLECTED_MIXIN(AnimatedArrow);
 
    public:
-    AnimatedArrow(const AtomicString& id, ContainerNode& parent);
+    AnimatedArrow(const AtomicString& id, Document& document);
 
     // MediaControlAnimationEventListener::Observer overrides
     void OnAnimationIteration() override;
@@ -64,6 +63,9 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
     void Trace(Visitor*);
 
    private:
+    void HideInternal();
+    void ShowInternal();
+
     int counter_ = 0;
     bool hidden_ = true;
 

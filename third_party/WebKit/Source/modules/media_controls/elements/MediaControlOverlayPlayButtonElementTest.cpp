@@ -18,29 +18,40 @@ class MediaControlOverlayPlayButtonElementTest : public PageTestBase {
     // Create page and instance of AnimatedArrow to run tests on.
     PageTestBase::SetUp();
     arrow_element_ = new MediaControlOverlayPlayButtonElement::AnimatedArrow(
-        "test", *GetDocument().body());
+        "test", GetDocument());
+    GetDocument().body()->AppendChild(arrow_element_);
   }
 
  protected:
-  void ExpectIsHidden() { EXPECT_TRUE(SVGElementHasDisplayValue()); }
+  void ExpectNotPresent() { EXPECT_FALSE(SVGElementIsPresent()); }
 
-  void ExpectIsShown() { EXPECT_FALSE(SVGElementHasDisplayValue()); }
+  void ExpectPresentAndShown() {
+    EXPECT_TRUE(SVGElementIsPresent());
+    EXPECT_FALSE(SVGElementHasDisplayValue());
+  }
+
+  void ExpectPresentAndHidden() {
+    EXPECT_TRUE(SVGElementIsPresent());
+    EXPECT_TRUE(SVGElementHasDisplayValue());
+  }
 
   void SimulateShow() { arrow_element_->Show(); }
 
   void SimulateAnimationIteration() {
     Event* event = Event::Create(EventTypeNames::animationiteration);
-    GetElementById("arrow-3").DispatchEvent(event);
+    GetElementById("arrow-3")->DispatchEvent(event);
   }
 
  private:
   bool SVGElementHasDisplayValue() {
-    return GetElementById("jump").InlineStyle()->HasProperty(
+    return GetElementById("jump")->InlineStyle()->HasProperty(
         CSSPropertyDisplay);
   }
 
-  Element& GetElementById(const AtomicString& id) {
-    return *GetDocument().body()->getElementById(id);
+  bool SVGElementIsPresent() { return GetElementById("jump"); }
+
+  Element* GetElementById(const AtomicString& id) {
+    return GetDocument().body()->getElementById(id);
   }
 
   Persistent<MediaControlOverlayPlayButtonElement::AnimatedArrow>
@@ -48,24 +59,24 @@ class MediaControlOverlayPlayButtonElementTest : public PageTestBase {
 };
 
 TEST_F(MediaControlOverlayPlayButtonElementTest, ShowIncrementsCounter) {
-  ExpectIsHidden();
+  ExpectNotPresent();
 
   // Start a new show.
   SimulateShow();
-  ExpectIsShown();
+  ExpectPresentAndShown();
 
   // Increment the counter and finish the first show.
   SimulateShow();
   SimulateAnimationIteration();
-  ExpectIsShown();
+  ExpectPresentAndShown();
 
   // Finish the second show.
   SimulateAnimationIteration();
-  ExpectIsHidden();
+  ExpectPresentAndHidden();
 
   // Start a new show.
   SimulateShow();
-  ExpectIsShown();
+  ExpectPresentAndShown();
 }
 
 }  // namespace blink
