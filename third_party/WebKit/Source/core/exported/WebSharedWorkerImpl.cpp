@@ -76,7 +76,8 @@ namespace blink {
 WebSharedWorkerImpl::WebSharedWorkerImpl(WebSharedWorkerClient* client)
     : worker_inspector_proxy_(WorkerInspectorProxy::Create()),
       client_(client),
-      creation_address_space_(mojom::IPAddressSpace::kPublic) {
+      creation_address_space_(mojom::IPAddressSpace::kPublic),
+      weak_ptr_factory_(this) {
   DCHECK(IsMainThread());
 }
 
@@ -254,6 +255,29 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
     // |this| is deleted at this point.
     return;
   }
+
+  // S13nServiceWorker: The browser process is expected to send a
+  // SetController IPC before sending the script response, but there is no
+  // guarantee of the ordering as the messages arrive on different message
+  // pipes. Wait for the SetController IPC to be received before starting the
+  // worker; otherwise fetches from the worker might not go through the
+  // appropriate controller.
+  //
+  // (For non-S13nServiceWorker, we don't need to do this step as the controller
+  // service worker isn't used directly by the renderer, but to minimize code
+  // differences between the flags just do it anyway.)
+  client_->WaitForServiceWorkerControllerInfo(
+      shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider(),
+      WTF::Bind(&WebSharedWorkerImpl::ContinueOnScriptLoaderFinished,
+                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
+  DCHECK(IsMainThread());
+  DCHECK(main_script_loader_);
+  DCHECK(!main_script_loader_->Failed());
+  if (asked_to_terminate_)
+    return;
 
   // FIXME: this document's origin is pristine and without any extra privileges
   // (e.g. GrantUniversalAccess) that can be overriden in regular documents
