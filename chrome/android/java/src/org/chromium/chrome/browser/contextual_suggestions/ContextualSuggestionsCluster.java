@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import org.chromium.base.Callback;
@@ -17,9 +18,15 @@ import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
+import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -30,6 +37,8 @@ class ContextualSuggestionsCluster extends InnerNode {
     private final List<SnippetArticle> mSuggestions = new ArrayList<>();
 
     private SectionHeader mHeader;
+    private SuggestionsList mSuggestionsList;
+    private OfflineModelObserver mOfflineModelObserver;
 
     /** Creates a new contextual suggestions cluster with provided title. */
     ContextualSuggestionsCluster(String title) {
@@ -57,13 +66,25 @@ class ContextualSuggestionsCluster extends InnerNode {
             addChild(mHeader);
         }
 
-        SuggestionsList suggestionsList = new SuggestionsList();
-        suggestionsList.addAll(mSuggestions);
-        addChild(suggestionsList);
+        mSuggestionsList = new SuggestionsList();
+        mSuggestionsList.addAll(mSuggestions);
+        addChild(mSuggestionsList);
+
+        // Only add observer after suggestions have been added to the cluster node to avoid
+        // OfflineModelObserver requesting a null list.
+        mOfflineModelObserver = new OfflineModelObserver(
+                OfflinePageBridge.getForProfile(Profile.getLastUsedProfile().getOriginalProfile()));
+        mOfflineModelObserver.updateAllSuggestionsOfflineAvailability(false);
+    }
+
+    @Override
+    public void detach() {
+        super.detach();
+        if (mOfflineModelObserver != null) mOfflineModelObserver.onDestroy();
     }
 
     /** A tree node that holds a list of suggestions. */
-    private static class SuggestionsList extends ChildNode {
+    private static class SuggestionsList extends ChildNode implements Iterable<SnippetArticle> {
         private final List<SnippetArticle> mSuggestions = new ArrayList<>();
 
         private final SuggestionsCategoryInfo mCategoryInfo;
@@ -125,6 +146,43 @@ class ContextualSuggestionsCluster extends InnerNode {
         public void dismissItem(int position, Callback<String> itemRemovedCallback) {
             // Contextual suggestions are not dismissible.
             assert false;
+        }
+
+        @NonNull
+        @Override
+        public Iterator<SnippetArticle> iterator() {
+            return mSuggestions.iterator();
+        }
+
+        // TODO(huayinz): Look at a way to share this with SuggestionsSection.
+        void updateSuggestionOfflineId(SnippetArticle article, Long newId) {
+            int index = mSuggestions.indexOf(article);
+            // The suggestions could have been removed / replaced in the meantime.
+            if (index == -1) return;
+
+            Long oldId = article.getOfflinePageOfflineId();
+            article.setOfflinePageOfflineId(newId);
+
+            if ((oldId == null) == (newId == null)) return;
+            notifyItemChanged(index, SnippetArticleViewHolder::refreshOfflineBadgeVisibility);
+        }
+    }
+
+    /** An observer to offline changes on suggestions. */
+    private class OfflineModelObserver extends SuggestionsOfflineModelObserver<SnippetArticle> {
+        OfflineModelObserver(OfflinePageBridge bridge) {
+            super(bridge);
+        }
+
+        @Override
+        public void onSuggestionOfflineIdChanged(SnippetArticle suggestion, OfflinePageItem item) {
+            mSuggestionsList.updateSuggestionOfflineId(
+                    suggestion, item == null ? null : item.getOfflineId());
+        }
+
+        @Override
+        public Iterable<SnippetArticle> getOfflinableSuggestions() {
+            return mSuggestionsList;
         }
     }
 }
