@@ -54,9 +54,6 @@ static void dec_setup_mi(AV1_COMMON *cm) {
   cm->mi_grid_visible = cm->mi_grid_base;
   memset(cm->mi_grid_base, 0,
          cm->mi_stride * cm->mi_rows * sizeof(*cm->mi_grid_base));
-
-  memset(cm->boundary_info, 0,
-         cm->boundary_info_alloc_size * sizeof(*cm->boundary_info));
 }
 
 static int av1_dec_alloc_mi(AV1_COMMON *cm, int mi_size) {

@@ -119,34 +119,6 @@ void av1_tile_set_col(TileInfo *tile, const AV1_COMMON *cm, int col) {
   assert(tile->mi_col_end > tile->mi_col_start);
 }
 
-void av1_setup_frame_boundary_info(const AV1_COMMON *const cm) {
-  BOUNDARY_TYPE *bi = cm->boundary_info;
-  int col;
-  for (col = 0; col < cm->mi_cols; ++col) {
-    *bi |= FRAME_ABOVE_BOUNDARY;
-    bi += 1;
-  }
-
-  bi = cm->boundary_info;
-  int row;
-  for (row = 0; row < cm->mi_rows; ++row) {
-    *bi |= FRAME_LEFT_BOUNDARY;
-    bi += cm->mi_stride;
-  }
-
-  bi = cm->boundary_info + (cm->mi_rows - 1) * cm->mi_stride;
-  for (col = 0; col < cm->mi_cols; ++col) {
-    *bi |= FRAME_BOTTOM_BOUNDARY;
-    bi += 1;
-  }
-
-  bi = cm->boundary_info + cm->mi_cols - 1;
-  for (row = 0; row < cm->mi_rows; ++row) {
-    *bi |= FRAME_RIGHT_BOUNDARY;
-    bi += cm->mi_stride;
-  }
-}
-
 int get_tile_size(int mi_frame_size, int log2_tile_num, int *ntiles) {
   // Round the frame up to a whole number of max superblocks
   mi_frame_size = ALIGN_POWER_OF_TWO(mi_frame_size, MAX_MIB_SIZE_LOG2);

@@ -4289,8 +4289,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     }
 #endif
 
-    av1_setup_frame_boundary_info(cm);
-
     // If allowed, encoding tiles in parallel with one thread handling one tile.
     // TODO(geza.lore): The multi-threaded encoder is not safe with more than
     // 1 tile rows, as it uses the single above_context et al arrays from

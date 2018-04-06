@@ -204,9 +204,6 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 
       int mi_row = MI_SIZE_64X64 * fbr;
       int mi_col = MI_SIZE_64X64 * fbc;
-      int mi_idx_tl = mi_row * cm->mi_stride + mi_col;
-      int mi_idx_tr = mi_row * cm->mi_stride + (mi_col + MI_SIZE_64X64 - 1);
-      int mi_idx_bl = (mi_row + MI_SIZE_64X64 - 1) * cm->mi_stride + mi_col;
       // for the current filter block, it's top left corner mi structure (mi_tl)
       // is first accessed to check whether the top and left boundaries are
       // frame boundaries. Then bottom-left and top-right mi structures are
@@ -216,20 +213,16 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
       // Note that we can't just check the bottom-right mi structure - eg. if
       // we're at the right-hand edge of the frame but not the bottom, then
       // the bottom-right mi is NULL but the bottom-left is not.
-      BOUNDARY_TYPE *const bi_tl = cm->boundary_info + mi_idx_tl;
-      BOUNDARY_TYPE *const bi_tr = cm->boundary_info + mi_idx_tr;
-      BOUNDARY_TYPE *const bi_bl = cm->boundary_info + mi_idx_bl;
-      BOUNDARY_TYPE boundary_tl = *bi_tl;
-      frame_top = boundary_tl & FRAME_ABOVE_BOUNDARY;
-      frame_left = boundary_tl & FRAME_LEFT_BOUNDARY;
+      frame_top = (mi_row == 0) ? 1 : 0;
+      frame_left = (mi_col == 0) ? 1 : 0;
 
-      if (fbr != nvfb - 1 && bi_bl)
-        frame_bottom = *bi_bl & FRAME_BOTTOM_BOUNDARY;
+      if (fbr != nvfb - 1)
+        frame_bottom = (mi_row + MI_SIZE_64X64 == cm->mi_rows) ? 1 : 0;
       else
         frame_bottom = 1;
 
-      if (fbc != nhfb - 1 && bi_tr)
-        frame_right = *bi_tr & FRAME_RIGHT_BOUNDARY;
+      if (fbc != nhfb - 1)
+        frame_right = (mi_col + MI_SIZE_64X64 == cm->mi_cols) ? 1 : 0;
       else
         frame_right = 1;
 

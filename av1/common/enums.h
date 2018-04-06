@@ -307,13 +307,6 @@ typedef enum ATTRIBUTE_PACKED {
 
 #define IS_2D_TRANSFORM(tx_type) (tx_type < IDTX)
 
-typedef enum ATTRIBUTE_PACKED {
-  FRAME_LEFT_BOUNDARY = 1,
-  FRAME_RIGHT_BOUNDARY = 2,
-  FRAME_ABOVE_BOUNDARY = 4,
-  FRAME_BOTTOM_BOUNDARY = 8,
-} BOUNDARY_TYPE;
-
 #define EXT_TX_SIZES 4       // number of sizes that use extended transforms
 #define EXT_TX_SETS_INTER 4  // Sets of transform selections for INTER
 #define EXT_TX_SETS_INTRA 3  // Sets of transform selections for INTRA

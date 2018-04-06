@@ -38,8 +38,6 @@ void av1_tile_set_col(TileInfo *tile, const struct AV1Common *cm, int col);
 void av1_get_tile_n_bits(int mi_cols, int *min_log2_tile_cols,
                          int *max_log2_tile_cols);
 
-void av1_setup_frame_boundary_info(const struct AV1Common *const cm);
-
 // Calculate the correct tile size (width or height) for (1 << log2_tile_num)
 // tiles horizontally or vertically in the frame.
 int get_tile_size(int mi_frame_size, int log2_tile_num, int *ntiles);
