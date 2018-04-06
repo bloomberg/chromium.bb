@@ -15,6 +15,17 @@ id<GREYMatcher> TabGridOpenButton();
 // Returns the GREYMatcher for the button that closes the tab grid.
 id<GREYMatcher> TabGridDoneButton();
 
+// Returns the GREYMatcher for the button that closes all the tabs in the tab
+// grid.
+id<GREYMatcher> TabGridCloseAllButton();
+
+// Returns the GREYMatcher for the button that reverts the close all tabs action
+// in the tab grid.
+id<GREYMatcher> TabGridUndoCloseAllButton();
+
+// Returns the GREYMatcher for the regular tabs empty state view.
+id<GREYMatcher> TabGridRegularTabsEmptyStateView();
+
 // Returns the GREYMatcher for the button that creates new non incognito tabs
 // from within the tab grid.
 id<GREYMatcher> TabGridNewTabButton();
@@ -34,6 +45,13 @@ id<GREYMatcher> TabGridIncognitoTabsPanelButton();
 // Returns the GREYMatcher for the button to go to the other devices panel in
 // the tab grid.
 id<GREYMatcher> TabGridOtherDevicesPanelButton();
+
+// Returns the GREYMatcher for the cell at |index| in the tab grid.
+id<GREYMatcher> TabGridCellAtIndex(unsigned int index);
+
+// Returns the GREYMatcher for the button to close the cell at |index| in the
+// tab grid.
+id<GREYMatcher> TabGridCloseButtonForCellAtIndex(unsigned int index);
 
 }  // namespace chrome_test_util
 

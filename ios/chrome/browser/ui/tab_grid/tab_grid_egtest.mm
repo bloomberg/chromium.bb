@@ -2,59 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
-#import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-
-// Identifer for cell at given |index|.
-NSString* IdentifierForCellAtIndex(unsigned int index) {
-  return [NSString stringWithFormat:@"%@%u", kGridCellIdentifierPrefix, index];
-}
-
-// Matcher for cell at |index|.
-id<GREYMatcher> CellAtIndex(unsigned int index) {
-  return grey_allOf(grey_accessibilityID(IdentifierForCellAtIndex(index)),
-                    grey_sufficientlyVisible(), nil);
-}
-
-// Matcher for close button for cell at |index|.
-id<GREYMatcher> CloseButtonForCellAtIndex(unsigned int index) {
-  return grey_allOf(
-      grey_ancestor(grey_accessibilityID(IdentifierForCellAtIndex(index))),
-      grey_accessibilityID(kGridCellCloseButtonIdentifier),
-      grey_sufficientlyVisible(), nil);
-}
-
-// Matcher for the Done button in the tab grid.
-id<GREYMatcher> DoneButton() {
-  return grey_allOf(grey_accessibilityID(kTabGridDoneButtonIdentifier),
-                    grey_sufficientlyVisible(), nil);
-}
-
-// Matcher for the Close All button in the tab grid.
-id<GREYMatcher> CloseAllButton() {
-  return grey_allOf(grey_accessibilityID(kTabGridCloseAllButtonIdentifier),
-                    grey_sufficientlyVisible(), nil);
-}
-
-// Matcher for the regular tabs empty state view.
-id<GREYMatcher> RegularTabsEmptyStateView() {
-  return grey_allOf(
-      grey_accessibilityID(kTabGridRegularTabsEmptyStateIdentifier),
-      grey_sufficientlyVisible(), nil);
-}
-
-}  // namespace
 
 @interface TabGridTestCase : ChromeTestCase
 @end
@@ -65,14 +20,16 @@ id<GREYMatcher> RegularTabsEmptyStateView() {
 - (void)testEnteringAndLeavingTabGrid {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:DoneButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridDoneButton()]
+      performAction:grey_tap()];
 }
 
 // Tests that tapping on the first cell shows that tab.
 - (void)testTappingOnFirstCell {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:CellAtIndex(0)] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
+      performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
@@ -81,23 +38,65 @@ id<GREYMatcher> RegularTabsEmptyStateView() {
 - (void)testClosingFirstCell {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:CloseButtonForCellAtIndex(0)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          TabGridCloseButtonForCellAtIndex(0)]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:CellAtIndex(0)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
       assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:RegularTabsEmptyStateView()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          TabGridRegularTabsEmptyStateView()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Tests that tapping Close All shows no tabs, and displays the empty state.
-- (void)testShowingEmptyStateOnCloseAll {
+// Tests that tapping Close All shows no tabs, shows Undo button, and displays
+// the empty state. Then tests tapping Undo shows Close All button again.
+- (void)testCloseAllAndUndoCloseAll {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:CloseAllButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:CellAtIndex(0)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCellAtIndex(0)]
       assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:RegularTabsEmptyStateView()]
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridUndoCloseAllButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          TabGridRegularTabsEmptyStateView()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridUndoCloseAllButton()]
+      performAction:grey_tap()];
+  // TODO(crbug.com/804567) : Implement Undo Close All and replace this alert
+  // check with tabs that have been previously closed.
+  [[EarlGrey selectElementWithMatcher:grey_text(@"OK")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that the Undo button is no longer available after tapping Close All,
+// then creating a new tab, then coming back to the tab grid.
+- (void)testUndoCloseAllNotAvailableAfterNewTabCreation {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
+      performAction:grey_tap()];
+  // Undo is available after close all action.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridUndoCloseAllButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  // Create a new tab then come back to tab grid.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridNewTabButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
+      performAction:grey_tap()];
+  // Undo is no longer available.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TabGridUndoCloseAllButton()]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::TabGridCloseAllButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 

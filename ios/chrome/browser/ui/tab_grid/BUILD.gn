@@ -115,6 +115,7 @@ source_set("egtest_support") {
 
   deps = [
     ":tab_grid_ui",
+    "grid:grid_ui",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/tools_menu/public",
@@ -134,19 +135,8 @@ source_set("eg_tests") {
   ]
 
   deps = [
-    ":tab_grid_ui",
-    "grid:grid_ui",
-    "//base",
-    "//components/strings",
-    "//ios/chrome/app:app_internal",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui:ui_util",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/test/app:test_support",
+    ":egtest_support",
     "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/web:earl_grey_test_support",
-    "//ui/base",
   ]
   libs = [ "XCTest.framework" ]
 }
