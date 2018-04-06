@@ -42333,6 +42333,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="SSLVersionInterferenceDetails">
+  <obsolete>
+    Removed April 2018.
+  </obsolete>
   <int value="0" label="Other"/>
   <int value="1" label="Connection closed"/>
   <int value="2" label="Connection reset"/>

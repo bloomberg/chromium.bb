@@ -15,6 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
@@ -112,7 +113,8 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       websocket_handshake_stream_base_create_helper_(NULL),
       net_error_details_(),
       retry_attempts_(0),
-      num_restarts_(0) {}
+      num_restarts_(0),
+      ssl_version_interference_error_(OK) {}
 
 HttpNetworkTransaction::~HttpNetworkTransaction() {
   if (stream_.get()) {
@@ -844,6 +846,9 @@ int HttpNetworkTransaction::DoCreateStream() {
 }
 
 int HttpNetworkTransaction::DoCreateStreamComplete(int result) {
+  // Version interference probes should not result in success.
+  DCHECK(!server_ssl_config_.version_interference_probe || result != OK);
+
   // If |result| is ERR_HTTPS_PROXY_TUNNEL_RESPONSE, then
   // DoCreateStreamComplete is being called from OnHttpsProxyTunnelResponse,
   // which resets the stream request first. Therefore, we have to grab the
@@ -863,6 +868,41 @@ int HttpNetworkTransaction::DoCreateStreamComplete(int result) {
   } else if (result == ERR_HTTP_1_1_REQUIRED ||
              result == ERR_PROXY_HTTP_1_1_REQUIRED) {
     return HandleHttp11Required(result);
+  }
+
+  // Perform a TLS 1.3 version interference probe on various connection
+  // errors. The retry will never produce a successful connection but may map
+  // errors to ERR_SSL_VERSION_INTERFERENCE, which signals a probable
+  // version-interfering middlebox.
+  if (IsSecureRequest() && !HasExceededMaxRetries() &&
+      server_ssl_config_.version_max == SSL_PROTOCOL_VERSION_TLS1_3 &&
+      !server_ssl_config_.version_interference_probe) {
+    if (result == ERR_CONNECTION_CLOSED || result == ERR_SSL_PROTOCOL_ERROR ||
+        result == ERR_SSL_VERSION_OR_CIPHER_MISMATCH ||
+        result == ERR_CONNECTION_RESET ||
+        result == ERR_SSL_BAD_RECORD_MAC_ALERT) {
+      // Report the error code for each time a version interference probe is
+      // triggered.
+      base::UmaHistogramSparse("Net.SSLVersionInterferenceProbeTrigger",
+                               std::abs(result));
+      net_log_.AddEventWithNetErrorCode(
+          NetLogEventType::SSL_VERSION_INTERFERENCE_PROBE, result);
+
+      retry_attempts_++;
+      server_ssl_config_.version_interference_probe = true;
+      server_ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+      ssl_version_interference_error_ = result;
+      ResetConnectionAndRequestForResend();
+      return OK;
+    }
+  }
+
+  if (result == ERR_SSL_VERSION_INTERFERENCE) {
+    // Record the error code version interference was detected at.
+    DCHECK(server_ssl_config_.version_interference_probe);
+    DCHECK_NE(OK, ssl_version_interference_error_);
+    base::UmaHistogramSparse("Net.SSLVersionInterferenceError",
+                             std::abs(ssl_version_interference_error_));
   }
 
   // Handle possible client certificate errors that may have occurred if the

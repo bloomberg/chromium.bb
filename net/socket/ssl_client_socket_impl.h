@@ -89,7 +89,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
                                  TokenBindingType tb_type,
                                  std::vector<uint8_t>* out) override;
   crypto::ECPrivateKey* GetChannelIDKey() const override;
-  SSLErrorDetails GetConnectErrorDetails() const override;
 
   // SSLSocket implementation.
   int ExportKeyingMaterial(const base::StringPiece& label,
@@ -349,8 +348,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // True if there was a certificate error which should be treated as fatal,
   // and false otherwise.
   bool is_fatal_cert_error_;
-
-  SSLErrorDetails connect_error_details_;
 
   NetLogWithSource net_log_;
   base::WeakPtrFactory<SSLClientSocketImpl> weak_factory_;

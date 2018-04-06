@@ -336,6 +336,13 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // SSLClientAuthCache, rather than provided externally by the caller.
   bool server_ssl_client_cert_was_cached_;
 
+  // SSL configuration used for the server and proxy, respectively. Note
+  // |server_ssl_config_| may be updated from the HttpStreamFactory, which will
+  // be applied on retry.
+  //
+  // TODO(davidben): Mutating it is weird and relies on HttpStreamFactory
+  // modifications being idempotent. Address this as part of other work to make
+  // sense of SSLConfig (related to https://crbug.com/488043).
   SSLConfig server_ssl_config_;
   SSLConfig proxy_ssl_config_;
 
@@ -414,6 +421,10 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
 
   // Number of times the transaction was restarted via a RestartWith* call.
   size_t num_restarts_;
+
+  // The net::Error which triggered a TLS 1.3 version interference probe, or OK
+  // if none was triggered.
+  int ssl_version_interference_error_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpNetworkTransaction);
 };
