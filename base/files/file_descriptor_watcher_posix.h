@@ -79,12 +79,13 @@ class BASE_EXPORT FileDescriptorWatcher {
   FileDescriptorWatcher(MessageLoopForIO* message_loop_for_io);
   ~FileDescriptorWatcher();
 
-  // Registers |callback| to be invoked on the current sequence when |fd| is
+  // Registers |callback| to be posted on the current sequence when |fd| is
   // readable or writable without blocking. |callback| is unregistered when the
   // returned Controller is deleted (deletion must happen on the current
   // sequence). To call these methods, a FileDescriptorWatcher must have been
   // instantiated on the current thread and SequencedTaskRunnerHandle::IsSet()
-  // must return true.
+  // must return true (these conditions are met at least on all TaskScheduler
+  // threads as well as on threads backed by a MessageLoopForIO).
   static std::unique_ptr<Controller> WatchReadable(int fd,
                                                    const Closure& callback);
   static std::unique_ptr<Controller> WatchWritable(int fd,
