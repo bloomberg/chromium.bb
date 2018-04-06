@@ -7,77 +7,77 @@ layer at (0,0) size 800x100
         LayoutText {#text} at (0,0) size 292x19
           text run at (0,0) width 292: "The following two lines should look the same:"
       LayoutNGBlockFlow {DIV} at (0,36) size 784x20
-        LayoutInline {SPAN} at (0,0) size 28x19
-          LayoutInline {<pseudo:before>} at (0,0) size 28x19
-            LayoutCounter (anonymous) at (0,0) size 28x19
-              text run at (0,0) width 28: "A.A"
-        LayoutText {#text} at (28,0) size 3x19
-          text run at (28,0) width 3: " "
         LayoutInline {SPAN} at (0,0) size 27x19
           LayoutInline {<pseudo:before>} at (0,0) size 27x19
-            LayoutCounter (anonymous) at (31,0) size 27x19
-              text run at (31,0) width 27: "A.B"
-        LayoutText {#text} at (58,0) size 4x19
-          text run at (58,0) width 4: " "
+            LayoutCounter (anonymous) at (0,0) size 27x19
+              text run at (0,0) width 27: "A.A"
+        LayoutText {#text} at (27,0) size 3x19
+          text run at (27,0) width 3: " "
         LayoutInline {SPAN} at (0,0) size 27x19
           LayoutInline {<pseudo:before>} at (0,0) size 27x19
-            LayoutCounter (anonymous) at (62,0) size 27x19
-              text run at (62,0) width 27: "A.C"
-        LayoutText {#text} at (89,0) size 4x19
-          text run at (89,0) width 4: " "
+            LayoutCounter (anonymous) at (30,0) size 27x19
+              text run at (30,0) width 27: "A.B"
+        LayoutText {#text} at (57,0) size 3x19
+          text run at (57,0) width 3: " "
+        LayoutInline {SPAN} at (0,0) size 27x19
+          LayoutInline {<pseudo:before>} at (0,0) size 27x19
+            LayoutCounter (anonymous) at (60,0) size 27x19
+              text run at (60,0) width 27: "A.C"
+        LayoutText {#text} at (87,0) size 3x19
+          text run at (87,0) width 3: " "
         LayoutInline {SPAN} at (0,0) size 28x19
           LayoutInline {<pseudo:before>} at (0,0) size 28x19
-            LayoutCounter (anonymous) at (93,0) size 28x19
-              text run at (93,0) width 28: "A.D"
-        LayoutText {#text} at (121,0) size 4x19
-          text run at (121,0) width 4: " "
+            LayoutCounter (anonymous) at (90,0) size 28x19
+              text run at (90,0) width 28: "A.D"
+        LayoutText {#text} at (118,0) size 3x19
+          text run at (118,0) width 3: " "
         LayoutInline {SPAN} at (0,0) size 26x19
           LayoutInline {<pseudo:before>} at (0,0) size 26x19
-            LayoutCounter (anonymous) at (125,0) size 26x19
-              text run at (125,0) width 26: "A.E"
-        LayoutText {#text} at (151,0) size 4x19
-          text run at (151,0) width 4: " "
+            LayoutCounter (anonymous) at (121,0) size 26x19
+              text run at (121,0) width 26: "A.E"
+        LayoutText {#text} at (147,0) size 3x19
+          text run at (147,0) width 3: " "
         LayoutInline {SPAN} at (0,0) size 25x19
           LayoutInline {<pseudo:before>} at (0,0) size 25x19
-            LayoutCounter (anonymous) at (155,0) size 25x19
-              text run at (155,0) width 25: "A.F"
-        LayoutText {#text} at (180,0) size 4x19
-          text run at (180,0) width 4: " "
+            LayoutCounter (anonymous) at (150,0) size 25x19
+              text run at (150,0) width 25: "A.F"
+        LayoutText {#text} at (175,0) size 3x19
+          text run at (175,0) width 3: " "
         LayoutInline {SPAN} at (0,0) size 28x19
           LayoutInline {<pseudo:before>} at (0,0) size 28x19
-            LayoutCounter (anonymous) at (184,0) size 28x19
-              text run at (184,0) width 28: "A.G"
-        LayoutText {#text} at (212,0) size 4x19
-          text run at (212,0) width 4: " "
+            LayoutCounter (anonymous) at (178,0) size 28x19
+              text run at (178,0) width 28: "A.G"
+        LayoutText {#text} at (206,0) size 3x19
+          text run at (206,0) width 3: " "
         LayoutInline {SPAN} at (0,0) size 28x19
           LayoutInline {<pseudo:before>} at (0,0) size 28x19
-            LayoutCounter (anonymous) at (216,0) size 28x19
-              text run at (216,0) width 28: "A.H"
-        LayoutText {#text} at (244,0) size 4x19
-          text run at (244,0) width 4: " "
+            LayoutCounter (anonymous) at (209,0) size 28x19
+              text run at (209,0) width 28: "A.H"
+        LayoutText {#text} at (237,0) size 3x19
+          text run at (237,0) width 3: " "
         LayoutInline {SPAN} at (0,0) size 21x19
           LayoutInline {<pseudo:before>} at (0,0) size 21x19
-            LayoutCounter (anonymous) at (248,0) size 21x19
-              text run at (248,0) width 21: "A.I"
-        LayoutText {#text} at (269,0) size 4x19
-          text run at (269,0) width 4: " "
+            LayoutCounter (anonymous) at (240,0) size 21x19
+              text run at (240,0) width 21: "A.I"
+        LayoutText {#text} at (261,0) size 3x19
+          text run at (261,0) width 3: " "
         LayoutInline {SPAN} at (0,0) size 22x19
           LayoutInline {<pseudo:before>} at (0,0) size 22x19
-            LayoutCounter (anonymous) at (273,0) size 22x19
-              text run at (273,0) width 22: "A.J"
-        LayoutText {#text} at (295,0) size 4x19
-          text run at (295,0) width 4: " "
+            LayoutCounter (anonymous) at (264,0) size 22x19
+              text run at (264,0) width 22: "A.J"
+        LayoutText {#text} at (286,0) size 3x19
+          text run at (286,0) width 3: " "
         LayoutInline {SPAN} at (0,0) size 28x19
           LayoutInline {<pseudo:before>} at (0,0) size 28x19
-            LayoutCounter (anonymous) at (299,0) size 28x19
-              text run at (299,0) width 28: "A.K"
-        LayoutText {#text} at (327,0) size 4x19
-          text run at (327,0) width 4: " "
+            LayoutCounter (anonymous) at (289,0) size 28x19
+              text run at (289,0) width 28: "A.K"
+        LayoutText {#text} at (317,0) size 3x19
+          text run at (317,0) width 3: " "
         LayoutInline {SPAN} at (0,0) size 26x19
           LayoutInline {<pseudo:before>} at (0,0) size 26x19
-            LayoutCounter (anonymous) at (331,0) size 26x19
-              text run at (331,0) width 26: "A.L"
+            LayoutCounter (anonymous) at (320,0) size 26x19
+              text run at (320,0) width 26: "A.L"
         LayoutText {#text} at (0,0) size 0x0
       LayoutNGBlockFlow {DIV} at (0,56) size 784x20
-        LayoutText {#text} at (0,0) size 357x19
-          text run at (0,0) width 357: "A.A A.B A.C A.D A.E A.F A.G A.H A.I A.J A.K A.L"
+        LayoutText {#text} at (0,0) size 346x19
+          text run at (0,0) width 346: "A.A A.B A.C A.D A.E A.F A.G A.H A.I A.J A.K A.L"

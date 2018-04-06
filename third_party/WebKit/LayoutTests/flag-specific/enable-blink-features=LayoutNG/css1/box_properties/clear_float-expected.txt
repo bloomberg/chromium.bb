@@ -84,8 +84,8 @@ layer at (0,0) size 800x826 backgroundClip at (0,0) size 800x600 clip at (0,0) s
               text run at (0,0) width 87: "0.5em margin"
       LayoutNGBlockFlow {DIV} at (224,200) size 528x235.88 [bgcolor=#FFFF00]
         LayoutNGBlockFlow {H1} at (8,29.44) size 512x37
-          LayoutText {#text} at (0,0) size 275x36
-            text run at (0,0) width 275: "The 'clear' property"
+          LayoutText {#text} at (0,0) size 274x36
+            text run at (0,0) width 274: "The 'clear' property"
         LayoutNGBlockFlow {P} at (8,87.88) size 512x100
           LayoutText {#text} at (0,0) size 512x99
             text run at (0,0) width 512: "This page has two floating \"menus\" on the side; one has a green background,"
@@ -101,9 +101,9 @@ layer at (0,0) size 800x826 backgroundClip at (0,0) size 800x600 clip at (0,0) s
         LayoutTableSection {TBODY} at (1,1) size 590x372
           LayoutTableRow {TR} at (0,0) size 590x28
             LayoutNGTableCell {TD} at (0,0) size 590x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x19
+                LayoutText {#text} at (4,4) size 161x19
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 590x344
             LayoutNGTableCell {TD} at (0,186) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,162) size 4x19
@@ -169,8 +169,8 @@ layer at (0,0) size 800x826 backgroundClip at (0,0) size 800x600 clip at (0,0) s
                       text run at (0,0) width 87: "0.5em margin"
               LayoutNGBlockFlow {DIV} at (228,4) size 314x335.88 [bgcolor=#FFFF00]
                 LayoutNGBlockFlow {H1} at (8,29.44) size 298x37
-                  LayoutText {#text} at (0,0) size 275x36
-                    text run at (0,0) width 275: "The 'clear' property"
+                  LayoutText {#text} at (0,0) size 274x36
+                    text run at (0,0) width 274: "The 'clear' property"
                 LayoutNGBlockFlow {P} at (8,87.88) size 298x180
                   LayoutText {#text} at (0,0) size 298x179
                     text run at (0,0) width 298: "This page has two floating \"menus\" on the"

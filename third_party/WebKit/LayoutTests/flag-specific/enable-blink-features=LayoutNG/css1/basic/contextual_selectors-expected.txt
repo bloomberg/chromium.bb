@@ -21,11 +21,11 @@ layer at (0,0) size 800x600
       LayoutNGBlockFlow {P} at (0,167) size 784x20 [color=#000080]
         LayoutText {#text} at (0,0) size 559x19
           text run at (0,0) width 559: "This sentence should be normal for its section, except for the last word, which should be "
-        LayoutInline {EM} at (0,0) size 36x19 [color=#008000]
-          LayoutText {#text} at (559,0) size 36x19
-            text run at (559,0) width 36: "green"
-        LayoutText {#text} at (595,0) size 4x19
-          text run at (595,0) width 4: "."
+        LayoutInline {EM} at (0,0) size 35x19 [color=#008000]
+          LayoutText {#text} at (559,0) size 35x19
+            text run at (559,0) width 35: "green"
+        LayoutText {#text} at (594,0) size 4x19
+          text run at (594,0) width 4: "."
       LayoutNGBlockFlow {UL} at (0,203) size 784x40
         LayoutNGListItem {LI} at (40,0) size 744x40
           LayoutNGListMarker (anonymous) at (-18,0) size 10x20
@@ -48,9 +48,9 @@ layer at (0,0) size 800x600
         LayoutTableSection {TBODY} at (1,1) size 720x163
           LayoutTableRow {TR} at (0,0) size 720x28
             LayoutNGTableCell {TD} at (0,0) size 720x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
-              LayoutInline {STRONG} at (0,0) size 159x19
-                LayoutText {#text} at (4,4) size 159x19
-                  text run at (4,4) width 159: "TABLE Testing Section"
+              LayoutInline {STRONG} at (0,0) size 161x19
+                LayoutText {#text} at (4,4) size 161x19
+                  text run at (4,4) width 161: "TABLE Testing Section"
           LayoutTableRow {TR} at (0,28) size 720x135
             LayoutNGTableCell {TD} at (0,81) size 12x28 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (4,57) size 4x19

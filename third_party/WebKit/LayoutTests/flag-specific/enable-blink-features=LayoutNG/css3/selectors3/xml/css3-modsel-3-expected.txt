@@ -15,7 +15,7 @@ layer at (0,0) size 800x108
         LayoutText {#text} at (0,0) size 167x19
           text run at (0,0) width 167: "This item should be green."
     LayoutNGBlockFlow (anonymous) at (0,88) size 800x20
-      LayoutInline {foo} at (0,0) size 451x19
-        LayoutText {#text} at (0,0) size 451x19
-          text run at (0,0) width 451: "And this element, part of a non-HTML namespace, should be green too"
+      LayoutInline {foo} at (0,0) size 450x19
+        LayoutText {#text} at (0,0) size 450x19
+          text run at (0,0) width 450: "And this element, part of a non-HTML namespace, should be green too"
       LayoutText {#text} at (0,0) size 0x0

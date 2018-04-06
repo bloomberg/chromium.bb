@@ -13,8 +13,8 @@ layer at (0,0) size 785x3248 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 83x19
           text run at (0,0) width 83: "Dummy text."
       LayoutNGBlockFlow {P} at (0,76) size 769x20
-        LayoutText {#text} at (0,0) size 616x19
-          text run at (0,0) width 616: "Scroll this document. A line of blue should remain stuck at the top of the viewport the whole time."
+        LayoutText {#text} at (0,0) size 615x19
+          text run at (0,0) width 615: "Scroll this document. A line of blue should remain stuck at the top of the viewport the whole time."
       LayoutNGBlockFlow {DIV} at (0,112) size 769x20 [color=#C0C0C0]
         LayoutText {#text} at (0,0) size 83x19
           text run at (0,0) width 83: "Dummy text."
