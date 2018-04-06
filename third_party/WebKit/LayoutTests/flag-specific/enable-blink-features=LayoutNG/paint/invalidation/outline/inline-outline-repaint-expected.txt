@@ -39,12 +39,12 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [104, 59, 662, 14],
+          "rect": [105, 59, 662, 14],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [104, 59, 662, 14],
+          "rect": [105, 59, 662, 14],
           "reason": "disappeared"
         },
         {
@@ -59,12 +59,12 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [191, 20, 325, 14],
+          "rect": [191, 20, 326, 14],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [191, 20, 325, 14],
+          "rect": [191, 20, 326, 14],
           "reason": "disappeared"
         },
         {
@@ -118,6 +118,16 @@
           "reason": "disappeared"
         },
         {
+          "object": "NGPaintFragment",
+          "rect": [11, 59, 89, 11],
+          "reason": "appeared"
+        },
+        {
+          "object": "NGPaintFragment",
+          "rect": [11, 59, 89, 11],
+          "reason": "disappeared"
+        },
+        {
           "object": "InlineTextBox ' '",
           "rect": [8, 176, 88, 39],
           "reason": "appeared"
@@ -134,32 +144,22 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [11, 59, 88, 11],
+          "rect": [11, 121, 88, 11],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [11, 59, 88, 11],
+          "rect": [11, 121, 88, 11],
           "reason": "disappeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [11, 121, 87, 11],
+          "rect": [8, 20, 61, 12],
           "reason": "appeared"
         },
         {
           "object": "NGPaintFragment",
-          "rect": [11, 121, 87, 11],
-          "reason": "disappeared"
-        },
-        {
-          "object": "NGPaintFragment",
-          "rect": [8, 20, 61, 11],
-          "reason": "appeared"
-        },
-        {
-          "object": "NGPaintFragment",
-          "rect": [8, 20, 61, 11],
+          "rect": [8, 20, 61, 12],
           "reason": "disappeared"
         },
         {
