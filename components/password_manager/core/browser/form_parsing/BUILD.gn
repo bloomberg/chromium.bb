@@ -2,7 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if (is_ios) {
+import("//build/config/sanitizers/sanitizers.gni")
+
+# Determine whetner fuzzer_test targets are built.
+does_fuzzer_test_compile =
+    !disable_libfuzzer && (use_fuzzing_engine || use_drfuzz || is_linux)
+
+if (does_fuzzer_test_compile || is_ios) {
+  # Compile for production under iOS and for fuzzing whenever fuzzer_tests are built.
   static_library("form_parsing") {
     sources = [
       "ios_form_parser.cc",
@@ -30,4 +37,4 @@ if (is_ios) {
       "//url",
     ]
   }
-}  # if (is_ios)
+}  # if (does_fuzzer_test_compile || is_ios)
