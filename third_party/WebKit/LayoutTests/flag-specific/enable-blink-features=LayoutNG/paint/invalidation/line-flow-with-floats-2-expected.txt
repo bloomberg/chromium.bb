@@ -349,7 +349,7 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [235, 183, 46, 13],
+          "rect": [235, 184, 46, 12],
           "reason": "appeared"
         },
         {

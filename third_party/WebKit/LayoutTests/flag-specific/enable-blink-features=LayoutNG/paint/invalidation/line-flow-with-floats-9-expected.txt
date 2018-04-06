@@ -264,7 +264,7 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [14, 504, 212, 14],
+          "rect": [14, 504, 213, 14],
           "reason": "appeared"
         },
         {
@@ -279,7 +279,7 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [211, 244, 158, 14],
+          "rect": [212, 244, 157, 14],
           "reason": "appeared"
         },
         {

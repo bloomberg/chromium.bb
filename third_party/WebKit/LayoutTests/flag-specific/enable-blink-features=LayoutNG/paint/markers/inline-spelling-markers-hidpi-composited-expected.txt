@@ -4,17 +4,17 @@ layer at (0,0) size 1600x356
   LayoutNGBlockFlow {HTML} at (0,0) size 1600x356
     LayoutNGBlockFlow {BODY} at (16,16) size 1568x324
       LayoutNGBlockFlow (anonymous) at (0,0) size 1568x37
-        LayoutText {#text} at (0,0) size 59x36
-          text run at (0,0) width 59: "LTR"
+        LayoutText {#text} at (0,0) size 58x36
+          text run at (0,0) width 58: "LTR"
       LayoutNGBlockFlow (anonymous) at (0,81) size 1568x37
         LayoutText {#text} at (0,0) size 59x36
           text run at (0,0) width 59: "RTL"
       LayoutNGBlockFlow (anonymous) at (0,162) size 1568x37
-        LayoutText {#text} at (0,0) size 368x36
-          text run at (0,0) width 368: "LTR (text-overflow:ellipses)"
+        LayoutText {#text} at (0,0) size 367x36
+          text run at (0,0) width 367: "LTR (text-overflow:ellipses)"
       LayoutNGBlockFlow (anonymous) at (0,243) size 1568x37
-        LayoutText {#text} at (0,0) size 366x36
-          text run at (0,0) width 366: "RTL (text-overflow:ellipses)"
+        LayoutText {#text} at (0,0) size 367x36
+          text run at (0,0) width 367: "RTL (text-overflow:ellipses)"
 layer at (16,53) size 404x44 clip at (18,55) size 400x40 scrollWidth 452
   LayoutBlockFlow {DIV} at (0,37) size 404x44 [border: (2px solid #000000)]
     LayoutText {#text} at (2,2) size 451x36
