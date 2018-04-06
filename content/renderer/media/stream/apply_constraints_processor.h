@@ -34,7 +34,8 @@ class CONTENT_EXPORT ApplyConstraintsProcessor {
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<
       const blink::mojom::MediaDevicesDispatcherHostPtr&()>;
   ApplyConstraintsProcessor(
-      MediaDevicesDispatcherCallback media_devices_dispatcher_cb);
+      MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ApplyConstraintsProcessor();
 
   // Starts processing of |request|. When processing of |request| is complete,
@@ -83,6 +84,8 @@ class CONTENT_EXPORT ApplyConstraintsProcessor {
 
   MediaDevicesDispatcherCallback media_devices_dispatcher_cb_;
   SEQUENCE_CHECKER(sequence_checker_);
+
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::WeakPtrFactory<ApplyConstraintsProcessor> weak_factory_;
 

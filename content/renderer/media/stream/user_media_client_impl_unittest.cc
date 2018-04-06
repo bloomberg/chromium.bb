@@ -394,7 +394,10 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
  public:
   UserMediaClientImplUnderTest(UserMediaProcessor* user_media_processor,
                                RequestState* state)
-      : UserMediaClientImpl(nullptr, base::WrapUnique(user_media_processor)),
+      : UserMediaClientImpl(
+            nullptr,
+            base::WrapUnique(user_media_processor),
+            blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
         state_(state) {}
 
   void RequestUserMediaForTest(
