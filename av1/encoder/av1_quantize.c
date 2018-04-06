@@ -130,35 +130,71 @@ static void highbd_quantize_fp_helper_c(
   (void)quant_shift_ptr;
   (void)iscan;
 
-  memset(qcoeff_ptr, 0, count * sizeof(*qcoeff_ptr));
-  memset(dqcoeff_ptr, 0, count * sizeof(*dqcoeff_ptr));
-
   if (!skip_block) {
-    // Quantization pass: All coefficients with index >= zero_flag are
-    // skippable. Note: zero_flag can be zero.
-    for (i = 0; i < count; i++) {
-      const int rc = scan[i];
-      const int coeff = coeff_ptr[rc];
-      const qm_val_t wt = qm_ptr != NULL ? qm_ptr[rc] : (1 << AOM_QM_BITS);
-      const qm_val_t iwt = iqm_ptr != NULL ? iqm_ptr[rc] : (1 << AOM_QM_BITS);
-      const int dequant =
-          (dequant_ptr[rc != 0] * iwt + (1 << (AOM_QM_BITS - 1))) >>
-          AOM_QM_BITS;
-      const int coeff_sign = (coeff >> 31);
-      const int64_t abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
-      int abs_qcoeff = 0;
-      if (abs_coeff * wt >=
-          (dequant_ptr[rc != 0] << (AOM_QM_BITS - (1 + log_scale)))) {
-        const int64_t tmp =
-            abs_coeff + ROUND_POWER_OF_TWO(round_ptr[rc != 0], log_scale);
-        abs_qcoeff =
-            (int)((tmp * quant_ptr[rc != 0] * wt) >> (shift + AOM_QM_BITS));
-        qcoeff_ptr[rc] = (tran_low_t)((abs_qcoeff ^ coeff_sign) - coeff_sign);
-        const tran_low_t abs_dqcoeff = (abs_qcoeff * dequant) >> log_scale;
-        dqcoeff_ptr[rc] = (tran_low_t)((abs_dqcoeff ^ coeff_sign) - coeff_sign);
+    if (qm_ptr || iqm_ptr) {
+      // Quantization pass: All coefficients with index >= zero_flag are
+      // skippable. Note: zero_flag can be zero.
+      for (i = 0; i < count; i++) {
+        const int rc = scan[i];
+        const int coeff = coeff_ptr[rc];
+        const qm_val_t wt = qm_ptr != NULL ? qm_ptr[rc] : (1 << AOM_QM_BITS);
+        const qm_val_t iwt = iqm_ptr != NULL ? iqm_ptr[rc] : (1 << AOM_QM_BITS);
+        const int dequant =
+            (dequant_ptr[rc != 0] * iwt + (1 << (AOM_QM_BITS - 1))) >>
+            AOM_QM_BITS;
+        const int coeff_sign = (coeff >> 31);
+        const int64_t abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
+        int abs_qcoeff = 0;
+        if (abs_coeff * wt >=
+            (dequant_ptr[rc != 0] << (AOM_QM_BITS - (1 + log_scale)))) {
+          const int64_t tmp =
+              abs_coeff + ROUND_POWER_OF_TWO(round_ptr[rc != 0], log_scale);
+          abs_qcoeff =
+              (int)((tmp * quant_ptr[rc != 0] * wt) >> (shift + AOM_QM_BITS));
+          qcoeff_ptr[rc] = (tran_low_t)((abs_qcoeff ^ coeff_sign) - coeff_sign);
+          const tran_low_t abs_dqcoeff = (abs_qcoeff * dequant) >> log_scale;
+          dqcoeff_ptr[rc] =
+              (tran_low_t)((abs_dqcoeff ^ coeff_sign) - coeff_sign);
+          if (abs_qcoeff) eob = i;
+        } else {
+          qcoeff_ptr[rc] = 0;
+          dqcoeff_ptr[rc] = 0;
+        }
       }
-      if (abs_qcoeff) eob = i;
+    } else {
+      const int shifted_dequant_arr[2] = { dequant_ptr[0] >> (1 + log_scale),
+                                           dequant_ptr[1] >> (1 + log_scale) };
+      const int log_scaled_round_arr[2] = {
+        ROUND_POWER_OF_TWO(round_ptr[0], log_scale),
+        ROUND_POWER_OF_TWO(round_ptr[1], log_scale),
+      };
+      for (i = 0; i < count; i++) {
+        const int rc = scan[i];
+        const int coeff = coeff_ptr[rc];
+        const int rc01 = (rc != 0);
+        const int coeff_sign = (coeff >> 31);
+        const int shifted_dequant = shifted_dequant_arr[rc01];
+        const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
+        const int log_scaled_round = log_scaled_round_arr[rc01];
+        if (abs_coeff >= shifted_dequant) {
+          const int quant = quant_ptr[rc01];
+          const int dequant = dequant_ptr[rc01];
+          const int64_t tmp = (int64_t)abs_coeff + log_scaled_round;
+          const int abs_qcoeff = (int)((tmp * quant) >> shift);
+          qcoeff_ptr[rc] = (tran_low_t)((abs_qcoeff ^ coeff_sign) - coeff_sign);
+          const tran_low_t abs_dqcoeff = (abs_qcoeff * dequant) >> log_scale;
+          if (abs_qcoeff) eob = i;
+          dqcoeff_ptr[rc] =
+              (tran_low_t)((abs_dqcoeff ^ coeff_sign) - coeff_sign);
+        } else {
+          qcoeff_ptr[rc] = 0;
+          dqcoeff_ptr[rc] = 0;
+        }
+      }
     }
+  } else {
+    memset(qcoeff_ptr, 0, count * sizeof(*qcoeff_ptr));
+    memset(dqcoeff_ptr, 0, count * sizeof(*dqcoeff_ptr));
   }
   *eob_ptr = eob + 1;
 }
