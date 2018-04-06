@@ -174,12 +174,14 @@ class PreflightController::PreflightLoader final {
     // CORS::EnsurePreflightResultAndCacheOnSuccess() in Blink.
 
     if (!error) {
-      // TODO(toyoshim): Define header names in public/cpp/cors/cors.h.
       result_ = PreflightResult::Create(
           credentials_mode_,
-          GetHeaderString(head.headers, "Access-Control-Allow-Methods"),
-          GetHeaderString(head.headers, "Access-Control-Allow-Headers"),
-          GetHeaderString(head.headers, "Access-Control-Max-Age"), &error);
+          GetHeaderString(head.headers,
+                          header_names::kAccessControlAllowMethods),
+          GetHeaderString(head.headers,
+                          header_names::kAccessControlAllowHeaders),
+          GetHeaderString(head.headers, header_names::kAccessControlMaxAge),
+          &error);
     }
 
     if (!error) {
