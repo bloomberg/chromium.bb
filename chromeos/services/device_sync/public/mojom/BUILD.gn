@@ -14,3 +14,21 @@ mojom("mojom") {
     "//mojo/public/mojom/base",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "device_sync_mojom_traits_unittest.cc",
+  ]
+
+  deps = [
+    ":mojom",
+    "//base",
+    "//base/test:test_support",
+    "//components/cryptauth",
+    "//mojo/common",
+    "//mojo/public/cpp/test_support:test_utils",
+    "//testing/gtest",
+  ]
+}
