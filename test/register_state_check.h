@@ -29,7 +29,7 @@
 //   See platform implementations of RegisterStateCheckXXX for details.
 //
 
-#if defined(_WIN64)
+#if defined(_WIN64) && ARCH_X86_64
 
 #undef NOMINMAX
 #define NOMINMAX
@@ -144,7 +144,7 @@ class RegisterStateCheck {};
 
 }  // namespace libaom_test
 
-#endif  // _WIN64
+#endif  // _WIN64 && ARCH_X86_64
 
 #if ARCH_X86 || ARCH_X86_64
 #if defined(__GNUC__)
