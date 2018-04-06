@@ -140,10 +140,18 @@ MediaStreamTrack* MediaStreamTrack::Create(ExecutionContext* context,
 
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
                                    MediaStreamComponent* component)
+    : MediaStreamTrack(context,
+                       component,
+                       component->Source()->GetReadyState(),
+                       false /* stopped */) {}
+
+MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
+                                   MediaStreamComponent* component,
+                                   MediaStreamSource::ReadyState ready_state,
+                                   bool stopped)
     : ContextLifecycleObserver(context),
-      ready_state_(component->Source()->GetReadyState()),
-      is_iterating_registered_media_streams_(false),
-      stopped_(false),
+      ready_state_(ready_state),
+      stopped_(stopped),
       component_(component) {
   component_->Source()->AddObserver(this);
 
@@ -291,11 +299,10 @@ void MediaStreamTrack::stopTrack(ExecutionContext* execution_context) {
 }
 
 MediaStreamTrack* MediaStreamTrack::clone(ScriptState* script_state) {
-  // TODO(pbos): Make sure m_readyState and m_stopped carries over on cloned
-  // tracks.
   MediaStreamComponent* cloned_component = Component()->Clone();
-  MediaStreamTrack* cloned_track = MediaStreamTrack::Create(
-      ExecutionContext::From(script_state), cloned_component);
+  MediaStreamTrack* cloned_track =
+      new MediaStreamTrack(ExecutionContext::From(script_state),
+                           cloned_component, ready_state_, stopped_);
   MediaStreamCenter::Instance().DidCloneMediaStreamTrack(Component(),
                                                          cloned_component);
   return cloned_track;

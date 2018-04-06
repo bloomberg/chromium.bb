@@ -32,6 +32,18 @@ test(t => {
                     "Tracks enabled status should not be linked.");
 }, "Clones of disabled MediaStreamTracks are still disabled.");
 
+test(t => {
+  track = createTrack();
+  assert_equals(track.readyState, "live");
+  cloned_track1 = track.clone();
+  assert_equals(cloned_track1.readyState, "live");
+  track.stop();
+  assert_equals(track.readyState, "ended");
+  cloned_track2 = track.clone();
+  assert_equals(cloned_track2.readyState, "ended");
+  assert_equals(cloned_track1.readyState, "live");
+}, "Cloned MediaStreamTracks have same states");
+
 promise_test(function() {
   return navigator.mediaDevices.getUserMedia({audio: { echoCancellation: true }})
     .then(function(s) {

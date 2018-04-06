@@ -113,6 +113,10 @@ class MODULES_EXPORT MediaStreamTrack
   friend class CanvasCaptureMediaStreamTrack;
 
   MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);
+  MediaStreamTrack(ExecutionContext*,
+                   MediaStreamComponent*,
+                   MediaStreamSource::ReadyState,
+                   bool stopped);
 
   // MediaStreamSourceObserver
   void SourceChangedState() override;
@@ -123,7 +127,7 @@ class MODULES_EXPORT MediaStreamTrack
 
   MediaStreamSource::ReadyState ready_state_;
   HeapHashSet<Member<MediaStream>> registered_media_streams_;
-  bool is_iterating_registered_media_streams_;
+  bool is_iterating_registered_media_streams_ = false;
   bool stopped_;
   Member<MediaStreamComponent> component_;
   Member<ImageCapture> image_capture_;
