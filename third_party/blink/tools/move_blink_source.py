@@ -12,6 +12,7 @@ for the details.
 import argparse
 import logging
 import os
+import platform
 import re
 import sys
 from functools import partial
@@ -29,6 +30,7 @@ from webkitpy.common.path_finder import get_scripts_dir
 from webkitpy.common.system.executive import Executive
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system.filesystem import FileSystem
+from webkitpy.common.system.platform_info import PlatformInfo
 
 _log = logging.getLogger('move_blink_source')
 
@@ -89,6 +91,7 @@ class MoveBlinkSource(object):
 
     def __init__(self, fs, options, repo_root):
         self._fs = fs
+        self._platform = PlatformInfo(sys, platform, fs, Executive())
         self._options = options
         _log.debug(options)
         self._repo_root = repo_root
@@ -216,7 +219,7 @@ class MoveBlinkSource(object):
 
         if self._options.run:
             _log.info('Formatting updated %d files ...', len(self._updated_files))
-            git = Git(cwd=self._repo_root)
+            git = self._create_git()
             # |git cl format| can't handle too many files at once.
             while len(self._updated_files) > 0:
                 end_index = 100
@@ -253,7 +256,7 @@ Bug: 768828
                           if 'third_party/WebKit/' + src.replace('\\', '/') in apply_only]
         _log.info('Will move %d files', len(file_pairs))
 
-        git = Git(cwd=self._repo_root)
+        git = self._create_git()
         files_set = self._get_checked_in_files(git)
         for i, (src, dest) in enumerate(file_pairs):
             src_from_repo = self._fs.join('third_party', 'WebKit', src)
@@ -295,7 +298,7 @@ Bug: 768828
 """)
 
     def fix_branch(self):
-        git = Git(cwd=self._repo_root)
+        git = self._create_git()
         status = self._get_local_change_status(git)
         if len(status) == 0:
             _log.info('No local changes.')
@@ -643,6 +646,9 @@ Bug: 768828
                 _log.info('Updated %s', file_path)
         else:
             _log.warning('%s does not contain specified source strings.', file_path)
+
+    def _create_git(self):
+        return Git(cwd=self._repo_root, filesystem=self._fs, platform=self._platform)
 
 
 def main():
