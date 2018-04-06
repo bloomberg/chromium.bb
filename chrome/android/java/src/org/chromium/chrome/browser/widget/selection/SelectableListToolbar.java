@@ -122,6 +122,8 @@ public class SelectableListToolbar<E>
     private int mModernToolbarSearchIconOffsetPx;
 
     private boolean mIsDestroyed;
+    private boolean mShowInfoItem;
+    private boolean mInfoShowing;
 
     /**
      * Constructor for inflating from XML.
@@ -200,6 +202,9 @@ public class SelectableListToolbar<E>
         if (!FeatureUtilities.isChromeModernDesignEnabled()) {
             setTitleTextAppearance(getContext(), R.style.BlackHeadline2);
         }
+
+        VrShellDelegate.registerVrModeObserver(this);
+        if (VrShellDelegate.isInVr()) onEnterVr();
     }
 
     @Override
@@ -208,12 +213,14 @@ public class SelectableListToolbar<E>
         // searching.
         mIsVrEnabled = true;
         if (mHasSearchView) updateSearchMenuItem();
+        updateInfoMenuItem(mShowInfoItem, mInfoShowing);
     }
 
     @Override
     public void onExitVr() {
         mIsVrEnabled = false;
         if (mHasSearchView) updateSearchMenuItem();
+        updateInfoMenuItem(mShowInfoItem, mInfoShowing);
     }
 
     /**
@@ -268,9 +275,6 @@ public class SelectableListToolbar<E>
                     getResources().getDimensionPixelSize(R.dimen.clear_text_button_end_padding),
                     mClearTextButton.getPaddingBottom());
         }
-
-        VrShellDelegate.registerVrModeObserver(this);
-        if (VrShellDelegate.isInVr()) onEnterVr();
     }
 
     @Override
@@ -637,6 +641,8 @@ public class SelectableListToolbar<E>
      * @param infoShowing Whether or not info header is currently showing.
      */
     public void updateInfoMenuItem(boolean showItem, boolean infoShowing) {
+        mShowInfoItem = showItem;
+        mInfoShowing = infoShowing;
         MenuItem infoMenuItem = getMenu().findItem(mInfoMenuItemId);
         if (infoMenuItem != null) {
             Drawable iconDrawable =
@@ -644,7 +650,16 @@ public class SelectableListToolbar<E>
                             infoShowing ? R.color.light_active_color : R.color.light_normal_color);
 
             infoMenuItem.setIcon(iconDrawable);
-            infoMenuItem.setTitle(infoShowing ? R.string.hide_info : R.string.show_info);
+            if (VrShellDelegate.isInVr()) {
+                // There seems to be a bug with the support library, only on Android N, where the
+                // toast showing the title shows up every time the info menu item is clicked or
+                // scrolled on, even if its long press handler is overridden. VR on N doesn't
+                // support toasts, which render monocularly over top of VR content, so we need to
+                // disable it.
+                infoMenuItem.setTitle("");
+            } else {
+                infoMenuItem.setTitle(infoShowing ? R.string.hide_info : R.string.show_info);
+            }
             infoMenuItem.setVisible(showItem);
         }
     }
