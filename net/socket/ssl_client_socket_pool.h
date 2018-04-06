@@ -149,8 +149,6 @@ class SSLConnectJob : public ConnectJob {
   // Otherwise, it returns a net error code.
   int ConnectInternal() override;
 
-  void ResetStateForRetry();
-
   scoped_refptr<SSLSocketParams> params_;
   TransportClientSocketPool* const transport_pool_;
   SOCKSClientSocketPool* const socks_pool_;
@@ -171,16 +169,6 @@ class SSLConnectJob : public ConnectJob {
   // and only if the connect job is connected *directly* to the server (not
   // through an HTTPS CONNECT request or a SOCKS proxy).
   IPEndPoint server_address_;
-
-  bool version_interference_probe_;
-
-  // The error which triggered a TLS 1.3 version interference probe, or OK if
-  // none was triggered.
-  int version_interference_error_;
-
-  // Details for the error which triggered a TLS 1.3 interference probe, or
-  // kOther if not applicable.
-  SSLErrorDetails version_interference_details_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLConnectJob);
 };

@@ -117,7 +117,11 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
     connection_group = "ftp/" + connection_group;
   }
   if (using_ssl) {
-    connection_group = "ssl/" + connection_group;
+    std::string prefix = "ssl/";
+    if (ssl_config_for_origin.version_interference_probe) {
+      prefix += "version-interference-probe/";
+    }
+    connection_group = prefix + connection_group;
   }
 
   ClientSocketPool::RespectLimits respect_limits =

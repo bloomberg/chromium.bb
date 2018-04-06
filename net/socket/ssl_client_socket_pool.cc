@@ -133,10 +133,7 @@ SSLConnectJob::SSLConnectJob(const std::string& group_name,
                            ? "pm/" + context.ssl_session_cache_shard
                            : context.ssl_session_cache_shard))),
       callback_(
-          base::Bind(&SSLConnectJob::OnIOComplete, base::Unretained(this))),
-      version_interference_probe_(false),
-      version_interference_error_(OK),
-      version_interference_details_(SSLErrorDetails::kOther) {}
+          base::Bind(&SSLConnectJob::OnIOComplete, base::Unretained(this))) {}
 
 SSLConnectJob::~SSLConnectJob() = default;
 
@@ -325,54 +322,18 @@ int SSLConnectJob::DoSSLConnect() {
 
   connect_timing_.ssl_start = base::TimeTicks::Now();
 
-  SSLConfig ssl_config = params_->ssl_config();
-  if (version_interference_probe_) {
-    DCHECK_EQ(SSL_PROTOCOL_VERSION_TLS1_3, ssl_config.version_max);
-    ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
-    ssl_config.version_interference_probe = true;
-  }
   ssl_socket_ = client_socket_factory_->CreateSSLClientSocket(
-      std::move(transport_socket_handle_), params_->host_and_port(), ssl_config,
-      context_);
+      std::move(transport_socket_handle_), params_->host_and_port(),
+      params_->ssl_config(), context_);
   return ssl_socket_->Connect(callback_);
 }
 
 int SSLConnectJob::DoSSLConnectComplete(int result) {
-  // Version interference probes should not result in success.
-  DCHECK(!version_interference_probe_ || result != OK);
-
   connect_timing_.ssl_end = base::TimeTicks::Now();
 
   if (result != OK && !server_address_.address().empty()) {
     connection_attempts_.push_back(ConnectionAttempt(server_address_, result));
     server_address_ = IPEndPoint();
-  }
-
-  // Perform a TLS 1.3 version interference probe on various connection
-  // errors. The retry will never produce a successful connection but may map
-  // errors to ERR_SSL_VERSION_INTERFERENCE, which signals a probable
-  // version-interfering middlebox.
-  if (params_->ssl_config().version_max == SSL_PROTOCOL_VERSION_TLS1_3 &&
-      !version_interference_probe_) {
-    if (result == ERR_CONNECTION_CLOSED || result == ERR_SSL_PROTOCOL_ERROR ||
-        result == ERR_SSL_VERSION_OR_CIPHER_MISMATCH ||
-        result == ERR_CONNECTION_RESET ||
-        result == ERR_SSL_BAD_RECORD_MAC_ALERT) {
-      // Report the error code for each time a version interference probe is
-      // triggered.
-      base::UmaHistogramSparse("Net.SSLVersionInterferenceProbeTrigger",
-                               std::abs(result));
-      net_log().AddEventWithNetErrorCode(
-          NetLogEventType::SSL_VERSION_INTERFERENCE_PROBE, result);
-      SSLErrorDetails details = ssl_socket_->GetConnectErrorDetails();
-
-      ResetStateForRetry();
-      version_interference_probe_ = true;
-      version_interference_error_ = result;
-      version_interference_details_ = details;
-      next_state_ = GetInitialState(params_->GetConnectionType());
-      return OK;
-    }
   }
 
   const std::string& host = params_->host_and_port().host();
@@ -435,24 +396,13 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
     }
   }
 
-  base::UmaHistogramSparse("Net.SSL_Connection_Error", std::abs(result));
-
-  if (tls13_supported) {
-    base::UmaHistogramSparse("Net.SSL_Connection_Error_TLS13Experiment",
-                             std::abs(result));
-  }
-
-  if (result == ERR_SSL_VERSION_INTERFERENCE) {
-    // Record the error code version interference was detected at.
-    DCHECK(version_interference_probe_);
-    DCHECK_NE(OK, version_interference_error_);
-    base::UmaHistogramSparse("Net.SSLVersionInterferenceError",
-                             std::abs(version_interference_error_));
+  // Don't double-count the version interference probes.
+  if (!params_->ssl_config().version_interference_probe) {
+    base::UmaHistogramSparse("Net.SSL_Connection_Error", std::abs(result));
 
     if (tls13_supported) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Net.SSLVersionInterferenceDetails_TLS13Experiment",
-          version_interference_details_, SSLErrorDetails::kLastValue);
+      base::UmaHistogramSparse("Net.SSL_Connection_Error_TLS13Experiment",
+                               std::abs(result));
     }
   }
 
@@ -484,13 +434,6 @@ SSLConnectJob::State SSLConnectJob::GetInitialState(
 int SSLConnectJob::ConnectInternal() {
   next_state_ = GetInitialState(params_->GetConnectionType());
   return DoLoop(OK);
-}
-
-void SSLConnectJob::ResetStateForRetry() {
-  transport_socket_handle_.reset();
-  ssl_socket_.reset();
-  error_response_info_ = HttpResponseInfo();
-  server_address_ = IPEndPoint();
 }
 
 SSLClientSocketPool::SSLConnectJobFactory::SSLConnectJobFactory(
