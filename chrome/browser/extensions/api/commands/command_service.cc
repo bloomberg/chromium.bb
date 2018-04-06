@@ -52,10 +52,6 @@ const char kSuggestedKey[] = "suggested_key";
 // actually assigned.
 const char kSuggestedKeyWasAssigned[] = "was_assigned";
 
-// A preference that indicates that the initial keybindings for the given
-// extension have been set.
-const char kInitialBindingsHaveBeenAssigned[] = "initial_keybindings_set";
-
 std::string GetPlatformKeybindingKeyForAccelerator(
     const ui::Accelerator& accelerator, const std::string& extension_id) {
   std::string key = Command::CommandPlatform() + ":" +
@@ -82,23 +78,6 @@ std::string StripCurrentPlatform(const std::string& key) {
   base::ReplaceFirstSubstringAfterOffset(
       &result, 0, Command::CommandPlatform() + ":", base::StringPiece());
   return result;
-}
-
-void SetInitialBindingsHaveBeenAssigned(
-    ExtensionPrefs* prefs, const std::string& extension_id) {
-  prefs->UpdateExtensionPref(extension_id, kInitialBindingsHaveBeenAssigned,
-                             std::make_unique<base::Value>(true));
-}
-
-bool InitialBindingsHaveBeenAssigned(
-    const ExtensionPrefs* prefs, const std::string& extension_id) {
-  bool assigned = false;
-  if (!prefs || !prefs->ReadPrefAsBoolean(extension_id,
-                                          kInitialBindingsHaveBeenAssigned,
-                                          &assigned))
-    return false;
-
-  return assigned;
 }
 
 // Merge |suggested_key_prefs| into the saved preferences for the extension. We
@@ -532,11 +511,6 @@ void CommandService::AssignKeybindings(const Extension* extension) {
   const CommandMap* commands = CommandsInfo::GetNamedCommands(extension);
   if (!commands)
     return;
-
-  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
-  // TODO(wittman): remove use of this pref after M37 hits stable.
-  if (!InitialBindingsHaveBeenAssigned(extension_prefs, extension->id()))
-    SetInitialBindingsHaveBeenAssigned(extension_prefs, extension->id());
 
   for (CommandMap::const_iterator iter = commands->begin();
        iter != commands->end(); ++iter) {
