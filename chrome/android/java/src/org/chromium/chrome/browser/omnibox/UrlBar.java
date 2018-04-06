@@ -707,12 +707,20 @@ public class UrlBar extends AutocompleteEditText {
     }
 
     private void scrollToBeginning() {
-        int scrollX = 0;
-        if (BidiFormatter.getInstance().isRtl(getTextWithAutocomplete())) {
-            int textWidth = (int) getLayout().getPaint().measureText(getTextWithAutocomplete());
-            scrollX = textWidth - getMeasuredWidth();
+        if (mFocused) return;
+
+        setSelection(0);
+
+        Editable text = getText();
+        float scrollPos = 0f;
+        if (BidiFormatter.getInstance().isRtl(text)) {
+            // RTL.
+            float endPointX = getLayout().getPrimaryHorizontal(text.length());
+            int measuredWidth = getMeasuredWidth();
+            float width = getLayout().getPaint().measureText(text.toString());
+            scrollPos = Math.max(0, endPointX - measuredWidth + width);
         }
-        scrollTo(scrollX, getScrollY());
+        scrollTo((int) scrollPos, getScrollY());
     }
 
     public void scrollToTLD() {
