@@ -98,11 +98,11 @@ class MoveBlinkSource(object):
 
         # The following fields are initialized in _create_basename_maps.
         self._basename_map = None
-        self._basename_re = None
+        self._basename_re_list = None
         self._idl_generated_impl_headers = None
-        # _checked_in_header_re is used to distinguish checked-in header files
-        # and generated header files.
-        self._checked_in_header_re = None
+        # _checked_in_header_re_list is used to distinguish checked-in
+        # header files and generated header files.
+        self._checked_in_header_re_list = None
 
         self._updated_files = []
 
@@ -345,12 +345,9 @@ Bug: 768828
 
     def _create_basename_maps(self, file_pairs):
         basename_map = {}
-        # Generated inspector/protocol/* contains a lot of names duplicated with
-        # checked-in core files. We don't want to rename them, and don't want to
-        # replace them in BUILD.gn and #include accidentally.
-        pattern = r'(?<!inspector/protocol/)\b('
+        basenames = []
         idl_headers = set()
-        header_pattern = r'(?<!inspector/protocol/)\b('
+        headers = []
         for source, dest in file_pairs:
             _, source_base = self._fs.split(source)
             _, dest_base = self._fs.split(dest)
@@ -359,27 +356,45 @@ Bug: 768828
             if 'bindings/tests' in source.replace('\\', '/'):
                 continue
             if source_base.endswith('.h'):
-                header_pattern += re.escape(source_base) + '|'
+                headers.append(re.escape(source_base))
             if source_base == dest_base:
                 continue
             basename_map[source_base] = dest_base
-            pattern += re.escape(source_base) + '|'
+            basenames.append(re.escape(source_base))
             # IDL sometimes generates implementation files as well as
             # binding files. We'd like to update #includes for such files.
             if source_base.endswith('.idl'):
                 source_header = source_base.replace('.idl', '.h')
                 basename_map[source_header] = dest_base.replace('.idl', '.h')
-                pattern += re.escape(source_header) + '|'
+                basenames.append(re.escape(source_header))
                 idl_headers.add(source_header)
             elif source_base.endswith('.proto'):
                 source_header = source_base.replace('.proto', '.pb.h')
                 basename_map[source_header] = dest_base.replace('.proto', '.pb.h')
-                pattern += re.escape(source_header) + '|'
+                basenames.append(re.escape(source_header))
         _log.debug('Rename %d files for snake_case', len(basename_map))
         self._basename_map = basename_map
-        self._basename_re = re.compile(pattern[0:len(pattern) - 1] + ')(?=["\']|$)')
         self._idl_generated_impl_headers = idl_headers
-        self._checked_in_header_re = re.compile(header_pattern[0:len(header_pattern) - 1] + ')$')
+
+        self._basename_re_list = []
+        self._checked_in_header_re_list = []
+        # Split file names into some chunks to avoid "Regular expression
+        # code size limit exceeded" on Windows
+        CHUNK_SIZE = 700
+        # Generated inspector/protocol/* contains a lot of names duplicated with
+        # checked-in core files. We don't want to rename them, and don't want to
+        # replace them in BUILD.gn and #include accidentally.
+        RE_PREFIX = r'(?<!inspector/protocol/)'
+
+        while len(basenames) > 0:
+            end_index = min(CHUNK_SIZE, len(basenames))
+            self._basename_re_list.append(re.compile(RE_PREFIX + r'\b(' + '|'.join(basenames[0:end_index]) + ')(?=["\']|$)'))
+            basenames = basenames[end_index:]
+
+        while len(headers) > 0:
+            end_index = min(CHUNK_SIZE, len(headers))
+            self._checked_in_header_re_list.append(re.compile(RE_PREFIX + r'\b(' + '|'.join(headers[0:end_index]) + ')$'))
+            headers = headers[end_index:]
 
     def _shorten_path(self, path):
         if path.startswith(self._repo_root):
@@ -469,7 +484,9 @@ Bug: 768828
                                'file:///gen/third_party/blink/public/')
 
     def _update_basename(self, content):
-        return self._basename_re.sub(lambda match: self._basename_map[match.group(1)], content)
+        for regex in self._basename_re_list:
+            content = regex.sub(lambda match: self._basename_map[match.group(1)], content)
+        return content
 
     @staticmethod
     def _append_unless_upper_dir_exists(dirs, new_dir):
@@ -578,7 +595,11 @@ Bug: 768828
             path = self._update_basename(path)
             return '#%s "%s"' % (include_or_import, path)
 
-        match = self._checked_in_header_re.search(path)
+        match = None
+        for regex in self._checked_in_header_re_list:
+            match = regex.search(path)
+            if match:
+                break
         if match:
             if match.group(1) in self._basename_map:
                 path = path[:match.start(1)] + self._basename_map[match.group(1)]
