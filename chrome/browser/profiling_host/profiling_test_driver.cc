@@ -661,9 +661,11 @@ bool ProfilingTestDriver::CheckOrStartProfiling() {
     }
   }
 
+  uint32_t sampling_rate = options_.should_sample
+                               ? (options_.sample_everything ? 2 : kSampleRate)
+                               : 1;
   ProfilingProcessHost::Start(connection, options_.mode, options_.stack_mode,
-                              options_.should_sample,
-                              options_.sample_everything ? 2 : kSampleRate);
+                              sampling_rate);
   ProfilingProcessHost::GetInstance()->SetKeepSmallAllocations(true);
 
   if (run_loop)

@@ -8,6 +8,8 @@ static_library("cpp") {
     "allocator_shim.h",
     "client.cc",
     "client.h",
+    "controller.cc",
+    "controller.h",
     "sender_pipe.h",
     "sender_pipe_posix.cc",
     "sender_pipe_win.cc",
@@ -26,6 +28,8 @@ static_library("cpp") {
     "//base:debugging_buildflags",
     "//base/allocator:buildflags",
     "//mojo/edk",
+    "//services/resource_coordinator/public/mojom:",
+    "//services/service_manager/public/cpp",
   ]
 }
 

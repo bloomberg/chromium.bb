@@ -34,6 +34,7 @@ class RenderProcessHost;
 
 namespace heap_profiling {
 
+class Controller;
 enum class Mode;
 
 // Represents the browser side of the profiling process (//chrome/profiling).
@@ -71,7 +72,6 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
       content::ServiceManagerConnection* connection,
       Mode mode,
       mojom::StackMode stack_mode,
-      bool should_sample,
       uint32_t sampling_rate);
 
   // Returns true if Start() has been called.
@@ -147,9 +147,6 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // Set/Get the profiling mode. Exposed for unittests.
   void SetMode(Mode mode);
 
-  // Make and store a connector from |connection|.
-  void MakeConnector(content::ServiceManagerConnection* connection);
-
   // BrowserChildProcessObserver
   // Observe connection of non-renderer child processes.
   void BrowserChildProcessLaunchedAndConnected(
@@ -162,7 +159,12 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
                const content::NotificationDetails& details) override;
 
   // Starts the profiling process.
-  void LaunchAsService();
+  void StartServiceOnIOThread(
+      mojom::StackMode stack_mode,
+      uint32_t sampling_rate,
+      std::unique_ptr<service_manager::Connector> connector);
+
+  void StartProfilingBrowserProcessOnIOThread();
 
   // Called on the UI thread after the heap dump has been added to the trace.
   void DumpProcessFinishedUIThread();
@@ -198,8 +200,12 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   bool SetTakingTraceForUpload(bool new_state);
 
   content::NotificationRegistrar registrar_;
+
+  // Bound to the IO thread.
   std::unique_ptr<service_manager::Connector> connector_;
-  mojom::ProfilingServicePtr profiling_service_;
+
+  // Bound to the IO thread.
+  std::unique_ptr<Controller> controller_;
 
   // Whether or not the host is registered to the |registrar_|.
   bool is_registered_;

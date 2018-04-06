@@ -27,6 +27,16 @@ const char kOOPHeapProfilingFeatureSamplingRate[] = "sampling-rate";
 const uint32_t kDefaultSamplingRate = 10000;
 const bool kDefaultShouldSample = false;
 
+bool RecordAllAllocationsForStartup() {
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(kMemlogSampling))
+    return false;
+
+  return !base::GetFieldTrialParamByFeatureAsBool(
+      kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureSampling,
+      /*default_value=*/kDefaultShouldSample);
+}
+
 }  // namespace
 
 Mode GetModeForStartup() {
@@ -113,17 +123,10 @@ mojom::StackMode ConvertStringToStackMode(const std::string& input) {
   return mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES;
 }
 
-bool GetShouldSampleForStartup() {
-  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  if (cmdline->HasSwitch(kMemlogSampling))
-    return true;
-
-  return base::GetFieldTrialParamByFeatureAsBool(
-      kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureSampling,
-      kDefaultShouldSample /* default_value */);
-}
-
 uint32_t GetSamplingRateForStartup() {
+  if (RecordAllAllocationsForStartup())
+    return 1;
+
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   if (cmdline->HasSwitch(kMemlogSamplingRate)) {
     std::string rate_as_string =
@@ -141,7 +144,7 @@ uint32_t GetSamplingRateForStartup() {
 
   return base::GetFieldTrialParamByFeatureAsInt(
       kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureSamplingRate,
-      kDefaultSamplingRate /* default_value */);
+      /*default_value=*/kDefaultSamplingRate);
 }
 
 bool IsBackgroundHeapProfilingEnabled() {
