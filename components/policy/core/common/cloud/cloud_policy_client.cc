@@ -433,9 +433,10 @@ void CloudPolicyClient::UploadDeviceStatus(
 }
 
 void CloudPolicyClient::UploadChromeDesktopReport(
-    const em::ChromeDesktopReportRequest& chrome_desktop_report,
+    std::unique_ptr<em::ChromeDesktopReportRequest> chrome_desktop_report,
     const CloudPolicyClient::StatusCallback& callback) {
   CHECK(is_registered());
+  DCHECK(chrome_desktop_report);
   std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_CHROME_DESKTOP_REPORT,
       GetRequestContext()));
@@ -444,7 +445,8 @@ void CloudPolicyClient::UploadChromeDesktopReport(
   request_job->SetClientID(client_id_);
 
   em::DeviceManagementRequest* request = request_job->GetRequest();
-  *request->mutable_chrome_desktop_report_request() = chrome_desktop_report;
+  request->set_allocated_chrome_desktop_report_request(
+      chrome_desktop_report.release());
 
   const DeviceManagementRequestJob::Callback job_callback =
       base::Bind(&CloudPolicyClient::OnReportUploadCompleted,

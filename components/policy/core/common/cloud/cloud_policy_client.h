@@ -201,7 +201,7 @@ class POLICY_EXPORT CloudPolicyClient {
   // in a registered state. |chrome_desktop_report| will be included in the
   // upload request. The |callback| will be called when the operation completes.
   virtual void UploadChromeDesktopReport(
-      const enterprise_management::ChromeDesktopReportRequest&
+      std::unique_ptr<enterprise_management::ChromeDesktopReportRequest>
           chrome_desktop_report,
       const StatusCallback& callback);
 
