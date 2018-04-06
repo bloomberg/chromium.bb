@@ -8,42 +8,41 @@
   await TestRunner.loadModule('performance_test_runner');
   await TestRunner.showPanel('timeline');
 
-  TestTimelineControllerClient = function() {
-    this._hadLoadingProgress = false;
-  };
+  class TestTimelineControllerClient {
+    constructor() {
+      this._hadLoadingProgress = false;
+    }
 
-  TestTimelineControllerClient.prototype = {
-    recordingProgress: function() {
+    recordingProgress() {
       if (!controller)
         return;
       TestRunner.addResult('TimelineControllerClient.recordingProgress');
       controller.stopRecording();
       controller = null;
-    },
+    }
 
-    loadingStarted: function() {
+    loadingStarted() {
       TestRunner.addResult('TimelineControllerClient.loadingStarted');
-    },
+    }
 
-    loadingProgress: function() {
+    loadingProgress() {
       if (this._hadLoadingProgress)
         return;
       this._hadLoadingProgress = true;
       TestRunner.addResult('TimelineControllerClient.loadingProgress');
-    },
+    }
 
-    processingStarted: function() {
+    processingStarted() {
       TestRunner.addResult('TimelineControllerClient.processingStarted');
-    },
+    }
 
-    loadingComplete: function() {
+    loadingComplete() {
       TestRunner.addResult('TimelineControllerClient.loadingComplete');
       TestRunner.completeTest();
     }
   };
-  var performanceModel = new Timeline.PerformanceModel();
-  var controller =
-      new Timeline.TimelineController(TestRunner.tracingManager, performanceModel, new TestTimelineControllerClient());
+
+  let controller = new Timeline.TimelineController(SDK.targetManager.mainTarget(), new TestTimelineControllerClient());
   controller.startRecording({}, []).then(() => {
     TestRunner.addResult('TimelineControllerClient.recordingStarted');
   });

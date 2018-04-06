@@ -236,11 +236,11 @@
     samples: [2, 2, 3, 3, 3, 4, 4, 2, 2]
   };
 
-  var timelineController = PerformanceTestRunner.timelineController();
+  var timelineController = PerformanceTestRunner.createTimelineController();
   timelineController._addCpuProfile(SDK.targetManager.mainTarget().id(), cpuProfile);
   timelineController.traceEventsCollected(rawTraceEvents);
   timelineController._finalizeTrace();
-  var events = timelineController._performanceModel.timelineModel().inspectedTargetEvents();
+  var events = UI.panels.timeline._performanceModel.timelineModel().inspectedTargetEvents();
   events.forEach(
       e => TestRunner.addResult(
           `${e.name}: ${e.startTime} ${(e.selfTime || 0).toFixed(2)}/${(e.duration || 0).toFixed(2)}`));
