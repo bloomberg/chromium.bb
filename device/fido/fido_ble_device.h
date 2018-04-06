@@ -69,7 +69,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
   void StopTimeout();
   void OnTimeout();
 
-  State state_ = State::kInit;
   base::OneShotTimer timer_;
 
   std::unique_ptr<FidoBleConnection> connection_;

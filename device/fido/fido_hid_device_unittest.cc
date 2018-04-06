@@ -16,6 +16,7 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_hid_device.h"
 #include "device/fido/test_callback_receiver.h"
+#include "device/fido/u2f_parsing_utils.h"
 #include "device/fido/u2f_request.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -28,45 +29,53 @@ namespace device {
 
 using ::testing::_;
 using ::testing::Invoke;
-using ::testing::WithArg;
-using ::testing::WithArgs;
 
 namespace {
 
-std::string HexEncode(base::span<const uint8_t> in) {
-  return base::HexEncode(in.data(), in.size());
-}
+// HID_MSG(83), followed by payload length(0008), followed by 'U2F_V2', followed
+// by APDU response code(9000).
+constexpr uint8_t kMockVersionResponseSuffix[] = {
+    0x83, 0x00, 0x08, 0x55, 0x32, 0x46, 0x5f, 0x56, 0x32, 0x90, 0x00};
 
-std::vector<uint8_t> HexDecode(base::StringPiece in) {
-  std::vector<uint8_t> out;
-  bool result = base::HexStringToBytes(in.as_string(), &out);
-  DCHECK(result);
-  return out;
-}
+// HID_KEEP_ALIVE(bb), followed by payload length(0001), followed by
+// status processing(01) byte.
+constexpr uint8_t kMockKeepAliveResponseSuffix[] = {0xbb, 0x00, 0x01, 0x01};
 
-// Converts hex encoded StringPiece to byte vector and pads zero to fit HID
-// packet size.
-std::vector<uint8_t> MakePacket(base::StringPiece hex) {
-  std::vector<uint8_t> out = HexDecode(hex);
-  out.resize(64);
-  return out;
-}
+// 4 byte broadcast channel id(ffffffff), followed by an HID_INIT command(86),
+// followed by a fixed size payload length(11). 8 byte nonce and 4 byte channel
+// ID must be appended to create a well formed  HID_INIT packet.
+constexpr uint8_t kInitResponsePrefix[] = {
+    0xff, 0xff, 0xff, 0xff, 0x86, 0x00, 0x11,
+};
 
 // Returns HID_INIT request to send to device with mock connection.
-std::vector<uint8_t> CreateMockInitResponse(std::vector<uint8_t> nonce,
-                                            std::vector<uint8_t> channel_id) {
-  // 4 bytes of broadcast channel identifier(ffffffff), followed by
-  // HID_INIT command(86) and 2 byte payload length(11).
-  return MakePacket("ffffffff860011" + HexEncode(nonce) +
-                    HexEncode(channel_id));
+std::vector<uint8_t> CreateMockInitResponse(
+    base::span<const uint8_t> nonce,
+    base::span<const uint8_t> channel_id) {
+  auto init_response = u2f_parsing_utils::Materialize(kInitResponsePrefix);
+  u2f_parsing_utils::Append(&init_response, nonce);
+  u2f_parsing_utils::Append(&init_response, channel_id);
+  init_response.resize(64);
+  return init_response;
+}
+
+// Returns HID keep alive message encoded into HID packet format.
+std::vector<uint8_t> GetKeepAliveHidMessage(
+    base::span<const uint8_t> channel_id) {
+  auto response = u2f_parsing_utils::Materialize(channel_id);
+  u2f_parsing_utils::Append(&response, kMockKeepAliveResponseSuffix);
+  response.resize(64);
+  return response;
 }
 
 // Returns "U2F_v2" as a mock response to version request with given channel id.
-std::vector<uint8_t> CreateMockVersionResponse(
-    std::vector<uint8_t> channel_id) {
-  // HID_MSG command(83), followed by payload length(0008), followed by
-  // hex encoded "U2F_V2" and  NO_ERROR response code(9000).
-  return MakePacket(HexEncode(channel_id) + "8300085532465f56329000");
+std::vector<uint8_t> CreateMockResponse(
+    base::span<const uint8_t> channel_id,
+    base::span<const uint8_t> response_buffer) {
+  auto response = u2f_parsing_utils::Materialize(channel_id);
+  u2f_parsing_utils::Append(&response, response_buffer);
+  response.resize(64);
+  return response;
 }
 
 // Returns U2F_V2 version response formatted in APDU response encoding.
@@ -127,19 +136,16 @@ using TestDeviceCallbackReceiver =
 
 class FidoHidDeviceTest : public ::testing::Test {
  public:
-  FidoHidDeviceTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
-
   void SetUp() override {
     fake_hid_manager_ = std::make_unique<FakeHidManager>();
     fake_hid_manager_->AddBinding2(mojo::MakeRequest(&hid_manager_));
   }
 
  protected:
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
   device::mojom::HidManagerPtr hid_manager_;
   std::unique_ptr<FakeHidManager> fake_hid_manager_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(FidoHidDeviceTest, TestConnectionFailure) {
@@ -223,65 +229,55 @@ TEST_F(FidoHidDeviceTest, TestDeviceError) {
 }
 
 TEST_F(FidoHidDeviceTest, TestRetryChannelAllocation) {
-  const std::vector<uint8_t> kIncorrectNonce = {0x00, 0x00, 0x00, 0x00,
-                                                0x00, 0x00, 0x00, 0x00};
+  constexpr uint8_t kIncorrectNonce[] = {0x00, 0x00, 0x00, 0x00,
+                                         0x00, 0x00, 0x00, 0x00};
 
-  const std::vector<uint8_t> kChannelId = {0x01, 0x02, 0x03, 0x04};
+  constexpr uint8_t kChannelId[] = {0x01, 0x02, 0x03, 0x04};
 
   auto hid_device = TestHidDevice();
 
   // Replace device HID connection with custom client connection bound to mock
   // server-side mojo connection.
   device::mojom::HidConnectionPtr connection_client;
-  MockHidConnection mock_connection(
-      hid_device.Clone(), mojo::MakeRequest(&connection_client), kChannelId);
+  MockHidConnection mock_connection(hid_device.Clone(),
+                                    mojo::MakeRequest(&connection_client),
+                                    u2f_parsing_utils::Materialize(kChannelId));
 
-  // Delegate custom functions to be invoked for mock hid connection.
-  EXPECT_CALL(mock_connection, WritePtr(_, _, _))
-      // HID_INIT request to authenticator for channel allocation.
-      .WillOnce(WithArgs<1, 2>(
-          Invoke([&](const std::vector<uint8_t>& buffer,
-                     device::mojom::HidConnection::WriteCallback* cb) {
-            mock_connection.SetNonce(base::make_span(buffer).subspan(7, 8));
-            std::move(*cb).Run(true);
-          })))
+  // Initial write for establishing a channel ID.
+  mock_connection.ExpectWriteHidInit();
 
-      // HID_MSG request to authenticator for version request.
-      .WillOnce(WithArgs<2>(
-          Invoke([](device::mojom::HidConnection::WriteCallback* cb) {
-            std::move(*cb).Run(true);
-          })));
+  // HID_MSG request to authenticator for version request.
+  mock_connection.ExpectHidWriteWithCommand(FidoHidDeviceCommand::kMsg);
 
   EXPECT_CALL(mock_connection, ReadPtr(_))
-      // First response to HID_INIT request with incorrect nonce.
-      .WillOnce(WithArg<0>(
-          Invoke([kIncorrectNonce, &mock_connection](
-                     device::mojom::HidConnection::ReadCallback* cb) {
+      // First response to HID_INIT request with an incorrect nonce.
+      .WillOnce(
+          Invoke([kIncorrectNonce, &mock_connection](auto* cb) {
             std::move(*cb).Run(
                 true, 0,
                 CreateMockInitResponse(
                     kIncorrectNonce, mock_connection.connection_channel_id()));
-          })))
-      // Second response to HID_INIT request with correct nonce.
-      .WillOnce(WithArg<0>(Invoke(
+          }))
+      // Second response to HID_INIT request with a correct nonce.
+      .WillOnce(Invoke(
           [&mock_connection](device::mojom::HidConnection::ReadCallback* cb) {
             std::move(*cb).Run(true, 0,
                                CreateMockInitResponse(
                                    mock_connection.nonce(),
                                    mock_connection.connection_channel_id()));
-          })))
+          }))
       // Version response from the authenticator.
-      .WillOnce(WithArg<0>(Invoke(
+      .WillOnce(Invoke(
           [&mock_connection](device::mojom::HidConnection::ReadCallback* cb) {
-            std::move(*cb).Run(true, 0,
-                               CreateMockVersionResponse(
-                                   mock_connection.connection_channel_id()));
-          })));
+            std::move(*cb).Run(
+                true, 0,
+                CreateMockResponse(mock_connection.connection_channel_id(),
+                                   kMockVersionResponseSuffix));
+          }));
 
   // Add device and set mock connection to fake hid manager.
   fake_hid_manager_->AddDeviceAndSetConnection(std::move(hid_device),
                                                std::move(connection_client));
-
   FidoDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
   hid_manager_->GetDevices(receiver.callback());
   receiver.WaitForCallback();
@@ -299,6 +295,141 @@ TEST_F(FidoHidDeviceTest, TestRetryChannelAllocation) {
   const auto& result = std::get<0>(*cb.result());
   ASSERT_TRUE(result);
   EXPECT_THAT(*result, testing::ElementsAreArray(GetValidU2fVersionResponse()));
+}
+
+TEST_F(FidoHidDeviceTest, TestKeepAliveMessage) {
+  constexpr uint8_t kChannelId[] = {0x01, 0x02, 0x03, 0x04};
+
+  auto hid_device = TestHidDevice();
+
+  // Replace device HID connection with custom client connection bound to mock
+  // server-side mojo connection.
+  device::mojom::HidConnectionPtr connection_client;
+  MockHidConnection mock_connection(hid_device.Clone(),
+                                    mojo::MakeRequest(&connection_client),
+                                    u2f_parsing_utils::Materialize(kChannelId));
+
+  // Initial write for establishing channel ID.
+  mock_connection.ExpectWriteHidInit();
+
+  // HID_CBOR request to authenticator.
+  mock_connection.ExpectHidWriteWithCommand(FidoHidDeviceCommand::kCbor);
+
+  EXPECT_CALL(mock_connection, ReadPtr(_))
+      // Response to HID_INIT request.
+      .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
+        std::move(*cb).Run(
+            true, 0,
+            CreateMockInitResponse(mock_connection.nonce(),
+                                   mock_connection.connection_channel_id()));
+      }))
+      // // Keep alive message sent from the authenticator.
+      .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
+        std::move(*cb).Run(
+            true, 0,
+            GetKeepAliveHidMessage(mock_connection.connection_channel_id()));
+      }))
+      // Repeated Read() invocation due to keep alive message. Sends a dummy
+      // response that corresponds to U2F version response.
+      .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
+        auto almost_time_out =
+            kDeviceTimeout - base::TimeDelta::FromMicroseconds(1);
+        scoped_task_environment_.FastForwardBy(almost_time_out);
+
+        std::move(*cb).Run(
+            true, 0,
+            CreateMockResponse(mock_connection.connection_channel_id(),
+                               kMockVersionResponseSuffix));
+      }));
+
+  // Add device and set mock connection to fake hid manager.
+  fake_hid_manager_->AddDeviceAndSetConnection(std::move(hid_device),
+                                               std::move(connection_client));
+
+  FidoDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
+  hid_manager_->GetDevices(receiver.callback());
+  receiver.WaitForCallback();
+
+  std::vector<std::unique_ptr<FidoHidDevice>> u2f_devices =
+      receiver.TakeReturnedDevicesFiltered();
+  ASSERT_EQ(1u, u2f_devices.size());
+  auto& device = u2f_devices.front();
+
+  // Keep alive message handling is only supported for CTAP HID device.
+  device->set_supported_protocol(ProtocolVersion::kCtap);
+  TestDeviceCallbackReceiver cb;
+  device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(false),
+                         cb.callback());
+  cb.WaitForCallback();
+  const auto result = std::get<0>(*cb.result());
+  ASSERT_TRUE(result);
+  EXPECT_THAT(*result, testing::ElementsAreArray(GetValidU2fVersionResponse()));
+}
+
+TEST_F(FidoHidDeviceTest, TestDeviceTimeoutAfterKeepAliveMessage) {
+  constexpr uint8_t kChannelId[] = {0x01, 0x02, 0x03, 0x04};
+
+  auto hid_device = TestHidDevice();
+
+  // Replace device HID connection with custom client connection bound to mock
+  // server-side mojo connection.
+  device::mojom::HidConnectionPtr connection_client;
+  MockHidConnection mock_connection(hid_device.Clone(),
+                                    mojo::MakeRequest(&connection_client),
+                                    u2f_parsing_utils::Materialize(kChannelId));
+
+  // Initial write for establishing channel ID.
+  mock_connection.ExpectWriteHidInit();
+
+  // HID_CBOR request to authenticator.
+  mock_connection.ExpectHidWriteWithCommand(FidoHidDeviceCommand::kCbor);
+
+  EXPECT_CALL(mock_connection, ReadPtr(_))
+      // Response to HID_INIT request.
+      .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
+        std::move(*cb).Run(
+            true, 0,
+            CreateMockInitResponse(mock_connection.nonce(),
+                                   mock_connection.connection_channel_id()));
+      }))
+      // // Keep alive message sent from the authenticator.
+      .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
+        std::move(*cb).Run(
+            true, 0,
+            GetKeepAliveHidMessage(mock_connection.connection_channel_id()));
+      }))
+      // Repeated Read() invocation due to keep alive message. The callback
+      // is invoked only after 3 seconds, which should cause device to timeout.
+      .WillOnce(Invoke([&](device::mojom::HidConnection::ReadCallback* cb) {
+        scoped_task_environment_.FastForwardBy(kDeviceTimeout);
+        std::move(*cb).Run(
+            true, 0,
+            CreateMockResponse(mock_connection.connection_channel_id(),
+                               kMockVersionResponseSuffix));
+      }));
+
+  // Add device and set mock connection to fake hid manager.
+  fake_hid_manager_->AddDeviceAndSetConnection(std::move(hid_device),
+                                               std::move(connection_client));
+
+  FidoDeviceEnumerateCallbackReceiver receiver(hid_manager_.get());
+  hid_manager_->GetDevices(receiver.callback());
+  receiver.WaitForCallback();
+
+  std::vector<std::unique_ptr<FidoHidDevice>> u2f_devices =
+      receiver.TakeReturnedDevicesFiltered();
+  ASSERT_EQ(1u, u2f_devices.size());
+  auto& device = u2f_devices.front();
+
+  // Keep alive message handling is only supported for CTAP HID device.
+  device->set_supported_protocol(ProtocolVersion::kCtap);
+  TestDeviceCallbackReceiver cb;
+  device->DeviceTransact(U2fRequest::GetU2fVersionApduCommand(false),
+                         cb.callback());
+  cb.WaitForCallback();
+  const auto result = std::get<0>(*cb.result());
+  EXPECT_FALSE(result);
+  EXPECT_EQ(FidoDevice::State::kDeviceError, device->state());
 }
 
 }  // namespace device

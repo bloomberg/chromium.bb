@@ -6,9 +6,18 @@
 
 #include <utility>
 
-#include "base/optional.h"
+#include "device/fido/u2f_parsing_utils.h"
 
 namespace device {
+
+namespace {
+
+MATCHER_P(IsCtapHidCommand, expected_command, "") {
+  return arg.size() >= 5 &&
+         arg[4] == (0x80 | static_cast<uint8_t>(expected_command));
+}
+
+}  // namespace
 
 MockHidConnection::MockHidConnection(
     device::mojom::HidDeviceInfoPtr device,
@@ -43,6 +52,31 @@ void MockHidConnection::SendFeatureReport(uint8_t report_id,
 
 void MockHidConnection::SetNonce(base::span<uint8_t const> nonce) {
   nonce_ = std::vector<uint8_t>(nonce.begin(), nonce.end());
+}
+
+void MockHidConnection::ExpectWriteHidInit() {
+  EXPECT_CALL(*this, WritePtr(::testing::_,
+                              IsCtapHidCommand(FidoHidDeviceCommand::kInit),
+                              ::testing::_))
+      .WillOnce(::testing::Invoke(
+          [&](auto&&, const std::vector<uint8_t>& buffer,
+              device::mojom::HidConnection::WriteCallback* cb) {
+            ASSERT_EQ(64u, buffer.size());
+            // First 7 bytes are 4 bytes of channel id, one byte representing
+            // HID command, 2 bytes for payload length.
+            SetNonce(base::make_span(buffer).subspan(7, 8));
+            std::move(*cb).Run(true);
+          }));
+}
+
+void MockHidConnection::ExpectHidWriteWithCommand(FidoHidDeviceCommand cmd) {
+  EXPECT_CALL(*this,
+              WritePtr(::testing::_, IsCtapHidCommand(cmd), ::testing::_))
+      .WillOnce(::testing::Invoke(
+          [&](auto&&, const std::vector<uint8_t>& buffer,
+              device::mojom::HidConnection::WriteCallback* cb) {
+            std::move(*cb).Run(true);
+          }));
 }
 
 bool FakeHidConnection::mock_connection_error_ = false;
