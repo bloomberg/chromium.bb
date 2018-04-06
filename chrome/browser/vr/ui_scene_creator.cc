@@ -2952,25 +2952,25 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
 }
 
 void UiSceneCreator::CreateToasts() {
-  auto layout = Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kLeft);
-  layout->set_contributes_to_parent_bounds(false);
-  layout->set_y_anchoring(TOP);
-  layout->SetTranslate(0, kIndicatorVerticalOffset, kIndicatorDistanceOffset);
-  layout->set_margin(kWebVrPermissionMargin);
-
   auto platform_toast = CreateTextToast(
       kPlatformToastTransientParent, kPlatformToast, model_, base::string16());
+  platform_toast->set_contributes_to_parent_bounds(false);
+  platform_toast->set_y_anchoring(BOTTOM);
+  platform_toast->set_y_centering(TOP);
+  platform_toast->SetTranslate(0, kPlatformToastVerticalOffset,
+                               kIndicatorDistanceOffset);
   platform_toast->AddBinding(std::make_unique<Binding<const PlatformToast*>>(
       VR_BIND_LAMBDA([](Model* m) { return m->platform_toast.get(); },
                      base::Unretained(model_)),
       VR_BIND_LAMBDA(
           [](TransientElement* t, const PlatformToast* const& value) {
-            SetVisibleInLayout(t, value);
+            t->SetVisible(value);
             if (value) {
               t->RefreshVisible();
             }
           },
           base::Unretained(platform_toast.get()))));
+
   Text* text_element =
       static_cast<Text*>(platform_toast->GetDescendantByType(kTypeToastText));
   DCHECK(text_element);
@@ -2984,9 +2984,8 @@ void UiSceneCreator::CreateToasts() {
             }
           },
           base::Unretained(text_element))));
-  layout->AddChild(std::move(platform_toast));
 
-  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(layout));
+  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(platform_toast));
 }
 
 }  // namespace vr
