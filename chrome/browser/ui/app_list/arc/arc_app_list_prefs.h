@@ -70,7 +70,7 @@ class ArcAppListPrefs : public KeyedService,
             bool showInLauncher,
             bool shortcut,
             bool launchable,
-            arc::mojom::OrientationLock orientation_lock);
+            arc::mojom::OrientationLockDeprecated orientation_lock);
     ~AppInfo();
 
     std::string name;
@@ -86,7 +86,7 @@ class ArcAppListPrefs : public KeyedService,
     bool showInLauncher;
     bool shortcut;
     bool launchable;
-    arc::mojom::OrientationLock orientation_lock;
+    arc::mojom::OrientationLockDeprecated orientation_lock;
   };
 
   struct PackageInfo {
@@ -137,9 +137,9 @@ class ArcAppListPrefs : public KeyedService,
         const std::vector<uint8_t>& icon_png_data) {}
     // Notifies that task has been destroyed.
     virtual void OnTaskDestroyed(int32_t task_id) {}
-    virtual void OnTaskOrientationLockRequested(
+    virtual void OnTaskOrientationLockRequestedDeprecated(
         int32_t task_id,
-        const arc::mojom::OrientationLock orientation_lock) {}
+        const arc::mojom::OrientationLockDeprecated orientation_lock) {}
     // Notifies that task has been activated and moved to the front.
     virtual void OnTaskSetActive(int32_t task_id) {}
 
@@ -320,9 +320,9 @@ class ArcAppListPrefs : public KeyedService,
       const std::string& label,
       const std::vector<uint8_t>& icon_png_data) override;
   void OnTaskDestroyed(int32_t task_id) override;
-  void OnTaskOrientationLockRequested(
+  void OnTaskOrientationLockRequestedDeprecated(
       int32_t task_id,
-      const arc::mojom::OrientationLock orientation_lock) override;
+      const arc::mojom::OrientationLockDeprecated orientation_lock) override;
   void OnTaskSetActive(int32_t task_id) override;
   void OnNotificationsEnabledChanged(const std::string& package_name,
                                      bool enabled) override;
@@ -349,17 +349,18 @@ class ArcAppListPrefs : public KeyedService,
                                                 bool installed) const;
 
   void AddApp(const arc::mojom::AppInfo& app_info);
-  void AddAppAndShortcut(bool app_ready,
-                         const std::string& name,
-                         const std::string& package_name,
-                         const std::string& activity,
-                         const std::string& intent_uri,
-                         const std::string& icon_resource_id,
-                         const bool sticky,
-                         const bool notifications_enabled,
-                         const bool shortcut,
-                         const bool launchable,
-                         arc::mojom::OrientationLock orientation_lock);
+  void AddAppAndShortcut(
+      bool app_ready,
+      const std::string& name,
+      const std::string& package_name,
+      const std::string& activity,
+      const std::string& intent_uri,
+      const std::string& icon_resource_id,
+      const bool sticky,
+      const bool notifications_enabled,
+      const bool shortcut,
+      const bool launchable,
+      arc::mojom::OrientationLockDeprecated orientation_lock);
   // Adds or updates local pref for given package.
   void AddOrUpdatePackagePrefs(PrefService* prefs,
                                const arc::mojom::ArcPackageInfo& package);

@@ -78,7 +78,8 @@ class DualBadgeMapTest : public ExtensionServiceTestBase {
     info.activity = activity;
     info.sticky = false;
     info.notifications_enabled = false;
-    info.orientation_lock = arc::mojom::OrientationLock::NONE;
+    info.orientation_lock_deprecated =
+        arc::mojom::OrientationLockDeprecated::NONE;
     return info;
   }
 
