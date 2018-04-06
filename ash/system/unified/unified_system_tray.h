@@ -44,6 +44,15 @@ class UnifiedSystemTray : public TrayBackgroundView {
   void ClickedOutsideBubble() override;
 
  private:
+  // Private class implements message_center::UiDelegate.
+  class UiDelegate;
+
+  // Forwarded from UiDelegate.
+  void ShowBubbleInternal();
+  void HideBubbleInternal();
+
+  std::unique_ptr<UiDelegate> ui_delegate_;
+
   std::unique_ptr<UnifiedSystemTrayBubble> bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTray);

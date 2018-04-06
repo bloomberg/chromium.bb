@@ -238,14 +238,14 @@ SystemTray::~SystemTray() {
 
 void SystemTray::InitializeTrayItems(
     WebNotificationTray* web_notification_tray) {
-  DCHECK(web_notification_tray);
+  DCHECK(web_notification_tray || features::IsSystemTrayUnifiedEnabled());
   web_notification_tray_ = web_notification_tray;
   TrayBackgroundView::Initialize();
   CreateItems();
 }
 
 void SystemTray::Shutdown() {
-  DCHECK(web_notification_tray_);
+  DCHECK(web_notification_tray_ || features::IsSystemTrayUnifiedEnabled());
   web_notification_tray_ = nullptr;
 }
 
