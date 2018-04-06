@@ -108,7 +108,6 @@ TEST_F(BufferTest, TestInitWithDataAndCallback) {
   EXPECT_EQ(Cronet_Buffer_GetSize(buffer), kTestBufferSize);
   Cronet_Buffer_Destroy(buffer);
   ASSERT_TRUE(on_destroy_called());
-  Cronet_BufferCallback_Destroy(buffer_callback);
 }
 
 // Example of posting application on_destroy to the executor and passing
@@ -130,8 +129,6 @@ TEST_F(BufferTest, TestCronetBufferAsync) {
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(on_destroy_called());
   Cronet_Executor_Destroy(executor);
-  Cronet_BufferCallback_Destroy(buffer_callback);
-  Cronet_Runnable_Destroy(runnable);
 }
 
 }  // namespace

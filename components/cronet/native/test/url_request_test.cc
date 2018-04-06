@@ -120,7 +120,6 @@ TEST_F(UrlRequestTest, InitChecks) {
   Cronet_EngineParams_enable_check_result_set(engine_params, false);
   EXPECT_EQ(Cronet_RESULT_SUCCESS,
             Cronet_Engine_StartWithParams(engine, engine_params));
-  Cronet_EngineParams_Destroy(engine_params);
 
   Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
   Cronet_UrlRequestParamsPtr request_params = Cronet_UrlRequestParams_Create();
