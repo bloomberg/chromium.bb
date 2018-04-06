@@ -1,0 +1,156 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/services/heap_profiling/public/cpp/settings.h"
+
+#include "base/allocator/buildflags.h"
+#include "base/base_switches.h"
+#include "base/command_line.h"
+#include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
+#include "components/services/heap_profiling/public/cpp/switches.h"
+
+namespace heap_profiling {
+
+const base::Feature kOOPHeapProfilingFeature{"OOPHeapProfiling",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const char kOOPHeapProfilingFeatureMode[] = "mode";
+
+namespace {
+
+const char kOOPHeapProfilingFeatureStackMode[] = "stack-mode";
+const char kOOPHeapProfilingFeatureSampling[] = "sampling";
+const char kOOPHeapProfilingFeatureSamplingRate[] = "sampling-rate";
+
+const uint32_t kDefaultSamplingRate = 10000;
+const bool kDefaultShouldSample = false;
+
+}  // namespace
+
+Mode GetModeForStartup() {
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
+  if (cmdline->HasSwitch(kMemlog) ||
+      base::FeatureList::IsEnabled(kOOPHeapProfilingFeature)) {
+    if (cmdline->HasSwitch(switches::kEnableHeapProfiling)) {
+      // PartitionAlloc doesn't support chained allocation hooks so we can't
+      // run both heap profilers at the same time.
+      LOG(ERROR) << "--" << switches::kEnableHeapProfiling
+                 << " specified with --" << kMemlog
+                 << "which are not compatible. Memlog will be disabled.";
+      return Mode::kNone;
+    }
+
+    std::string mode;
+    // Respect the commandline switch above the field trial.
+    if (cmdline->HasSwitch(kMemlog)) {
+      mode = cmdline->GetSwitchValueASCII(kMemlog);
+    } else {
+      mode = base::GetFieldTrialParamValueByFeature(
+          kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureMode);
+    }
+
+    return ConvertStringToMode(mode);
+  }
+  return Mode::kNone;
+#else
+  LOG_IF(ERROR, cmdline->HasSwitch(kMemlog))
+      << "--" << kMemlog
+      << " specified but it will have no effect because the use_allocator_shim "
+      << "is not available in this build.";
+  return Mode::kNone;
+#endif
+}
+
+Mode ConvertStringToMode(const std::string& mode) {
+  if (mode == kMemlogModeAll)
+    return Mode::kAll;
+  if (mode == kMemlogModeAllRenderers)
+    return Mode::kAllRenderers;
+  if (mode == kMemlogModeManual)
+    return Mode::kManual;
+  if (mode == kMemlogModeMinimal)
+    return Mode::kMinimal;
+  if (mode == kMemlogModeBrowser)
+    return Mode::kBrowser;
+  if (mode == kMemlogModeGpu)
+    return Mode::kGpu;
+  if (mode == kMemlogModeRendererSampling)
+    return Mode::kRendererSampling;
+  DLOG(ERROR) << "Unsupported value: \"" << mode << "\" passed to --"
+              << kMemlog;
+  return Mode::kNone;
+}
+
+mojom::StackMode GetStackModeForStartup() {
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  std::string stack_mode;
+
+  // Respect the commandline switch above the field trial.
+  if (cmdline->HasSwitch(kMemlogStackMode)) {
+    stack_mode = cmdline->GetSwitchValueASCII(kMemlogStackMode);
+  } else {
+    stack_mode = base::GetFieldTrialParamValueByFeature(
+        kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureStackMode);
+  }
+
+  return ConvertStringToStackMode(stack_mode);
+}
+
+mojom::StackMode ConvertStringToStackMode(const std::string& input) {
+  if (input == kMemlogStackModeNative)
+    return mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES;
+  if (input == kMemlogStackModeNativeWithThreadNames)
+    return mojom::StackMode::NATIVE_WITH_THREAD_NAMES;
+  if (input == kMemlogStackModePseudo)
+    return mojom::StackMode::PSEUDO;
+  if (input == kMemlogStackModeMixed)
+    return mojom::StackMode::MIXED;
+  DLOG(ERROR) << "Unsupported value: \"" << input << "\" passed to --"
+              << kMemlogStackMode;
+  return mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES;
+}
+
+bool GetShouldSampleForStartup() {
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(kMemlogSampling))
+    return true;
+
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureSampling,
+      kDefaultShouldSample /* default_value */);
+}
+
+uint32_t GetSamplingRateForStartup() {
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(kMemlogSamplingRate)) {
+    std::string rate_as_string =
+        cmdline->GetSwitchValueASCII(kMemlogSamplingRate);
+    int rate_as_int = 1;
+    if (!base::StringToInt(rate_as_string, &rate_as_int)) {
+      LOG(ERROR) << "Could not parse sampling rate: " << rate_as_string;
+    }
+    if (rate_as_int <= 0) {
+      LOG(ERROR) << "Invalid sampling rate: " << rate_as_string;
+      rate_as_int = 1;
+    }
+    return rate_as_int;
+  }
+
+  return base::GetFieldTrialParamByFeatureAsInt(
+      kOOPHeapProfilingFeature, kOOPHeapProfilingFeatureSamplingRate,
+      kDefaultSamplingRate /* default_value */);
+}
+
+bool IsBackgroundHeapProfilingEnabled() {
+  return base::FeatureList::IsEnabled(kOOPHeapProfilingFeature);
+}
+
+bool ShouldKeepSmallAllocations() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kMemlogKeepSmallAllocations);
+}
+
+}  // namespace heap_profiling

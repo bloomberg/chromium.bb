@@ -41,7 +41,7 @@ class ProfilingTestDriver {
  public:
   struct Options {
     // The profiling mode to test.
-    ProfilingProcessHost::Mode mode;
+    Mode mode;
 
     // The stack profiling mode to test.
     mojom::StackMode stack_mode;

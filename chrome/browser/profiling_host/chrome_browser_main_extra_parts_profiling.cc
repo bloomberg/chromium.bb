@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/services/heap_profiling/public/cpp/settings.h"
 
 ChromeBrowserMainExtraPartsProfiling::ChromeBrowserMainExtraPartsProfiling() =
     default;
@@ -22,14 +23,12 @@ void ChromeBrowserMainExtraPartsProfiling::ServiceManagerConnectionStarted(
   // memlog and memory sanitizers are compatible and can run at the same time.
   (void)connection;  // Unused variable.
 #else
-  heap_profiling::ProfilingProcessHost::Mode mode =
-      heap_profiling::ProfilingProcessHost::GetModeForStartup();
-  if (mode != heap_profiling::ProfilingProcessHost::Mode::kNone) {
+  heap_profiling::Mode mode = heap_profiling::GetModeForStartup();
+  if (mode != heap_profiling::Mode::kNone) {
     heap_profiling::ProfilingProcessHost::Start(
-        connection, mode,
-        heap_profiling::ProfilingProcessHost::GetStackModeForStartup(),
-        heap_profiling::ProfilingProcessHost::GetShouldSampleForStartup(),
-        heap_profiling::ProfilingProcessHost::GetSamplingRateForStartup());
+        connection, mode, heap_profiling::GetStackModeForStartup(),
+        heap_profiling::GetShouldSampleForStartup(),
+        heap_profiling::GetSamplingRateForStartup());
   }
 #endif
 }

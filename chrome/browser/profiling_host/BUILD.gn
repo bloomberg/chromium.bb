@@ -18,6 +18,7 @@ if (!is_android) {
       "//base",
       "//base/allocator:buildflags",
       "//chrome/test:test_support_ui",
+      "//components/services/heap_profiling/public/cpp",
       "//testing/gmock",
       "//testing/gtest",
     ]
