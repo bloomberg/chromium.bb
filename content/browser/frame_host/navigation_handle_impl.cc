@@ -57,6 +57,9 @@ void UpdateThrottleCheckResult(
   *to_update = result;
 }
 
+// TODO(csharrison,nasko): This macro is incorrect for subframe navigations,
+// which will only have subframe-specific transition types. This means that all
+// subframes currently are tagged as NewNavigations.
 #define LOG_NAVIGATION_TIMING_HISTOGRAM(histogram, transition, value,      \
                                         max_time)                          \
   do {                                                                     \

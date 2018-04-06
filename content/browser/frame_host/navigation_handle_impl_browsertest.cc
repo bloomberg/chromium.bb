@@ -6,6 +6,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -24,6 +25,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/navigation_handle_observer.h"
+#include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -1985,6 +1987,162 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
         EXPECT_EQ(iframe_url_final, root->child_at(0u)->current_url());
       }
     }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, StartToCommitMetrics) {
+  enum class FrameType {
+    kMain,
+    kSub,
+  };
+  enum class ProcessType {
+    kCross,
+    kSame,
+  };
+  enum class TransitionType {
+    kNew,
+    kReload,
+    kBackForward,
+  };
+
+  // Uses the provided ProcessType, FrameType, and TransitionType expected for
+  // this navigation to generate all combinations of Navigation.StartToCommit
+  // metrics.
+  auto check_navigation = [](const base::HistogramTester& histograms,
+                             ProcessType process_type, FrameType frame_type,
+                             TransitionType transition_type) {
+    const std::map<FrameType, std::string> kFrameSuffixes = {
+        {FrameType::kMain, ".MainFrame"}, {FrameType::kSub, ".Subframe"}};
+    const std::map<ProcessType, std::string> kProcessSuffixes = {
+        {ProcessType::kCross, ".CrossProcess"},
+        {ProcessType::kSame, ".SameProcess"}};
+    const std::map<TransitionType, std::string> kTransitionSuffixes = {
+        {TransitionType::kNew, ".NewNavigation"},
+        {TransitionType::kReload, ".Reload"},
+        {TransitionType::kBackForward, ".BackForward"},
+    };
+
+    // Add the suffix to all existing histogram names, and append the results to
+    // |names|.
+    std::vector<std::string> names{"Navigation.StartToCommit"};
+    auto add_suffix = [&names](std::string suffix) {
+      size_t original_size = names.size();
+      for (size_t i = 0; i < original_size; i++) {
+        names.push_back(names[i] + suffix);
+      }
+    };
+    add_suffix(kProcessSuffixes.at(process_type));
+    add_suffix(kFrameSuffixes.at(frame_type));
+    add_suffix(kTransitionSuffixes.at(transition_type));
+
+    // Check that all generated histogram names are logged exactly once.
+    for (const auto& name : names) {
+      histograms.ExpectTotalCount(name, 1);
+    }
+
+    // Check that no additional histograms with the StartToCommit prefix were
+    // logged.
+    base::HistogramTester::CountsMap counts =
+        histograms.GetTotalCountsForPrefix("Navigation.StartToCommit");
+    int32_t total_counts = 0;
+    for (const auto& it : counts) {
+      total_counts += it.second;
+    }
+    EXPECT_EQ(static_cast<int32_t>(names.size()), total_counts);
+  };
+
+  // Main frame tests.
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/hello.html"));
+  {
+    base::HistogramTester histograms;
+    GURL url(embedded_test_server()->GetURL("/title1.html"));
+    NavigateToURL(shell(), url);
+    check_navigation(histograms, ProcessType::kSame, FrameType::kMain,
+                     TransitionType::kNew);
+  }
+  {
+    base::HistogramTester histograms;
+    GURL url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+    NavigateToURL(shell(), url);
+    check_navigation(histograms, ProcessType::kCross, FrameType::kMain,
+                     TransitionType::kNew);
+  }
+  {
+    base::HistogramTester histograms;
+    ReloadBlockUntilNavigationsComplete(shell(), 1);
+    check_navigation(histograms, ProcessType::kSame, FrameType::kMain,
+                     TransitionType::kReload);
+  }
+  {
+    base::HistogramTester histograms;
+    TestNavigationObserver nav_observer(shell()->web_contents());
+    shell()->GoBackOrForward(-1);
+    nav_observer.Wait();
+    check_navigation(histograms, ProcessType::kCross, FrameType::kMain,
+                     TransitionType::kBackForward);
+  }
+  {
+    base::HistogramTester histograms;
+    TestNavigationObserver nav_observer(shell()->web_contents());
+    shell()->GoBackOrForward(-1);
+    nav_observer.Wait();
+    check_navigation(histograms, ProcessType::kSame, FrameType::kMain,
+                     TransitionType::kBackForward);
+  }
+  {
+    base::HistogramTester histograms;
+    NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+    check_navigation(histograms, ProcessType::kSame, FrameType::kMain,
+                     TransitionType::kNew);
+  }
+
+  // Subframe tests. All of these tests just navigate a frame within
+  // page_with_iframe.html.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/page_with_iframe.html")));
+  FrameTreeNode* first_child =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetFrameTree()
+          ->root()
+          ->child_at(0);
+  {
+    base::HistogramTester histograms;
+    EXPECT_TRUE(NavigateToURLFromRenderer(
+        first_child, embedded_test_server()->GetURL("c.com", "/title1.html")));
+    check_navigation(histograms, ProcessType::kCross, FrameType::kSub,
+                     TransitionType::kNew);
+  }
+  {
+    base::HistogramTester histograms;
+    TestFrameNavigationObserver nav_observer(first_child);
+    EXPECT_TRUE(ExecuteScript(first_child, "location.reload();"));
+    nav_observer.Wait();
+    // location.reload triggers the PAGE_TRANSITION_AUTO_SUBFRAME which
+    // corresponds to NewNavigation.
+    check_navigation(histograms, ProcessType::kSame, FrameType::kSub,
+                     TransitionType::kNew);
+  }
+  {
+    base::HistogramTester histograms;
+    shell()->GoBackOrForward(-1);
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+    // History back triggers the PAGE_TRANSITION_AUTO_SUBFRAME which corresponds
+    // to NewNavigation.
+    check_navigation(histograms, ProcessType::kCross, FrameType::kSub,
+                     TransitionType::kNew);
+  }
+  EXPECT_TRUE(NavigateToURLFromRenderer(
+      first_child, embedded_test_server()->GetURL("/simple_links.html")));
+  {
+    base::HistogramTester histograms;
+    TestFrameNavigationObserver nav_observer(first_child);
+    EXPECT_TRUE(ExecuteScript(first_child, "clickSameSiteLink();"));
+    nav_observer.Wait();
+    // Link clicking will trigger PAGE_TRANSITION_MANUAL_SUBFRAME which
+    // corresponds to NewNavigation.
+    check_navigation(histograms, ProcessType::kSame, FrameType::kSub,
+                     TransitionType::kNew);
   }
 }
 
