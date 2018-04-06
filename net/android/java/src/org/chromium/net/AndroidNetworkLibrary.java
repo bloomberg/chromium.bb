@@ -213,8 +213,11 @@ class AndroidNetworkLibrary {
     }
 
     /**
-     * Gets the SSID of the currently associated WiFi access point if there is one. Otherwise,
-     * returns empty string.
+     * Gets the SSID of the currently associated WiFi access point if there is one, and it is
+     * available. SSID may not be available if the app does not have permissions to access it. On
+     * Android M+, the app accessing SSID needs to have ACCESS_COARSE_LOCATION or
+     * ACCESS_FINE_LOCATION. If there is no WiFi access point or its SSID is unavailable, an empty
+     * string is returned.
      */
     @CalledByNative
     public static String getWifiSSID() {
@@ -224,7 +227,9 @@ class AndroidNetworkLibrary {
             final WifiInfo wifiInfo = intent.getParcelableExtra(WifiManager.EXTRA_WIFI_INFO);
             if (wifiInfo != null) {
                 final String ssid = wifiInfo.getSSID();
-                if (ssid != null) {
+                // On Android M+, the platform APIs may return "<unknown ssid>" as the SSID if the
+                // app does not have sufficient permissions. In that case, return an empty string.
+                if (ssid != null && !ssid.equals("<unknown ssid>")) {
                     return ssid;
                 }
             }
