@@ -110,6 +110,9 @@ class DockedMagnifierTest : public NoSessionAshTestBase {
     GetSessionControllerClient()->AddUserSession(kUser2Email);
 
     test_client_.Start();
+
+    // Place the cursor in the first display.
+    GetEventGenerator().MoveMouseTo(gfx::Point(0, 0));
   }
 
   void SwitchActiveUser(const std::string& email) {

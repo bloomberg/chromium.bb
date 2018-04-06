@@ -155,44 +155,6 @@ AccessibilityStatusEventDetails::AccessibilityStatusEventDetails(
     : notification_type(notification_type), enabled(enabled) {}
 
 ///////////////////////////////////////////////////////////////////////////////
-// AccessibilityManager::PrefHandler
-
-AccessibilityManager::PrefHandler::PrefHandler(const char* pref_path)
-    : pref_path_(pref_path) {}
-
-AccessibilityManager::PrefHandler::~PrefHandler() {}
-
-void AccessibilityManager::PrefHandler::HandleProfileChanged(
-    Profile* previous_profile,
-    Profile* current_profile) {
-  // Returns if the current profile is null.
-  if (!current_profile)
-    return;
-
-  // If the user set a pref value on the login screen and is now starting a
-  // session with a new profile, copy the pref value to the profile.
-  if ((previous_profile && ProfileHelper::IsSigninProfile(previous_profile) &&
-       current_profile->IsNewProfile() &&
-       !ProfileHelper::IsSigninProfile(current_profile)) ||
-      // Special case for Guest mode:
-      // Guest mode launches a guest-mode browser process before session starts,
-      // so the previous profile is null.
-      (!previous_profile && current_profile->IsGuestSession())) {
-    // Returns if the pref has not been set by the user.
-    const PrefService::Preference* pref =
-        ProfileHelper::GetSigninProfile()->GetPrefs()->FindPreference(
-            pref_path_);
-    if (!pref || !pref->IsUserControlled())
-      return;
-
-    // Copy the pref value from the signin screen.
-    const base::Value* value_on_login = pref->GetValue();
-    PrefService* user_prefs = current_profile->GetPrefs();
-    user_prefs->Set(pref_path_, *value_on_login);
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
 //
 // AccessibilityManager
 
@@ -221,27 +183,6 @@ void AccessibilityManager::ShowAccessibilityHelp(Browser* browser) {
 
 AccessibilityManager::AccessibilityManager()
     : profile_(NULL),
-      large_cursor_pref_handler_(ash::prefs::kAccessibilityLargeCursorEnabled),
-      sticky_keys_pref_handler_(ash::prefs::kAccessibilityStickyKeysEnabled),
-      spoken_feedback_pref_handler_(
-          ash::prefs::kAccessibilitySpokenFeedbackEnabled),
-      high_contrast_pref_handler_(
-          ash::prefs::kAccessibilityHighContrastEnabled),
-      autoclick_pref_handler_(ash::prefs::kAccessibilityAutoclickEnabled),
-      autoclick_delay_pref_handler_(ash::prefs::kAccessibilityAutoclickDelayMs),
-      virtual_keyboard_pref_handler_(
-          ash::prefs::kAccessibilityVirtualKeyboardEnabled),
-      mono_audio_pref_handler_(ash::prefs::kAccessibilityMonoAudioEnabled),
-      caret_highlight_pref_handler_(
-          ash::prefs::kAccessibilityCaretHighlightEnabled),
-      cursor_highlight_pref_handler_(
-          ash::prefs::kAccessibilityCursorHighlightEnabled),
-      focus_highlight_pref_handler_(
-          ash::prefs::kAccessibilityFocusHighlightEnabled),
-      select_to_speak_pref_handler_(
-          ash::prefs::kAccessibilitySelectToSpeakEnabled),
-      switch_access_pref_handler_(
-          ash::prefs::kAccessibilitySwitchAccessEnabled),
       spoken_feedback_enabled_(false),
       select_to_speak_enabled_(false),
       switch_access_enabled_(false),
@@ -360,8 +301,10 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
         prefs->GetBoolean(ash::prefs::kAccessibilityMonoAudioEnabled) ||
         prefs->GetBoolean(ash::prefs::kAccessibilityCaretHighlightEnabled) ||
         prefs->GetBoolean(ash::prefs::kAccessibilityCursorHighlightEnabled) ||
-        prefs->GetBoolean(ash::prefs::kAccessibilityFocusHighlightEnabled))
+        prefs->GetBoolean(ash::prefs::kAccessibilityFocusHighlightEnabled) ||
+        prefs->GetBoolean(ash::prefs::kDockedMagnifierEnabled)) {
       return true;
+    }
   }
   return false;
 }
@@ -994,20 +937,6 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     if (!extension_registry_observer_.IsObserving(registry))
       extension_registry_observer_.Add(registry);
   }
-
-  large_cursor_pref_handler_.HandleProfileChanged(profile_, profile);
-  spoken_feedback_pref_handler_.HandleProfileChanged(profile_, profile);
-  high_contrast_pref_handler_.HandleProfileChanged(profile_, profile);
-  sticky_keys_pref_handler_.HandleProfileChanged(profile_, profile);
-  autoclick_pref_handler_.HandleProfileChanged(profile_, profile);
-  autoclick_delay_pref_handler_.HandleProfileChanged(profile_, profile);
-  virtual_keyboard_pref_handler_.HandleProfileChanged(profile_, profile);
-  mono_audio_pref_handler_.HandleProfileChanged(profile_, profile);
-  caret_highlight_pref_handler_.HandleProfileChanged(profile_, profile);
-  cursor_highlight_pref_handler_.HandleProfileChanged(profile_, profile);
-  focus_highlight_pref_handler_.HandleProfileChanged(profile_, profile);
-  select_to_speak_pref_handler_.HandleProfileChanged(profile_, profile);
-  switch_access_pref_handler_.HandleProfileChanged(profile_, profile);
 
   bool had_profile = (profile_ != NULL);
   profile_ = profile;

@@ -84,6 +84,7 @@ class ASH_EXPORT DockedMagnifierController
 
   // ash::SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
+  void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;

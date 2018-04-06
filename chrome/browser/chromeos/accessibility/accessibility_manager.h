@@ -110,25 +110,6 @@ class AccessibilityManager
   // Show the accessibility help as a tab in the browser.
   static void ShowAccessibilityHelp(Browser* browser);
 
-  // On a user's first login into a device, any a11y features enabled/disabled
-  // by the user on the login screen are enabled/disabled in the user's profile.
-  // This class watches for profile changes and copies settings into the user's
-  // profile when it detects a login with a newly created profile.
-  class PrefHandler {
-   public:
-    explicit PrefHandler(const char* pref_path);
-    virtual ~PrefHandler();
-
-    // Should be called from AccessibilityManager::SetProfile().
-    void HandleProfileChanged(Profile* previous_profile,
-                              Profile* current_profile);
-
-   private:
-    const char* pref_path_;
-
-    DISALLOW_COPY_AND_ASSIGN(PrefHandler);
-  };
-
   // Returns true when the accessibility menu should be shown.
   bool ShouldShowAccessibilityMenu();
 
@@ -393,20 +374,6 @@ class AccessibilityManager
   std::unique_ptr<PrefChangeRegistrar> local_state_pref_change_registrar_;
   std::unique_ptr<user_manager::ScopedUserSessionStateObserver>
       session_state_observer_;
-
-  PrefHandler large_cursor_pref_handler_;
-  PrefHandler sticky_keys_pref_handler_;
-  PrefHandler spoken_feedback_pref_handler_;
-  PrefHandler high_contrast_pref_handler_;
-  PrefHandler autoclick_pref_handler_;
-  PrefHandler autoclick_delay_pref_handler_;
-  PrefHandler virtual_keyboard_pref_handler_;
-  PrefHandler mono_audio_pref_handler_;
-  PrefHandler caret_highlight_pref_handler_;
-  PrefHandler cursor_highlight_pref_handler_;
-  PrefHandler focus_highlight_pref_handler_;
-  PrefHandler select_to_speak_pref_handler_;
-  PrefHandler switch_access_pref_handler_;
 
   bool spoken_feedback_enabled_;
   bool select_to_speak_enabled_;

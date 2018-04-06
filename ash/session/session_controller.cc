@@ -346,10 +346,9 @@ void SessionController::SetUserSessionOrder(
       observer.OnActiveUserSessionChanged(
           user_sessions_[0]->user_info->account_id);
     }
-    if (it != per_user_prefs_.end()) {
-      for (auto& observer : observers_)
-        observer.OnActiveUserPrefServiceChanged(last_active_user_prefs_);
-    }
+
+    if (it != per_user_prefs_.end())
+      MaybeNotifyOnActiveUserPrefServiceChanged();
 
     UpdateLoginStatus();
   }
@@ -498,10 +497,8 @@ void SessionController::SetSessionState(SessionState state) {
     session_activation_observer_holder_.NotifyLockStateChanged(locked);
   }
 
-  // Signin profile prefs are needed at OOBE and login screen, but don't request
-  // them twice.
-  if (!signin_screen_prefs_requested_ &&
-      (state_ == SessionState::OOBE || state_ == SessionState::LOGIN_PRIMARY)) {
+  // Request signin profile prefs only once.
+  if (!signin_screen_prefs_requested_) {
     ConnectToSigninScreenPrefService();
     signin_screen_prefs_requested_ = true;
   }
@@ -639,11 +636,18 @@ void SessionController::OnSigninScreenPrefServiceInitialized(
   DCHECK(!signin_screen_prefs_);
   signin_screen_prefs_ = std::move(pref_service);
 
-  // The signin profile should be initialized before any user profile.
-  DCHECK(!last_active_user_prefs_);
-
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.OnSigninScreenPrefServiceInitialized(signin_screen_prefs_.get());
+  }
+
+  if (on_active_user_prefs_changed_notify_deferred_) {
+    // Notify obsevers with the deferred OnActiveUserPrefServiceChanged(). Do
+    // this in a separate loop from the above since observers might depend on
+    // each other and we want to avoid having inconsistent states.
+    for (auto& observer : observers_)
+      observer.OnActiveUserPrefServiceChanged(last_active_user_prefs_);
+    on_active_user_prefs_changed_notify_deferred_ = false;
+  }
 }
 
 void SessionController::OnProfilePrefServiceInitialized(
@@ -660,9 +664,24 @@ void SessionController::OnProfilePrefServiceInitialized(
   DCHECK(!user_sessions_.empty());
   if (account_id == user_sessions_[0]->user_info->account_id) {
     last_active_user_prefs_ = pref_service_ptr;
-    for (auto& observer : observers_)
-      observer.OnActiveUserPrefServiceChanged(pref_service_ptr);
+
+    MaybeNotifyOnActiveUserPrefServiceChanged();
   }
+}
+
+void SessionController::MaybeNotifyOnActiveUserPrefServiceChanged() {
+  DCHECK(last_active_user_prefs_);
+
+  if (!signin_screen_prefs_) {
+    // We must guarantee that OnSigninScreenPrefServiceInitialized() is called
+    // before OnActiveUserPrefServiceChanged(), so defer notifying the
+    // observers until the sign in prefs are received.
+    on_active_user_prefs_changed_notify_deferred_ = true;
+    return;
+  }
+
+  for (auto& observer : observers_)
+    observer.OnActiveUserPrefServiceChanged(last_active_user_prefs_);
 }
 
 }  // namespace ash
