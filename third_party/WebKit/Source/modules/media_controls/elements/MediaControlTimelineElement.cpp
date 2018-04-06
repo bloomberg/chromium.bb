@@ -24,6 +24,7 @@
 #include "core/style/ComputedStyle.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "modules/media_controls/MediaControlsResourceLoader.h"
+#include "modules/media_controls/elements/MediaControlCurrentTimeDisplayElement.h"
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"
 #include "platform/runtime_enabled_features.h"
 #include "public/platform/Platform.h"
@@ -87,6 +88,9 @@ bool MediaControlTimelineElement::WillRespondToMouseClickEvents() {
 
 void MediaControlTimelineElement::SetPosition(double current_time) {
   setValue(String::Number(current_time));
+  setAttribute(
+      HTMLNames::aria_valuetextAttr,
+      AtomicString(GetMediaControls().CurrentTimeDisplay().textContent(true)));
   RenderBarSegments();
 }
 
