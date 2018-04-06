@@ -187,6 +187,13 @@ const char kChromeFeaturesServiceInterface[] =
 const char kChromeFeaturesServiceIsCrostiniEnabledMethod[] =
     "IsCrostiniEnabled";
 
+const char kUrlHandlerServiceName[] = "org.chromium.UrlHandlerService";
+const char kUrlHandlerServicePath[] = "/org/chromium/UrlHandlerService";
+const char kUrlHandlerServiceInterface[] =
+    "org.chromium.UrlHandlerServiceInterface";
+// Methods
+const char kUrlHandlerServiceOpenUrlMethod[] = "OpenUrl";
+
 }  // namespace chromeos
 
 namespace cromo {
