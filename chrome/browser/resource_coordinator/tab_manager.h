@@ -259,6 +259,8 @@ class TabManager : public LifecycleUnitObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsTabRestoredInForeground);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, EnablePageAlmostIdleSignal);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, FreezeTab);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           TrackingNumberOfLoadedLifecycleUnits);
 
   // The time of the first purging after a renderer is backgrounded.
   // The initial value was chosen because most of users activate backgrounded
@@ -409,12 +411,17 @@ class TabManager : public LifecycleUnitObserver,
 
   // LifecycleUnitObserver:
   void OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) override;
+  void OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit) override;
 
   // LifecycleUnitSourceObserver:
   void OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) override;
 
   // LifecycleUnits managed by this.
   LifecycleUnitSet lifecycle_units_;
+
+  // Number of LifecycleUnits in |lifecycle_units_| that are State::LOADED. Used
+  // to determine threshold for proactive tab discarding experiments.
+  int num_loaded_lifecycle_units_ = 0;
 
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer update_timer_;

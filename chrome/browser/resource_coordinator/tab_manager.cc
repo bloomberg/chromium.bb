@@ -115,6 +115,14 @@ std::unique_ptr<base::trace_event::ConvertableToTraceFormat> DataAsTraceValue(
   return std::move(data);
 }
 
+int GetNumLoadedLifecycleUnits(LifecycleUnitSet lifecycle_unit_set) {
+  int num_loaded_lifecycle_units = 0;
+  for (auto* lifecycle_unit : lifecycle_unit_set)
+    if (lifecycle_unit->GetState() == LifecycleUnit::State::LOADED)
+      num_loaded_lifecycle_units++;
+  return num_loaded_lifecycle_units;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -905,15 +913,35 @@ bool TabManager::IsForceLoadTimerRunning() const {
   return force_load_timer_ && force_load_timer_->IsRunning();
 }
 
+void TabManager::OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit) {
+  if (lifecycle_unit->GetState() == LifecycleUnit::State::LOADED)
+    num_loaded_lifecycle_units_++;
+  else
+    num_loaded_lifecycle_units_--;
+
+  DCHECK_EQ(num_loaded_lifecycle_units_,
+            GetNumLoadedLifecycleUnits(lifecycle_units_));
+}
+
 void TabManager::OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) {
+  if (lifecycle_unit->GetState() == LifecycleUnit::State::LOADED)
+    num_loaded_lifecycle_units_--;
   lifecycle_units_.erase(lifecycle_unit);
+
+  DCHECK_EQ(num_loaded_lifecycle_units_,
+            GetNumLoadedLifecycleUnits(lifecycle_units_));
 }
 
 void TabManager::OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) {
   lifecycle_units_.insert(lifecycle_unit);
+  if (lifecycle_unit->GetState() == LifecycleUnit::State::LOADED)
+    num_loaded_lifecycle_units_++;
 
   // Add an observer to be notified of destruction.
   lifecycle_unit->AddObserver(this);
+
+  DCHECK_EQ(num_loaded_lifecycle_units_,
+            GetNumLoadedLifecycleUnits(lifecycle_units_));
 }
 
 }  // namespace resource_coordinator
