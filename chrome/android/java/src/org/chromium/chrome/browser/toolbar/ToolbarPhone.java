@@ -1066,12 +1066,10 @@ public class ToolbarPhone extends ToolbarLayout
         mLocationBarNtpOffsetLeft = 0;
         mLocationBarNtpOffsetRight = 0;
 
-        boolean isNtp = false;
         Tab currentTab = getToolbarDataProvider().getTab();
         if (currentTab != null) {
             NewTabPage ntp = getToolbarDataProvider().getNewTabPageForCurrentTab();
             if (ntp != null) {
-                isNtp = true;
                 ntp.setUrlFocusChangeAnimationPercent(mUrlFocusChangePercent);
             }
 
@@ -1102,7 +1100,8 @@ public class ToolbarPhone extends ToolbarLayout
 
         // Only transition theme colors if in static tab mode that is not the NTP. In practice this
         // only runs when you focus the omnibox on a web page.
-        if (mLocationBar.useModernDesign() && !isNtp && mTabSwitcherState == STATIC_TAB) {
+        if (mLocationBar.useModernDesign() && !isLocationBarShownInNTP()
+                && mTabSwitcherState == STATIC_TAB) {
             int defaultColor = ColorUtils.getDefaultThemeColor(getResources(), true, isIncognito());
             int defaultLocationBarColor = getLocationBarColorForToolbarColor(defaultColor);
             int primaryColor = getToolbarDataProvider().getPrimaryColor();

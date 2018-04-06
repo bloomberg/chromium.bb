@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
@@ -283,8 +284,8 @@ public class NewTabPage
         mBackgroundColor = ApiCompatibilityUtils.getColor(activity.getResources(),
                 SuggestionsConfig.useModernLayout() ? R.color.modern_primary_color
                                                     : R.color.ntp_bg);
-        mThemeColor = ApiCompatibilityUtils.getColor(
-                activity.getResources(), R.color.default_primary_color);
+        mThemeColor = ColorUtils.getDefaultThemeColor(
+                activity.getResources(), FeatureUtilities.isChromeModernDesignEnabled(), false);
         mIsTablet = activity.isTablet();
         TemplateUrlService.getInstance().addObserver(this);
 

@@ -98,18 +98,23 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         int textBoxColor = Color.WHITE;
         int textBoxResourceId = R.drawable.card_single;
 
-        boolean isNtp = false;
+        boolean isLocationBarShownInNtp = false;
         boolean useModern = false;
         Tab currentTab = fullscreenManager.getTab();
         if (currentTab != null) {
-            isNtp = currentTab != null ? NewTabPage.isNTPUrl(currentTab.getUrl()) : false;
+            boolean isNtp =
+                    currentTab != null ? currentTab.getNativePage() instanceof NewTabPage : false;
+            if (isNtp) {
+                isLocationBarShownInNtp =
+                        ((NewTabPage) currentTab.getNativePage()).isLocationBarShownInNTP();
+            }
             useModern = currentTab.getActivity().supportsModernDesign()
                     && FeatureUtilities.isChromeModernDesignEnabled();
         }
 
         if (useModern) {
-            textBoxColor = ColorUtils.getTextBoxColorForToolbarBackground(
-                    mContext.getResources(), isNtp, browserControlsBackgroundColor, true);
+            textBoxColor = ColorUtils.getTextBoxColorForToolbarBackground(mContext.getResources(),
+                    isLocationBarShownInNtp, browserControlsBackgroundColor, true);
             textBoxResourceId = R.drawable.modern_location_bar;
         }
 
