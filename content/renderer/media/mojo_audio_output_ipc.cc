@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "media/audio/audio_device_description.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -21,12 +20,13 @@ void TrivialAuthorizedCallback(media::OutputDeviceStatus,
 
 }  // namespace
 
-MojoAudioOutputIPC::MojoAudioOutputIPC(FactoryAccessorCB factory_accessor)
+MojoAudioOutputIPC::MojoAudioOutputIPC(
+    FactoryAccessorCB factory_accessor,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : factory_accessor_(std::move(factory_accessor)),
       binding_(this),
-      weak_factory_(this) {
-  DETACH_FROM_THREAD(thread_checker_);
-}
+      io_task_runner_(std::move(io_task_runner)),
+      weak_factory_(this) {}
 
 MojoAudioOutputIPC::~MojoAudioOutputIPC() {
   DCHECK(!AuthorizationRequested() && !StreamCreationRequested())
@@ -41,7 +41,7 @@ void MojoAudioOutputIPC::RequestDeviceAuthorization(
     int session_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate);
   DCHECK(!delegate_);
   DCHECK(!AuthorizationRequested());
@@ -63,7 +63,7 @@ void MojoAudioOutputIPC::RequestDeviceAuthorization(
 
 void MojoAudioOutputIPC::CreateStream(media::AudioOutputIPCDelegate* delegate,
                                       const media::AudioParameters& params) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate);
   DCHECK(!StreamCreationRequested());
   if (!AuthorizationRequested()) {
@@ -94,19 +94,19 @@ void MojoAudioOutputIPC::CreateStream(media::AudioOutputIPCDelegate* delegate,
 }
 
 void MojoAudioOutputIPC::PlayStream() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(stream_.is_bound());
   stream_->Play();
 }
 
 void MojoAudioOutputIPC::PauseStream() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(stream_.is_bound());
   stream_->Pause();
 }
 
 void MojoAudioOutputIPC::CloseStream() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   stream_provider_.reset();
   stream_.reset();
   binding_.Close();
@@ -117,13 +117,13 @@ void MojoAudioOutputIPC::CloseStream() {
 }
 
 void MojoAudioOutputIPC::SetVolume(double volume) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(stream_.is_bound());
   stream_->SetVolume(volume);
 }
 
 void MojoAudioOutputIPC::OnError() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate_);
   delegate_->OnError();
 }
@@ -138,7 +138,7 @@ bool MojoAudioOutputIPC::StreamCreationRequested() {
 
 media::mojom::AudioOutputStreamProviderRequest
 MojoAudioOutputIPC::MakeProviderRequest() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!AuthorizationRequested());
   media::mojom::AudioOutputStreamProviderRequest request =
       mojo::MakeRequest(&stream_provider_);
@@ -161,7 +161,7 @@ void MojoAudioOutputIPC::DoRequestDeviceAuthorization(
     int session_id,
     const std::string& device_id,
     AuthorizationCB callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   auto* factory = factory_accessor_.Run();
   if (!factory) {
     LOG(ERROR) << "MojoAudioOutputIPC failed to acquire factory";
@@ -172,7 +172,7 @@ void MojoAudioOutputIPC::DoRequestDeviceAuthorization(
     // when the factory is destroyed before reply, i.e. calling
     // OnDeviceAuthorized with ERROR_INTERNAL in the normal case.
     // The AudioOutputIPCDelegate will call CloseStream as necessary.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    io_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce([](AuthorizationCB cb) {}, std::move(callback)));
     return;
@@ -188,14 +188,14 @@ void MojoAudioOutputIPC::ReceivedDeviceAuthorization(
     media::OutputDeviceStatus status,
     const media::AudioParameters& params,
     const std::string& device_id) const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate_);
   delegate_->OnDeviceAuthorized(status, params, device_id);
 }
 
 void MojoAudioOutputIPC::StreamCreated(
     media::mojom::AudioDataPipePtr data_pipe) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate_);
 
   base::PlatformFile socket_handle;

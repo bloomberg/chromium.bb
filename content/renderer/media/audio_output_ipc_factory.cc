@@ -39,7 +39,8 @@ AudioOutputIPCFactory::CreateAudioOutputIPC(int frame_id) const {
     // Unretained is safe due to the contract at the top of the header file.
     return std::make_unique<MojoAudioOutputIPC>(
         base::BindRepeating(&AudioOutputIPCFactory::GetRemoteFactory,
-                            base::Unretained(this), frame_id));
+                            base::Unretained(this), frame_id),
+        io_task_runner_);
   }
   return audio_message_filter_->CreateAudioOutputIPC(frame_id);
 }

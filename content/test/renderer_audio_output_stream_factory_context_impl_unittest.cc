@@ -252,12 +252,13 @@ TEST_F(RendererAudioOutputStreamFactoryIntegrationTest, StreamIntegrationTest) {
   // Wait for factory_ptr to be set.
   SyncWith(renderer_ipc_task_runner);
 
-  auto renderer_side_ipc =
-      std::make_unique<MojoAudioOutputIPC>(base::BindRepeating(
+  auto renderer_side_ipc = std::make_unique<MojoAudioOutputIPC>(
+      base::BindRepeating(
           [](mojom::RendererAudioOutputStreamFactory* factory_ptr) {
             return factory_ptr;
           },
-          factory_ptr));
+          factory_ptr),
+      renderer_ipc_task_runner);
 
   auto device = base::MakeRefCounted<media::AudioOutputDevice>(
       std::move(renderer_side_ipc), renderer_ipc_task_runner, kNoSessionId, "",
