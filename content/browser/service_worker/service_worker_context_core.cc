@@ -366,6 +366,7 @@ void ServiceWorkerContextCore::AddProviderHost(
 ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHost(
     int process_id,
     int provider_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ProviderMap* map = GetProviderMapForProcess(process_id);
   if (!map)
     return nullptr;

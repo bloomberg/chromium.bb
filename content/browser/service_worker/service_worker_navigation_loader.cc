@@ -264,8 +264,8 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     return;
   }
 
-  // Creates a new HttpResponseInfo using the the ServiceWorker script's
-  // HttpResponseInfo to show HTTPS padlock.
+  // Get SSLInfo from the ServiceWorker script's HttpResponseInfo to show HTTPS
+  // padlock.
   // TODO(horo): When we support mixed-content (HTTP) no-cors requests from a
   // ServiceWorker, we have to check the security level of the responses.
   const net::HttpResponseInfo* main_script_http_info =

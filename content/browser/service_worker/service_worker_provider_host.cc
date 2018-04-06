@@ -114,10 +114,10 @@ void RemoveProviderHost(base::WeakPtr<ServiceWorkerContextCore> context,
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerProviderHost::RemoveProviderHost");
   if (!context || !context->GetProviderHost(process_id, provider_id)) {
-    // In some cancellation of navigation cases, it is possible for the
-    // pre-created host, whose |provider_id| is assigned by the browser process,
-    // to have been destroyed before being claimed by the renderer. The provider
-    // is then destroyed in the renderer, and no matching host will be found.
+    // In some cases, it is possible for the Mojo endpoint of a pre-created
+    // host to be destroyed before being claimed by the renderer and
+    // becoming owned by ServiceWorkerContextCore. The owner of the host is
+    // responsible for deleting the host, so just return here.
     return;
   }
   context->RemoveProviderHost(process_id, provider_id);

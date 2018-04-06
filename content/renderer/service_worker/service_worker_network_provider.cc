@@ -99,32 +99,26 @@ class WebServiceWorkerNetworkProviderForFrame
       return nullptr;
 
     // S13nServiceWorker:
-    // We only install our own URLLoader if Servicification is
-    // enabled.
+    // We only install our own URLLoader if Servicification is enabled.
     if (!ServiceWorkerUtils::IsServicificationEnabled())
       return nullptr;
 
-    // S13nServiceWorker:
-    // We need SubresourceLoaderFactory populated in order to
-    // create our own URLLoader for subresource loading.
+    // We need SubresourceLoaderFactory populated in order to create our own
+    // URLLoader for subresource loading.
     if (!provider_->context() ||
         !provider_->context()->GetSubresourceLoaderFactory())
       return nullptr;
 
-    // S13nServiceWorker:
-    // If it's not for HTTP or HTTPS no need to intercept the
-    // request.
+    // If it's not for HTTP or HTTPS, no need to intercept the request.
     if (!GURL(request.Url()).SchemeIsHTTPOrHTTPS())
       return nullptr;
 
-    // S13nServiceWorker:
-    // If GetSkipServiceWorker() returns true, no need to intercept the request.
+    // If GetSkipServiceWorker() returns true, do not intercept the request.
     if (request.GetSkipServiceWorker())
       return nullptr;
 
-    // S13nServiceWorker:
-    // Create our own SubresourceLoader to route the request
-    // to the controller ServiceWorker.
+    // Create our own SubresourceLoader to route the request to the controller
+    // ServiceWorker.
     // TODO(crbug.com/796425): Temporarily wrap the raw mojom::URLLoaderFactory
     // pointer into SharedURLLoaderFactory.
     return std::make_unique<WebURLLoaderImpl>(
