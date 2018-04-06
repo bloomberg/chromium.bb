@@ -165,6 +165,7 @@ SupervisedUserInterstitial::SupervisedUserInterstitial(
       url_(url),
       reason_(reason),
       initial_page_load_(initial_page_load),
+      proceeded_(false),
       callback_(callback),
       scoped_observer_(this),
       weak_ptr_factory_(this) {}
@@ -337,7 +338,11 @@ void SupervisedUserInterstitial::OnURLFilterChanged() {
             features::kSupervisedUserCommittedInterstitials)) {
       ProceedInternal();
     } else {
-      interstitial_page_->Proceed();
+      // Interstitial page deletes the interstitial when proceeding but not
+      // synchronously, so a check is required to avoid calling proceed twice.
+      if (!proceeded_)
+        interstitial_page_->Proceed();
+      proceeded_ = true;
     }
   }
 }
