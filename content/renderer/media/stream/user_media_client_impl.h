@@ -40,9 +40,11 @@ class CONTENT_EXPORT UserMediaClientImpl : public RenderFrameObserver,
   UserMediaClientImpl(
       RenderFrameImpl* render_frame,
       PeerConnectionDependencyFactory* dependency_factory,
-      std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer);
+      std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   UserMediaClientImpl(RenderFrameImpl* render_frame,
-                      std::unique_ptr<UserMediaProcessor> user_media_processor);
+                      std::unique_ptr<UserMediaProcessor> user_media_processor,
+                      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~UserMediaClientImpl() override;
 
   MediaStreamDeviceObserver* media_stream_device_observer() const {

@@ -40,8 +40,10 @@ void RequestSucceeded(blink::WebApplyConstraintsRequest request) {
 }  // namespace
 
 ApplyConstraintsProcessor::ApplyConstraintsProcessor(
-    MediaDevicesDispatcherCallback media_devices_dispatcher_cb)
+    MediaDevicesDispatcherCallback media_devices_dispatcher_cb,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : media_devices_dispatcher_cb_(std::move(media_devices_dispatcher_cb)),
+      task_runner_(std::move(task_runner)),
       weak_factory_(this) {}
 
 ApplyConstraintsProcessor::~ApplyConstraintsProcessor() {
@@ -308,7 +310,7 @@ bool ApplyConstraintsProcessor::AbortIfVideoRequestStateInvalid() {
 }
 
 void ApplyConstraintsProcessor::ApplyConstraintsSucceeded() {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&ApplyConstraintsProcessor::CleanupRequest,
                      weak_factory_.GetWeakPtr(),
@@ -318,7 +320,7 @@ void ApplyConstraintsProcessor::ApplyConstraintsSucceeded() {
 void ApplyConstraintsProcessor::ApplyConstraintsFailed(
     const char* failed_constraint_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &ApplyConstraintsProcessor::CleanupRequest,
@@ -332,7 +334,7 @@ void ApplyConstraintsProcessor::ApplyConstraintsFailed(
 void ApplyConstraintsProcessor::CannotApplyConstraints(
     const blink::WebString& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ApplyConstraintsProcessor::CleanupRequest,
                                 weak_factory_.GetWeakPtr(),
                                 base::BindOnce(&RequestFailed, current_request_,

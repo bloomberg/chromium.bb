@@ -87,12 +87,14 @@ UserMediaClientImpl::Request::MoveUserMediaRequest() {
 
 UserMediaClientImpl::UserMediaClientImpl(
     RenderFrameImpl* render_frame,
-    std::unique_ptr<UserMediaProcessor> user_media_processor)
+    std::unique_ptr<UserMediaProcessor> user_media_processor,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : RenderFrameObserver(render_frame),
       user_media_processor_(std::move(user_media_processor)),
       apply_constraints_processor_(new ApplyConstraintsProcessor(
           base::BindRepeating(&UserMediaClientImpl::GetMediaDevicesDispatcher,
-                              base::Unretained(this)))),
+                              base::Unretained(this)),
+          std::move(task_runner))),
       weak_factory_(this) {}
 
 // base::Unretained(this) is safe here because |this| owns
@@ -100,7 +102,8 @@ UserMediaClientImpl::UserMediaClientImpl(
 UserMediaClientImpl::UserMediaClientImpl(
     RenderFrameImpl* render_frame,
     PeerConnectionDependencyFactory* dependency_factory,
-    std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer)
+    std::unique_ptr<MediaStreamDeviceObserver> media_stream_device_observer,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : UserMediaClientImpl(
           render_frame,
           std::make_unique<UserMediaProcessor>(
@@ -109,7 +112,8 @@ UserMediaClientImpl::UserMediaClientImpl(
               std::move(media_stream_device_observer),
               base::BindRepeating(
                   &UserMediaClientImpl::GetMediaDevicesDispatcher,
-                  base::Unretained(this)))) {}
+                  base::Unretained(this))),
+          std::move(task_runner)) {}
 
 UserMediaClientImpl::~UserMediaClientImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
