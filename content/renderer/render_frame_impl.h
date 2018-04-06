@@ -53,7 +53,6 @@
 #include "content/renderer/input/input_target_client_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/media/media_factory.h"
-#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
@@ -1272,8 +1271,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void SendUpdateFaviconURL(blink::WebIconURL::Type icon_types_mask);
 
-  void UpdatePeakMemoryStats();
-  void ReportPeakMemoryStats();
   void BindWidget(mojom::WidgetRequest request);
 
   void ShowDeferredContextMenu(const ContextMenuParams& params);
@@ -1669,8 +1666,6 @@ class CONTENT_EXPORT RenderFrameImpl
   std::vector<media::RoutingTokenCallback> pending_routing_token_callbacks_;
 
   InputTargetClientImpl input_target_client_impl_;
-
-  RenderThreadImpl::RendererMemoryMetrics peak_memory_metrics_;
 
   // Used for devtools instrumentation and trace-ability. This token is
   // used to tag calls and requests in order to attribute them to the context

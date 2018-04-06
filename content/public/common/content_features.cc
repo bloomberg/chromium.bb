@@ -299,10 +299,6 @@ const base::Feature kRasterInducingScroll{"RasterInducingScroll",
 const base::Feature kRenderingPipelineThrottling{
     "RenderingPipelineThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Collect renderer peak memory usage during page loads.
-const base::Feature kReportRendererPeakMemoryStats{
-    "ReportRendererPeakMemoryStats", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // When loading CSS from a 'file:' URL, require a CSS-like file extension.
 const base::Feature kRequireCSSExtensionForFile{
     "RequireCSSExtensionForFile", base::FEATURE_ENABLED_BY_DEFAULT};
