@@ -783,8 +783,6 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
 ScriptPromise WebGLRenderingContextBase::setCompatibleXRDevice(
     ScriptState* script_state,
     XRDevice* xr_device) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  ScriptPromise promise = resolver->Promise();
 
   if (isContextLost()) {
     return ScriptPromise::RejectWithDOMException(
@@ -793,13 +791,13 @@ ScriptPromise WebGLRenderingContextBase::setCompatibleXRDevice(
   }
 
   if (xr_device == compatible_xr_device_) {
-    resolver->Resolve();
-    return promise;
+    // Returns a script promise resolved with undefined.
+    return ScriptPromise::CastUndefined(script_state);
   }
 
   if (ContextCreatedOnCompatibleAdapter(xr_device)) {
     compatible_xr_device_ = xr_device;
-    resolver->Resolve();
+    return ScriptPromise::CastUndefined(script_state);
   } else {
     // TODO(offenwanger): Trigger context loss and recreate on compatible GPU.
     return ScriptPromise::RejectWithDOMException(
@@ -808,8 +806,6 @@ ScriptPromise WebGLRenderingContextBase::setCompatibleXRDevice(
             kNotSupportedError,
             "Context is not compatible. Switching not yet implemented."));
   }
-
-  return promise;
 }
 
 bool WebGLRenderingContextBase::IsXRDeviceCompatible(
