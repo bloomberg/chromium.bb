@@ -14,4 +14,12 @@ const char* const kClientHintsHeaderMapping[] = {"device-memory", "dpr",
 const size_t kClientHintsHeaderMappingCount =
     arraysize(kClientHintsHeaderMapping);
 
+const char* const kWebEffectiveConnectionTypeMapping[] = {
+    "4g" /* Unknown */, "4g" /* Offline */, "slow-2g" /* Slow 2G */,
+    "2g" /* 2G */,      "3g" /* 3G */,      "4g" /* 4G */
+};
+
+const size_t kWebEffectiveConnectionTypeMappingCount =
+    arraysize(kWebEffectiveConnectionTypeMapping);
+
 }  // namespace blink

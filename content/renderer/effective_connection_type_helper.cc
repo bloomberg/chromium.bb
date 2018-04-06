@@ -4,6 +4,8 @@
 
 #include "content/renderer/effective_connection_type_helper.h"
 
+#include "third_party/WebKit/public/common/client_hints/client_hints.h"
+
 namespace content {
 
 #define STATIC_ASSERT_ENUM(a, b)                            \
@@ -24,6 +26,17 @@ STATIC_ASSERT_ENUM(net::EFFECTIVE_CONNECTION_TYPE_4G,
                    blink::WebEffectiveConnectionType::kType4G);
 
 #undef STATIC_ASSERT_ENUM
+
+static_assert(net::EFFECTIVE_CONNECTION_TYPE_4G + 1 ==
+                  net::EFFECTIVE_CONNECTION_TYPE_LAST,
+              "When adding a new effective connection type, "
+              "WebEffectiveConnectionType.h should be updated too");
+
+static_assert(static_cast<int>(blink::WebEffectiveConnectionType::kType4G) +
+                      1 ==
+                  net::EFFECTIVE_CONNECTION_TYPE_LAST,
+              "When adding a new effective connection type, "
+              "WebEffectiveConnectionType.h should be updated too");
 
 blink::WebEffectiveConnectionType
 EffectiveConnectionTypeToWebEffectiveConnectionType(

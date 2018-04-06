@@ -31,6 +31,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "third_party/WebKit/public/common/client_hints/client_hints.h"
 
 namespace {
 
@@ -57,14 +58,11 @@ class ThirdPartyURLLoaderInterceptor {
       return false;
 
     request_count_seen_++;
-    if (params->url_request.headers.HasHeader("dpr")) {
-      client_hints_count_seen_++;
-    }
-    if (params->url_request.headers.HasHeader("device-memory")) {
-      client_hints_count_seen_++;
-    }
-    if (params->url_request.headers.HasHeader("viewport-width")) {
-      client_hints_count_seen_++;
+    for (size_t i = 0; i < blink::kClientHintsHeaderMappingCount; ++i) {
+      if (params->url_request.headers.HasHeader(
+              blink::kClientHintsHeaderMapping[i])) {
+        client_hints_count_seen_++;
+      }
     }
     return false;
   }
@@ -256,13 +254,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
         request.GetURL().spec().find(".html") != std::string::npos;
 
     if (is_main_frame_navigation) {
-      // device-memory header is attached to the main frame request.
-      EXPECT_EQ(expect_client_hints_on_main_frame_,
-                base::ContainsKey(request.headers, "device-memory"));
-      EXPECT_EQ(expect_client_hints_on_main_frame_,
-                base::ContainsKey(request.headers, "dpr"));
-      EXPECT_EQ(expect_client_hints_on_main_frame_,
-                base::ContainsKey(request.headers, "viewport-width"));
+      VerifyClientHintsReceived(expect_client_hints_on_main_frame_, request);
       if (expect_client_hints_on_main_frame_) {
         double value = 0.0;
         EXPECT_TRUE(base::StringToDouble(
@@ -287,12 +279,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
     }
 
     if (!is_main_frame_navigation) {
-      EXPECT_EQ(expect_client_hints_on_subresources_,
-                base::ContainsKey(request.headers, "device-memory"));
-      EXPECT_EQ(expect_client_hints_on_subresources_,
-                base::ContainsKey(request.headers, "dpr"));
-      EXPECT_EQ(expect_client_hints_on_subresources_,
-                base::ContainsKey(request.headers, "viewport-width"));
+      VerifyClientHintsReceived(expect_client_hints_on_subresources_, request);
 
       if (expect_client_hints_on_subresources_) {
         double value = 0.0;
@@ -328,14 +315,25 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
       }
     }
 
-    if (base::ContainsKey(request.headers, "dpr"))
-      count_client_hints_headers_seen_++;
+    for (size_t i = 0; i < blink::kClientHintsHeaderMappingCount; ++i) {
+      if (base::ContainsKey(request.headers,
+                            blink::kClientHintsHeaderMapping[i])) {
+        count_client_hints_headers_seen_++;
+      }
+    }
+  }
 
-    if (base::ContainsKey(request.headers, "device-memory"))
-      count_client_hints_headers_seen_++;
-
-    if (base::ContainsKey(request.headers, "viewport-width"))
-      count_client_hints_headers_seen_++;
+  void VerifyClientHintsReceived(bool expect_client_hints,
+                                 const net::test_server::HttpRequest& request) {
+    for (size_t i = 0; i < blink::kClientHintsHeaderMappingCount; ++i) {
+      // Resource width client hint is only attached on image subresources.
+      if (std::string(blink::kClientHintsHeaderMapping[i]) == "width") {
+        continue;
+      }
+      EXPECT_EQ(expect_client_hints,
+                base::ContainsKey(request.headers,
+                                  blink::kClientHintsHeaderMapping[i]));
+    }
   }
 
   net::EmbeddedTestServer http_server_;
