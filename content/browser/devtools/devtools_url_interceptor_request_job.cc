@@ -811,8 +811,10 @@ void DevToolsURLInterceptorRequestJob::OnInterceptedRequestResponseStarted(
     const net::Error& net_error) {
   DCHECK_NE(waiting_for_user_response_,
             WaitingForUserResponse::WAITING_FOR_RESPONSE_ACK);
-  if (stage_to_intercept_ == InterceptionStage::DONT_INTERCEPT)
+  if (stage_to_intercept_ == InterceptionStage::DONT_INTERCEPT) {
+    static_cast<InterceptedRequest*>(sub_request_.get())->FetchResponseBody();
     return;
+  }
   waiting_for_user_response_ = WaitingForUserResponse::WAITING_FOR_RESPONSE_ACK;
 
   std::unique_ptr<InterceptedRequestInfo> request_info = BuildRequestInfo();
@@ -1130,7 +1132,13 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionResponse(
     // The reason we start a sub request is because we are in full control of it
     // and can choose to ignore it if, for example, the fetch encounters a
     // redirect that the user chooses to replace with a mock response.
-    sub_request_.reset(new SubRequest(request_details_, this, interceptor_));
+    DCHECK(stage_to_intercept_ != InterceptionStage::RESPONSE);
+    if (stage_to_intercept_ == InterceptionStage::BOTH) {
+      sub_request_.reset(
+          new InterceptedRequest(request_details_, this, interceptor_));
+    } else {
+      sub_request_.reset(new SubRequest(request_details_, this, interceptor_));
+    }
   }
 }
 
