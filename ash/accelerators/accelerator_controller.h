@@ -205,6 +205,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget,
   std::set<int> actions_allowed_at_login_screen_;
   // Actions allowed when the screen is locked.
   std::set<int> actions_allowed_at_lock_screen_;
+  // Actions allowed when the power menu is opened.
+  std::set<int> actions_allowed_at_power_menu_;
   // Actions allowed when a modal window is up.
   std::set<int> actions_allowed_at_modal_window_;
   // Preferred actions. See accelerator_table.h for details.

@@ -233,6 +233,10 @@ ASH_EXPORT extern const size_t kActionsAllowedAtLoginOrLockScreenLength;
 ASH_EXPORT extern const AcceleratorAction kActionsAllowedAtLockScreen[];
 ASH_EXPORT extern const size_t kActionsAllowedAtLockScreenLength;
 
+// Actions allowed while power menu is opened.
+ASH_EXPORT extern const AcceleratorAction kActionsAllowedAtPowerMenu[];
+ASH_EXPORT extern const size_t kActionsAllowedAtPowerMenuLength;
+
 // Actions allowed while a modal window is up.
 ASH_EXPORT extern const AcceleratorAction kActionsAllowedAtModalWindow[];
 ASH_EXPORT extern const size_t kActionsAllowedAtModalWindowLength;

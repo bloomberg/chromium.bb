@@ -61,6 +61,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -1018,6 +1019,8 @@ void AcceleratorController::Init() {
   }
   for (size_t i = 0; i < kActionsAllowedAtLockScreenLength; ++i)
     actions_allowed_at_lock_screen_.insert(kActionsAllowedAtLockScreen[i]);
+  for (size_t i = 0; i < kActionsAllowedAtPowerMenuLength; ++i)
+    actions_allowed_at_power_menu_.insert(kActionsAllowedAtPowerMenu[i]);
   for (size_t i = 0; i < kActionsAllowedAtModalWindowLength; ++i)
     actions_allowed_at_modal_window_.insert(kActionsAllowedAtModalWindow[i]);
   for (size_t i = 0; i < kPreferredActionsLength; ++i)
@@ -1572,6 +1575,10 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) const {
   if (Shell::Get()->session_controller()->IsScreenLocked() &&
       actions_allowed_at_lock_screen_.find(action) ==
           actions_allowed_at_lock_screen_.end()) {
+    return RESTRICTION_PREVENT_PROCESSING;
+  }
+  if (Shell::Get()->power_button_controller()->IsMenuOpened() &&
+      !base::ContainsKey(actions_allowed_at_power_menu_, action)) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
   if (Shell::Get()->shell_delegate()->IsRunningInForcedAppMode() &&

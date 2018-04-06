@@ -62,7 +62,7 @@ std::unique_ptr<views::Widget> CreateMenuWidget() {
   params.name = "PowerButtonMenuWindow";
   params.layer_type = ui::LAYER_SOLID_COLOR;
   params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
-      kShellWindowId_OverlayContainer);
+      kShellWindowId_PowerMenuContainer);
   menu_widget->Init(params);
 
   gfx::Rect widget_bounds =
@@ -286,7 +286,6 @@ void PowerButtonController::OnLockButtonEvent(
     return;
   }
 
-  DismissMenu();
   if (down)
     lock_state_controller_->StartLockAnimation();
   else
