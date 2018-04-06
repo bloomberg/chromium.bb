@@ -234,6 +234,8 @@ target(link_target_type, "renderer") {
     "loader/child_url_loader_factory_bundle.h",
     "loader/ftp_directory_listing_response_delegate.cc",
     "loader/ftp_directory_listing_response_delegate.h",
+    "loader/navigation_response_override_parameters.cc",
+    "loader/navigation_response_override_parameters.h",
     "loader/request_extra_data.cc",
     "loader/request_extra_data.h",
     "loader/resource_dispatcher.cc",
