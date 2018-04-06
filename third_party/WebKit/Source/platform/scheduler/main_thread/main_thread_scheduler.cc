@@ -1428,7 +1428,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
         expensive_task_policy = ExpensiveTaskPolicy::kBlock;
         new_policy.compositor_queue_policy().priority =
-            TaskQueue::kHighPriority;
+            TaskQueue::kHighestPriority;
       } else {
         // What we really want to do is priorize loading tasks, but that doesn't
         // seem to be safe. Instead we do that by proxy by deprioritizing
@@ -1440,7 +1440,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
     case UseCase::kSynchronizedGesture:
       new_policy.compositor_queue_policy().priority =
-          main_thread_compositing_is_fast ? TaskQueue::kHighPriority
+          main_thread_compositing_is_fast ? TaskQueue::kHighestPriority
                                           : TaskQueue::kNormalPriority;
       if (touchstart_expected_soon) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
@@ -1456,7 +1456,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       // block expensive tasks because we don't know whether they were integral
       // to the page's functionality or not.
       new_policy.compositor_queue_policy().priority =
-          main_thread_compositing_is_fast ? TaskQueue::kHighPriority
+          main_thread_compositing_is_fast ? TaskQueue::kHighestPriority
                                           : TaskQueue::kNormalPriority;
       break;
 
@@ -1465,7 +1465,8 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       // by the main thread. Since we know the established gesture type, we can
       // be a little more aggressive about prioritizing compositing and input
       // handling over other tasks.
-      new_policy.compositor_queue_policy().priority = TaskQueue::kHighPriority;
+      new_policy.compositor_queue_policy().priority =
+          TaskQueue::kHighestPriority;
       if (touchstart_expected_soon) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
         expensive_task_policy = ExpensiveTaskPolicy::kBlock;
@@ -1476,7 +1477,8 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
     case UseCase::kTouchstart:
       new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
-      new_policy.compositor_queue_policy().priority = TaskQueue::kHighPriority;
+      new_policy.compositor_queue_policy().priority =
+          TaskQueue::kHighestPriority;
       new_policy.loading_queue_policy().is_blocked = true;
       new_policy.timer_queue_policy().is_blocked = true;
       // NOTE this is a nop due to the above.
@@ -2163,7 +2165,7 @@ bool RendererSchedulerImpl::TaskQueuePolicy::IsQueueEnabled(
 
 TaskQueue::QueuePriority RendererSchedulerImpl::TaskQueuePolicy::GetPriority(
     MainThreadTaskQueue* task_queue) const {
-  return task_queue->UsedForImportantTasks() ? TaskQueue::kHighPriority
+  return task_queue->UsedForImportantTasks() ? TaskQueue::kHighestPriority
                                              : priority;
 }
 

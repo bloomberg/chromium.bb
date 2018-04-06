@@ -3534,7 +3534,7 @@ TEST_F(RendererSchedulerImplTest, MAIN_THREAD_GESTURE) {
     EXPECT_EQ(UseCase::kMainThreadGesture, CurrentUseCase()) << "i = " << i;
   }
 
-  EXPECT_EQ(TaskQueue::kHighPriority,
+  EXPECT_EQ(TaskQueue::kHighestPriority,
             scheduler_->CompositorTaskQueue()->GetQueuePriority());
   EXPECT_EQ(279u, run_order.size());
 }
