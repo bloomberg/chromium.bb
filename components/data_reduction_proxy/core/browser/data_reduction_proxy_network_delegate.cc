@@ -125,8 +125,9 @@ void RecordContentLengthHistograms(bool is_https,
   // Add the current resource to these histograms only when the content length
   // is valid.
   if (original_content_length >= 0) {
-    UMA_HISTOGRAM_COUNTS_1M("Net.HttpOriginalContentLengthWithValidOCL",
-                            original_content_length);
+    // This is only used locally in integration testing.
+    LOCAL_HISTOGRAM_COUNTS_1000000("Net.HttpOriginalContentLengthWithValidOCL",
+                                   original_content_length);
     UMA_HISTOGRAM_COUNTS_1M("Net.HttpContentLengthDifferenceWithValidOCL",
                             original_content_length - received_content_length);
   } else {
