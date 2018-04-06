@@ -57,7 +57,7 @@ void SharedMemoryTracker::IncrementMemoryUsage(
   AutoLock hold(usages_lock_);
   DCHECK(usages_.find(mapping.raw_memory_ptr()) == usages_.end());
   usages_.emplace(mapping.raw_memory_ptr(),
-                  UsageInfo(mapping.size(), mapping.guid()));
+                  UsageInfo(mapping.mapped_size(), mapping.guid()));
 }
 
 void SharedMemoryTracker::DecrementMemoryUsage(

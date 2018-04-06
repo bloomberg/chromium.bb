@@ -157,9 +157,13 @@ TYPED_TEST(SharedMemoryRegionTest, MapMinimumAlignment) {
                 (subtle::PlatformSharedMemoryRegion::kMapMinimumAlignment - 1));
 }
 
+TYPED_TEST(SharedMemoryRegionTest, MapSize) {
+  EXPECT_EQ(this->rw_mapping_.size(), kRegionSize);
+  EXPECT_GE(this->rw_mapping_.mapped_size(), kRegionSize);
+}
+
 TYPED_TEST(SharedMemoryRegionTest, MapGranularity) {
-  EXPECT_GE(this->rw_mapping_.size(), kRegionSize);
-  EXPECT_LT(this->rw_mapping_.size(),
+  EXPECT_LT(this->rw_mapping_.mapped_size(),
             kRegionSize + SysInfo::VMAllocationGranularity());
 }
 

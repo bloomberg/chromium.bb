@@ -301,7 +301,7 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
     return {};
   }
 
-  return PlatformSharedMemoryRegion(std::move(scoped_h), mode, rounded_size,
+  return PlatformSharedMemoryRegion(std::move(scoped_h), mode, size,
                                     UnguessableToken::Create());
 }
 

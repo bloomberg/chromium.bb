@@ -35,7 +35,10 @@ namespace base {
 SharedMemoryMapping::SharedMemoryMapping() = default;
 
 SharedMemoryMapping::SharedMemoryMapping(SharedMemoryMapping&& mapping)
-    : memory_(mapping.memory_), size_(mapping.size_), guid_(mapping.guid_) {
+    : memory_(mapping.memory_),
+      size_(mapping.size_),
+      mapped_size_(mapping.mapped_size_),
+      guid_(mapping.guid_) {
   mapping.memory_ = nullptr;
 }
 
@@ -44,6 +47,7 @@ SharedMemoryMapping& SharedMemoryMapping::operator=(
   Unmap();
   memory_ = mapping.memory_;
   size_ = mapping.size_;
+  mapped_size_ = mapping.mapped_size_;
   guid_ = mapping.guid_;
   mapping.memory_ = nullptr;
   return *this;
@@ -55,8 +59,9 @@ SharedMemoryMapping::~SharedMemoryMapping() {
 
 SharedMemoryMapping::SharedMemoryMapping(void* memory,
                                          size_t size,
+                                         size_t mapped_size,
                                          const UnguessableToken& guid)
-    : memory_(memory), size_(size), guid_(guid) {
+    : memory_(memory), size_(size), mapped_size_(mapped_size), guid_(guid) {
   SharedMemoryTracker::GetInstance()->IncrementMemoryUsage(*this);
 }
 
@@ -91,8 +96,9 @@ ReadOnlySharedMemoryMapping& ReadOnlySharedMemoryMapping::operator=(
 ReadOnlySharedMemoryMapping::ReadOnlySharedMemoryMapping(
     void* address,
     size_t size,
+    size_t mapped_size,
     const UnguessableToken& guid)
-    : SharedMemoryMapping(address, size, guid) {}
+    : SharedMemoryMapping(address, size, mapped_size, guid) {}
 
 WritableSharedMemoryMapping::WritableSharedMemoryMapping() = default;
 WritableSharedMemoryMapping::WritableSharedMemoryMapping(
@@ -102,7 +108,8 @@ WritableSharedMemoryMapping& WritableSharedMemoryMapping::operator=(
 WritableSharedMemoryMapping::WritableSharedMemoryMapping(
     void* address,
     size_t size,
+    size_t mapped_size,
     const UnguessableToken& guid)
-    : SharedMemoryMapping(address, size, guid) {}
+    : SharedMemoryMapping(address, size, mapped_size, guid) {}
 
 }  // namespace base

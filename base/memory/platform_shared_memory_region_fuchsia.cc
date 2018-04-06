@@ -148,7 +148,7 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   }
   ignore_result(old_vmo.release());
 
-  return PlatformSharedMemoryRegion(std::move(vmo), mode, rounded_size,
+  return PlatformSharedMemoryRegion(std::move(vmo), mode, size,
                                     UnguessableToken::Create());
 }
 

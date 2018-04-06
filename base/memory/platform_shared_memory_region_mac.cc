@@ -96,15 +96,17 @@ bool PlatformSharedMemoryRegion::ConvertToReadOnly(void* mapped_addr) {
   }
 
   // Make new memory object.
+  memory_object_size_t allocation_size = size_;
   mac::ScopedMachSendRight named_right;
   kern_return_t kr = mach_make_memory_entry_64(
-      mach_task_self(), reinterpret_cast<memory_object_size_t*>(&size_),
+      mach_task_self(), &allocation_size,
       reinterpret_cast<memory_object_offset_t>(temp_addr), VM_PROT_READ,
       named_right.receive(), MACH_PORT_NULL);
   if (kr != KERN_SUCCESS) {
     MACH_DLOG(ERROR, kr) << "mach_make_memory_entry_64";
     return false;
   }
+  DCHECK_GE(allocation_size, size_);
 
   handle_ = std::move(named_right);
   mode_ = Mode::kReadOnly;
@@ -170,8 +172,9 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
     MACH_DLOG(ERROR, kr) << "mach_make_memory_entry_64";
     return {};
   }
+  DCHECK_GE(vm_size, size);
 
-  return PlatformSharedMemoryRegion(std::move(named_right), mode, vm_size,
+  return PlatformSharedMemoryRegion(std::move(named_right), mode, size,
                                     UnguessableToken::Create());
 }
 

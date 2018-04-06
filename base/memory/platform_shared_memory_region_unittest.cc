@@ -31,7 +31,7 @@ class PlatformSharedMemoryRegionTest : public ::testing::Test {
     if (!region->MapAt(offset, bytes, &memory, &mapped_size))
       return {};
 
-    return SharedMemoryMapping(memory, mapped_size, region->GetGUID());
+    return SharedMemoryMapping(memory, bytes, mapped_size, region->GetGUID());
   }
 
   void* GetMemory(SharedMemoryMapping* mapping) {
@@ -74,6 +74,21 @@ TEST_F(PlatformSharedMemoryRegionTest, CreateTooLargeRegionIsInvalid) {
   PlatformSharedMemoryRegion region2 =
       PlatformSharedMemoryRegion::CreateUnsafe(too_large_region_size);
   EXPECT_FALSE(region2.IsValid());
+}
+
+// Tests that regions consistently report their size as the size requested at
+// creation time even if their allocation size is larger due to platform
+// constraints.
+TEST_F(PlatformSharedMemoryRegionTest, ReportedSizeIsRequestedSize) {
+  constexpr size_t kTestSizes[] = {1, 2, 3, 64, 4096, 1024 * 1024};
+  for (size_t size : kTestSizes) {
+    PlatformSharedMemoryRegion region =
+        PlatformSharedMemoryRegion::CreateWritable(size);
+    EXPECT_EQ(region.GetSize(), size);
+
+    region.ConvertToReadOnly();
+    EXPECT_EQ(region.GetSize(), size);
+  }
 }
 
 // Tests that the platform-specific handle converted to read-only cannot be used
