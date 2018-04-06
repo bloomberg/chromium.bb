@@ -361,6 +361,10 @@ enum {
   // the decoded samples. These buffers are then reused when the client tells
   // us that it is done with the buffer.
   kNumPictureBuffers = 5,
+  // When GetTextureTarget() returns GL_TEXTURE_EXTERNAL_OES, allocated
+  // PictureBuffers do not consume significant resources, so we can optimize for
+  // latency more aggressively.
+  kNumPictureBuffersForZeroCopy = 10,
   // The keyed mutex should always be released before the other thread
   // attempts to acquire it, so AcquireSync should always return immediately.
   kAcquireSyncWaitMs = 0,
@@ -714,6 +718,9 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       support_share_nv12_textures_(
           gpu_preferences.enable_zero_copy_dxgi_video &&
           !workarounds.disable_dxgi_zero_copy_video),
+      num_picture_buffers_requested_(support_share_nv12_textures_
+                                         ? kNumPictureBuffersForZeroCopy
+                                         : kNumPictureBuffers),
       support_copy_nv12_textures_(gpu_preferences.enable_nv12_dxgi_video &&
                                   !workarounds.disable_nv12_dxgi_video),
       support_delayed_copy_nv12_textures_(
@@ -763,7 +770,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
   if (!config.supported_output_formats.empty() &&
       !base::ContainsValue(config.supported_output_formats,
                            PIXEL_FORMAT_NV12)) {
-    support_share_nv12_textures_ = false;
+    DisableSharedTextureSupport();
     support_copy_nv12_textures_ = false;
   }
 
@@ -1188,9 +1195,10 @@ void DXVAVideoDecodeAccelerator::AssignPictureBuffers(
   RETURN_AND_NOTIFY_ON_FAILURE((state != kUninitialized),
                                "Invalid state: " << state, ILLEGAL_STATE, );
   RETURN_AND_NOTIFY_ON_FAILURE(
-      (kNumPictureBuffers <= buffers.size()),
+      (num_picture_buffers_requested_ <= static_cast<int>(buffers.size())),
       "Failed to provide requested picture buffers. (Got "
-          << buffers.size() << ", requested " << kNumPictureBuffers << ")",
+          << buffers.size() << ", requested " << num_picture_buffers_requested_
+          << ")",
       INVALID_ARGUMENT, );
 
   RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
@@ -1697,7 +1705,7 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
 
   if (use_fp16_) {
     // TODO(hubbe): Share/copy P010/P016 textures.
-    support_share_nv12_textures_ = false;
+    DisableSharedTextureSupport();
     support_copy_nv12_textures_ = false;
   }
 
@@ -1731,7 +1739,7 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
   // pending_output_samples_. The decoder adds this number to the number of
   // reference pictures it expects to need and uses that to determine the
   // array size of the output texture.
-  const int kMaxOutputSamples = kNumPictureBuffers + 1;
+  const int kMaxOutputSamples = num_picture_buffers_requested_ + 1;
   attributes->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT_PROGRESSIVE,
                         kMaxOutputSamples);
   attributes->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT, kMaxOutputSamples);
@@ -1759,7 +1767,7 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
       !gl::g_driver_egl.ext.b_EGL_KHR_stream ||
       !gl::g_driver_egl.ext.b_EGL_KHR_stream_consumer_gltexture ||
       !gl::g_driver_egl.ext.b_EGL_NV_stream_consumer_gltexture_yuv) {
-    support_share_nv12_textures_ = false;
+    DisableSharedTextureSupport();
     support_copy_nv12_textures_ = false;
   }
 
@@ -2221,7 +2229,7 @@ void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
     bool provide_nv12_textures =
         GetPictureBufferMechanism() != PictureBufferMechanism::COPY_TO_RGB;
     client_->ProvidePictureBuffers(
-        kNumPictureBuffers,
+        num_picture_buffers_requested_,
         provide_nv12_textures ? PIXEL_FORMAT_NV12 : PIXEL_FORMAT_UNKNOWN,
         provide_nv12_textures ? 2 : 1, gfx::Size(width, height),
         GetTextureTarget());
@@ -3155,6 +3163,11 @@ uint32_t DXVAVideoDecodeAccelerator::GetTextureTarget() const {
   }
   NOTREACHED();
   return 0;
+}
+
+void DXVAVideoDecodeAccelerator::DisableSharedTextureSupport() {
+  support_share_nv12_textures_ = false;
+  num_picture_buffers_requested_ = kNumPictureBuffers;
 }
 
 DXVAVideoDecodeAccelerator::PictureBufferMechanism
