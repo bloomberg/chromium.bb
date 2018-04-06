@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/services/heap_profiling/public/cpp/allocator_shim.h"
+#include "components/services/heap_profiling/public/cpp/settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/tracing_controller.h"
@@ -538,7 +539,7 @@ bool ProfilingTestDriver::RunTest(const Options& options) {
       content::BrowserThread::CurrentlyOn(content::BrowserThread::UI);
 
   // The only thing to test for Mode::kNone is that profiling hasn't started.
-  if (options_.mode == ProfilingProcessHost::Mode::kNone) {
+  if (options_.mode == Mode::kNone) {
     if (ProfilingProcessHost::has_started()) {
       LOG(ERROR) << "Profiling should not have started";
       return false;
@@ -756,9 +757,8 @@ bool ProfilingTestDriver::ValidateBrowserAllocations(base::Value* dump_json) {
   base::Value* heaps_v2 =
       FindArgDump(base::Process::Current().Pid(), dump_json, "heaps_v2");
 
-  if (options_.mode != ProfilingProcessHost::Mode::kAll &&
-      options_.mode != ProfilingProcessHost::Mode::kBrowser &&
-      options_.mode != ProfilingProcessHost::Mode::kMinimal) {
+  if (options_.mode != Mode::kAll && options_.mode != Mode::kBrowser &&
+      options_.mode != Mode::kMinimal) {
     if (heaps_v2) {
       LOG(ERROR) << "There should be no heap dump for the browser.";
       return false;
@@ -881,7 +881,7 @@ bool ProfilingTestDriver::ValidateRendererAllocations(base::Value* dump_json) {
     }
   }
 
-  if (options_.mode == ProfilingProcessHost::Mode::kAllRenderers) {
+  if (options_.mode == Mode::kAllRenderers) {
     if (NumProcessesWithName(dump_json, "Renderer", nullptr) == 0) {
       LOG(ERROR) << "There should be at least 1 renderer dump";
       return false;
@@ -897,14 +897,12 @@ bool ProfilingTestDriver::ValidateRendererAllocations(base::Value* dump_json) {
 }
 
 bool ProfilingTestDriver::ShouldProfileBrowser() {
-  return options_.mode == ProfilingProcessHost::Mode::kAll ||
-         options_.mode == ProfilingProcessHost::Mode::kBrowser ||
-         options_.mode == ProfilingProcessHost::Mode::kMinimal;
+  return options_.mode == Mode::kAll || options_.mode == Mode::kBrowser ||
+         options_.mode == Mode::kMinimal;
 }
 
 bool ProfilingTestDriver::ShouldProfileRenderer() {
-  return options_.mode == ProfilingProcessHost::Mode::kAll ||
-         options_.mode == ProfilingProcessHost::Mode::kAllRenderers;
+  return options_.mode == Mode::kAll || options_.mode == Mode::kAllRenderers;
 }
 
 bool ProfilingTestDriver::ShouldIncludeNativeThreadNames() {

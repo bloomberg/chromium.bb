@@ -10,6 +10,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/services/heap_profiling/public/cpp/settings.h"
 #include "components/services/heap_profiling/public/cpp/switches.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -24,10 +25,10 @@ TEST(ProfilingProcessHost, ShouldProfileNewRenderer) {
   TestingProfile testing_profile;
   content::MockRenderProcessHost rph(&testing_profile);
 
-  pph.SetMode(ProfilingProcessHost::Mode::kNone);
+  pph.SetMode(Mode::kNone);
   EXPECT_FALSE(pph.ShouldProfileNewRenderer(&rph));
 
-  pph.SetMode(ProfilingProcessHost::Mode::kAll);
+  pph.SetMode(Mode::kAll);
   EXPECT_TRUE(pph.ShouldProfileNewRenderer(&rph));
 
   Profile* incognito_profile = testing_profile.GetOffTheRecordProfile();
@@ -38,70 +39,61 @@ TEST(ProfilingProcessHost, ShouldProfileNewRenderer) {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 TEST(ProfilingProcessHost, GetModeForStartup_Default) {
-  EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-            ProfilingProcessHost::GetModeForStartup());
+  EXPECT_EQ(Mode::kNone, GetModeForStartup());
 }
 
 TEST(ProfilingProcessHost, GetModeForStartup_Commandline) {
   {
     base::test::ScopedCommandLine scoped_command_line;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlog, "");
-    EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kNone, GetModeForStartup());
   }
 
   {
     base::test::ScopedCommandLine scoped_command_line;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlog,
                                                               "invalid");
-    EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kNone, GetModeForStartup());
   }
 
   {
     base::test::ScopedCommandLine scoped_command_line;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlog,
                                                               kMemlogModeAll);
-    EXPECT_EQ(ProfilingProcessHost::Mode::kAll,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kAll, GetModeForStartup());
   }
 
   {
     base::test::ScopedCommandLine scoped_command_line;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         kMemlog, kMemlogModeBrowser);
-    EXPECT_EQ(ProfilingProcessHost::Mode::kBrowser,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kBrowser, GetModeForStartup());
   }
 
   {
     base::test::ScopedCommandLine scoped_command_line;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         kMemlog, kMemlogModeMinimal);
-    EXPECT_EQ(ProfilingProcessHost::Mode::kMinimal,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kMinimal, GetModeForStartup());
   }
 
   {
     base::test::ScopedCommandLine scoped_command_line;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlog,
                                                               kMemlogModeGpu);
-    EXPECT_EQ(ProfilingProcessHost::Mode::kGpu,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kGpu, GetModeForStartup());
   }
 
   {
     base::test::ScopedCommandLine scoped_command_line;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         kMemlog, kMemlogModeRendererSampling);
-    EXPECT_EQ(ProfilingProcessHost::Mode::kRendererSampling,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kRendererSampling, GetModeForStartup());
   }
 }
 
 TEST(ProfilingProcessHost, GetModeForStartup_Finch) {
-  EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-            ProfilingProcessHost::GetModeForStartup());
+  EXPECT_EQ(Mode::kNone, GetModeForStartup());
   std::map<std::string, std::string> parameters;
 
   {
@@ -110,8 +102,7 @@ TEST(ProfilingProcessHost, GetModeForStartup_Finch) {
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         kOOPHeapProfilingFeature, parameters);
 
-    EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kNone, GetModeForStartup());
   }
 
   {
@@ -119,8 +110,7 @@ TEST(ProfilingProcessHost, GetModeForStartup_Finch) {
     parameters[kOOPHeapProfilingFeatureMode] = "invalid";
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         kOOPHeapProfilingFeature, parameters);
-    EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kNone, GetModeForStartup());
   }
 
   {
@@ -128,8 +118,7 @@ TEST(ProfilingProcessHost, GetModeForStartup_Finch) {
     parameters[kOOPHeapProfilingFeatureMode] = kMemlogModeAll;
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         kOOPHeapProfilingFeature, parameters);
-    EXPECT_EQ(ProfilingProcessHost::Mode::kAll,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kAll, GetModeForStartup());
   }
 
   {
@@ -137,8 +126,7 @@ TEST(ProfilingProcessHost, GetModeForStartup_Finch) {
     parameters[kOOPHeapProfilingFeatureMode] = kMemlogModeBrowser;
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         kOOPHeapProfilingFeature, parameters);
-    EXPECT_EQ(ProfilingProcessHost::Mode::kBrowser,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kBrowser, GetModeForStartup());
   }
 
   {
@@ -146,8 +134,7 @@ TEST(ProfilingProcessHost, GetModeForStartup_Finch) {
     parameters[kOOPHeapProfilingFeatureMode] = kMemlogModeMinimal;
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         kOOPHeapProfilingFeature, parameters);
-    EXPECT_EQ(ProfilingProcessHost::Mode::kMinimal,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kMinimal, GetModeForStartup());
   }
 
   {
@@ -155,8 +142,7 @@ TEST(ProfilingProcessHost, GetModeForStartup_Finch) {
     parameters[kOOPHeapProfilingFeatureMode] = kMemlogModeGpu;
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         kOOPHeapProfilingFeature, parameters);
-    EXPECT_EQ(ProfilingProcessHost::Mode::kGpu,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kGpu, GetModeForStartup());
   }
 
   {
@@ -164,8 +150,7 @@ TEST(ProfilingProcessHost, GetModeForStartup_Finch) {
     parameters[kOOPHeapProfilingFeatureMode] = kMemlogModeRendererSampling;
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         kOOPHeapProfilingFeature, parameters);
-    EXPECT_EQ(ProfilingProcessHost::Mode::kRendererSampling,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kRendererSampling, GetModeForStartup());
   }
 }
 
@@ -181,8 +166,7 @@ TEST(ProfilingProcessHost, GetModeForStartup_CommandLinePrecedence) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       kOOPHeapProfilingFeature, parameters);
 
-  EXPECT_EQ(ProfilingProcessHost::Mode::kAll,
-            ProfilingProcessHost::GetModeForStartup());
+  EXPECT_EQ(Mode::kAll, GetModeForStartup());
 }
 
 #else
@@ -192,8 +176,7 @@ TEST(ProfilingProcessHost, GetModeForStartup_NoModeWithoutShim) {
     base::test::ScopedCommandLine scoped_command_line;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlog,
                                                               kMemlogModeAll);
-    EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kNone, GetModeForStartup());
   }
 
   {
@@ -202,8 +185,7 @@ TEST(ProfilingProcessHost, GetModeForStartup_NoModeWithoutShim) {
     parameters[kOOPHeapProfilingFeatureMode] = kMemlogModeMinimal;
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         kOOPHeapProfilingFeature, parameters);
-    EXPECT_EQ(ProfilingProcessHost::Mode::kNone,
-              ProfilingProcessHost::GetModeForStartup());
+    EXPECT_EQ(Mode::kNone, GetModeForStartup());
   }
 }
 

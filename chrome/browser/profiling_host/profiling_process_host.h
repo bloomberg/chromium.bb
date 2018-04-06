@@ -9,13 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiling_host/background_profiling_triggers.h"
-#include "chrome/common/chrome_features.h"
 #include "components/services/heap_profiling/public/cpp/client.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_service.mojom.h"
@@ -36,8 +34,7 @@ class RenderProcessHost;
 
 namespace heap_profiling {
 
-extern const base::Feature kOOPHeapProfilingFeature;
-extern const char kOOPHeapProfilingFeatureMode[];
+enum class Mode;
 
 // Represents the browser side of the profiling process (//chrome/profiling).
 //
@@ -59,37 +56,6 @@ extern const char kOOPHeapProfilingFeatureMode[];
 class ProfilingProcessHost : public content::BrowserChildProcessObserver,
                              content::NotificationObserver {
  public:
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class Mode {
-    // No profiling enabled.
-    kNone = 0,
-
-    // Only profile the browser and GPU processes.
-    kMinimal = 1,
-
-    // Profile all processes.
-    kAll = 2,
-
-    // Profile only the browser process.
-    kBrowser = 3,
-
-    // Profile only the gpu process.
-    kGpu = 4,
-
-    // Profile a sampled number of renderer processes.
-    kRendererSampling = 5,
-
-    // Profile all renderer processes.
-    kAllRenderers = 6,
-
-    // By default, profile no processes. User may choose to start profiling for
-    // processes via chrome://memory-internals.
-    kManual = 7,
-
-    kCount
-  };
-
   // Returns the mode.
   Mode GetMode() {
     base::AutoLock l(mode_lock_);
@@ -97,13 +63,6 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   }
 
   // Returns the mode specified by the command line or via about://flags.
-  static Mode GetModeForStartup();
-  static Mode ConvertStringToMode(const std::string& input);
-  static mojom::StackMode GetStackModeForStartup();
-  static mojom::StackMode ConvertStringToStackMode(const std::string& input);
-
-  static bool GetShouldSampleForStartup();
-  static uint32_t GetSamplingRateForStartup();
 
   bool ShouldProfileNonRendererProcessType(int process_type);
 

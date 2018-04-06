@@ -7,6 +7,7 @@
 #include "base/android/jni_string.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
 #include "chrome/browser/profiling_host/profiling_test_driver.h"
+#include "components/services/heap_profiling/public/cpp/settings.h"
 #include "jni/TestAndroidShim_jni.h"
 
 using base::android::JavaParamRef;
@@ -36,11 +37,10 @@ jboolean TestAndroidShim::RunTestForMode(
     jboolean sample_everything) {
   heap_profiling::ProfilingTestDriver driver;
   heap_profiling::ProfilingTestDriver::Options options;
-  options.mode = heap_profiling::ProfilingProcessHost::ConvertStringToMode(
+  options.mode = heap_profiling::ConvertStringToMode(
       base::android::ConvertJavaStringToUTF8(mode));
-  options.stack_mode =
-      heap_profiling::ProfilingProcessHost::ConvertStringToStackMode(
-          base::android::ConvertJavaStringToUTF8(stack_mode));
+  options.stack_mode = heap_profiling::ConvertStringToStackMode(
+      base::android::ConvertJavaStringToUTF8(stack_mode));
   options.profiling_already_started = !dynamically_start_profiling;
   options.should_sample = should_sample;
   options.sample_everything = sample_everything;

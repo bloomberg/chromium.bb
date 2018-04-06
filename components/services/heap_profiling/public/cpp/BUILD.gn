@@ -11,6 +11,8 @@ static_library("cpp") {
     "sender_pipe.h",
     "sender_pipe_posix.cc",
     "sender_pipe_win.cc",
+    "settings.cc",
+    "settings.h",
     "stream.h",
     "switches.cc",
     "switches.h",
