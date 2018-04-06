@@ -171,7 +171,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
   if (GetWebContents()->GetPageImportanceSignals().had_form_interaction)
     return false;
 
-  // Do discard media tabs as it's too distruptive to the user experience.
+  // Do not discard media tabs as it's too distruptive to the user experience.
   if (IsMediaTab())
     return false;
 

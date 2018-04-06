@@ -1034,4 +1034,51 @@ TEST_F(TabManagerTest, EnablePageAlmostIdleSignal) {
   EXPECT_FALSE(tab_manager_->IsNavigationDelayedForTest(nav_handle3_.get()));
 }
 
+TEST_F(TabManagerTest, TrackingNumberOfLoadedLifecycleUnits) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_TABBED;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // TabManager should start out with 0 loaded LifecycleUnits.
+  EXPECT_EQ(tab_manager_->num_loaded_lifecycle_units_, 0);
+
+  // Number of loaded LifecycleUnits should go up by 1 for each new WebContents.
+  for (int i = 1; i <= 5; i++) {
+    tab_strip->AppendWebContents(CreateWebContents(), false);
+    EXPECT_EQ(tab_manager_->num_loaded_lifecycle_units_, i);
+  }
+
+  // Closing loaded tabs should reduce |num_loaded_lifecycle_units_| back to the
+  // original amount.
+  tab_strip->CloseAllTabs();
+  EXPECT_EQ(tab_manager_->num_loaded_lifecycle_units_, 0);
+
+  // Number of loaded LifecycleUnits should go up by 1 for each new WebContents.
+  for (int i = 1; i <= 5; i++) {
+    tab_strip->AppendWebContents(CreateWebContents(), false);
+    EXPECT_EQ(tab_manager_->num_loaded_lifecycle_units_, i);
+  }
+
+  task_runner_->FastForwardBy(TabManager::kDiscardProtectionTime);
+
+  // Number of loaded LifecycleUnits should go down by 1 for each discarded
+  // WebContents.
+  for (int i = 0; i < 5; i++) {
+    TabLifecycleUnitExternal::FromWebContents(tab_strip->GetWebContentsAt(i))
+        ->DiscardTab();
+    EXPECT_EQ(tab_manager_->num_loaded_lifecycle_units_, 4 - i);
+  }
+
+  // All tabs were discarded, so there should be no loaded LifecycleUnits.
+  EXPECT_EQ(tab_manager_->num_loaded_lifecycle_units_, 0);
+
+  tab_strip->CloseAllTabs();
+
+  // Closing discarded tabs shouldn't affect |num_loaded_lifecycle_units_|.
+  EXPECT_EQ(tab_manager_->num_loaded_lifecycle_units_, 0);
+}
+
 }  // namespace resource_coordinator
