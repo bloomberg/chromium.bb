@@ -148,6 +148,14 @@ TEST(ResourceRequestTest, SetIsAdResource) {
   EXPECT_FALSE(original.IsAdResource());
   original.SetIsAdResource();
   EXPECT_TRUE(original.IsAdResource());
+
+  // Should persist across redirects.
+  std::unique_ptr<ResourceRequest> redirect_request =
+      original.CreateRedirectRequest(
+          KURL("https://example.test/redirect"), original.HttpMethod(),
+          original.SiteForCookies(), original.HttpReferrer(),
+          original.GetReferrerPolicy(), original.GetSkipServiceWorker());
+  EXPECT_TRUE(redirect_request->IsAdResource());
 }
 
 }  // namespace blink

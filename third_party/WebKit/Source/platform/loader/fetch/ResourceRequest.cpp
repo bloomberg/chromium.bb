@@ -165,6 +165,8 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetCheckForBrowserSideNavigation(CheckForBrowserSideNavigation());
   request->SetWasDiscarded(WasDiscarded());
   request->SetCORSPreflightPolicy(CORSPreflightPolicy());
+  if (IsAdResource())
+    request->SetIsAdResource();
 
   return request;
 }
