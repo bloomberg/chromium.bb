@@ -97,6 +97,33 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
   // animation.
   SetPaintToLayer();
   layer()->SetMasksToBounds(true);
+
+  gfx::Image image = this->delegate()->GetIcon();
+  if (!image.IsEmpty()) {
+    icon_ = new views::ImageView;
+    icon_->SetImage(image.ToImageSkia());
+    icon_->SizeToPreferredSize();
+    icon_->SetProperty(
+        views::kMarginsKey,
+        new gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                            DISTANCE_TOAST_LABEL_VERTICAL),
+                        0));
+    AddChildView(icon_);
+  }
+
+  close_button_ = views::CreateVectorImageButton(this);
+  // This is the wrong color, but allows the button's size to be computed
+  // correctly.  We'll reset this with the correct color in OnThemeChanged().
+  views::SetImageFromVectorIcon(close_button_, vector_icons::kClose16Icon,
+                                gfx::kPlaceholderColor);
+  close_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
+  close_button_->SetFocusForPlatform();
+  gfx::Insets close_button_spacing = GetCloseButtonSpacing();
+  close_button_->SetProperty(views::kMarginsKey,
+                             new gfx::Insets(close_button_spacing.top(), 0,
+                                             close_button_spacing.bottom(), 0));
+  AddChildView(close_button_);
 }
 
 InfoBarView::~InfoBarView() {
@@ -157,44 +184,20 @@ void InfoBarView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   View::ViewHierarchyChanged(details);
 
-  if (details.is_add && (details.child == this) && (close_button_ == NULL)) {
-    gfx::Image image = delegate()->GetIcon();
-    if (!image.IsEmpty()) {
-      icon_ = new views::ImageView;
-      icon_->SetImage(image.ToImageSkia());
-      icon_->SizeToPreferredSize();
-      icon_->SetProperty(
-          views::kMarginsKey,
-          new gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
-                              DISTANCE_TOAST_LABEL_VERTICAL),
-                          0));
-      AddChildView(icon_);
+  // Anything that needs to happen once after all subclasses add their children.
+  if (details.is_add && (details.child == this)) {
+    ReorderChildView(close_button_, -1);
+
+    // Ensure the infobar is tall enough to display its contents.
+    int height = 0;
+    for (int i = 0; i < child_count(); ++i) {
+      View* child = child_at(i);
+      const gfx::Insets* const margins = child->GetProperty(views::kMarginsKey);
+      const int margin_height = margins ? margins->height() : 0;
+      height = std::max(height, child->height() + margin_height);
     }
-
-    close_button_ = views::CreateVectorImageButton(this);
-    views::SetImageFromVectorIcon(close_button_, vector_icons::kClose16Icon,
-                                  GetColor(kTextColor));
-    close_button_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
-    close_button_->SetFocusForPlatform();
-    gfx::Insets close_button_spacing = GetCloseButtonSpacing();
-    close_button_->SetProperty(
-        views::kMarginsKey, new gfx::Insets(close_button_spacing.top(), 0,
-                                            close_button_spacing.bottom(), 0));
-    // Subclasses should already be done adding child views by this point (see
-    // related DCHECK in Layout()).
-    AddChildView(close_button_);
+    SetTargetHeight(height + InfoBarContainerDelegate::kSeparatorLineHeight);
   }
-
-  // Ensure the infobar is tall enough to display its contents.
-  int height = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    View* child = child_at(i);
-    const gfx::Insets* const margins = child->GetProperty(views::kMarginsKey);
-    const int margin_height = margins ? margins->height() : 0;
-    height = std::max(height, child->height() + margin_height);
-  }
-  SetTargetHeight(height + InfoBarContainerDelegate::kSeparatorLineHeight);
 }
 
 void InfoBarView::OnThemeChanged() {
@@ -202,10 +205,8 @@ void InfoBarView::OnThemeChanged() {
   background()->SetNativeControlColor(background_color);
 
   const SkColor text_color = GetColor(kTextColor);
-  if (close_button_) {
-    views::SetImageFromVectorIcon(close_button_, vector_icons::kClose16Icon,
-                                  text_color);
-  }
+  views::SetImageFromVectorIcon(close_button_, vector_icons::kClose16Icon,
+                                text_color);
 
   for (int i = 0; i < child_count(); ++i) {
     View* child = child_at(i);
@@ -220,6 +221,9 @@ void InfoBarView::OnThemeChanged() {
 }
 
 void InfoBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  // The constructor could not set initial colors correctly, since the
+  // ThemeProvider wasn't available yet.  When this function is called, the view
+  // has been added to a Widget, so that ThemeProvider is now present.
   OnThemeChanged();
 }
 

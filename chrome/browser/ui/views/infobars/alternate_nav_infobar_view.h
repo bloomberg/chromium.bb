@@ -33,8 +33,6 @@ class AlternateNavInfoBarView : public InfoBarView,
 
   // InfoBarView:
   void Layout() override;
-  void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
   int ContentMinimumWidth() const override;
 
   // views::LinkListener:
