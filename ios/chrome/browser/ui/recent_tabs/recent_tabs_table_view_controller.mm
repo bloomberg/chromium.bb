@@ -192,7 +192,7 @@ const int kRelativeTimeMaxHours = 4;
   TableViewURLItem* historyItem =
       [[TableViewURLItem alloc] initWithType:ItemTypeShowFullHistory];
   historyItem.title = l10n_util::GetNSString(IDS_HISTORY_SHOWFULLHISTORY_LINK);
-  historyItem.favicon = [UIImage imageNamed:@"ntp_opentabs_clock"];
+  historyItem.favicon = [UIImage imageNamed:@"show_history"];
   [model addItem:historyItem
       toSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
 }
