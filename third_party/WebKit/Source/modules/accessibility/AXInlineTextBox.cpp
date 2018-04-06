@@ -32,6 +32,8 @@
 #include "core/layout/LayoutText.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/accessibility/AXPosition.h"
+#include "modules/accessibility/AXRange.h"
 #include "platform/LayoutUnit.h"
 
 namespace blink {
@@ -115,12 +117,14 @@ void AXInlineTextBox::GetWordBoundaries(Vector<AXRange>& words) const {
   if (!inline_text_box_ || inline_text_box_->GetText().ContainsOnlyWhitespace())
     return;
 
-  Vector<AbstractInlineTextBox::WordBoundaries> word_boundaries;
-  inline_text_box_->GetWordBoundaries(word_boundaries);
-  words.resize(word_boundaries.size());
-  for (unsigned i = 0; i < word_boundaries.size(); i++)
-    words[i] =
-        AXRange(word_boundaries[i].start_index, word_boundaries[i].end_index);
+  Vector<AbstractInlineTextBox::WordBoundaries> boundaries;
+  inline_text_box_->GetWordBoundaries(boundaries);
+  words.ReserveCapacity(boundaries.size());
+  for (const auto& boundary : boundaries) {
+    words.emplace_back(
+        AXPosition::CreatePositionInTextObject(*this, boundary.start_index),
+        AXPosition::CreatePositionInTextObject(*this, boundary.end_index));
+  }
 }
 
 String AXInlineTextBox::GetName(AXNameFrom& name_from,

@@ -69,6 +69,8 @@
 #include "core/layout/LayoutObject.h"
 #include "core/svg/SVGElement.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
+#include "modules/accessibility/AXPosition.h"
+#include "modules/accessibility/AXRange.h"
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/weborigin/KURL.h"
@@ -1151,14 +1153,18 @@ void AXNodeObject::Markers(Vector<DocumentMarker::MarkerType>& marker_types,
   if (!GetNode() || !GetDocument() || !GetDocument()->View())
     return;
 
+  if (!GetNode()->IsTextNode())
+    return;
+
   DocumentMarkerController& marker_controller = GetDocument()->Markers();
   DocumentMarkerVector markers = marker_controller.MarkersFor(GetNode());
   for (size_t i = 0; i < markers.size(); ++i) {
     DocumentMarker* marker = markers[i];
     if (MarkerTypeIsUsedForAccessibility(marker->GetType())) {
       marker_types.push_back(marker->GetType());
-      marker_ranges.push_back(
-          AXRange(marker->StartOffset(), marker->EndOffset()));
+      marker_ranges.emplace_back(
+          AXPosition::CreatePositionInTextObject(*this, marker->StartOffset()),
+          AXPosition::CreatePositionInTextObject(*this, marker->EndOffset()));
     }
   }
 }

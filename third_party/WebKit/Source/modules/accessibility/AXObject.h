@@ -53,6 +53,7 @@ namespace blink {
 class AccessibleNodeList;
 class AXObject;
 class AXObjectCacheImpl;
+class AXRange;
 class IntPoint;
 class LayoutObject;
 class LocalFrameView;
@@ -165,7 +166,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
  public:
   typedef HeapVector<Member<AXObject>> AXObjectVector;
 
-  struct AXRange {
+  struct AXSelection {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     // The deepest descendant in which the range starts.
     // (nullptr means the current object.)
@@ -189,7 +190,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
     // than the next line.
     TextAffinity focus_affinity;
 
-    AXRange()
+    AXSelection()
         : anchor_object(nullptr),
           anchor_offset(-1),
           anchor_affinity(TextAffinity::kUpstream),
@@ -197,7 +198,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
           focus_offset(-1),
           focus_affinity(TextAffinity::kDownstream) {}
 
-    AXRange(int start_offset, int end_offset)
+    AXSelection(int start_offset, int end_offset)
         : anchor_object(nullptr),
           anchor_offset(start_offset),
           anchor_affinity(TextAffinity::kUpstream),
@@ -205,12 +206,12 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
           focus_offset(end_offset),
           focus_affinity(TextAffinity::kDownstream) {}
 
-    AXRange(AXObject* anchor_object,
-            int anchor_offset,
-            TextAffinity anchor_affinity,
-            AXObject* focus_object,
-            int focus_offset,
-            TextAffinity focus_affinity)
+    AXSelection(AXObject* anchor_object,
+                int anchor_offset,
+                TextAffinity anchor_affinity,
+                AXObject* focus_object,
+                int focus_offset,
+                TextAffinity focus_affinity)
         : anchor_object(anchor_object),
           anchor_offset(anchor_offset),
           anchor_affinity(anchor_affinity),
@@ -524,13 +525,13 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // For all node objects. The start and end character offset of each
   // marker, such as spelling or grammar error.
   virtual void Markers(Vector<DocumentMarker::MarkerType>&,
-                       Vector<AXRange>&) const {}
+                       Vector<AXRange>&) const;
   // For an inline text box.
   // The integer horizontal pixel offset of each character in the string;
   // negative values for RTL.
-  virtual void TextCharacterOffsets(Vector<int>&) const {}
+  virtual void TextCharacterOffsets(Vector<int>&) const;
   // The start and end character offset of each word in the object's text.
-  virtual void GetWordBoundaries(Vector<AXRange>&) const {}
+  virtual void GetWordBoundaries(Vector<AXRange>&) const;
 
   // Properties of interactive elements.
   AXDefaultActionVerb Action() const;
@@ -692,11 +693,11 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Methods that retrieve or manipulate the current selection.
 
   // Get the current selection from anywhere in the accessibility tree.
-  virtual AXRange Selection() const { return AXRange(); }
+  virtual AXSelection Selection() const { return AXSelection(); }
   // Gets only the start and end offsets of the selection computed using the
   // current object as the starting point. Returns a null selection if there is
   // no selection in the subtree rooted at this object.
-  virtual AXRange SelectionUnderObject() const { return AXRange(); }
+  virtual AXSelection SelectionUnderObject() const { return AXSelection(); }
 
   // Scrollable containers.
   bool IsScrollableContainer() const;
@@ -729,7 +730,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool RequestScrollToMakeVisibleAction();
   bool RequestScrollToMakeVisibleWithSubFocusAction(const IntRect&);
   bool RequestSetSelectedAction(bool);
-  bool RequestSetSelectionAction(const AXRange&);
+  bool RequestSetSelectionAction(const AXSelection&);
   bool RequestSetSequentialFocusNavigationStartingPointAction();
   bool RequestSetValueAction(const String&);
   bool RequestShowContextMenuAction();
@@ -745,7 +746,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool OnNativeScrollToMakeVisibleWithSubFocusAction(
       const IntRect&) const;
   virtual bool OnNativeSetSelectedAction(bool);
-  virtual bool OnNativeSetSelectionAction(const AXRange&);
+  virtual bool OnNativeSetSelectionAction(const AXSelection&);
   virtual bool OnNativeSetSequentialFocusNavigationStartingPointAction();
   virtual bool OnNativeSetValueAction(const String&);
   virtual bool OnNativeShowContextMenuAction();

@@ -137,12 +137,12 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
                          NameSources*) const override;
 
   // Modify or take an action on an object.
-  bool OnNativeSetSelectionAction(const AXRange&) override;
+  bool OnNativeSetSelectionAction(const AXSelection&) override;
   bool OnNativeSetValueAction(const String&) override;
 
   // Methods that retrieve or manipulate the current selection.
-  AXRange Selection() const override;
-  AXRange SelectionUnderObject() const override;
+  AXSelection Selection() const override;
+  AXSelection SelectionUnderObject() const override;
 
   // Hit testing.
   AXObject* AccessibilityHitTest(const IntPoint&) const override;
@@ -203,7 +203,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void AddInlineTextBoxChildren(bool force);
 
   LayoutRect ComputeElementRect() const;
-  AXRange TextControlSelection() const;
+  AXSelection TextControlSelection() const;
   int IndexForVisiblePosition(const VisiblePosition&) const;
   AXLayoutObject* GetUnignoredObjectFromNode(Node&) const;
 
