@@ -28,6 +28,10 @@ class ExtensionUninstallDialog
       public ChromeAppIconDelegate,
       public ExtensionRegistryObserver {
  public:
+  // Implement this callback to handle checking for the dialog's header message.
+  using OnWillShowCallback =
+      base::RepeatingCallback<void(ExtensionUninstallDialog*)>;
+
   // The type of action the dialog took at close.
   // Do not reorder this enum, as it is used in UMA histograms.
   enum CloseAction {
@@ -90,6 +94,9 @@ class ExtensionUninstallDialog
 
   // Called when the dialog is closing to do any book-keeping.
   void OnDialogClosed(CloseAction action);
+
+  // Called from unit test to check callbacks in dialog.
+  static void SetOnShownCallbackForTesting(OnWillShowCallback* callback);
 
  protected:
   // Constructor used by the derived classes.
