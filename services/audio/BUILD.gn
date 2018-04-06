@@ -37,6 +37,8 @@ source_set("lib") {
     "group_member.h",
     "in_process_audio_manager_accessor.cc",
     "in_process_audio_manager_accessor.h",
+    "output_controller.cc",
+    "output_controller.h",
     "output_stream.cc",
     "output_stream.h",
     "owning_audio_manager_accessor.cc",
@@ -47,6 +49,8 @@ source_set("lib") {
     "service_factory.h",
     "stream_factory.cc",
     "stream_factory.h",
+    "sync_reader.cc",
+    "sync_reader.h",
     "system_info.cc",
     "system_info.h",
   ]
@@ -65,7 +69,9 @@ source_set("tests") {
   sources = [
     "debug_recording_unittest.cc",
     "group_coordinator_unittest.cc",
+    "output_controller_unittest.cc",
     "output_stream_unittest.cc",
+    "sync_reader_unittest.cc",
     "test/audio_system_to_service_adapter_test.cc",
     "test/debug_recording_session_unittest.cc",
     "test/in_process_service_test.cc",
