@@ -133,7 +133,9 @@ const CGFloat kDamping = 0.85;
     self.popupViewController.contentContainer.transform =
         CGAffineTransformIdentity;
   }
-      withCompletion:nil];
+      withCompletion:^(BOOL finished) {
+        [self.delegate containedPresenterDidPresent:self];
+      }];
 }
 
 - (void)dismissAnimated:(BOOL)animated {

@@ -13,6 +13,8 @@
 // and which is informed about dismissal events.
 @protocol ContainedPresenterDelegate
 
+- (void)containedPresenterDidPresent:(id<ContainedPresenter>)presenter;
+
 // Tells the delegate that |presenter| has finished dismissing.
 - (void)containedPresenterDidDismiss:(id<ContainedPresenter>)presenter;
 

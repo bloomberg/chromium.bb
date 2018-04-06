@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -16,6 +17,7 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_presenter.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
+#import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -31,12 +33,15 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 }
 }  // namespace
 
-@interface PopupMenuCoordinator ()<PopupMenuCommands>
+@interface PopupMenuCoordinator ()<ContainedPresenterDelegate,
+                                   PopupMenuCommands>
 
 // Presenter for the popup menu, managing the animations.
 @property(nonatomic, strong) PopupMenuPresenter* presenter;
 // Mediator for the popup menu.
 @property(nonatomic, strong) PopupMenuMediator* mediator;
+// Time when the presentation of the popup menu is requested.
+@property(nonatomic, assign) NSTimeInterval requestStartTime;
 
 @end
 
@@ -45,6 +50,7 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 @synthesize dispatcher = _dispatcher;
 @synthesize mediator = _mediator;
 @synthesize presenter = _presenter;
+@synthesize requestStartTime = _requestStartTime;
 @synthesize webStateList = _webStateList;
 
 #pragma mark - ChromeCoordinator
@@ -111,6 +117,24 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   self.mediator = nil;
 }
 
+#pragma mark - ContainedPresenterDelegate
+
+- (void)containedPresenterDidPresent:(id<ContainedPresenter>)presenter {
+  DCHECK(presenter == self.presenter);
+  if (self.requestStartTime != 0) {
+    base::TimeDelta elapsed = base::TimeDelta::FromSecondsD(
+        [NSDate timeIntervalSinceReferenceDate] - self.requestStartTime);
+    UMA_HISTOGRAM_TIMES("Toolbar.ShowToolsMenuResponsiveness", elapsed);
+    // Reset the start time to ensure that whatever happens, we only record
+    // this once.
+    self.requestStartTime = 0;
+  }
+}
+
+- (void)containedPresenterDidDismiss:(id<ContainedPresenter>)presenter {
+  DCHECK(presenter == self.presenter);
+}
+
 #pragma mark - Notification callback
 
 - (void)applicationDidEnterBackground:(NSNotification*)note {
@@ -128,6 +152,8 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
       static_cast<id<BrowserCommands>>(self.dispatcher);
   [callableDispatcher
       prepareForPopupMenuPresentation:CommandTypeFromPopupType(type)];
+
+  self.requestStartTime = [NSDate timeIntervalSinceReferenceDate];
 
   PopupMenuTableViewController* tableViewController =
       [[PopupMenuTableViewController alloc]
@@ -152,6 +178,7 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   self.presenter.commandHandler = self;
   self.presenter.presentedViewController = tableViewController;
   self.presenter.guideName = guideName;
+  self.presenter.delegate = self;
 
   [self.presenter prepareForPresentation];
   [self.presenter presentAnimated:YES];
