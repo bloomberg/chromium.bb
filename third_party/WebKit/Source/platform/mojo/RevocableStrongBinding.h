@@ -100,7 +100,7 @@ class RevocableStrongBinding {
       : impl_(std::move(impl)),
         binding_(impl_.get(), std::move(request), invalidator),
         weak_factory_(this) {
-    binding_.set_connection_error_handler(base::BindRepeating(
+    binding_.set_connection_error_handler(base::BindOnce(
         &RevocableStrongBinding::OnConnectionError, base::Unretained(this)));
   }
 
