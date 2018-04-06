@@ -29,9 +29,8 @@
 
 namespace {
 
-const SkColor kButtonHoverColor = SkColorSetARGB(20, 0, 0, 0);
-const SkColor kButtonPressedColor = SkColorSetARGB(31, 0, 0, 0);
-const SkColor kAvatarIconColor = SkColorSetRGB(0x5a, 0x5a, 0x5a);
+constexpr SkColor kButtonHoverColor = SkColorSetARGB(20, 0, 0, 0);
+constexpr SkColor kButtonPressedColor = SkColorSetARGB(31, 0, 0, 0);
 
 const CGFloat kButtonHeight = 24;
 
@@ -246,8 +245,8 @@ const CGFloat kFrameColorDarkUpperBound = 0.33;
       base::mac::ObjCCastStrict<AvatarButton>(button_);
 
   if (useGenericButton) {
-    NSImage* avatarIcon = NSImageFromImageSkia(
-        gfx::CreateVectorIcon(kUserAccountAvatarIcon, 18, kAvatarIconColor));
+    NSImage* avatarIcon = NSImageFromImageSkia(gfx::CreateVectorIcon(
+        kUserAccountAvatarIcon, 18, gfx::kChromeIconGrey));
     [button setDefaultImage:avatarIcon];
     [button setHoverImage:nil];
     [button setPressedImage:nil];

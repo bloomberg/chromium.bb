@@ -244,7 +244,7 @@ AvatarButton::AvatarButton(views::MenuButtonListener* listener,
     SetBorder(nullptr);
     generic_avatar_ =
         gfx::CreateVectorIcon(kProfileSwitcherOutlineIcon,
-                              kGenericAvatarIconSize, gfx::kPlaceholderColor);
+                              kGenericAvatarIconSize, gfx::kChromeIconGrey);
 #endif
   } else if (apply_ink_drop) {
     SetInkDropMode(InkDropMode::ON);
@@ -254,7 +254,7 @@ AvatarButton::AvatarButton(views::MenuButtonListener* listener,
     SetBorder(std::make_unique<AvatarButtonThemedBorder>());
     generic_avatar_ =
         gfx::CreateVectorIcon(kProfileSwitcherOutlineIcon,
-                              kGenericAvatarIconSize, gfx::kPlaceholderColor);
+                              kGenericAvatarIconSize, gfx::kChromeIconGrey);
 #elif defined(OS_WIN)
     DCHECK_EQ(AvatarButtonStyle::NATIVE, button_style);
     SetBorder(views::CreateEmptyBorder(kBorderInsets));

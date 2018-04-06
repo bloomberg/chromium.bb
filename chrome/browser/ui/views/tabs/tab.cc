@@ -1222,7 +1222,13 @@ void Tab::OnButtonColorMaybeChanged() {
   const SkColor title_color = theme_provider->GetColor(IsActive() ?
       ThemeProperties::COLOR_TAB_TEXT :
       ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
-  const SkColor new_button_color = SkColorSetA(title_color, 0xA0);
+
+  SkColor new_button_color = title_color;
+  if (IsActive()) {
+    // This alpha value (0x2f) blends GoogleGrey800 close to GoogleGrey700.
+    new_button_color = color_utils::BlendTowardOppositeLuma(title_color, 0x2f);
+  }
+
   if (button_color_ != new_button_color) {
     button_color_ = new_button_color;
     title_->SetEnabledColor(title_color);
