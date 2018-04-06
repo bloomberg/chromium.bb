@@ -30,11 +30,9 @@
 
 #include "core/loader/ThreadableLoader.h"
 
-#include "core/dom/Document.h"
 #include "core/execution_context/ExecutionContext.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/ThreadableLoadingContext.h"
-#include "core/loader/WorkerThreadableLoader.h"
 #include "core/workers/WorkerGlobalScope.h"
 
 namespace blink {
@@ -45,18 +43,10 @@ ThreadableLoader* ThreadableLoader::Create(
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& resource_loader_options) {
   DCHECK(client);
-
-  if (context.IsWorkerGlobalScope()) {
+  if (context.IsWorkerGlobalScope())
     ToWorkerGlobalScope(&context)->EnsureFetcher();
-    // TODO(horo): Rename DocumentThreadableLoader. We are using it on the
-    // worker thread also.
-    return DocumentThreadableLoader::Create(
-        *ThreadableLoadingContext::Create(*ToWorkerGlobalScope(&context)),
-        client, options, resource_loader_options);
-  }
-
   return DocumentThreadableLoader::Create(
-      *ThreadableLoadingContext::Create(*ToDocument(&context)), client, options,
+      *ThreadableLoadingContext::Create(context), client, options,
       resource_loader_options);
 }
 
@@ -66,16 +56,9 @@ void ThreadableLoader::LoadResourceSynchronously(
     ThreadableLoaderClient& client,
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& resource_loader_options) {
-  if (context.IsWorkerGlobalScope()) {
-    DocumentThreadableLoader::LoadResourceSynchronously(
-        *ThreadableLoadingContext::Create(*ToWorkerGlobalScope(&context)),
-        request, client, options, resource_loader_options);
-    return;
-  }
-
   DocumentThreadableLoader::LoadResourceSynchronously(
-      *ThreadableLoadingContext::Create(*ToDocument(&context)), request, client,
-      options, resource_loader_options);
+      *ThreadableLoadingContext::Create(context), request, client, options,
+      resource_loader_options);
 }
 
 }  // namespace blink
