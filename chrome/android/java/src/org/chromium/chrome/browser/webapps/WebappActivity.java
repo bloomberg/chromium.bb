@@ -251,6 +251,10 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     protected void initializeUI(Bundle savedInstanceState) {
+        // Make display mode available before page load.
+        getActivityTab().getTabWebContentsDelegateAndroid().setDisplayMode(
+                mWebappInfo.displayMode());
+
         // We do not load URL when restoring from saved instance states.
         if (savedInstanceState == null) {
             getActivityTab().loadUrl(
@@ -260,8 +264,6 @@ public class WebappActivity extends SingleTabActivity {
         }
 
         getActivityTab().addObserver(createTabObserver());
-        getActivityTab().getTabWebContentsDelegateAndroid().setDisplayMode(
-                mWebappInfo.displayMode());
     }
 
     @Override

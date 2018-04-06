@@ -556,8 +556,9 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual bool DoBrowserControlsShrinkBlinkSize() const;
 
   // Give WebContentsDelegates the opportunity to adjust the previews state.
-  virtual void AdjustPreviewsStateForNavigation(PreviewsState* previews_state) {
-  }
+  virtual void AdjustPreviewsStateForNavigation(
+      content::WebContents* web_contents,
+      PreviewsState* previews_state) {}
 
   // Requests to print an out-of-process subframe for the specified WebContents.
   // |rect| is the rectangular area where its content resides in its parent
