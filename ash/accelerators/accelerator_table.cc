@@ -354,6 +354,13 @@ const AcceleratorAction kActionsAllowedAtLockScreen[] = {
 const size_t kActionsAllowedAtLockScreenLength =
     arraysize(kActionsAllowedAtLockScreen);
 
+const AcceleratorAction kActionsAllowedAtPowerMenu[] = {
+    BRIGHTNESS_DOWN, BRIGHTNESS_UP, VOLUME_DOWN, VOLUME_UP, VOLUME_MUTE,
+};
+
+const size_t kActionsAllowedAtPowerMenuLength =
+    arraysize(kActionsAllowedAtPowerMenu);
+
 const AcceleratorAction kActionsAllowedAtModalWindow[] = {
     BRIGHTNESS_DOWN,
     BRIGHTNESS_UP,

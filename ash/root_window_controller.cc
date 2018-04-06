@@ -923,6 +923,12 @@ void RootWindowController::CreateContainers() {
   status_container->SetProperty(kUsesScreenCoordinatesKey, true);
   status_container->SetProperty(kLockedToRootKey, true);
 
+  aura::Window* power_menu_container =
+      CreateContainer(kShellWindowId_PowerMenuContainer, "PowerMenuContainer",
+                      lock_screen_related_containers);
+  wm::SetSnapsChildrenToPhysicalPixelBoundary(power_menu_container);
+  power_menu_container->SetProperty(kUsesScreenCoordinatesKey, true);
+
   aura::Window* settings_bubble_container =
       CreateContainer(kShellWindowId_SettingBubbleContainer,
                       "SettingBubbleContainer", lock_screen_related_containers);

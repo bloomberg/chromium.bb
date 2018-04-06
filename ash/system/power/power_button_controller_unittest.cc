@@ -309,18 +309,6 @@ TEST_F(PowerButtonControllerTest, ReleasePowerButtonBeforeTriggerShutdown) {
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 }
 
-// Should dismiss the menu if locking screen when menu is opened.
-TEST_F(PowerButtonControllerTest, LockScreenIfMenuIsOpened) {
-  Initialize(ButtonType::NORMAL, LoginStatus::USER);
-  OpenPowerButtonMenu();
-  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
-  PressLockButton();
-  ReleaseLockButton();
-  EXPECT_TRUE(lock_state_test_api_->is_animating_lock());
-  EXPECT_EQ(1, session_manager_client_->request_lock_screen_call_count());
-  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
-}
-
 // Tests press lock button and power button in sequence.
 TEST_F(PowerButtonControllerTest, PressAfterAnotherReleased) {
   // Tap power button after press lock button should still turn screen off.
@@ -946,6 +934,52 @@ TEST_F(PowerButtonControllerTest, HideCursorAfterShowMenu) {
   // Cursor reappears if mouse moves.
   GenerateMouseMoveEvent();
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
+}
+
+// Tests that press VKEY_ESCAPE should dismiss the opened menu.
+TEST_F(PowerButtonControllerTest, ESCDismissMenu) {
+  OpenPowerButtonMenu();
+
+  PressKey(ui::VKEY_VOLUME_DOWN);
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+
+  PressKey(ui::VKEY_BRIGHTNESS_UP);
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+
+  PressKey(ui::VKEY_BROWSER_SEARCH);
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+
+  PressKey(ui::VKEY_ESCAPE);
+  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
+}
+
+// Tests the navigation of the menu.
+TEST_F(PowerButtonControllerTest, MenuNavigation) {
+  OpenPowerButtonMenu();
+  PressKey(ui::VKEY_TAB);
+  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
+                  ->sign_out_item()
+                  ->HasFocus());
+
+  PressKey(ui::VKEY_LEFT);
+  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
+                  ->power_off_item()
+                  ->HasFocus());
+
+  PressKey(ui::VKEY_RIGHT);
+  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
+                  ->sign_out_item()
+                  ->HasFocus());
+
+  PressKey(ui::VKEY_UP);
+  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
+                  ->power_off_item()
+                  ->HasFocus());
+
+  PressKey(ui::VKEY_DOWN);
+  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
+                  ->sign_out_item()
+                  ->HasFocus());
 }
 
 class PowerButtonControllerWithPositionTest

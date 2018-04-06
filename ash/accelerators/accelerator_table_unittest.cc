@@ -90,6 +90,14 @@ TEST(AcceleratorTableTest, CheckDuplicatedActionsAllowedAtLoginOrLockScreen) {
   }
 }
 
+TEST(AcceleratorTableTest, CheckDuplicatedActionsAllowedAtPowerMenu) {
+  std::set<AcceleratorAction> actions;
+  for (size_t i = 0; i < kActionsAllowedAtPowerMenuLength; ++i) {
+    EXPECT_TRUE(actions.insert(kActionsAllowedAtPowerMenu[i]).second)
+        << "Duplicated action: " << kActionsAllowedAtPowerMenu[i];
+  }
+}
+
 TEST(AcceleratorTableTest, CheckDuplicatedActionsAllowedAtModalWindow) {
   std::set<AcceleratorAction> actions;
   for (size_t i = 0; i < kActionsAllowedAtModalWindowLength; ++i) {

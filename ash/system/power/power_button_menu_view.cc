@@ -192,6 +192,20 @@ gfx::Size PowerButtonMenuView::CalculatePreferredSize() const {
   return menu_size;
 }
 
+bool PowerButtonMenuView::OnKeyPressed(const ui::KeyEvent& event) {
+  const ui::KeyboardCode key = event.key_code();
+  if (key == ui::VKEY_ESCAPE) {
+    Shell::Get()->power_button_controller()->DismissMenu();
+  } else if (sign_out_item_ && (key == ui::VKEY_TAB || key == ui::VKEY_LEFT ||
+                                key == ui::VKEY_RIGHT || key == ui::VKEY_UP ||
+                                key == ui::VKEY_DOWN)) {
+    sign_out_item_->HasFocus() ? power_off_item_->RequestFocus()
+                               : sign_out_item_->RequestFocus();
+  }
+
+  return true;
+}
+
 void PowerButtonMenuView::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
   DCHECK(sender);
