@@ -55,6 +55,8 @@ public class ToolbarModelImpl
     private int mPreviousSecurityLevel;
     private String mCachedSearchTerms;
 
+    private boolean mIgnoreSecurityLevelForSearchTerms;
+
     /**
      * Default constructor for this class.
      * @param bottomSheet The {@link BottomSheet} for the activity displaying this toolbar.
@@ -141,7 +143,7 @@ public class ToolbarModelImpl
         String url = getCurrentUrl();
         if (DomDistillerUrlUtils.isDistilledPage(url)) return false;
         if (isOfflinePage()) return false;
-        if (isDisplayingQueryTerms()) return false;
+        if (shouldDisplaySearchTerms()) return false;
         if (NativePageFactory.isNativePageUrl(url, isIncognito()) || NewTabPage.isNTPUrl(url)) {
             return false;
         }
@@ -201,10 +203,9 @@ public class ToolbarModelImpl
             String originalUrl = mTab.getOriginalUrl();
             editingText = OfflinePageUtils.stripSchemeFromOnlineUrl(
                     DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl));
-        } else {
-            String searchTerms = extractSearchTermsFromUrl(url);
+        } else if (shouldDisplaySearchTerms()) {
             // Show the search terms in the omnibox instead of the URL if this is a DSE search URL.
-            if (searchTerms != null) editingText = searchTerms;
+            editingText = getDisplaySearchTerms(url);
         }
 
         return editingText;
@@ -318,7 +319,7 @@ public class ToolbarModelImpl
     public int getSecurityIconResource(boolean isTablet) {
         // If we're showing a query in the omnibox, and the security level is high enough to show
         // the search icon, return that instead of the security icon.
-        if (isDisplayingQueryTerms()) {
+        if (shouldDisplaySearchTerms()) {
             return R.drawable.ic_search;
         }
         return getSecurityIconResource(getSecurityLevel(), !isTablet, isOfflinePage());
@@ -367,8 +368,16 @@ public class ToolbarModelImpl
     }
 
     @Override
-    public boolean isDisplayingQueryTerms() {
-        return extractSearchTermsFromUrl(getCurrentUrl()) != null;
+    public boolean shouldDisplaySearchTerms() {
+        return (mIgnoreSecurityLevelForSearchTerms || securityLevelSafeForQueryInOmnibox())
+                && isUrlApplicableToDisplaySearchTerms(getCurrentUrl());
+    }
+
+    private boolean isUrlApplicableToDisplaySearchTerms(String url) {
+        if (!mQueryInOmniboxEnabled) return false;
+        if (mTab != null && !(mTab.getActivity() instanceof ChromeTabbedActivity)) return false;
+        if (TextUtils.isEmpty(getDisplaySearchTerms(url))) return false;
+        return true;
     }
 
     private boolean securityLevelSafeForQueryInOmnibox() {
@@ -379,21 +388,23 @@ public class ToolbarModelImpl
 
     /**
      * Extracts query terms from a URL if it's a SRP URL from the default search engine, caching
-     * the result of the more expensive call to {@link #extractSearchTermsFromUrlInternal}.
+     * the result of the more expensive call to {@link #getDisplaySearchTermsInternal}.
      *
      * @param url The URL to extract search terms from.
      * @return The search terms. Returns null if not a DSE SRP URL or there are no search terms to
      *         extract, if query in omnibox is disabled, or if the security level is insufficient to
-     *         display search terms in place of SRP URL.
+     *         display search terms in place of SRP URL. This will also return nothing if the search
+     *         terms look too much like a URL, since we don't want to display URL look-a-likes with
+     *         "Query in Omnibox" to avoid confusion.
      */
-    private String extractSearchTermsFromUrl(String url) {
+    private String getDisplaySearchTerms(String url) {
         if (url == null) {
             mCachedSearchTerms = null;
         } else {
             @ConnectionSecurityLevel
             int securityLevel = getSecurityLevel();
             if (!url.equals(mPreviousUrl) || securityLevel != mPreviousSecurityLevel) {
-                mCachedSearchTerms = extractSearchTermsFromUrlInternal(url);
+                mCachedSearchTerms = getDisplaySearchTermsInternal(url);
                 mPreviousUrl = url;
                 mPreviousSecurityLevel = securityLevel;
             }
@@ -411,19 +422,35 @@ public class ToolbarModelImpl
      *         extract, if query in omnibox is disabled, or if the security level is insufficient to
      *         display search terms in place of SRP URL.
      */
-    private String extractSearchTermsFromUrlInternal(String url) {
-        if (mTab != null && !(mTab.getActivity() instanceof ChromeTabbedActivity)) return null;
-        if (!mQueryInOmniboxEnabled || !securityLevelSafeForQueryInOmnibox()) return null;
+    private String getDisplaySearchTermsInternal(String url) {
+        TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
+        if (!templateUrlService.isSearchResultsPageFromDefaultSearchProvider(url)) return null;
 
-        String searchTerms = TemplateUrlService.getInstance().extractSearchTermsFromUrl(url);
-        if (!TextUtils.isEmpty(searchTerms)) {
-            // Avoid showing search terms that would be interpreted as a URL if typed into the
-            // omnibox.
-            if (TextUtils.isEmpty(
-                        AutocompleteController.nativeQualifyPartialURLQuery(searchTerms))) {
-                return searchTerms;
-            }
-        }
-        return null;
+        String searchTerms = templateUrlService.extractSearchTermsFromUrl(url);
+        // Avoid showing search terms that would be interpreted as a URL if typed into the
+        // omnibox.
+        return looksLikeUrl(searchTerms) ? null : searchTerms;
+    }
+
+    /**
+     * Checks if the provided {@link String} look like a URL.
+     *
+     * @param input The {@link String} to check.
+     * @return Whether or not the {@link String} appeared to be a URL.
+     */
+    private boolean looksLikeUrl(String input) {
+        return !TextUtils.isEmpty(input)
+                && !TextUtils.isEmpty(AutocompleteController.nativeQualifyPartialURLQuery(input));
+    }
+
+    /**
+     * Sets a flag telling the model to ignore the security level in its check for whether to
+     * display search terms or not. This is useful for avoiding the flicker that occurs when loading
+     * a SRP URL before our SSL state updates.
+     *
+     * @param ignore Whether or not we should ignore the security level.
+     */
+    protected void setIgnoreSecurityLevelForSearchTerms(boolean ignore) {
+        mIgnoreSecurityLevelForSearchTerms = ignore;
     }
 }

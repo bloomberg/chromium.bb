@@ -111,7 +111,7 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     }
 
     @Override
-    public boolean isDisplayingQueryTerms() {
+    public boolean shouldDisplaySearchTerms() {
         return false;
     }
 }

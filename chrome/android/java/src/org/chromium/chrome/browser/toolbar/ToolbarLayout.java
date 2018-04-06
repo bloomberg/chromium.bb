@@ -234,7 +234,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             }
 
             @Override
-            public boolean isDisplayingQueryTerms() {
+            public boolean shouldDisplaySearchTerms() {
                 return false;
             }
         };

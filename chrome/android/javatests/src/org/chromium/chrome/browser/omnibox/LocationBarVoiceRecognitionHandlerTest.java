@@ -215,7 +215,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
         }
 
         @Override
-        public boolean isDisplayingQueryTerms() {
+        public boolean shouldDisplaySearchTerms() {
             return false;
         }
 
