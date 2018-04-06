@@ -1072,24 +1072,6 @@ RenderWidgetHostInputEventRouter::FindTouchscreenGestureEventTarget(
   return {nullptr, false, base::nullopt};
 }
 
-// TODO(wjmaclean): Remove this when no longer needed. https://crbug.com/824774
-void RenderWidgetHostInputEventRouter::VerifyViewInMap(
-    RenderWidgetHostViewBase* view,
-    std::string src) const {
-  for (const auto& entry : owner_map_) {
-    if (entry.second == view)
-      return;
-  }
-
-  static auto* ptr_key = base::debug::AllocateCrashKeyString(
-      "not-in-map-view-ptr", base::debug::CrashKeySize::Size64);
-  base::debug::ScopedCrashKeyString(ptr_key, base::StringPrintf("%p", view));
-  static auto* src_key = base::debug::AllocateCrashKeyString(
-      "not-in-map-view-src", base::debug::CrashKeySize::Size64);
-  base::debug::ScopedCrashKeyString device_key_value(src_key, src);
-  base::debug::DumpWithoutCrashing();
-}
-
 void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     RenderWidgetHostViewBase* root_view,
     RenderWidgetHostViewBase* target,
@@ -1157,7 +1139,6 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // created by ContentView. These will use the target found by the
     // RenderWidgetTargeter. These gesture events should always have a
     // unique_touch_event_id of 0.
-    VerifyViewInMap(target, "unique_touch_event_id == 0");
     touchscreen_gesture_target_.target = target;
     base::debug::SetCrashKeyString(target_source_key, "touch_id=0");
     DCHECK(target_location.has_value());
@@ -1183,13 +1164,10 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
     // Re https://crbug.com/796656): Since we are already in an error case,
     // don't worry about the fact we're ignoring |result.should_query_view|, as
     // this is the best we can do until we fix https://crbug.com/595422.
-
-    // Since we synchronously found this target, assume it's in the map.
     touchscreen_gesture_target_.target = result.view;
     base::debug::SetCrashKeyString(target_source_key, "no_matching_id");
     touchscreen_gesture_target_.delta = transformed_point - original_point;
   } else if (is_gesture_start) {
-    VerifyViewInMap(gesture_target_it->second.target, "is_gesture_start");
     touchscreen_gesture_target_ = gesture_target_it->second;
     touchscreen_gesture_target_map_.erase(gesture_target_it);
 
