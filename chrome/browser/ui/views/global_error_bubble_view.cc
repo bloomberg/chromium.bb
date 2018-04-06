@@ -47,7 +47,7 @@ const int kMaxBubbleViewWidth = 362;
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 
-views::View* GetBubbleAnchorView(Browser* browser) {
+views::View* GetGlobalErrorBubbleAnchorView(Browser* browser) {
 #if BUILDFLAG(MAC_VIEWS_BROWSER)
   if (views_mode_controller::IsViewsBrowserCocoa())
     return nullptr;
@@ -56,7 +56,7 @@ views::View* GetBubbleAnchorView(Browser* browser) {
   return browser_view->button_provider()->GetAppMenuButton();
 }
 
-gfx::Rect GetBubbleAnchorRect(Browser* browser) {
+gfx::Rect GetGlobalErrorBubbleAnchorRect(Browser* browser) {
 #if BUILDFLAG(MAC_VIEWS_BROWSER)
   if (views_mode_controller::IsViewsBrowserCocoa())
     return bubble_anchor_util::GetAppMenuAnchorRectCocoa(browser);
@@ -75,10 +75,10 @@ gfx::Rect GetBubbleAnchorRect(Browser* browser) {
 GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowStandardBubbleView(
     Browser* browser,
     const base::WeakPtr<GlobalErrorWithStandardBubble>& error) {
-  views::View* anchor_view = GetBubbleAnchorView(browser);
+  views::View* anchor_view = GetGlobalErrorBubbleAnchorView(browser);
   gfx::Rect anchor_rect;
   if (!anchor_view)
-    anchor_rect = GetBubbleAnchorRect(browser);
+    anchor_rect = GetGlobalErrorBubbleAnchorRect(browser);
   GlobalErrorBubbleView* bubble_view = new GlobalErrorBubbleView(
       anchor_view, anchor_rect, views::BubbleBorder::TOP_RIGHT, browser, error);
   views::BubbleDialogDelegateView::CreateBubble(bubble_view);
