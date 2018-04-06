@@ -103,13 +103,16 @@ void ConsentAuditor::RecordGaiaConsent(
       break;
   }
 
+  // TODO(msramek): Pass in the actual account id.
   std::unique_ptr<sync_pb::UserEventSpecifics> specifics = ConstructUserConsent(
-      feature, description_grd_ids, confirmation_grd_id, status);
+      /* account_id = */ std::string(), feature, description_grd_ids,
+      confirmation_grd_id, status);
   user_event_service_->RecordUserEvent(std::move(specifics));
 }
 
 std::unique_ptr<sync_pb::UserEventSpecifics>
 ConsentAuditor::ConstructUserConsent(
+    const std::string& account_id,
     Feature feature,
     const std::vector<int>& description_grd_ids,
     int confirmation_grd_id,
@@ -118,6 +121,7 @@ ConsentAuditor::ConstructUserConsent(
   specifics->set_event_time_usec(
       base::Time::Now().since_origin().InMicroseconds());
   auto* consent = specifics->mutable_user_consent();
+  consent->set_account_id(account_id);
   consent->set_feature(FeatureToProtoEnum(feature));
   for (int id : description_grd_ids) {
     consent->add_description_grd_ids(id);

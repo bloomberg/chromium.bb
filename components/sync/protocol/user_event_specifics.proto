@@ -114,6 +114,17 @@ message UserEventSpecifics {
       GIVEN = 2;
     }
     optional ConsentStatus status = 5;
+    // The account ID of the user who gave the consent. This field is used
+    // by UserEventService to distinguish consents from different users,
+    // as UserConsent does not get deleted when a user signs out. However,
+    // it should be cleared before being sent over the wire, as the UserEvent
+    // is sent over an authenticated channel, so this information would be
+    // redundant.
+    //
+    // For semantics and usage of the |account_id| in the signin codebase,
+    // see SigninManagerBase::GetAuthenticatedAccountId()
+    // or AccountInfo::account_id.
+    optional string account_id = 6;
   }
 
   // User reused their GAIA password on another website.

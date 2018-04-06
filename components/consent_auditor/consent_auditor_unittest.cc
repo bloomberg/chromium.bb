@@ -191,6 +191,9 @@ TEST_F(ConsentAuditorTest, RecordGaiaConsent) {
   EXPECT_FALSE(events[0].has_navigation_id());
   EXPECT_TRUE(events[0].has_user_consent());
   auto& consent = events[0].user_consent();
+  // TODO(crbug.com/781765): The |account_id| is not passed into
+  // ConsentAuditor yet.
+  EXPECT_EQ("", consent.account_id());
   EXPECT_EQ(UserEventSpecifics::UserConsent::CHROME_SYNC, consent.feature());
   EXPECT_EQ(3, consent.description_grd_ids_size());
   EXPECT_EQ(kDescriptionMessageIds[0], consent.description_grd_ids(0));

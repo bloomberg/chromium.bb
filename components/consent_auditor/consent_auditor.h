@@ -82,6 +82,7 @@ class ConsentAuditor : public KeyedService {
 
  private:
   std::unique_ptr<sync_pb::UserEventSpecifics> ConstructUserConsent(
+      const std::string& account_id,
       Feature feature,
       const std::vector<int>& description_grd_ids,
       int confirmation_grd_id,

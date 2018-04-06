@@ -874,6 +874,7 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::UserConsent& proto) {
   VISIT(confirmation_grd_id);
   VISIT(locale);
   VISIT_ENUM(status);
+  VISIT(account_id);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::TypeHint& proto) {
