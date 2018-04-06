@@ -8993,6 +8993,13 @@ static int inter_mode_search_order_independent_skip(const AV1_COMP *cpi,
   const MV_REFERENCE_FRAME *ref_frame = av1_mode_order[mode_index].ref_frame;
   const PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
 
+  if (cpi->sf.mode_pruning_based_on_two_pass_partition_search &&
+      !x->cb_partition_scan) {
+    if (!x->ref0_candidate_mask[ref_frame[0]] ||
+        (ref_frame[1] >= 0 && !x->ref1_candidate_mask[ref_frame[1]]))
+      return 1;
+  }
+
   if (ref_frame[0] > INTRA_FRAME && ref_frame[1] == INTRA_FRAME) {
     // Mode must by compatible
     if (!is_interintra_allowed_mode(this_mode)) return 1;

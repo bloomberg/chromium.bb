@@ -154,6 +154,10 @@ struct macroblock {
   // cost in the first pass search.
   int cb_partition_scan;
 
+  // If 0, do not allow corresponding ref frame during RD search.
+  uint8_t ref0_candidate_mask[REF_FRAMES + 1];  // The last entry is a counter.
+  uint8_t ref1_candidate_mask[REF_FRAMES];
+
   // Activate constrained coding block partition search range.
   int use_cb_search_range;
 
