@@ -737,14 +737,8 @@ class CompositingRenderWidgetHostViewBrowserTestHiDPI
   DISALLOW_COPY_AND_ASSIGN(CompositingRenderWidgetHostViewBrowserTestHiDPI);
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#define MAYBE_ScrollOffset DISABLED_ScrollOffset
-#else
-#define MAYBE_ScrollOffset ScrollOffset
-#endif
-
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestHiDPI,
-                       MAYBE_ScrollOffset) {
+                       ScrollOffset) {
   const int kContentHeight = 2000;
   const int kScrollAmount = 100;
 
@@ -767,6 +761,10 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestHiDPI,
                          kContentHeight, kScrollAmount));
 
   SET_UP_SURFACE_OR_PASS_TEST("\"DONE\"");
+  RenderFrameSubmissionObserver observer_(
+      GetRenderWidgetHost()->render_frame_metadata_provider());
+  observer_.WaitForScrollOffsetAtTop(false);
+
   if (!ShouldContinueAfterTestURLLoad())
     return;
 
