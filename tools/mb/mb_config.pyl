@@ -455,7 +455,7 @@
       'V8 Linux GN': 'release_bot',
       'V8-Blink Linux 64': 'release_bot',
       'V8-Blink Linux 64 - future': 'release_bot',
-      'V8-Blink Linux 64 (dbg)': 'debug_bot',
+      'V8-Blink Linux 64 (dbg)': 'release_bot_v8_debug',
       'V8-Blink Mac': 'release_bot',
       'V8-Blink Win': 'release_bot_x86_minimal_symbols',
       'Win V8 FYI Release (NVIDIA)': 'gpu_tests_release_trybot_x86_minimal_symbols',
@@ -1516,6 +1516,10 @@
       'release_bot', 'mac_strip',
     ],
 
+    'release_bot_v8_debug': [
+      'release_bot', 'v8_enable_debugging_features',
+    ],
+
     'release_bot_x86': [
       'release_bot', 'x86',
     ],
@@ -2141,6 +2145,10 @@
 
     'v8_concurrent_marking': {
       'gn_args': 'v8_enable_concurrent_marking=true',
+    },
+
+    'v8_enable_debugging_features': {
+      'gn_args': 'v8_enable_debugging_features=true',
     },
 
     'v8_future': {
