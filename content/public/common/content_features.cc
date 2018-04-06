@@ -459,6 +459,17 @@ const base::Feature kWebAssemblyStreaming{"WebAssemblyStreaming",
 const base::Feature kWebAssemblyTrapHandler{"WebAssemblyTrapHandler",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether the visibility of a WebContents can be OCCLUDED. When
+// disabled, an occluded WebContents behaves exactly like a VISIBLE WebContents.
+const base::Feature kWebContentsOcclusion {
+  "WebContentsOcclusion",
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
 // Controls whether the WebAuthentication API is enabled:
 // https://w3c.github.io/webauthn
 const base::Feature kWebAuth {

@@ -8,7 +8,9 @@
 
 #include "base/command_line.h"
 #include "base/test/scoped_command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/test_windows.h"
@@ -58,6 +60,9 @@ TEST_F(WebContentsViewAuraTest, ShowHideParent) {
 }
 
 TEST_F(WebContentsViewAuraTest, OccludeView) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kWebContentsOcclusion);
+
   // |other_window| occludes |web_contents()| when it's shown.
   std::unique_ptr<aura::Window> other_window(
       aura::test::CreateTestWindowWithDelegateAndType(

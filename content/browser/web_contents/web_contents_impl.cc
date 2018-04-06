@@ -115,6 +115,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
@@ -6147,8 +6148,12 @@ int WebContentsImpl::GetCurrentlyPlayingVideoCount() {
 }
 
 void WebContentsImpl::UpdateWebContentsVisibility(Visibility visibility) {
-  // Occlusion can cause flakiness in browser tests.
-  static const bool occlusion_is_disabled =
+  // Occlusion is disabled when |features::kWebContentsOcclusion| is disabled
+  // (for power and speed impact assessment) or when
+  // |switches::kDisableBackgroundingOccludedWindowsForTesting| is specified on
+  // the command line (to avoid flakiness in browser tests).
+  const bool occlusion_is_disabled =
+      !base::FeatureList::IsEnabled(features::kWebContentsOcclusion) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableBackgroundingOccludedWindowsForTesting);
   if (occlusion_is_disabled && visibility == Visibility::OCCLUDED)
