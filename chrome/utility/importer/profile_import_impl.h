@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/values.h"
 #include "chrome/common/importer/profile_import.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -19,7 +20,6 @@ class ExternalProcessImporterBridge;
 class Importer;
 
 namespace base {
-class DictionaryValue;
 class Thread;
 }  // namespace base
 
@@ -37,7 +37,7 @@ class ProfileImportImpl : public chrome::mojom::ProfileImport {
   // chrome::mojom::ProfileImport:
   void StartImport(const importer::SourceProfile& source_profile,
                    uint16_t items,
-                   std::unique_ptr<base::DictionaryValue> localized_strings,
+                   base::Value localized_strings,
                    chrome::mojom::ProfileImportObserverPtr observer) override;
   void CancelImport() override;
   void ReportImportItemFinished(importer::ImportItem item) override;
