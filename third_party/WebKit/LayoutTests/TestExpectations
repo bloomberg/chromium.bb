@@ -1167,6 +1167,8 @@ crbug.com/591099 virtual/layout_ng_experimental/printing/thead-repeats-at-top-of
 crbug.com/591099 virtual/layout_ng_experimental/printing/thead-under-multicol.html [ Failure ]
 crbug.com/824918 virtual/layout_ng_experimental/printing/width-overflow.html [ Failure ]
 
+crbug.com/829804 [ Mac ] virtual/layout_ng_experimental/printing/webgl-oversized-printing.html [ Pass Timeout ]
+
 # ====== LayoutNG-only failures until here ======
 
 # ====== IncrementalShadowDOM-only failures from here ======
