@@ -332,6 +332,12 @@ AXObject* AccessibilityMediaTimeline::Create(
   return new AccessibilityMediaTimeline(layout_object, ax_object_cache);
 }
 
+String AccessibilityMediaTimeline::ValueDescription() const {
+  if (auto* input = ToHTMLInputElementOrNull(layout_object_->GetNode()))
+    return LocalizedMediaTimeDescription(input->value().ToFloat());
+  return String();
+}
+
 String AccessibilityMediaTimeline::Description(
     AXNameFrom name_from,
     AXDescriptionFrom& description_from,
