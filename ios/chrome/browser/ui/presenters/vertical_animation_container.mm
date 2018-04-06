@@ -81,14 +81,23 @@ NSTimeInterval kAnimationDuration = 0.2;
   if (self.presentedConstraints[0].active)
     return;
 
-  [UIView animateWithDuration:animated ? kAnimationDuration : 0.0
-                   animations:^{
-                     [NSLayoutConstraint
-                         deactivateConstraints:self.dismissedConstraints];
-                     [NSLayoutConstraint
-                         activateConstraints:self.presentedConstraints];
-                     [self.baseViewController.view layoutIfNeeded];
-                   }];
+  auto animations = ^{
+    [NSLayoutConstraint deactivateConstraints:self.dismissedConstraints];
+    [NSLayoutConstraint activateConstraints:self.presentedConstraints];
+    [self.baseViewController.view layoutIfNeeded];
+  };
+  auto completion = ^(BOOL finished) {
+    [self.delegate containedPresenterDidPresent:self];
+  };
+
+  if (animated) {
+    [UIView animateWithDuration:kAnimationDuration
+                     animations:animations
+                     completion:completion];
+  } else {
+    animations();
+    completion(YES);
+  }
 }
 
 - (void)dismissAnimated:(BOOL)animated {
@@ -100,12 +109,12 @@ NSTimeInterval kAnimationDuration = 0.2;
   if (self.dismissedConstraints[0].active)
     return;
 
-  void (^animations)() = ^{
+  auto animations = ^{
     [NSLayoutConstraint deactivateConstraints:self.presentedConstraints];
     [NSLayoutConstraint activateConstraints:self.dismissedConstraints];
     [self.baseViewController.view layoutIfNeeded];
   };
-  void (^completion)(BOOL) = ^(BOOL finished) {
+  auto completion = ^(BOOL finished) {
     [self cleanUpAfterDismissal];
     [self.delegate containedPresenterDidDismiss:self];
   };

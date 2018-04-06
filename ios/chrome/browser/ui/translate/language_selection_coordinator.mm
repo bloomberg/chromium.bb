@@ -125,6 +125,10 @@
 
 #pragma mark - ContainedPresenterDelegate
 
+- (void)containedPresenterDidPresent:(id<ContainedPresenter>)presenter {
+  DCHECK(presenter == self.presenter);
+}
+
 - (void)containedPresenterDidDismiss:(id<ContainedPresenter>)presenter {
   DCHECK(presenter == self.presenter);
   [self stop];
