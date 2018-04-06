@@ -53,6 +53,8 @@ class POLICY_EXPORT BrowserPolicyConnectorBase {
 
   const ConfigurationPolicyHandlerList* GetHandlerList() const;
 
+  std::vector<ConfigurationPolicyProvider*> GetPolicyProviders() const;
+
   // Sets a |provider| that will be included in PolicyServices returned by
   // GetPolicyService. This is a static method because local state is
   // created immediately after the connector, and tests don't have a chance to

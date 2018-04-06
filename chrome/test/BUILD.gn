@@ -653,6 +653,7 @@ test("browser_tests") {
       "../browser/policy/cloud/cloud_policy_test_utils.h",
       "../browser/policy/cloud/component_cloud_policy_browsertest.cc",
       "../browser/policy/cloud/device_management_service_browsertest.cc",
+      "../browser/policy/cloud/machine_level_user_cloud_policy_browsertest.cc",
       "../browser/policy/cloud/test_request_interceptor.cc",
       "../browser/policy/cloud/test_request_interceptor.h",
       "../browser/policy/policy_browsertest.cc",
@@ -1712,6 +1713,9 @@ test("browser_tests") {
 
         # chromeos does not use the desktop user manager
         "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
+
+        # chromeos does not support machine level user cloud policies
+        "../browser/policy/cloud/machine_level_user_cloud_policy_browsertest.cc",
       ]
       deps += [
         "//ash:test_support_with_content",

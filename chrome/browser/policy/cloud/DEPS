@@ -18,6 +18,7 @@ specific_include_rules = {
   r"cloud_policy_manager_browsertest|"
   r"component_cloud_policy_browsertest|"
   r"device_management_service_browsertest|"
+  r"machine_level_user_cloud_policy_browsertest|"
   r"test_request_interceptor|"
   r"policy_header_service_factory|"
   r"policy_header_service_unittest|"

@@ -81,6 +81,7 @@ MachineLevelUserCloudPolicyFetcher::MachineLevelUserCloudPolicyFetcher(
     scoped_refptr<net::URLRequestContextGetter> system_request_context)
     : policy_manager_(policy_manager),
       local_state_(local_state),
+      device_management_service_(device_management_service),
       system_request_context_(system_request_context) {
   std::unique_ptr<CloudPolicyClient> client =
       std::make_unique<CloudPolicyClient>(
