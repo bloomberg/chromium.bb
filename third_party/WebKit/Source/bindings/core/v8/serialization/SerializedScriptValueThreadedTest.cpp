@@ -26,7 +26,7 @@ TEST(SerializedScriptValueThreadedTest,
   WorkerReportingProxy proxy;
   WorkerThreadForTest worker_thread(nullptr, proxy);
   ParentFrameTaskRunners* parent_frame_task_runners =
-      ParentFrameTaskRunners::Create(scope.GetFrame());
+      ParentFrameTaskRunners::Create(&scope.GetDocument());
   worker_thread.StartWithSourceCode(scope.GetDocument().GetSecurityOrigin(),
                                     "/* no worker script */",
                                     parent_frame_task_runners);
