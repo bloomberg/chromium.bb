@@ -9,7 +9,7 @@
     android:insetRight="@dimen/keyboard_accessory_half_padding"
     android:insetTop="@dimen/keyboard_accessory_padding">
     <shape>
-        <solid android:color="#ECEFF1" />
+        <solid android:color="@color/google_grey_200" />
         <corners android:radius="2dp" />
     </shape>
 </inset>

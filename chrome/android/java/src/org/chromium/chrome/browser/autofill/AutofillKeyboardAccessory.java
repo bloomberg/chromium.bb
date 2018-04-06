@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.autofill;
+package org.chromium.chrome.browser.autofill;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -25,6 +25,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
+import org.chromium.components.autofill.AutofillDelegate;
+import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -34,9 +37,9 @@ import java.util.ArrayList;
  * The Autofill suggestion view that lists relevant suggestions. It sits above the keyboard and
  * below the content area.
  */
-public class AutofillKeyboardAccessory extends LinearLayout
-        implements WindowAndroid.KeyboardVisibilityListener, View.OnClickListener,
-        View.OnLongClickListener {
+public class AutofillKeyboardAccessory
+        extends LinearLayout implements WindowAndroid.KeyboardVisibilityListener,
+                                        View.OnClickListener, View.OnLongClickListener {
     // Time to pause before reversing animation when the first suggestion is a hint.
     private static final long PAUSE_ANIMATION_BEFORE_REVERSE_MILLIS = 1000;
     // Time to fade in views that we temporarily hide when we change container layout.
@@ -79,8 +82,8 @@ public class AutofillKeyboardAccessory extends LinearLayout
         mMaximumSublabelWidthPx = deviceWidthPx / 4;
 
         mWindowAndroid.addKeyboardVisibilityListener(this);
-        int horizontalPaddingPx = getResources().getDimensionPixelSize(
-                R.dimen.keyboard_accessory_half_padding);
+        int horizontalPaddingPx =
+                getResources().getDimensionPixelSize(R.dimen.keyboard_accessory_half_padding);
         setPadding(horizontalPaddingPx, 0, horizontalPaddingPx, 0);
 
         mAnimationDurationMillis = animationDurationMillis;
@@ -116,8 +119,9 @@ public class AutofillKeyboardAccessory extends LinearLayout
 
             View touchTarget;
             if (!suggestion.isFillable() && suggestion.getIconId() != 0) {
-                touchTarget = LayoutInflater.from(getContext()).inflate(
-                        R.layout.autofill_keyboard_accessory_icon, this, false);
+                touchTarget =
+                        LayoutInflater.from(getContext())
+                                .inflate(R.layout.autofill_keyboard_accessory_icon, this, false);
 
                 if (mSeparatorPosition == -1 && !isKeyboardAccessoryHint) mSeparatorPosition = i;
 
@@ -125,16 +129,17 @@ public class AutofillKeyboardAccessory extends LinearLayout
                 Drawable drawable =
                         AppCompatResources.getDrawable(getContext(), suggestion.getIconId());
                 if (isKeyboardAccessoryHint) {
-                    drawable.setColorFilter(ApiCompatibilityUtils.getColor(getResources(),
-                                                    R.color.keyboard_accessory_hint_icon),
+                    drawable.setColorFilter(
+                            ApiCompatibilityUtils.getColor(getResources(), R.color.google_blue_500),
                             PorterDuff.Mode.SRC_IN);
                 } else {
                     icon.setContentDescription(suggestion.getLabel());
                 }
                 icon.setImageDrawable(drawable);
             } else {
-                touchTarget = LayoutInflater.from(getContext()).inflate(
-                        R.layout.autofill_keyboard_accessory_item, this, false);
+                touchTarget =
+                        LayoutInflater.from(getContext())
+                                .inflate(R.layout.autofill_keyboard_accessory_item, this, false);
 
                 TextView label = (TextView) touchTarget.findViewById(
                         R.id.autofill_keyboard_accessory_item_label);
@@ -149,8 +154,7 @@ public class AutofillKeyboardAccessory extends LinearLayout
                 }
 
                 if (suggestion.getIconId() != 0) {
-                    ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                            label,
+                    ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(label,
                             AppCompatResources.getDrawable(getContext(), suggestion.getIconId()),
                             null /* top */, null /* end */, null /* bottom */);
                 }
