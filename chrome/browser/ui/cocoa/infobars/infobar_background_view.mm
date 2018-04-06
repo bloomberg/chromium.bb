@@ -26,14 +26,6 @@
   return self;
 }
 
-- (void)setInfobarBackgroundColor:(SkColor)color {
-  // TODO(ellyjones): no need to use a gradient here.
-  base::scoped_nsobject<NSGradient> gradient([[NSGradient alloc]
-      initWithStartingColor:skia::SkColorToCalibratedNSColor(color)
-                endingColor:skia::SkColorToCalibratedNSColor(color)]);
-  [self setGradient:gradient];
-}
-
 - (NSColor*)strokeColor {
   const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   if (!themeProvider)
@@ -41,24 +33,17 @@
 
   BOOL active = [[self window] isMainWindow];
   return themeProvider->GetNSColor(
-      active ? ThemeProperties::COLOR_TOOLBAR_STROKE :
-               ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE);
+      active ? ThemeProperties::COLOR_TOOLBAR_STROKE
+             : ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE);
 }
 
 - (void)drawRect:(NSRect)rect {
   NSRect bounds = [self bounds];
 
-  // Around the bounds of the infobar, continue drawing the path into which the
-  // gradient will be drawn.
-  NSBezierPath* infoBarPath = [NSBezierPath bezierPath];
-  [infoBarPath moveToPoint:NSMakePoint(NSMinX(bounds), NSMaxY(bounds))];
-  [infoBarPath lineToPoint:NSMakePoint(NSMaxX(bounds), NSMaxY(bounds))];
-  [infoBarPath lineToPoint:NSMakePoint(NSMaxX(bounds), NSMinY(bounds))];
-  [infoBarPath lineToPoint:NSMakePoint(NSMinX(bounds), NSMinY(bounds))];
-  [infoBarPath closePath];
-
-  // Draw the gradient.
-  [[self gradient] drawInBezierPath:infoBarPath angle:270];
+  // Draw the background.
+  // TODO(ellyjones): Use the detached bookmark bar color here.
+  [[NSColor whiteColor] set];
+  NSRectFill([self bounds]);
 
   NSColor* strokeColor = [self strokeColor];
   if (strokeColor) {
@@ -69,14 +54,6 @@
     NSDivideRect(bounds, &borderRect, &contentRect, 1, NSMinYEdge);
     NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
   }
-
-  // Add an inner stroke.
-  NSBezierPath* highlightPath = [NSBezierPath bezierPath];
-  [highlightPath moveToPoint:NSMakePoint(NSMinX(bounds), NSMaxY(bounds) - 1)];
-  [highlightPath lineToPoint:NSMakePoint(NSMaxX(bounds), NSMaxY(bounds) - 1)];
-
-  [[NSColor colorWithDeviceWhite:1.0 alpha:1.0] setStroke];
-  [highlightPath stroke];
 }
 
 - (BOOL)mouseDownCanMoveWindow {
