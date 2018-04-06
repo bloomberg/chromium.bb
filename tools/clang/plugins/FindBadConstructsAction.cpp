@@ -54,7 +54,8 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
       // and http://crbug.com/356816 are fixed.
       options_.check_enum_max_value = true;
     } else if (args[i] == "no-realpath") {
-      options_.no_realpath = true;
+      // Ignored.
+      // TODO(mostynb@vewd.com): remove this completely.
     } else if (args[i] == "check-ipc") {
       options_.check_ipc = true;
     } else {
