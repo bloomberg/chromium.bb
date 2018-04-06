@@ -86,45 +86,6 @@ inline bool SkipWhiteSpace(const String& str,
   return pos < len;
 }
 
-// Returns true if the function can match the whole token (case insensitive)
-// incrementing pos on match, otherwise leaving pos unchanged.
-// Note: Might return pos == str.length()
-inline bool SkipToken(const String& str, unsigned& pos, const char* token) {
-  unsigned len = str.length();
-  unsigned current = pos;
-
-  while (current < len && *token) {
-    if (ToASCIILower(str[current]) != *token++)
-      return false;
-    ++current;
-  }
-
-  if (*token)
-    return false;
-
-  pos = current;
-  return true;
-}
-
-// True if the expected equals sign is seen and there is more to follow.
-inline bool SkipEquals(const String& str, unsigned& pos) {
-  return SkipWhiteSpace(str, pos) && str[pos++] == '=' &&
-         SkipWhiteSpace(str, pos);
-}
-
-// True if a value present, incrementing pos to next space or semicolon, if any.
-// Note: might return pos == str.length().
-inline bool SkipValue(const String& str, unsigned& pos) {
-  unsigned start = pos;
-  unsigned len = str.length();
-  while (pos < len) {
-    if (str[pos] == ' ' || str[pos] == '\t' || str[pos] == ';')
-      break;
-    ++pos;
-  }
-  return pos != start;
-}
-
 template <typename CharType>
 inline bool IsASCIILowerAlphaOrDigit(CharType c) {
   return IsASCIILower(c) || IsASCIIDigit(c);
@@ -302,7 +263,7 @@ ReflectedXSSDisposition ParseXSSProtectionHeader(const String& header,
                                                  unsigned& failure_position,
                                                  String& report_url) {
   DEFINE_STATIC_LOCAL(String, failure_reason_invalid_toggle,
-                      ("expected 0 or 1"));
+                      ("expected token to be 0 or 1"));
   DEFINE_STATIC_LOCAL(String, failure_reason_invalid_separator,
                       ("expected semicolon"));
   DEFINE_STATIC_LOCAL(String, failure_reason_invalid_equals,
@@ -318,84 +279,98 @@ ReflectedXSSDisposition ParseXSSProtectionHeader(const String& header,
   DEFINE_STATIC_LOCAL(String, failure_reason_invalid_directive,
                       ("unrecognized directive"));
 
-  unsigned pos = 0;
+  HeaderFieldTokenizer tokenizer(header);
 
-  if (!SkipWhiteSpace(header, pos))
-    return kReflectedXSSUnset;
+  StringView toggle;
+  if (!tokenizer.ConsumeToken(Mode::kNormal, toggle)) {
+    if (tokenizer.IsConsumed())
+      return kReflectedXSSUnset;
+  }
 
-  if (header[pos] == '0')
-    return kAllowReflectedXSS;
-
-  if (header[pos++] != '1') {
+  if (toggle.length() != 1 || (toggle[0] != '0' && toggle[0] != '1')) {
     failure_reason = failure_reason_invalid_toggle;
     return kReflectedXSSInvalid;
   }
+
+  if (toggle[0] == '0')
+    return kAllowReflectedXSS;
 
   ReflectedXSSDisposition result = kFilterReflectedXSS;
   bool mode_directive_seen = false;
   bool report_directive_seen = false;
 
-  while (1) {
+  while (!tokenizer.IsConsumed()) {
     // At end of previous directive: consume whitespace, semicolon, and
     // whitespace.
-    if (!SkipWhiteSpace(header, pos))
-      return result;
-
-    if (header[pos++] != ';') {
+    if (!tokenizer.Consume(';')) {
       failure_reason = failure_reason_invalid_separator;
-      failure_position = pos;
+      failure_position = tokenizer.Index();
       return kReflectedXSSInvalid;
     }
 
-    if (!SkipWhiteSpace(header, pos))
+    // Give a pass to a trailing semicolon.
+    if (tokenizer.IsConsumed())
       return result;
 
     // At start of next directive.
-    if (SkipToken(header, pos, "mode")) {
+    StringView token;
+    unsigned token_start = tokenizer.Index();
+    if (!tokenizer.ConsumeToken(Mode::kNormal, token)) {
+      failure_reason = failure_reason_invalid_directive;
+      failure_position = token_start;
+      return kReflectedXSSInvalid;
+    }
+    if (EqualIgnoringASCIICase(token, "mode")) {
       if (mode_directive_seen) {
         failure_reason = failure_reason_duplicate_mode;
-        failure_position = pos;
+        failure_position = token_start;
         return kReflectedXSSInvalid;
       }
       mode_directive_seen = true;
-      if (!SkipEquals(header, pos)) {
+      if (!tokenizer.Consume('=')) {
         failure_reason = failure_reason_invalid_equals;
-        failure_position = pos;
+        failure_position = tokenizer.Index();
         return kReflectedXSSInvalid;
       }
-      if (!SkipToken(header, pos, "block")) {
+      String value;
+      unsigned value_start = tokenizer.Index();
+      if (!tokenizer.ConsumeTokenOrQuotedString(Mode::kNormal, value) ||
+          !EqualIgnoringASCIICase(value, "block")) {
         failure_reason = failure_reason_invalid_mode;
-        failure_position = pos;
+        failure_position = value_start;
         return kReflectedXSSInvalid;
       }
       result = kBlockReflectedXSS;
-    } else if (SkipToken(header, pos, "report")) {
+    } else if (EqualIgnoringASCIICase(token, "report")) {
       if (report_directive_seen) {
         failure_reason = failure_reason_duplicate_report;
-        failure_position = pos;
+        failure_position = token_start;
         return kReflectedXSSInvalid;
       }
       report_directive_seen = true;
-      if (!SkipEquals(header, pos)) {
+      if (!tokenizer.Consume('=')) {
         failure_reason = failure_reason_invalid_equals;
-        failure_position = pos;
+        failure_position = tokenizer.Index();
         return kReflectedXSSInvalid;
       }
-      size_t start_pos = pos;
-      if (!SkipValue(header, pos)) {
+      // Set, just in case later semantic check deems unacceptable.
+      failure_position = tokenizer.Index();
+      String value;
+      // Relaxed mode - unquoted URLs contain colons and such.
+      if (!tokenizer.ConsumeTokenOrQuotedString(Mode::kRelaxed, value)) {
         failure_reason = failure_reason_invalid_report;
-        failure_position = pos;
         return kReflectedXSSInvalid;
       }
-      report_url = header.Substring(start_pos, pos - start_pos);
-      failure_position =
-          start_pos;  // If later semantic check deems unacceptable.
+      report_url = value;
     } else {
+      // Unrecognized directive
       failure_reason = failure_reason_invalid_directive;
-      failure_position = pos;
+      failure_position = token_start;
       return kReflectedXSSInvalid;
     }
   }
+
+  return result;
 }
 
 ContentTypeOptionsDisposition ParseContentTypeOptionsHeader(
