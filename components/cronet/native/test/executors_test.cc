@@ -73,6 +73,7 @@ TEST_F(ExecutorsTest, TestTestExecutor) {
   Cronet_Executor_Destroy(executor);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(runnable_called());
+  Cronet_Runnable_Destroy(runnable);
 }
 
 }  // namespace
