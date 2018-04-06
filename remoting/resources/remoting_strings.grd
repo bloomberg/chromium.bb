@@ -707,9 +707,7 @@ Securely access your computer from your iOS device. It's fast, simple and free.
 • On your iOS device, open the app and tap on any of your online computers to connect.
         </message>
         <message name="IDS_APP_STORE_CHANGES" desc="List of what's changed in this release of Chrome Remote Desktop for iOS. [CHAR-LIMIT=4000] [NAME=app_store_changes]">
-• New look and feel.
-• Improved performance, responsiveness and reliability.
-• Support for playing audio from Windows or Linux computers.
+General fixes and stability improvements.
         </message>
       </if>  <!-- is_android or is_ios -->
 
