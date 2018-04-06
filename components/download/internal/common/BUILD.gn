@@ -85,6 +85,7 @@ source_set("unit_tests") {
     "base_file_unittest.cc",
     "base_file_win_unittest.cc",
     "download_file_unittest.cc",
+    "download_item_impl_unittest.cc",
     "download_stats_unittest.cc",
     "download_ukm_helper_unittest.cc",
     "parallel_download_job_unittest.cc",
