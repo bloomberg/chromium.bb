@@ -170,34 +170,15 @@ Polymer({
    * sections.
    * @param {string} query The text to search for.
    * @return {!Promise<!settings.SearchResult>} A signal indicating that
-   *     searching finished.
+   * searching finished.
    */
   searchContents: function(query) {
-    const whenSearchDone = [
-      settings.getSearchManager().search(query, assert(this.$$('#basicPage'))),
-    ];
+    const nodes = [assert(this.$$('#basicPage'))];
+    if (this.pageVisibility.advancedSettings !== false)
+      nodes.push(this.$$('#advancedPageTemplate').get());
 
-    if (this.pageVisibility.advancedSettings !== false) {
-      whenSearchDone.push(
-          this.$$('#advancedPageTemplate').get().then(function(advancedPage) {
-            return settings.getSearchManager().search(query, advancedPage);
-          }));
-    }
-
-    return Promise.all(whenSearchDone).then(function(requests) {
-      // Combine the SearchRequests results to a single SearchResult object.
-      return {
-        canceled: requests.some(function(r) {
-          return r.canceled;
-        }),
-        didFindMatches: requests.some(function(r) {
-          return r.didFindMatches();
-        }),
-        // All requests correspond to the same user query, so only need to check
-        // one of them.
-        wasClearSearch: requests[0].isSame(''),
-      };
-    });
+    return Promise.all(nodes).then(
+        nodes => settings.getSearchManager().search(query, nodes));
   },
 
   // <if expr="chromeos">

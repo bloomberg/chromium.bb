@@ -45,8 +45,7 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
     /** @override */
     search(text, page) {
       if (this.searchRequest_ == null || !this.searchRequest_.isSame(text)) {
-        this.searchRequest_ = new settings.SearchRequest(
-            text, document.createElement('div'));
+        this.searchRequest_ = new settings.SearchRequest(text);
         this.searchRequest_.finished = true;
         this.searchRequest_.updateMatches(false);
 
@@ -66,6 +65,9 @@ TEST_F('SettingsBasicPageBrowserTest', 'DISABLED_Load', function() {
       }
       return this.searchRequest_.resolver.promise;
     }
+
+    /** @override */
+    registerObserver(observer) {}
   }
 
   // Register mocha tests.
