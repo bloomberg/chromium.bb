@@ -29,8 +29,23 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
     // SupportLibWebkitToCompatConverterAdapter
     private final InvocationHandler mCompatConverterAdapter;
     private final WebViewChromiumAwInit mAwInit;
+    // clang-format off
     private final String[] mWebViewSupportedFeatures =
-            new String[] {Features.VISUAL_STATE_CALLBACK};
+            new String[] {
+                    Features.VISUAL_STATE_CALLBACK,
+                    Features.OFF_SCREEN_PRERASTER,
+                    Features.SAFE_BROWSING_ENABLE,
+                    Features.DISABLED_ACTION_MODE_MENU_ITEMS,
+                    Features.START_SAFE_BROWSING,
+                    Features.SAFE_BROWSING_WHITELIST,
+                    Features.SAFE_BROWSING_PRIVACY_POLICY_URL,
+                    Features.SERVICE_WORKER_BASIC_USAGE,
+                    Features.SERVICE_WORKER_CACHE_MODE,
+                    Features.SERVICE_WORKER_CONTENT_ACCESS,
+                    Features.SERVICE_WORKER_FILE_ACCESS,
+                    Features.SERVICE_WORKER_BLOCK_NETWORK_LOADS
+            };
+    // clang-format on
 
     // Initialization guarded by mAwInit.getLock()
     private InvocationHandler mStatics;
