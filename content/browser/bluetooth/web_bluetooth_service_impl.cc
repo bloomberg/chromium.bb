@@ -823,11 +823,12 @@ void WebBluetoothServiceImpl::RequestDeviceImpl(
     blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
     RequestDeviceCallback callback,
     device::BluetoothAdapter* adapter) {
-  // requestDevice() can only be called when processing a user-gesture and any
-  // user gesture outside of a chooser should close the chooser. This does
-  // not happen on all platforms so we don't DCHECK that the old one is closed.
-  // We destroy the old chooser before constructing the new one to make sure
-  // they can't conflict.
+  // Calls to requestDevice() require user activation (user gestures).  We
+  // should close any opened chooser when a duplicate requestDevice call is made
+  // with the same user activation or when any gesture occurs outside of the
+  // opened chooser. This does not happen on all platforms so we don't DCHECK
+  // that the old one is closed.  We destroy the old chooser before constructing
+  // the new one to make sure they can't conflict.
   device_chooser_controller_.reset();
 
   device_chooser_controller_.reset(
