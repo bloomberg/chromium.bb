@@ -3806,9 +3806,6 @@ crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/dou
 crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-on-play-button.html [ Skip ]
 crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-to-toggle-fullscreen.html [ Skip ]
 
-# Test failing on WebKit Trusty
-crbug.com/829228 [ Win7 Linux ] virtual/modern-media-controls/media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Failure ]
-
 crbug.com/802915 css3/blending/isolation-should-include-non-local-background.html [ Failure ]
 
 crbug.com/807838 external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
@@ -4014,14 +4011,6 @@ crbug.com/827209 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll
 
 # Utility for manual testing, not intended to be run as part of layout tests.
 crbug.com/785955 http/tests/credentialmanager/tools/virtual-authenticator-environment-manual.html [ Skip ]
-
-# Disabled after r548309.  TODO(thomasanderson): Reenable these tests
-crbug.com/787020 virtual/gpu/fast/canvas/canvas-zero-length-lineCap.html [ Pass Failure ]
-crbug.com/787020 virtual/threaded/http/tests/devtools/tracing/timeline-js/compile-script.js [ Pass Failure ]
-crbug.com/787020 external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/extendable-message-event.https.html [ Pass Failure ]
-crbug.com/787020 external/wpt/shadow-dom/untriaged/events/retargeting-focus-events/test-003.html [ Pass Failure ]
-crbug.com/787020 virtual/incremental-shadow-dom/external/wpt/shadow-dom/untriaged/events/retargeting-focus-events/test-003.html [ Pass Failure ]
-crbug.com/787020 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/ServiceWorkerGlobalScope/extendable-message-event.https.html [ Pass Failure ]
 
 # These Web Authentication API would require either real hardware, or
 # virtual simulation thereof (work in progress, see: https://crbug.com/785955).
