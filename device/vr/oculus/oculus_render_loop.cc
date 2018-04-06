@@ -60,6 +60,12 @@ void OculusRenderLoop::CleanUp() {
   binding_.Close();
 }
 
+void OculusRenderLoop::SubmitFrameMissing(int16_t frame_index,
+                                          const gpu::SyncToken& sync_token) {
+  // Nothing to do. It's OK to start the next frame even if the current
+  // one didn't get sent to the ovrSession.
+}
+
 void OculusRenderLoop::SubmitFrame(int16_t frame_index,
                                    const gpu::MailboxHolder& mailbox,
                                    base::TimeDelta time_waited) {

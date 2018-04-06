@@ -17,6 +17,8 @@ xr_session_promise_test( (session) => new Promise((resolve, reject) => {
   session.baseLayer = webglLayer;
 
   function onSkipFrame(time, xrFrame) {
+    assert_equals(getSubmitFrameCount(), 0);
+    assert_equals(getMissingFrameCount(), 0);
     // No GL commands issued.
     session.requestAnimationFrame(onDrawToCanvas);
   }
@@ -24,15 +26,17 @@ xr_session_promise_test( (session) => new Promise((resolve, reject) => {
   function onDrawToCanvas(time, xrFrame) {
     // Ensure the previous step did not submit a frame.
     assert_equals(getSubmitFrameCount(), 0);
+    assert_equals(getMissingFrameCount(), 1);
 
-    // Clear the canvas.
+    // Clear the canvas, but don't touch the framebuffer.
     gl.clear(gl.COLOR_BUFFER_BIT);
     session.requestAnimationFrame(onDrawToFramebuffer);
   }
 
   function onDrawToFramebuffer(time, xrFrame) {
-    // Ensure the previous step did not submit a frame.
+    // Ensure both previous steps did not submit frames.
     assert_equals(getSubmitFrameCount(), 0);
+    assert_equals(getMissingFrameCount(), 2);
 
     // Clear the VRWebGLLayer framebuffer.
     gl.bindFramebuffer(gl.FRAMEBUFFER, webglLayer.framebuffer);
@@ -41,6 +45,7 @@ xr_session_promise_test( (session) => new Promise((resolve, reject) => {
     // After the function returns ensure the frame was submitted.
     window.setTimeout(() => {
       assert_equals(getSubmitFrameCount(), 1);
+      assert_equals(getMissingFrameCount(), 2);
       // Finished test.
       resolve();
     }, 100);
