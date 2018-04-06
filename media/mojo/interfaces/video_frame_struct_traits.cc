@@ -140,6 +140,9 @@ bool StructTraits<media::mojom::VideoFrameDataView,
     return false;
   }
 
+  if (!frame)
+    return false;
+
   std::unique_ptr<base::DictionaryValue> metadata;
   if (!input.ReadMetadata(&metadata))
     return false;

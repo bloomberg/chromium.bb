@@ -294,6 +294,8 @@ void DecryptingVideoDecoder::DeliverFrame(
   }
 
   DCHECK_EQ(status, Decryptor::kSuccess);
+  CHECK(frame);
+
   // Frame returned with kSuccess should not be an end-of-stream frame.
   DCHECK(!frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
 

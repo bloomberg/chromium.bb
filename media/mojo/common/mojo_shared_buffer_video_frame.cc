@@ -36,8 +36,10 @@ MojoSharedBufferVideoFrame::CreateDefaultI420(const gfx::Size& dimensions,
   const size_t allocation_size = VideoFrame::AllocationSize(format, coded_size);
   mojo::ScopedSharedBufferHandle handle =
       mojo::SharedBufferHandle::Create(allocation_size);
-  if (!handle.is_valid())
+  if (!handle.is_valid()) {
+    DLOG(ERROR) << __func__ << " Unable to allocate memory.";
     return nullptr;
+  }
 
   // Create and initialize the frame. As this is I420 format, the U and V
   // planes have samples for each 2x2 block. The memory is laid out as follows:
@@ -125,8 +127,11 @@ scoped_refptr<MojoSharedBufferVideoFrame> MojoSharedBufferVideoFrame::Create(
       new MojoSharedBufferVideoFrame(format, coded_size, visible_rect,
                                      natural_size, std::move(handle), data_size,
                                      timestamp));
-  if (!frame->Init(y_stride, u_stride, v_stride, y_offset, u_offset, v_offset))
+  if (!frame->Init(y_stride, u_stride, v_stride, y_offset, u_offset,
+                   v_offset)) {
+    DLOG(ERROR) << __func__ << " MojoSharedBufferVideoFrame::Init failed.";
     return nullptr;
+  }
 
   return frame;
 }

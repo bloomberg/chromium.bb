@@ -148,6 +148,13 @@ class MojoCdmVideoFrame : public VideoFrameImpl {
             PlaneOffset(kYPlane), PlaneOffset(kUPlane), PlaneOffset(kVPlane),
             Stride(kYPlane), Stride(kUPlane), Stride(kVPlane),
             base::TimeDelta::FromMicroseconds(Timestamp()));
+
+    // If |frame| is not created something is wrong with the video frame data
+    // returned by the CDM. Catch it here rather than returning a null frame
+    // to the renderer.
+    // TODO(crbug.com/829443). Monitor crashes to see if this happens.
+    CHECK(frame);
+
     frame->SetMojoSharedBufferDoneCB(mojo_shared_buffer_done_cb_);
     return frame;
   }
