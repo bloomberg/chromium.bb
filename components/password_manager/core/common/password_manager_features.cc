@@ -73,7 +73,7 @@ const base::Feature kPasswordImport = {"PasswordImport",
 
 // Allows searching for saved passwords in the settings page on mobile devices.
 const base::Feature kPasswordSearchMobile = {"PasswordSearchMobile",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the experiment for the password manager to only fill on account
 // selection, rather than autofilling on page load, with highlighting of fields.
