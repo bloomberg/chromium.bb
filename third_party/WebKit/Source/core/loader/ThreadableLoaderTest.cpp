@@ -326,8 +326,7 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
   void OnSetUp() override {
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
     security_origin_ = GetDocument().GetSecurityOrigin();
-    parent_frame_task_runners_ =
-        ParentFrameTaskRunners::Create(dummy_page_holder_->GetFrame());
+    parent_frame_task_runners_ = ParentFrameTaskRunners::Create(&GetDocument());
     worker_thread_ = std::make_unique<WorkerThreadForTest>(
         ThreadableLoadingContext::Create(GetDocument()), *reporting_proxy_);
     WorkerClients* worker_clients = WorkerClients::Create();

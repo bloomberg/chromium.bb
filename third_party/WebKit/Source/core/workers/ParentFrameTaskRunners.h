@@ -17,24 +17,21 @@
 
 namespace blink {
 
-class LocalFrame;
-
-// Represents a set of task runners of the parent (or associated) document's
-// frame, or default task runners of the main thread.
-//
-// This observes LocalFrame lifecycle only when this is created with LocalFrame.
+// Represents a set of task runners of the parent execution context, or default
+// task runners for the current thread if no execution context is available.
+// TODO(japhet): Rename to something like ParentExecutionContextTaskRunners.
 class CORE_EXPORT ParentFrameTaskRunners final
     : public GarbageCollectedFinalized<ParentFrameTaskRunners>,
       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ParentFrameTaskRunners);
 
  public:
-  // Returns task runners associated with a given frame. This must be called on
-  // the frame's context thread, that is, the main thread. The given frame must
-  // have a valid execution context.
-  static ParentFrameTaskRunners* Create(LocalFrame&);
+  // Returns task runners associated with a given context. This must be called
+  // on the context's context thread, that is, the thread where the context was
+  // created.
+  static ParentFrameTaskRunners* Create(ExecutionContext*);
 
-  // Returns default task runners of the main thread. This can be called from
+  // Returns default task runners of the current thread. This can be called from
   // any threads. This must be used only for shared workers, service workers and
   // tests that don't have a parent frame.
   static ParentFrameTaskRunners* Create();
@@ -52,9 +49,9 @@ class CORE_EXPORT ParentFrameTaskRunners final
                                     WTF::IntHash<TaskType>,
                                     TaskTypeTraits>;
 
-  // LocalFrame could be nullptr if the worker is not associated with a
-  // particular local frame.
-  explicit ParentFrameTaskRunners(LocalFrame*);
+  // ExecutionContext could be nullptr if the worker is not associated with a
+  // particular context.
+  explicit ParentFrameTaskRunners(ExecutionContext*);
 
   void ContextDestroyed(ExecutionContext*) LOCKS_EXCLUDED(mutex_) override;
 

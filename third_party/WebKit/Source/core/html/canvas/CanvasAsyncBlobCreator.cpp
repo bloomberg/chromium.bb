@@ -197,8 +197,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
   idle_task_status_ = kIdleTaskNotSupported;
   num_rows_completed_ = 0;
   if (context->IsDocument()) {
-    parent_frame_task_runner_ =
-        ParentFrameTaskRunners::Create(*ToDocument(context)->GetFrame());
+    parent_frame_task_runner_ = ParentFrameTaskRunners::Create(context);
   }
   if (script_promise_resolver_) {
     function_type_ = kOffscreenCanvasToBlobPromise;

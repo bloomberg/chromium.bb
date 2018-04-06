@@ -4,8 +4,7 @@
 
 #include "core/workers/ParentFrameTaskRunners.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
+#include "core/execution_context/ExecutionContext.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "public/platform/Platform.h"
@@ -13,27 +12,27 @@
 
 namespace blink {
 
-ParentFrameTaskRunners* ParentFrameTaskRunners::Create(LocalFrame& frame) {
-  DCHECK(frame.GetDocument());
-  DCHECK(frame.GetDocument()->IsContextThread());
-  DCHECK(IsMainThread());
-  return new ParentFrameTaskRunners(&frame);
+ParentFrameTaskRunners* ParentFrameTaskRunners::Create(
+    ExecutionContext* context) {
+  DCHECK(context);
+  DCHECK(context->IsContextThread());
+  return new ParentFrameTaskRunners(context);
 }
 
 ParentFrameTaskRunners* ParentFrameTaskRunners::Create() {
   return new ParentFrameTaskRunners(nullptr);
 }
 
-ParentFrameTaskRunners::ParentFrameTaskRunners(LocalFrame* frame)
-    : ContextLifecycleObserver(frame ? frame->GetDocument() : nullptr) {
+ParentFrameTaskRunners::ParentFrameTaskRunners(ExecutionContext* context)
+    : ContextLifecycleObserver(context) {
   // For now we only support very limited task types.
   for (auto type : {TaskType::kUnspecedTimer, TaskType::kUnspecedLoading,
                     TaskType::kNetworking, TaskType::kPostedMessage,
                     TaskType::kCanvasBlobSerialization, TaskType::kUnthrottled,
                     TaskType::kInternalTest}) {
-    auto task_runner = frame
-                           ? frame->GetTaskRunner(type)
-                           : Platform::Current()->MainThread()->GetTaskRunner();
+    auto task_runner =
+        context ? context->GetTaskRunner(type)
+                : Platform::Current()->CurrentThread()->GetTaskRunner();
     task_runners_.insert(type, std::move(task_runner));
   }
 }
