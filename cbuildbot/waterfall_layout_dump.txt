@@ -3589,4 +3589,5 @@ zoombini-unittest-stress (gce_beefy)
 == go/legoland ==
 amd64-generic-tot-chromium-pfq-informational (baremetal)
 daisy-tot-chromium-pfq-informational (gce_beefy)
+eve-tot-chrome-pfq-informational (gce_beefy)
 
