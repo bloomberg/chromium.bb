@@ -51,6 +51,9 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
   // TODO(mlamouri): required by LayoutVTTCue.
   virtual LayoutObject* ContainerLayoutObject() = 0;
 
+  // Used for layout tests to disable some animations.
+  virtual void SetTestMode(bool) = 0;
+
   // TODO: the following are required by other parts of the media controls
   // implementation and could be removed when the full implementation has moved
   // to modules.

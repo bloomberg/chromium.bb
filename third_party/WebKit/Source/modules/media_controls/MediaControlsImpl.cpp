@@ -808,6 +808,18 @@ LayoutObject* MediaControlsImpl::ContainerLayoutObject() {
   return GetLayoutObject();
 }
 
+void MediaControlsImpl::SetTestMode(bool enable) {
+  is_test_mode_ = enable;
+  if (loading_panel_)
+    loading_panel_->OnTestModeUpdated();
+  // TODO(steimel): Add other test mode changes, such as stopping the overlay
+  // play button transition.
+}
+
+bool MediaControlsImpl::GetTestMode() const {
+  return is_test_mode_;
+}
+
 void MediaControlsImpl::MaybeShow() {
   panel_->SetIsWanted(true);
   panel_->SetIsDisplayed(true);

@@ -33,6 +33,8 @@ class MODULES_EXPORT MediaControlLoadingPanelElement final
   void OnControlsHidden();
   // Inform the loading panel that the Media Controls have been shown.
   void OnControlsShown();
+  // Inform the loading panel that the Media Controls are entering test mode.
+  void OnTestModeUpdated();
 
   void Trace(Visitor*);
 

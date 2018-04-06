@@ -394,6 +394,7 @@ class Internals final : public ScriptWrappable {
   void setPersistent(HTMLVideoElement*, bool);
   void forceStaleStateForMediaElement(HTMLMediaElement*, int target_state);
   bool isMediaElementSuspended(HTMLMediaElement*);
+  void setMediaControlsTestMode(HTMLMediaElement*, bool);
 
   void registerURLSchemeAsBypassingContentSecurityPolicy(const String& scheme);
   void registerURLSchemeAsBypassingContentSecurityPolicy(
