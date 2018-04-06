@@ -93,6 +93,15 @@ bool IsStartOfDifferentDirection(const InlineBox* inline_box) {
   return prev_box->BidiLevel() > inline_box->BidiLevel();
 }
 
+// TODO(editing-dev): This function is almost identical to
+// |IsStartOfDifferentDirection|. Try to unify them.
+bool IsEndOfDifferentDirection(const InlineBox* inline_box) {
+  const InlineBox* const next_box = inline_box->NextLeafChild();
+  if (!next_box)
+    return true;
+  return next_box->BidiLevel() >= inline_box->BidiLevel();
+}
+
 template <typename Strategy>
 PositionTemplate<Strategy> DownstreamIgnoringEditingBoundaries(
     PositionTemplate<Strategy> position) {
@@ -119,11 +128,10 @@ InlineBoxPosition AdjustInlineBoxPositionForPrimaryDirection(
     InlineBox* inline_box,
     int caret_offset) {
   if (caret_offset == inline_box->CaretRightmostOffset()) {
-    InlineBox* const next_box = inline_box->NextLeafChild();
-    if (!next_box || next_box->BidiLevel() >= inline_box->BidiLevel())
+    if (IsEndOfDifferentDirection(inline_box))
       return InlineBoxPosition(inline_box, caret_offset);
 
-    const unsigned level = next_box->BidiLevel();
+    const unsigned level = inline_box->NextLeafChild()->BidiLevel();
     InlineBox* const prev_box =
         InlineBoxTraversal::FindLeftBidiRun(*inline_box, level);
 
