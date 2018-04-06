@@ -85,9 +85,9 @@ bool DoesSupportConsentCheck() {
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
 // Returns the app menu view, except when the browser window is Cocoa; Cocoa
-// browser windows always have a null anchor view and use GetBubbleAnchorRect()
-// instead.
-views::View* GetBubbleAnchorView(Browser* browser) {
+// browser windows always have a null anchor view and use
+// GetSessionCrashedBubbleAnchorRect() instead.
+views::View* GetSessionCrashedBubbleAnchorView(Browser* browser) {
 #if BUILDFLAG(MAC_VIEWS_BROWSER)
   if (views_mode_controller::IsViewsBrowserCocoa())
     return nullptr;
@@ -97,12 +97,12 @@ views::View* GetBubbleAnchorView(Browser* browser) {
       ->GetAppMenuButton();
 }
 #else  // OS_MACOSX && !MAC_VIEWS_BROWSER
-views::View* GetBubbleAnchorView(Browser* browser) {
+views::View* GetSessionCrashedBubbleAnchorView(Browser* browser) {
   return nullptr;
 }
 #endif
 
-gfx::Rect GetBubbleAnchorRect(Browser* browser) {
+gfx::Rect GetSessionCrashedBubbleAnchorRect(Browser* browser) {
 #if BUILDFLAG(MAC_VIEWS_BROWSER)
   if (views_mode_controller::IsViewsBrowserCocoa())
     return bubble_anchor_util::GetAppMenuAnchorRectCocoa(browser);
@@ -187,8 +187,8 @@ void SessionCrashedBubbleView::ShowForReal(
   }
 
   SessionCrashedBubbleView* crash_bubble = new SessionCrashedBubbleView(
-      GetBubbleAnchorView(browser), GetBubbleAnchorRect(browser), browser,
-      offer_uma_optin);
+      GetSessionCrashedBubbleAnchorView(browser),
+      GetSessionCrashedBubbleAnchorRect(browser), browser, offer_uma_optin);
   views::BubbleDialogDelegateView::CreateBubble(crash_bubble)->Show();
 #if defined(OS_MACOSX)
   if (views_mode_controller::IsViewsBrowserCocoa())
