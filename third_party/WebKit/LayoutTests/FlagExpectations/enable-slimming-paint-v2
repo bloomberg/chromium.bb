@@ -732,8 +732,6 @@ Bug(none) paint/invalidation/repaint-overlay/layers.html [ Failure ]
 Bug(none) paint/invalidation/svg/deep-nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Failure ]
 Bug(none) paint/invalidation/svg/deep-nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Failure ]
 Bug(none) paint/invalidation/svg/animated-svg-as-image-transformed-offscreen.html [ Failure ]
-Bug(none) paint/invalidation/video-mute-repaint.html [ Failure ]
-Bug(none) paint/invalidation/video-unmute-repaint.html [ Failure ]
 Bug(none) paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Failure ]
 
 # Wrong invalidation/painting/rasterization for multicol. Different layer tree.

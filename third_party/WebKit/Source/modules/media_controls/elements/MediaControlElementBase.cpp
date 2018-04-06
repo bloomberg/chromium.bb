@@ -5,7 +5,6 @@
 #include "modules/media_controls/elements/MediaControlElementBase.h"
 
 #include "core/html/media/HTMLMediaElement.h"
-#include "core/layout/LayoutObject.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 
 namespace blink {
@@ -67,12 +66,7 @@ HTMLMediaElement& MediaControlElementBase::MediaElement() const {
 
 void MediaControlElementBase::SetDisplayType(
     MediaControlElementType display_type) {
-  if (display_type == display_type_)
-    return;
-
   display_type_ = display_type;
-  if (LayoutObject* object = element_->GetLayoutObject())
-    object->SetShouldDoFullPaintInvalidation();
 }
 
 void MediaControlElementBase::Trace(blink::Visitor* visitor) {
