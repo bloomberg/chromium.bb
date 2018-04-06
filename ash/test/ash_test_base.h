@@ -189,6 +189,9 @@ class AshTestBase : public testing::Test,
   // existing user sessions and makes it the active user session.
   void SimulateUserLogin(const std::string& user_email);
 
+  // Simular to SimulateUserLogin but for a newly created user first ever login.
+  void SimulateNewUserFirstLogin(const std::string& user_email);
+
   // Similar to SimulateUserLogin but for a guest user.
   void SimulateGuestLogin();
 

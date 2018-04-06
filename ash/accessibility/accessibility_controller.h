@@ -170,6 +170,11 @@ class ASH_EXPORT AccessibilityController
   void NotifyShowAccessibilityNotification();
 
   service_manager::Connector* connector_ = nullptr;
+
+  // The pref service of the currently active user or the signin profile before
+  // user logs in. Can be null in ash_unittests.
+  PrefService* active_user_prefs_ = nullptr;
+
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   // Binding for mojom::AccessibilityController interface.

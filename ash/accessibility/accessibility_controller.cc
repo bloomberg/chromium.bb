@@ -41,8 +41,94 @@ using session_manager::SessionState;
 namespace ash {
 namespace {
 
-PrefService* GetActivePrefService() {
-  return Shell::Get()->session_controller()->GetActivePrefService();
+// List of accessibility prefs that are to be copied (if changed by the user) on
+// signin screen profile to a newly created user profile or a guest session.
+constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
+    prefs::kAccessibilityAutoclickDelayMs,
+    prefs::kAccessibilityAutoclickEnabled,
+    prefs::kAccessibilityCaretHighlightEnabled,
+    prefs::kAccessibilityCursorHighlightEnabled,
+    prefs::kAccessibilityFocusHighlightEnabled,
+    prefs::kAccessibilityHighContrastEnabled,
+    prefs::kAccessibilityLargeCursorEnabled,
+    prefs::kAccessibilityMonoAudioEnabled,
+    prefs::kAccessibilityScreenMagnifierEnabled,
+    prefs::kAccessibilityScreenMagnifierScale,
+    prefs::kAccessibilitySelectToSpeakEnabled,
+    prefs::kAccessibilitySpokenFeedbackEnabled,
+    prefs::kAccessibilityStickyKeysEnabled,
+    prefs::kAccessibilitySwitchAccessEnabled,
+    prefs::kAccessibilityVirtualKeyboardEnabled,
+    prefs::kDockedMagnifierEnabled,
+    prefs::kDockedMagnifierScale,
+};
+
+// Returns true if |pref_service| is the one used for the signin screen.
+bool IsSigninPrefService(PrefService* pref_service) {
+  const PrefService* signin_pref_service =
+      Shell::Get()->session_controller()->GetSigninScreenPrefService();
+  DCHECK(signin_pref_service);
+  return pref_service == signin_pref_service;
+}
+
+// Returns true if the current session is the guest session.
+bool IsCurrentSessionGuest() {
+  const base::Optional<user_manager::UserType> user_type =
+      Shell::Get()->session_controller()->GetUserType();
+  return user_type && *user_type == user_manager::USER_TYPE_GUEST;
+}
+
+bool IsUserFirstLogin() {
+  return Shell::Get()->session_controller()->IsUserFirstLogin();
+}
+
+// The copying of any modified accessibility prefs on the signin prefs happens
+// when the |previous_pref_service| is of the signin profile, and the
+// |current_pref_service| is of a newly created profile first logged in, or if
+// the current session is the guest session.
+bool ShouldCopySigninPrefs(PrefService* previous_pref_service,
+                           PrefService* current_pref_service) {
+  DCHECK(previous_pref_service);
+  if (IsUserFirstLogin() && IsSigninPrefService(previous_pref_service) &&
+      !IsSigninPrefService(current_pref_service)) {
+    // If the user set a pref value on the login screen and is now starting a
+    // session with a new profile, copy the pref value to the profile.
+    return true;
+  }
+
+  if (IsCurrentSessionGuest()) {
+    // Guest sessions don't have their own prefs, so always copy.
+    return true;
+  }
+
+  return false;
+}
+
+// On a user's first login into a device, any a11y features enabled/disabled
+// by the user on the login screen are enabled/disabled in the user's profile.
+// This function copies settings from the signin prefs into the user's prefs
+// when it detects a login with a newly created profile.
+void CopySigninPrefsIfNeeded(PrefService* previous_pref_service,
+                             PrefService* current_pref_service) {
+  DCHECK(current_pref_service);
+  if (!ShouldCopySigninPrefs(previous_pref_service, current_pref_service))
+    return;
+
+  PrefService* signin_prefs =
+      Shell::Get()->session_controller()->GetSigninScreenPrefService();
+  DCHECK(signin_prefs);
+  for (const auto* pref_path : kCopiedOnSigninAccessibilityPrefs) {
+    const PrefService::Preference* pref =
+        signin_prefs->FindPreference(pref_path);
+
+    // Ignore if the pref has not been set by the user.
+    if (!pref || !pref->IsUserControlled())
+      continue;
+
+    // Copy the pref value from the signin profile.
+    const base::Value* value_on_login = pref->GetValue();
+    current_pref_service->Set(pref_path, *value_on_login);
+  }
 }
 
 }  // namespace
@@ -129,11 +215,11 @@ void AccessibilityController::BindRequest(
 }
 
 void AccessibilityController::SetAutoclickEnabled(bool enabled) {
-  PrefService* prefs = GetActivePrefService();
-  if (!prefs)
+  if (!active_user_prefs_)
     return;
-  prefs->SetBoolean(prefs::kAccessibilityAutoclickEnabled, enabled);
-  prefs->CommitPendingWrite();
+  active_user_prefs_->SetBoolean(prefs::kAccessibilityAutoclickEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 bool AccessibilityController::IsAutoclickEnabled() const {
@@ -141,11 +227,11 @@ bool AccessibilityController::IsAutoclickEnabled() const {
 }
 
 void AccessibilityController::SetCaretHighlightEnabled(bool enabled) {
-  PrefService* prefs = GetActivePrefService();
-  if (!prefs)
+  if (!active_user_prefs_)
     return;
-  prefs->SetBoolean(prefs::kAccessibilityCaretHighlightEnabled, enabled);
-  prefs->CommitPendingWrite();
+  active_user_prefs_->SetBoolean(prefs::kAccessibilityCaretHighlightEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 bool AccessibilityController::IsCaretHighlightEnabled() const {
@@ -153,11 +239,11 @@ bool AccessibilityController::IsCaretHighlightEnabled() const {
 }
 
 void AccessibilityController::SetCursorHighlightEnabled(bool enabled) {
-  PrefService* prefs = GetActivePrefService();
-  if (!prefs)
+  if (!active_user_prefs_)
     return;
-  prefs->SetBoolean(prefs::kAccessibilityCursorHighlightEnabled, enabled);
-  prefs->CommitPendingWrite();
+  active_user_prefs_->SetBoolean(prefs::kAccessibilityCursorHighlightEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 bool AccessibilityController::IsCursorHighlightEnabled() const {
@@ -165,11 +251,11 @@ bool AccessibilityController::IsCursorHighlightEnabled() const {
 }
 
 void AccessibilityController::SetFocusHighlightEnabled(bool enabled) {
-  PrefService* prefs = GetActivePrefService();
-  if (!prefs)
+  if (!active_user_prefs_)
     return;
-  prefs->SetBoolean(prefs::kAccessibilityFocusHighlightEnabled, enabled);
-  prefs->CommitPendingWrite();
+  active_user_prefs_->SetBoolean(prefs::kAccessibilityFocusHighlightEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 bool AccessibilityController::IsFocusHighlightEnabled() const {
@@ -177,11 +263,11 @@ bool AccessibilityController::IsFocusHighlightEnabled() const {
 }
 
 void AccessibilityController::SetHighContrastEnabled(bool enabled) {
-  PrefService* prefs = GetActivePrefService();
-  if (!prefs)
+  if (!active_user_prefs_)
     return;
-  prefs->SetBoolean(prefs::kAccessibilityHighContrastEnabled, enabled);
-  prefs->CommitPendingWrite();
+  active_user_prefs_->SetBoolean(prefs::kAccessibilityHighContrastEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 bool AccessibilityController::IsHighContrastEnabled() const {
@@ -189,11 +275,11 @@ bool AccessibilityController::IsHighContrastEnabled() const {
 }
 
 void AccessibilityController::SetLargeCursorEnabled(bool enabled) {
-  PrefService* prefs = GetActivePrefService();
-  if (!prefs)
+  if (!active_user_prefs_)
     return;
-  prefs->SetBoolean(prefs::kAccessibilityLargeCursorEnabled, enabled);
-  prefs->CommitPendingWrite();
+  active_user_prefs_->SetBoolean(prefs::kAccessibilityLargeCursorEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 bool AccessibilityController::IsLargeCursorEnabled() const {
@@ -201,11 +287,11 @@ bool AccessibilityController::IsLargeCursorEnabled() const {
 }
 
 void AccessibilityController::SetMonoAudioEnabled(bool enabled) {
-  PrefService* prefs = GetActivePrefService();
-  if (!prefs)
+  if (!active_user_prefs_)
     return;
-  prefs->SetBoolean(prefs::kAccessibilityMonoAudioEnabled, enabled);
-  prefs->CommitPendingWrite();
+  active_user_prefs_->SetBoolean(prefs::kAccessibilityMonoAudioEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 bool AccessibilityController::IsMonoAudioEnabled() const {
@@ -215,12 +301,12 @@ bool AccessibilityController::IsMonoAudioEnabled() const {
 void AccessibilityController::SetSpokenFeedbackEnabled(
     bool enabled,
     AccessibilityNotificationVisibility notify) {
-  PrefService* prefs = GetActivePrefService();
-  if (!prefs)
+  if (!active_user_prefs_)
     return;
   spoken_feedback_notification_ = notify;
-  prefs->SetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled, enabled);
-  prefs->CommitPendingWrite();
+  active_user_prefs_->SetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 bool AccessibilityController::IsSpokenFeedbackEnabled() const {
@@ -228,11 +314,11 @@ bool AccessibilityController::IsSpokenFeedbackEnabled() const {
 }
 
 void AccessibilityController::SetSelectToSpeakEnabled(bool enabled) {
-  PrefService* prefs = GetActivePrefService();
-  if (!prefs)
+  if (!active_user_prefs_)
     return;
-  prefs->SetBoolean(prefs::kAccessibilitySelectToSpeakEnabled, enabled);
-  prefs->CommitPendingWrite();
+  active_user_prefs_->SetBoolean(prefs::kAccessibilitySelectToSpeakEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 bool AccessibilityController::IsSelectToSpeakEnabled() const {
@@ -240,11 +326,11 @@ bool AccessibilityController::IsSelectToSpeakEnabled() const {
 }
 
 void AccessibilityController::SetStickyKeysEnabled(bool enabled) {
-  PrefService* prefs = GetActivePrefService();
-  if (!prefs)
+  if (!active_user_prefs_)
     return;
-  prefs->SetBoolean(prefs::kAccessibilityStickyKeysEnabled, enabled);
-  prefs->CommitPendingWrite();
+  active_user_prefs_->SetBoolean(prefs::kAccessibilityStickyKeysEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 bool AccessibilityController::IsStickyKeysEnabled() const {
@@ -252,11 +338,11 @@ bool AccessibilityController::IsStickyKeysEnabled() const {
 }
 
 void AccessibilityController::SetVirtualKeyboardEnabled(bool enabled) {
-  PrefService* prefs = GetActivePrefService();
-  if (!prefs)
+  if (!active_user_prefs_)
     return;
-  prefs->SetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled, enabled);
-  prefs->CommitPendingWrite();
+  active_user_prefs_->SetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
 }
 
 bool AccessibilityController::IsVirtualKeyboardEnabled() const {
@@ -372,6 +458,10 @@ void AccessibilityController::OnSigninScreenPrefServiceInitialized(
 
 void AccessibilityController::OnActiveUserPrefServiceChanged(
     PrefService* prefs) {
+  // This is guaranteed to be received after
+  // OnSigninScreenPrefServiceInitialized() so only copy the signin prefs if
+  // needed here.
+  CopySigninPrefsIfNeeded(active_user_prefs_, prefs);
   ObservePrefs(prefs);
 }
 
@@ -380,6 +470,10 @@ void AccessibilityController::FlushMojoForTest() {
 }
 
 void AccessibilityController::ObservePrefs(PrefService* prefs) {
+  DCHECK(prefs);
+
+  active_user_prefs_ = prefs;
+
   // Watch for pref updates from webui settings and policy.
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   pref_change_registrar_->Init(prefs);
@@ -458,8 +552,9 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
 }
 
 void AccessibilityController::UpdateAutoclickFromPref() {
-  PrefService* prefs = GetActivePrefService();
-  const bool enabled = prefs->GetBoolean(prefs::kAccessibilityAutoclickEnabled);
+  DCHECK(active_user_prefs_);
+  const bool enabled =
+      active_user_prefs_->GetBoolean(prefs::kAccessibilityAutoclickEnabled);
 
   if (autoclick_enabled_ == enabled)
     return;
@@ -481,9 +576,9 @@ void AccessibilityController::UpdateAutoclickFromPref() {
 }
 
 void AccessibilityController::UpdateAutoclickDelayFromPref() {
-  PrefService* prefs = GetActivePrefService();
-  base::TimeDelta autoclick_delay = base::TimeDelta::FromMilliseconds(
-      int64_t{prefs->GetInteger(prefs::kAccessibilityAutoclickDelayMs)});
+  DCHECK(active_user_prefs_);
+  base::TimeDelta autoclick_delay = base::TimeDelta::FromMilliseconds(int64_t{
+      active_user_prefs_->GetInteger(prefs::kAccessibilityAutoclickDelayMs)});
 
   if (autoclick_delay_ == autoclick_delay)
     return;
@@ -502,9 +597,9 @@ void AccessibilityController::UpdateAutoclickDelayFromPref() {
 }
 
 void AccessibilityController::UpdateCaretHighlightFromPref() {
-  PrefService* prefs = GetActivePrefService();
-  const bool enabled =
-      prefs->GetBoolean(prefs::kAccessibilityCaretHighlightEnabled);
+  DCHECK(active_user_prefs_);
+  const bool enabled = active_user_prefs_->GetBoolean(
+      prefs::kAccessibilityCaretHighlightEnabled);
 
   if (caret_highlight_enabled_ == enabled)
     return;
@@ -516,9 +611,9 @@ void AccessibilityController::UpdateCaretHighlightFromPref() {
 }
 
 void AccessibilityController::UpdateCursorHighlightFromPref() {
-  PrefService* prefs = GetActivePrefService();
-  const bool enabled =
-      prefs->GetBoolean(prefs::kAccessibilityCursorHighlightEnabled);
+  DCHECK(active_user_prefs_);
+  const bool enabled = active_user_prefs_->GetBoolean(
+      prefs::kAccessibilityCursorHighlightEnabled);
 
   if (cursor_highlight_enabled_ == enabled)
     return;
@@ -530,8 +625,9 @@ void AccessibilityController::UpdateCursorHighlightFromPref() {
 }
 
 void AccessibilityController::UpdateFocusHighlightFromPref() {
-  PrefService* prefs = GetActivePrefService();
-  bool enabled = prefs->GetBoolean(prefs::kAccessibilityFocusHighlightEnabled);
+  DCHECK(active_user_prefs_);
+  bool enabled = active_user_prefs_->GetBoolean(
+      prefs::kAccessibilityFocusHighlightEnabled);
 
   // Focus highlighting can't be on when spoken feedback is on, because
   // ChromeVox does its own focus highlighting.
@@ -548,9 +644,9 @@ void AccessibilityController::UpdateFocusHighlightFromPref() {
 }
 
 void AccessibilityController::UpdateHighContrastFromPref() {
-  PrefService* prefs = GetActivePrefService();
+  DCHECK(active_user_prefs_);
   const bool enabled =
-      prefs->GetBoolean(prefs::kAccessibilityHighContrastEnabled);
+      active_user_prefs_->GetBoolean(prefs::kAccessibilityHighContrastEnabled);
 
   if (high_contrast_enabled_ == enabled)
     return;
@@ -575,13 +671,14 @@ void AccessibilityController::UpdateHighContrastFromPref() {
 }
 
 void AccessibilityController::UpdateLargeCursorFromPref() {
-  PrefService* prefs = GetActivePrefService();
+  DCHECK(active_user_prefs_);
   const bool enabled =
-      prefs->GetBoolean(prefs::kAccessibilityLargeCursorEnabled);
+      active_user_prefs_->GetBoolean(prefs::kAccessibilityLargeCursorEnabled);
   // Reset large cursor size to the default size when large cursor is disabled.
   if (!enabled)
-    prefs->ClearPref(prefs::kAccessibilityLargeCursorDipSize);
-  const int size = prefs->GetInteger(prefs::kAccessibilityLargeCursorDipSize);
+    active_user_prefs_->ClearPref(prefs::kAccessibilityLargeCursorDipSize);
+  const int size =
+      active_user_prefs_->GetInteger(prefs::kAccessibilityLargeCursorDipSize);
 
   if (large_cursor_enabled_ == enabled && large_cursor_size_in_dip_ == size)
     return;
@@ -598,8 +695,9 @@ void AccessibilityController::UpdateLargeCursorFromPref() {
 }
 
 void AccessibilityController::UpdateMonoAudioFromPref() {
-  PrefService* prefs = GetActivePrefService();
-  const bool enabled = prefs->GetBoolean(prefs::kAccessibilityMonoAudioEnabled);
+  DCHECK(active_user_prefs_);
+  const bool enabled =
+      active_user_prefs_->GetBoolean(prefs::kAccessibilityMonoAudioEnabled);
 
   if (mono_audio_enabled_ == enabled)
     return;
@@ -611,9 +709,9 @@ void AccessibilityController::UpdateMonoAudioFromPref() {
 }
 
 void AccessibilityController::UpdateSpokenFeedbackFromPref() {
-  PrefService* prefs = GetActivePrefService();
-  const bool enabled =
-      prefs->GetBoolean(prefs::kAccessibilitySpokenFeedbackEnabled);
+  DCHECK(active_user_prefs_);
+  const bool enabled = active_user_prefs_->GetBoolean(
+      prefs::kAccessibilitySpokenFeedbackEnabled);
 
   if (spoken_feedback_enabled_ == enabled)
     return;
@@ -651,9 +749,9 @@ void AccessibilityController::UpdateAccessibilityHighlightingFromPrefs() {
 }
 
 void AccessibilityController::UpdateSelectToSpeakFromPref() {
-  PrefService* prefs = GetActivePrefService();
+  DCHECK(active_user_prefs_);
   const bool enabled =
-      prefs->GetBoolean(prefs::kAccessibilitySelectToSpeakEnabled);
+      active_user_prefs_->GetBoolean(prefs::kAccessibilitySelectToSpeakEnabled);
 
   if (select_to_speak_enabled_ == enabled)
     return;
@@ -664,9 +762,9 @@ void AccessibilityController::UpdateSelectToSpeakFromPref() {
 }
 
 void AccessibilityController::UpdateStickyKeysFromPref() {
-  PrefService* prefs = GetActivePrefService();
+  DCHECK(active_user_prefs_);
   const bool enabled =
-      prefs->GetBoolean(prefs::kAccessibilityStickyKeysEnabled);
+      active_user_prefs_->GetBoolean(prefs::kAccessibilityStickyKeysEnabled);
 
   if (sticky_keys_enabled_ == enabled)
     return;
@@ -679,9 +777,9 @@ void AccessibilityController::UpdateStickyKeysFromPref() {
 }
 
 void AccessibilityController::UpdateVirtualKeyboardFromPref() {
-  PrefService* prefs = GetActivePrefService();
-  const bool enabled =
-      prefs->GetBoolean(prefs::kAccessibilityVirtualKeyboardEnabled);
+  DCHECK(active_user_prefs_);
+  const bool enabled = active_user_prefs_->GetBoolean(
+      prefs::kAccessibilityVirtualKeyboardEnabled);
 
   if (virtual_keyboard_enabled_ == enabled)
     return;

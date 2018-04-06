@@ -42,9 +42,15 @@
 
 # TODO: Docked magnifier needs reflector to work in mash.
 # https://crbug.com/814481.
+-AccessibilityControllerSigninTest.EnableOnLoginScreenAndLogin/0
+-AccessibilityControllerSigninTest.EnableOnLoginScreenAndLogin/1
+-AccessibilityControllerSigninTest.EnableOnLoginScreenAndLogin/2
 -DockedMagnifierTest.AddRemoveDisplays
 -DockedMagnifierTest.DisplaysWorkAreas
 -DockedMagnifierTest.HighContrastMode
+-DockedMagnifierTest.MutuallyExclusiveMagnifiers
+-DockedMagnifierTest.TestEnableAndDisable
+-DockedMagnifierTest.TestOutsidePrefsUpdates
 -DockedMagnifierTest.TextInputFieldEvents
 -DockedMagnifierTest.TransformSimple
 
