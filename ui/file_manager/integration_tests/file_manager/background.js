@@ -48,7 +48,7 @@ function testPromise(promise) {
   return testPromiseAndApps(
       promise,
       [remoteCall, galleryApp, audioPlayerApp, videoPlayerApp]);
-};
+}
 
 /**
  * Executes a sequence of test steps.

@@ -32,7 +32,7 @@ function waitAndAcceptDialog(windowId) {
  */
 function getTreeItems(windowId) {
   return remoteCall.callRemoteTestUtil('getTreeItems', windowId, []);
-};
+}
 
 /**
  * Waits until the directory item appears.
@@ -112,7 +112,7 @@ function keyboardCopy(path, callback) {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
-};
+}
 
 /**
  * Tests deleting a file and and waits until the file lists changes.
@@ -328,7 +328,7 @@ function testRenameFile(path, initialEntrySet) {
                         expectedEntryRows,
                         {ignoreLastModifiedTime: true});
   });
-};
+}
 
 testcase.keyboardCopyDownloads = function() {
   keyboardCopy(RootPath.DOWNLOADS);

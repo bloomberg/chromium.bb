@@ -54,7 +54,7 @@ function testPromiseAndApps(promise, apps) {
   }), function(error) {
     chrome.test.fail(error.stack || error);
   });
-};
+}
 
 /**
  * Interval milliseconds between checks of repeatUntil.
@@ -93,7 +93,7 @@ function pending(message, var_args) {
   var pendingMarker = Object.create(pending.prototype);
   pendingMarker.message = formattedMessage;
   return pendingMarker;
-};
+}
 
 /**
  * Waits until the checkFunction returns a value but a pending marker.
@@ -119,7 +119,7 @@ function repeatUntil(checkFunction) {
     });
   };
   return step();
-};
+}
 
 /**
  * Adds the givin entries to the target volume(s).
@@ -147,7 +147,7 @@ function addEntries(volumeNames, entries, opt_callback) {
                        opt_callback.bind(null, false));
   }
   return resultPromise;
-};
+}
 
 /**
  * @enum {string}
@@ -209,7 +209,7 @@ function TestEntryInfo(type,
   this.sizeText = sizeText;
   this.typeText = typeText;
   Object.freeze(this);
-};
+}
 
 TestEntryInfo.getExpectedRows = function(entries) {
   return entries.map(function(entry) { return entry.getExpectedRow(); });

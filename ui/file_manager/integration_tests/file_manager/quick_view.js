@@ -29,7 +29,7 @@ function openQuickViewSteps(appId, filename) {
               if (results.length === 0 ||
                   results[0].styles.display === 'none') {
                 return pending('Quick View is not opened yet.');
-              };
+              }
               return results;
             });
       }).then(this.next);
@@ -61,7 +61,7 @@ function closeQuickViewSteps(appId) {
             .then(function(results) {
               if (results.length > 0 && results[0].styles.display !== 'none') {
                 return pending('Quick View is not closed yet.');
-              };
+              }
               return;
             });
       }).then(this.next);

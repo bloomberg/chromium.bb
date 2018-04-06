@@ -101,7 +101,7 @@ function share(path) {
       checkIfNoErrorsOccured(this.next);
     }
   ]);
-};
+}
 
 /**
  * Tests sharing a file on Drive
