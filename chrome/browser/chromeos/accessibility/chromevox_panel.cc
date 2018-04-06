@@ -7,21 +7,18 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/accessibility_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/shell.h"  // mash-ok
 #include "base/macros.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "extensions/browser/view_type_utils.h"
-#include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/public/cpp/property_type_converters.h"
-#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/webview/webview.h"
@@ -106,20 +103,9 @@ ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context,
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   // Placing the panel in the accessibility panel container allows ash to manage
   // both the window bounds and display work area.
-  const int container_id = ash::kShellWindowId_AccessibilityPanelContainer;
-  const display::Display primary_display =
-      display::Screen::GetScreen()->GetPrimaryDisplay();
-  if (chromeos::GetAshConfig() == ash::Config::MASH) {
-    using ui::mojom::WindowManager;
-    params.mus_properties[WindowManager::kContainerId_InitProperty] =
-        mojo::ConvertTo<std::vector<uint8_t>>(container_id);
-    params.mus_properties[WindowManager::kDisplayId_InitProperty] =
-        mojo::ConvertTo<std::vector<uint8_t>>(primary_display.id());
-  } else {
-    params.parent = ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
-                                             container_id);
-  }
-  params.bounds = primary_display.bounds();
+  ash_util::SetupWidgetInitParamsForContainer(
+      &params, ash::kShellWindowId_AccessibilityPanelContainer);
+  params.bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   params.delegate = this;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.name = "ChromeVoxPanel";

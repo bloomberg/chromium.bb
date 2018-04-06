@@ -168,18 +168,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
     int container_id = create_params.is_ime_window
                            ? ash::kShellWindowId_ImeWindowParentContainer
                            : ash::kShellWindowId_LockActionHandlerContainer;
-    if (ash_util::IsRunningInMash()) {
-      init_params->mus_properties
-          [ui::mojom::WindowManager::kContainerId_InitProperty] =
-          mojo::ConvertTo<std::vector<uint8_t>>(container_id);
-      int display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
-      init_params
-          ->mus_properties[ui::mojom::WindowManager::kDisplayId_InitProperty] =
-          mojo::ConvertTo<std::vector<uint8_t>>(display_id);
-    } else {
-      init_params->parent = ash::Shell::GetContainer(
-          ash::Shell::GetPrimaryRootWindow(), container_id);
-    }
+    ash_util::SetupWidgetInitParamsForContainer(init_params, container_id);
   }
   DCHECK_NE(AppWindow::WINDOW_TYPE_PANEL, create_params.window_type);
   init_params->mus_properties
