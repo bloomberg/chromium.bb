@@ -70,7 +70,6 @@ class BrowserLiveTabContext;
 class BrowserWindow;
 class FastUnloadController;
 class FindBarController;
-class PictureInPictureWindowController;
 class Profile;
 class ScopedKeepAlive;
 class StatusBubble;
@@ -83,6 +82,7 @@ class BrowserCommandController;
 }
 
 namespace content {
+class PictureInPictureWindowController;
 class SessionStorageNamespace;
 }
 
@@ -996,7 +996,8 @@ class Browser : public TabStripModelObserver,
 
   std::unique_ptr<chrome::BrowserCommandController> command_controller_;
 
-  std::unique_ptr<PictureInPictureWindowController> pip_window_controller_;
+  std::unique_ptr<content::PictureInPictureWindowController>
+      pip_window_controller_;
 
   // True if the browser window has been shown at least once.
   bool window_has_shown_;
