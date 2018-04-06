@@ -39,10 +39,10 @@ class ExtensionSpecialStoragePolicy : public storage::SpecialStoragePolicy {
   bool IsStorageProtected(const GURL& origin) override;
   bool IsStorageUnlimited(const GURL& origin) override;
   bool IsStorageSessionOnly(const GURL& origin) override;
-  bool ShouldDeleteCookieOnExit(const GURL& origin) override;
   bool HasIsolatedStorage(const GURL& origin) override;
   bool HasSessionOnlyOrigins() override;
   bool IsStorageDurable(const GURL& origin) override;
+  DeleteCookiePredicate CreateDeleteCookieOnExitPredicate() override;
 
   // Methods used by the ExtensionService to populate this class.
   void GrantRightsForExtension(const extensions::Extension* extension,

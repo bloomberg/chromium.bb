@@ -346,36 +346,7 @@ bool CanonicalCookie::IsOnPath(const std::string& url_path) const {
 }
 
 bool CanonicalCookie::IsDomainMatch(const std::string& host) const {
-  // Can domain match in two ways; as a domain cookie (where the cookie
-  // domain begins with ".") or as a host cookie (where it doesn't).
-
-  // Some consumers of the CookieMonster expect to set cookies on
-  // URLs like http://.strange.url.  To retrieve cookies in this instance,
-  // we allow matching as a host cookie even when the domain_ starts with
-  // a period.
-  if (host == domain_)
-    return true;
-
-  // Domain cookie must have an initial ".".  To match, it must be
-  // equal to url's host with initial period removed, or a suffix of
-  // it.
-
-  // Arguably this should only apply to "http" or "https" cookies, but
-  // extension cookie tests currently use the funtionality, and if we
-  // ever decide to implement that it should be done by preventing
-  // such cookies from being set.
-  if (domain_.empty() || domain_[0] != '.')
-    return false;
-
-  // The host with a "." prefixed.
-  if (domain_.compare(1, std::string::npos, host) == 0)
-    return true;
-
-  // A pure suffix of the host (ok since we know the domain already
-  // starts with a ".")
-  return (host.length() > domain_.length() &&
-          host.compare(host.length() - domain_.length(),
-                       domain_.length(), domain_) == 0);
+  return cookie_util::IsDomainMatch(domain_, host);
 }
 
 bool CanonicalCookie::IncludeForRequestURL(const GURL& url,

@@ -59,14 +59,19 @@ class CookieSettings : public RefcountedKeyedService {
   // This may be called on any thread.
   bool IsCookieSessionOnly(const GURL& url) const;
 
-  // Returns true if the cookie set by a page identified by |url| should be
-  // session only or blocked.
-  // If an http |url| is BLOCKED, but the https version of |url| is ALLOWED,
-  // the cookie will not be deleted to allow blocking http cookie without
-  // affecting cookies from https sites that are not marked as "Secure".
+  // Returns true if the cookie associated with |domain| should be deleted
+  // on exit.
+  // This uses domain matching as described in section 5.1.3 of RFC 6265 to
+  // identify content setting rules that could have influenced the cookie
+  // when it was created.
+  // As |cookie_settings| can be expensive to create, it should be cached if
+  // multiple calls to ShouldDeleteCookieOnExit() are made.
   //
   // This may be called on any thread.
-  bool ShouldDeleteCookieOnExit(const GURL& url) const;
+  bool ShouldDeleteCookieOnExit(
+      const ContentSettingsForOneType& cookie_settings,
+      const std::string& domain,
+      bool is_https) const;
 
   // Returns all patterns with a non-default cookie setting, mapped to their
   // actual settings, in the precedence order of the setting rules. |settings|

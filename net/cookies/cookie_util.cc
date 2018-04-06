@@ -273,6 +273,39 @@ GURL CookieOriginToURL(const std::string& domain, bool is_https) {
   return GURL(scheme + "://" + host);
 }
 
+bool IsDomainMatch(const std::string& domain, const std::string& host) {
+  // Can domain match in two ways; as a domain cookie (where the cookie
+  // domain begins with ".") or as a host cookie (where it doesn't).
+
+  // Some consumers of the CookieMonster expect to set cookies on
+  // URLs like http://.strange.url.  To retrieve cookies in this instance,
+  // we allow matching as a host cookie even when the domain_ starts with
+  // a period.
+  if (host == domain)
+    return true;
+
+  // Domain cookie must have an initial ".".  To match, it must be
+  // equal to url's host with initial period removed, or a suffix of
+  // it.
+
+  // Arguably this should only apply to "http" or "https" cookies, but
+  // extension cookie tests currently use the funtionality, and if we
+  // ever decide to implement that it should be done by preventing
+  // such cookies from being set.
+  if (domain.empty() || domain[0] != '.')
+    return false;
+
+  // The host with a "." prefixed.
+  if (domain.compare(1, std::string::npos, host) == 0)
+    return true;
+
+  // A pure suffix of the host (ok since we know the domain already
+  // starts with a ".")
+  return (host.length() > domain.length() &&
+          host.compare(host.length() - domain.length(), domain.length(),
+                       domain) == 0);
+}
+
 void ParseRequestCookieLine(const std::string& header_value,
                             ParsedRequestCookies* parsed_cookies) {
   std::string::const_iterator i = header_value.begin();

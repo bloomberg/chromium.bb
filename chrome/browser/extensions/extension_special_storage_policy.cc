@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -112,11 +113,18 @@ bool ExtensionSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
   return cookie_settings_->IsCookieSessionOnly(origin);
 }
 
-bool ExtensionSpecialStoragePolicy::ShouldDeleteCookieOnExit(
-    const GURL& origin) {
+storage::SpecialStoragePolicy::DeleteCookiePredicate
+ExtensionSpecialStoragePolicy::CreateDeleteCookieOnExitPredicate() {
   if (cookie_settings_.get() == NULL)
-    return false;
-  return cookie_settings_->ShouldDeleteCookieOnExit(origin);
+    return DeleteCookiePredicate();
+  // Fetch the list of cookies related content_settings and bind it
+  // to CookieSettings::ShouldDeleteCookieOnExit to avoid fetching it on
+  // every call.
+  ContentSettingsForOneType entries;
+  cookie_settings_->GetCookieSettings(&entries);
+  return base::BindRepeating(
+      &content_settings::CookieSettings::ShouldDeleteCookieOnExit,
+      cookie_settings_, std::move(entries));
 }
 
 bool ExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {

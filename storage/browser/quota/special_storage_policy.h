@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "storage/browser/storage_browser_export.h"
@@ -40,6 +41,11 @@ class STORAGE_EXPORT SpecialStoragePolicy
     virtual ~Observer();
   };
 
+  // Returns true if the cookie associated with the domain and is_https status
+  // should be deleted.
+  using DeleteCookiePredicate =
+      base::RepeatingCallback<bool(const std::string&, bool)>;
+
   SpecialStoragePolicy();
 
   // Protected storage is not subject to removal by the browsing data remover.
@@ -58,15 +64,17 @@ class STORAGE_EXPORT SpecialStoragePolicy
   // when the session ends.
   virtual bool IsStorageSessionOnly(const GURL& origin) = 0;
 
-  // Cookies should be deleted if the origin is session only or blocked because
-  // it is possible to e.g. create an .example.com cookie from www.example.com.
-  // If www.example.com is SESSION_ONLY and example.com is BLOCKED, this cookie
-  // could be created but not deleted. If http://example.com is BLOCKED, but
-  // https://example.com is ALLOWED, the cookie will be kept.
-  virtual bool ShouldDeleteCookieOnExit(const GURL& origin) = 0;
-
   // Returns true if some origins are only allowed session-only storage.
   virtual bool HasSessionOnlyOrigins() = 0;
+
+  // Returns a predicate that takes the domain of a cookie and a bool whether
+  // the cookie is secure and returns true if the cookie should be deleted on
+  // exit.
+  // If |HasSessionOnlyOrigins()| is true a non-null callback is returned.
+  // It uses domain matching as described in section 5.1.3 of RFC 6265 to
+  // identify content setting rules that could have influenced the cookie
+  // when it was created.
+  virtual DeleteCookiePredicate CreateDeleteCookieOnExitPredicate() = 0;
 
   // Adds/removes an observer, the policy does not take
   // ownership of the observer. Should only be called on the IO thread.
