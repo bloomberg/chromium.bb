@@ -726,22 +726,21 @@ body.performance-test * {
 #album div.media-wrapper {
   -webkit-app-region: no-drag;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-  margin: 8px;
+  margin: 10px;
   transition: -webkit-transform 50ms;
   vertical-align: middle;
   display: inline-block;
   position: relative;
   width: 220px;
-  height: 124px;
+  height: 200px;
+  overflow: hidden;
 }
 
 #album div.media-wrapper img {
   position: absolute;
-  margin: auto;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
 }
 
 #album div.media-wrapper.selected::after {

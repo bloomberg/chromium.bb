@@ -507,8 +507,10 @@ camera.views.Album.prototype.addPictureToDOM = function(picture) {
  * @override
  */
 camera.views.Album.prototype.updateElementSize = function(wrapper) {
+  // Album CSS should center and fill the picture thumbnail inside the wrapper
+  // and crop the overflowed content.
   camera.views.GalleryBase.prototype.updateElementSize.call(
-      this, wrapper, wrapper.clientWidth, wrapper.clientHeight);
+      this, wrapper, wrapper.clientWidth, wrapper.clientHeight, true);
 };
 
 /**

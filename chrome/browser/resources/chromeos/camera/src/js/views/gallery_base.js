@@ -391,21 +391,27 @@ camera.views.GalleryBase.prototype.addPictureToDOM = function(picture) {
 };
 
 /**
- * Updates the picture's content element size according to the max dimension.
+ * Updates the picture's content element size according to the given bounds.
  * The wrapped content (either img or video child element) should keep the
- * aspect ratio and is letterboxed inside the picture's wrapper element.
+ * aspect ratio and is either filled up or letterboxed inside the picture's
+ * wrapper element.
  * @param {HTMLElement}  wrapper Picture element to be updated.
- * @param {number} maxWidth Maximum width in pixels.
- * @param {number} maxHeight Maximum height in pixels.
+ * @param {number} boundWidth Bound width in pixels.
+ * @param {number} boundHeight Bound height in pixels.
+ * @param {boolean} fill True to fill up and crop the content to the bounds,
+ *     false to letterbox the content within the bounds.
  * @protected
  */
 camera.views.GalleryBase.prototype.updateElementSize = function(
-    wrapper, maxWidth, maxHeight) {
+    wrapper, boundWidth, boundHeight, fill) {
   // Assume the wrapped child is either img or video element.
   var child = wrapper.firstElementChild;
   var srcWidth = child.naturalWidth ? child.naturalWidth : child.videoWidth;
   var srcHeight = child.naturalHeight ? child.naturalHeight : child.videoHeight;
-  var scale = Math.min(maxHeight / srcHeight, maxWidth / srcWidth);
+  var f = fill ? Math.max : Math.min;
+  var scale = f(boundHeight / srcHeight, boundWidth / srcWidth);
+
+  // Corresponding CSS should handle the adjusted sizes for proper display.
   child.width = scale * srcWidth;
   child.height = scale * srcHeight;
 };
