@@ -32,6 +32,7 @@ import unittest
 
 from webkitpy.common import exit_codes
 from webkitpy.common.host_mock import MockHost
+from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.layout_tests import lint_test_expectations
 
 
@@ -89,7 +90,7 @@ class FakeFactory(object):
         return sorted(self.ports.keys())
 
 
-class LintTest(unittest.TestCase):
+class LintTest(LoggingTestCase):
 
     def test_all_configurations(self):
         host = MockHost()
@@ -98,29 +99,19 @@ class LintTest(unittest.TestCase):
                                                FakePort(host, 'b', 'path-to-b'),
                                                FakePort(host, 'b-win', 'path-to-b')))
 
-        logging_stream = StringIO.StringIO()
         options = optparse.Values({'platform': None})
-        logger, handler = lint_test_expectations.set_up_logging(logging_stream)
-        try:
-            res = lint_test_expectations.lint(host, options)
-        finally:
-            lint_test_expectations.tear_down_logging(logger, handler)
+        res = lint_test_expectations.lint(host, options)
         self.assertEqual(res, [])
         self.assertEqual(host.ports_parsed, ['a', 'b', 'b-win'])
 
     def test_lint_test_files(self):
-        logging_stream = StringIO.StringIO()
         options = optparse.Values({'platform': 'test-mac-mac10.10'})
         host = MockHost()
 
         host.port_factory.all_port_names = lambda platform=None: [platform]
 
-        logger, handler = lint_test_expectations.set_up_logging(logging_stream)
-        try:
-            res = lint_test_expectations.lint(host, options)
-            self.assertEqual(res, [])
-        finally:
-            lint_test_expectations.tear_down_logging(logger, handler)
+        res = lint_test_expectations.lint(host, options)
+        self.assertEqual(res, [])
 
     def test_lint_test_files_errors(self):
         options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
@@ -132,16 +123,12 @@ class LintTest(unittest.TestCase):
         host.port_factory.get = lambda platform, options=None: port
         host.port_factory.all_port_names = lambda platform=None: [port.name()]
 
-        logging_stream = StringIO.StringIO()
-        logger, handler = lint_test_expectations.set_up_logging(logging_stream)
-        try:
-            res = lint_test_expectations.lint(host, options)
-        finally:
-            lint_test_expectations.tear_down_logging(logger, handler)
+        res = lint_test_expectations.lint(host, options)
 
         self.assertTrue(res)
-        self.assertIn('foo:1', logging_stream.getvalue())
-        self.assertIn('bar:1', logging_stream.getvalue())
+        all_logs = ''.join(self.logMessages())
+        self.assertIn('foo:1', all_logs)
+        self.assertIn('bar:1', all_logs)
 
     def test_extra_files_errors(self):
         options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
@@ -154,15 +141,11 @@ class LintTest(unittest.TestCase):
         host.port_factory.all_port_names = lambda platform=None: [port.name()]
         host.filesystem.write_text_file('/test.checkout/LayoutTests/LeakExpectations', '-- syntax error')
 
-        logging_stream = StringIO.StringIO()
-        logger, handler = lint_test_expectations.set_up_logging(logging_stream)
-        try:
-            res = lint_test_expectations.lint(host, options)
-        finally:
-            lint_test_expectations.tear_down_logging(logger, handler)
+        res = lint_test_expectations.lint(host, options)
 
         self.assertTrue(res)
-        self.assertIn('LeakExpectations:1', logging_stream.getvalue())
+        all_logs = ''.join(self.logMessages())
+        self.assertIn('LeakExpectations:1', all_logs)
 
     def test_lint_flag_specific_expectation_errors(self):
         options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
@@ -174,16 +157,12 @@ class LintTest(unittest.TestCase):
         host.port_factory.get = lambda platform, options=None: port
         host.port_factory.all_port_names = lambda platform=None: [port.name()]
 
-        logging_stream = StringIO.StringIO()
-        logger, handler = lint_test_expectations.set_up_logging(logging_stream)
-        try:
-            res = lint_test_expectations.lint(host, options)
-        finally:
-            lint_test_expectations.tear_down_logging(logger, handler)
+        res = lint_test_expectations.lint(host, options)
 
         self.assertTrue(res)
-        self.assertIn('flag-specific:1 Path does not exist. does/not/exist', logging_stream.getvalue())
-        self.assertNotIn('noproblem', logging_stream.getvalue())
+        all_logs = ''.join(self.logMessages())
+        self.assertIn('flag-specific:1 Path does not exist. does/not/exist', all_logs)
+        self.assertNotIn('noproblem', all_logs)
 
 
 class CheckVirtualSuiteTest(unittest.TestCase):
@@ -194,18 +173,13 @@ class CheckVirtualSuiteTest(unittest.TestCase):
         orig_get = host.port_factory.get
         host.port_factory.get = lambda options: orig_get('test', options=options)
 
-        logging_stream = StringIO.StringIO()
-        logger, handler = lint_test_expectations.set_up_logging(logging_stream)
-        try:
-            res = lint_test_expectations.check_virtual_test_suites(host, options)
-            self.assertTrue(res)
+        res = lint_test_expectations.check_virtual_test_suites(host, options)
+        self.assertTrue(res)
 
-            options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
-            host.filesystem.exists = lambda path: True
-            res = lint_test_expectations.check_virtual_test_suites(host, options)
-            self.assertFalse(res)
-        finally:
-            lint_test_expectations.tear_down_logging(logger, handler)
+        options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
+        host.filesystem.exists = lambda path: True
+        res = lint_test_expectations.check_virtual_test_suites(host, options)
+        self.assertFalse(res)
 
 
 class MainTest(unittest.TestCase):
@@ -223,13 +197,13 @@ class MainTest(unittest.TestCase):
     def test_success(self):
         lint_test_expectations.lint = lambda host, options: []
         res = lint_test_expectations.main(['--platform', 'test'], self.stderr)
-        self.assertTrue('Lint succeeded' in self.stderr.getvalue())
+        self.assertEqual('Lint succeeded.', self.stderr.getvalue().strip())
         self.assertEqual(res, 0)
 
     def test_failure(self):
         lint_test_expectations.lint = lambda host, options: ['test failure']
         res = lint_test_expectations.main(['--platform', 'test'], self.stderr)
-        self.assertTrue('Lint failed' in self.stderr.getvalue())
+        self.assertEqual('Lint failed.', self.stderr.getvalue().strip())
         self.assertEqual(res, 1)
 
     def test_interrupt(self):

@@ -179,7 +179,7 @@ class MockExecutive(object):
                 env_string = ', env=%s' % env
             _log.info('MOCK popen: %s%s%s', args, cwd_string, env_string)
         if not self._proc:
-            self._proc = MockProcess(self._output)
+            self._proc = MockProcess(stdout=self._output, stderr=self._stderr, returncode=self._exit_code)
         return self._proc
 
     def call(self, args, **_):
