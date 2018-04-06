@@ -13,6 +13,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "device/fido/fido_constants.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -46,6 +47,9 @@ class MockHidConnection : public device::mojom::HidConnection {
                          const std::vector<uint8_t>& buffer,
                          SendFeatureReportCallback callback) override;
   void SetNonce(base::span<uint8_t const> nonce);
+
+  void ExpectWriteHidInit();
+  void ExpectHidWriteWithCommand(FidoHidDeviceCommand cmd);
 
   const std::vector<uint8_t>& connection_channel_id() const {
     return connection_channel_id_;
