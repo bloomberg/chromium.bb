@@ -86,6 +86,9 @@ suite('SiteDetails', function() {
       test_util.createContentSettingTypeToValuePair(
           settings.ContentSettingsTypes.PAYMENT_HANDLER,
           [test_util.createRawSiteException('https://foo.com:443')]),
+      test_util.createContentSettingTypeToValuePair(
+          settings.ContentSettingsTypes.USB_DEVICES,
+          [test_util.createRawSiteException('https://foo.com:443')]),
     ]);
 
     browserProxy = new TestSiteSettingsPrefsBrowserProxy();
@@ -106,7 +109,6 @@ suite('SiteDetails', function() {
     const nonSiteDetailsContentSettingsTypes = [
       settings.ContentSettingsTypes.COOKIES,
       settings.ContentSettingsTypes.PROTOCOL_HANDLERS,
-      settings.ContentSettingsTypes.USB_DEVICES,
       settings.ContentSettingsTypes.ZOOM_LEVELS,
     ];
     if (!cr.isChromeOS)

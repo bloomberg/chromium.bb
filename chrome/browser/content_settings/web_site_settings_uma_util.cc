@@ -21,6 +21,9 @@ void WebSiteSettingsUmaUtil::LogPermissionChange(ContentSettingsType type,
   } else if (setting == ContentSetting::CONTENT_SETTING_BLOCK) {
     UMA_HISTOGRAM_EXACT_LINEAR("WebsiteSettings.Menu.PermissionChanged.Blocked",
                                histogram_value, num_values);
+  } else if (setting == ContentSetting::CONTENT_SETTING_ASK) {
+    UMA_HISTOGRAM_EXACT_LINEAR("WebsiteSettings.Menu.PermissionChanged.Ask",
+                               histogram_value, num_values);
   } else if (setting == ContentSetting::CONTENT_SETTING_DEFAULT) {
     UMA_HISTOGRAM_EXACT_LINEAR("WebsiteSettings.Menu.PermissionChanged.Reset",
                                histogram_value, num_values);

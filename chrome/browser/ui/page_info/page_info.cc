@@ -118,6 +118,7 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_AUTOPLAY,
     CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
     CONTENT_SETTINGS_TYPE_CLIPBOARD_READ,
+    CONTENT_SETTINGS_TYPE_USB_GUARD,
 };
 
 // Checks whether this permission is currently the factory default, as set by
@@ -835,6 +836,12 @@ void PageInfo::PresentSitePermissions() {
   for (const ChooserUIInfo& ui_info : kChooserUIInfo) {
     ChooserContextBase* context = ui_info.get_context(profile_);
     const GURL origin = site_url_.GetOrigin();
+
+    // Hide individual object permissions because when the chooser is blocked
+    // previously granted device permissions are also ignored.
+    if (!context->CanRequestObjectPermission(origin, origin))
+      continue;
+
     auto chosen_objects = context->GetGrantedObjects(origin, origin);
     for (std::unique_ptr<base::DictionaryValue>& object : chosen_objects) {
       chosen_object_info_list.push_back(

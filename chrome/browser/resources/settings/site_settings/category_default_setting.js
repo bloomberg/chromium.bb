@@ -116,6 +116,7 @@ Polymer({
       case settings.ContentSettingsTypes.NOTIFICATIONS:
       case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
       case settings.ContentSettingsTypes.MIDI_DEVICES:
+      case settings.ContentSettingsTypes.USB_DEVICES:
         // "Ask" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(
             this.category,
