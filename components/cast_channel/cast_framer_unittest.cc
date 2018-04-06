@@ -81,7 +81,7 @@ TEST_F(CastFramerTest, TestSerializeErrorMessageTooLarge) {
   CastMessage big_message;
   big_message.CopyFrom(cast_message_);
   std::string payload;
-  payload.append(MessageFramer::MessageHeader::max_message_size() + 1, 'x');
+  payload.append(MessageFramer::MessageHeader::max_body_size() + 1, 'x');
   big_message.set_payload_utf8(payload);
   EXPECT_FALSE(MessageFramer::Serialize(big_message, &serialized));
 }
@@ -92,6 +92,30 @@ TEST_F(CastFramerTest, TestIngestIllegalLargeMessage) {
   mangled_cast_message[1] = 88;
   mangled_cast_message[2] = 88;
   mangled_cast_message[3] = 88;
+  WriteToBuffer(mangled_cast_message);
+
+  size_t bytes_ingested;
+  ChannelError error;
+  EXPECT_EQ(4u, framer_->BytesRequested());
+  EXPECT_EQ(nullptr, framer_->Ingest(4, &bytes_ingested, &error).get());
+  EXPECT_EQ(ChannelError::INVALID_MESSAGE, error);
+  EXPECT_EQ(0u, framer_->BytesRequested());
+
+  // Test that the parser enters a terminal error state.
+  WriteToBuffer(cast_message_str_);
+  EXPECT_EQ(0u, framer_->BytesRequested());
+  EXPECT_EQ(nullptr, framer_->Ingest(4, &bytes_ingested, &error).get());
+  EXPECT_EQ(ChannelError::INVALID_MESSAGE, error);
+  EXPECT_EQ(0u, framer_->BytesRequested());
+}
+
+TEST_F(CastFramerTest, TestIngestIllegalLargeMessage2) {
+  std::string mangled_cast_message = cast_message_str_;
+  // Header indicates body size is 0x00010001 = 65537
+  mangled_cast_message[0] = 0;
+  mangled_cast_message[1] = 0x1;
+  mangled_cast_message[2] = 0;
+  mangled_cast_message[3] = 0x1;
   WriteToBuffer(mangled_cast_message);
 
   size_t bytes_ingested;

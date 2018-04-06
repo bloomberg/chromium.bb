@@ -67,6 +67,8 @@ class MessageFramer {
     static size_t header_size();
     // Maximum size (in bytes) of a message payload on the wire (does not
     // include header).
+    static size_t max_body_size();
+    // Maximum size (in bytes) of a message (header + payload) on the wire.
     static size_t max_message_size();
     std::string ToString();
     // The size of the following protocol message in bytes, in host byte order.
