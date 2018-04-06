@@ -433,20 +433,24 @@ class ArcBluetoothBridge
 
   // Common code for OnCharacteristicReadRequest and OnDescriptorReadRequest
   template <class LocalGattAttribute>
-  void OnGattAttributeReadRequest(const device::BluetoothDevice* device,
-                                  const LocalGattAttribute* attribute,
-                                  int offset,
-                                  const ValueCallback& success_callback,
-                                  const ErrorCallback& error_callback);
+  void OnGattAttributeReadRequest(
+      const device::BluetoothDevice* device,
+      const LocalGattAttribute* attribute,
+      int offset,
+      mojom::BluetoothGattDBAttributeType attribute_type,
+      const ValueCallback& success_callback,
+      const ErrorCallback& error_callback);
 
   // Common code for OnCharacteristicWriteRequest and OnDescriptorWriteRequest
   template <class LocalGattAttribute>
-  void OnGattAttributeWriteRequest(const device::BluetoothDevice* device,
-                                   const LocalGattAttribute* attribute,
-                                   const std::vector<uint8_t>& value,
-                                   int offset,
-                                   const base::Closure& success_callback,
-                                   const ErrorCallback& error_callback);
+  void OnGattAttributeWriteRequest(
+      const device::BluetoothDevice* device,
+      const LocalGattAttribute* attribute,
+      const std::vector<uint8_t>& value,
+      int offset,
+      mojom::BluetoothGattDBAttributeType attribute_type,
+      const base::Closure& success_callback,
+      const ErrorCallback& error_callback);
 
   void OnSetDiscoverable(bool discoverable, bool success, uint32_t timeout);
   void SetDiscoverable(bool discoverable, uint32_t timeout);

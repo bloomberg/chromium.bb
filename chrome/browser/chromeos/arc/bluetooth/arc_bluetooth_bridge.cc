@@ -692,6 +692,7 @@ void ArcBluetoothBridge::OnGattAttributeReadRequest(
     const BluetoothDevice* device,
     const LocalGattAttribute* attribute,
     int offset,
+    mojom::BluetoothGattDBAttributeType attribute_type,
     const ValueCallback& success_callback,
     const ErrorCallback& error_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -707,6 +708,7 @@ void ArcBluetoothBridge::OnGattAttributeReadRequest(
   bluetooth_instance->RequestGattRead(
       mojom::BluetoothAddress::From(device->GetAddress()),
       gatt_handle_[attribute->GetIdentifier()], offset, false /* is_long */,
+      attribute_type,
       base::BindOnce(&OnGattServerRead, success_callback, error_callback));
 }
 
@@ -716,6 +718,7 @@ void ArcBluetoothBridge::OnGattAttributeWriteRequest(
     const LocalGattAttribute* attribute,
     const std::vector<uint8_t>& value,
     int offset,
+    mojom::BluetoothGattDBAttributeType attribute_type,
     const base::Closure& success_callback,
     const ErrorCallback& error_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -730,7 +733,7 @@ void ArcBluetoothBridge::OnGattAttributeWriteRequest(
 
   bluetooth_instance->RequestGattWrite(
       mojom::BluetoothAddress::From(device->GetAddress()),
-      gatt_handle_[attribute->GetIdentifier()], offset, value,
+      gatt_handle_[attribute->GetIdentifier()], offset, value, attribute_type,
       base::BindOnce(&OnGattServerWrite, success_callback, error_callback));
 }
 
@@ -740,8 +743,10 @@ void ArcBluetoothBridge::OnCharacteristicReadRequest(
     int offset,
     const ValueCallback& callback,
     const ErrorCallback& error_callback) {
-  OnGattAttributeReadRequest(device, characteristic, offset, callback,
-                             error_callback);
+  OnGattAttributeReadRequest(
+      device, characteristic, offset,
+      mojom::BluetoothGattDBAttributeType::BTGATT_DB_CHARACTERISTIC, callback,
+      error_callback);
 }
 
 void ArcBluetoothBridge::OnCharacteristicWriteRequest(
@@ -751,8 +756,10 @@ void ArcBluetoothBridge::OnCharacteristicWriteRequest(
     int offset,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  OnGattAttributeWriteRequest(device, characteristic, value, offset, callback,
-                              error_callback);
+  OnGattAttributeWriteRequest(
+      device, characteristic, value, offset,
+      mojom::BluetoothGattDBAttributeType::BTGATT_DB_CHARACTERISTIC, callback,
+      error_callback);
 }
 
 void ArcBluetoothBridge::OnDescriptorReadRequest(
@@ -761,8 +768,10 @@ void ArcBluetoothBridge::OnDescriptorReadRequest(
     int offset,
     const ValueCallback& callback,
     const ErrorCallback& error_callback) {
-  OnGattAttributeReadRequest(device, descriptor, offset, callback,
-                             error_callback);
+  OnGattAttributeReadRequest(
+      device, descriptor, offset,
+      mojom::BluetoothGattDBAttributeType::BTGATT_DB_DESCRIPTOR, callback,
+      error_callback);
 }
 
 void ArcBluetoothBridge::OnDescriptorWriteRequest(
@@ -772,8 +781,10 @@ void ArcBluetoothBridge::OnDescriptorWriteRequest(
     int offset,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  OnGattAttributeWriteRequest(device, descriptor, value, offset, callback,
-                              error_callback);
+  OnGattAttributeWriteRequest(
+      device, descriptor, value, offset,
+      mojom::BluetoothGattDBAttributeType::BTGATT_DB_DESCRIPTOR, callback,
+      error_callback);
 }
 
 void ArcBluetoothBridge::OnNotificationsStart(
