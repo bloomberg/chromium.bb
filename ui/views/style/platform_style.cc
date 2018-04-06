@@ -8,7 +8,9 @@
 #include "build/build_config.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/shadow_value.h"
+#include "ui/gfx/utf16_indexing.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
@@ -68,6 +70,15 @@ std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
 
 // static
 void PlatformStyle::OnTextfieldEditFailed() {}
+
+// static
+gfx::Range PlatformStyle::RangeToDeleteBackwards(const base::string16& text,
+                                                 size_t cursor_position) {
+  // Delete one code point, which may be two UTF-16 words.
+  size_t previous_grapheme_index =
+      gfx::UTF16OffsetToIndex(text, cursor_position, -1);
+  return gfx::Range(cursor_position, previous_grapheme_index);
+}
 
 #endif  // OS_MACOSX
 

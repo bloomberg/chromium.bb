@@ -16,6 +16,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/utf16_indexing.h"
+#include "ui/views/style/platform_style.h"
 
 namespace views {
 
@@ -406,10 +407,8 @@ bool TextfieldModel::Backspace(bool add_to_kill_buffer) {
   }
   size_t cursor_position = GetCursorPosition();
   if (cursor_position > 0) {
-    // Delete one code point, which may be two UTF-16 words.
-    size_t previous_grapheme_index =
-        gfx::UTF16OffsetToIndex(text(), cursor_position, -1);
-    gfx::Range range_to_delete(cursor_position, previous_grapheme_index);
+    gfx::Range range_to_delete(
+        PlatformStyle::RangeToDeleteBackwards(text(), cursor_position));
     if (add_to_kill_buffer)
       SetKillBuffer(GetTextFromRange(range_to_delete));
     ExecuteAndRecordDelete(range_to_delete, true);
