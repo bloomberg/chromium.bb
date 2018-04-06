@@ -878,6 +878,12 @@ void CdmAdapter::DecryptAndDecodeVideo(
 
   scoped_refptr<VideoFrame> decoded_frame =
       video_frame->TransformToVideoFrame(natural_size_);
+  if (!decoded_frame) {
+    DLOG(ERROR) << __func__ << ": TransformToVideoFrame failed.";
+    video_decode_cb.Run(Decryptor::kError, nullptr);
+    return;
+  }
+
   video_decode_cb.Run(Decryptor::kSuccess, decoded_frame);
 }
 
