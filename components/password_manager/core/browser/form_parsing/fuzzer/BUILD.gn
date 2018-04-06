@@ -2,14 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
+
 static_library("fuzzer_support") {
   sources = [
     "data_accessor.cc",
     "data_accessor.h",
+    "form_data_producer.cc",
+    "form_data_producer.h",
   ]
 
   deps = [
     "//base",
+    "//components/autofill/core/common",
+    "//url",
   ]
 }
 
@@ -24,4 +30,20 @@ source_set("unit_tests") {
     "//base",
     "//testing/gtest",
   ]
+}
+
+fuzzer_test("password_manager_form_parser_fuzzer") {
+  sources = [
+    "form_parser_fuzzer.cc",
+  ]
+
+  deps = [
+    ":fuzzer_support",
+    "//base",
+    "//base:i18n",
+    "//components/autofill/core/common",
+    "//components/password_manager/core/browser/form_parsing",
+  ]
+
+  dict = "form_parser_fuzzer.dict"
 }

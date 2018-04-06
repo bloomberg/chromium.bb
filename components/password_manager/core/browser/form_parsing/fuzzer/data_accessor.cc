@@ -16,7 +16,7 @@ namespace password_manager {
 namespace {
 
 // The maximum byte length of a string to be returned by |ConsumeString*|.
-constexpr size_t kMaxStringBytes = 254;
+constexpr size_t kMaxStringBytes = 256;
 
 }  // namespace
 
