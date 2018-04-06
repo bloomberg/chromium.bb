@@ -159,6 +159,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="3789841737615482174">Install</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3897092660631435901">Menu</translation>
+<translation id="3915450441834151894">Site Information</translation>
 <translation id="3928666092801078803">Combine my data</translation>
 <translation id="3950820424414687140">Sign in</translation>
 <translation id="3963231839620026525">New Incognito Tab</translation>
@@ -222,6 +223,7 @@ Your data is encrypted with your sync passphrase. Enter it to start sync.</trans
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Enable sync</translation>
 <translation id="5244474230056479698">Syncing to <ph name="EMAIL" /></translation>
+<translation id="527973086555161537">Open a tab to browse the web privately.</translation>
 <translation id="5300589172476337783">Show</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5327248766486351172">Name</translation>
@@ -301,6 +303,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6445981559479772097">Message sent.</translation>
 <translation id="6464071786529933911">Open in New Incognito Tab</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items deleted</translation>
+<translation id="6528048372317642110">File download is available</translation>
 <translation id="6541915733953096570">Past Hour</translation>
 <translation id="6570040839871198836">Autofill Forms</translation>
 <translation id="6656103420185847513">Edit Folder</translation>
@@ -397,6 +400,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="8532105204136943229">Year of Expiry</translation>
 <translation id="8534481786647257214">Google+ post completed.</translation>
 <translation id="8548878600947630424">Find in page...</translation>
+<translation id="8563611504944539039">Download successfully finished</translation>
 <translation id="8605219856220328675">Close tab.</translation>
 <translation id="8620640915598389714">Edit</translation>
 <translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>

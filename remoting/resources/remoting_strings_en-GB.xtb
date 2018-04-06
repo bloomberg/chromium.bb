@@ -143,6 +143,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="4145029455188493639">Signed in as <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Some required components are missing. Please make sure that you have installed the latest version of the software and try again.</translation>
 <translation id="4156740505453712750">To protect access to this computer, please choose a PIN of <ph name="BOLD_START" />at least six digits<ph name="BOLD_END" />. This PIN will be required when connecting from another location.</translation>
+<translation id="4169432154993690151">To choose a profile picture, allow Chrome Remote Desktop to access your camera</translation>
 <translation id="4176825807642096119">Access code</translation>
 <translation id="4207623512727273241">Please run the installer before continuing.</translation>
 <translation id="4227991223508142681">Host Provisioning Utility</translation>
@@ -260,6 +261,7 @@ PC</translation>
 <translation id="6748108480210050150">From</translation>
 <translation id="677755392401385740">Host started for user: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">View/edit</translation>
+<translation id="6913710942997637770">To choose a profile picture, allow Chrome Remote Desktop to access your photos</translation>
 <translation id="6930242544192836755">Duration</translation>
 <translation id="6939719207673461467">Show/hide keyboard.</translation>
 <translation id="6944854424004126054">Restore window</translation>

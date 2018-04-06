@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">Default search provider</translation>
 <translation id="1099282607296956954">Enable Site Isolation for every site</translation>
 <translation id="1117535567637097036">The protocol handlers set via this policy are not used when handling Android intents.</translation>
+<translation id="1118093128235245168">Allow sites to ask the user to grant access to a connected USB device</translation>
 <translation id="1122282995569868661">Shows the <ph name="PRODUCT_NAME" /> toolbar icon</translation>
 <translation id="1128903365609589950">Configures the directory that <ph name="PRODUCT_NAME" /> will use for storing cached files on the disk.
 
@@ -74,6 +75,9 @@
       If this policy is unset, the default frequency is 3 hours. The minimum
       allowed frequency is 60 seconds.</translation>
 <translation id="1204263402976895730">Enabled enterprise printers</translation>
+<translation id="1216758672198492382">Allows you to set whether websites are allowed to get access to connected USB devices. Access can be completely blocked, or the user can be asked every time a website wants to get access to connected USB devices.
+
+          If this policy is not left set, '3' will be used, and the user will be able to change it.</translation>
 <translation id="1219695476179627719">Specifies whether the device should roll back to the version set by <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> if it's already running a later version.
 
       Default is RollbackDisabled.</translation>
@@ -329,6 +333,17 @@
 <translation id="2113068765175018713">Limit device uptime by automatically rebooting</translation>
 <translation id="2127599828444728326">Allow notifications on these sites</translation>
 <translation id="2131902621292742709">Screen dim delay when running on battery power</translation>
+<translation id="2132732175597591362">Controls the whitelist of URL patterns on which auto-play will always be enabled.
+
+      If auto-play is enabled then videos containing audio content can play automatically (without user consent) <ph name="PRODUCT_NAME" />.
+
+      A URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      If the Auto-PlayAllowed policy is set to True, then this policy will have no effect.
+
+      If the Auto-PlayAllowed policy is set to False, then any URL patterns set in this policy will still be allowed to play.
+
+      Note that if <ph name="PRODUCT_NAME" /> is running and this policy changes, it will only be applied to newly opened tabs. Therefore, some tabs might still observe the previous behaviour.</translation>
 <translation id="2134437727173969994">Permit locking the screen</translation>
 <translation id="2137064848866899664">If this policy is set, each display is rotated to the
       specified orientation on every reboot and the first time that it is connected
@@ -392,6 +407,7 @@
       If you set this policy, users cannot change or override it. However, users will still be able to enable/disable an accessibility on-screen keyboard which takes precedence over the virtual keyboard controlled by this policy. See the |VirtualKeyboardEnabled| policy for controlling the accessibility on-screen keyboard.
 
       If this policy is left unset, the on-screen keyboard is disabled initially but can be enabled by the user anytime. Heuristic rules may also be used to decide when to display the keyboard.</translation>
+<translation id="2278947183573212094">Allows media auto-play on a whitelist of URL patterns</translation>
 <translation id="228659285074633994">Specifies the length of time without user input after which a warning dialogue is shown when running on AC power.
 
           When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> shows a warning dialogue telling the user that the idle action is about to be taken.
@@ -615,6 +631,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2801230735743888564">Allow users to play dinosaur easter egg game when device is offline.
 
       If this policy is set to False, users will not be able to play the dinosaur Easter egg game when device is offline. If this setting is set to True, users are allowed to play the dinosaur game. If this policy is not set, users are not allowed to play the dinosaur Easter egg game on enrolled Chrome OS, but are allowed to play it under other circumstances.</translation>
+<translation id="2802085784857530815">Allows you to control if users can access non-enterprise printers
+
+      If the policy is set to True, or not set at all, users will be able to add, configure and print using their own native printers.
+
+      If the policy is set to False, users will not be able to add and configure their own native printers. They will also not be able to print using any previously configured native printers.
+      </translation>
 <translation id="2805707493867224476">Allow all sites to show pop-ups</translation>
 <translation id="2808013382476173118">Enables usage of STUN servers when remote clients are trying to establish a connection to this machine.
 
@@ -777,6 +799,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           The policy value should be specified in milliseconds. Values are clamped to be less than or equal to the screen off delay (if set) and the idle delay.</translation>
 <translation id="3264793472749429012">Default search provider encodings</translation>
 <translation id="3273221114520206906">Default JavaScript setting</translation>
+<translation id="3284094172359247914">Control use of the WebUSB API</translation>
 <translation id="3288595667065905535">Release channel</translation>
 <translation id="3292147213643666827">Enables <ph name="PRODUCT_NAME" /> to act as a proxy between <ph name="CLOUD_PRINT_NAME" /> and legacy printers connected to the machine.
 
@@ -862,6 +885,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="350797926066071931">Enable Translate</translation>
 <translation id="3512226956150568738">If the client device model already supported ARC before migration to ext4 was necessary to run ARC and if the ArcEnabled policy is set to true, this option will behave as AskUser (value 3). In all other cases (if the device model did not support ARC before, or if ArcEnabled policy is set to false), this value is equivalent to DisallowArc (value 0).</translation>
+<translation id="3524204464536655762">Do not allow any site to request access to USB devices via the WebUSB API</translation>
 <translation id="3528000905991875314">Enable alternate error pages</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
 <translation id="3577251398714997599">Ads setting for sites with intrusive ads</translation>
@@ -977,6 +1001,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Lists extensions that are automatically installed for the Demo user, for devices in retail mode. These extensions are saved in the device and can be installed while offline, after the installation.
 
       Each list entry contains a dictionary that must include the extension ID in the 'extension-id' field, and its update URL in the 'update-url' field.</translation>
+<translation id="3873159954366380945">Allows you to set the time period over which <ph name="PRODUCT_NAME" /> relaunch notifications are shown to apply a pending update.
+
+      This policy setting can be used to control the time period, in milliseconds, over which a user is progressively informed that <ph name="PRODUCT_NAME" /> must be relaunched (or <ph name="PRODUCT_OS_NAME" /> must be restarted) for an update. Over this time period, the user will be repeatedly informed of the need for an update based on the setting of the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> policy. If not set, the default period of 345,600,000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME" /> and 604,800,000 milliseconds (one week) for all other platforms.</translation>
 <translation id="3877517141460819966">Integrated second factor authentication mode</translation>
 <translation id="388237772682176890">This policy is deprecated in M53 and removed in M54, because SPDY/3.1 support is removed.
 
@@ -1329,6 +1356,14 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="489803897780524242">Parameter controlling search term placement for the default search provider</translation>
 <translation id="4899708173828500852">Enable Safe Browsing</translation>
+<translation id="4899802251198446659">Allows you to control whether videos with audio content can play automatically (without user consent) <ph name="PRODUCT_NAME" />.
+
+      If the policy is set to True, <ph name="PRODUCT_NAME" /> is allowed to auto-play media.
+      If the policy is set to False, <ph name="PRODUCT_NAME" /> is not allowed to auto-play media. The Auto-PlayWhitelist policy can be used to override this for certain URL patterns.
+      By default, <ph name="PRODUCT_NAME" /> is not allowed to auto-play media. The Auto-PlayWhitelist policy can be used to override this for certain URL patterns.
+
+      Note that if <ph name="PRODUCT_NAME" /> is running and this policy changes, it will only be applied to newly opened tabs. Therefore, some tabs might still observe the previous behaviour.
+      </translation>
 <translation id="4906194810004762807">Refresh rate for Device Policy</translation>
 <translation id="4917385247580444890">Strong</translation>
 <translation id="4923806312383904642">Allow WebDriver to Override Incompatible Policies</translation>
@@ -2299,6 +2334,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">New Tab Page</translation>
 <translation id="7788511847830146438">Per Profile</translation>
+<translation id="7789637461480472766">Allows access to native CUPS printers</translation>
 <translation id="7801886189430766248">When this policy is set to true, Android app data is uploaded to Android Backup servers and restored from them upon app re-installations for compatible apps.
 
       When this policy is set to false, Android Backup Service will be switched off.
@@ -2698,6 +2734,15 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="9112897538922695510">Allows you to register a list of protocol handlers. This can only be a recommended policy. The property |protocol| should be set to the scheme such as 'mailto' and the property |url| should be set to the URL pattern of the application that handles the scheme. The pattern can include a '%s', which if present will be replaced by the handled URL.
 
           The protocol handlers registered by policy are merged with the ones registered by the user and both are available for use. The user can override the protocol handlers installed by policy by installing a new default handler, but cannot remove a protocol handler registered by policy.</translation>
+<translation id="9123211093995421438">Specifies the minimum number of <ph name="PRODUCT_OS_NAME" /> milestones roll back should be allowed starting from the stable version at any time.
+
+      Default is zero for consumer, four (approx. half a year) for enterprise-enrolled devices.
+
+      Setting this policy prevents roll back protection to apply for at least this number of milestones.
+
+      Setting this policy to a lower value has a permanent effect: the device MAY not be able to roll back to earlier versions even after the policy is reset to a larger value.
+
+      Actual roll back possibilities may also depend on the board and critical vulnerability patches.</translation>
 <translation id="913195841488580904">Block access to a list of URLs</translation>
 <translation id="9135033364005346124">Enable <ph name="CLOUD_PRINT_NAME" /> proxy</translation>
 <translation id="9136253551939494882">A whitelist controlling which quick unlock modes the user can configure and use to unlock the lock screen.
