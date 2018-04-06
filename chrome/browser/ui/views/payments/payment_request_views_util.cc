@@ -410,8 +410,9 @@ std::unique_ptr<views::View> CreateShippingOptionLabel(
 
 SkColor GetForegroundColorForBackground(SkColor background_color) {
   constexpr double kLightForegroundRatioThreshold = 3;
-  if (color_utils::GetContrastRatio(background_color, SK_ColorWHITE) >=
-      kLightForegroundRatioThreshold) {
+  if (background_color != 0 &&
+      color_utils::GetContrastRatio(background_color, SK_ColorWHITE) >=
+          kLightForegroundRatioThreshold) {
     return SK_ColorWHITE;
   }
   views::Label label;
