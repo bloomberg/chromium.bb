@@ -52,20 +52,12 @@ PrefService* GetActivePrefService() {
 }  // namespace
 
 // static
-void TouchDevicesController::RegisterProfilePrefs(PrefRegistrySimple* registry,
-                                                  bool for_test) {
-  if (for_test) {
-    // In tests there is no remote pref service. Make ash own the prefs.
-    registry->RegisterBooleanPref(
-        prefs::kTapDraggingEnabled, false,
-        user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF |
-            PrefRegistry::PUBLIC);
-  } else {
-    // In production the prefs are owned by chrome.
-    // TODO: Move ownership to ash.
-    registry->RegisterForeignPref(prefs::kTapDraggingEnabled);
-  }
-
+void TouchDevicesController::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kTapDraggingEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF |
+          PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(prefs::kTouchpadEnabled, PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(prefs::kTouchscreenEnabled,
                                 PrefRegistry::PUBLIC);

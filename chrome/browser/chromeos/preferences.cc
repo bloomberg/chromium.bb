@@ -239,10 +239,6 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       ash::prefs::kShouldAlwaysShowAccessibilityMenu, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      ash::prefs::kTapDraggingEnabled, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF |
-          PrefRegistry::PUBLIC);
 
   registry->RegisterIntegerPref(
       prefs::kMouseSensitivity,
