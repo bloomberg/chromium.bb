@@ -140,6 +140,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   // Methods used for Download In-product help.
   const MediaControlDownloadButtonElement& DownloadButton() const;
+  const MediaControlOverflowMenuButtonElement& OverflowButton() const;
   void DidDismissDownloadInProductHelp();
   MediaDownloadInProductHelpManager* DownloadInProductHelp();
 

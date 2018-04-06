@@ -26,7 +26,7 @@ MediaControlDownloadButtonElement::MediaControlDownloadButtonElement(
   SetIsWanted(false);
 }
 
-bool MediaControlDownloadButtonElement::ShouldDisplayDownloadButton() {
+bool MediaControlDownloadButtonElement::ShouldDisplayDownloadButton() const {
   if (!MediaElement().SupportsSave())
     return false;
 
@@ -62,7 +62,8 @@ const char* MediaControlDownloadButtonElement::GetNameForHistograms() const {
 void MediaControlDownloadButtonElement::UpdateShownState() {
   MediaControlInputElement::UpdateShownState();
 
-  if (GetMediaControls().DownloadInProductHelp()) {
+  if (!MediaControlsImpl::IsModern() &&
+      GetMediaControls().DownloadInProductHelp()) {
     GetMediaControls().DownloadInProductHelp()->SetDownloadButtonVisibility(
         IsWanted() && DoesFit());
   }
