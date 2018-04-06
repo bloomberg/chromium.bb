@@ -124,14 +124,30 @@ class ArcUsbHostPermissionTest : public InProcessBrowserTest {
         package_name, usb_device_entry, allowed);
   }
 
+  void GrantTemporayUsbAccessPermission(
+      const std::string& package_name,
+      const ArcUsbHostPermissionManager::UsbDeviceEntry& usb_device_entry) {
+    arc_usb_permission_manager_->GrantUsbAccessPermission(
+        package_name, usb_device_entry.guid, usb_device_entry.vendor_id,
+        usb_device_entry.product_id);
+  }
+
+  std::unordered_set<std::string> GetEventPackageList(
+      const ArcUsbHostPermissionManager::UsbDeviceEntry& usb_device_entry)
+      const {
+    return arc_usb_permission_manager_->GetEventPackageList(
+        usb_device_entry.guid, usb_device_entry.serial_number,
+        usb_device_entry.vendor_id, usb_device_entry.product_id);
+  }
+
   bool HasUsbScanDeviceListPermission(const std::string& package_name) const {
     return arc_usb_permission_manager_->HasUsbScanDeviceListPermission(
         package_name);
   }
 
-  bool HasUsbAccessPermission(
-      const std::string& package_name,
-      const ArcUsbHostPermissionManager::UsbDeviceEntry& usb_device_entry) {
+  bool HasUsbAccessPermission(const std::string& package_name,
+                              const ArcUsbHostPermissionManager::UsbDeviceEntry&
+                                  usb_device_entry) const {
     return arc_usb_permission_manager_->HasUsbAccessPermission(
         package_name, usb_device_entry);
   }
@@ -148,6 +164,28 @@ class ArcUsbHostPermissionTest : public InProcessBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(ArcUsbHostPermissionTest);
 };
+
+IN_PROC_BROWSER_TEST_F(ArcUsbHostPermissionTest, UsbTemporayPermissionTest) {
+  AddArcApp(kAppName, kPackageName, kAppActivity);
+  AddArcPackage(kPackageName);
+  // Persistent device0.
+  const std::string guid0 = "TestGuidXXXXXX0";
+  const base::string16 device_name0 = base::UTF8ToUTF16("TestDevice0");
+  const base::string16 serial_number0 = base::UTF8ToUTF16("TestSerialNumber0");
+  uint16_t vendor_id0 = 123;
+  uint16_t product_id0 = 456;
+
+  ArcUsbHostPermissionManager::UsbDeviceEntry testDevice0(
+      guid0, device_name0, serial_number0, vendor_id0, product_id0);
+
+  GrantTemporayUsbAccessPermission(kPackageName, testDevice0);
+  EXPECT_TRUE(HasUsbAccessPermission(kPackageName, testDevice0));
+  EXPECT_EQ(1u, GetEventPackageList(testDevice0).size());
+
+  DeviceRemoved(guid0);
+  EXPECT_FALSE(HasUsbAccessPermission(kPackageName, testDevice0));
+  EXPECT_EQ(0u, GetEventPackageList(testDevice0).size());
+}
 
 IN_PROC_BROWSER_TEST_F(ArcUsbHostPermissionTest, UsbChromePrefsTest) {
   AddArcApp(kAppName, kPackageName, kAppActivity);
