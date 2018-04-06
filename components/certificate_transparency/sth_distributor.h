@@ -2,34 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_CERT_STH_DISTRIBUTOR_H_
-#define NET_CERT_STH_DISTRIBUTOR_H_
+#ifndef COMPONENTS_CERTIFICATE_TRANSPARENCY_STH_DISTRIBUTOR_H_
+#define COMPONENTS_CERTIFICATE_TRANSPARENCY_STH_DISTRIBUTOR_H_
 
 #include <vector>
 
 #include "base/observer_list.h"
+#include "components/certificate_transparency/sth_observer.h"
+#include "components/certificate_transparency/sth_reporter.h"
 #include "net/base/net_export.h"
-#include "net/cert/sth_observer.h"
-#include "net/cert/sth_reporter.h"
 
 namespace net {
-
 namespace ct {
-
 struct SignedTreeHead;
+}  // namespace ct
+}  // namespace net
+
+namespace certificate_transparency {
 
 // A proxy for delegating new STH notifications to all registered
 // observers.
 // For each |observer| registered with RegisterObserver, the
 // NewSTHObserved method will be called whenever the STHDistributor's
 // NewSTHObserved method is invoked.
-class NET_EXPORT STHDistributor : public STHObserver, public STHReporter {
+class STHDistributor : public STHObserver, public STHReporter {
  public:
   STHDistributor();
   ~STHDistributor() override;
 
   // STHObserver implementation.
-  void NewSTHObserved(const SignedTreeHead& sth) override;
+  void NewSTHObserved(const net::ct::SignedTreeHead& sth) override;
 
   // STHReporter implementation
   // Registers |observer| for new STH notifications. On registration,
@@ -43,14 +45,12 @@ class NET_EXPORT STHDistributor : public STHObserver, public STHReporter {
 
  private:
   // STHs from logs, one for each log.
-  std::vector<SignedTreeHead> observed_sths_;
+  std::vector<net::ct::SignedTreeHead> observed_sths_;
 
   // The observers for new STH notifications.
   base::ObserverList<STHObserver, true> observer_list_;
 };
 
-}  // namespace ct
+}  // namespace certificate_transparency
 
-}  // namespace net
-
-#endif  // NET_CERT_STH_DISTRIBUTOR_H_
+#endif  // COMPONENTS_CERTIFICATE_TRANSPARENCY_STH_DISTRIBUTOR_H_

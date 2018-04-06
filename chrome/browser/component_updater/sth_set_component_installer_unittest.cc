@@ -17,9 +17,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "components/certificate_transparency/sth_observer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cert/signed_tree_head.h"
-#include "net/cert/sth_observer.h"
 #include "net/test/ct_test_util.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +27,7 @@
 
 namespace component_updater {
 
-class StoringSTHObserver : public net::ct::STHObserver {
+class StoringSTHObserver : public certificate_transparency::STHObserver {
  public:
   void NewSTHObserved(const net::ct::SignedTreeHead& sth) override {
     sths[sth.log_id] = sth;

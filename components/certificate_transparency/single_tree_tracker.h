@@ -13,11 +13,11 @@
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "components/certificate_transparency/sth_observer.h"
 #include "net/base/hash_value.h"
 #include "net/base/network_change_notifier.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/signed_tree_head.h"
-#include "net/cert/sth_observer.h"
 #include "net/log/net_log_with_source.h"
 
 namespace net {
@@ -87,11 +87,10 @@ enum SCTCanBeCheckedForInclusion {
 //
 // To accomplish this, this class needs to be notified of when new SCTs are
 // observed (which it does by implementing net::CTVerifier::Observer) and when
-// new STHs are observed (which it does by implementing net::ct::STHObserver).
+// new STHs are observed (which it does by implementing STHObserver).
 // Once connected to sources providing that data, the status for a given SCT
 // can be queried by calling GetLogEntryInclusionCheck.
-class SingleTreeTracker : public net::CTVerifier::Observer,
-                          public net::ct::STHObserver {
+class SingleTreeTracker : public net::CTVerifier::Observer, public STHObserver {
  public:
   enum SCTInclusionStatus {
     // SCT was not observed by this class and is not currently pending
@@ -143,7 +142,7 @@ class SingleTreeTracker : public net::CTVerifier::Observer,
                      net::X509Certificate* cert,
                      const net::ct::SignedCertificateTimestamp* sct) override;
 
-  // net::ct::STHObserver implementation.
+  // STHObserver implementation.
   // After verification of the signature over the |sth|, uses this
   // STH for future inclusion checks.
   // Must only be called for STHs issued by the log this instance tracks.

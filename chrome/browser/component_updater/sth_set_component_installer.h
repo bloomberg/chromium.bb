@@ -20,11 +20,9 @@ class FilePath;
 class Value;
 }  // namespace base
 
-namespace net {
-namespace ct {
+namespace certificate_transparency {
 class STHObserver;
-}  // namespace ct
-}  // namespace net
+}  // namespace certificate_transparency
 
 namespace component_updater {
 
@@ -36,12 +34,14 @@ class ComponentUpdateService;
 // To identify the log each STH belongs to, the name of the file is
 // hex-encoded Log ID of the log that produced this STH.
 //
-// Notifications of each of the new STHs are sent to the net::ct::STHObserver,
-// so that it can take appropriate steps, including possible persistence.
+// Notifications of each of the new STHs are sent to the
+// certificate_transparency::STHObserver, so that it can take appropriate
+// steps, including possible persistence.
 class STHSetComponentInstallerPolicy : public ComponentInstallerPolicy {
  public:
   // The |sth_distributor| will be notified each time a new STH is observed.
-  explicit STHSetComponentInstallerPolicy(net::ct::STHObserver* sth_observer);
+  explicit STHSetComponentInstallerPolicy(
+      certificate_transparency::STHObserver* sth_observer);
   ~STHSetComponentInstallerPolicy() override;
 
  private:
@@ -79,7 +79,7 @@ class STHSetComponentInstallerPolicy : public ComponentInstallerPolicy {
   // The observer is not owned by this class, so the code creating an instance
   // of this class is expected to ensure the STHObserver lives as long as
   // this class does. Typically the observer provided will be a global.
-  net::ct::STHObserver* sth_observer_;
+  certificate_transparency::STHObserver* sth_observer_;
 
   base::WeakPtrFactory<STHSetComponentInstallerPolicy> weak_ptr_factory_;
 

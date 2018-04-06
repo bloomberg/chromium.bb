@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/cert/sth_distributor.h"
+#include "components/certificate_transparency/sth_distributor.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -15,18 +15,16 @@ const uint8_t kPilotLogID[] = {0xa4, 0xb9, 0x09, 0x90, 0xb4, 0x18, 0x58, 0x14,
                                0xe3, 0x77, 0xcd, 0x0e, 0xc8, 0x0d, 0xdc, 0x10};
 }
 
-namespace net {
-
-namespace ct {
+namespace certificate_transparency {
 
 STHDistributor::STHDistributor()
     : observer_list_(base::ObserverListPolicy::EXISTING_ONLY) {}
 
 STHDistributor::~STHDistributor() = default;
 
-void STHDistributor::NewSTHObserved(const SignedTreeHead& sth) {
+void STHDistributor::NewSTHObserved(const net::ct::SignedTreeHead& sth) {
   auto it = std::find_if(observed_sths_.begin(), observed_sths_.end(),
-                         [&sth](const SignedTreeHead& other) {
+                         [&sth](const net::ct::SignedTreeHead& other) {
                            return sth.log_id == other.log_id;
                          });
 
@@ -54,7 +52,7 @@ void STHDistributor::RegisterObserver(STHObserver* observer) {
   // Make a local copy, because notifying the |observer| of a
   // new STH may result in this class being notified of a
   // (different) new STH, thus invalidating the iterator.
-  std::vector<SignedTreeHead> local_sths(observed_sths_);
+  std::vector<net::ct::SignedTreeHead> local_sths(observed_sths_);
 
   for (const auto& sth : local_sths)
     observer->NewSTHObserved(sth);
@@ -64,6 +62,4 @@ void STHDistributor::UnregisterObserver(STHObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-}  // namespace ct
-
-}  // namespace net
+}  // namespace certificate_transparency

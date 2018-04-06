@@ -43,6 +43,8 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/certificate_transparency/sth_distributor.h"
+#include "components/certificate_transparency/sth_observer.h"
 #include "components/certificate_transparency/tree_state_tracker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_usage/core/data_use_aggregator.h"
@@ -73,8 +75,6 @@
 #include "net/cert/ct_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
-#include "net/cert/sth_distributor.h"
-#include "net/cert/sth_observer.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
@@ -428,7 +428,7 @@ IOThread::IOThread(
   pac_https_url_stripping_enabled_.MoveToThread(io_thread_proxy);
 
   chrome_browser_net::SetGlobalSTHDistributor(
-      std::make_unique<net::ct::STHDistributor>());
+      std::make_unique<certificate_transparency::STHDistributor>());
 
   BrowserThread::SetIOThreadDelegate(this);
 
@@ -739,11 +739,13 @@ void IOThread::UpdateDnsClientEnabled() {
   }
 }
 
-void IOThread::RegisterSTHObserver(net::ct::STHObserver* observer) {
+void IOThread::RegisterSTHObserver(
+    certificate_transparency::STHObserver* observer) {
   chrome_browser_net::GetGlobalSTHDistributor()->RegisterObserver(observer);
 }
 
-void IOThread::UnregisterSTHObserver(net::ct::STHObserver* observer) {
+void IOThread::UnregisterSTHObserver(
+    certificate_transparency::STHObserver* observer) {
   chrome_browser_net::GetGlobalSTHDistributor()->UnregisterObserver(observer);
 }
 

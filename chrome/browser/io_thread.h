@@ -46,6 +46,7 @@ class ExternalDataUseObserver;
 
 namespace certificate_transparency {
 class TreeStateTracker;
+class STHObserver;
 }
 
 namespace chrome_browser_net {
@@ -75,11 +76,6 @@ class RTTAndThroughputEstimatesObserver;
 class SSLConfigService;
 class URLRequestContext;
 class URLRequestContextGetter;
-
-namespace ct {
-class STHObserver;
-}
-
 }  // namespace net
 
 namespace net_log {
@@ -198,10 +194,10 @@ class IOThread : public content::BrowserThreadDelegate {
   metrics::UpdateUsagePrefCallbackType GetMetricsDataUseForwarder();
 
   // Registers the |observer| for new STH notifications.
-  void RegisterSTHObserver(net::ct::STHObserver* observer);
+  void RegisterSTHObserver(certificate_transparency::STHObserver* observer);
 
   // Un-registers the |observer|.
-  void UnregisterSTHObserver(net::ct::STHObserver* observer);
+  void UnregisterSTHObserver(certificate_transparency::STHObserver* observer);
 
   // Returns true if the indicated proxy resolution features are
   // enabled. These features are controlled through

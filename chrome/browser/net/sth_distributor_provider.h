@@ -7,19 +7,15 @@
 
 #include <memory>
 
-namespace net {
-
-namespace ct {
+namespace certificate_transparency {
 class STHDistributor;
-}  // namespace ct
-
-}  // namespace net
+}  // namespace certificate_transparency
 
 namespace chrome_browser_net {
 
 void SetGlobalSTHDistributor(
-    std::unique_ptr<net::ct::STHDistributor> distributor);
-net::ct::STHDistributor* GetGlobalSTHDistributor();
+    std::unique_ptr<certificate_transparency::STHDistributor> distributor);
+certificate_transparency::STHDistributor* GetGlobalSTHDistributor();
 
 }  // namespace chrome_browser_net
 
