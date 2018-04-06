@@ -1533,6 +1533,7 @@ static TX_SIZE av1_get_transform_size(
     const MB_MODE_INFO *const mbmi, const EDGE_DIR edge_dir, const int mi_row,
     const int mi_col, const int plane,
     const struct macroblockd_plane *plane_ptr) {
+  assert(mbmi != NULL);
   TX_SIZE tx_size = (plane == AOM_PLANE_Y)
                         ? mbmi->tx_size
                         : av1_get_uv_tx_size(mbmi, plane_ptr->subsampling_x,
@@ -1594,6 +1595,11 @@ static TX_SIZE set_lpf_parameters(
   const int mi_col = scale_horz | ((x << scale_horz) >> MI_SIZE_LOG2);
   MB_MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride + mi_col;
   const MB_MODE_INFO *mbmi = mi[0];
+  // If current mbmi is not correctly setup, return an invalid value to stop
+  // filtering. One example is that if this tile is not coded, then its mbmi
+  // it not set up.
+  if (mbmi == NULL) return TX_INVALID;
+
   const TX_SIZE ts =
       av1_get_transform_size(mi[0], edge_dir, mi_row, mi_col, plane, plane_ptr);
 
@@ -1613,6 +1619,7 @@ static TX_SIZE set_lpf_parameters(
       if (coord) {
         {
           const MB_MODE_INFO *const mi_prev = *(mi - mode_step);
+          if (mi_prev == NULL) return TX_INVALID;
           const int pv_row =
               (VERT_EDGE == edge_dir) ? (mi_row) : (mi_row - (1 << scale_vert));
           const int pv_col =
@@ -1696,6 +1703,10 @@ static void filter_block_plane_vert(const AV1_COMMON *const cm, const int plane,
 
       tx_size = set_lpf_parameters(&params, ((ptrdiff_t)1 << scale_horz), cm,
                                    VERT_EDGE, curr_x, curr_y, plane, plane_ptr);
+      if (tx_size == TX_INVALID) {
+        params.filter_length = 0;
+        tx_size = TX_4X4;
+      }
 
       switch (params.filter_length) {
         // apply 4-tap filtering
@@ -1776,6 +1787,10 @@ static void filter_block_plane_horz(const AV1_COMMON *const cm, const int plane,
 
       tx_size = set_lpf_parameters(&params, (cm->mi_stride << scale_vert), cm,
                                    HORZ_EDGE, curr_x, curr_y, plane, plane_ptr);
+      if (tx_size == TX_INVALID) {
+        params.filter_length = 0;
+        tx_size = TX_4X4;
+      }
 
       switch (params.filter_length) {
         // apply 4-tap filtering
