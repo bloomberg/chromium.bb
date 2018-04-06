@@ -22,7 +22,7 @@ namespace base {
 // Persisted histograms will eventually be reported by Chrome.
 class BASE_EXPORT PersistentHistogramStorage {
  public:
-  enum class StorageDirCreation { kEnable, kDisable };
+  enum class StorageDirManagement { kCreate, kUseExisting };
 
   // Creates a process-wide storage location for histograms that will be written
   // to a file within a directory provided by |set_storage_base_dir()| on
@@ -30,11 +30,10 @@ class BASE_EXPORT PersistentHistogramStorage {
   // The |allocator_name| is used both as an internal name for the allocator,
   // well as the leaf directory name for the file to which the histograms are
   // persisted. The string must be ASCII.
-  // |storage_dir_create_action| determines that if this instance is
-  // responsible for creating the storage directory. If kDisable is supplied,
-  // it's the consumer's responsibility to create the storage directory.
+  // |storage_dir_management| specifies if this instance reuses an existing
+  // storage directory, or is responsible for creating one.
   PersistentHistogramStorage(StringPiece allocator_name,
-                             StorageDirCreation storage_dir_create_action);
+                             StorageDirManagement storage_dir_management);
 
   ~PersistentHistogramStorage();
 
@@ -53,9 +52,8 @@ class BASE_EXPORT PersistentHistogramStorage {
   // |storage_base_dir_|/|allocator_name| (see the ctor for allocator_name).
   FilePath storage_base_dir_;
 
-  // A flag indicating if the class instance is responsible for creating the
-  // storage directory.
-  const StorageDirCreation storage_dir_create_action_;
+  // The setting of the storage directory management.
+  const StorageDirManagement storage_dir_management_;
 
   // A flag indicating if histogram storage is disabled. It starts with false,
   // but can be set to true by the caller who decides to throw away its

@@ -55,7 +55,7 @@ TEST_F(PersistentHistogramStorageTest, HistogramWriteTest) {
   auto persistent_histogram_storage =
       std::make_unique<PersistentHistogramStorage>(
           kTestHistogramAllocatorName,
-          PersistentHistogramStorage::StorageDirCreation::kEnable);
+          PersistentHistogramStorage::StorageDirManagement::kCreate);
 
   persistent_histogram_storage->set_storage_base_dir(temp_dir_path());
 

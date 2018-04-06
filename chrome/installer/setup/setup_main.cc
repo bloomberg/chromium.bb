@@ -1291,11 +1291,11 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     return installer::CPU_NOT_SUPPORTED;
 
   // Persist histograms so they can be uploaded later. The storage directory is
-  // created during installation when the main WorkItemList is evaluated. So
+  // created during installation when the main WorkItemList is evaluated so
   // disable storage directory creation in PersistentHistogramStorage.
   base::PersistentHistogramStorage persistent_histogram_storage(
       installer::kSetupHistogramAllocatorName,
-      base::PersistentHistogramStorage::StorageDirCreation::kDisable);
+      base::PersistentHistogramStorage::StorageDirManagement::kUseExisting);
 
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
@@ -1306,6 +1306,9 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
           switches::kProcessType);
 
   if (process_type == crash_reporter::switches::kCrashpadHandler) {
+    // Histogram storage is enabled at the very top of this wWinMain. Disable it
+    // when this process is decicated to crashpad as there is no directory in
+    // which to write them nor a browser to subsequently upload them.
     persistent_histogram_storage.Disable();
     return crash_reporter::RunAsCrashpadHandler(
         *base::CommandLine::ForCurrentProcess(), base::FilePath(),
@@ -1351,8 +1354,9 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
 
   const bool is_uninstall = cmd_line.HasSwitch(installer::switches::kUninstall);
 
-  // Disable histogram storage during uninstall since there's neither a
-  // directory in which to write them nor a browser to subsequently upload them.
+  // Histogram storage is enabled at the very top of this wWinMain. Disable it
+  // during uninstall since there's neither a directory in which to write them
+  // nor a browser to subsequently upload them.
   if (is_uninstall)
     persistent_histogram_storage.Disable();
 
