@@ -12,7 +12,7 @@
 
 #include "base/hash.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 // Wrapper around an address in the instrumented process. This wrapper should
 // be a zero-overhead abstraction around a 64-bit integer (so pass by value)
@@ -47,13 +47,13 @@ struct Address {
   int64_t operator-(Address a) const { return value - a.value; }
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 namespace std {
 
 template <>
-struct hash<profiling::Address> {
-  typedef profiling::Address argument_type;
+struct hash<heap_profiling::Address> {
+  typedef heap_profiling::Address argument_type;
   typedef uint32_t result_type;
   result_type operator()(argument_type a) const {
     return base::Hash(&a.value, sizeof(int64_t));

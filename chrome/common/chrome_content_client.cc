@@ -711,13 +711,13 @@ media::MediaDrmBridgeClient* ChromeContentClient::GetMediaDrmBridgeClient() {
 
 void ChromeContentClient::OnServiceManagerConnected(
     content::ServiceManagerConnection* connection) {
-  static base::LazyInstance<profiling::Client>::Leaky profiling_client =
+  static base::LazyInstance<heap_profiling::Client>::Leaky profiling_client =
       LAZY_INSTANCE_INITIALIZER;
 
   std::unique_ptr<service_manager::BinderRegistry> registry(
       new service_manager::BinderRegistry);
   registry->AddInterface(
-      base::BindRepeating(&profiling::Client::BindToInterface,
+      base::BindRepeating(&heap_profiling::Client::BindToInterface,
                           base::Unretained(&profiling_client.Get())));
   connection->AddConnectionFilter(
       std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));

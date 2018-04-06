@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 namespace {
 
@@ -269,4 +269,4 @@ TEST(StreamParser, StringMapping) {
   EXPECT_EQ(kDummyText, receiver.last_raw_string());
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

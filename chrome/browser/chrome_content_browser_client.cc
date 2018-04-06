@@ -3320,7 +3320,7 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PRINTING_SERVICE_NAME);
 #endif
 
-  (*services)[profiling::mojom::kServiceName] =
+  (*services)[heap_profiling::mojom::kServiceName] =
       base::ASCIIToUTF16("Profiling Service");
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

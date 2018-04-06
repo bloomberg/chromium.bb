@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/handle.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 class SenderPipe;
 
@@ -26,7 +26,7 @@ class Client : public mojom::ProfilingClient {
   void StartProfiling(mojom::ProfilingParamsPtr params) override;
   void FlushMemlogPipe(uint32_t barrier_id) override;
 
-  void BindToInterface(profiling::mojom::ProfilingClientRequest request);
+  void BindToInterface(mojom::ProfilingClientRequest request);
 
  private:
   // Ideally, this would be a mojo::Binding that would only keep alive one
@@ -42,6 +42,6 @@ class Client : public mojom::ProfilingClient {
   std::unique_ptr<SenderPipe> sender_pipe_;
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_CLIENT_H_

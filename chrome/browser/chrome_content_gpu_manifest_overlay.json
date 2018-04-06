@@ -10,7 +10,7 @@
           "arc::mojom::VideoEncodeAccelerator",
           "arc::mojom::VideoEncodeClient",
           "arc::mojom::VideoProtectedBufferAllocator",
-          "profiling::mojom::ProfilingClient"
+          "heap_profiling::mojom::ProfilingClient"
         ]
       }
     }

@@ -13,7 +13,7 @@
 #include "components/services/heap_profiling/public/cpp/stream.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 namespace {
 const int kTimeoutDurationMs = 10000;
@@ -74,4 +74,4 @@ void Client::FlushMemlogPipe(uint32_t barrier_id) {
   AllocatorShimFlushPipe(barrier_id);
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

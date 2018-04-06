@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "components/services/heap_profiling/address.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 // Holds a move-only stack backtrace and a precomputed hash. This backtrace
 // uses addresses in the instrumented process. This is in contrast to
@@ -60,13 +60,13 @@ class Backtrace {
   DISALLOW_COPY_AND_ASSIGN(Backtrace);
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 namespace std {
 
 template <>
-struct hash<profiling::Backtrace> {
-  using argument_type = profiling::Backtrace;
+struct hash<heap_profiling::Backtrace> {
+  using argument_type = heap_profiling::Backtrace;
   using result_type = size_t;
   result_type operator()(const argument_type& s) const {
     return s.fingerprint();

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "components/services/heap_profiling/backtrace.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 namespace {
 constexpr size_t kShardCount = 64;
@@ -132,4 +132,4 @@ void BacktraceStorage::ReleaseBacktracesLocked(
 BacktraceStorage::ContainerShard::ContainerShard() = default;
 BacktraceStorage::ContainerShard::~ContainerShard() = default;
 
-}  // namespace profiling
+}  // namespace heap_profiling

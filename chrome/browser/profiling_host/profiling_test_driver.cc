@@ -23,7 +23,7 @@
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/common/service_manager_connection.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 namespace {
 
@@ -649,11 +649,11 @@ bool ProfilingTestDriver::CheckOrStartProfiling() {
   if (ShouldProfileBrowser()) {
     if (running_on_ui_thread_) {
       run_loop.reset(new base::RunLoop);
-      profiling::SetOnInitAllocatorShimCallbackForTesting(
+      SetOnInitAllocatorShimCallbackForTesting(
           run_loop->QuitClosure(), base::ThreadTaskRunnerHandle::Get());
     } else {
       wait_for_profiling_to_start_ = true;
-      profiling::SetOnInitAllocatorShimCallbackForTesting(
+      SetOnInitAllocatorShimCallbackForTesting(
           base::Bind(&base::WaitableEvent::Signal,
                      base::Unretained(&wait_for_ui_thread_)),
           base::ThreadTaskRunnerHandle::Get());
@@ -736,7 +736,7 @@ void ProfilingTestDriver::CollectResults(bool synchronous) {
                                         base::Unretained(&wait_for_ui_thread_));
   }
 
-  profiling::ProfilingProcessHost::GetInstance()->RequestTraceWithHeapDump(
+  ProfilingProcessHost::GetInstance()->RequestTraceWithHeapDump(
       base::Bind(&ProfilingTestDriver::TraceFinished, base::Unretained(this),
                  std::move(finish_tracing_closure)),
       false /* strip_path_from_mapped_files */);
@@ -938,8 +938,7 @@ void ProfilingTestDriver::WaitForProfilingToStartForAllRenderersUIThread() {
           std::move(finished).Run();
         },
         &profiled_pids, run_loop.QuitClosure());
-    profiling::ProfilingProcessHost::GetInstance()->GetProfiledPids(
-        std::move(callback));
+    ProfilingProcessHost::GetInstance()->GetProfiledPids(std::move(callback));
     run_loop.Run();
 
     if (RenderersAreBeingProfiled(profiled_pids))
@@ -950,7 +949,7 @@ void ProfilingTestDriver::WaitForProfilingToStartForAllRenderersUIThread() {
 void ProfilingTestDriver::
     WaitForProfilingToStartForAllRenderersUIThreadAndSignal() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  profiling::ProfilingProcessHost::GetInstance()->GetProfiledPids(
+  ProfilingProcessHost::GetInstance()->GetProfiledPids(
       base::BindOnce(&ProfilingTestDriver::
                          WaitForProfilingToStartForAllRenderersUIThreadCallback,
                      base::Unretained(this)));
@@ -966,4 +965,4 @@ void ProfilingTestDriver::
   WaitForProfilingToStartForAllRenderersUIThreadAndSignal();
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

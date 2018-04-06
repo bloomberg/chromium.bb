@@ -21,7 +21,7 @@
         ],
         "ime:ime_driver": [],
         "profiling_client": [
-          "profiling::mojom::ProfilingClient"
+          "heap_profiling::mojom::ProfilingClient"
         ]
       },
       "requires": {

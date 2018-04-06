@@ -12,7 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 class SenderPipe {
  public:
@@ -66,6 +66,6 @@ class SenderPipe {
   DISALLOW_COPY_AND_ASSIGN(SenderPipe);
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_SENDER_PIPE_H_

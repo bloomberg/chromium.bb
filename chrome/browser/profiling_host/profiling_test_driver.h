@@ -17,7 +17,7 @@ namespace base {
 class Value;
 }  // namespace base
 
-namespace profiling {
+namespace heap_profiling {
 
 // This class runs tests for the profiling service, a cross-platform,
 // multi-process component. Chrome on Android does not support browser_tests. It
@@ -44,7 +44,7 @@ class ProfilingTestDriver {
     ProfilingProcessHost::Mode mode;
 
     // The stack profiling mode to test.
-    profiling::mojom::StackMode stack_mode;
+    mojom::StackMode stack_mode;
 
     // Whether the caller has already started profiling with the given mode.
     // When false, the test driver is responsible for starting profiling.
@@ -143,6 +143,6 @@ class ProfilingTestDriver {
   DISALLOW_COPY_AND_ASSIGN(ProfilingTestDriver);
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // CHROME_BROWSER_PROFILING_HOST_PROFILING_TEST_DRIVER_H_

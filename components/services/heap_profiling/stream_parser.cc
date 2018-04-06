@@ -12,7 +12,7 @@
 #include "components/services/heap_profiling/backtrace.h"
 #include "components/services/heap_profiling/public/cpp/stream.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 StreamParser::Block::Block(std::unique_ptr<char[]> d, size_t s)
     : data(std::move(d)), size(s) {}
@@ -240,4 +240,4 @@ void StreamParser::SetErrorState() {
   receiver_->OnComplete();
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

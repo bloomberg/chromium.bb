@@ -9,7 +9,7 @@
 #include "components/services/heap_profiling/public/cpp/stream.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 // Initializes the TLS slot globally. This will be called early in Chrome's
 // lifecycle to prevent re-entrancy from occurring while trying to set up the
@@ -61,6 +61,6 @@ void SetOnInitAllocatorShimCallbackForTesting(
     base::OnceClosure callback,
     scoped_refptr<base::TaskRunner> task_runner);
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_ALLOCATOR_SHIM_H_

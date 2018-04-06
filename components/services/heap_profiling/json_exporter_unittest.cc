@@ -17,7 +17,7 @@
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 namespace {
 
@@ -591,4 +591,4 @@ TEST(ProfilingJsonExporterTest, Context) {
   ASSERT_TRUE(found_no_context);
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

@@ -9,7 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/services/heap_profiling/backtrace_storage.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 AllocationTracker::AllocationTracker(CompleteCallback complete_cb,
                                      BacktraceStorage* backtrace_storage)
@@ -119,4 +119,4 @@ void AllocationTracker::SnapshotOnBarrier(
       std::make_pair(std::move(callback_runner), std::move(callback));
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

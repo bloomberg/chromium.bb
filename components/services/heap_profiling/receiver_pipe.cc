@@ -8,7 +8,7 @@
 #include "base/task_runner.h"
 #include "components/services/heap_profiling/stream_receiver.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 ReceiverPipeBase::ReceiverPipeBase(mojo::edk::ScopedPlatformHandle handle)
     : handle_(std::move(handle)) {}
@@ -35,4 +35,4 @@ void ReceiverPipeBase::OnStreamDataThunk(
   }
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

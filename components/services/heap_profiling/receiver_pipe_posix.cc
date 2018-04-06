@@ -15,7 +15,7 @@
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/platform_handle.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 ReceiverPipe::ReceiverPipe(mojo::edk::ScopedPlatformHandle handle)
     : ReceiverPipeBase(std::move(handle)),
@@ -71,4 +71,4 @@ void ReceiverPipe::OnFileCanWriteWithoutBlocking(int fd) {
   NOTREACHED();
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

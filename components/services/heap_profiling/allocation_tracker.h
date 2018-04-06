@@ -16,7 +16,7 @@
 #include "components/services/heap_profiling/backtrace_storage.h"
 #include "components/services/heap_profiling/receiver.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 // Tracks live allocations in one process. This is an analogue to memory-infra
 // allocation register and needs to be merged/deduped.
@@ -93,6 +93,6 @@ class AllocationTracker : public Receiver {
   DISALLOW_COPY_AND_ASSIGN(AllocationTracker);
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // COMPONENTS_SERVICES_HEAP_PROFILING_ALLOCATION_TRACKER_H_

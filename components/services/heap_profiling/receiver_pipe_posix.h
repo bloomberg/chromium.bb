@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "components/services/heap_profiling/receiver_pipe.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 class ReceiverPipe : public ReceiverPipeBase,
                      public base::MessageLoopForIO::Watcher {
@@ -36,6 +36,6 @@ class ReceiverPipe : public ReceiverPipeBase,
   DISALLOW_COPY_AND_ASSIGN(ReceiverPipe);
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // COMPONENTS_SERVICES_HEAP_PROFILING_RECEIVER_PIPE_POSIX_H_

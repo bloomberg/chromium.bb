@@ -11,7 +11,7 @@
 #include "base/hash.h"
 #include "components/services/heap_profiling/backtrace_storage.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 namespace {
 
@@ -45,4 +45,4 @@ bool Backtrace::operator!=(const Backtrace& other) const {
   return !operator==(other);
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

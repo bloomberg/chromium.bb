@@ -7,10 +7,10 @@
 
 #include <utility>
 
-namespace profiling {
+namespace heap_profiling {
 namespace {
 
-class DummyReceiver : public profiling::Receiver {
+class DummyReceiver : public Receiver {
   void OnHeader(const StreamHeader& header) override {}
   void OnAlloc(const AllocPacket& alloc_packet,
                std::vector<Address>&& stack,
@@ -23,13 +23,13 @@ class DummyReceiver : public profiling::Receiver {
 };
 
 }  // namespace
-}  // namespace profiling
+}  // namespace heap_profiling
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  profiling::DummyReceiver receiver;
-  scoped_refptr<profiling::StreamParser> parser(
-      new profiling::StreamParser(&receiver));
+  heap_profiling::DummyReceiver receiver;
+  scoped_refptr<heap_profiling::StreamParser> parser(
+      new heap_profiling::StreamParser(&receiver));
   std::unique_ptr<char[]> stream_data(new char[size]);
   memcpy(stream_data.get(), data, size);
   parser->OnStreamData(std::move(stream_data), size);

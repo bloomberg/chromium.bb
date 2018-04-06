@@ -30,7 +30,7 @@ class SequencedTaskRunner;
 
 }  // namespace base
 
-namespace profiling {
+namespace heap_profiling {
 
 using VmRegions =
     std::unordered_map<base::ProcessId,
@@ -143,6 +143,6 @@ class ConnectionManager {
   DISALLOW_COPY_AND_ASSIGN(ConnectionManager);
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // COMPONENTS_SERVICES_HEAP_PROFILING_CONNECTION_MANAGER_H_

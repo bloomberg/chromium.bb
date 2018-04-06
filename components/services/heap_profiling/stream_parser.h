@@ -12,7 +12,7 @@
 #include "components/services/heap_profiling/receiver.h"
 #include "components/services/heap_profiling/stream_receiver.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 // Parses a memory stream. Refcounted via StreamReceiver.
 class StreamParser : public StreamReceiver {
@@ -87,6 +87,6 @@ class StreamParser : public StreamReceiver {
   DISALLOW_COPY_AND_ASSIGN(StreamParser);
 };
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // COMPONENTS_SERVICES_HEAP_PROFILING_STREAM_PARSER_H_

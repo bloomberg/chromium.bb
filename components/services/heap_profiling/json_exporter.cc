@@ -15,7 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 namespace {
 
@@ -520,4 +520,4 @@ void ExportMemoryMapsAndV2StackTraceToJSON(ExportParams* params,
   out << "}\n";
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

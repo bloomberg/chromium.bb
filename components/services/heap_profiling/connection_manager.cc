@@ -24,7 +24,7 @@
 #include <io.h>
 #endif
 
-namespace profiling {
+namespace heap_profiling {
 
 namespace {
 const size_t kMinSizeThreshold = 16 * 1024;
@@ -213,10 +213,9 @@ void ConnectionManager::OnConnectionComplete(base::ProcessId pid) {
 void ConnectionManager::ReportMetrics() {
   base::AutoLock lock(connections_lock_);
   for (auto& pair : connections_) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "OutOfProcessHeapProfiling.ProfiledProcess.Type",
-        pair.second->process_type,
-        static_cast<int>(profiling::mojom::ProcessType::LAST) + 1);
+    UMA_HISTOGRAM_ENUMERATION("OutOfProcessHeapProfiling.ProfiledProcess.Type",
+                              pair.second->process_type,
+                              static_cast<int>(mojom::ProcessType::LAST) + 1);
   }
 }
 
@@ -370,4 +369,4 @@ void ConnectionManager::DoDumpOneProcessForTracing(
                      std::move(finished_callback)));
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

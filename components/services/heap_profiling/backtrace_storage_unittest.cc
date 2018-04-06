@@ -8,7 +8,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace profiling {
+namespace heap_profiling {
 
 TEST(BacktraceStorage, KeyStability) {
   BacktraceStorage storage;
@@ -31,4 +31,4 @@ TEST(BacktraceStorage, KeyStability) {
   }
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling

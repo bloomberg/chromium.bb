@@ -686,7 +686,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   // order to allocate storage for a higher slot number. Since malloc is hooked,
   // this causes re-entrancy into the allocator shim, while the TLS object is
   // partially-initialized, which the TLS object is supposed to protect again.
-  profiling::InitTLSSlot();
+  heap_profiling::InitTLSSlot();
 
   return false;
 }

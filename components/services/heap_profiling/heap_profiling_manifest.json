@@ -5,7 +5,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "profiling": [ "profiling::mojom::ProfilingService" ],
+        "profiling": [ "heap_profiling::mojom::ProfilingService" ],
         "heap_profiler": [ "memory_instrumentation::mojom::HeapProfiler" ]
       },
       "requires": {

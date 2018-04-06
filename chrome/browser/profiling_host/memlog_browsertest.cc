@@ -28,7 +28,7 @@
 // Some builds don't support memlog in which case the tests won't function.
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
 
-namespace profiling {
+namespace heap_profiling {
 
 struct TestParam {
   ProfilingProcessHost::Mode mode;
@@ -154,6 +154,6 @@ INSTANTIATE_TEST_CASE_P(Memlog,
                         MemlogBrowserTest,
                         ::testing::ValuesIn(GetParams()));
 
-}  // namespace profiling
+}  // namespace heap_profiling
 
 #endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)

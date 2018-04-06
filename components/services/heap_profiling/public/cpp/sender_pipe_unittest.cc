@@ -14,7 +14,7 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #endif
 
-namespace profiling {
+namespace heap_profiling {
 namespace {
 
 using Result = SenderPipe::Result;
@@ -95,4 +95,4 @@ TEST_F(SenderPipeTest, NoTimeout) {
 }
 
 }  // namespace
-}  // namespace profiling
+}  // namespace heap_profiling

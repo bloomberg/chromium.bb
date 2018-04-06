@@ -369,7 +369,7 @@ ChromeContentRendererClient::ChromeContentRendererClient()
   printing::SetAgent(GetUserAgent());
 #endif
 
-  profiling::SetGCHeapAllocationHookFunctions(
+  heap_profiling::SetGCHeapAllocationHookFunctions(
       &blink::WebHeap::SetAllocationHook, &blink::WebHeap::SetFreeHook);
 }
 

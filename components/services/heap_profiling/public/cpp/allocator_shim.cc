@@ -38,7 +38,7 @@ using base::trace_event::AllocationContext;
 using base::trace_event::AllocationContextTracker;
 using CaptureMode = base::trace_event::AllocationContextTracker::CaptureMode;
 
-namespace profiling {
+namespace heap_profiling {
 
 namespace {
 
@@ -882,4 +882,4 @@ void SetOnInitAllocatorShimCallbackForTesting(
   *g_on_init_allocator_shim_task_runner_.Pointer() = task_runner;
 }
 
-}  // namespace profiling
+}  // namespace heap_profiling
