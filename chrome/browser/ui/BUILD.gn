@@ -2871,6 +2871,8 @@ split_static_library("ui") {
       "views/harmony/harmony_layout_provider.h",
       "views/harmony/harmony_typography_provider.cc",
       "views/harmony/harmony_typography_provider.h",
+      "views/harmony/material_refresh_layout_provider.cc",
+      "views/harmony/material_refresh_layout_provider.h",
       "views/harmony/textfield_layout.cc",
       "views/harmony/textfield_layout.h",
       "views/hover_button.cc",
