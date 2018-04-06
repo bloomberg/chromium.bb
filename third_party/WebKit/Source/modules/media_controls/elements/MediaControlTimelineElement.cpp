@@ -77,7 +77,7 @@ MediaControlTimelineElement::MediaControlTimelineElement(
     auto* style = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
     style->setTextContent(
         MediaControlsResourceLoader::GetShadowTimelineStyleSheet());
-    track.AppendChild(style);
+    track.ParserAppendChild(style);
   }
 }
 

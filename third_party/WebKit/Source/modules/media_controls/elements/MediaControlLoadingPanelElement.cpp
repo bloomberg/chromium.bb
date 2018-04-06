@@ -63,7 +63,7 @@ void MediaControlLoadingPanelElement::PopulateShadowDOM() {
   auto* style = HTMLStyleElement::Create(GetDocument(), CreateElementFlags());
   style->setTextContent(
       MediaControlsResourceLoader::GetShadowLoadingStyleSheet());
-  shadow_root->AppendChild(style);
+  shadow_root->ParserAppendChild(style);
 
   // The spinner frame is centers the spinner in the middle of the element and
   // cuts off any overflowing content. It also contains a SVG mask which will

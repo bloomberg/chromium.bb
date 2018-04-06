@@ -120,11 +120,11 @@ Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
   // Modern media controls should have the checkbox after the text instead of
   // the other way around.
   if (!MediaControlsImpl::IsModern())
-    track_item->AppendChild(track_item_input);
+    track_item->ParserAppendChild(track_item_input);
   String track_label = GetMediaControls().GetTextTrackLabel(track);
-  track_item->AppendChild(Text::Create(GetDocument(), track_label));
+  track_item->ParserAppendChild(Text::Create(GetDocument(), track_label));
   if (MediaControlsImpl::IsModern())
-    track_item->AppendChild(track_item_input);
+    track_item->ParserAppendChild(track_item_input);
 
   // Add a track kind marker icon if there are multiple tracks with the same
   // label or if the track has no label.
@@ -138,7 +138,7 @@ Element* MediaControlTextTrackListElement::CreateTextTrackListItem(
       track_kind_marker->SetShadowPseudoId(AtomicString(
           "-internal-media-controls-text-track-list-kind-subtitles"));
     }
-    track_item->AppendChild(track_kind_marker);
+    track_item->ParserAppendChild(track_kind_marker);
   }
   return track_item;
 }
@@ -147,7 +147,7 @@ Element* MediaControlTextTrackListElement::CreateTextTrackHeaderItem() {
   HTMLLabelElement* header_item = HTMLLabelElement::Create(GetDocument());
   header_item->SetShadowPseudoId(
       "-internal-media-controls-text-track-list-header");
-  header_item->AppendChild(
+  header_item->ParserAppendChild(
       Text::Create(GetDocument(),
                    GetLocale().QueryString(
                        WebLocalizedString::kOverflowMenuCaptionsSubmenuTitle)));
@@ -164,18 +164,18 @@ void MediaControlTextTrackListElement::RefreshTextTrackListMenu() {
   RemoveChildren(kOmitSubtreeModifiedEvent);
 
   if (MediaControlsImpl::IsModern())
-    AppendChild(CreateTextTrackHeaderItem());
+    ParserAppendChild(CreateTextTrackHeaderItem());
 
   // Construct a menu for subtitles and captions.  Pass in a nullptr to
   // createTextTrackListItem to create the "Off" track item.
-  AppendChild(CreateTextTrackListItem(nullptr));
+  ParserAppendChild(CreateTextTrackListItem(nullptr));
 
   TextTrackList* track_list = MediaElement().textTracks();
   for (unsigned i = 0; i < track_list->length(); i++) {
     TextTrack* track = track_list->AnonymousIndexedGetter(i);
     if (!track->CanBeRendered())
       continue;
-    AppendChild(CreateTextTrackListItem(track));
+    ParserAppendChild(CreateTextTrackListItem(track));
   }
 }
 

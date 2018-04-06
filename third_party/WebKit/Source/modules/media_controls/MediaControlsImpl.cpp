@@ -155,10 +155,10 @@ bool ShouldShowFullscreenButton(const HTMLMediaElement& media_element) {
   return true;
 }
 
-void MaybeAppendChild(Element* parent, Element* child) {
+void MaybeParserAppendChild(Element* parent, Element* child) {
   DCHECK(parent);
   if (child)
-    parent->AppendChild(child);
+    parent->ParserAppendChild(child);
 }
 
 bool ShouldShowPictureInPictureButton(HTMLMediaElement& media_element) {
@@ -410,7 +410,7 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 
   MediaControlsResourceLoader::InjectMediaControlsUAStyleSheet();
 
-  shadow_root.AppendChild(controls);
+  shadow_root.ParserAppendChild(controls);
   return controls;
 }
 
@@ -487,7 +487,7 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 void MediaControlsImpl::InitializeControls() {
   if (IsModern() && MediaElement().IsHTMLVideoElement()) {
     loading_panel_ = new MediaControlLoadingPanelElement(*this);
-    AppendChild(loading_panel_);
+    ParserAppendChild(loading_panel_);
   }
 
   overlay_enclosure_ = new MediaControlOverlayEnclosureElement(*this);
@@ -497,13 +497,13 @@ void MediaControlsImpl::InitializeControls() {
     overlay_play_button_ = new MediaControlOverlayPlayButtonElement(*this);
 
     if (!IsModern())
-      overlay_enclosure_->AppendChild(overlay_play_button_);
+      overlay_enclosure_->ParserAppendChild(overlay_play_button_);
   }
 
   overlay_cast_button_ = new MediaControlCastButtonElement(*this, true);
-  overlay_enclosure_->AppendChild(overlay_cast_button_);
+  overlay_enclosure_->ParserAppendChild(overlay_cast_button_);
 
-  AppendChild(overlay_enclosure_);
+  ParserAppendChild(overlay_enclosure_);
 
   // Create an enclosing element for the panel so we can visually offset the
   // controls correctly.
@@ -549,36 +549,35 @@ void MediaControlsImpl::InitializeControls() {
   overflow_menu_ = new MediaControlOverflowMenuButtonElement(*this);
 
   PopulatePanel();
-  enclosure_->AppendChild(panel_);
+  enclosure_->ParserAppendChild(panel_);
 
-  AppendChild(enclosure_);
+  ParserAppendChild(enclosure_);
 
   text_track_list_ = new MediaControlTextTrackListElement(*this);
-  AppendChild(text_track_list_);
-
+  ParserAppendChild(text_track_list_);
 
   overflow_list_ = new MediaControlOverflowMenuListElement(*this);
-  AppendChild(overflow_list_);
+  ParserAppendChild(overflow_list_);
 
   // The order in which we append elements to the overflow list is significant
   // because it determines how the elements show up in the overflow menu
   // relative to each other.  The first item appended appears at the top of the
   // overflow menu.
-  overflow_list_->AppendChild(play_button_->CreateOverflowElement(
+  overflow_list_->ParserAppendChild(play_button_->CreateOverflowElement(
       new MediaControlPlayButtonElement(*this)));
-  overflow_list_->AppendChild(fullscreen_button_->CreateOverflowElement(
+  overflow_list_->ParserAppendChild(fullscreen_button_->CreateOverflowElement(
       new MediaControlFullscreenButtonElement(*this)));
-  overflow_list_->AppendChild(download_button_->CreateOverflowElement(
+  overflow_list_->ParserAppendChild(download_button_->CreateOverflowElement(
       new MediaControlDownloadButtonElement(*this)));
-  overflow_list_->AppendChild(mute_button_->CreateOverflowElement(
+  overflow_list_->ParserAppendChild(mute_button_->CreateOverflowElement(
       new MediaControlMuteButtonElement(*this)));
-  overflow_list_->AppendChild(cast_button_->CreateOverflowElement(
+  overflow_list_->ParserAppendChild(cast_button_->CreateOverflowElement(
       new MediaControlCastButtonElement(*this, false)));
-  overflow_list_->AppendChild(
+  overflow_list_->ParserAppendChild(
       toggle_closed_captions_button_->CreateOverflowElement(
           new MediaControlToggleClosedCaptionsButtonElement(*this)));
   if (RuntimeEnabledFeatures::PictureInPictureEnabled()) {
-    overflow_list_->AppendChild(
+    overflow_list_->ParserAppendChild(
         picture_in_picture_button_->CreateOverflowElement(
             new MediaControlPictureInPictureButtonElement(*this)));
   }
@@ -596,9 +595,9 @@ void MediaControlsImpl::PopulatePanel() {
   Element* button_panel = panel_;
   if (IsModern() && MediaElement().IsHTMLVideoElement() &&
       !is_acting_as_audio_controls_) {
-    MaybeAppendChild(panel_, scrubbing_message_);
-    panel_->AppendChild(overlay_play_button_);
-    panel_->AppendChild(media_button_panel_);
+    MaybeParserAppendChild(panel_, scrubbing_message_);
+    panel_->ParserAppendChild(overlay_play_button_);
+    panel_->ParserAppendChild(media_button_panel_);
     button_panel = media_button_panel_;
   }
 
@@ -606,35 +605,35 @@ void MediaControlsImpl::PopulatePanel() {
   // only or are using the legacy controls.
   if (!IsModern() || is_acting_as_audio_controls_ ||
       MediaElement().IsHTMLAudioElement()) {
-    button_panel->AppendChild(play_button_);
+    button_panel->ParserAppendChild(play_button_);
   }
 
-  button_panel->AppendChild(current_time_display_);
-  button_panel->AppendChild(duration_display_);
+  button_panel->ParserAppendChild(current_time_display_);
+  button_panel->ParserAppendChild(duration_display_);
 
   if (IsModern() && MediaElement().IsHTMLVideoElement()) {
     MediaControlElementsHelper::CreateDiv(
         "-internal-media-controls-button-spacer", button_panel);
   }
 
-  panel_->AppendChild(timeline_);
+  panel_->ParserAppendChild(timeline_);
 
-  button_panel->AppendChild(mute_button_);
+  button_panel->ParserAppendChild(mute_button_);
 
-  MaybeAppendChild(button_panel, volume_slider_);
-  MaybeAppendChild(button_panel, picture_in_picture_button_);
+  MaybeParserAppendChild(button_panel, volume_slider_);
+  MaybeParserAppendChild(button_panel, picture_in_picture_button_);
 
-  button_panel->AppendChild(fullscreen_button_);
+  button_panel->ParserAppendChild(fullscreen_button_);
 
   // The download, cast and captions buttons should not be present on the modern
   // controls button panel.
   if (!IsModern()) {
-    button_panel->AppendChild(download_button_);
-    button_panel->AppendChild(cast_button_);
-    button_panel->AppendChild(toggle_closed_captions_button_);
+    button_panel->ParserAppendChild(download_button_);
+    button_panel->ParserAppendChild(cast_button_);
+    button_panel->ParserAppendChild(toggle_closed_captions_button_);
   }
 
-  button_panel->AppendChild(overflow_menu_);
+  button_panel->ParserAppendChild(overflow_menu_);
 }
 
 Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(

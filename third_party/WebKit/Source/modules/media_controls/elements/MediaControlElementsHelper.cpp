@@ -82,7 +82,7 @@ HTMLDivElement* MediaControlElementsHelper::CreateDiv(const AtomicString& id,
   DCHECK(parent);
   HTMLDivElement* element = HTMLDivElement::Create(parent->GetDocument());
   element->SetShadowPseudoId(id);
-  parent->AppendChild(element);
+  parent->ParserAppendChild(element);
   return element;
 }
 
@@ -112,7 +112,7 @@ HTMLDivElement* MediaControlElementsHelper::CreateDivWithId(
   DCHECK(parent);
   HTMLDivElement* element = HTMLDivElement::Create(parent->GetDocument());
   element->setAttribute("id", id);
-  parent->AppendChild(element);
+  parent->ParserAppendChild(element);
   return element;
 }
 
