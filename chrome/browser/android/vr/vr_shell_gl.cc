@@ -1223,7 +1223,6 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
   TRACE_EVENT1("gpu", "VrShellGl::DrawIntoAcquiredFrame", "frame", frame_index);
 
   bool is_webvr_frame = frame_index >= 0;
-  DCHECK_EQ(is_webvr_frame, ShouldDrawWebVr());
   DCHECK(!is_webvr_frame || webvr_frame_processing_);
 
   last_used_head_pose_ = render_info_primary_.head_pose;
@@ -1467,10 +1466,6 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
                                    const gfx::Transform& head_pose) {
   TRACE_EVENT1("gpu", "VrShellGl::DrawFrameSubmitNow", "frame", frame_index);
 
-  bool is_webvr_frame = frame_index >= 0;
-  DCHECK_EQ(is_webvr_frame, ShouldDrawWebVr());
-  DCHECK(!is_webvr_frame || webvr_frame_processing_);
-
   gvr::Mat4f mat;
   TransformToGvrMat(head_pose, &mat);
   {
@@ -1489,10 +1484,15 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
     surface_->SwapBuffers(base::DoNothing());
   }
 
-  if (is_webvr_frame) {
+  // At this point, ShouldDrawWebVr and webvr_frame_processing_ may have become
+  // false for a WebVR frame. Ignore the ShouldDrawWebVr status to ensure we
+  // send render notifications while paused for exclusive UI mode. Skip the
+  // steps if we lost the processing state, that means presentation has ended.
+  bool is_webvr_frame = frame_index >= 0;
+  if (is_webvr_frame && webvr_frame_processing_) {
     // Report rendering completion to the Renderer so that it's permitted to
-    // submit a fresh frame. We could do this earlier, as soon as the frame got
-    // pulled off the transfer surface, but that results in overstuffed
+    // submit a fresh frame. We could do this earlier, as soon as the frame
+    // got pulled off the transfer surface, but that results in overstuffed
     // buffers.
     WebVrSendRenderNotification(true);
 
