@@ -27,7 +27,6 @@
 #include "base/values.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/ntp/android_content_suggestions_notifier.h"
-#include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/ntp_snippets/dependent_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
@@ -176,14 +175,10 @@ ntp_snippets::BreakingNewsListener* GetBreakingNewsListener(
 
 SnippetsInternalsMessageHandler::SnippetsInternalsMessageHandler(
     ntp_snippets::ContentSuggestionsService* content_suggestions_service,
-    ntp_snippets::ContextualContentSuggestionsService*
-        contextual_content_suggestions_service,
     PrefService* pref_service)
     : content_suggestions_service_observer_(this),
       dom_loaded_(false),
       content_suggestions_service_(content_suggestions_service),
-      contextual_content_suggestions_service_(
-          contextual_content_suggestions_service),
       remote_suggestions_provider_(
           content_suggestions_service_
               ->remote_suggestions_provider_for_debugging()),
@@ -221,12 +216,6 @@ void SnippetsInternalsMessageHandler::RegisterMessages() {
       base::BindRepeating(
           &SnippetsInternalsMessageHandler::
               HandleFetchRemoteSuggestionsInTheBackgroundIn2Seconds,
-          base::Unretained(this)));
-
-  web_ui()->RegisterMessageCallback(
-      "fetchContextualSuggestions",
-      base::BindRepeating(
-          &SnippetsInternalsMessageHandler::HandleFetchContextualSuggestions,
           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -409,18 +398,6 @@ void SnippetsInternalsMessageHandler::
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SnippetsInternalsMessageHandler::HandleFetchContextualSuggestions(
-    const base::ListValue* args) {
-  DCHECK_EQ(1u, args->GetSize());
-  std::string url_str;
-  args->GetString(0, &url_str);
-  contextual_content_suggestions_service_->FetchContextualSuggestions(
-      GURL(url_str),
-      base::BindOnce(
-          &SnippetsInternalsMessageHandler::OnContextualSuggestionsFetched,
-          weak_ptr_factory_.GetWeakPtr()));
-}
-
 void SnippetsInternalsMessageHandler::HandleResetNotificationsState(
     const base::ListValue* args) {
   pref_service_->SetInteger(
@@ -430,23 +407,6 @@ void SnippetsInternalsMessageHandler::HandleResetNotificationsState(
   pref_service_->SetInteger(prefs::kContentSuggestionsNotificationsSentDay, 0);
   AndroidContentSuggestionsNotifier().HideAllNotifications(
       ContentSuggestionsNotificationAction::HIDE_FRONTMOST);
-}
-
-void SnippetsInternalsMessageHandler::OnContextualSuggestionsFetched(
-    ntp_snippets::Status status,
-    const GURL& url,
-    std::vector<ntp_snippets::ContentSuggestion> suggestions) {
-  // Ids start in a range distinct from those created by SendContentSuggestions.
-  int id = 10000;
-  auto suggestions_list = std::make_unique<base::ListValue>();
-  for (const ContentSuggestion& suggestion : suggestions) {
-    suggestions_list->Append(PrepareSuggestion(suggestion, id++));
-  }
-  base::DictionaryValue result;
-  result.Set("list", std::move(suggestions_list));
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "chrome.SnippetsInternals.receiveContextualSuggestions", result,
-      base::Value(static_cast<int>(status.code)));
 }
 
 void SnippetsInternalsMessageHandler::HandlePushDummySuggestionIn10Seconds(

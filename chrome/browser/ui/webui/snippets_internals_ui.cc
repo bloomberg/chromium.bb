@@ -8,7 +8,6 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
-#include "chrome/browser/ntp_snippets/contextual_content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/snippets_internals_message_handler.h"
 #include "chrome/common/url_constants.h"
@@ -26,13 +25,6 @@ content::WebUIDataSource* CreateSnippetsInternalsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISnippetsInternalsHost);
 
-#if defined(OS_ANDROID)
-  source->AddBoolean("contextualSuggestionsEnabled",
-                     base::FeatureList::IsEnabled(
-                         chrome::android::kContextualSuggestionsBottomSheet));
-#else
-  source->AddBoolean("contextualSuggestionsEnabled", false);
-#endif
   source->SetJsonPath("strings.js");
   source->AddResourcePath("snippets_internals.js", IDR_SNIPPETS_INTERNALS_JS);
   source->AddResourcePath("snippets_internals.css", IDR_SNIPPETS_INTERNALS_CSS);
@@ -50,8 +42,6 @@ SnippetsInternalsUI::SnippetsInternalsUI(content::WebUI* web_ui)
 
   web_ui->AddMessageHandler(std::make_unique<SnippetsInternalsMessageHandler>(
       ContentSuggestionsServiceFactory::GetInstance()->GetForProfile(profile),
-      ContextualContentSuggestionsServiceFactory::GetInstance()->GetForProfile(
-          profile),
       profile->GetPrefs()));
 }
 
