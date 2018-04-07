@@ -111,12 +111,20 @@ Polymer({
   /**
    * @param {string} label
    * @param {string} name
+   * @param {string} syncErrorLabel
+   * @param {string} authErrorLabel
    * @return {string}
    * @private
    */
-  getNameDisplay_: function(label, name, errorLabel) {
-    if (this.syncStatus.hasError === true)
-      return errorLabel;
+  getNameDisplay_: function(label, name, syncErrorLabel, authErrorLabel) {
+    if (this.syncStatus.hasError) {
+      // Most of the time re-authenticate states are caused by intentional user
+      // action, so they will be displayed differently as other errors.
+      return this.syncStatus.statusAction ==
+              settings.StatusAction.REAUTHENTICATE ?
+          authErrorLabel :
+          syncErrorLabel;
+    }
 
     return this.syncStatus.signedIn ?
         loadTimeData.substituteString(label, name) :
@@ -134,11 +142,19 @@ Polymer({
   },
 
   /**
+   * Returned value must match one of iron-icon's settings:(*) icon name.
    * @return {string}
    * @private
    */
   getSyncIcon_: function() {
-    return this.syncStatus.hasError ? 'settings:sync-problem' : 'settings:sync';
+    if (this.syncStatus.hasError) {
+      return this.syncStatus.statusAction ==
+              settings.StatusAction.REAUTHENTICATE ?
+          'sync-disabled' :
+          'sync-problem';
+    }
+
+    return 'sync';
   },
 
   /**

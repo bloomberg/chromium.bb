@@ -67,11 +67,16 @@
        --iron-icon-fill-color: var(--settings-error-color);
       }
 
+      #sync-status[actionable].auth-error
+          iron-icon[icon='settings:sync-disabled'] {
+       --iron-icon-fill-color: var(--google-blue-500);
+      }
+
       #sync-status:not([actionable]) .subpage-arrow {
         display: none;
       }
 
-      .settings-box[actionable] .sync-error {
+      .settings-box[actionable].sync-error #syncSecondary {
         color: var(--settings-error-color);
       }
 
@@ -212,17 +217,17 @@
 
         <template is="dom-if" if="[[isAdvancedSyncSettingsVisible_(
             syncStatus, unifiedConsentEnabled_)]]">
-          <div class="settings-box two-line" on-click="onSyncTap_"
-              id="sync-status" actionable$="[[isSyncStatusActionable_(
-              syncStatus)]]">
+          <div class$="settings-box two-line
+                  [[getSyncStatusClass_(syncStatus)]]"
+              on-click="onSyncTap_" id="sync-status"
+              actionable$="[[isSyncStatusActionable_(syncStatus)]]">
             <div class="icon-container">
               <iron-icon id="sync-icon" icon$="[[getSyncIcon_(syncStatus)]]">
               </iron-icon>
             </div>
             <div class="middle">
               $i18n{sync}
-              <div class$="secondary [[getSyncStatusTextClass_(syncStatus)]]"
-                  id="syncSecondary">
+              <div class="secondary" id="syncSecondary">
                 [[syncStatus.statusText]]
               </div>
             </div>
