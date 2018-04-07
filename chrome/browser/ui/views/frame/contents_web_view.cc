@@ -45,27 +45,43 @@ void ContentsWebView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   WebView::ViewHierarchyChanged(details);
   if (details.is_add)
-    OnThemeChanged();
+    UpdateBackgroundColor();
 }
 
 void ContentsWebView::OnThemeChanged() {
+  UpdateBackgroundColor();
+}
+
+void ContentsWebView::OnLetterboxingChanged() {
+  UpdateBackgroundColor();
+}
+
+void ContentsWebView::UpdateBackgroundColor() {
   const ui::ThemeProvider* const theme = GetThemeProvider();
   if (!theme)
     return;
 
-  // Set the background color to a dark tint of the new tab page's background
-  // color.  This is the color filled within the WebView's bounds when its child
-  // view is sized specially for fullscreen tab capture.  See WebView header
-  // file comments for more details.
-  const int kBackgroundBrightness = 0x33;  // 20%
-  // Make sure the background is opaque.
   const SkColor ntp_background = color_utils::GetResultingPaintColor(
       theme->GetColor(ThemeProperties::COLOR_NTP_BACKGROUND), SK_ColorWHITE);
-  SetBackground(views::CreateSolidBackground(SkColorSetARGB(
-      SkColorGetA(ntp_background),
-      SkColorGetR(ntp_background) * kBackgroundBrightness / 0xFF,
-      SkColorGetG(ntp_background) * kBackgroundBrightness / 0xFF,
-      SkColorGetB(ntp_background) * kBackgroundBrightness / 0xFF)));
+  if (is_letterboxing()) {
+    // Set the background color to a dark tint of the new tab page's background
+    // color.  This is the color filled within the WebView's bounds when its
+    // child view is sized specially for fullscreen tab capture.  See WebView
+    // header file comments for more details.
+    const int kBackgroundBrightness = 0x33;  // 20%
+    // Make sure the background is opaque.
+    const SkColor dimmed_ntp_background = SkColorSetARGB(
+        SkColorGetA(ntp_background),
+        SkColorGetR(ntp_background) * kBackgroundBrightness / 0xFF,
+        SkColorGetG(ntp_background) * kBackgroundBrightness / 0xFF,
+        SkColorGetB(ntp_background) * kBackgroundBrightness / 0xFF);
+    SetBackground(views::CreateSolidBackground(dimmed_ntp_background));
+  } else {
+    SetBackground(views::CreateSolidBackground(ntp_background));
+  }
+  // Changing a view's background does not necessarily schedule the view to be
+  // redrawn.
+  SchedulePaint();
 
   if (web_contents()) {
     content::RenderWidgetHostView* rwhv =
@@ -126,7 +142,7 @@ void ContentsWebView::DestroyClonedLayer() {
 }
 
 void ContentsWebView::RenderViewReady() {
-  // Apply the theme color to be the default background on startup.
-  OnThemeChanged();
+  // Set the background color to be the theme's ntp background on startup.
+  UpdateBackgroundColor();
   WebView::RenderViewReady();
 }

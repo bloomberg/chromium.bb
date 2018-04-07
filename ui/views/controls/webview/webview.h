@@ -103,6 +103,10 @@ class WEBVIEW_EXPORT WebView : public View,
 
   // Called when the web contents is successfully attached.
   virtual void OnWebContentsAttached() {}
+  // Called when letterboxing (scaling the native view to preserve aspect
+  // ratio) is enabled or disabled.
+  virtual void OnLetterboxingChanged() {}
+  bool is_letterboxing() const { return is_letterboxing_; }
 
   // Overridden from View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
@@ -162,6 +166,9 @@ class WEBVIEW_EXPORT WebView : public View,
   // view instead of the normal WebContentsView render view. Note: This will be
   // false in the case of non-Flash fullscreen.
   bool is_embedding_fullscreen_widget_;
+  // Set to true when |holder_| is letterboxed (scaled to be smaller than this
+  // view, to preserve its aspect ratio).
+  bool is_letterboxing_ = false;
   content::BrowserContext* browser_context_;
   bool allow_accelerators_;
   View* crashed_overlay_view_ = nullptr;

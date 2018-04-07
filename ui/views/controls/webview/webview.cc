@@ -147,6 +147,10 @@ void WebView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     // Reset the native view size.
     holder_->SetNativeViewSize(gfx::Size());
     holder_->SetBoundsRect(holder_bounds);
+    if (is_letterboxing_) {
+      is_letterboxing_ = false;
+      OnLetterboxingChanged();
+    }
     return;
   }
 
@@ -165,6 +169,10 @@ void WebView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
         static_cast<int>(x / capture_size.height()), holder_bounds.height()));
   }
 
+  if (!is_letterboxing_) {
+    is_letterboxing_ = true;
+    OnLetterboxingChanged();
+  }
   holder_->SetNativeViewSize(capture_size);
   holder_->SetBoundsRect(holder_bounds);
 }
