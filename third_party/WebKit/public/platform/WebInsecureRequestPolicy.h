@@ -5,6 +5,8 @@
 #ifndef WebInsecureRequestPolicy_h
 #define WebInsecureRequestPolicy_h
 
+#include <cstdio>
+
 namespace blink {
 
 // TODO(mkwst): In an ideal world, the combined state would be the same as
