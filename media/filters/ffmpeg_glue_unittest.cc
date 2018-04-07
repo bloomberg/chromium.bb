@@ -31,7 +31,6 @@ namespace media {
 class MockProtocol : public FFmpegURLProtocol {
  public:
   MockProtocol() = default;
-  virtual ~MockProtocol() = default;
 
   MOCK_METHOD2(Read, int(int size, uint8_t* data));
   MOCK_METHOD1(GetPosition, bool(int64_t* position_out));
