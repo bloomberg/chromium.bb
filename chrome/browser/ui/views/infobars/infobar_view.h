@@ -30,6 +30,9 @@ class InfoBarView : public infobars::InfoBar,
  public:
   explicit InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate);
 
+  // Requests that the infobar recompute its target height.
+  void RecalculateHeight();
+
  protected:
   using Labels = std::vector<views::Label*>;
 
