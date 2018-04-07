@@ -14,6 +14,9 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchObserver;
+import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -25,6 +28,8 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeRea
 import org.chromium.ui.UiUtils;
 
 import java.util.PriorityQueue;
+
+import javax.annotation.Nullable;
 
 /**
  * This class is responsible for managing the content shown by the {@link BottomSheet}. Features
@@ -54,16 +59,20 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
     /** Track whether the sheet was shown for the current tab. */
     private boolean mWasShownForCurrentTab;
 
+    /** Whether composited UI is currently showing (such as Contextual Search). */
+    private boolean mIsCompositedUIShowing;
+
     /**
      * Build a new controller of the bottom sheet.
      * @param tabModelSelector A tab model selector to track events on tabs open in the browser.
      * @param layoutManager A layout manager for detecting changes in the active layout.
      * @param fadingBackgroundView The scrim that shows when the bottom sheet is opened.
+     * @param contextualSearchManager The manager for Contextual Search to attach listeners to.
      * @param bottomSheet The bottom sheet that this class will be controlling.
      */
     public BottomSheetController(final Activity activity, final TabModelSelector tabModelSelector,
             final LayoutManager layoutManager, final FadingBackgroundView fadingBackgroundView,
-            BottomSheet bottomSheet) {
+            ContextualSearchManager contextualSearchManager, BottomSheet bottomSheet) {
         mBottomSheet = bottomSheet;
         mLayoutManager = layoutManager;
         mSnackbarManager = new SnackbarManager(
@@ -151,6 +160,34 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             }
         });
 
+        // TODO(mdjones): This should be changed to a generic OverlayPanel observer.
+        if (contextualSearchManager != null) {
+            contextualSearchManager.addObserver(new ContextualSearchObserver() {
+                /** Whether the bottom sheet was showing prior to contextual search appearing. */
+                private boolean mWasSheetShowing;
+
+                @Override
+                public void onShowContextualSearch(
+                        @Nullable GSAContextDisplaySelection selectionContext) {
+                    mWasSheetShowing = mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_PEEK;
+                    mIsCompositedUIShowing = true;
+                    mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HIDDEN, false,
+                            BottomSheet.StateChangeReason.COMPOSITED_UI);
+                }
+
+                @Override
+                public void onHideContextualSearch() {
+                    mIsCompositedUIShowing = false;
+                    if (mBottomSheet.getCurrentSheetContent() != null && mWasSheetShowing) {
+                        mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+                    } else {
+                        showNextContent();
+                    }
+                    mWasSheetShowing = false;
+                }
+            });
+        }
+
         // Initialize the queue with a comparator that checks content priority.
         mContentQueue = new PriorityQueue<>(INITIAL_QUEUE_CAPACITY,
                 (content1, content2) -> content2.getPriority() - content1.getPriority());
@@ -181,7 +218,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
     public boolean requestShowContent(BottomSheetContent content, boolean animate) {
         // If pre-load failed, do nothing. The content will automatically be queued.
         if (!requestContentPreload(content)) return false;
-        if (!mBottomSheet.isSheetOpen()) {
+        if (!mBottomSheet.isSheetOpen() && !isOtherUIObscuring()) {
             mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, animate);
         }
         mWasShownForCurrentTab = true;
@@ -301,6 +338,13 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
      */
     protected boolean isValidLayoutShowing() {
         return mLayoutManager.getActiveLayout() instanceof StaticLayout;
+    }
+
+    /**
+     * @return Whether some other UI is preventing the sheet from showing.
+     */
+    protected boolean isOtherUIObscuring() {
+        return mIsCompositedUIShowing;
     }
 
     /**
