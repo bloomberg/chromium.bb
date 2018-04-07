@@ -33,6 +33,7 @@ mojom("mojom_platform") {
     "service_worker/service_worker_stream_handle.mojom",
     "shared_worker/shared_worker_creation_context_type.mojom",
     "use_counter/css_property_id.mojom",
+    "web_package/web_package_internals.mojom",
   ]
 
   public_deps = [
