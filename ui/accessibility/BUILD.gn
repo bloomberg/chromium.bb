@@ -20,6 +20,12 @@ mojom("ax_enums_mojo") {
   sources = [
     "ax_enums.mojom",
   ]
+
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/mojo",
+  ]
 }
 
 component("accessibility") {
@@ -172,10 +178,12 @@ test("accessibility_unittests") {
     "ax_tree_combiner_unittest.cc",
     "ax_tree_serializer_unittest.cc",
     "ax_tree_unittest.cc",
+    "mojom/ax_node_data_mojom_traits_unittest.cc",
     "platform/ax_platform_node_unittest.cc",
     "platform/ax_platform_node_unittest.h",
     "platform/ax_platform_node_win_unittest.cc",
     "platform/ax_unique_id_unittest.cc",
+    "run_all_unittests.cc",
   ]
 
   deps = [
@@ -183,9 +191,14 @@ test("accessibility_unittests") {
     ":ax_enums_mojo",
     ":test_support",
     "//base",
-    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//mojo/common",
+    "//mojo/edk",
+    "//mojo/edk/test:test_support",
+    "//mojo/public/cpp/test_support:test_utils",
     "//skia",
     "//testing/gtest",
+    "//ui/accessibility/mojom",
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
