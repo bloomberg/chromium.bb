@@ -4,6 +4,7 @@ include_rules = [
   "+ash/components/resources",
   "+ash/components/shortcut_viewer",
   "+ash/components/strings",
+  "+ash/resources",
   "+base",
   "+cc/paint",
   "+testing/gtest",

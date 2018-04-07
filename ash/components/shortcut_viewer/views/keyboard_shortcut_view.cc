@@ -13,8 +13,10 @@
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_item_view.h"
 #include "ash/components/shortcut_viewer/views/ksv_search_box_view.h"
 #include "ash/components/strings/grit/ash_components_strings.h"
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/resources/grit/ash_resources.h"
 #include "base/bind.h"
 #include "base/i18n/string_search.h"
 #include "base/metrics/user_metrics.h"
@@ -117,12 +119,7 @@ views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
     window->SetProperty(ash::kFrameInactiveColorKey, SK_ColorWHITE);
 
     // Set shelf icon.
-    // An app id for keyboard shortcut viewer window, also used to identify the
-    // shelf item. Generated as
-    // crx_file::id_util::GenerateId("org.chromium.keyboardshortcutviewer")
-    static constexpr char kKeyboardShortcutViewerId[] =
-        "dieikdblbimmfmfinbibdlalidbnbchd";
-    const ash::ShelfID shelf_id(kKeyboardShortcutViewerId);
+    const ash::ShelfID shelf_id(app_list::kInternalAppIdKeyboardShortcutViewer);
     window->SetProperty(ash::kShelfIDKey,
                         new std::string(shelf_id.Serialize()));
     window->SetProperty<int>(ash::kShelfItemTypeKey, ash::TYPE_DIALOG);
@@ -134,7 +131,7 @@ views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
     window->SetTitle(l10n_util::GetStringUTF16(IDS_KSV_TITLE));
     gfx::ImageSkia* icon =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_KEYBOARD_SHORTCUT_VIEWER_APP_ICON);
+            IDR_KEYBOARD_SHORTCUT_VIEWER_LOGO_192);
     // The new gfx::ImageSkia instance is owned by the window itself.
     window->SetProperty(aura::client::kWindowIconKey,
                         new gfx::ImageSkia(*icon));

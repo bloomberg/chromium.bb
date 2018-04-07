@@ -12,6 +12,7 @@
   <release seq="1">
     <structures fallback_to_low_resolution="true">
       <!-- Keyboard Shortcut Viewer icons. -->
+      <!-- TODO(wutao): This structures cannot be empty. Delete this resource when possible. -->
       <structure type="chrome_scaled_image" name="IDR_KEYBOARD_SHORTCUT_VIEWER_APP_ICON" file="shortcut_viewer/ksv_app_icon.png" />
 
     </structures>

@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_INTERNAL_APP_METADATA_H_
-#define CHROME_BROWSER_UI_APP_LIST_SEARCH_INTERNAL_APP_METADATA_H_
+#ifndef CHROME_BROWSER_UI_APP_LIST_INTERNAL_APP_INTERNAL_APP_METADATA_H_
+#define CHROME_BROWSER_UI_APP_LIST_INTERNAL_APP_INTERNAL_APP_METADATA_H_
 
 #include <string>
 #include <vector>
 
 namespace app_list {
-
-constexpr char kInternalAppIdKeyboardShortcutViewer[] =
-    "internal://keyboard_shortcut_viewer";
 
 // Metadata about an internal app.
 // Internal apps are these apps can run in Chrome OS directly, e.g. Keyboard
@@ -31,4 +28,4 @@ int GetIconResourceIdByAppId(const std::string& app_id);
 
 }  // namespace app_list
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_SEARCH_INTERNAL_APP_METADATA_H_
+#endif  // CHROME_BROWSER_UI_APP_LIST_INTERNAL_APP_INTERNAL_APP_METADATA_H_

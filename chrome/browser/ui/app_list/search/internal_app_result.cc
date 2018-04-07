@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/app_list/search/internal_app_result.h"
 
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/search/internal_app_metadata.h"
+#include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -55,8 +57,11 @@ void InternalAppResult::Open(int event_flags) {
   if (display_type() != DisplayType::kRecommendation)
     RecordHistogram(APP_SEARCH_RESULT);
 
-  if (id() == kInternalAppIdKeyboardShortcutViewer)
+  if (id() == kInternalAppIdKeyboardShortcutViewer) {
     keyboard_shortcut_viewer_util::ShowKeyboardShortcutViewer();
+  } else if (id() == kInternalAppIdSettings) {
+    chrome::ShowSettingsSubPageForProfile(profile(), std::string());
+  }
 }
 
 std::unique_ptr<ChromeSearchResult> InternalAppResult::Duplicate() const {

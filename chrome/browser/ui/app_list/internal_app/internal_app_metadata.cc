@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/internal_app_metadata.h"
+#include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 
+#include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "ash/resources/grit/ash_resources.h"
 #include "base/no_destructor.h"
-#include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 
 namespace app_list {
@@ -13,8 +14,10 @@ namespace app_list {
 const std::vector<InternalApp>& GetInternalAppList() {
   static const base::NoDestructor<std::vector<InternalApp>> internal_app_list(
       {{kInternalAppIdKeyboardShortcutViewer,
-        IDS_LAUNCHER_SEARCHABLE_APP_KEYBOARD_SHORTCUT_VIEWER,
-        IDR_KEYBOARD_SHORTCUT_VIEWER_LOGO_192}});
+        IDS_INTERNAL_APP_KEYBOARD_SHORTCUT_VIEWER,
+        IDR_KEYBOARD_SHORTCUT_VIEWER_LOGO_192},
+       {kInternalAppIdSettings, IDS_INTERNAL_APP_SETTINGS,
+        IDR_SETTINGS_LOGO_192}});
   return *internal_app_list;
 }
 
