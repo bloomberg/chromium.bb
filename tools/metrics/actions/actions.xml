@@ -5792,6 +5792,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="InProductHelp.NotifyEvent.IPH_ContextualSuggestions">
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The user triggered an event related to the contextual suggestions in-product
+    help. See //components/feature_engagement/README.md#Configuring-UMA for
+    details.
+  </description>
+</action>
+
 <action name="InProductHelp.NotifyEvent.IPH_DataSaverDetail">
   <owner>nyquist@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
@@ -5986,6 +5995,15 @@ should be able to be added at any place in this file.
     The user triggered a used event related to the Contextual Search in-product
     help. See //components/feature_engagement/README.md#Configuring-UMA for
     details.
+  </description>
+</action>
+
+<action name="InProductHelp.NotifyUsedEvent.IPH_ContextualSuggestions">
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The user triggered a used event related to the contextual suggestions
+    in-product help. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
   </description>
 </action>
 
@@ -6189,6 +6207,15 @@ should be able to be added at any place in this file.
   <description>
     The feature engagement tracker tried to determine whether the Contextual
     Search in-product help should be shown to the user. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action name="InProductHelp.ShouldTriggerHelpUI.IPH_ContextualSuggestions">
+  <owner>twellington@chromium.org</owner>
+  <description>
+    The feature engagement tracker tried to determine whether the contextual
+    suggestions in-product help should be shown to the user. See
     //components/feature_engagement/README.md#Configuring-UMA for details.
   </description>
 </action>
@@ -6432,6 +6459,16 @@ should be able to be added at any place in this file.
 </action>
 
 <action
+    name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_ContextualSuggestions">
+  <owner>twellington@chromium.org</owner>
+  <description>
+    A user action that could have triggered the contextual suggestions
+    in-product help did not. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action
     name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_DataSaverDetail">
   <owner>nyquist@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
@@ -6657,6 +6694,17 @@ should be able to be added at any place in this file.
 </action>
 
 <action
+    name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_ContextualSuggestions">
+  <owner>donnd@chromium.org</owner>
+  <owner>mahmoudi@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    A user action triggered the contextual suggestions in-product help. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action
     name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_DataSaverDetail">
   <owner>nyquist@chromium.org</owner>
   <owner>xingliu@chromium.org</owner>
@@ -6774,6 +6822,17 @@ should be able to be added at any place in this file.
   <description>
     A pull-to-refresh would have triggered the Chrome Home in-product help, but
     the feature was configured for tracking only. See
+    //components/feature_engagement/README.md#Configuring-UMA for details.
+  </description>
+</action>
+
+<action
+    name="InProductHelp.ShouldTriggerHelpUIResult.WouldHaveTriggered.IPH_ContextualSuggestions">
+  <owner>twellington@chromium.org</owner>
+  <owner>mdjones@chromium.org</owner>
+  <description>
+    A user action would have triggered the contextual suggestions in-product
+    help, but the feature was configured for tracking only. See
     //components/feature_engagement/README.md#Configuring-UMA for details.
   </description>
 </action>

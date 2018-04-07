@@ -52,7 +52,8 @@ public class ContextualSuggestionsCoordinator {
 
         mModel = new ContextualSuggestionsModel();
         mMediator = new ContextualSuggestionsMediator(mActivity, mProfile, tabModelSelector,
-                activity.getFullscreenManager(), this, mModel);
+                activity.getFullscreenManager(), this, mModel,
+                mBottomSheetController.getBottomSheet());
     }
 
     /** Called when the containing activity is destroyed. */

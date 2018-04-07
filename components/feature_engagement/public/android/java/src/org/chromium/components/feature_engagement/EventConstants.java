@@ -63,6 +63,23 @@ public final class EventConstants {
     public static final String CHROME_HOME_MENU_HEADER_CLICKED = "chrome_home_menu_header_clicked";
 
     /**
+     * The contextual suggestions bottom sheet was explicitly dismissed via a tap on its close
+     * button.
+     */
+    public static final String CONTEXTUAL_SUGGESTIONS_DISMISSED =
+            "contextual_suggestions_dismissed";
+
+    /**
+     * The contextual suggestions bottom sheet was opened.
+     */
+    public static final String CONTEXTUAL_SUGGESTIONS_OPENED = "contextual_suggestions_opened";
+
+    /**
+     * The contextual suggestions bottom sheet was shown in its peeking state.
+     */
+    public static final String CONTEXTUAL_SUGGESTIONS_PEEKED = "contextual_suggestions_peeked";
+
+    /**
      * Screenshot is taken with Chrome in the foreground.
      */
     public static final String SCREENSHOT_TAKEN_CHROME_IN_FOREGROUND =

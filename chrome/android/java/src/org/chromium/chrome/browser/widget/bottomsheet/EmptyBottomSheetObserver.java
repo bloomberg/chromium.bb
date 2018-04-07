@@ -33,5 +33,8 @@ public class EmptyBottomSheetObserver implements BottomSheetObserver {
     public void onSheetStateChanged(int newState) {}
 
     @Override
+    public void onSheetFullyPeeked() {}
+
+    @Override
     public void onSheetContentChanged(BottomSheetContent newContent) {}
 }
