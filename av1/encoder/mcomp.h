@@ -81,11 +81,6 @@ int av1_full_pixel_diamond(const struct AV1_COMP *cpi, MACROBLOCK *x,
                            const aom_variance_fn_ptr_t *fn_ptr,
                            const MV *ref_mv, MV *dst_mv);
 
-// Perform integral projection based motion estimation.
-unsigned int av1_int_pro_motion_estimation(const struct AV1_COMP *cpi,
-                                           MACROBLOCK *x, BLOCK_SIZE bsize,
-                                           int mi_row, int mi_col);
-
 int av1_hex_search(MACROBLOCK *x, MV *start_mv, int search_param,
                    int sad_per_bit, int do_init_search, int *cost_list,
                    const aom_variance_fn_ptr_t *vfp, int use_mvcost,
