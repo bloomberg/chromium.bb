@@ -443,13 +443,6 @@ public class TabModelImpl extends TabModelJniBridge {
         return retVal == -1 ? INVALID_TAB_INDEX : retVal;
     }
 
-    /**
-     * @return true if this is the current model according to the model selector
-     */
-    private boolean isCurrentModel() {
-        return mModelDelegate.getCurrentModel().isIncognito() == isIncognito();
-    }
-
     // TODO(aurimas): Move this method to TabModelSelector when notifications move there.
     private int getLastId(TabSelectionType type) {
         if (type == TabSelectionType.FROM_CLOSE || type == TabSelectionType.FROM_EXIT) {
@@ -503,6 +496,11 @@ public class TabModelImpl extends TabModelJniBridge {
         } finally {
             TraceEvent.end("TabModelImpl.setIndex");
         }
+    }
+
+    @Override
+    public boolean isCurrentModel() {
+        return mModelDelegate.isCurrentModel(this);
     }
 
     /**

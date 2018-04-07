@@ -22,7 +22,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "ui/gfx/text_elider.h"
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #endif
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(JavaScriptDialogTabHelper);
@@ -35,8 +36,9 @@ app_modal::JavaScriptDialogManager* AppModalDialogManager() {
 
 bool IsWebContentsForemost(content::WebContents* web_contents) {
 #if defined(OS_ANDROID)
-  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
-  return tab && tab->IsUserInteractable();
+  TabModel* tab_model = TabModelList::GetTabModelForWebContents(web_contents);
+  return tab_model && tab_model->IsCurrentModel() &&
+         tab_model->GetActiveWebContents() == web_contents;
 #else
   Browser* browser = BrowserList::GetInstance()->GetLastActive();
   DCHECK(browser);

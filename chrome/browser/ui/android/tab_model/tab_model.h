@@ -64,6 +64,10 @@ class TabModel : public content::NotificationObserver {
   // Return true if we are currently restoring sessions asynchronously.
   virtual bool IsSessionRestoreInProgress() const = 0;
 
+  // Return true if this class is the currently selected in the correspond
+  // tab model selector.
+  virtual bool IsCurrentModel() const = 0;
+
  protected:
   explicit TabModel(Profile* profile, bool is_tabbed_activity);
   ~TabModel() override;

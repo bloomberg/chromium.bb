@@ -165,6 +165,11 @@ public class IncognitoTabModel implements TabModel {
     }
 
     @Override
+    public boolean isCurrentModel() {
+        return mDelegateModel.isCurrentModel();
+    }
+
+    @Override
     public void moveTab(int id, int newIndex) {
         mDelegateModel.moveTab(id, newIndex);
     }

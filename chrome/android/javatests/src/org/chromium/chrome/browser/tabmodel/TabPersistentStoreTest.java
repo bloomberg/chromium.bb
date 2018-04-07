@@ -223,6 +223,11 @@ public class TabPersistentStoreTest {
         public boolean isSessionRestoreInProgress() {
             return false;
         }
+
+        @Override
+        public boolean isCurrentModel(TabModel model) {
+            return false;
+        }
     }
 
     static class MockTabPersistentStoreObserver extends TabPersistentStoreObserver {

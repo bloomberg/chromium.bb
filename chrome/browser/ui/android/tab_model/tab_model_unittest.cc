@@ -42,6 +42,7 @@ class TestTabModel : public TabModel {
     return NULL;
   }
   bool IsSessionRestoreInProgress() const override { return false; }
+  bool IsCurrentModel() const override { return false; }
   TabAndroid* GetTabAt(int index) const override { return NULL; }
   void SetActiveIndex(int index) override {}
   void CloseTabAt(int index) override {}

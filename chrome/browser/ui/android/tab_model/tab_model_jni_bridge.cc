@@ -145,6 +145,11 @@ bool TabModelJniBridge::IsSessionRestoreInProgress() const {
       env, java_object_.get(env));
 }
 
+bool TabModelJniBridge::IsCurrentModel() const {
+  JNIEnv* env = AttachCurrentThread();
+  return Java_TabModelJniBridge_isCurrentModel(env, java_object_.get(env));
+}
+
 void TabModelJniBridge::BroadcastSessionRestoreComplete(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {

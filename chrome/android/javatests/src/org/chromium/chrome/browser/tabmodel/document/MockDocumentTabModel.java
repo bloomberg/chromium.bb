@@ -123,6 +123,11 @@ public class MockDocumentTabModel implements DocumentTabModel {
     }
 
     @Override
+    public boolean isCurrentModel() {
+        return false;
+    }
+
+    @Override
     public int index() {
         Assert.fail();
         return 0;

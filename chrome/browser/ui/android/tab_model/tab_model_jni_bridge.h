@@ -59,6 +59,10 @@ class TabModelJniBridge : public TabModel {
   // Return true if we are currently restoring sessions asynchronously.
   bool IsSessionRestoreInProgress() const override;
 
+  // Return true if this class is the currently selected in the correspond
+  // tab model selector.
+  bool IsCurrentModel() const override;
+
   // Instructs the TabModel to broadcast a notification that all tabs are now
   // loaded from storage.
   void BroadcastSessionRestoreComplete(

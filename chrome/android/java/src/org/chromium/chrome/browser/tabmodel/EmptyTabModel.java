@@ -86,6 +86,11 @@ public class EmptyTabModel implements TabModel {
     public void setIndex(int i, TabSelectionType type) {}
 
     @Override
+    public boolean isCurrentModel() {
+        return false;
+    }
+
+    @Override
     public void moveTab(int id, int newIndex) {}
 
     @Override
