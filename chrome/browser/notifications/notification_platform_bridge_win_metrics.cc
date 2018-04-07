@@ -54,4 +54,14 @@ void LogSetReadyCallbackStatus(SetReadyCallbackStatus status) {
                             status, SetReadyCallbackStatus::COUNT);
 }
 
+void LogOnDismissedStatus(OnDismissedStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.OnDismissedStatus", status,
+                            OnDismissedStatus::COUNT);
+}
+
+void LogOnFailedStatus(OnFailedStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.OnFailedStatus", status,
+                            OnFailedStatus::COUNT);
+}
+
 }  // namespace notifications_uma
