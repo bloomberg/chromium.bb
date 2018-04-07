@@ -11,7 +11,6 @@
 namespace blink {
 
 class BlinkLeakDetectorClient;
-class WebFrame;
 class ResourceFetcher;
 
 // This class is responsible for stabilizing the detection results which are
@@ -24,7 +23,7 @@ class CORE_EXPORT BlinkLeakDetector {
   static BlinkLeakDetector& Instance();
   ~BlinkLeakDetector();
 
-  void PrepareForLeakDetection(WebFrame*);
+  void PrepareForLeakDetection();
   void CollectGarbage();
   void SetClient(BlinkLeakDetectorClient*);
 

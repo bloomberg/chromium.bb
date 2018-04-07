@@ -11,10 +11,6 @@
 #include "content/shell/common/leak_detection_result.h"
 #include "third_party/WebKit/public/web/WebLeakDetector.h"
 
-namespace blink {
-class WebFrame;
-}  // namespace blink
-
 namespace content {
 
 class BlinkTestRunner;
@@ -28,9 +24,9 @@ class LeakDetector : public blink::WebLeakDetectorClient {
   // Counts DOM objects, compare the previous status and returns the result of
   // leak detection. It is assumed that this method is always called when a
   // specific page, like about:blank is loaded to compare the previous
-  // circumstance of DOM objects. If the number of objects increses, there
+  // circumstance of DOM objects. If the number of objects increases, there
   // should be a leak.
-  void TryLeakDetection(blink::WebFrame*);
+  void TryLeakDetection();
 
   // WebLeakDetectorClient:
   void OnLeakDetectionComplete(const Result& result) override;

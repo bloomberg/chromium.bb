@@ -74,7 +74,7 @@ void InspectorMemoryAgent::prepareForLeakDetection(
 
   BlinkLeakDetector& detector = BlinkLeakDetector::Instance();
   detector.SetClient(this);
-  detector.PrepareForLeakDetection(frames_->Root()->Client()->GetWebFrame());
+  detector.PrepareForLeakDetection();
   detector.CollectGarbage();
 }
 

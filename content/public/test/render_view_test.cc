@@ -352,7 +352,7 @@ void RenderViewTest::TearDown() {
   std::unique_ptr<blink::WebLeakDetector> leak_detector =
       base::WrapUnique(blink::WebLeakDetector::Create(this));
 
-  leak_detector->PrepareForLeakDetection(view_->GetWebView()->MainFrame());
+  leak_detector->PrepareForLeakDetection();
 
   // |view_| is ref-counted and deletes itself during the RunUntilIdle() call
   // below.
