@@ -18,13 +18,6 @@
 
 namespace remoting {
 
-// Used by the HostlistFetcher to make HTTP requests and also by the
-// unittests for this class to set fake response data for these URLs.
-// TODO(nicholss): Consider moving this to an extern and conditionally include
-// prod or test environment urls based on config. A test env app would be nice.
-const char kHostListProdRequestUrl[] =
-    "https://www.googleapis.com/chromoting/v1/@me/hosts";
-
 // Requests a host list from the directory service for an access token.
 // Destroying the RemoteHostInfoFetcher while a request is outstanding
 // will cancel the request. It is safe to delete the fetcher from within a
@@ -46,14 +39,14 @@ class HostListFetcher : public net::URLFetcherDelegate {
 
   // Supplied by the client for each hostlist request and returns a valid,
   // initialized Hostlist object on success.
-  typedef base::Callback<void(int response_code,
-                              const std::vector<remoting::HostInfo>& hostlist)>
+  typedef base::OnceCallback<
+      void(int response_code, const std::vector<remoting::HostInfo>& hostlist)>
       HostlistCallback;
 
   // Makes a service call to retrieve a hostlist. The
   // callback will be called once the HTTP request has completed.
   virtual void RetrieveHostlist(const std::string& access_token,
-                                const HostlistCallback& callback);
+                                HostlistCallback callback);
 
   // Cancels the current fetch request and runs the host list callback with
   // RESPONSE_CODE_CANCELLED. Nothing will happen if there is no ongoing fetch

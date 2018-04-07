@@ -12,6 +12,8 @@ source_set("facade") {
     "host_info.h",
     "host_list_fetcher.cc",
     "host_list_fetcher.h",
+    "host_list_service.h",
+    "host_list_service.mm",
     "ios_client_runtime_delegate.h",
     "ios_client_runtime_delegate.mm",
     "ios_oauth_token_getter.h",
@@ -25,9 +27,39 @@ source_set("facade") {
 
   deps = [
     "//base",
+    "//ios/third_party/material_components_ios",
     "//remoting/base:authorization",
+    "//remoting/client",
     "//remoting/ios/domain",
     "//remoting/ios/persistence",
+    "//remoting/resources",
+    "//ui/base",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "fake_host_list_fetcher.cc",
+    "fake_host_list_fetcher.h",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "host_list_service_unittest.mm",
+  ]
+  deps = [
+    ":facade",
+    ":test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/ocmock",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

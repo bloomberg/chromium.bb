@@ -36,6 +36,7 @@
 #include "remoting/base/oauth_token_getter.h"
 #include "remoting/base/string_resources.h"
 #include "remoting/client/connect_to_host_info.h"
+#include "remoting/ios/facade/host_list_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
 static CGFloat kHostInset = 5.f;
@@ -81,6 +82,8 @@ ConnectionType GetConnectionType() {
 
 #pragma mark - RemotingViewController
 
+using remoting::HostListService;
+
 @interface RemotingViewController ()<HostCollectionViewControllerDelegate,
                                      UIViewControllerAnimatedTransitioning,
                                      UIViewControllerTransitioningDelegate> {
@@ -90,7 +93,11 @@ ConnectionType GetConnectionType() {
   HostFetchingViewController* _fetchingViewController;
   HostFetchingErrorViewController* _fetchingErrorViewController;
   HostSetupViewController* _setupViewController;
-  RemotingService* _remotingService;
+  HostListService* _hostListService;
+  std::unique_ptr<HostListService::CallbackSubscription>
+      _hostListStateSubscription;
+  std::unique_ptr<HostListService::CallbackSubscription>
+      _hostListFetchFailureSubscription;
 
   NSArray<id<RemotingRefreshControl>>* _refreshControls;
 }
@@ -107,7 +114,7 @@ ConnectionType GetConnectionType() {
                                            sectionInset, sectionInset)];
   self = [super init];
   if (self) {
-    _remotingService = RemotingService.instance;
+    _hostListService = HostListService::GetInstance();
 
     __weak RemotingViewController* weakSelf = self;
     RemotingRefreshAction refreshAction = ^{
@@ -197,17 +204,15 @@ ConnectionType GetConnectionType() {
 
   [_appBar addSubviewsToParent];
 
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(hostListStateDidChangeNotification:)
-             name:kHostListStateDidChange
-           object:nil];
-
-  [NSNotificationCenter.defaultCenter
-      addObserver:self
-         selector:@selector(hostListFetchDidFailNotification:)
-             name:kHostListFetchDidFail
-           object:nil];
+  __weak __typeof(self) weakSelf = self;
+  _hostListStateSubscription =
+      _hostListService->RegisterHostListStateCallback(base::BindBlockArc(^{
+        [weakSelf hostListStateDidChange];
+      }));
+  _hostListFetchFailureSubscription =
+      _hostListService->RegisterFetchFailureCallback(base::BindBlockArc(^{
+        [weakSelf hostListFetchDidFail];
+      }));
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -222,16 +227,14 @@ ConnectionType GetConnectionType() {
   return UIStatusBarStyleLightContent;
 }
 
-#pragma mark - Remoting Service Notifications
+#pragma mark - HostListService Callbacks
 
-- (void)hostListStateDidChangeNotification:(NSNotification*)notification {
+- (void)hostListStateDidChange {
   [self refreshContent];
 }
 
-- (void)hostListFetchDidFailNotification:(NSNotification*)notification {
-  HostListFetchFailureReason reason = (HostListFetchFailureReason)
-      [notification.userInfo[kHostListFetchFailureReasonKey] integerValue];
-  [self handleHostListFetchFailure:reason];
+- (void)hostListFetchDidFail {
+  [self handleHostListFetchFailure];
 }
 
 #pragma mark - HostCollectionViewControllerDelegate
@@ -288,11 +291,12 @@ ConnectionType GetConnectionType() {
 }
 
 - (NSInteger)getHostCount {
-  return _remotingService.hosts.count;
+  return _hostListService->hosts().size();
 }
 
 - (HostInfo*)getHostAtIndexPath:(NSIndexPath*)path {
-  return _remotingService.hosts[path.row];
+  return [[HostInfo alloc]
+      initWithRemotingHostInfo:_hostListService->hosts()[path.row]];
 }
 
 #pragma mark - UIViewControllerTransitioningDelegate
@@ -316,9 +320,7 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 #pragma mark - Private
 
 - (void)didSelectRefresh {
-  // TODO(nicholss): Might want to rate limit this. Maybe remoting service
-  // controls that.
-  [_remotingService requestHostListFetch];
+  _hostListService->RequestFetch();
 }
 
 - (void)didSelectMenu {
@@ -326,31 +328,30 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 }
 
 - (void)refreshContent {
-  if (_remotingService.hostListState == HostListStateFetching) {
+  if (_hostListService->state() == HostListService::State::FETCHING) {
     if (![self isAnyRefreshControlRefreshing]) {
       self.contentViewController = _fetchingViewController;
     }
     return;
   }
 
-  if (_remotingService.hostListState == HostListStateNotFetched) {
-    if (_remotingService.lastFetchFailureReason ==
-        HostListFetchFailureReasonNoFailure) {
+  if (_hostListService->state() == HostListService::State::NOT_FETCHED) {
+    if (!_hostListService->last_fetch_failure()) {
       self.contentViewController = nil;
     } else {
       // hostListFetchDidFailNotification might miss the first failure happened
       // before the notification is registered. This logic covers that.
-      [self handleHostListFetchFailure:_remotingService.lastFetchFailureReason];
+      [self handleHostListFetchFailure];
     }
     return;
   }
 
-  DCHECK(_remotingService.hostListState == HostListStateFetched);
+  DCHECK(_hostListService->state() == HostListService::State::FETCHED);
 
   [self stopAllRefreshControls];
 
   UICollectionViewController* contentViewController;
-  if (_remotingService.hosts.count > 0) {
+  if (_hostListService->hosts().size() > 0) {
     [_collectionViewController.collectionView reloadData];
     contentViewController = _collectionViewController;
   } else {
@@ -362,20 +363,12 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   self.contentViewController.view.frame = self.view.bounds;
 }
 
-- (void)handleHostListFetchFailure:(HostListFetchFailureReason)reason {
-  int messageId;
-  switch (reason) {
-    case HostListFetchFailureReasonNetworkError:
-      messageId = IDS_ERROR_NETWORK_ERROR;
-      break;
-    case HostListFetchFailureReasonAuthError:
-      messageId = IDS_ERROR_OAUTH_TOKEN_INVALID;
-      break;
-    default:
-      NOTREACHED();
-      return;
+- (void)handleHostListFetchFailure {
+  const auto* failure = _hostListService->last_fetch_failure();
+  if (!failure) {
+    return;
   }
-  NSString* errorText = l10n_util::GetNSString(messageId);
+  NSString* errorText = base::SysUTF8ToNSString(failure->localized_description);
   if ([self isAnyRefreshControlRefreshing]) {
     // User could just try pull-to-refresh again to refresh. We just need to
     // show the error as a toast.

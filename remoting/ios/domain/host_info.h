@@ -7,6 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
+namespace remoting {
+struct HostInfo;
+}  // namespace remoting
+
 // A detail record for a Remoting Host.
 @interface HostInfo : NSObject
 
@@ -25,6 +29,8 @@
 @property(nonatomic, copy) NSString* offlineReason;
 // True when |status| is @"ONLINE", anything else is False.
 @property(nonatomic, readonly) bool isOnline;
+
+- (instancetype)initWithRemotingHostInfo:(const remoting::HostInfo&)hostInfo;
 
 // First consider if |isOnline| is greater than anything else, then consider by
 // case insensitive locale of |hostName|.
