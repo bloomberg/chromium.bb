@@ -2711,6 +2711,7 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
 
   if (seq_params->enable_order_hint)
     aom_wb_write_literal(wb, seq_params->order_hint_bits_minus1, 3);
+
   aom_wb_write_bit(wb, seq_params->enable_superres);
   aom_wb_write_bit(wb, seq_params->enable_cdef);
   aom_wb_write_bit(wb, seq_params->enable_restoration);
@@ -2905,8 +2906,9 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
   cm->frame_refs_short_signaling = 0;
 
-  aom_wb_write_literal(wb, cm->frame_offset,
-                       cm->seq_params.order_hint_bits_minus1 + 1);
+  if (cm->seq_params.enable_order_hint)
+    aom_wb_write_literal(wb, cm->frame_offset,
+                         cm->seq_params.order_hint_bits_minus1 + 1);
 
   if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
     aom_wb_write_literal(wb, cm->primary_ref_frame, PRIMARY_REF_BITS);
@@ -3042,6 +3044,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       aom_wb_write_bit(wb, cm->switchable_motion_mode);
       if (frame_might_allow_ref_frame_mvs(cm)) {
         aom_wb_write_bit(wb, cm->allow_ref_frame_mvs);
+      } else {
+        assert(cm->allow_ref_frame_mvs == 0);
       }
     }
   }
