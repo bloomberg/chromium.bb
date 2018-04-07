@@ -43,8 +43,9 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
     CtapGetAssertionRequest request_param(
         kRpId, u2f_parsing_utils::Materialize(kClientDataHash));
     request_param.SetAllowList(
-        {{kU2fCredentialType, u2f_parsing_utils::Materialize(
-                                  test_data::kTestGetAssertionCredentialId)}});
+        {{to_string(CredentialType::kPublicKey),
+          u2f_parsing_utils::Materialize(
+              test_data::kTestGetAssertionCredentialId)}});
 
     return std::make_unique<GetAssertionRequestHandler>(
         nullptr /* connector */,

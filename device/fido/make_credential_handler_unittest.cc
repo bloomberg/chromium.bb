@@ -47,7 +47,8 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
     ForgeNextHidDiscovery();
     PublicKeyCredentialRpEntity rp(kRpId);
     PublicKeyCredentialUserEntity user(u2f_parsing_utils::Materialize(kUserId));
-    PublicKeyCredentialParams credential_params({{kU2fCredentialType}});
+    PublicKeyCredentialParams credential_params(
+        std::vector<PublicKeyCredentialParams::CredentialInfo>(1));
 
     auto request_parameter = CtapMakeCredentialRequest(
         u2f_parsing_utils::Materialize(kClientDataHash), std::move(rp),

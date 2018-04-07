@@ -54,9 +54,7 @@ class FidoMakeCredentialTaskTest : public testing::Test {
             u2f_parsing_utils::Materialize(kClientDataHash), std::move(rp),
             std::move(user),
             PublicKeyCredentialParams(
-                {{kU2fCredentialType,
-                  base::strict_cast<int>(
-                      CoseAlgorithmIdentifier::kCoseEs256)}})),
+                std::vector<PublicKeyCredentialParams::CredentialInfo>(1))),
         AuthenticatorSelectionCriteria(), callback_receiver_.callback());
   }
 
@@ -72,9 +70,7 @@ class FidoMakeCredentialTaskTest : public testing::Test {
             u2f_parsing_utils::Materialize(kClientDataHash), std::move(rp),
             std::move(user),
             PublicKeyCredentialParams(
-                {{kU2fCredentialType,
-                  base::strict_cast<int>(
-                      CoseAlgorithmIdentifier::kCoseEs256)}})),
+                std::vector<PublicKeyCredentialParams::CredentialInfo>(1))),
         std::move(criteria), callback_receiver_.callback());
   }
 
