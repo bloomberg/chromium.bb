@@ -59,9 +59,9 @@ TEST_F(FidoGetAssertionTaskTest, TestGetAssertionSuccess) {
 
   CtapGetAssertionRequest request_param(
       kRpId, u2f_parsing_utils::Materialize(kClientDataHash));
-  request_param.SetAllowList(
-      {{kU2fCredentialType, u2f_parsing_utils::Materialize(
-                                test_data::kTestGetAssertionCredentialId)}});
+  request_param.SetAllowList({{to_string(CredentialType::kPublicKey),
+                               u2f_parsing_utils::Materialize(
+                                   test_data::kTestGetAssertionCredentialId)}});
 
   auto task = std::make_unique<GetAssertionTask>(
       device.get(), std::move(request_param),

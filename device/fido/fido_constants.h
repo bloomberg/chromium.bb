@@ -196,8 +196,7 @@ enum class U2fApduInstruction : uint8_t {
   kVenderLast = 0xBF,
 };
 
-// Credential type used for U2F requests.
-COMPONENT_EXPORT(DEVICE_FIDO) extern const char kU2fCredentialType[];
+enum class CredentialType { kPublicKey };
 
 // Parameters for fake U2F registration used to check for user presence.
 COMPONENT_EXPORT(DEVICE_FIDO)
@@ -271,6 +270,20 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kFormatKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kAttestationStatementKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kAuthDataKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kNoneAttestationValue[];
+
+// String representation of public key credential enum.
+// https://w3c.github.io/webauthn/#credentialType
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const char kPublicKey[];
+
+constexpr const char* to_string(CredentialType type) {
+  switch (type) {
+    case CredentialType::kPublicKey:
+      return kPublicKey;
+  }
+  NOTREACHED();
+  return kPublicKey;
+}
 
 }  // namespace device
 

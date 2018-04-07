@@ -120,7 +120,8 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
   CtapMakeCredentialRequest make_credential_param(
       std::vector<uint8_t>(kClientDataHash, std::end(kClientDataHash)),
       std::move(rp), std::move(user),
-      PublicKeyCredentialParams({{"public-key", 7}, {"public-key", 257}}));
+      PublicKeyCredentialParams({{CredentialType::kPublicKey, 7},
+                                 {CredentialType::kPublicKey, 257}}));
   auto serialized_data = make_credential_param.SetResidentKeySupported(true)
                              .SetUserVerificationRequired(true)
                              .EncodeAsCBOR();

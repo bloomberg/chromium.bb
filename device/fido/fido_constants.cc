@@ -6,8 +6,6 @@
 
 namespace device {
 
-const char kU2fCredentialType[] = "public-key";
-
 const std::array<uint8_t, 32> kBogusAppParam = {
     0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,
     0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,
@@ -58,5 +56,7 @@ const char kFormatKey[] = "fmt";
 const char kAttestationStatementKey[] = "attStmt";
 const char kAuthDataKey[] = "authData";
 const char kNoneAttestationValue[] = "none";
+
+const char kPublicKey[] = "public-key";
 
 }  // namespace device
