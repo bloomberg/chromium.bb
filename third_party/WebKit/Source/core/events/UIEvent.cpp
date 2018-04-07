@@ -20,9 +20,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/events/UIEvent.h"
+#include "third_party/blink/renderer/core/events/ui_event.h"
 
-#include "core/input/InputDeviceCapabilities.h"
+#include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 
 namespace blink {
 

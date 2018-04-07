@@ -16,7 +16,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/blink/public/web/web_document.h"
 
 class GURL;
 

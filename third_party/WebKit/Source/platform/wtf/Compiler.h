@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_Compiler_h
-#define WTF_Compiler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_COMPILER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_COMPILER_H_
 
 #include "base/compiler_specific.h"
 #include "build/build_config.h"

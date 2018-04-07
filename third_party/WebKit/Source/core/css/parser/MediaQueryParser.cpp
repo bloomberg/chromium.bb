@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/MediaQueryParser.h"
+#include "third_party/blink/renderer/core/css/parser/media_query_parser.h"
 
-#include "core/css/parser/CSSTokenizer.h"
-#include "core/media_type_names.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/core/media_type_names.h"
 
 namespace blink {
 

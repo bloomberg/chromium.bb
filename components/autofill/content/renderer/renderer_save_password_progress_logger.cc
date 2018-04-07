@@ -6,7 +6,7 @@
 
 #include "base/strings/string16.h"
 #include "base/values.h"
-#include "third_party/WebKit/public/web/WebFormControlElement.h"
+#include "third_party/blink/public/web/web_form_control_element.h"
 
 namespace autofill {
 

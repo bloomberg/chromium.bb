@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/FlatTreeTraversal.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 
-#include "core/dom/Element.h"
-#include "core/html/HTMLShadowElement.h"
-#include "core/html/HTMLSlotElement.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/html_shadow_element.h"
+#include "third_party/blink/renderer/core/html/html_slot_element.h"
 
 namespace blink {
 

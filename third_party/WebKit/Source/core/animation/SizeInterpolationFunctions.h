@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SizeInterpolationFunctions_h
-#define SizeInterpolationFunctions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SIZE_INTERPOLATION_FUNCTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SIZE_INTERPOLATION_FUNCTIONS_H_
 
-#include "core/animation/InterpolationValue.h"
-#include "core/animation/PairwiseInterpolationValue.h"
-#include "core/style/FillLayer.h"
 #include <memory>
+#include "third_party/blink/renderer/core/animation/interpolation_value.h"
+#include "third_party/blink/renderer/core/animation/pairwise_interpolation_value.h"
+#include "third_party/blink/renderer/core/style/fill_layer.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class SizeInterpolationFunctions {
 
 }  // namespace blink
 
-#endif  // SizeInterpolationFunctions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SIZE_INTERPOLATION_FUNCTIONS_H_

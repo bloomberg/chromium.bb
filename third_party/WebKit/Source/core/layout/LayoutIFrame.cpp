@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutIFrame.h"
+#include "third_party/blink/renderer/core/layout/layout_iframe.h"
 
-#include "core/layout/LayoutAnalyzer.h"
-#include "core/page/scrolling/RootScrollerController.h"
+#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
 
 namespace blink {
 

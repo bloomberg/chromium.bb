@@ -25,13 +25,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/Pattern.h"
+#include "third_party/blink/renderer/platform/graphics/pattern.h"
 
-#include "platform/graphics/ImagePattern.h"
-#include "platform/graphics/PaintRecordPattern.h"
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/blink/renderer/platform/graphics/image_pattern.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/graphics/paint_record_pattern.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkShader.h"
 

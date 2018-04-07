@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontFaceSetLoadEvent_h
-#define FontFaceSetLoadEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_SET_LOAD_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_SET_LOAD_EVENT_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/css/FontFace.h"
-#include "core/css/FontFaceSetLoadEventInit.h"
-#include "core/dom/events/Event.h"
+#include "third_party/blink/renderer/core/css/font_face.h"
+#include "third_party/blink/renderer/core/css/font_face_set_load_event_init.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class FontFaceSetLoadEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // FontFaceSetLoadEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_SET_LOAD_EVENT_H_

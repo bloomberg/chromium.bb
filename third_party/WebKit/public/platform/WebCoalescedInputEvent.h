@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebCoalescedInputEvent_h
-#define WebCoalescedInputEvent_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_COALESCED_INPUT_EVENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_COALESCED_INPUT_EVENT_H_
 
-#include "WebCommon.h"
-#include "WebInputEvent.h"
-#include "WebPointerEvent.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_pointer_event.h"
 
 #include <memory>
 #include <vector>

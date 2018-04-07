@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/media/HTMLMediaElement.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
 
 #include <algorithm>
 #include <memory>
 
-#include "core/dom/UserGestureIndicator.h"
-#include "core/event_type_names.h"
-#include "core/fullscreen/Fullscreen.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/html/media/MediaControls.h"
-#include "core/html/media/MediaCustomControlsFullscreenDetector.h"
-#include "core/loader/EmptyClients.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/testing/EmptyWebMediaPlayer.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/platform/wtf/Time.h"
-#include "third_party/WebKit/public/platform/WebFullscreenVideoStatus.h"
+#include "third_party/blink/public/platform/web_fullscreen_video_status.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/html/media/media_controls.h"
+#include "third_party/blink/renderer/core/html/media/media_custom_controls_fullscreen_detector.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

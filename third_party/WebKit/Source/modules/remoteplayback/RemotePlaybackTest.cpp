@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/remoteplayback/RemotePlayback.h"
+#include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/modules/v8/v8_remote_playback_availability_callback.h"
-#include "core/dom/UserGestureIndicator.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/testing/DummyPageHolder.h"
-#include "modules/presentation/MockWebPresentationClient.h"
-#include "modules/presentation/PresentationController.h"
-#include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "public/platform/modules/presentation/WebPresentationClient.h"
-#include "public/platform/modules/remoteplayback/WebRemotePlaybackState.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/presentation/web_presentation_client.h"
+#include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_remote_playback_availability_callback.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/modules/presentation/mock_web_presentation_client.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
+#include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 

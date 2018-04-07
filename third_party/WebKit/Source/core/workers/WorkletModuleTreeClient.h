@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkletModuleTreeClient_h
-#define WorkletModuleTreeClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_MODULE_TREE_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_MODULE_TREE_CLIENT_H_
 
 #include "base/single_thread_task_runner.h"
-#include "core/script/Modulator.h"
-#include "core/workers/WorkletPendingTasks.h"
-#include "platform/heap/GarbageCollected.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/workers/worklet_pending_tasks.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -35,4 +35,4 @@ class WorkletModuleTreeClient final : public ModuleTreeClient {
 
 }  // namespace blink
 
-#endif  // WorkletModuleTreeClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_MODULE_TREE_CLIENT_H_

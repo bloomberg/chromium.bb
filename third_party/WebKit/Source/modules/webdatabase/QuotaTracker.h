@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef QuotaTracker_h
-#define QuotaTracker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_QUOTA_TRACKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_QUOTA_TRACKER_H_
 
 #include "base/macros.h"
-#include "modules/ModulesExport.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 
@@ -69,4 +69,4 @@ class MODULES_EXPORT QuotaTracker {
 
 }  // namespace blink
 
-#endif  // QuotaTracker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_QUOTA_TRACKER_H_

@@ -23,10 +23,10 @@
  * SUCH DAMAGE.
  */
 
-#include "platform/text/DateTimeFormat.h"
+#include "third_party/blink/renderer/platform/text/date_time_format.h"
 
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

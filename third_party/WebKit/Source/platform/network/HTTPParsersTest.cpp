@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/network/HTTPParsers.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
 
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/dtoa/utils.h"
-#include "platform/wtf/text/AtomicString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/csspaint/PaintRenderingContext2D.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_rendering_context_2d.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

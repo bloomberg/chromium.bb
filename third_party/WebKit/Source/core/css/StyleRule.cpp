@@ -19,20 +19,20 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/StyleRule.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
 
-#include "core/css/CSSFontFaceRule.h"
-#include "core/css/CSSImportRule.h"
-#include "core/css/CSSKeyframesRule.h"
-#include "core/css/CSSMediaRule.h"
-#include "core/css/CSSNamespaceRule.h"
-#include "core/css/CSSPageRule.h"
-#include "core/css/CSSStyleRule.h"
-#include "core/css/CSSSupportsRule.h"
-#include "core/css/CSSViewportRule.h"
-#include "core/css/StyleRuleImport.h"
-#include "core/css/StyleRuleKeyframe.h"
-#include "core/css/StyleRuleNamespace.h"
+#include "third_party/blink/renderer/core/css/css_font_face_rule.h"
+#include "third_party/blink/renderer/core/css/css_import_rule.h"
+#include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
+#include "third_party/blink/renderer/core/css/css_media_rule.h"
+#include "third_party/blink/renderer/core/css/css_namespace_rule.h"
+#include "third_party/blink/renderer/core/css/css_page_rule.h"
+#include "third_party/blink/renderer/core/css/css_style_rule.h"
+#include "third_party/blink/renderer/core/css/css_supports_rule.h"
+#include "third_party/blink/renderer/core/css/css_viewport_rule.h"
+#include "third_party/blink/renderer/core/css/style_rule_import.h"
+#include "third_party/blink/renderer/core/css/style_rule_keyframe.h"
+#include "third_party/blink/renderer/core/css/style_rule_namespace.h"
 
 namespace blink {
 

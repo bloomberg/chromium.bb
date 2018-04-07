@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/URLConversion.h"
+#include "third_party/blink/public/platform/url_conversion.h"
 
-#include "platform/wtf/text/StringUTF8Adaptor.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "url/gurl.h"
 
 namespace blink {

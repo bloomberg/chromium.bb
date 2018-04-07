@@ -23,8 +23,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Canvas2DLayerBridge_h
-#define Canvas2DLayerBridge_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_2D_LAYER_BRIDGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_2D_LAYER_BRIDGE_H_
 
 #include <memory>
 
@@ -32,18 +32,18 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "cc/layers/texture_layer_client.h"
-#include "platform/PlatformExport.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/CanvasColorParams.h"
-#include "platform/graphics/CanvasResourceHost.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/paint/PaintRecorder.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/CheckedNumeric.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefCounted.h"
-#include "public/platform/WebExternalTextureLayer.h"
+#include "third_party/blink/public/platform/web_external_texture_layer.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_host.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/color_space.h"

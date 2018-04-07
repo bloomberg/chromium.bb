@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/serviceworkers/ServiceWorkerThread.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_thread.h"
 
 #include <memory>
 
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/WorkerBackingThread.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScopeProxy.h"
-#include "modules/serviceworkers/ServiceWorkerInstalledScriptsManager.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_proxy.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_installed_scripts_manager.h"
 
 namespace blink {
 

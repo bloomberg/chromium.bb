@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/resize_observer/ResizeObserver.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 
-#include "bindings/core/v8/v8_resize_observer_callback.h"
-#include "core/dom/Element.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/AdjustForAbsoluteZoom.h"
-#include "core/layout/LayoutObject.h"
-#include "core/resize_observer/ResizeObservation.h"
-#include "core/resize_observer/ResizeObserverController.h"
-#include "core/resize_observer/ResizeObserverEntry.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_resize_observer_callback.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer_controller.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
 
 namespace blink {
 

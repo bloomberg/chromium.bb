@@ -20,13 +20,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSRule_h
-#define CSSRule_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_RULE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_RULE_H_
 
-#include "core/CoreExport.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -112,4 +112,4 @@ class CORE_EXPORT CSSRule : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // CSSRule_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_RULE_H_

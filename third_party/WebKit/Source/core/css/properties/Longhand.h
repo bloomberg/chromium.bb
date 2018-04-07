@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Longhand_h
-#define Longhand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_LONGHAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_LONGHAND_H_
 
-#include "core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
 
-#include "platform/graphics/Color.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 
 namespace blink {
 
@@ -47,4 +47,4 @@ DEFINE_TYPE_CASTS(Longhand,
 
 }  // namespace blink
 
-#endif  // Longhand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_LONGHAND_H_

@@ -24,24 +24,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Image_h
-#define Image_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_H_
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "platform/PlatformExport.h"
-#include "platform/SharedBuffer.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/ImageAnimationPolicy.h"
-#include "platform/graphics/ImageObserver.h"
-#include "platform/graphics/ImageOrientation.h"
-#include "platform/graphics/paint/PaintImage.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/image_animation_policy.h"
+#include "third_party/blink/renderer/platform/graphics/image_observer.h"
+#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkMatrix;

@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/credentialmanager/CredentialsContainer.h"
+#include "third_party/blink/renderer/modules/credentialmanager/credentials_container.h"
 
 #include <memory>
 #include <utility>
 
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/core/v8/V8GCController.h"
-#include "core/dom/Document.h"
-#include "core/frame/FrameTestHelpers.h"
-#include "core/frame/LocalFrame.h"
-#include "modules/credentialmanager/CredentialManagerProxy.h"
-#include "modules/credentialmanager/CredentialRequestOptions.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Functional.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/modules/credentialmanager/credential_manager.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/credentialmanager/credential_manager.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/credentialmanager/credential_manager_proxy.h"
+#include "third_party/blink/renderer/modules/credentialmanager/credential_request_options.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

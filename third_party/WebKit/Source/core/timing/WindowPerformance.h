@@ -29,16 +29,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WindowPerformance_h
-#define WindowPerformance_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_WINDOW_PERFORMANCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_WINDOW_PERFORMANCE_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/frame/PerformanceMonitor.h"
-#include "core/timing/MemoryInfo.h"
-#include "core/timing/Performance.h"
-#include "core/timing/PerformanceNavigation.h"
-#include "core/timing/PerformanceTiming.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/PerformanceMonitor.h"
+#include "third_party/blink/renderer/core/timing/memory_info.h"
+#include "third_party/blink/renderer/core/timing/performance.h"
+#include "third_party/blink/renderer/core/timing/performance_navigation.h"
+#include "third_party/blink/renderer/core/timing/performance_timing.h"
 
 namespace blink {
 
@@ -92,4 +92,4 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
 }  // namespace blink
 
-#endif  // WindowPerformance_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_WINDOW_PERFORMANCE_H_

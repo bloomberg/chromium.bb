@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXListBoxOption_h
-#define AXListBoxOption_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_LIST_BOX_OPTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_LIST_BOX_OPTION_H_
 
 #include "base/macros.h"
-#include "core/html/HTMLElement.h"
-#include "modules/accessibility/AXLayoutObject.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class AXListBoxOption final : public AXLayoutObject {
 
 }  // namespace blink
 
-#endif  // AXListBoxOption_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_LIST_BOX_OPTION_H_

@@ -27,24 +27,24 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXObject_h
-#define AXObject_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_OBJECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_OBJECT_H_
 
 #include <ostream>
 
 #include "base/macros.h"
-#include "core/dom/Element.h"
-#include "core/editing/Forward.h"
-#include "core/editing/TextAffinity.h"
-#include "core/editing/markers/DocumentMarker.h"
-#include "core/inspector/protocol/Accessibility.h"
-#include "modules/ModulesExport.h"
-#include "modules/accessibility/AXEnums.h"
-#include "platform/geometry/FloatQuad.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/Color.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Accessibility.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_enums.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 class SkMatrix44;
 
@@ -890,4 +890,4 @@ MODULES_EXPORT std::ostream& operator<<(std::ostream&, const AXObject&);
 
 }  // namespace blink
 
-#endif  // AXObject_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_OBJECT_H_

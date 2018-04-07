@@ -18,10 +18,10 @@
  *
  */
 
-#ifndef LayoutBR_h
-#define LayoutBR_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BR_H_
 
-#include "core/layout/LayoutText.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
 
 // The whole class here is a hack to get <br> working, as long as we don't have
 // support for CSS2 :before and :after pseudo elements.
@@ -78,4 +78,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBR, IsBR());
 
 }  // namespace blink
 
-#endif  // LayoutBR_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BR_H_

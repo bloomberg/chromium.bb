@@ -2,14 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom"
+mojom = "//third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom"
 public_headers =
     [ "//content/common/background_fetch/background_fetch_types.h" ]
 traits_headers =
     [ "//content/common/background_fetch/background_fetch_struct_traits.h" ]
 deps = [
   "//mojo/public/cpp/bindings",
-  "//third_party/WebKit/public:blink_headers",
+  "//third_party/blink/public:blink_headers",
 ]
 type_mappings = [
   "blink.mojom.BackgroundFetchOptions=content::BackgroundFetchOptions",

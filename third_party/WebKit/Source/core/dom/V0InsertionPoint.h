@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V0InsertionPoint_h
-#define V0InsertionPoint_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_V0_INSERTION_POINT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_V0_INSERTION_POINT_H_
 
-#include "core/CoreExport.h"
-#include "core/css/CSSSelectorList.h"
-#include "core/dom/DistributedNodes.h"
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_selector_list.h"
+#include "third_party/blink/renderer/core/dom/distributed_nodes.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -120,4 +120,4 @@ void CollectDestinationInsertionPoints(
 
 }  // namespace blink
 
-#endif  // V0InsertionPoint_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_V0_INSERTION_POINT_H_

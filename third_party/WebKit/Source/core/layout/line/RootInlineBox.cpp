@@ -17,22 +17,22 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/line/RootInlineBox.h"
+#include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
 
-#include "core/css/StyleEngine.h"
-#include "core/dom/Document.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/VerticalPositionCache.h"
-#include "core/layout/api/LineLayoutBlockFlow.h"
-#include "core/layout/api/LineLayoutItem.h"
-#include "core/layout/line/EllipsisBox.h"
-#include "core/layout/line/GlyphOverflow.h"
-#include "core/layout/line/InlineTextBox.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/RootInlineBoxPainter.h"
-#include "platform/text/BidiResolver.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/line/ellipsis_box.h"
+#include "third_party/blink/renderer/core/layout/line/glyph_overflow.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/vertical_position_cache.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/root_inline_box_painter.h"
+#include "third_party/blink/renderer/platform/text/bidi_resolver.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
 

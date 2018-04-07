@@ -20,18 +20,18 @@
  *
  */
 
-#ifndef ElementRuleCollector_h
-#define ElementRuleCollector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_ELEMENT_RULE_COLLECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_ELEMENT_RULE_COLLECTOR_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/css/PseudoStyleRequest.h"
-#include "core/css/SelectorChecker.h"
-#include "core/css/resolver/ElementResolveContext.h"
-#include "core/css/resolver/MatchRequest.h"
-#include "core/css/resolver/MatchResult.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/css/pseudo_style_request.h"
+#include "third_party/blink/renderer/core/css/resolver/element_resolve_context.h"
+#include "third_party/blink/renderer/core/css/resolver/match_request.h"
+#include "third_party/blink/renderer/core/css/resolver/match_result.h"
+#include "third_party/blink/renderer/core/css/selector_checker.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -197,4 +197,4 @@ class ElementRuleCollector {
 
 }  // namespace blink
 
-#endif  // ElementRuleCollector_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_ELEMENT_RULE_COLLECTOR_H_

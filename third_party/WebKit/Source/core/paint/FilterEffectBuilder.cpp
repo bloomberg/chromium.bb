@@ -24,28 +24,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/paint/FilterEffectBuilder.h"
+#include "third_party/blink/renderer/core/paint/filter_effect_builder.h"
 
 #include <algorithm>
-#include "core/style/FilterOperations.h"
-#include "core/svg/SVGFilterElement.h"
-#include "core/svg/SVGLengthContext.h"
-#include "core/svg/SVGResource.h"
-#include "core/svg/graphics/filters/SVGFilterBuilder.h"
-#include "platform/LengthFunctions.h"
-#include "platform/graphics/CompositorFilterOperations.h"
-#include "platform/graphics/InterpolationSpace.h"
-#include "platform/graphics/filters/FEBoxReflect.h"
-#include "platform/graphics/filters/FEColorMatrix.h"
-#include "platform/graphics/filters/FEComponentTransfer.h"
-#include "platform/graphics/filters/FEDropShadow.h"
-#include "platform/graphics/filters/FEGaussianBlur.h"
-#include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/FilterEffect.h"
-#include "platform/graphics/filters/PaintFilterBuilder.h"
-#include "platform/graphics/filters/SourceGraphic.h"
-#include "platform/wtf/MathExtras.h"
-#include "public/platform/WebPoint.h"
+#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/renderer/core/style/filter_operations.h"
+#include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_filter_element.h"
+#include "third_party/blink/renderer/core/svg/svg_length_context.h"
+#include "third_party/blink/renderer/core/svg/svg_resource.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_box_reflect.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_color_matrix.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_component_transfer.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_drop_shadow.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_gaussian_blur.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
+#include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
+#include "third_party/blink/renderer/platform/graphics/interpolation_space.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

@@ -26,15 +26,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/SQLStatementBackend.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_statement_backend.h"
 
-#include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/SQLError.h"
-#include "modules/webdatabase/SQLStatement.h"
-#include "modules/webdatabase/StorageLog.h"
-#include "modules/webdatabase/sqlite/SQLiteDatabase.h"
-#include "modules/webdatabase/sqlite/SQLiteStatement.h"
-#include "platform/wtf/text/CString.h"
+#include "third_party/blink/renderer/modules/webdatabase/database.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_error.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_statement.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_database.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_statement.h"
+#include "third_party/blink/renderer/modules/webdatabase/storage_log.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 // The Life-Cycle of a SQLStatement i.e. Who's keeping the SQLStatement alive?
 // ==========================================================================

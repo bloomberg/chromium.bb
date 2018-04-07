@@ -41,7 +41,7 @@ cc_component("blink") {
     "//cc",
     "//cc/paint",
     "//gpu",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
@@ -68,7 +68,7 @@ cc_test("cc_blink_unittests") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
   ]

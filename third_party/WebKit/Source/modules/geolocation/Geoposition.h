@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Geoposition_h
-#define Geoposition_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOPOSITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOPOSITION_H_
 
-#include "modules/EventModules.h"
-#include "modules/geolocation/Coordinates.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/geolocation/coordinates.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class Geoposition final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // Geoposition_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOPOSITION_H_

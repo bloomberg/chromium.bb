@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebMediaConstraints.h"
+#include "third_party/blink/public/platform/web_media_constraints.h"
 
 #include <math.h>
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 

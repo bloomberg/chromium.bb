@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InterventionReport_h
-#define InterventionReport_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_INTERVENTION_REPORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_INTERVENTION_REPORT_H_
 
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/frame/MessageReport.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/frame/message_report.h"
 
 namespace blink {
 
@@ -23,4 +23,4 @@ class CORE_EXPORT InterventionReport : public MessageReport {
 
 }  // namespace blink
 
-#endif  // InterventionReport_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_INTERVENTION_REPORT_H_

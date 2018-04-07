@@ -29,15 +29,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ChromeClientImpl_h
-#define ChromeClientImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_CHROME_CLIENT_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_CHROME_CLIENT_IMPL_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/page/ChromeClient.h"
-#include "platform/graphics/TouchAction.h"
-#include "public/web/WebNavigationPolicy.h"
-#include "public/web/WebWindowFeatures.h"
+#include "third_party/blink/public/web/web_navigation_policy.h"
+#include "third_party/blink/public/web/web_window_features.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/platform/graphics/touch_action.h"
 
 namespace blink {
 

@@ -30,13 +30,13 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/ContainerAnnotations.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/ThreadRestrictionVerifier.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/container_annotations.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/thread_restriction_verifier.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace WTF {
 

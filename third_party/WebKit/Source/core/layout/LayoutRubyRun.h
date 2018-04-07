@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutRubyRun_h
-#define LayoutRubyRun_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_RUBY_RUN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_RUBY_RUN_H_
 
-#include "core/layout/LayoutBlockFlow.h"
-#include "platform/text/TextBreakIterator.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 
 namespace blink {
 
@@ -92,4 +92,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutRubyRun, IsRubyRun());
 
 }  // namespace blink
 
-#endif  // LayoutRubyRun_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_RUBY_RUN_H_

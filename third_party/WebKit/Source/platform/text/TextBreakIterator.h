@@ -19,14 +19,14 @@
  *
  */
 
-#ifndef TextBreakIterator_h
-#define TextBreakIterator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_BREAK_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_BREAK_ITERATOR_H_
 
 #include "base/macros.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 #include <unicode/brkiter.h>
 

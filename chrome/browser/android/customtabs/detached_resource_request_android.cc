@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "content/public/common/referrer.h"
 #include "jni/CustomTabsConnection_jni.h"
-#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
 #include "url/gurl.h"
 
 namespace customtabs {

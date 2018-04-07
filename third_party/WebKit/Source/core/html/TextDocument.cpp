@@ -22,10 +22,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/TextDocument.h"
+#include "third_party/blink/renderer/core/html/text_document.h"
 
-#include "core/frame/UseCounter.h"
-#include "core/html/parser/TextDocumentParser.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/parser/text_document_parser.h"
 
 namespace blink {
 

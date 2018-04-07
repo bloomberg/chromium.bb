@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/imports/HTMLImportChild.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_child.h"
 
-#include "core/css/StyleEngine.h"
-#include "core/css/StyleSheetList.h"
-#include "core/dom/Document.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/custom/V0CustomElement.h"
-#include "core/html/custom/V0CustomElementMicrotaskImportStep.h"
-#include "core/html/custom/V0CustomElementSyncMicrotaskQueue.h"
-#include "core/html/imports/HTMLImportChildClient.h"
-#include "core/html/imports/HTMLImportLoader.h"
-#include "core/html/imports/HTMLImportTreeRoot.h"
-#include "core/html/imports/HTMLImportsController.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/style_sheet_list.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_import_step.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_sync_microtask_queue.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_child_client.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_tree_root.h"
+#include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 
 namespace blink {
 

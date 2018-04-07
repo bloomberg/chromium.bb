@@ -27,14 +27,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/serializers/StyledMarkupAccumulator.h"
+#include "third_party/blink/renderer/core/editing/serializers/styled_markup_accumulator.h"
 
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/dom/Text.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/iterators/TextIterator.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

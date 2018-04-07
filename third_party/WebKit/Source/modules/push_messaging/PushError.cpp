@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/push_messaging/PushError.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_error.h"
 
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

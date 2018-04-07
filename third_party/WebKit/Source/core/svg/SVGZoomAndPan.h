@@ -19,11 +19,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGZoomAndPan_h
-#define SVGZoomAndPan_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ZOOM_AND_PAN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ZOOM_AND_PAN_H_
 
-#include "core/dom/QualifiedName.h"
-#include "core/svg_names.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 
@@ -94,4 +94,4 @@ class SVGZoomAndPan {
 
 }  // namespace blink
 
-#endif  // SVGZoomAndPan_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ZOOM_AND_PAN_H_

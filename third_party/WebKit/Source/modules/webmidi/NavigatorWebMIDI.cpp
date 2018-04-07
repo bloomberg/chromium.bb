@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webmidi/NavigatorWebMIDI.h"
+#include "third_party/blink/renderer/modules/webmidi/navigator_web_midi.h"
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Navigator.h"
-#include "core/frame/UseCounter.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "modules/webmidi/MIDIAccessInitializer.h"
-#include "modules/webmidi/MIDIOptions.h"
-#include "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_access_initializer.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_options.h"
 
 namespace blink {
 namespace {

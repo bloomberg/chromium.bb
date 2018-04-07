@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebTextCheckingResult.h"
+#include "third_party/blink/public/web/web_text_checking_result.h"
 
-#include "core/editing/spellcheck/TextChecking.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/text_checking.h"
 
 namespace blink {
 

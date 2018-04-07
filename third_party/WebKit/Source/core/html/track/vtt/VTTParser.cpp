@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/track/vtt/VTTParser.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_parser.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/ProcessingInstruction.h"
-#include "core/dom/Text.h"
-#include "core/html/track/vtt/VTTElement.h"
-#include "core/html/track/vtt/VTTRegion.h"
-#include "core/html/track/vtt/VTTScanner.h"
-#include "platform/loader/fetch/TextResourceDecoderOptions.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/text/SegmentedString.h"
-#include "platform/wtf/DateMath.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/processing_instruction.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_element.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_region.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_scanner.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/text/segmented_string.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

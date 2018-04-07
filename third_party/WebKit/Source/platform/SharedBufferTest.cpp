@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/SharedBuffer.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GridLayoutUtils_h
-#define GridLayoutUtils_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_LAYOUT_UTILS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_LAYOUT_UTILS_H_
 
-#include "core/layout/LayoutBox.h"
-#include "platform/LayoutUnit.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
 
 namespace blink {
 
@@ -35,4 +35,4 @@ class GridLayoutUtils {
 
 }  // namespace blink
 
-#endif  // GridLayoutUtils_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_LAYOUT_UTILS_H_

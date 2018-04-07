@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/WorkletModuleResponsesMap.h"
+#include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 
-#include "core/loader/modulescript/DocumentModuleScriptFetcher.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

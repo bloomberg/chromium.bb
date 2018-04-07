@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ng/ng_box_clipper.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_box_clipper.h"
 
-#include "core/paint/PaintInfo.h"
-#include "core/paint/ng/ng_paint_fragment.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

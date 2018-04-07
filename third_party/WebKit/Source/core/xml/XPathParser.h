@@ -24,14 +24,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XPathParser_h
-#define XPathParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_PARSER_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "core/xml/XPathPredicate.h"
-#include "core/xml/XPathStep.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/xml/xpath_predicate.h"
+#include "third_party/blink/renderer/core/xml/xpath_step.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/ResolveNode.h"
+#include "third_party/blink/renderer/core/inspector/resolve_node.h"
 
-#include "bindings/core/v8/BindingSecurity.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/Document.h"
-#include "core/dom/Node.h"
-#include "core/frame/LocalFrame.h"
-#include "core/inspector/V8InspectorString.h"
+#include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
 
 namespace blink {
 

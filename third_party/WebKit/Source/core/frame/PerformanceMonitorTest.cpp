@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/PerformanceMonitor.h"
+#include "third_party/blink/renderer/core/frame/PerformanceMonitor.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Location.h"
-#include "core/probe/CoreProbes.h"
-#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/location.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 #include <memory>
 

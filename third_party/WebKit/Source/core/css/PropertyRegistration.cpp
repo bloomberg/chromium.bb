@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/PropertyRegistration.h"
+#include "third_party/blink/renderer/core/css/property_registration.h"
 
-#include "core/animation/CSSInterpolationTypesMap.h"
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/CSSSyntaxDescriptor.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/CSSVariableReferenceValue.h"
-#include "core/css/PropertyDescriptor.h"
-#include "core/css/PropertyRegistry.h"
-#include "core/css/StyleChangeReason.h"
-#include "core/css/StyleEngine.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/parser/CSSTokenizer.h"
-#include "core/css/parser/CSSVariableParser.h"
-#include "core/css/resolver/StyleBuilderConverter.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
+#include "third_party/blink/renderer/core/css/property_descriptor.h"
+#include "third_party/blink/renderer/core/css/property_registry.h"
+#include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 

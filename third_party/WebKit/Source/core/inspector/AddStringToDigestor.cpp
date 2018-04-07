@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/AddStringToDigestor.h"
+#include "third_party/blink/renderer/core/inspector/add_string_to_digestor.h"
 
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebCrypto.h"
+#include "third_party/blink/public/platform/web_crypto.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

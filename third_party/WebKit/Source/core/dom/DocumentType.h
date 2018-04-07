@@ -21,10 +21,10 @@
  *
  */
 
-#ifndef DocumentType_h
-#define DocumentType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_TYPE_H_
 
-#include "core/dom/Node.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ DEFINE_NODE_TYPE_CASTS(DocumentType, IsDocumentTypeNode());
 
 }  // namespace blink
 
-#endif  // DocumentType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_TYPE_H_

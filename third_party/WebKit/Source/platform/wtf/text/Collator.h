@@ -26,13 +26,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_Collator_h
-#define WTF_Collator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_COLLATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_COLLATOR_H_
 
 #include "base/macros.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 struct UCollator;
 

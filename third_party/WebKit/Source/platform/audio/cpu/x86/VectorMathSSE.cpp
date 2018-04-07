@@ -6,7 +6,7 @@
 
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_MACOSX)
 
-#include "platform/audio/cpu/x86/VectorMathSSE.h"
+#include "third_party/blink/renderer/platform/audio/cpu/x86/vector_math_sse.h"
 
 #include <xmmintrin.h>
 
@@ -23,7 +23,7 @@ using MType = __m128;
 #define MM_PS(name) _mm_##name##_ps
 #define VECTOR_MATH_SIMD_NAMESPACE_NAME SSE
 
-#include "platform/audio/cpu/x86/VectorMathImpl.h"
+#include "third_party/blink/renderer/platform/audio/cpu/x86/vector_math_impl.h"
 
 #undef MM_PS
 #undef VECTOR_MATH_SIMD_NAMESPACE_NAME

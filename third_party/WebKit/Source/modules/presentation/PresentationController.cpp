@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/presentation/PresentationController.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/UseCounter.h"
-#include "modules/presentation/PresentationAvailabilityCallbacks.h"
-#include "modules/presentation/PresentationAvailabilityObserver.h"
-#include "modules/presentation/PresentationAvailabilityState.h"
-#include "modules/presentation/PresentationConnection.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/presentation/WebPresentationClient.h"
+#include "third_party/blink/public/platform/modules/presentation/web_presentation_client.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability_callbacks.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability_observer.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability_state.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_connection.h"
 
 namespace blink {
 

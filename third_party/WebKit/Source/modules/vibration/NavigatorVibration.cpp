@@ -17,23 +17,23 @@
  *  Boston, MA 02110-1301, USA.
  */
 
-#include "modules/vibration/NavigatorVibration.h"
+#include "third_party/blink/renderer/modules/vibration/navigator_vibration.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/UserGestureIndicator.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/FrameConsole.h"
-#include "core/frame/Intervention.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Navigator.h"
-#include "core/frame/UseCounter.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/page/Page.h"
-#include "modules/vibration/VibrationController.h"
-#include "platform/Histogram.h"
-#include "platform/feature_policy/FeaturePolicy.h"
-#include "public/platform/site_engagement.mojom-blink.h"
+#include "third_party/blink/public/platform/site_engagement.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/intervention.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/modules/vibration/vibration_controller.h"
+#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
 

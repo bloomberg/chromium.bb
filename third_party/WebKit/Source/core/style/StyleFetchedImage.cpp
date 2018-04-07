@@ -21,15 +21,15 @@
  *
  */
 
-#include "core/style/StyleFetchedImage.h"
+#include "third_party/blink/renderer/core/style/style_fetched_image.h"
 
-#include "core/css/CSSImageValue.h"
-#include "core/dom/Document.h"
-#include "core/loader/resource/ImageResourceContent.h"
-#include "core/style/ComputedStyle.h"
-#include "core/svg/graphics/SVGImage.h"
-#include "core/svg/graphics/SVGImageForContainer.h"
-#include "platform/geometry/LayoutSize.h"
+#include "third_party/blink/renderer/core/css/css_image_value.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
 
 namespace blink {
 

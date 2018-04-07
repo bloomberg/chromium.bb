@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaymentAddress_h
-#define PaymentAddress_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_ADDRESS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_ADDRESS_H_
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "modules/ModulesExport.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/payments/payment_request.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/payments/payment_request.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ class MODULES_EXPORT PaymentAddress final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // PaymentAddress_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_ADDRESS_H_

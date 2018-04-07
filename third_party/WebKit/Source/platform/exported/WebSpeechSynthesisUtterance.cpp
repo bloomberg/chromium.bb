@@ -23,10 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebSpeechSynthesisUtterance.h"
+#include "third_party/blink/public/platform/web_speech_synthesis_utterance.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/speech/PlatformSpeechSynthesisUtterance.h"
+#include "third_party/blink/renderer/platform/speech/platform_speech_synthesis_utterance.h"
 
 namespace blink {
 

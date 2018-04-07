@@ -21,17 +21,17 @@
  *
  */
 
-#include "core/layout/LayoutListItem.h"
+#include "third_party/blink/renderer/core/layout/layout_list_item.h"
 
-#include "core/dom/FlatTreeTraversal.h"
-#include "core/html/HTMLLIElement.h"
-#include "core/html/HTMLOListElement.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutListMarker.h"
-#include "core/paint/ListItemPainter.h"
-#include "platform/wtf/SaturatedArithmetic.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/html/html_li_element.h"
+#include "third_party/blink/renderer/core/html/html_olist_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
+#include "third_party/blink/renderer/core/paint/list_item_painter.h"
+#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

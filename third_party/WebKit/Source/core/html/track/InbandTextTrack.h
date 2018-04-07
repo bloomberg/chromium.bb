@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InbandTextTrack_h
-#define InbandTextTrack_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_INBAND_TEXT_TRACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_INBAND_TEXT_TRACK_H_
 
-#include "core/html/track/TextTrack.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/WebInbandTextTrackClient.h"
+#include "third_party/blink/public/platform/web_inband_text_track_client.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 class WebInbandTextTrack;

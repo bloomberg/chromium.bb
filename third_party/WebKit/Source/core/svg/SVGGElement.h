@@ -18,10 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGGElement_h
-#define SVGGElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_G_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_G_ELEMENT_H_
 
-#include "core/svg/SVGGraphicsElement.h"
+#include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class CORE_EXPORT SVGGElement final : public SVGGraphicsElement {
 
 }  // namespace blink
 
-#endif  // SVGGElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_G_ELEMENT_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/bindings/OriginTrialFeatures.h"
+#include "third_party/blink/renderer/platform/bindings/origin_trial_features.h"
 
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

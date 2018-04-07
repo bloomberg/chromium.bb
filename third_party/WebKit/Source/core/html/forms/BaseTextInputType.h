@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BaseTextInputType_h
-#define BaseTextInputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_BASE_TEXT_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_BASE_TEXT_INPUT_TYPE_H_
 
-#include "core/html/forms/TextFieldInputType.h"
+#include "third_party/blink/renderer/core/html/forms/text_field_input_type.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class BaseTextInputType : public TextFieldInputType {
 
 }  // namespace blink
 
-#endif  // BaseTextInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_BASE_TEXT_INPUT_TYPE_H_

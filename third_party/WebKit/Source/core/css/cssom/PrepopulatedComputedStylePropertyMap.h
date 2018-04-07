@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PrepopulatedComputedStylePropertyMap_h
-#define PrepopulatedComputedStylePropertyMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_PREPOPULATED_COMPUTED_STYLE_PROPERTY_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_PREPOPULATED_COMPUTED_STYLE_PROPERTY_MAP_H_
 
 #include "base/macros.h"
-#include "core/css/CSSPropertyIDTemplates.h"
-#include "core/css/cssom/StylePropertyMapReadOnly.h"
+#include "third_party/blink/renderer/core/css/css_property_id_templates.h"
+#include "third_party/blink/renderer/core/css/cssom/style_property_map_read_only.h"
 
 namespace blink {
 

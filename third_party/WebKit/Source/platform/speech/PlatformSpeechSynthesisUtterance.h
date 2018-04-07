@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PlatformSpeechSynthesisUtterance_h
-#define PlatformSpeechSynthesisUtterance_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SPEECH_PLATFORM_SPEECH_SYNTHESIS_UTTERANCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SPEECH_PLATFORM_SPEECH_SYNTHESIS_UTTERANCE_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/speech/PlatformSpeechSynthesisVoice.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/speech/platform_speech_synthesis_voice.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -91,4 +91,4 @@ class PLATFORM_EXPORT PlatformSpeechSynthesisUtterance final
 
 }  // namespace blink
 
-#endif  // PlatformSpeechSynthesisUtterance_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SPEECH_PLATFORM_SPEECH_SYNTHESIS_UTTERANCE_H_

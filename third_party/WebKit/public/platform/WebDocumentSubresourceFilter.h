@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebDocumentSubresourceFilter_h
-#define WebDocumentSubresourceFilter_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DOCUMENT_SUBRESOURCE_FILTER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DOCUMENT_SUBRESOURCE_FILTER_H_
 
-#include "public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 
 namespace blink {
 
@@ -41,4 +41,4 @@ class WebDocumentSubresourceFilter {
 
 }  // namespace blink
 
-#endif  // WebDocumentSubresourceFilter_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DOCUMENT_SUBRESOURCE_FILTER_H_

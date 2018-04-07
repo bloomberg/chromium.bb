@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/Dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 
-#include "bindings/core/v8/IDLTypes.h"
-#include "bindings/core/v8/NativeValueTraitsImpl.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "platform/bindings/ScriptState.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "v8/include/v8.h"
 
 namespace blink {

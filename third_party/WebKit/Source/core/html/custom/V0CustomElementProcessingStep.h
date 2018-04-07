@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V0CustomElementProcessingStep_h
-#define V0CustomElementProcessingStep_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_PROCESSING_STEP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_PROCESSING_STEP_H_
 
 #include "base/macros.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class V0CustomElementProcessingStep
 
 }  // namespace blink
 
-#endif  // V0CustomElementProcessingStep_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_PROCESSING_STEP_H_

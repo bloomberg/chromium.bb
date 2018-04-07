@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/presentation/PresentationAvailabilityState.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability_state.h"
 
-#include "modules/presentation/MockPresentationService.h"
-#include "modules/presentation/PresentationAvailabilityCallbacks.h"
-#include "modules/presentation/PresentationAvailabilityObserver.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebCallbacks.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/renderer/modules/presentation/mock_presentation_service.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability_callbacks.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability_observer.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 using testing::_;
 

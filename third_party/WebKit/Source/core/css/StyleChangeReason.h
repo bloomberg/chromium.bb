@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StyleChangeReason_h
-#define StyleChangeReason_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_CHANGE_REASON_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_CHANGE_REASON_H_
 
-#include "core/dom/QualifiedName.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -108,4 +108,4 @@ class StyleChangeReasonForTracing {
 
 }  // namespace blink
 
-#endif  // StyleChangeReason_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_CHANGE_REASON_H_

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IDBObserverChanges_h
-#define IDBObserverChanges_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_OBSERVER_CHANGES_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_OBSERVER_CHANGES_H_
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "modules/indexeddb/IDBDatabase.h"
-#include "modules/indexeddb/IDBObservation.h"
-#include "modules/indexeddb/IDBTransaction.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_observation.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_transaction.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ class IDBObserverChanges final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // IDBObserverChanges_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_OBSERVER_CHANGES_H_

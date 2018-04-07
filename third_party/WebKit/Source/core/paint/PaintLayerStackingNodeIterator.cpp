@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/paint/PaintLayerStackingNodeIterator.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
 
 // FIXME: We should build our primitive on top of
 // PaintLayerStackingNode and remove this include.
-#include "core/paint/PaintLayer.h"
-#include "core/paint/PaintLayerStackingNode.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_stacking_node.h"
 
 namespace blink {
 

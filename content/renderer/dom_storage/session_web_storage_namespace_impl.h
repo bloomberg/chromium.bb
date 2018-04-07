@@ -6,8 +6,8 @@
 #define CONTENT_RENDERER_DOM_STORAGE_SESSION_WEB_STORAGE_NAMESPACE_IMPL_H_
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
-#include "third_party/WebKit/public/platform/WebStorageNamespace.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_storage_namespace.h"
 
 namespace content {
 class LocalStorageCachedAreas;

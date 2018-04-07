@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CachingWordShaper_h
-#define CachingWordShaper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_CACHING_WORD_SHAPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_CACHING_WORD_SHAPER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/fonts/shaping/ShapeResultBuffer.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/text/TextRun.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -72,4 +72,4 @@ class PLATFORM_EXPORT CachingWordShaper final {
 
 }  // namespace blink
 
-#endif  // CachingWordShaper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_CACHING_WORD_SHAPER_H_

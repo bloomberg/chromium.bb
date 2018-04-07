@@ -23,25 +23,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/script/HTMLParserScriptRunner.h"
+#include "third_party/blink/renderer/core/script/html_parser_script_runner.h"
 
 #include <inttypes.h>
 #include <memory>
-#include "core/dom/DocumentParserTiming.h"
-#include "core/dom/Element.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/parser/HTMLInputStream.h"
-#include "core/html/parser/NestingLevelIncrementer.h"
-#include "core/script/HTMLParserScriptRunnerHost.h"
-#include "core/script/IgnoreDestructiveWriteCountIncrementer.h"
-#include "core/script/ScriptLoader.h"
-#include "platform/Histogram.h"
-#include "platform/bindings/Microtask.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/instrumentation/tracing/TracedValue.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/dom/document_parser_timing.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/parser/html_input_stream.h"
+#include "third_party/blink/renderer/core/html/parser/nesting_level_incrementer.h"
+#include "third_party/blink/renderer/core/script/html_parser_script_runner_host.h"
+#include "third_party/blink/renderer/core/script/ignore_destructive_write_count_incrementer.h"
+#include "third_party/blink/renderer/core/script/script_loader.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintWorkletPendingGeneratorRegistry_h
-#define PaintWorkletPendingGeneratorRegistry_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_PENDING_GENERATOR_REGISTRY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_PENDING_GENERATOR_REGISTRY_H_
 
-#include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
-#include "platform/heap/Heap.h"
-#include "platform/heap/HeapAllocator.h"
+#include "third_party/blink/renderer/modules/csspaint/css_paint_image_generator_impl.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
 
@@ -39,4 +39,4 @@ class PaintWorkletPendingGeneratorRegistry
 
 }  // namespace blink
 
-#endif  // PaintWorkletPendingGeneratorRegistry_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_PENDING_GENERATOR_REGISTRY_H_

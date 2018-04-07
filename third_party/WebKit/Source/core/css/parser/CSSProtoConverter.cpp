@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSProtoConverter.h"
 #include <string>
+#include "third_party/blink/renderer/core/css/parser/css_proto_converter.h"
 
 // TODO(metzman): Figure out how to remove this include and use DCHECK.
-#include "platform/wtf/text/WTFString.h"
-#include "third_party/WebKit/Source/core/css/parser/CSS.pb.h"
+#include "third_party/blink/renderer/core/css/parser/css.pb.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace css_proto_converter {
 

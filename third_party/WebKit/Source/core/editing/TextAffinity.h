@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextAffinity_h
-#define TextAffinity_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_TEXT_AFFINITY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_TEXT_AFFINITY_H_
 
-#include "core/CoreExport.h"
 #include <iosfwd>
+#include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&, TextAffinity);
 
 }  // namespace blink
 
-#endif  // TextAffinity_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_TEXT_AFFINITY_H_

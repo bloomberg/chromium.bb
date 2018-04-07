@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/AudioBus.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
 
 #include <assert.h>
 #include <math.h>
@@ -34,13 +34,13 @@
 #include <memory>
 #include <utility>
 
-#include "platform/SharedBuffer.h"
-#include "platform/audio/AudioFileReader.h"
-#include "platform/audio/DenormalDisabler.h"
-#include "platform/audio/SincResampler.h"
-#include "platform/audio/VectorMath.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebAudioBus.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_file_reader.h"
+#include "third_party/blink/renderer/platform/audio/denormal_disabler.h"
+#include "third_party/blink/renderer/platform/audio/sinc_resampler.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 
 namespace blink {
 

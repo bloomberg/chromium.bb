@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/WhitespaceAttacher.h"
+#include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 
-#include "core/dom/Element.h"
-#include "core/dom/LayoutTreeBuilderTraversal.h"
-#include "core/dom/Text.h"
-#include "core/layout/LayoutText.h"
-#include "platform/bindings/ScriptForbiddenScope.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 
 namespace blink {
 

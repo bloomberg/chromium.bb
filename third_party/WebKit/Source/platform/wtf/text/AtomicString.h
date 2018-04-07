@@ -18,19 +18,19 @@
  *
  */
 
-#ifndef AtomicString_h
-#define AtomicString_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_ATOMIC_STRING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_ATOMIC_STRING_H_
 
 #include <cstring>
 #include <iosfwd>
 
 #include "build/build_config.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashTableDeletedValueType.h"
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/StringView.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -316,5 +316,5 @@ using WTF::g_xml_atom;
 using WTF::g_xmlns_atom;
 using WTF::g_xlink_atom;
 
-#include "platform/wtf/text/StringConcatenate.h"
-#endif  // AtomicString_h
+#include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_ATOMIC_STRING_H_

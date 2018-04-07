@@ -14,8 +14,8 @@
 #include "base/time/time.h"
 #include "net/http/http_util.h"
 #include "net/http/http_version.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url_response.h"
 
 using base::Time;
 using base::TimeDelta;

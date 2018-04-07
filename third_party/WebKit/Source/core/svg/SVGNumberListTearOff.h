@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGNumberListTearOff_h
-#define SVGNumberListTearOff_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_NUMBER_LIST_TEAR_OFF_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_NUMBER_LIST_TEAR_OFF_H_
 
-#include "core/svg/SVGNumberList.h"
-#include "core/svg/properties/SVGListPropertyTearOffHelper.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_list_property_tear_off_helper.h"
+#include "third_party/blink/renderer/core/svg/svg_number_list.h"
 
 namespace blink {
 
@@ -64,4 +64,4 @@ class SVGNumberListTearOff final
 
 }  // namespace blink
 
-#endif  // SVGNumberListTearOff_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_NUMBER_LIST_TEAR_OFF_H_

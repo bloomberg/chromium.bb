@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaKeyStatusMap_h
-#define MediaKeyStatusMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEY_STATUS_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEY_STATUS_MAP_H_
 
-#include "bindings/core/v8/Iterable.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/typed_arrays/DOMArrayPiece.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/iterable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ class MediaKeyStatusMap final
 
 }  // namespace blink
 
-#endif  // MediaKeyStatusMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEY_STATUS_MAP_H_

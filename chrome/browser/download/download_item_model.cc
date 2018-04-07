@@ -29,7 +29,7 @@
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_item_utils.h"
 #include "net/base/mime_util.h"
-#include "third_party/WebKit/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"

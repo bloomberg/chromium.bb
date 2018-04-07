@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "content/shell/test_runner/test_common.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebTextCheckingResult.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_text_checking_result.h"
 
 namespace test_runner {
 

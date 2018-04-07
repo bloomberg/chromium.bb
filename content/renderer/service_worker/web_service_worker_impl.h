@@ -13,9 +13,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_object.mojom.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorker.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker.h"
+#include "third_party/blink/public/web/web_frame.h"
 
 namespace base {
 class SingleThreadTaskRunner;

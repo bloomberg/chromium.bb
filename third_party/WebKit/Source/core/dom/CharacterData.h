@@ -21,12 +21,12 @@
  *
  */
 
-#ifndef CharacterData_h
-#define CharacterData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHARACTER_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHARACTER_DATA_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Node.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -97,4 +97,4 @@ DEFINE_NODE_TYPE_CASTS(CharacterData, IsCharacterDataNode());
 
 }  // namespace blink
 
-#endif  // CharacterData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHARACTER_DATA_H_

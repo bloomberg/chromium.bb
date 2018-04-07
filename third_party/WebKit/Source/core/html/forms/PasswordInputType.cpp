@@ -29,18 +29,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/PasswordInputType.h"
+#include "third_party/blink/renderer/core/html/forms/password_input_type.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/Document.h"
-#include "core/editing/FrameSelection.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/WebFeature.h"
-#include "core/html/forms/FormController.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/input_type_names.h"
-#include "core/layout/LayoutTextControlSingleLine.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/forms/form_controller.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/layout/layout_text_control_single_line.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

@@ -14,10 +14,10 @@
 #include "base/macros.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
 #include "base/trace_event/memory_dump_request_args.h"
-#include "platform/PlatformExport.h"
-#include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 class SkTraceMemoryDump;
 

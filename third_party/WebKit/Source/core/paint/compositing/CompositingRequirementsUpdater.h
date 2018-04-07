@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CompositingRequirementsUpdater_h
-#define CompositingRequirementsUpdater_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_REQUIREMENTS_UPDATER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_REQUIREMENTS_UPDATER_H_
 
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/CompositingReasons.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -79,4 +79,4 @@ class CompositingRequirementsUpdater {
 
 }  // namespace blink
 
-#endif  // CompositingRequirementsUpdater_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_REQUIREMENTS_UPDATER_H_

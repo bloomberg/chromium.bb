@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLDimension.h"
+#include "third_party/blink/renderer/core/html/html_dimension.h"
 
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/ParsingUtilities.h"
-#include "platform/wtf/text/StringToNumber.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

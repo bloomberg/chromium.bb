@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/loader/LinkHeader.h"
+#include "third_party/blink/renderer/platform/loader/link_header.h"
 
 #include "base/strings/string_util.h"
 #include "components/link_header_util/link_header_util.h"
-#include "platform/wtf/text/ParsingUtilities.h"
+#include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
 
 namespace blink {
 

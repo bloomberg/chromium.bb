@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webaudio/AudioWorkletProcessorDefinition.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_processor_definition.h"
 
 namespace blink {
 

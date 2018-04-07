@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextTrackKindUserPreference_h
-#define TextTrackKindUserPreference_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_KIND_USER_PREFERENCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_KIND_USER_PREFERENCE_H_
 
 namespace blink {
 
@@ -21,4 +21,4 @@ enum class TextTrackKindUserPreference {
 
 }  // namespace blink
 
-#endif  // TextTrackKindUserPreference_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_KIND_USER_PREFERENCE_H_

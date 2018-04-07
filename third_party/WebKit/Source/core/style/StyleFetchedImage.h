@@ -21,12 +21,12 @@
  *
  */
 
-#ifndef StyleFetchedImage_h
-#define StyleFetchedImage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_FETCHED_IMAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_FETCHED_IMAGE_H_
 
-#include "core/loader/resource/ImageResourceObserver.h"
-#include "core/style/StyleImage.h"
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

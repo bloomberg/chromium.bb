@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutThemeFontProvider.h"
+#include "third_party/blink/renderer/core/layout/layout_theme_font_provider.h"
 
-#include "core/css_value_keywords.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

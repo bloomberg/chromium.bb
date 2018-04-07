@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/encryptedmedia/MediaKeysGetStatusForPolicy.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_keys_get_status_for_policy.h"
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "modules/encryptedmedia/MediaKeys.h"
-#include "modules/encryptedmedia/MediaKeysPolicy.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_keys.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_keys_policy.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

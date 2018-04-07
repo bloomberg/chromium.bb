@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorAnimationDelegate_h
-#define CompositorAnimationDelegate_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_ANIMATION_DELEGATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_ANIMATION_DELEGATE_H_
 
 #include "cc/animation/animation_curve.h"
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 #include <memory>
 
@@ -33,4 +33,4 @@ class PLATFORM_EXPORT CompositorAnimationDelegate {
 
 }  // namespace blink
 
-#endif  // CompositorAnimationDelegate_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_ANIMATION_DELEGATE_H_

@@ -23,23 +23,23 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/mac/ScrollAnimatorMac.h"
+#include "third_party/blink/renderer/platform/mac/scroll_animator_mac.h"
 
 #import <AppKit/AppKit.h>
 
 #include <memory>
-#include "platform/Timer.h"
-#include "platform/animation/TimingFunction.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/mac/BlockExceptions.h"
-#include "platform/mac/NSScrollerImpDetails.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/scroll/ScrollableArea.h"
-#include "platform/scroll/ScrollbarTheme.h"
-#include "platform/scroll/ScrollbarThemeMac.h"
-#include "platform/wtf/MathExtras.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/animation/timing_function.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/mac/block_exceptions.h"
+#include "third_party/blink/renderer/platform/mac/ns_scroller_imp_details.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_mac.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace {
 

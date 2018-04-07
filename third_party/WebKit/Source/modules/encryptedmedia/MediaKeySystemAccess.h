@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaKeySystemAccess_h
-#define MediaKeySystemAccess_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEY_SYSTEM_ACCESS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEY_SYSTEM_ACCESS_H_
 
 #include <memory>
-#include "bindings/core/v8/ScriptPromise.h"
-#include "modules/encryptedmedia/MediaKeySystemConfiguration.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/WebContentDecryptionModuleAccess.h"
+#include "third_party/blink/public/platform/web_content_decryption_module_access.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_key_system_configuration.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -33,4 +33,4 @@ class MediaKeySystemAccess final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // MediaKeySystemAccess_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEY_SYSTEM_ACCESS_H_

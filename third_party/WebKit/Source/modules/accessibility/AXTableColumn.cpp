@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/accessibility/AXTableColumn.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_table_column.h"
 
-#include "core/layout/LayoutTableCell.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/accessibility/AXTableCell.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_table_cell.h"
 
 namespace blink {
 

@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/modules/installedapp/WebRelatedAppsFetcher.h"
+#include "third_party/blink/public/platform/modules/installedapp/web_related_apps_fetcher.h"
 
 namespace blink {
 namespace mojom {

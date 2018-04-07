@@ -23,10 +23,10 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/BiquadProcessor.h"
 #include <memory>
-#include "modules/webaudio/BiquadDSPKernel.h"
-#include "platform/audio/AudioUtilities.h"
+#include "third_party/blink/renderer/modules/webaudio/biquad_dsp_kernel.h"
+#include "third_party/blink/renderer/modules/webaudio/biquad_processor.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 
 namespace blink {
 

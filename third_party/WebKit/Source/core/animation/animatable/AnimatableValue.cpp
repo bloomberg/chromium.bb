@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/animatable/AnimatableValue.h"
+#include "third_party/blink/renderer/core/animation/animatable/animatable_value.h"
 
 #include <algorithm>
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

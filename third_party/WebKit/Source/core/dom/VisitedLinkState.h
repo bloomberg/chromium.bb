@@ -28,13 +28,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef VisitedLinkState_h
-#define VisitedLinkState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_VISITED_LINK_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_VISITED_LINK_STATE_H_
 
-#include "core/dom/Element.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/LinkHash.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/link_hash.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 

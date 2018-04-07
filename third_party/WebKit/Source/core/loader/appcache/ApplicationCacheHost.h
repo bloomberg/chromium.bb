@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ApplicationCacheHost_h
-#define ApplicationCacheHost_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_APPCACHE_APPLICATION_CACHE_HOST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_APPCACHE_APPLICATION_CACHE_HOST_H_
 
 #include <memory>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebApplicationCacheHostClient.h"
+#include "third_party/blink/public/platform/web_application_cache_host_client.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 class ApplicationCache;
@@ -224,4 +224,4 @@ class CORE_EXPORT ApplicationCacheHost final
 
 }  // namespace blink
 
-#endif  // ApplicationCacheHost_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_APPCACHE_APPLICATION_CACHE_HOST_H_

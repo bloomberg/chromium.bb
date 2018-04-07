@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Iterable_h
-#define Iterable_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_ITERABLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_ITERABLE_H_
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8IteratorResultValue.h"
-#include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/dom/Iterator.h"
-#include "core/execution_context/ExecutionContext.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
+#include "third_party/blink/renderer/core/dom/iterator.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
 namespace blink {
 
@@ -201,4 +201,4 @@ class SetlikeIterable : public Iterable<ValueType, ValueType> {
 
 }  // namespace blink
 
-#endif  // Iterable_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_ITERABLE_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGLVertexArrayObject_h
-#define WebGLVertexArrayObject_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_VERTEX_ARRAY_OBJECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_VERTEX_ARRAY_OBJECT_H_
 
-#include "modules/webgl/WebGLVertexArrayObjectBase.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object_base.h"
 
 namespace blink {
 
@@ -21,4 +21,4 @@ class WebGLVertexArrayObject final : public WebGLVertexArrayObjectBase {
 
 }  // namespace blink
 
-#endif  // WebGLVertexArrayObject_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_VERTEX_ARRAY_OBJECT_H_

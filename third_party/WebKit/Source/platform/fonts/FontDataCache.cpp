@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/FontDataCache.h"
+#include "third_party/blink/renderer/platform/fonts/font_data_cache.h"
 
 #include "build/build_config.h"
-#include "platform/fonts/SimpleFontData.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 
 namespace blink {
 

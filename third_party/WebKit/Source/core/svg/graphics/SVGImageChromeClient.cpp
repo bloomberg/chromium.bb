@@ -26,15 +26,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/graphics/SVGImageChromeClient.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
 
 #include <algorithm>
 #include <utility>
 
-#include "core/svg/graphics/SVGImage.h"
-#include "platform/graphics/ImageObserver.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
+#include "third_party/blink/renderer/platform/graphics/image_observer.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

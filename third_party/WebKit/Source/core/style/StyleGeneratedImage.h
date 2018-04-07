@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef StyleGeneratedImage_h
-#define StyleGeneratedImage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_GENERATED_IMAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_GENERATED_IMAGE_H_
 
-#include "core/CoreExport.h"
-#include "core/style/StyleImage.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
 
 namespace blink {
 

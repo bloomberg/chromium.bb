@@ -26,35 +26,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EmptyClients_h
-#define EmptyClients_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_EMPTY_CLIENTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_EMPTY_CLIENTS_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/frame/ContentSettingsClient.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/frame/RemoteFrameClient.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "platform/DragImage.h"
-#include "platform/exported/WrappedResourceRequest.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/TouchAction.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ResourceError.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCanvas.h"
-#include "public/platform/WebFocusType.h"
-#include "public/platform/WebMenuSourceType.h"
-#include "public/platform/WebScreenInfo.h"
-#include "public/platform/WebSpellCheckPanelHostClient.h"
-#include "public/platform/WebURLLoader.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_canvas.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/platform/web_menu_source_type.h"
+#include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/public/platform/web_spell_check_panel_host_client.h"
+#include "third_party/blink/public/platform/web_url_loader.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/content_settings_client.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/remote_frame_client.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/drag_image.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/touch_action.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "v8/include/v8.h"
 
 /*
@@ -449,4 +449,4 @@ CORE_EXPORT void FillWithEmptyClients(Page::PageClients&);
 
 }  // namespace blink
 
-#endif  // EmptyClients_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_EMPTY_CLIENTS_H_

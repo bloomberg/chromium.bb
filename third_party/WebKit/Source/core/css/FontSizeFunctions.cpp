@@ -28,11 +28,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/FontSizeFunctions.h"
+#include "third_party/blink/renderer/core/css/font_size_functions.h"
 
-#include "core/css_value_keywords.h"
-#include "core/dom/Document.h"
-#include "core/frame/Settings.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 
 namespace blink {
 

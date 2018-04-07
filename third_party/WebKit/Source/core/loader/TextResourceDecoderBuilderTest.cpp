@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/TextResourceDecoderBuilder.h"
+#include "third_party/blink/renderer/core/loader/text_resource_decoder_builder.h"
 
-#include "core/testing/DummyPageHolder.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 namespace blink {
 

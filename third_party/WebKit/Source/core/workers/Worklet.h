@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Worklet_h
-#define Worklet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_H_
 
 #include "base/macros.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/workers/WorkletGlobalScopeProxy.h"
-#include "core/workers/WorkletModuleResponsesMap.h"
-#include "core/workers/WorkletOptions.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope_proxy.h"
+#include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
+#include "third_party/blink/renderer/core/workers/worklet_options.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -92,4 +92,4 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // Worklet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_H_

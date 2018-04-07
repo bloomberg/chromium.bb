@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/filesystem/DevToolsHostFileSystem.h"
+#include "third_party/blink/renderer/modules/filesystem/dev_tools_host_file_system.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/inspector/DevToolsHost.h"
-#include "core/page/Page.h"
-#include "modules/filesystem/DOMFileSystem.h"
-#include "platform/json/JSONValues.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/dev_tools_host.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
 
 namespace blink {
 

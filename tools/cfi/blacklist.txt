@@ -181,7 +181,7 @@ fun:*GrGLFunction*
 # defined as a char16_t internally, but for the rest of chromium it's an
 # unsigned short, causing mismatched type signatures for icalls to/from icu
 src:*third_party/icu/source/common/*
-src:*third_party/WebKit/Source/platform/wtf/*
+src:*third_party/blink/renderer/platform/wtf/*
 # v8/src/intl.cc
 fun:*LocaleConvertCase*
 

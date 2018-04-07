@@ -17,18 +17,18 @@
  *  Boston, MA 02110-1301, USA.
  */
 
-#ifndef VibrationController_h
-#define VibrationController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VIBRATION_VIBRATION_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_VIBRATION_VIBRATION_CONTROLLER_H_
 
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/page/PageVisibilityObserver.h"
-#include "modules/ModulesExport.h"
-#include "platform/Timer.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
 #include "services/device/public/mojom/vibration_manager.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -98,4 +98,4 @@ class MODULES_EXPORT VibrationController final
 
 }  // namespace blink
 
-#endif  // VibrationController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_VIBRATION_VIBRATION_CONTROLLER_H_

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/WindowNameCollection.h"
+#include "third_party/blink/renderer/core/html/window_name_collection.h"
 
-#include "core/html/HTMLImageElement.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
 
 namespace blink {
 

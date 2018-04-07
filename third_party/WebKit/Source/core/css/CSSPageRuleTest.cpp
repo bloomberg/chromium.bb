@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSPageRule.h"
+#include "third_party/blink/renderer/core/css/css_page_rule.h"
 
-#include "core/css/CSSRuleList.h"
-#include "core/css/CSSTestHelper.h"
-#include "core/dom/Document.h"
+#include "third_party/blink/renderer/core/css/css_rule_list.h"
+#include "third_party/blink/renderer/core/css/css_test_helper.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

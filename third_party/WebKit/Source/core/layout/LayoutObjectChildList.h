@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutObjectChildList_h
-#define LayoutObjectChildList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_OBJECT_CHILD_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_OBJECT_CHILD_LIST_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class LayoutObjectChildList {
 
 }  // namespace blink
 
-#endif  // LayoutObjectChildList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_OBJECT_CHILD_LIST_H_

@@ -69,7 +69,7 @@ if (enable_vr) {
         ":jni_headers",
         "//device/gamepad",
         "//device/gamepad/public/cpp:shared_with_blink",
-        "//third_party/WebKit/public:blink_headers",
+        "//third_party/blink/public:blink_headers",
       ]
       ldflags = [ "-landroid" ]
       libs = [

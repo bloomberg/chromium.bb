@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/BitmapImage.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 
 #include <algorithm>
 #include <memory>
@@ -32,23 +32,23 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "platform/Timer.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/BitmapImageMetrics.h"
-#include "platform/graphics/DeferredImageDecoder.h"
-#include "platform/graphics/ImageObserver.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/graphics/paint/PaintImage.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/instrumentation/PlatformInstrumentation.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/web/WebSettings.h"
+#include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
+#include "third_party/blink/renderer/platform/graphics/deferred_image_decoder.h"
+#include "third_party/blink/renderer/platform/graphics/image_observer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/instrumentation/platform_instrumentation.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

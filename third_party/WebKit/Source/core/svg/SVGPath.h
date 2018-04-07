@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGPath_h
-#define SVGPath_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_H_
 
-#include "core/css/CSSPathValue.h"
-#include "core/svg/SVGParsingError.h"
-#include "core/svg/SVGPathByteStream.h"
-#include "core/svg/properties/SVGProperty.h"
+#include "third_party/blink/renderer/core/css/css_path_value.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
+#include "third_party/blink/renderer/core/svg/svg_path_byte_stream.h"
 
 namespace blink {
 

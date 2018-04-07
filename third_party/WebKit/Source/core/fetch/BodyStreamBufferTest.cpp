@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/BodyStreamBuffer.h"
+#include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 
 #include <memory>
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/dom/Document.h"
-#include "core/fetch/BlobBytesConsumer.h"
-#include "core/fetch/BytesConsumer.h"
-#include "core/fetch/BytesConsumerTestUtil.h"
-#include "core/fetch/FormDataBytesConsumer.h"
-#include "core/html/forms/FormData.h"
-#include "platform/blob/BlobData.h"
-#include "platform/blob/BlobURL.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/network/EncodedFormData.h"
-#include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
+#include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
+#include "third_party/blink/renderer/core/html/forms/form_data.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/blob/blob_url.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 

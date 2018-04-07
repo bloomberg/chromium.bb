@@ -27,7 +27,7 @@ static_library("renderer") {
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
     "//skia",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
     "//v8",
   ]
 }

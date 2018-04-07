@@ -20,9 +20,9 @@
  *
  */
 
-#include "core/html/HTMLDirectoryElement.h"
+#include "third_party/blink/renderer/core/html/html_directory_element.h"
 
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

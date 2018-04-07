@@ -29,15 +29,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/BaseButtonInputType.h"
+#include "third_party/blink/renderer/core/html/forms/base_button_input_type.h"
 
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/Text.h"
-#include "core/html/forms/HTMLFormElement.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutButton.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_button.h"
 
 namespace blink {
 

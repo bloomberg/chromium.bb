@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutScrollbar.h"
+#include "third_party/blink/renderer/core/layout/layout_scrollbar.h"
 
-#include "core/css/PseudoStyleRequest.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutEmbeddedContent.h"
-#include "core/layout/LayoutScrollbarPart.h"
-#include "core/layout/LayoutScrollbarTheme.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/ObjectPaintInvalidator.h"
-#include "platform/graphics/GraphicsContext.h"
+#include "third_party/blink/renderer/core/css/pseudo_style_request.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_scrollbar_part.h"
+#include "third_party/blink/renderer/core/layout/layout_scrollbar_theme.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 namespace blink {
 

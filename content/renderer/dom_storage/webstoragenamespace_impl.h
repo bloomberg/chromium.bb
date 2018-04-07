@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <string>
 
-#include "third_party/WebKit/public/platform/WebStorageNamespace.h"
+#include "third_party/blink/public/platform/web_storage_namespace.h"
 
 namespace content {
 

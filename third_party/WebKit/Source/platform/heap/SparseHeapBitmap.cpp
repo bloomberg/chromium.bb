@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/heap/SparseHeapBitmap.h"
+#include "third_party/blink/renderer/platform/heap/sparse_heap_bitmap.h"
 
-#include "platform/heap/Heap.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 

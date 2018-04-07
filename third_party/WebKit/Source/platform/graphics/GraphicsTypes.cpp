@@ -24,10 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/GraphicsTypes.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

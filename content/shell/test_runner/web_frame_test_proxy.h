@@ -14,10 +14,10 @@
 #include "content/public/common/content_switches.h"
 #include "content/shell/test_runner/test_runner_export.h"
 #include "content/shell/test_runner/web_frame_test_client.h"
-#include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebFrameClient.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/platform/web_effective_connection_type.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace test_runner {
 

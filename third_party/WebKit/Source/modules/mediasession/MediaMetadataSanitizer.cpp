@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediasession/MediaMetadataSanitizer.h"
+#include "third_party/blink/renderer/modules/mediasession/media_metadata_sanitizer.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "modules/mediasession/MediaImage.h"
-#include "modules/mediasession/MediaMetadata.h"
-#include "platform/wtf/text/StringOperators.h"
-#include "public/platform/WebIconSizesParser.h"
-#include "public/platform/WebSize.h"
+#include "third_party/blink/public/platform/web_icon_sizes_parser.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/mediasession/media_image.h"
+#include "third_party/blink/renderer/modules/mediasession/media_metadata.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_operators.h"
 #include "url/url_constants.h"
 
 namespace blink {

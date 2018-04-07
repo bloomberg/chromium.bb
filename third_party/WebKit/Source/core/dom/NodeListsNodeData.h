@@ -19,18 +19,18 @@
  *
  */
 
-#ifndef NodeListsNodeData_h
-#define NodeListsNodeData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_LISTS_NODE_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_LISTS_NODE_DATA_H_
 
 #include "base/macros.h"
-#include "core/dom/ChildNodeList.h"
-#include "core/dom/EmptyNodeList.h"
-#include "core/dom/QualifiedName.h"
-#include "core/dom/TagCollection.h"
-#include "core/html/CollectionType.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/core/dom/child_node_list.h"
+#include "third_party/blink/renderer/core/dom/empty_node_list.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/dom/tag_collection.h"
+#include "third_party/blink/renderer/core/html/collection_type.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 
@@ -217,4 +217,4 @@ inline Collection* ContainerNode::CachedCollection(CollectionType type) {
 
 }  // namespace blink
 
-#endif  // NodeListsNodeData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_LISTS_NODE_DATA_H_

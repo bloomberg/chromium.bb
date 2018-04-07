@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Member_h
-#define Member_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MEMBER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MEMBER_H_
 
-#include "platform/heap/Heap.h"
-#include "platform/heap/HeapPage.h"
-#include "platform/heap/heap_buildflags.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashFunctions.h"
-#include "platform/wtf/HashTraits.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
+#include "third_party/blink/renderer/platform/heap/heap_page.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 
 namespace WTF {
 template <typename P, typename Traits, typename Allocator>
@@ -623,4 +623,4 @@ class ConstructTraits<blink::Member<T>, Traits, Allocator> {
 
 }  // namespace WTF
 
-#endif  // Member_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MEMBER_H_

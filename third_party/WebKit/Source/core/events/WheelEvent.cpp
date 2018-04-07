@@ -21,9 +21,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/events/WheelEvent.h"
+#include "third_party/blink/renderer/core/events/wheel_event.h"
 
-#include "core/clipboard/DataTransfer.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 
 namespace blink {
 

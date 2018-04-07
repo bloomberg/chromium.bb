@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_WEB_RENDER_WIDGET_SCHEDULING_STATE_H_
 #define THIRD_PARTY_WEBKIT_PUBLIC_PLATFORM_SCHEDULER_WEB_RENDER_WIDGET_SCHEDULING_STATE_H_
 
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 namespace scheduler {

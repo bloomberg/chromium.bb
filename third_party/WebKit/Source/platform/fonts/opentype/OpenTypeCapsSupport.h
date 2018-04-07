@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef OpenTypeCapsSupport_h
-#define OpenTypeCapsSupport_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_OPENTYPE_OPEN_TYPE_CAPS_SUPPORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_OPENTYPE_OPEN_TYPE_CAPS_SUPPORT_H_
 
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/SmallCapsIterator.h"
-#include "platform/fonts/opentype/OpenTypeCapsSupport.h"
-#include "platform/fonts/shaping/CaseMappingHarfBuzzBufferFiller.h"
-#include "platform/fonts/shaping/HarfBuzzFace.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/open_type_caps_support.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/case_mapping_harf_buzz_buffer_filler.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_face.h"
+#include "third_party/blink/renderer/platform/fonts/small_caps_iterator.h"
 
 #include <hb.h>
 

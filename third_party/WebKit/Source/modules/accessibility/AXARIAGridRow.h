@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXARIAGridRow_h
-#define AXARIAGridRow_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_ARIA_GRID_ROW_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_ARIA_GRID_ROW_H_
 
 #include "base/macros.h"
-#include "modules/accessibility/AXTableRow.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_table_row.h"
 
 namespace blink {
 
@@ -77,4 +77,4 @@ DEFINE_AX_OBJECT_TYPE_CASTS(AXARIAGridRow, IsARIARow());
 
 }  // namespace blink
 
-#endif  // AXARIAGridRow_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_ARIA_GRID_ROW_H_

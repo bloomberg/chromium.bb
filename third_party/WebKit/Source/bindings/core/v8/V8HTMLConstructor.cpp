@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/V8HTMLConstructor.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_html_constructor.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptCustomElementDefinition.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8HTMLElement.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/html/custom/CustomElementRegistry.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/V8BindingMacros.h"
-#include "platform/bindings/V8DOMWrapper.h"
-#include "platform/bindings/V8PerContextData.h"
-#include "platform/bindings/V8ThrowException.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_custom_element_definition.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_html_element.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 

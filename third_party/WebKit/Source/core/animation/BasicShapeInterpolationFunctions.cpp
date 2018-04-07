@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/BasicShapeInterpolationFunctions.h"
+#include "third_party/blink/renderer/core/animation/basic_shape_interpolation_functions.h"
 
-#include "core/animation/CSSPositionAxisListInterpolationType.h"
-#include "core/animation/LengthInterpolationFunctions.h"
-#include "core/css/CSSBasicShapeValues.h"
-#include "core/style/BasicShapes.h"
 #include <memory>
+#include "third_party/blink/renderer/core/animation/css_position_axis_list_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/css/css_basic_shape_values.h"
+#include "third_party/blink/renderer/core/style/basic_shapes.h"
 
 namespace blink {
 

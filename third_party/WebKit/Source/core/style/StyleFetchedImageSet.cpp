@@ -23,12 +23,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/style/StyleFetchedImageSet.h"
+#include "third_party/blink/renderer/core/style/style_fetched_image_set.h"
 
-#include "core/css/CSSImageSetValue.h"
-#include "core/loader/resource/ImageResourceContent.h"
-#include "core/style/ComputedStyle.h"
-#include "core/svg/graphics/SVGImageForContainer.h"
+#include "third_party/blink/renderer/core/css/css_image_set_value.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 
 namespace blink {
 

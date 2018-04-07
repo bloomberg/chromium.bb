@@ -23,18 +23,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef VisibleSelection_h
-#define VisibleSelection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_VISIBLE_SELECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_VISIBLE_SELECTION_H_
 
-#include "core/CoreExport.h"
-#include "core/editing/EditingStrategy.h"
-#include "core/editing/Forward.h"
-#include "core/editing/Position.h"
-#include "core/editing/SelectionType.h"
-#include "core/editing/TextAffinity.h"
-#include "core/editing/TextGranularity.h"
-#include "core/editing/VisibleUnits.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/editing_strategy.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/selection_type.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
+#include "third_party/blink/renderer/core/editing/text_granularity.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -180,4 +180,4 @@ void showTree(const blink::VisibleSelectionInFlatTree&);
 void showTree(const blink::VisibleSelectionInFlatTree*);
 #endif
 
-#endif  // VisibleSelection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_VISIBLE_SELECTION_H_

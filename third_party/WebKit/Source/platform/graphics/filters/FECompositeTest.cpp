@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/filters/FEComposite.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_composite.h"
 
-#include "platform/graphics/filters/FEOffset.h"
-#include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/SourceGraphic.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_offset.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
 
 namespace blink {
 

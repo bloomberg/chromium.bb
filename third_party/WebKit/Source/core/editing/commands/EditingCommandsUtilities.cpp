@@ -27,23 +27,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/commands/EditingCommandsUtilities.h"
+#include "third_party/blink/renderer/core/editing/commands/editing_commands_utilities.h"
 
-#include "core/dom/NodeComputedStyle.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleSelection.h"
-#include "core/editing/commands/SelectionForUndoStep.h"
-#include "core/editing/commands/TypingCommand.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/frame/UseCounter.h"
-#include "core/frame/WebFeatureForward.h"
-#include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLHtmlElement.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/editing/commands/selection_for_undo_step.h"
+#include "third_party/blink/renderer/core/editing/commands/typing_command.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/web_feature_forward.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 

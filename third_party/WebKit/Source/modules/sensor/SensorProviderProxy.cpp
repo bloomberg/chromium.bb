@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/sensor/SensorProviderProxy.h"
+#include "third_party/blink/renderer/modules/sensor/sensor_provider_proxy.h"
 
-#include "modules/sensor/SensorProxy.h"
-#include "platform/mojo/MojoHelper.h"
 #include "services/device/public/mojom/constants.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/modules/sensor/sensor_proxy.h"
+#include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 
 namespace blink {
 

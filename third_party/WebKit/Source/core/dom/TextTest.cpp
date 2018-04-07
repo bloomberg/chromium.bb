@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/Text.h"
+#include "third_party/blink/renderer/core/dom/text.h"
 
-#include "core/dom/Range.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/html/HTMLPreElement.h"
-#include "core/layout/LayoutText.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/html/html_pre_element.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
 
 namespace blink {
 

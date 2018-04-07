@@ -23,14 +23,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LayoutTable_h
-#define LayoutTable_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/css_property_names.h"
-#include "core/layout/LayoutBlock.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -610,4 +610,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTable, IsTable());
 
 }  // namespace blink
 
-#endif  // LayoutTable_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_H_

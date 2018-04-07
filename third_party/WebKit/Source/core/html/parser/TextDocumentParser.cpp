@@ -22,11 +22,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/TextDocumentParser.h"
+#include "third_party/blink/renderer/core/html/parser/text_document_parser.h"
 
-#include "core/html/parser/HTMLTreeBuilder.h"
-#include "core/html/parser/ParserSynchronizationPolicy.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/html/parser/html_tree_builder.h"
+#include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

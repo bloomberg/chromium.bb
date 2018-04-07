@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GraphicsTypes3D_h
-#define GraphicsTypes3D_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_TYPES_3D_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_TYPES_3D_H_
 
 #ifndef __glext_h_
 #include "third_party/khronos/GLES3/gl3.h"
@@ -32,7 +32,7 @@
 #endif
 
 #include <stdint.h>
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 // WebGL-specific enums
 const unsigned GC3D_UNPACK_FLIP_Y_WEBGL = 0x9240;
@@ -56,4 +56,4 @@ enum SourceDrawingBuffer { kFrontBuffer, kBackBuffer };
 
 }  // namespace blink
 
-#endif  // GraphicsTypes3D_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_TYPES_3D_H_

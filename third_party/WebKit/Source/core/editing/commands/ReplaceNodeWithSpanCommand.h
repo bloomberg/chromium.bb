@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ReplaceNodeWithSpanCommand_h
-#define ReplaceNodeWithSpanCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_REPLACE_NODE_WITH_SPAN_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_REPLACE_NODE_WITH_SPAN_COMMAND_H_
 
-#include "core/editing/commands/CompositeEditCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/composite_edit_command.h"
 
 namespace blink {
 

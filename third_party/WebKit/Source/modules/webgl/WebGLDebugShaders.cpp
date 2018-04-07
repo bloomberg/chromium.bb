@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webgl/WebGLDebugShaders.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_debug_shaders.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "modules/webgl/GLStringQuery.h"
-#include "modules/webgl/WebGLRenderingContextBase.h"
-#include "modules/webgl/WebGLShader.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/modules/webgl/gl_string_query.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_shader.h"
 
 namespace blink {
 

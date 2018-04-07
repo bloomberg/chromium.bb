@@ -20,13 +20,13 @@
  *
  */
 
-#ifndef HTMLObjectElement_h
-#define HTMLObjectElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_OBJECT_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_OBJECT_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/html/HTMLPlugInElement.h"
-#include "core/html/forms/FormAssociated.h"
-#include "core/html/forms/ListedElement.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/form_associated.h"
+#include "third_party/blink/renderer/core/html/forms/listed_element.h"
+#include "third_party/blink/renderer/core/html/html_plugin_element.h"
 
 namespace blink {
 
@@ -136,4 +136,4 @@ const HTMLObjectElement& ToHTMLObjectElementFromListedElement(
 
 }  // namespace blink
 
-#endif  // HTMLObjectElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_OBJECT_ELEMENT_H_

@@ -6,15 +6,15 @@
 #define NGContainerFragmentBuilder_h
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_bfc_offset.h"
-#include "core/layout/ng/geometry/ng_logical_size.h"
-#include "core/layout/ng/geometry/ng_margin_strut.h"
-#include "core/layout/ng/ng_base_fragment_builder.h"
-#include "core/layout/ng/ng_out_of_flow_positioned_descendant.h"
-#include "platform/text/TextDirection.h"
-#include "platform/text/WritingMode.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_base_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_descendant.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

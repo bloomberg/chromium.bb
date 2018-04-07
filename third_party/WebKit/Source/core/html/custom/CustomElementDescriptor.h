@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CustomElementDescriptor_h
-#define CustomElementDescriptor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_DESCRIPTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_DESCRIPTOR_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Element.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashTableDeletedValueType.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class CORE_EXPORT CustomElementDescriptor final {
 
 }  // namespace blink
 
-#endif  // CustomElementDescriptor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_DESCRIPTOR_H_

@@ -23,15 +23,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebScrollbarThemeGeometryNative_h
-#define WebScrollbarThemeGeometryNative_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WEB_SCROLLBAR_THEME_GEOMETRY_NATIVE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WEB_SCROLLBAR_THEME_GEOMETRY_NATIVE_H_
 
 #include <memory>
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebScrollbarThemeGeometry.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_scrollbar_theme_geometry.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 

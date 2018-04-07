@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SideIndex_h
-#define SideIndex_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SIDE_INDEX_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SIDE_INDEX_H_
 
 namespace blink {
 
@@ -17,4 +17,4 @@ enum SideIndex : unsigned {
 
 }  // namespace blink
 
-#endif  // SideIndex_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SIDE_INDEX_H_

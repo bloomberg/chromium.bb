@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef XRInputSourceEvent_h
-#define XRInputSourceEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_INPUT_SOURCE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_INPUT_SOURCE_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/xr/XRInputSource.h"
-#include "modules/xr/XRInputSourceEventInit.h"
-#include "modules/xr/XRPresentationFrame.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/xr/xr_input_source.h"
+#include "third_party/blink/renderer/modules/xr/xr_input_source_event_init.h"
+#include "third_party/blink/renderer/modules/xr/xr_presentation_frame.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class XRInputSourceEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // XRInputSourceEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_INPUT_SOURCE_EVENT_H_

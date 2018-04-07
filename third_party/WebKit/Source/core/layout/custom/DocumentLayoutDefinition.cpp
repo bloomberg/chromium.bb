@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/custom/DocumentLayoutDefinition.h"
+#include "third_party/blink/renderer/core/layout/custom/document_layout_definition.h"
 
 namespace blink {
 

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PresentationAvailability_h
-#define PresentationAvailability_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_AVAILABILITY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_AVAILABILITY_H_
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/PausableObject.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/page/PageVisibilityObserver.h"
-#include "modules/ModulesExport.h"
-#include "modules/presentation/PresentationAvailabilityObserver.h"
-#include "modules/presentation/PresentationPromiseProperty.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability_observer.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_promise_property.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -93,4 +93,4 @@ class MODULES_EXPORT PresentationAvailability final
 
 }  // namespace blink
 
-#endif  // PresentationAvailability_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_AVAILABILITY_H_

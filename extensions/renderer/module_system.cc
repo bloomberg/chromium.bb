@@ -26,8 +26,8 @@
 #include "extensions/renderer/source_map.h"
 #include "extensions/renderer/v8_helpers.h"
 #include "gin/converter.h"
-#include "third_party/WebKit/public/web/WebContextFeatures.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/blink/public/web/web_context_features.h"
+#include "third_party/blink/public/web/web_frame.h"
 
 namespace extensions {
 

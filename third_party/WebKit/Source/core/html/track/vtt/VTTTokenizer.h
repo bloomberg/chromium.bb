@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef VTTTokenizer_h
-#define VTTTokenizer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VTT_VTT_TOKENIZER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VTT_VTT_TOKENIZER_H_
 
 #include "base/macros.h"
-#include "core/html/parser/InputStreamPreprocessor.h"
-#include "core/html/track/vtt/VTTToken.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/html/parser/input_stream_preprocessor.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_token.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

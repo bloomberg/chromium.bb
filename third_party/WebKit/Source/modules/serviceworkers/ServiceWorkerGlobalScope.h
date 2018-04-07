@@ -27,17 +27,17 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef ServiceWorkerGlobalScope_h
-#define ServiceWorkerGlobalScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_GLOBAL_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_GLOBAL_SCOPE_H_
 
 #include <memory>
-#include "bindings/core/v8/request_or_usv_string.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "modules/ModulesExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
+#include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -158,4 +158,4 @@ DEFINE_TYPE_CASTS(ServiceWorkerGlobalScope,
 
 }  // namespace blink
 
-#endif  // ServiceWorkerGlobalScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_GLOBAL_SCOPE_H_

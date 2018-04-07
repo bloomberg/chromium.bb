@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/ng/slot_assignment_engine.h"
+#include "third_party/blink/renderer/core/dom/ng/slot_assignment_engine.h"
 
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/SlotAssignment.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/slot_assignment.h"
 
 namespace blink {
 

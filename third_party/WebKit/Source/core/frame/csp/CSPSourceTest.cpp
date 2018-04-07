@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/csp/CSPSource.h"
+#include "third_party/blink/renderer/core/frame/csp/csp_source.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

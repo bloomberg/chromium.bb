@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebPluginDocument_h
-#define WebPluginDocument_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_DOCUMENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_DOCUMENT_H_
 
-#include "WebDocument.h"
+#include "third_party/blink/public/web/web_document.h"
 
 namespace blink {
 

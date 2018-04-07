@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/scrolling/ViewportScrollCallback.h"
+#include "third_party/blink/renderer/core/page/scrolling/viewport_scroll_callback.h"
 
-#include "core/frame/BrowserControls.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/RootFrameViewport.h"
-#include "core/frame/Settings.h"
-#include "core/page/scrolling/OverscrollController.h"
-#include "core/page/scrolling/ScrollState.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/scroll/ScrollableArea.h"
+#include "third_party/blink/renderer/core/frame/browser_controls.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/page/scrolling/overscroll_controller.h"
+#include "third_party/blink/renderer/core/page/scrolling/scroll_state.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 
 namespace blink {
 

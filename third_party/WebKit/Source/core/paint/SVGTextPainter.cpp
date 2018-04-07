@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/SVGTextPainter.h"
+#include "third_party/blink/renderer/core/paint/svg_text_painter.h"
 
-#include "core/layout/svg/LayoutSVGText.h"
-#include "core/paint/BlockPainter.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/SVGPaintContext.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
+#include "third_party/blink/renderer/core/paint/block_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
 
 namespace blink {
 

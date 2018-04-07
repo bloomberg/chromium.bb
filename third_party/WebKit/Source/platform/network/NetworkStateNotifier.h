@@ -23,25 +23,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NetworkStateNotifier_h
-#define NetworkStateNotifier_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_STATE_NOTIFIER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_STATE_NOTIFIER_H_
 
 #include <memory>
 
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
-#include "platform/CrossThreadCopier.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebConnectionType.h"
-#include "public/platform/WebEffectiveConnectionType.h"
+#include "third_party/blink/public/platform/web_connection_type.h"
+#include "third_party/blink/public/platform/web_effective_connection_type.h"
+#include "third_party/blink/renderer/platform/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -336,4 +336,4 @@ PLATFORM_EXPORT NetworkStateNotifier& GetNetworkStateNotifier();
 
 }  // namespace blink
 
-#endif  // NetworkStateNotifier_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_STATE_NOTIFIER_H_

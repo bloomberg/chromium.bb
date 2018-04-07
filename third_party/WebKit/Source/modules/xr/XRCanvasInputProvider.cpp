@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/xr/XRCanvasInputProvider.h"
+#include "third_party/blink/renderer/modules/xr/xr_canvas_input_provider.h"
 
-#include "core/events/MouseEvent.h"
-#include "core/html/canvas/HTMLCanvasElement.h"
-#include "modules/xr/XRDevice.h"
-#include "modules/xr/XRFrameProvider.h"
-#include "modules/xr/XRInputSource.h"
-#include "modules/xr/XRSession.h"
-#include "modules/xr/XRView.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/modules/xr/xr_device.h"
+#include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
+#include "third_party/blink/renderer/modules/xr/xr_input_source.h"
+#include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_view.h"
 
 namespace blink {
 

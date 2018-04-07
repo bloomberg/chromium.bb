@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CORS_h
-#define CORS_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_CORS_CORS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_CORS_CORS_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/text/WTFString.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ PLATFORM_EXPORT bool IsCORSSafelistedHeader(const String& name,
 
 }  // namespace blink
 
-#endif  // CORS_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_CORS_CORS_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/ReportingObserver.h"
+#include "third_party/blink/renderer/core/frame/reporting_observer.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/Report.h"
-#include "core/frame/ReportingContext.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/report.h"
+#include "third_party/blink/renderer/core/frame/reporting_context.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

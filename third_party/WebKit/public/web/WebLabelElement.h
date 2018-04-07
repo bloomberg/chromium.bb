@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebLabelElement_h
-#define WebLabelElement_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LABEL_ELEMENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LABEL_ELEMENT_H_
 
-#include "WebElement.h"
+#include "third_party/blink/public/web/web_element.h"
 
 namespace blink {
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/testing/CallbackFunctionTest.h"
+#include "third_party/blink/renderer/core/testing/callback_function_test.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/v8_test_callback.h"
-#include "bindings/core/v8/v8_test_enum_callback.h"
-#include "bindings/core/v8/v8_test_interface_callback.h"
-#include "bindings/core/v8/v8_test_receiver_object_callback.h"
-#include "bindings/core/v8/v8_test_sequence_callback.h"
-#include "core/html/HTMLDivElement.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_test_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_test_enum_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_test_receiver_object_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_test_sequence_callback.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
 
 namespace blink {
 

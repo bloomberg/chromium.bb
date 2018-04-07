@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/testing/TestingPlatformSupportWithWebRTC.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_web_rtc.h"
 
 #include <memory>
-#include "public/platform/WebMediaStreamTrack.h"
-#include "public/platform/WebRTCDTMFSenderHandler.h"
-#include "public/platform/WebRTCError.h"
-#include "public/platform/WebRTCRtpReceiver.h"
-#include "public/platform/WebRTCRtpSender.h"
-#include "public/platform/WebRTCSessionDescription.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
+#include "third_party/blink/public/platform/web_rtc_error.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
+#include "third_party/blink/public/platform/web_rtc_session_description.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 

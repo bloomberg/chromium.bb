@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DeprecatedStorageInfo_h
-#define DeprecatedStorageInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_DEPRECATED_STORAGE_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_DEPRECATED_STORAGE_INFO_H_
 
-#include "modules/quota/DeprecatedStorageQuota.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/modules/quota/deprecated_storage_quota.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class DeprecatedStorageInfo final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // DeprecatedStorageInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_DEPRECATED_STORAGE_INFO_H_

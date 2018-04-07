@@ -28,12 +28,12 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef InstanceCounters_h
-#define InstanceCounters_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTANCE_COUNTERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTANCE_COUNTERS_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Atomics.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/atomics.h"
 
 namespace blink {
 

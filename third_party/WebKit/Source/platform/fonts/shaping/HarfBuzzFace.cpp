@@ -28,23 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/shaping/HarfBuzzFace.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_face.h"
 
 #include <memory>
 
 #include "build/build_config.h"
-#include "platform/Histogram.h"
-#include "platform/ResolutionUnits.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/FontGlobalContext.h"
-#include "platform/fonts/FontPlatformData.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/UnicodeRangeSet.h"
-#include "platform/fonts/shaping/HarfBuzzFontCache.h"
-#include "platform/fonts/shaping/HarfBuzzShaper.h"
-#include "platform/fonts/skia/SkiaTextMetrics.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_global_context.h"
+#include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_shaper.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/fonts/skia/skia_text_metrics.h"
+#include "third_party/blink/renderer/platform/fonts/unicode_range_set.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/resolution_units.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 #include <hb-ot.h>
 #include <hb.h>

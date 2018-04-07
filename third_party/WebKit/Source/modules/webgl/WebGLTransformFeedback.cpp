@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webgl/WebGLTransformFeedback.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_transform_feedback.h"
 
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "modules/webgl/WebGL2RenderingContextBase.h"
+#include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context_base.h"
 
 namespace blink {
 

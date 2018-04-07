@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintFilter_h
-#define PaintFilter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_FILTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_FILTER_H_
 
 #include "cc/paint/paint_filter.h"
 
@@ -33,4 +33,4 @@ using cc::LightingPointPaintFilter;
 using cc::LightingSpotPaintFilter;
 }  // namespace blink
 
-#endif  // PaintFilter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_FILTER_H_

@@ -18,15 +18,15 @@
  *
  */
 
-#ifndef QualifiedName_h
-#define QualifiedName_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_QUALIFIED_NAME_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_QUALIFIED_NAME_H_
 
-#include "core/CoreExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashTableDeletedValueType.h"
-#include "platform/wtf/HashTraits.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
+#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

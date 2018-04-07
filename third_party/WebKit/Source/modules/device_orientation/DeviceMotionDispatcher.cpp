@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/device_orientation/DeviceMotionDispatcher.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_dispatcher.h"
 
-#include "modules/device_orientation/DeviceMotionController.h"
-#include "modules/device_orientation/DeviceMotionData.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_controller.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
 
 namespace blink {
 

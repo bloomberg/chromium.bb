@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FakeBlobRegistry_h
-#define FakeBlobRegistry_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_TESTING_FAKE_BLOB_REGISTRY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_TESTING_FAKE_BLOB_REGISTRY_H_
 
-#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ class FakeBlobRegistry : public mojom::blink::BlobRegistry {
 
 }  // namespace blink
 
-#endif  // FakeBlobRegistry_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_TESTING_FAKE_BLOB_REGISTRY_H_

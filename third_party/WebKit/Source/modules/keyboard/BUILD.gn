@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("keyboard") {
   sources = [
-    "Keyboard.cpp",
-    "Keyboard.h",
-    "KeyboardLock.cpp",
-    "KeyboardLock.h",
-    "NavigatorKeyboard.cpp",
-    "NavigatorKeyboard.h",
+    "keyboard.cc",
+    "keyboard.h",
+    "keyboard_lock.cc",
+    "keyboard_lock.h",
+    "navigator_keyboard.cc",
+    "navigator_keyboard.h",
   ]
 }

@@ -22,22 +22,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLViewSourceDocument.h"
+#include "third_party/blink/renderer/core/html/html_view_source_document.h"
 
-#include "core/dom/Text.h"
-#include "core/html/HTMLAnchorElement.h"
-#include "core/html/HTMLBRElement.h"
-#include "core/html/HTMLBaseElement.h"
-#include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/html/HTMLHeadElement.h"
-#include "core/html/HTMLHtmlElement.h"
-#include "core/html/HTMLSpanElement.h"
-#include "core/html/HTMLTableCellElement.h"
-#include "core/html/HTMLTableElement.h"
-#include "core/html/HTMLTableRowElement.h"
-#include "core/html/HTMLTableSectionElement.h"
-#include "core/html/parser/HTMLViewSourceParser.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/html/html_anchor_element.h"
+#include "third_party/blink/renderer/core/html/html_base_element.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/html/html_br_element.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/html/html_head_element.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/core/html/html_span_element.h"
+#include "third_party/blink/renderer/core/html/html_table_cell_element.h"
+#include "third_party/blink/renderer/core/html/html_table_element.h"
+#include "third_party/blink/renderer/core/html/html_table_row_element.h"
+#include "third_party/blink/renderer/core/html/html_table_section_element.h"
+#include "third_party/blink/renderer/core/html/parser/html_view_source_parser.h"
 
 namespace blink {
 

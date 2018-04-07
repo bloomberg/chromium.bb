@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebNetworkStateNotifier.h"
+#include "third_party/blink/public/platform/web_network_state_notifier.h"
 
-#include "platform/network/NetworkStateNotifier.h"
+#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 
 namespace blink {
 

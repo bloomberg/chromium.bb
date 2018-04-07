@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScreenOrientationControllerImpl_h
-#define ScreenOrientationControllerImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_ORIENTATION_CONTROLLER_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_ORIENTATION_CONTROLLER_IMPL_H_
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/frame/PlatformEventController.h"
-#include "core/frame/ScreenOrientationController.h"
-#include "modules/ModulesExport.h"
-#include "public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
-#include "public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
-#include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 #include "services/device/public/mojom/screen_orientation.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_lock_orientation_callback.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_lock_type.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_type.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/platform_event_controller.h"
+#include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -91,4 +91,4 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
 
 }  // namespace blink
 
-#endif  // ScreenOrientationControllerImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_ORIENTATION_CONTROLLER_IMPL_H_

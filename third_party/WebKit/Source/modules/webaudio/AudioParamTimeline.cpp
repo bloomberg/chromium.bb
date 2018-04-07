@@ -23,21 +23,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webaudio/AudioParamTimeline.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param_timeline.h"
 
 #include <algorithm>
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
 #include "build/build_config.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/frame/Deprecation.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/wtf/CPU.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/cpu.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 #if defined(ARCH_CPU_X86_FAMILY)
 #include <emmintrin.h>

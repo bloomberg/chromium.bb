@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace base {
 namespace trace_event {

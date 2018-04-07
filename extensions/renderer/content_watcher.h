@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 class WebString;

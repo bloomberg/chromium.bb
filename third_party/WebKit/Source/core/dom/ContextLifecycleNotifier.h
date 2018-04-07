@@ -25,12 +25,12 @@
  *
  */
 
-#ifndef ContextLifecycleNotifier_h
-#define ContextLifecycleNotifier_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTEXT_LIFECYCLE_NOTIFIER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTEXT_LIFECYCLE_NOTIFIER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/LifecycleNotifier.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/lifecycle_notifier.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class CORE_EXPORT ContextLifecycleNotifier
 
 }  // namespace blink
 
-#endif  // ContextLifecycleNotifier_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTEXT_LIFECYCLE_NOTIFIER_H_

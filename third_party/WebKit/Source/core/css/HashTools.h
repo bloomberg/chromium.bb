@@ -18,10 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef HashTools_h
-#define HashTools_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_HASH_TOOLS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_HASH_TOOLS_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ const Value* FindValue(const char* str, unsigned len);
 
 }  // namespace blink
 
-#endif  // HashTools_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_HASH_TOOLS_H_

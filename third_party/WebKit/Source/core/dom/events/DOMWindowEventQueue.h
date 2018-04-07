@@ -24,11 +24,11 @@
  *
  */
 
-#ifndef DOMWindowEventQueue_h
-#define DOMWindowEventQueue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_DOM_WINDOW_EVENT_QUEUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_DOM_WINDOW_EVENT_QUEUE_H_
 
-#include "core/dom/events/EventQueue.h"
-#include "platform/wtf/LinkedHashSet.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue.h"
+#include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class DOMWindowEventQueue final : public EventQueue {
 
 }  // namespace blink
 
-#endif  // DOMWindowEventQueue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_DOM_WINDOW_EVENT_QUEUE_H_

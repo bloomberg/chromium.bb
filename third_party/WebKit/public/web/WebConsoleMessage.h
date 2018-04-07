@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebConsoleMessage_h
-#define WebConsoleMessage_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_CONSOLE_MESSAGE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_CONSOLE_MESSAGE_H_
 
-#include "public/platform/WebString.h"
-#include "public/web/WebNode.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_node.h"
 
 namespace blink {
 

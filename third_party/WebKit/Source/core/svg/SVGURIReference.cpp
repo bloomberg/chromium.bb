@@ -18,15 +18,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGURIReference.h"
+#include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/IdTargetObserver.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/svg/SVGElement.h"
-#include "core/xlink_names.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Functional.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/id_target_observer.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/xlink_names.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

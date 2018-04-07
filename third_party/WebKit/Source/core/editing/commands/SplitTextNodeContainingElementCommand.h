@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SplitTextNodeContainingElementCommand_h
-#define SplitTextNodeContainingElementCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SPLIT_TEXT_NODE_CONTAINING_ELEMENT_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SPLIT_TEXT_NODE_CONTAINING_ELEMENT_COMMAND_H_
 
-#include "core/editing/commands/CompositeEditCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/composite_edit_command.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class SplitTextNodeContainingElementCommand final
 
 }  // namespace blink
 
-#endif  // SplitTextNodeContainingElementCommand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SPLIT_TEXT_NODE_CONTAINING_ELEMENT_COMMAND_H_

@@ -9,7 +9,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/redirect_info.h"
-#include "third_party/WebKit/public/mojom/blob/blob.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 namespace network {
 class ResourceRequestBody;

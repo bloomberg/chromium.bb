@@ -21,7 +21,7 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/u2f_transport_protocol.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/WebKit/public/platform/modules/webauth/authenticator.mojom.h"
+#include "third_party/blink/public/platform/modules/webauth/authenticator.mojom.h"
 #include "url/origin.h"
 
 namespace base {

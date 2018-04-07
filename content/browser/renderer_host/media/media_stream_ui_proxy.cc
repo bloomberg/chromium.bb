@@ -16,7 +16,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "media/capture/video/fake_video_capture_device.h"
-#include "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

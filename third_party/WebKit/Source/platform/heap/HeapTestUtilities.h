@@ -4,8 +4,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef HeapTestUtilities_h
-#define HeapTestUtilities_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_TEST_UTILITIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_TEST_UTILITIES_H_
 
 namespace blink {
 
@@ -15,4 +15,4 @@ void ClearOutOldGarbage();
 
 }  // namespace blink
 
-#endif  // HeapTestUtilities_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_TEST_UTILITIES_H_

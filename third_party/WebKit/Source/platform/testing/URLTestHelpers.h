@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef URLTestHelpers_h
-#define URLTestHelpers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_URL_TEST_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_URL_TEST_HELPERS_H_
 
-#include "platform/weborigin/KURL.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLResponse.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 namespace URLTestHelpers {

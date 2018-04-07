@@ -23,10 +23,10 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/AudioBasicInspectorNode.h"
-#include "modules/webaudio/AudioNodeInput.h"
-#include "modules/webaudio/AudioNodeOutput.h"
-#include "modules/webaudio/BaseAudioContext.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_basic_inspector_node.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 
 namespace blink {
 

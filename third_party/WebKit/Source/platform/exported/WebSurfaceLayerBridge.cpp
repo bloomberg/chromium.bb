@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebSurfaceLayerBridge.h"
+#include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 
 #include <memory>
-#include "third_party/WebKit/Source/platform/graphics/SurfaceLayerBridge.h"
+#include "third_party/blink/renderer/platform/graphics/surface_layer_bridge.h"
 
 namespace blink {
 

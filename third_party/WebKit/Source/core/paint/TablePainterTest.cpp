@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/LayoutTable.h"
-#include "core/layout/LayoutTableCell.h"
-#include "core/paint/PaintControllerPaintTest.h"
-#include "core/paint/PaintLayerPainter.h"
+#include "third_party/blink/renderer/core/layout/layout_table.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 
 // This file contains tests testing TablePainter, TableSectionPainter,
 // TableRowPainter and TableCellPainter. It's difficult to separate the tests

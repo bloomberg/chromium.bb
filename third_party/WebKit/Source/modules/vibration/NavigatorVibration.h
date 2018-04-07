@@ -17,17 +17,17 @@
  *  Boston, MA 02110-1301, USA.
  */
 
-#ifndef NavigatorVibration_h
-#define NavigatorVibration_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VIBRATION_NAVIGATOR_VIBRATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_VIBRATION_NAVIGATOR_VIBRATION_H_
 
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/frame/Navigator.h"
-#include "modules/ModulesExport.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ class MODULES_EXPORT NavigatorVibration final
 
 }  // namespace blink
 
-#endif  // NavigatorVibration_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_VIBRATION_NAVIGATOR_VIBRATION_H_

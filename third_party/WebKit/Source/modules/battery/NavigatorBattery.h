@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigatorBattery_h
-#define NavigatorBattery_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BATTERY_NAVIGATOR_BATTERY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BATTERY_NAVIGATOR_BATTERY_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/frame/Navigator.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -37,4 +37,4 @@ class NavigatorBattery final : public GarbageCollected<NavigatorBattery>,
 
 }  // namespace blink
 
-#endif  // NavigatorBattery_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BATTERY_NAVIGATOR_BATTERY_H_

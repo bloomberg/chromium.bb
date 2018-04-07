@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Deprecation_h
-#define Deprecation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DEPRECATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DEPRECATION_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css_property_names.h"
-#include "core/frame/UseCounter.h"
-#include "platform/wtf/BitVector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 
 namespace blink {
 namespace mojom {
@@ -75,4 +75,4 @@ class CORE_EXPORT Deprecation {
 
 }  // namespace blink
 
-#endif  // Deprecation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DEPRECATION_H_

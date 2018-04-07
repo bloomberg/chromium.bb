@@ -18,7 +18,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DOMArrayBufferBase_h
-#define DOMArrayBufferBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_ARRAY_BUFFER_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_ARRAY_BUFFER_BASE_H_
 
-#include "core/CoreExport.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/typed_arrays/ArrayBuffer.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class CORE_EXPORT DOMArrayBufferBase : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // DOMArrayBufferBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_ARRAY_BUFFER_BASE_H_

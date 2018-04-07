@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebRTCPeerConnectionHandlerClient_h
-#define WebRTCPeerConnectionHandlerClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_PEER_CONNECTION_HANDLER_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_PEER_CONNECTION_HANDLER_CLIENT_H_
 
 #include <memory>
 
-#include "WebCommon.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 
@@ -88,4 +88,4 @@ class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
 
 }  // namespace blink
 
-#endif  // WebRTCPeerConnectionHandlerClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_PEER_CONNECTION_HANDLER_CLIENT_H_

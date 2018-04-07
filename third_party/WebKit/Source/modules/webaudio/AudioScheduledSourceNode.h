@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AudioScheduledSourceNode_h
-#define AudioScheduledSourceNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_SCHEDULED_SOURCE_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_SCHEDULED_SOURCE_NODE_H_
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "modules/webaudio/AudioNode.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 
 namespace blink {
 
@@ -166,4 +166,4 @@ class AudioScheduledSourceNode
 
 }  // namespace blink
 
-#endif  // AudioScheduledSourceNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_SCHEDULED_SOURCE_NODE_H_

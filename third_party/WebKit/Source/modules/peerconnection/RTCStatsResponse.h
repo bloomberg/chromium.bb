@@ -22,16 +22,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCStatsResponse_h
-#define RTCStatsResponse_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_STATS_RESPONSE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_STATS_RESPONSE_H_
 
-#include "modules/peerconnection/RTCLegacyStatsReport.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/peerconnection/RTCStatsResponseBase.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_legacy_stats_report.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats_response_base.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ class RTCStatsResponse final : public RTCStatsResponseBase {
 
 }  // namespace blink
 
-#endif  // RTCStatsResponse_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_STATS_RESPONSE_H_

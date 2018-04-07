@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/scrolling/OverscrollController.h"
+#include "third_party/blink/renderer/core/page/scrolling/overscroll_controller.h"
 
-#include "core/frame/VisualViewport.h"
-#include "core/page/ChromeClient.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/scroll/ScrollTypes.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
 

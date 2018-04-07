@@ -29,17 +29,17 @@
  *
  */
 
-#ifndef LinkLoader_h
-#define LinkLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_LINK_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_LINK_LOADER_H_
 
-#include "core/CoreExport.h"
-#include "core/html/LinkRelAttribute.h"
-#include "core/loader/LinkLoaderClient.h"
-#include "core/script/Modulator.h"
-#include "platform/CrossOriginAttributeValue.h"
-#include "platform/PrerenderClient.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/link_rel_attribute.h"
+#include "third_party/blink/renderer/core/loader/link_loader_client.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/prerender_client.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

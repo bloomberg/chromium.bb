@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebSelectElement.h"
+#include "third_party/blink/public/web/web_select_element.h"
 
-#include "core/html/forms/HTMLOptionElement.h"
-#include "core/html/forms/HTMLSelectElement.h"
-#include "core/html_names.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

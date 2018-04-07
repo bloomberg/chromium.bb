@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGLengthTearOff_h
-#define SVGLengthTearOff_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_LENGTH_TEAR_OFF_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_LENGTH_TEAR_OFF_H_
 
-#include "core/svg/SVGLength.h"
-#include "core/svg/properties/SVGPropertyTearOff.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property_tear_off.h"
+#include "third_party/blink/renderer/core/svg/svg_length.h"
 
 namespace blink {
 
@@ -88,4 +88,4 @@ class SVGLengthTearOff final : public SVGPropertyTearOff<SVGLength> {
 
 }  // namespace blink
 
-#endif  // SVGLengthTearOff_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_LENGTH_TEAR_OFF_H_

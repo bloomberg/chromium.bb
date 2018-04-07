@@ -22,18 +22,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/FirstLetterPseudoElement.h"
+#include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
 
-#include "core/css/StyleChangeReason.h"
-#include "core/dom/Element.h"
-#include "core/layout/GeneratedChildren.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutObjectInlines.h"
-#include "core/layout/LayoutText.h"
-#include "core/layout/LayoutTextFragment.h"
-#include "platform/text/TextBreakIterator.h"
-#include "platform/wtf/text/WTFString.h"
-#include "platform/wtf/text/icu/UnicodeIcu.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/layout/generated_children.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator.h"
+#include "third_party/blink/renderer/platform/wtf/text/icu/unicode_icu.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

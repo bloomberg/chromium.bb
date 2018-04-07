@@ -18,12 +18,12 @@
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "platform/scheduler/base/enqueue_order.h"
-#include "platform/scheduler/base/graceful_queue_shutdown_helper.h"
-#include "platform/scheduler/base/intrusive_heap.h"
-#include "platform/scheduler/base/sequenced_task_source.h"
-#include "platform/scheduler/base/task_queue.h"
-#include "platform/wtf/Deque.h"
+#include "third_party/blink/renderer/platform/scheduler/base/enqueue_order.h"
+#include "third_party/blink/renderer/platform/scheduler/base/graceful_queue_shutdown_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/base/intrusive_heap.h"
+#include "third_party/blink/renderer/platform/scheduler/base/sequenced_task_source.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 
 namespace blink {
 namespace scheduler {

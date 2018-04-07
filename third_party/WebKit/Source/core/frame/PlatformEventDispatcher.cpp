@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/PlatformEventDispatcher.h"
+#include "third_party/blink/renderer/core/frame/platform_event_dispatcher.h"
 
-#include "core/frame/PlatformEventController.h"
-#include "platform/wtf/AutoReset.h"
+#include "third_party/blink/renderer/core/frame/platform_event_controller.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 

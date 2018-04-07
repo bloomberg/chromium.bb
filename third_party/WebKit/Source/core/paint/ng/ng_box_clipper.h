@@ -5,7 +5,7 @@
 #ifndef NGBoxClipper_h
 #define NGBoxClipper_h
 
-#include "core/paint/BoxClipperBase.h"
+#include "third_party/blink/renderer/core/paint/box_clipper_base.h"
 
 namespace blink {
 

@@ -27,11 +27,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/RuleSet.h"
+#include "third_party/blink/renderer/core/css/rule_set.h"
 
-#include "core/css/CSSTestHelper.h"
-#include "platform/wtf/text/StringBuilder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_test_helper.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

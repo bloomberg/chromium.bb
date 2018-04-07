@@ -35,16 +35,16 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef GIFImageReader_h
-#define GIFImageReader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_GIF_GIF_IMAGE_READER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_GIF_GIF_IMAGE_READER_H_
 
 // Define ourselves as the clientPtr.  Mozilla just hacked their C++ callback
 // class into this old C decoder, so we will too.
 #include <memory>
-#include "platform/image-decoders/gif/GIFImageDecoder.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/image-decoders/gif/gif_image_decoder.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

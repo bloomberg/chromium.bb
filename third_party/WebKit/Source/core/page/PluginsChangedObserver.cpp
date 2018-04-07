@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/PluginsChangedObserver.h"
+#include "third_party/blink/renderer/core/page/plugins_changed_observer.h"
 
-#include "core/page/Page.h"
+#include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/heap/BlinkGCMemoryDumpProvider.h"
+#include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 
 #include "base/trace_event/process_memory_dump.h"
-#include "platform/wtf/Threading.h"
-#include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 

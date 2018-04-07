@@ -12,7 +12,7 @@
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/mojom/cors.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "third_party/WebKit/public/mojom/blob/serialized_blob.mojom.h"
+#include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

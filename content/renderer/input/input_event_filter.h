@@ -16,7 +16,7 @@
 #include "content/renderer/input/input_handler_manager_client.h"
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "ipc/message_filter.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 
 namespace base {
 class SingleThreadTaskRunner;

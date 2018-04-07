@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/UndoStack.h"
+#include "third_party/blink/renderer/core/editing/commands/undo_stack.h"
 
-#include "core/dom/ContainerNode.h"
-#include "core/editing/commands/UndoStep.h"
-#include "platform/wtf/AutoReset.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/editing/commands/undo_step.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebMouseEvent_h
-#define WebMouseEvent_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MOUSE_EVENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MOUSE_EVENT_H_
 
-#include "WebInputEvent.h"
-#include "WebMenuSourceType.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_menu_source_type.h"
 
 namespace blink {
 
@@ -105,4 +105,4 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
 
 }  // namespace blink
 
-#endif  // WebMouseEvent_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MOUSE_EVENT_H_

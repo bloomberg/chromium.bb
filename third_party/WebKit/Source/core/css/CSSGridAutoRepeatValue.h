@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSGridAutoRepeatValue_h
-#define CSSGridAutoRepeatValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GRID_AUTO_REPEAT_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GRID_AUTO_REPEAT_VALUE_H_
 
-#include "core/css/CSSValueList.h"
-#include "core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSGridAutoRepeatValue, IsGridAutoRepeatValue());
 
 }  // namespace blink
 
-#endif  // CSSGridAutoRepeatValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GRID_AUTO_REPEAT_VALUE_H_

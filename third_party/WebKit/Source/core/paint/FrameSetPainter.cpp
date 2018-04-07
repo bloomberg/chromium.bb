@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/FrameSetPainter.h"
+#include "third_party/blink/renderer/core/paint/frame_set_painter.h"
 
-#include "core/html/HTMLFrameSetElement.h"
-#include "core/layout/LayoutFrameSet.h"
-#include "core/paint/AdjustPaintOffsetScope.h"
-#include "core/paint/PaintInfo.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
+#include "third_party/blink/renderer/core/html/html_frame_set_element.h"
+#include "third_party/blink/renderer/core/layout/layout_frame_set.h"
+#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
 

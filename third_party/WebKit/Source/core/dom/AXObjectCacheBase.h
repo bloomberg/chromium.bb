@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AXObjectCacheBase_h
-#define AXObjectCacheBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_AX_OBJECT_CACHE_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_AX_OBJECT_CACHE_BASE_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/AXObjectCache.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/modulescript/ModuleTreeLinkerRegistry.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
 
-#include "core/loader/modulescript/ModuleTreeLinker.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/KURLHash.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
 
 namespace blink {
 

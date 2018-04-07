@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/CSSUnparsedValue.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unparsed_value.h"
 
-#include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/CSSVariableData.h"
-#include "core/css/CSSVariableReferenceValue.h"
-#include "core/css/cssom/CSSStyleVariableReferenceValue.h"
-#include "core/css/parser/CSSTokenizer.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_style_variable_reference_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PageScaleConstraintsSet_h
-#define PageScaleConstraintsSet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PAGE_SCALE_CONSTRAINTS_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PAGE_SCALE_CONSTRAINTS_SET_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/CoreExport.h"
-#include "core/dom/ViewportDescription.h"
-#include "core/frame/PageScaleConstraints.h"
-#include "platform/Length.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/viewport_description.h"
+#include "third_party/blink/renderer/core/frame/page_scale_constraints.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -131,4 +131,4 @@ class CORE_EXPORT PageScaleConstraintsSet {
 
 }  // namespace blink
 
-#endif  // PageScaleConstraintsSet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PAGE_SCALE_CONSTRAINTS_SET_H_

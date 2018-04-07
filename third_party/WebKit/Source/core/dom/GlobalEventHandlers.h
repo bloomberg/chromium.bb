@@ -27,11 +27,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GlobalEventHandlers_h
-#define GlobalEventHandlers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_GLOBAL_EVENT_HANDLERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_GLOBAL_EVENT_HANDLERS_H_
 
-#include "core/dom/events/EventTarget.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

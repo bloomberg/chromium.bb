@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PageWidgetDelegate_h
-#define PageWidgetDelegate_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_WIDGET_DELEGATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_WIDGET_DELEGATE_H_
 
-#include "core/CoreExport.h"
-#include "public/platform/WebCanvas.h"
-#include "public/platform/WebCoalescedInputEvent.h"
-#include "public/web/WebWidget.h"
+#include "third_party/blink/public/platform/web_canvas.h"
+#include "third_party/blink/public/platform/web_coalesced_input_event.h"
+#include "third_party/blink/public/web/web_widget.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 

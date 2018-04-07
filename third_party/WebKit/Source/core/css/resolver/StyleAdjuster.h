@@ -20,10 +20,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef StyleAdjuster_h
-#define StyleAdjuster_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_ADJUSTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_ADJUSTER_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -44,4 +44,4 @@ class StyleAdjuster {
 
 }  // namespace blink
 
-#endif  // StyleAdjuster_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_ADJUSTER_H_

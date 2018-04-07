@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BlinkPerfTestSuite_h
-#define BlinkPerfTestSuite_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_BLINK_PERF_TEST_SUITE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_BLINK_PERF_TEST_SUITE_H_
 
 #include "base/test/test_suite.h"
 
@@ -19,4 +19,4 @@ class BlinkPerfTestSuite : public base::TestSuite {
 
 }  // namespace blink
 
-#endif  // BlinkPerfTestSuite_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_BLINK_PERF_TEST_SUITE_H_

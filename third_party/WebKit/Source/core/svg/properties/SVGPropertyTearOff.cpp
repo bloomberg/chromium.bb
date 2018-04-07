@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/properties/SVGPropertyTearOff.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property_tear_off.h"
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/svg/SVGElement.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
 
 namespace blink {
 

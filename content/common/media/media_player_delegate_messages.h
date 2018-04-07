@@ -16,7 +16,7 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/media_content_type.h"
-#include "third_party/WebKit/public/platform/WebFullscreenVideoStatus.h"
+#include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
 
 #undef IPC_MESSAGE_EXPORT

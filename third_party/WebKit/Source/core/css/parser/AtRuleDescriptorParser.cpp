@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/AtRuleDescriptorParser.h"
+#include "third_party/blink/renderer/core/css/parser/at_rule_descriptor_parser.h"
 
-#include "core/css/CSSFontFaceSrcValue.h"
-#include "core/css/CSSUnicodeRangeValue.h"
-#include "core/css/CSSValue.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/parser/CSSParserMode.h"
-#include "core/css/parser/CSSParserTokenRange.h"
-#include "core/css/parser/CSSTokenizer.h"
-#include "core/css/properties/CSSParsingUtils.h"
-#include "core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/css_font_face_src_value.h"
+#include "third_party/blink/renderer/core/css/css_unicode_range_value.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
 
 namespace blink {
 

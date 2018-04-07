@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
-#include "third_party/WebKit/public/web/WebAXObject.h"
+#include "third_party/blink/public/web/web_ax_object.h"
 #include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
 

@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8EventListenerHelper_h
-#define V8EventListenerHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EVENT_LISTENER_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EVENT_LISTENER_HELPER_H_
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8EventListener.h"
-#include "core/CoreExport.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -64,4 +64,4 @@ class V8EventListenerHelper {
 
 }  // namespace blink
 
-#endif  // V8EventListenerHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EVENT_LISTENER_HELPER_H_

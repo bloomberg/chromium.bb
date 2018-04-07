@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebImage.h"
+#include "third_party/blink/public/platform/web_image.h"
 
-#include "platform/SharedBuffer.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/WebData.h"
-#include "public/platform/WebSize.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 

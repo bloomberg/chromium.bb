@@ -7,8 +7,8 @@
 #include "base/callback_helpers.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/platform_controller.h"
-#include "third_party/WebKit/public/platform/WebGestureEvent.h"
-#include "third_party/WebKit/public/platform/WebMouseEvent.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
 
 namespace vr {
 

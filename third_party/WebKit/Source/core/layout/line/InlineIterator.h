@@ -21,16 +21,16 @@
  *
  */
 
-#ifndef InlineIterator_h
-#define InlineIterator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_ITERATOR_H_
 
-#include "core/layout/BidiRun.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/api/LineLayoutBlockFlow.h"
-#include "core/layout/api/LineLayoutInline.h"
-#include "core/layout/api/LineLayoutText.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_inline.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_text.h"
+#include "third_party/blink/renderer/core/layout/bidi_run.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
@@ -905,4 +905,4 @@ inline void InlineBidiResolver::AppendRun(BidiRunList<BidiRun>& runs) {
 
 }  // namespace blink
 
-#endif  // InlineIterator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_ITERATOR_H_

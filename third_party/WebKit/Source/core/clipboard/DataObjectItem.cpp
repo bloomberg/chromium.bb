@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/clipboard/DataObjectItem.h"
+#include "third_party/blink/renderer/core/clipboard/data_object_item.h"
 
-#include "core/clipboard/Pasteboard.h"
-#include "core/fileapi/Blob.h"
-#include "platform/clipboard/ClipboardMimeTypes.h"
-#include "platform/network/mime/MIMETypeRegistry.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebClipboard.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_clipboard.h"
+#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/platform/clipboard/clipboard_mime_types.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 
 namespace blink {
 

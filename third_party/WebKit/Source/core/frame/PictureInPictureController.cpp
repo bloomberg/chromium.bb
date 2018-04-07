@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/PictureInPictureController.h"
+#include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 
-#include "core/CoreInitializer.h"
-#include "core/dom/Document.h"
+#include "third_party/blink/renderer/core/core_initializer.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
 

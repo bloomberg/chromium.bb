@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScriptPromiseResolver_h
-#define ScriptPromiseResolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_PROMISE_RESOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_PROMISE_RESOLVER_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "core/CoreExport.h"
-#include "core/dom/PausableObject.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "platform/Timer.h"
-#include "platform/bindings/ScopedPersistent.h"
-#include "platform/bindings/ScriptForbiddenScope.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/SelfKeepAlive.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
+#include "third_party/blink/renderer/platform/timer.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -179,4 +179,4 @@ class CORE_EXPORT ScriptPromiseResolver
 
 }  // namespace blink
 
-#endif  // ScriptPromiseResolver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_PROMISE_RESOLVER_H_

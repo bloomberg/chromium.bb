@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/messaging/BlinkCloneableMessage.h"
+#include "third_party/blink/renderer/core/messaging/blink_cloneable_message.h"
 
 namespace blink {
 

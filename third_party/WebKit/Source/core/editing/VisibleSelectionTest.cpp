@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/VisibleSelection.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
 
-#include "core/dom/Range.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/SelectionAdjuster.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/testing/EditingTestBase.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/selection_adjuster.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 
 #define LOREM_IPSUM                                                            \
   "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod "  \

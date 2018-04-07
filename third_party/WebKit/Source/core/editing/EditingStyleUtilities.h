@@ -29,14 +29,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EditingStyleUtilities_h
-#define EditingStyleUtilities_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_STYLE_UTILITIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_STYLE_UTILITIES_H_
 
-#include "core/css/CSSValue.h"
-#include "core/css_value_keywords.h"
-#include "core/dom/ContainerNode.h"
-#include "core/editing/Forward.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class EditingStyleUtilities {
 
 }  // namespace blink
 
-#endif  // EditingStyleUtilities_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_STYLE_UTILITIES_H_

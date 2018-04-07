@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaymentRequestEvent_h
-#define PaymentRequestEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_EVENT_H_
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "modules/EventModules.h"
-#include "modules/payments/PaymentRequestEventInit.h"
-#include "modules/serviceworkers/ExtendableEvent.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/payments/payment_request_event_init.h"
+#include "third_party/blink/renderer/modules/serviceworkers/extendable_event.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace WTF {
 class AtomicString;
@@ -67,4 +67,4 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
 
 }  // namespace blink
 
-#endif  // PaymentRequestEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_EVENT_H_

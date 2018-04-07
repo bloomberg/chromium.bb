@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/ScreenOrientationController.h"
+#include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
 
 namespace blink {
 

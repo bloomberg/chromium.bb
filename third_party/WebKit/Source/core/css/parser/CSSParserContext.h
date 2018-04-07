@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSParserContext_h
-#define CSSParserContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_CONTEXT_H_
 
-#include "core/CoreExport.h"
-#include "core/css/parser/CSSParserMode.h"
-#include "core/css_property_names.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/WebFeatureForward.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/Referrer.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/web_feature_forward.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 
@@ -139,4 +139,4 @@ CORE_EXPORT const CSSParserContext* StrictCSSParserContext(SecureContextMode);
 
 }  // namespace blink
 
-#endif  // CSSParserContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_CONTEXT_H_

@@ -25,8 +25,8 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ImeAdapterImpl_jni.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "third_party/WebKit/public/platform/WebTextInputType.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_text_input_type.h"
 #include "ui/base/ime/ime_text_span.h"
 
 using base::android::AttachCurrentThread;

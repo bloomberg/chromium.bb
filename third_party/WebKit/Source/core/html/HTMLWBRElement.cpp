@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLWBRElement.h"
+#include "third_party/blink/renderer/core/html/html_wbr_element.h"
 
-#include "core/html_names.h"
-#include "core/layout/LayoutWordBreak.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_word_break.h"
 
 namespace blink {
 

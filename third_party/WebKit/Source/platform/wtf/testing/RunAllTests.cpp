@@ -30,8 +30,8 @@
 
 #include <string.h>
 #include "base/test/test_suite.h"
-#include "platform/wtf/WTF.h"
-#include "platform/wtf/allocator/Partitions.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 int main(int argc, char** argv) {
   WTF::Partitions::Initialize(nullptr);

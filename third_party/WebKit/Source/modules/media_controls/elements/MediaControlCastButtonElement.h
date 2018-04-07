@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlCastButtonElement_h
-#define MediaControlCastButtonElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_CAST_BUTTON_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_CAST_BUTTON_ELEMENT_H_
 
-#include "modules/media_controls/elements/MediaControlInputElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_input_element.h"
 
 namespace blink {
 
@@ -43,4 +43,4 @@ class MediaControlCastButtonElement final : public MediaControlInputElement {
 
 }  // namespace blink
 
-#endif  // MediaControlCastButtonElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_CAST_BUTTON_ELEMENT_H_

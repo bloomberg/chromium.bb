@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/events/CustomEvent.h"
+#include "third_party/blink/renderer/core/dom/events/custom_event.h"
 
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 
 namespace blink {
 

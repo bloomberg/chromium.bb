@@ -17,7 +17,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/peripheral_content_heuristic.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {

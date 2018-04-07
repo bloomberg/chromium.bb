@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FrameRequestCallbackCollection_h
-#define FrameRequestCallbackCollection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_FRAME_REQUEST_CALLBACK_COLLECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_FRAME_REQUEST_CALLBACK_COLLECTION_H_
 
-#include "bindings/core/v8/v8_frame_request_callback.h"
-#include "core/CoreExport.h"
-#include "core/dom/DOMHighResTimeStamp.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_frame_request_callback.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -99,4 +99,4 @@ class CORE_EXPORT FrameRequestCallbackCollection final
 
 }  // namespace blink
 
-#endif  // FrameRequestCallbackCollection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_FRAME_REQUEST_CALLBACK_COLLECTION_H_

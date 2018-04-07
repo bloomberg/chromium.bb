@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AudioWorkletMessagingProxy_h
-#define AudioWorkletMessagingProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_MESSAGING_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_MESSAGING_PROXY_H_
 
 #include <memory>
-#include "core/workers/ThreadedWorkletMessagingProxy.h"
+#include "third_party/blink/renderer/core/workers/threaded_worklet_messaging_proxy.h"
 
 namespace blink {
 
@@ -77,4 +77,4 @@ class AudioWorkletMessagingProxy final : public ThreadedWorkletMessagingProxy {
 
 }  // namespace blink
 
-#endif  // AudioWorkletMessagingProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_MESSAGING_PROXY_H_

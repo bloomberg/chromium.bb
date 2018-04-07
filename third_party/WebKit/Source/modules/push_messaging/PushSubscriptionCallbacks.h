@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PushSubscriptionCallbacks_h
-#define PushSubscriptionCallbacks_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_SUBSCRIPTION_CALLBACKS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_SUBSCRIPTION_CALLBACKS_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
-#include "public/platform/modules/push_messaging/WebPushProvider.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_provider.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -39,4 +39,4 @@ class PushSubscriptionCallbacks final : public WebPushSubscriptionCallbacks {
 
 }  // namespace blink
 
-#endif  // PushSubscriptionCallbacks_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_SUBSCRIPTION_CALLBACKS_H_

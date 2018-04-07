@@ -44,11 +44,11 @@
 #include "content/public/common/result_codes.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
-#include "third_party/WebKit/public/common/origin_trials/trial_token_validator.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_error_type.mojom.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_object.mojom.h"
-#include "third_party/WebKit/public/web/WebConsoleMessage.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
+#include "third_party/blink/public/web/web_console_message.h"
 
 namespace content {
 namespace {

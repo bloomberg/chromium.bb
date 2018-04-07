@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayerHitTestRects_h
-#define LayerHitTestRects_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_LAYER_HIT_TEST_RECTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_LAYER_HIT_TEST_RECTS_H_
 
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/TouchAction.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/touch_action.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -27,4 +27,4 @@ typedef WTF::HashMap<const PaintLayer*, Vector<TouchActionRect>>
 
 }  // namespace blink
 
-#endif  // LayerHitTestRects_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_LAYER_HIT_TEST_RECTS_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/LayoutTableBoxComponent.h"
+#include "third_party/blink/renderer/core/layout/layout_table_box_component.h"
 
-#include "core/layout/LayoutTable.h"
-#include "core/paint/ObjectPaintInvalidator.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/layout/layout_table.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

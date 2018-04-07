@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/parser/TextResourceDecoderForFuzzing.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder_for_fuzzing.h"
 
-#include "platform/testing/BlinkFuzzerTestSupport.h"
-#include "platform/testing/FuzzedDataProvider.h"
 #include <algorithm>
+#include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
+#include "third_party/blink/renderer/platform/testing/fuzzed_data_provider.h"
 
 namespace blink {
 

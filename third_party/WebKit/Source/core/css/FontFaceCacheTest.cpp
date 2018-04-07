@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSFontFaceSrcValue.h"
-#include "core/css/CSSFontFamilyValue.h"
-#include "core/css/CSSFontStyleRangeValue.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/CSSSegmentedFontFace.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/FontFace.h"
-#include "core/css/FontFaceCache.h"
-#include "core/css/StyleRule.h"
-#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_font_face_src_value.h"
+#include "third_party/blink/renderer/core/css/css_font_family_value.h"
+#include "third_party/blink/renderer/core/css/css_font_style_range_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_segmented_font_face.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/font_face.h"
+#include "third_party/blink/renderer/core/css/font_face_cache.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

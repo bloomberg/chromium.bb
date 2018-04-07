@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/custom/V0CustomElementMicrotaskResolutionStep.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_resolution_step.h"
 
-#include "core/dom/Element.h"
-#include "core/html/custom/V0CustomElementRegistrationContext.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
 
 namespace blink {
 

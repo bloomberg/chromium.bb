@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VRController_h
-#define VRController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_CONTROLLER_H_
 
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/Document.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "modules/vr/VRDisplay.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Deque.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/modules/vr/vr_display.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 
 #include <memory>
 
@@ -68,4 +68,4 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
 
 }  // namespace blink
 
-#endif  // VRController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_CONTROLLER_H_

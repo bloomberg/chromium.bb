@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/websockets/WebPepperSocketImpl.h"
+#include "third_party/blink/renderer/modules/websockets/web_pepper_socket_impl.h"
 
 #include <stddef.h>
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/inspector/ConsoleTypes.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "modules/websockets/DocumentWebSocketChannel.h"
-#include "modules/websockets/WebPepperSocketChannelClientProxy.h"
-#include "modules/websockets/WebSocketChannel.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebURL.h"
-#include "public/web/WebArrayBuffer.h"
-#include "public/web/WebDocument.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_array_buffer.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/inspector/console_types.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/websockets/document_web_socket_channel.h"
+#include "third_party/blink/renderer/modules/websockets/web_pepper_socket_channel_client_proxy.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_channel.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

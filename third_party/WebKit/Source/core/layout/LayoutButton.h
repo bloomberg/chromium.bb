@@ -18,12 +18,12 @@
  *
  */
 
-#ifndef LayoutButton_h
-#define LayoutButton_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BUTTON_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BUTTON_H_
 
-#include "core/editing/EditingUtilities.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/layout/LayoutFlexibleBox.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 
 namespace blink {
 
@@ -69,4 +69,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutButton, IsLayoutButton());
 
 }  // namespace blink
 
-#endif  // LayoutButton_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BUTTON_H_

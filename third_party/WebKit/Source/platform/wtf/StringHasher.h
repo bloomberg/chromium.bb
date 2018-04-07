@@ -19,11 +19,11 @@
  *
  */
 
-#ifndef WTF_StringHasher_h
-#define WTF_StringHasher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_STRING_HASHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_STRING_HASHER_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace WTF {
 
@@ -229,4 +229,4 @@ class StringHasher {
 
 using WTF::StringHasher;
 
-#endif  // WTF_StringHasher_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_STRING_HASHER_H_

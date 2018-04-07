@@ -27,11 +27,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ThreadSafeRefCounted_h
-#define ThreadSafeRefCounted_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREAD_SAFE_REF_COUNTED_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREAD_SAFE_REF_COUNTED_H_
 
 #include "base/memory/ref_counted.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace WTF {
 
@@ -69,4 +69,4 @@ class ThreadSafeRefCounted : public base::RefCountedThreadSafe<T, Traits> {
 
 using WTF::ThreadSafeRefCounted;
 
-#endif  // ThreadSafeRefCounted_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREAD_SAFE_REF_COUNTED_H_

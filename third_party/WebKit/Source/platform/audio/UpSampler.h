@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UpSampler_h
-#define UpSampler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_UP_SAMPLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_UP_SAMPLER_H_
 
-#include "platform/audio/AudioArray.h"
-#include "platform/audio/DirectConvolver.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
+#include "third_party/blink/renderer/platform/audio/direct_convolver.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -76,4 +76,4 @@ class PLATFORM_EXPORT UpSampler {
 
 }  // namespace blink
 
-#endif  // UpSampler_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_UP_SAMPLER_H_

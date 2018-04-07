@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/spellcheck/IdleSpellCheckCallback.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_callback.h"
 
-#include "core/editing/spellcheck/SpellCheckTestBase.h"
-#include "core/editing/spellcheck/SpellChecker.h"
-#include "core/frame/LocalFrame.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_check_test_base.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/GridPainter.h"
+#include "third_party/blink/renderer/core/paint/grid_painter.h"
 
-#include "core/layout/LayoutGrid.h"
-#include "core/paint/BlockPainter.h"
-#include "core/paint/PaintInfo.h"
 #include <algorithm>
+#include "third_party/blink/renderer/core/layout/layout_grid.h"
+#include "third_party/blink/renderer/core/paint/block_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
 
 namespace blink {
 

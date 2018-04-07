@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DevToolsEmulator_h
-#define DevToolsEmulator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_DEV_TOOLS_EMULATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_DEV_TOOLS_EMULATOR_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Optional.h"
-#include "public/platform/PointerProperties.h"
-#include "public/platform/WebFloatPoint.h"
-#include "public/platform/WebViewportStyle.h"
-#include "public/web/WebDeviceEmulationParams.h"
+#include "third_party/blink/public/platform/pointer_properties.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_viewport_style.h"
+#include "third_party/blink/public/web/web_device_emulation_params.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

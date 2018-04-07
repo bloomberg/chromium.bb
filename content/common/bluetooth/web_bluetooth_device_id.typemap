@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 mojom =
-    "//third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom"
+    "//third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom"
 public_headers = [ "//content/common/bluetooth/web_bluetooth_device_id.h" ]
 traits_headers =
     [ "//content/common/bluetooth/web_bluetooth_device_id_struct_traits.h" ]

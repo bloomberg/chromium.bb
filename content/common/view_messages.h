@@ -45,16 +45,16 @@
 #include "media/capture/ipc/capture_param_traits.h"
 #include "net/base/network_change_notifier.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "third_party/WebKit/public/platform/WebDisplayMode.h"
-#include "third_party/WebKit/public/platform/WebFloatPoint.h"
-#include "third_party/WebKit/public/platform/WebFloatRect.h"
-#include "third_party/WebKit/public/platform/WebIntrinsicSizingInfo.h"
-#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
-#include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
-#include "third_party/WebKit/public/web/WebMediaPlayerAction.h"
-#include "third_party/WebKit/public/web/WebPluginAction.h"
-#include "third_party/WebKit/public/web/WebPopupType.h"
-#include "third_party/WebKit/public/web/WebTextDirection.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_type.h"
+#include "third_party/blink/public/platform/web_display_mode.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_float_rect.h"
+#include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
+#include "third_party/blink/public/web/web_device_emulation_params.h"
+#include "third_party/blink/public/web/web_media_player_action.h"
+#include "third_party/blink/public/web/web_plugin_action.h"
+#include "third_party/blink/public/web/web_popup_type.h"
+#include "third_party/blink/public/web/web_text_direction.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_types.h"
@@ -69,8 +69,8 @@
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
 #if defined(OS_MACOSX)
-#include "third_party/WebKit/public/platform/WebScrollbarButtonsPlacement.h"
-#include "third_party/WebKit/public/platform/mac/WebScrollbarTheme.h"
+#include "third_party/blink/public/platform/mac/web_scrollbar_theme.h"
+#include "third_party/blink/public/platform/web_scrollbar_buttons_placement.h"
 #endif
 
 #undef IPC_MESSAGE_EXPORT

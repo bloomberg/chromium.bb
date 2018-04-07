@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BoxClipperBase_h
-#define BoxClipperBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_CLIPPER_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_CLIPPER_BASE_H_
 
-#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

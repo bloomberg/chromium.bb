@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSParserContext.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/Settings.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/html/imports/HTMLImportsController.h"
-#include "core/page/Page.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
+#include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
 

@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/bindings/ScriptWrappableMarkingVisitor.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 
-#include "platform/Supplementable.h"
-#include "platform/bindings/ActiveScriptWrappableBase.h"
-#include "platform/bindings/DOMWrapperMap.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScopedPersistent.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/ScriptWrappableVisitorVerifier.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/bindings/WrapperTypeInfo.h"
-#include "platform/heap/HeapCompact.h"
-#include "platform/heap/HeapPage.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/AutoReset.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_map.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor_verifier.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/heap/heap_compact.h"
+#include "third_party/blink/renderer/platform/heap/heap_page.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

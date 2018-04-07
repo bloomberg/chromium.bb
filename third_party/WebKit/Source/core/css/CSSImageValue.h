@@ -18,15 +18,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSImageValue_h
-#define CSSImageValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IMAGE_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IMAGE_VALUE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/css/CSSValue.h"
-#include "platform/CrossOriginAttributeValue.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/weborigin/Referrer.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
 
 namespace blink {
 
@@ -120,4 +120,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageValue, IsImageValue());
 
 }  // namespace blink
 
-#endif  // CSSImageValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IMAGE_VALUE_H_

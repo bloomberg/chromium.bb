@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SecurityOriginStructTraits_h
-#define SecurityOriginStructTraits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_SECURITY_ORIGIN_STRUCT_TRAITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_SECURITY_ORIGIN_STRUCT_TRAITS_H_
 
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "url/mojom/origin.mojom-blink.h"
 
 namespace mojo {
@@ -53,4 +53,4 @@ struct StructTraits<url::mojom::blink::Origin::DataView,
 };
 }
 
-#endif  // SecurityOriginStructTraits_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_SECURITY_ORIGIN_STRUCT_TRAITS_H_

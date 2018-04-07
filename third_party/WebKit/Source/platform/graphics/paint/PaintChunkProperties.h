@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintChunkProperties_h
-#define PaintChunkProperties_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CHUNK_PROPERTIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CHUNK_PROPERTIES_H_
 
 #include <iosfwd>
-#include "platform/PlatformExport.h"
-#include "platform/graphics/paint/RefCountedPropertyTreeState.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/graphics/paint/ref_counted_property_tree_state.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
 
 }  // namespace blink
 
-#endif  // PaintChunkProperties_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CHUNK_PROPERTIES_H_

@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/PerformanceMonitor.h"
+#include "third_party/blink/renderer/core/frame/PerformanceMonitor.h"
 
-#include "bindings/core/v8/ScheduledAction.h"
-#include "bindings/core/v8/ScriptEventListener.h"
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/CoreProbeSink.h"
-#include "core/dom/Document.h"
-#include "core/dom/events/EventListener.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/Frame.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/parser/HTMLDocumentParser.h"
-#include "core/probe/CoreProbes.h"
-#include "platform/Histogram.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/scheduled_action.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/CoreProbeSink.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

@@ -22,10 +22,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSMarkup_h
-#define CSSMarkup_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_MARKUP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_MARKUP_H_
 
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 // Helper functions for converting from CSSValues to text.
 
@@ -43,4 +43,4 @@ String SerializeFontFamily(const String&);
 
 }  // namespace blink
 
-#endif  // CSSMarkup_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_MARKUP_H_

@@ -23,10 +23,10 @@
  * SUCH DAMAGE.
  */
 
-#ifndef PopupOpeningObserver_h
-#define PopupOpeningObserver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_POPUP_OPENING_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_POPUP_OPENING_OBSERVER_H_
 
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 

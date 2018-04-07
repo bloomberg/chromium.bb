@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlSliderElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_slider_element.h"
 
-#include "core/html/HTMLDivElement.h"
-#include "core/input_type_names.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutBoxModelObject.h"
-#include "core/layout/LayoutView.h"
-#include "core/resize_observer/ResizeObserver.h"
-#include "core/resize_observer/ResizeObserverEntry.h"
-#include "modules/media_controls/MediaControlsImpl.h"
-#include "modules/media_controls/elements/MediaControlElementsHelper.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace {
 

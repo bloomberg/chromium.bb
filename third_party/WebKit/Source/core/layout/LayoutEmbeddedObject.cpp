@@ -22,20 +22,20 @@
  *
  */
 
-#include "core/layout/LayoutEmbeddedObject.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
 
-#include "core/css_value_keywords.h"
-#include "core/exported/WebPluginContainerImpl.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLPlugInElement.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutAnalyzer.h"
-#include "core/layout/LayoutView.h"
-#include "core/page/Page.h"
-#include "core/paint/EmbeddedObjectPaintInvalidator.h"
-#include "core/paint/EmbeddedObjectPainter.h"
-#include "platform/text/PlatformLocale.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_plugin_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/embedded_object_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/embedded_object_painter.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 

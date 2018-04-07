@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebHTTPLoadInfo.h"
+#include "third_party/blink/public/platform/web_http_load_info.h"
 
-#include "platform/loader/fetch/ResourceLoadInfo.h"
-#include "public/platform/WebHTTPHeaderVisitor.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_http_header_visitor.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_info.h"
 
 namespace blink {
 

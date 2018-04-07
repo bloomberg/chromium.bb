@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontSelector_h
-#define FontSelector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_SELECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_SELECTOR_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/PlatformExport.h"
-#include "platform/fonts/FontCacheClient.h"
-#include "platform/fonts/SegmentedFontData.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache_client.h"
+#include "third_party/blink/renderer/platform/fonts/segmented_font_data.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -83,4 +83,4 @@ class PLATFORM_EXPORT FontSelector : public FontCacheClient {
 
 }  // namespace blink
 
-#endif  // FontSelector_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_SELECTOR_H_

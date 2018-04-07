@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/RootInlineBoxPainter.h"
+#include "third_party/blink/renderer/core/paint/root_inline_box_painter.h"
 
-#include "core/layout/api/LineLayoutAPIShim.h"
-#include "core/layout/line/EllipsisBox.h"
-#include "core/layout/line/RootInlineBox.h"
-#include "core/paint/PaintInfo.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
+#include "third_party/blink/renderer/core/layout/line/ellipsis_box.h"
+#include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
 
 namespace blink {
 

@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/events/NavigatorEvents.h"
+#include "third_party/blink/renderer/core/events/navigator_events.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Navigator.h"
-#include "core/frame/Settings.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 
 namespace blink {
 

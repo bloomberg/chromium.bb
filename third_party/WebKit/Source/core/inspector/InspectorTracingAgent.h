@@ -4,15 +4,15 @@
  * found in the LICENSE file.
  */
 
-#ifndef InspectorTracingAgent_h
-#define InspectorTracingAgent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORTRACINGAGENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORTRACINGAGENT_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/protocol/Tracing.h"
-#include "core/loader/FrameLoaderTypes.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Tracing.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class CORE_EXPORT InspectorTracingAgent final
 
 }  // namespace blink
 
-#endif  // InspectorTracingAgent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORTRACINGAGENT_H_

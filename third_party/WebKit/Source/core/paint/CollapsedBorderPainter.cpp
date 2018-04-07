@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/CollapsedBorderPainter.h"
+#include "third_party/blink/renderer/core/paint/collapsed_border_painter.h"
 
-#include "core/paint/BlockPainter.h"
-#include "core/paint/ObjectPainter.h"
-#include "core/paint/PaintInfo.h"
+#include "third_party/blink/renderer/core/paint/block_painter.h"
+#include "third_party/blink/renderer/core/paint/object_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
 
 namespace blink {
 

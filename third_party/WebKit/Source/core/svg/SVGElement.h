@@ -19,18 +19,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGElement_h
-#define SVGElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ELEMENT_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/Element.h"
-#include "core/svg/SVGParsingError.h"
-#include "core/svg/properties/SVGPropertyInfo.h"
-#include "core/svg_names.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property_info.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -364,6 +364,6 @@ inline bool Node::HasTagName(const SVGQualifiedName& name) const {
 
 }  // namespace blink
 
-#include "core/svg_element_type_helpers.h"
+#include "third_party/blink/renderer/core/svg_element_type_helpers.h"
 
-#endif  // SVGElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ELEMENT_H_

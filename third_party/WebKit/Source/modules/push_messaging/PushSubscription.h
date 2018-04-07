@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PushSubscription_h
-#define PushSubscription_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_SUBSCRIPTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_SUBSCRIPTION_H_
 
 #include <memory>
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/dom/DOMTimeStamp.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "modules/ModulesExport.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/dom/dom_time_stamp.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // PushSubscription_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_SUBSCRIPTION_H_

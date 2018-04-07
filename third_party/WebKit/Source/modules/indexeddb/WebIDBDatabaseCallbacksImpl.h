@@ -23,19 +23,19 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebIDBDatabaseCallbacksImpl_h
-#define WebIDBDatabaseCallbacksImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_CALLBACKS_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_CALLBACKS_IMPL_H_
 
 #include <memory>
 
-#include "modules/indexeddb/IDBDatabaseCallbacks.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabaseError.h"
-#include "public/platform/modules/indexeddb/WebIDBObservation.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_observation.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ class WebIDBDatabaseCallbacksImpl final : public WebIDBDatabaseCallbacks {
 
 }  // namespace blink
 
-#endif  // WebIDBDatabaseCallbacksImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_CALLBACKS_IMPL_H_

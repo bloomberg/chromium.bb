@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef OrderedNamedGridLines_h
-#define OrderedNamedGridLines_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_ORDERED_NAMED_GRID_LINES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_ORDERED_NAMED_GRID_LINES_H_
 
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashTraits.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -20,4 +20,4 @@ using OrderedNamedGridLines =
 
 }  // namespace blink
 
-#endif  // OrderedNamedGridLines_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_ORDERED_NAMED_GRID_LINES_H_

@@ -16,7 +16,7 @@ source_set("renderer") {
       "//components/safe_browsing/common:common",
       "//content/public/renderer",
       "//ipc",
-      "//third_party/WebKit/public:blink",
+      "//third_party/blink/public:blink",
       "//url/ipc:url_ipc",
     ]
   }
@@ -39,7 +39,7 @@ source_set("throttles") {
     "//ipc",
     "//net",
     "//services/service_manager/public/cpp:cpp",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//url:url",
   ]
 }
@@ -59,6 +59,6 @@ source_set("websocket_sb_handshake_throttle_unittest") {
     "//ipc",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
   ]
 }

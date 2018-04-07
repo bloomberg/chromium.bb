@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InspectorDOMSnapshotAgent_h
-#define InspectorDOMSnapshotAgent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORDOMSNAPSHOTAGENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORDOMSNAPSHOTAGENT_H_
 
 #include "base/macros.h"
-#include "core/css_property_names.h"
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/protocol/DOMSnapshot.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/protocol/DOMSnapshot.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

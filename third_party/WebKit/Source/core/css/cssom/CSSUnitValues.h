@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSUnitValues_h
-#define CSSUnitValues_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_UNIT_VALUES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_UNIT_VALUES_H_
 
-#include "core/css/cssom/CSSUnitValue.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
 
 namespace blink {
 
@@ -150,4 +150,4 @@ class CSSUnitValues {
 
 }  // namespace blink
 
-#endif  // CSSUnitValues_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_UNIT_VALUES_H_

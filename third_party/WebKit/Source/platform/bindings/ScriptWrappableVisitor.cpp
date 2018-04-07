@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/bindings/ScriptWrappableVisitor.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 
-#include "platform/Supplementable.h"
-#include "platform/bindings/DOMWrapperMap.h"
-#include "platform/bindings/TraceWrapperBase.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_map.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_base.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 

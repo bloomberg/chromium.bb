@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScrollRecorder_h
-#define ScrollRecorder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCROLL_RECORDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCROLL_RECORDER_H_
 
-#include "core/CoreExport.h"
-#include "core/paint/PaintPhase.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/paint/paint_phase.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -39,4 +39,4 @@ class CORE_EXPORT ScrollRecorder {
 
 }  // namespace blink
 
-#endif  // ScrollRecorder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCROLL_RECORDER_H_

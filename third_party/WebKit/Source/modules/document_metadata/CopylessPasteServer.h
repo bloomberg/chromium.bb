@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CopylessPasteServer_h
-#define CopylessPasteServer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DOCUMENT_METADATA_COPYLESS_PASTE_SERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_DOCUMENT_METADATA_COPYLESS_PASTE_SERVER_H_
 
-#include "modules/ModulesExport.h"
-#include "platform/heap/Persistent.h"
-#include "public/platform/modules/document_metadata/copyless_paste.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/document_metadata/copyless_paste.mojom-blink.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
@@ -31,4 +31,4 @@ class MODULES_EXPORT CopylessPasteServer final
 
 }  // namespace blink
 
-#endif  // CopylessPasteServer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_DOCUMENT_METADATA_COPYLESS_PASTE_SERVER_H_

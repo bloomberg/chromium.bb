@@ -28,24 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/quota/DeprecatedStorageQuota.h"
+#include "third_party/blink/renderer/modules/quota/deprecated_storage_quota.h"
 
 #include "base/location.h"
-#include "bindings/modules/v8/v8_storage_error_callback.h"
-#include "bindings/modules/v8/v8_storage_quota_callback.h"
-#include "bindings/modules/v8/v8_storage_usage_callback.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/quota/DOMError.h"
-#include "modules/quota/QuotaUtils.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_storage_error_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_storage_quota_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_storage_usage_callback.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/quota/dom_error.h"
+#include "third_party/blink/renderer/modules/quota/quota_utils.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

@@ -23,19 +23,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/network/NetworkStateNotifier.h"
+#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 
 #include <memory>
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/text/StringHash.h"
-#include "third_party/WebKit/public/common/client_hints/client_hints.h"
+#include "third_party/blink/public/common/client_hints/client_hints.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 

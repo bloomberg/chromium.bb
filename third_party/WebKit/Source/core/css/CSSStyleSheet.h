@@ -19,19 +19,19 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSStyleSheet_h
-#define CSSStyleSheet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_STYLE_SHEET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_STYLE_SHEET_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css/CSSRule.h"
-#include "core/css/MediaQueryEvaluator.h"
-#include "core/css/StyleSheet.h"
-#include "core/dom/TreeScope.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/text/TextEncoding.h"
-#include "platform/wtf/text/TextPosition.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_rule.h"
+#include "third_party/blink/renderer/core/css/media_query_evaluator.h"
+#include "third_party/blink/renderer/core/css/style_sheet.h"
+#include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
 namespace blink {
 

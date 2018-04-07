@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebIDBObservation_h
-#define WebIDBObservation_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_OBSERVATION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_OBSERVATION_H_
 
-#include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
-#include "public/platform/modules/indexeddb/WebIDBTypes.h"
-#include "public/platform/modules/indexeddb/WebIDBValue.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_range.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 
 namespace blink {
 
@@ -39,4 +39,4 @@ struct WebIDBObservation {
 
 }  // namespace blink
 
-#endif  // WebIDBObservation_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_OBSERVATION_H_

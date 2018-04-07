@@ -9,9 +9,9 @@
 
 #include "mojo/public/cpp/bindings/lib/hash_util.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
-#include "third_party/WebKit/Source/platform/wtf/HashFunctions.h"
-#include "third_party/WebKit/Source/platform/wtf/text/StringHash.h"
-#include "third_party/WebKit/Source/platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace mojo {
 namespace internal {

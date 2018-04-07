@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/workers/WorkerContentSettingsClient.h"
+#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 
 #include <memory>
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebSecurityOrigin.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

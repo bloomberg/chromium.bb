@@ -23,20 +23,20 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/bindings/V8PerIsolateData.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 
 #include <memory>
 #include <utility>
 
-#include "platform/bindings/DOMDataStore.h"
-#include "platform/bindings/ScriptForbiddenScope.h"
-#include "platform/bindings/V8Binding.h"
-#include "platform/bindings/V8ObjectConstructor.h"
-#include "platform/bindings/V8PrivateProperty.h"
-#include "platform/bindings/V8ValueCache.h"
-#include "platform/wtf/LeakAnnotations.h"
-#include "public/platform/Platform.h"
-#include "public/web/WebKit.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
+#include "third_party/blink/renderer/platform/bindings/v8_value_cache.h"
+#include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
 #include "v8/include/v8.h"
 
 namespace blink {

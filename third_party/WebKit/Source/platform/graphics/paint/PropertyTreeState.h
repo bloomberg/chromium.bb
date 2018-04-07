@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PropertyTreeState_h
-#define PropertyTreeState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PROPERTY_TREE_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PROPERTY_TREE_STATE_H_
 
-#include "platform/graphics/paint/ClipPaintPropertyNode.h"
-#include "platform/graphics/paint/EffectPaintPropertyNode.h"
-#include "platform/graphics/paint/TransformPaintPropertyNode.h"
-#include "platform/wtf/HashFunctions.h"
-#include "platform/wtf/HashTraits.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ inline bool operator!=(const PropertyTreeState& a, const PropertyTreeState& b) {
 
 }  // namespace blink
 
-#endif  // PropertyTreeState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PROPERTY_TREE_STATE_H_

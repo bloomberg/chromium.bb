@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DeviceMotionController_h
-#define DeviceMotionController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_CONTROLLER_H_
 
-#include "core/frame/DeviceSingleWindowEventController.h"
-#include "modules/ModulesExport.h"
+#include "third_party/blink/renderer/core/frame/device_single_window_event_controller.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class MODULES_EXPORT DeviceMotionController final
 
 }  // namespace blink
 
-#endif  // DeviceMotionController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_CONTROLLER_H_

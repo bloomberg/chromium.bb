@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/LayoutTreeAsText.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/ObjectPaintProperties.h"
-#include "core/paint/PaintControllerPaintTest.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/PaintPropertyTreePrinter.h"
-#include "core/paint/PrePaintTreeWalk.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/graphics/paint/GeometryMapper.h"
-#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
-#include "platform/graphics/paint/TransformPaintPropertyNode.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "platform/text/TextStream.h"
-#include "platform/wtf/HashMap.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/object_paint_properties.h"
+#include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
+#include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 

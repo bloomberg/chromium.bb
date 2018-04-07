@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/modulescript/ModuleScriptLoaderRegistry.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
 
-#include "core/loader/modulescript/ModuleScriptLoader.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_loader.h"
 
 namespace blink {
 

@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/text/StringStatics.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_statics.h"
 
-#include "platform/wtf/DynamicAnnotations.h"
-#include "platform/wtf/StaticConstructors.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/StringImpl.h"
+#include "third_party/blink/renderer/platform/wtf/dynamic_annotations.h"
+#include "third_party/blink/renderer/platform/wtf/static_constructors.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 namespace WTF {
 

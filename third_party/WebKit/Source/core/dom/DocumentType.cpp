@@ -20,10 +20,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/DocumentType.h"
+#include "third_party/blink/renderer/core/dom/document_type.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/NamedNodeMap.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/named_node_map.h"
 
 namespace blink {
 

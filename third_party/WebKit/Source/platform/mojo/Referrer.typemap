@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//third_party/WebKit/public/platform/referrer.mojom"
-public_headers = [ "//third_party/WebKit/Source/platform/weborigin/Referrer.h" ]
+mojom = "//third_party/blink/public/platform/referrer.mojom"
+public_headers =
+    [ "//third_party/blink/renderer/platform/weborigin/referrer.h" ]
 traits_headers =
-    [ "//third_party/WebKit/Source/platform/mojo/ReferrerStructTraits.h" ]
+    [ "//third_party/blink/renderer/platform/mojo/referrer_struct_traits.h" ]
 deps = [
   "//mojo/public/cpp/bindings",
   "//url",

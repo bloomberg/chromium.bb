@@ -18,7 +18,7 @@
 #include "media/base/media_switches.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/network/public/cpp/features.h"
-#include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
+#include "third_party/blink/public/platform/web_runtime_features.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_features.h"

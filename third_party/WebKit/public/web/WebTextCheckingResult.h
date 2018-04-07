@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebTextCheckingResult_h
-#define WebTextCheckingResult_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_TEXT_CHECKING_RESULT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_TEXT_CHECKING_RESULT_H_
 
-#include "WebTextDecorationType.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_text_decoration_type.h"
 
 namespace blink {
 

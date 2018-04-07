@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/ScriptEventListener.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 
-#include "bindings/core/v8/ScheduledAction.h"
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/SourceLocation.h"
-#include "bindings/core/v8/V8AbstractEventListener.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/WindowProxy.h"
-#include "core/dom/Document.h"
-#include "core/dom/DocumentParser.h"
-#include "core/dom/QualifiedName.h"
-#include "core/dom/events/EventListener.h"
-#include "core/frame/LocalFrame.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/bindings/core/v8/scheduled_action.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_parser.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "v8/include/v8.h"
 
 namespace blink {

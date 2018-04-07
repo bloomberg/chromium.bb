@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/VDMXParser.h"
+#include "third_party/blink/renderer/platform/fonts/vdmx_parser.h"
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/ByteOrder.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/byte_order.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 #include <stdlib.h>
 #include <string.h>

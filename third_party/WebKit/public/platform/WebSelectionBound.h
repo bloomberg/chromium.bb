@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebSelectionBound_h
-#define WebSelectionBound_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SELECTION_BOUND_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SELECTION_BOUND_H_
 
-#include "public/platform/WebPoint.h"
+#include "third_party/blink/public/platform/web_point.h"
 
 namespace blink {
 

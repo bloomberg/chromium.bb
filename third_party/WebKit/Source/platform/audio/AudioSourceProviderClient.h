@@ -23,11 +23,11 @@
  * DAMAGE.
  */
 
-#ifndef AudioSourceProviderClient_h
-#define AudioSourceProviderClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_SOURCE_PROVIDER_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_SOURCE_PROVIDER_CLIENT_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class AudioSourceProviderClient : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // AudioSourceProviderClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_SOURCE_PROVIDER_CLIENT_H_

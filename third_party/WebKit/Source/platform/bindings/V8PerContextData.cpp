@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/bindings/V8PerContextData.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 
 #include <stdlib.h>
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "platform/InstanceCounters.h"
-#include "platform/bindings/OriginTrialFeatures.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8Binding.h"
-#include "platform/bindings/V8ObjectConstructor.h"
+#include "third_party/blink/renderer/platform/bindings/origin_trial_features.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/platform/instance_counters.h"
 
 namespace blink {
 

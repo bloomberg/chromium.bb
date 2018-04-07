@@ -23,11 +23,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLDrawBuffers_h
-#define WebGLDrawBuffers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_DRAW_BUFFERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_DRAW_BUFFERS_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/webgl/WebGLExtension.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_extension.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class WebGLDrawBuffers final : public WebGLExtension {
 
 }  // namespace blink
 
-#endif  // WebGLDrawBuffers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_DRAW_BUFFERS_H_

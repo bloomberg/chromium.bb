@@ -23,20 +23,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InputMethodController_h
-#define InputMethodController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_IME_INPUT_METHOD_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_IME_INPUT_METHOD_CONTROLLER_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/DocumentShutdownObserver.h"
-#include "core/editing/Forward.h"
-#include "core/editing/PlainTextRange.h"
-#include "core/editing/ime/ImeTextSpan.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebTextInputInfo.h"
-#include "public/platform/WebTextInputType.h"
+#include "third_party/blink/public/platform/web_text_input_info.h"
+#include "third_party/blink/public/platform/web_text_input_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/ime/ime_text_span.h"
+#include "third_party/blink/renderer/core/editing/plain_text_range.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -189,4 +189,4 @@ class CORE_EXPORT InputMethodController final
 
 }  // namespace blink
 
-#endif  // InputMethodController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_IME_INPUT_METHOD_CONTROLLER_H_

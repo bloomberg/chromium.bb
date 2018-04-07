@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MainThreadWorkletReportingProxy_h
-#define MainThreadWorkletReportingProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_MAIN_THREAD_WORKLET_REPORTING_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_MAIN_THREAD_WORKLET_REPORTING_PROXY_H_
 
-#include "core/workers/WorkerReportingProxy.h"
+#include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 
 namespace blink {
 
@@ -28,4 +28,4 @@ class CORE_EXPORT MainThreadWorkletReportingProxy
 
 }  // namespace blink
 
-#endif  // MainThreadWorkletReportingProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_MAIN_THREAD_WORKLET_REPORTING_PROXY_H_

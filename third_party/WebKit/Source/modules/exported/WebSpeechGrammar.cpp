@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebSpeechGrammar.h"
+#include "third_party/blink/public/web/web_speech_grammar.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/speech/SpeechGrammar.h"
+#include "third_party/blink/renderer/modules/speech/speech_grammar.h"
 
 namespace blink {
 

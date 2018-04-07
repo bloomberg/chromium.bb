@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/script/DynamicModuleResolver.h"
+#include "third_party/blink/renderer/core/script/dynamic_module_resolver.h"
 
-#include "bindings/core/v8/ReferrerScriptInfo.h"
-#include "bindings/core/v8/ScriptFunction.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/dom/Document.h"
-#include "core/loader/modulescript/ModuleScriptFetchRequest.h"
-#include "core/script/ModuleScript.h"
-#include "core/testing/DummyModulator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
+#include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "v8/include/v8.h"
 
 namespace blink {

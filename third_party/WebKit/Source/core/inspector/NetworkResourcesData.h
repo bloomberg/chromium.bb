@@ -26,19 +26,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NetworkResourcesData_h
-#define NetworkResourcesData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_NETWORK_RESOURCES_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_NETWORK_RESOURCES_DATA_H_
 
-#include "core/html/parser/TextResourceDecoder.h"
-#include "core/inspector/InspectorPageAgent.h"
-#include "platform/blob/BlobData.h"
-#include "platform/network/HTTPHeaderMap.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/core/inspector/InspectorPageAgent.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

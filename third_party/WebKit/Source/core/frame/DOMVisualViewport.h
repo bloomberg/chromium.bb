@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMVisualViewport_h
-#define DOMVisualViewport_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_VISUAL_VIEWPORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_VISUAL_VIEWPORT_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollTypes.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class CORE_EXPORT DOMVisualViewport final : public EventTargetWithInlineData {
 
 }  // namespace blink
 
-#endif  // DOMVisualViewport_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_VISUAL_VIEWPORT_H_

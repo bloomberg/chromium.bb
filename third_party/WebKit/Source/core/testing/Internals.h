@@ -24,19 +24,19 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Internals_h
-#define Internals_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_INTERNALS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_INTERNALS_H_
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/page/scrolling/ScrollingCoordinator.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -611,4 +611,4 @@ class Internals final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // Internals_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_INTERNALS_H_

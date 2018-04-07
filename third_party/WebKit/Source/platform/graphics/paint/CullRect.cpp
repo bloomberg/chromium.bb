@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/CullRect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

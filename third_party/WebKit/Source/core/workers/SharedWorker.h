@@ -29,14 +29,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SharedWorker_h
-#define SharedWorker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_H_
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/CoreExport.h"
-#include "core/workers/AbstractWorker.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/workers/abstract_worker.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -76,4 +76,4 @@ class CORE_EXPORT SharedWorker final
 
 }  // namespace blink
 
-#endif  // SharedWorker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_H_

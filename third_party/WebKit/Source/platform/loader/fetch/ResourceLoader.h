@@ -26,22 +26,22 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ResourceLoader_h
-#define ResourceLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_LOADER_H_
 
 #include <memory>
 #include "base/gtest_prod_util.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/ResourceLoadScheduler.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/WebURLLoader.h"
-#include "public/platform/WebURLLoaderClient.h"
-#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/platform/web_url_loader.h"
+#include "third_party/blink/public/platform/web_url_loader_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

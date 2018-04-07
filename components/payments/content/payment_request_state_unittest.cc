@@ -17,7 +17,7 @@
 #include "components/payments/content/test_content_payment_request_delegate.h"
 #include "components/payments/core/journey_logger.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
+#include "third_party/blink/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace payments {
 

@@ -23,13 +23,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebExternalTextureLayer_h
-#define WebExternalTextureLayer_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_EXTERNAL_TEXTURE_LAYER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_EXTERNAL_TEXTURE_LAYER_H_
 
-#include "WebCommon.h"
-#include "WebFloatPoint.h"
-#include "WebFloatRect.h"
-#include "WebLayer.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_float_rect.h"
+#include "third_party/blink/public/platform/web_layer.h"
 
 namespace blink {
 
@@ -74,4 +74,4 @@ class WebExternalTextureLayer {
 
 }  // namespace blink
 
-#endif  // WebExternalTextureLayer_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_EXTERNAL_TEXTURE_LAYER_H_

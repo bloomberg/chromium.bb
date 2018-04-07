@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/storage/DOMWindowStorage.h"
+#include "third_party/blink/renderer/modules/storage/dom_window_storage.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
-#include "core/page/Page.h"
-#include "modules/storage/Storage.h"
-#include "modules/storage/StorageNamespace.h"
-#include "modules/storage/StorageNamespaceController.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/modules/storage/storage.h"
+#include "third_party/blink/renderer/modules/storage/storage_namespace.h"
+#include "third_party/blink/renderer/modules/storage/storage_namespace_controller.h"
 
 namespace blink {
 

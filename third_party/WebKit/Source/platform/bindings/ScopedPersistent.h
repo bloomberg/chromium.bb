@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScopedPersistent_h
-#define ScopedPersistent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCOPED_PERSISTENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCOPED_PERSISTENT_H_
 
 #include <memory>
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -108,4 +108,4 @@ class ScopedPersistent {
 
 }  // namespace blink
 
-#endif  // ScopedPersistent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCOPED_PERSISTENT_H_

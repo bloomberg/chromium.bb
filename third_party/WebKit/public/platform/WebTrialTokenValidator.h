@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebTrialTokenValidator_h
-#define WebTrialTokenValidator_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TRIAL_TOKEN_VALIDATOR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TRIAL_TOKEN_VALIDATOR_H_
 
-#include "public/platform/WebCallbacks.h"
-#include "public/platform/WebSecurityOrigin.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -34,4 +34,4 @@ class WebTrialTokenValidator {
 
 }  // namespace blink
 
-#endif  // WebTrialTokenValidator_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TRIAL_TOKEN_VALIDATOR_H_

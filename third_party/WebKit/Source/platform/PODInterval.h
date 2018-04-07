@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PODInterval_h
-#define PODInterval_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_INTERVAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_INTERVAL_H_
 
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #ifndef NDEBUG
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #endif
 
 namespace blink {
@@ -71,7 +71,7 @@ namespace blink {
 // Note that this class requires a copy constructor and assignment
 // operator in order to be stored in the red-black tree.
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 #ifndef NDEBUG
 template <class T>
@@ -150,4 +150,4 @@ class PODInterval {
 
 }  // namespace blink
 
-#endif  // PODInterval_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_INTERVAL_H_

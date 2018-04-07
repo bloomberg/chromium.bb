@@ -8,7 +8,7 @@
 #include "components/webcrypto/algorithms/rsa.h"
 #include "components/webcrypto/algorithms/rsa_sign.h"
 #include "components/webcrypto/status.h"
-#include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
+#include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
 
 namespace webcrypto {
 

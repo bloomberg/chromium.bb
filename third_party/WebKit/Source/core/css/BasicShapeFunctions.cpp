@@ -27,17 +27,17 @@
  * SUCH DAMAGE.
  */
 
-#include "core/css/BasicShapeFunctions.h"
+#include "third_party/blink/renderer/core/css/basic_shape_functions.h"
 
-#include "core/css/CSSBasicShapeValues.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/CSSRayValue.h"
-#include "core/css/CSSValuePair.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include "core/style/BasicShapes.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/StyleRay.h"
+#include "third_party/blink/renderer/core/css/css_basic_shape_values.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
+#include "third_party/blink/renderer/core/css/css_ray_value.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/style/basic_shapes.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/style_ray.h"
 
 namespace blink {
 

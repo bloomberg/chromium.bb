@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediastream/ApplyConstraintsRequest.h"
+#include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "modules/mediastream/OverconstrainedError.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
 
 namespace blink {
 

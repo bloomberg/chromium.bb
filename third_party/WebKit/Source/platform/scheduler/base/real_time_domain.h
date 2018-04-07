@@ -8,8 +8,8 @@
 #include <set>
 
 #include "base/macros.h"
-#include "platform/PlatformExport.h"
-#include "platform/scheduler/base/time_domain.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
 
 namespace blink {
 namespace scheduler {

@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/WebKit/Source/platform/exported/WebClipboardImpl.h"
+#include "third_party/blink/renderer/platform/exported/web_clipboard_impl.h"
 
 #include "build/build_config.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/escape.h"
-#include "public/platform/Platform.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/WebKit/Source/platform/blob/BlobData.h"
-#include "third_party/WebKit/Source/platform/clipboard/ClipboardMimeTypes.h"
-#include "third_party/WebKit/Source/platform/wtf/text/StringUTF8Adaptor.h"
-#include "third_party/WebKit/public/platform/WebDragData.h"
-#include "third_party/WebKit/public/platform/WebImage.h"
-#include "third_party/WebKit/public/platform/WebSize.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_drag_data.h"
+#include "third_party/blink/public/platform/web_image.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/clipboard/clipboard_mime_types.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 

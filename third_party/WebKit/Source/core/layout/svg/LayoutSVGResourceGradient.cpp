@@ -20,7 +20,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/svg/LayoutSVGResourceGradient.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_gradient.h"
 
 #include <memory>
 

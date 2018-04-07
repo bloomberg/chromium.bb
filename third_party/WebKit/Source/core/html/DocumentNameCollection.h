@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DocumentNameCollection_h
-#define DocumentNameCollection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_DOCUMENT_NAME_COLLECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_DOCUMENT_NAME_COLLECTION_H_
 
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLNameCollection.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_name_collection.h"
 
 namespace blink {
 
@@ -37,4 +37,4 @@ DEFINE_TYPE_CASTS(DocumentNameCollection,
 
 }  // namespace blink
 
-#endif  // DocumentNameCollection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_DOCUMENT_NAME_COLLECTION_H_

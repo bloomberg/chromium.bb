@@ -27,12 +27,12 @@
  * SUCH DAMAGE.
  */
 
-#ifndef BasicShapeFunctions_h
-#define BasicShapeFunctions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_BASIC_SHAPE_FUNCTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_BASIC_SHAPE_FUNCTIONS_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/style/BasicShapes.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/style/basic_shapes.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

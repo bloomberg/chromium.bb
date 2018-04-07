@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/NavigatorConcurrentHardware.h"
+#include "third_party/blink/renderer/core/frame/navigator_concurrent_hardware.h"
 
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
 
 namespace blink {
 

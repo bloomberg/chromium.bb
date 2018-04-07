@@ -28,23 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/timing/PerformanceTiming.h"
+#include "third_party/blink/renderer/core/timing/performance_timing.h"
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/css/CSSTiming.h"
-#include "core/dom/Document.h"
-#include "core/dom/DocumentParserTiming.h"
-#include "core/dom/DocumentTiming.h"
-#include "core/frame/LocalFrame.h"
-#include "core/loader/DocumentLoadTiming.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/FrameLoader.h"
-#include "core/loader/InteractiveDetector.h"
-#include "core/paint/PaintTiming.h"
-#include "core/timing/Performance.h"
-#include "platform/loader/fetch/ResourceLoadTiming.h"
-#include "platform/loader/fetch/ResourceResponse.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/css/css_timing.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_parser_timing.h"
+#include "third_party/blink/renderer/core/dom/document_timing.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/loader/document_load_timing.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/loader/interactive_detector.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
+#include "third_party/blink/renderer/core/timing/performance.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
 // Legacy support for NT1(https://www.w3.org/TR/navigation-timing/).
 namespace blink {

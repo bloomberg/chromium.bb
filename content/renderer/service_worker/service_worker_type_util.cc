@@ -11,10 +11,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "storage/common/blob_storage/blob_handle.h"
-#include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
+#include "third_party/blink/public/platform/web_http_header_visitor.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace content {
 

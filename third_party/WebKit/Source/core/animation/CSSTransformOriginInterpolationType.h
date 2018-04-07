@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSTransformOriginInterpolationType_h
-#define CSSTransformOriginInterpolationType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_TRANSFORM_ORIGIN_INTERPOLATION_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_TRANSFORM_ORIGIN_INTERPOLATION_TYPE_H_
 
-#include "core/animation/CSSLengthListInterpolationType.h"
-#include "core/animation/CSSPositionAxisListInterpolationType.h"
-#include "core/animation/LengthInterpolationFunctions.h"
-#include "core/animation/ListInterpolationFunctions.h"
-#include "core/css/CSSValueList.h"
+#include "third_party/blink/renderer/core/animation/css_length_list_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/css_position_axis_list_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/list_interpolation_functions.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class CSSTransformOriginInterpolationType
 
 }  // namespace blink
 
-#endif  // CSSTransformOriginInterpolationType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_TRANSFORM_ORIGIN_INTERPOLATION_TYPE_H_

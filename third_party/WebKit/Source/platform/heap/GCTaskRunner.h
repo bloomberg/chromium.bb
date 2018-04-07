@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GCTaskRunner_h
-#define GCTaskRunner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_GC_TASK_RUNNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_GC_TASK_RUNNER_H_
 
 #include <memory>
 #include "base/location.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/heap/ThreadState.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
 
 namespace blink {
 

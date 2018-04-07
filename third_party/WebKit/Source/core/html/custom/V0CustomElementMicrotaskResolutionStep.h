@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V0CustomElementMicrotaskResolutionStep_h
-#define V0CustomElementMicrotaskResolutionStep_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_MICROTASK_RESOLUTION_STEP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_MICROTASK_RESOLUTION_STEP_H_
 
-#include "core/html/custom/V0CustomElementDescriptor.h"
-#include "core/html/custom/V0CustomElementMicrotaskStep.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_descriptor.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_step.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class V0CustomElementMicrotaskResolutionStep final
 
 }  // namespace blink
 
-#endif  // V0CustomElementMicrotaskResolutionStep_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_MICROTASK_RESOLUTION_STEP_H_

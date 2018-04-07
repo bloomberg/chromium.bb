@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/FormDataBytesConsumer.h"
+#include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "core/fetch/BytesConsumerTestUtil.h"
-#include "core/html/forms/FormData.h"
-#include "core/testing/PageTestBase.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "core/typed_arrays/DOMTypedArray.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
-#include "platform/blob/BlobData.h"
-#include "platform/network/EncodedFormData.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebHTTPBody.h"
-#include "public/platform/WebString.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_http_body.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
+#include "third_party/blink/renderer/core/html/forms/form_data.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 namespace {

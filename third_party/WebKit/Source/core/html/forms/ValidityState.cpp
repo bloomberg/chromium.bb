@@ -21,7 +21,7 @@
  *
  */
 
-#include "core/html/forms/ValidityState.h"
+#include "third_party/blink/renderer/core/html/forms/validity_state.h"
 
 namespace blink {
 

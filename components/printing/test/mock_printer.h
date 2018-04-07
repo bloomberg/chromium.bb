@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "printing/image.h"
-#include "third_party/WebKit/public/web/WebPrintScalingOption.h"
+#include "third_party/blink/public/web/web_print_scaling_option.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 

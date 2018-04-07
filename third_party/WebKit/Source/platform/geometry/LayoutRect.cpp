@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/geometry/LayoutRect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 #include <stdio.h>
 #include <algorithm>
-#include "platform/LayoutUnit.h"
-#include "platform/geometry/DoubleRect.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/geometry/double_rect.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

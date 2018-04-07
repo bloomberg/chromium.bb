@@ -24,22 +24,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSFontSelector.h"
+#include "third_party/blink/renderer/core/css/css_font_selector.h"
 
 #include "build/build_config.h"
-#include "core/css/CSSSegmentedFontFace.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/FontFaceSetDocument.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
-#include "core/loader/FrameLoader.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/FontSelectorClient.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/css/css_segmented_font_face.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/font_face_set_document.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

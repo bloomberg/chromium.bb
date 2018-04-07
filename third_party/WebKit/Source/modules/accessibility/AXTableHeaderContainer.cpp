@@ -26,9 +26,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/accessibility/AXTableHeaderContainer.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_table_header_container.h"
 
-#include "modules/accessibility/AXObjectCacheImpl.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 
 namespace blink {
 

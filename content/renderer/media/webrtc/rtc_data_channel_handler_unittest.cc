@@ -11,7 +11,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "content/renderer/media/webrtc/mock_data_channel_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebRTCDataChannelHandlerClient.h"
+#include "third_party/blink/public/platform/web_rtc_data_channel_handler_client.h"
 
 namespace content {
 

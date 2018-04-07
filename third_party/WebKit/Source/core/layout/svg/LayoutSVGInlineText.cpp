@@ -21,22 +21,22 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/svg/LayoutSVGInlineText.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 
-#include "core/css/CSSFontSelector.h"
-#include "core/css/FontSizeFunctions.h"
-#include "core/css/StyleEngine.h"
-#include "core/editing/TextAffinity.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/svg/LayoutSVGText.h"
-#include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "platform/fonts/CharacterRange.h"
-#include "platform/text/BidiCharacterRun.h"
-#include "platform/text/BidiResolver.h"
-#include "platform/text/TextDirection.h"
-#include "platform/text/TextRun.h"
-#include "platform/text/TextRunIterator.h"
+#include "third_party/blink/renderer/core/css/css_font_selector.h"
+#include "third_party/blink/renderer/core/css/font_size_functions.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
+#include "third_party/blink/renderer/core/layout/svg/line/svg_inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/platform/fonts/character_range.h"
+#include "third_party/blink/renderer/platform/text/bidi_character_run.h"
+#include "third_party/blink/renderer/platform/text/bidi_resolver.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
+#include "third_party/blink/renderer/platform/text/text_run_iterator.h"
 
 namespace blink {
 

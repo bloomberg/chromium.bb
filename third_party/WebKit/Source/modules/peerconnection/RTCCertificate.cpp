@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/peerconnection/RTCCertificate.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 
 #include "base/memory/ptr_util.h"
-#include "platform/bindings/ToV8.h"
-#include "platform/bindings/V8Binding.h"
+#include "third_party/blink/renderer/platform/bindings/to_v8.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 
 namespace blink {
 

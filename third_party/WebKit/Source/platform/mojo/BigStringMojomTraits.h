@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BigStringMojomTraits_h
-#define BigStringMojomTraits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_BIG_STRING_MOJOM_TRAITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_BIG_STRING_MOJOM_TRAITS_H_
 
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "mojo/public/mojom/base/big_string.mojom-blink.h"
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace mojo_base {
 class BigBuffer;
@@ -27,4 +27,4 @@ struct PLATFORM_EXPORT
 
 }  // namespace mojo
 
-#endif  // BigStringMojomTraits_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_BIG_STRING_MOJOM_TRAITS_H_

@@ -29,13 +29,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace WTF {
 

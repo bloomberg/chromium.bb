@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_layout_input_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 
-#include "core/layout/LayoutReplaced.h"
-#include "core/layout/LayoutView.h"
-#include "core/layout/MinMaxSize.h"
-#include "core/layout/ng/geometry/ng_logical_size.h"
-#include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/list/layout_ng_list_marker.h"
-#include "core/layout/ng/ng_block_node.h"
-#include "core/layout/ng/ng_layout_result.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/layout/layout_replaced.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 namespace {

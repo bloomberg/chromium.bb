@@ -26,18 +26,18 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ReverbConvolver_h
-#define ReverbConvolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_REVERB_CONVOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_REVERB_CONVOLVER_H_
 
 #include <memory>
-#include "platform/audio/AudioArray.h"
-#include "platform/audio/DirectConvolver.h"
-#include "platform/audio/FFTConvolver.h"
-#include "platform/audio/ReverbAccumulationBuffer.h"
-#include "platform/audio/ReverbConvolverStage.h"
-#include "platform/audio/ReverbInputBuffer.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
+#include "third_party/blink/renderer/platform/audio/direct_convolver.h"
+#include "third_party/blink/renderer/platform/audio/fft_convolver.h"
+#include "third_party/blink/renderer/platform/audio/reverb_accumulation_buffer.h"
+#include "third_party/blink/renderer/platform/audio/reverb_convolver_stage.h"
+#include "third_party/blink/renderer/platform/audio/reverb_input_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -98,4 +98,4 @@ class PLATFORM_EXPORT ReverbConvolver {
 
 }  // namespace blink
 
-#endif  // ReverbConvolver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_REVERB_CONVOLVER_H_

@@ -21,13 +21,13 @@
  *
  */
 
-#ifndef UIEvent_h
-#define UIEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_UI_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_UI_EVENT_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/events/Event.h"
-#include "core/events/UIEventInit.h"
-#include "core/frame/DOMWindow.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/ui_event_init.h"
+#include "third_party/blink/renderer/core/frame/dom_window.h"
 
 namespace blink {
 
@@ -97,4 +97,4 @@ class CORE_EXPORT UIEvent : public Event {
 
 }  // namespace blink
 
-#endif  // UIEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_UI_EVENT_H_

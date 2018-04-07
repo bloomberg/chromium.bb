@@ -26,21 +26,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/SQLTransaction.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/probe/CoreProbes.h"
-#include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/DatabaseAuthorizer.h"
-#include "modules/webdatabase/DatabaseContext.h"
-#include "modules/webdatabase/DatabaseThread.h"
-#include "modules/webdatabase/SQLError.h"
-#include "modules/webdatabase/SQLTransactionBackend.h"
-#include "modules/webdatabase/SQLTransactionClient.h"  // FIXME: Should be used in the backend only.
-#include "modules/webdatabase/StorageLog.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/modules/webdatabase/database.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_authorizer.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_context.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_thread.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_error.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction_backend.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction_client.h"  // FIXME: Should be used in the backend only.
+#include "third_party/blink/renderer/modules/webdatabase/storage_log.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

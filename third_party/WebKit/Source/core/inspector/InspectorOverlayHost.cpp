@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/inspector/InspectorOverlayHost.h"
+#include "third_party/blink/renderer/core/inspector/inspector_overlay_host.h"
 
 namespace blink {
 

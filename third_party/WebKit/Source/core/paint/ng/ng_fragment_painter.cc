@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ng/ng_fragment_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_fragment_painter.h"
 
-#include "core/layout/LayoutTheme.h"
-#include "core/layout/ng/inline/ng_inline_fragment_traversal.h"
-#include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "core/layout/ng/ng_physical_fragment.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/ng/ng_paint_fragment.h"
-#include "core/paint/ng/ng_paint_fragment_traversal.h"
-#include "core/style/BorderEdge.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment_traversal.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/style/border_edge.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

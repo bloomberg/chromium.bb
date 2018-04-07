@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_MEDIA_MEDIA_SESSION_STRUCT_TRAITS_H_
 #define CONTENT_COMMON_MEDIA_MEDIA_SESSION_STRUCT_TRAITS_H_
 
-#include "third_party/WebKit/public/platform/modules/mediasession/media_session.mojom.h"
+#include "third_party/blink/public/platform/modules/mediasession/media_session.mojom.h"
 
 namespace mojo {
 

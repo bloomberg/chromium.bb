@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8AbstractEventListener.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8Event.h"
-#include "bindings/core/v8/V8EventListenerHelper.h"
-#include "bindings/core/v8/V8EventTarget.h"
-#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/dom/Document.h"
-#include "core/dom/DocumentParser.h"
-#include "core/dom/events/Event.h"
-#include "core/events/BeforeUnloadEvent.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/probe/CoreProbes.h"
-#include "core/workers/WorkerOrWorkletGlobalScope.h"
-#include "platform/InstanceCounters.h"
-#include "platform/bindings/V8PrivateProperty.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_helper.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
+#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_parser.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/before_unload_event.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
+#include "third_party/blink/renderer/platform/instance_counters.h"
 
 namespace blink {
 

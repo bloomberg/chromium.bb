@@ -28,8 +28,8 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_registration.mojom.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_state.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_state.mojom.h"
 
 namespace content {
 namespace service_worker_handle_unittest {

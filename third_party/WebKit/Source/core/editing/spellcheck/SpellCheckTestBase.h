@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SpellCheckTestBase_h
-#define SpellCheckTestBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_SPELL_CHECK_TEST_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_SPELL_CHECK_TEST_BASE_H_
 
-#include "core/editing/testing/EditingTestBase.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 
 namespace blink {
 
@@ -20,4 +20,4 @@ class SpellCheckTestBase : public EditingTestBase {
 
 }  // namespace blink
 
-#endif  // SpellCheckTestBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_SPELL_CHECK_TEST_BASE_H_

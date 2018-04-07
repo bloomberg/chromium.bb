@@ -1,5 +1,5 @@
 include_rules = [
-    "-modules",
-    "+modules/EventTargetModules.h",
-    "+modules/netinfo",
+    "-third_party/blink/renderer/modules",
+    "+third_party/blink/renderer/modules/event_target_modules.h",
+    "+third_party/blink/renderer/modules/netinfo",
 ]

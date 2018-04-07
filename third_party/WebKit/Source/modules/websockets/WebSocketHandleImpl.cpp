@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/websockets/WebSocketHandleImpl.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_handle_impl.h"
 
 #include "base/single_thread_task_runner.h"
-#include "modules/websockets/WebSocketHandleClient.h"
-#include "platform/network/NetworkLog.h"
-#include "platform/network/WebSocketHandshakeRequest.h"
-#include "platform/network/WebSocketHandshakeResponse.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_handle_client.h"
+#include "third_party/blink/renderer/platform/network/network_log.h"
+#include "third_party/blink/renderer/platform/network/web_socket_handshake_request.h"
+#include "third_party/blink/renderer/platform/network/web_socket_handshake_response.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 namespace {

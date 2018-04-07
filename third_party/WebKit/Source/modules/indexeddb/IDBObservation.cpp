@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/indexeddb/IDBObservation.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_observation.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/modules/v8/ToV8ForModules.h"
-#include "bindings/modules/v8/V8BindingForModules.h"
-#include "modules/indexed_db_names.h"
-#include "modules/indexeddb/IDBAny.h"
-#include "modules/indexeddb/IDBKeyRange.h"
-#include "modules/indexeddb/IDBValue.h"
-#include "platform/bindings/ScriptState.h"
-#include "public/platform/modules/indexeddb/WebIDBObservation.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_observation.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/modules/v8/to_v8_for_modules.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
+#include "third_party/blink/renderer/modules/indexed_db_names.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_any.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

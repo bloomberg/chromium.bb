@@ -28,9 +28,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/InspectorDatabaseResource.h"
+#include "third_party/blink/renderer/modules/webdatabase/inspector_database_resource.h"
 
-#include "modules/webdatabase/Database.h"
+#include "third_party/blink/renderer/modules/webdatabase/database.h"
 
 namespace blink {
 

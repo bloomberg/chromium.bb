@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGSMILElement_h
-#define SVGSMILElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SVG_SMIL_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SVG_SMIL_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGTests.h"
-#include "core/svg/animation/SMILTime.h"
-#include "core/svg_names.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/svg/animation/smil_time.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_tests.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -309,4 +309,4 @@ DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGSMILElement);
 
 }  // namespace blink
 
-#endif  // SVGSMILElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SVG_SMIL_ELEMENT_H_

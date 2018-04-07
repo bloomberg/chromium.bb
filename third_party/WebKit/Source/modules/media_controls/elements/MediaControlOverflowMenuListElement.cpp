@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlOverflowMenuListElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_overflow_menu_list_element.h"
 
-#include "core/dom/events/Event.h"
-#include "modules/media_controls/MediaControlsImpl.h"
-#include "platform/Histogram.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
 

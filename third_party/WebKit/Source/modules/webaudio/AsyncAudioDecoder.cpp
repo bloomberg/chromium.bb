@@ -23,18 +23,18 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/AsyncAudioDecoder.h"
+#include "third_party/blink/renderer/modules/webaudio/async_audio_decoder.h"
 
 #include "base/location.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "modules/webaudio/AudioBuffer.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioFileReader.h"
-#include "platform/threading/BackgroundTaskRunner.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_file_reader.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/threading/background_task_runner.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 

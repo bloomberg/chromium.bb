@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/quota/WorkerNavigatorStorageQuota.h"
+#include "third_party/blink/renderer/modules/quota/worker_navigator_storage_quota.h"
 
-#include "modules/quota/DeprecatedStorageQuota.h"
-#include "modules/quota/StorageManager.h"
+#include "third_party/blink/renderer/modules/quota/deprecated_storage_quota.h"
+#include "third_party/blink/renderer/modules/quota/storage_manager.h"
 
 namespace blink {
 

@@ -12,7 +12,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-#include "third_party/WebKit/public/platform/WebDataConsumerHandle.h"
+#include "third_party/blink/public/platform/web_data_consumer_handle.h"
 
 namespace content {
 

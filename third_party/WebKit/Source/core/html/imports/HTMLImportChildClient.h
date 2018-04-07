@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLImportChildClient_h
-#define HTMLImportChildClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_HTML_IMPORT_CHILD_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_HTML_IMPORT_CHILD_CLIENT_H_
 
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class HTMLImportChildClient : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // HTMLImportChildClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_HTML_IMPORT_CHILD_CLIENT_H_

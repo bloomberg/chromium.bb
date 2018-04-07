@@ -8,11 +8,11 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "third_party/WebKit/public/platform/URLConversion.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationAction.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_action.h"
+#include "third_party/blink/public/platform/url_conversion.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 using blink::WebNotificationData;
 using blink::WebString;

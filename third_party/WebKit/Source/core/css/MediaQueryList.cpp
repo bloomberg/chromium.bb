@@ -17,13 +17,13 @@
  *  Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/MediaQueryList.h"
+#include "third_party/blink/renderer/core/css/media_query_list.h"
 
-#include "core/css/MediaList.h"
-#include "core/css/MediaQueryEvaluator.h"
-#include "core/css/MediaQueryListListener.h"
-#include "core/css/MediaQueryMatcher.h"
-#include "core/dom/Document.h"
+#include "third_party/blink/renderer/core/css/media_list.h"
+#include "third_party/blink/renderer/core/css/media_query_evaluator.h"
+#include "third_party/blink/renderer/core/css/media_query_list_listener.h"
+#include "third_party/blink/renderer/core/css/media_query_matcher.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
 

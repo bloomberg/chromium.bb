@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/push_messaging/PushEvent.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_event.h"
 
-#include "modules/push_messaging/PushEventInit.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_event_init.h"
 
 namespace blink {
 

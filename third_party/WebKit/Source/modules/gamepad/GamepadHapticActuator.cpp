@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/gamepad/GamepadHapticActuator.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad_haptic_actuator.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "modules/gamepad/GamepadDispatcher.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad_dispatcher.h"
 
 namespace {
 

@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/testing/URLTestHelpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
 #include <string>
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "platform/loader/fetch/ResourceLoader.h"
-#include "platform/network/http_names.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/FilePathConversion.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebURLError.h"
-#include "public/platform/WebURLLoadTiming.h"
-#include "public/platform/WebURLLoaderMockFactory.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/public/platform/web_url_load_timing.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 namespace URLTestHelpers {

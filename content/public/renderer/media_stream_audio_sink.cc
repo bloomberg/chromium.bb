@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "content/renderer/media/stream/media_stream_audio_track.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace content {
 

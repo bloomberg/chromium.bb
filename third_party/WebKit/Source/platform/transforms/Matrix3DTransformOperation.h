@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Matrix3DTransformOperation_h
-#define Matrix3DTransformOperation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_MATRIX_3D_TRANSFORM_OPERATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_MATRIX_3D_TRANSFORM_OPERATION_H_
 
-#include "platform/transforms/TransformOperation.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operation.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ DEFINE_TRANSFORM_TYPE_CASTS(Matrix3DTransformOperation);
 
 }  // namespace blink
 
-#endif  // Matrix3DTransformOperation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_MATRIX_3D_TRANSFORM_OPERATION_H_

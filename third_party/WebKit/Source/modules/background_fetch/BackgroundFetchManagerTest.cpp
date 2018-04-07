@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/background_fetch/BackgroundFetchManager.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_manager.h"
 
-#include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/core/v8/request_or_usv_string.h"
-#include "bindings/modules/v8/request_or_usv_string_or_request_or_usv_string_sequence.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/fetch/Request.h"
-#include "platform/bindings/ScriptState.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/modules/v8/request_or_usv_string_or_request_or_usv_string_sequence.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/fetch/request.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

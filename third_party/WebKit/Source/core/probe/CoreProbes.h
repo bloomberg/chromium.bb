@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CoreProbes_h
-#define CoreProbes_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PROBE_CORE_PROBES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PROBE_CORE_PROBES_H_
 
-#include "core/CoreExport.h"
-#include "core/animation/Animation.h"
-#include "core/dom/Document.h"
-#include "core/dom/PseudoElement.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/HTMLSlotElement.h"
-#include "core/page/ChromeClient.h"
-#include "platform/probe/PlatformProbes.h"
+#include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/html_slot_element.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/platform/probe/platform_probes.h"
 
 namespace blink {
 
@@ -117,6 +117,6 @@ CORE_EXPORT void ContinueWithPolicyIgnore(LocalFrame*,
 }  // namespace probe
 }  // namespace blink
 
-#include "core/CoreProbesInl.h"
+#include "third_party/blink/renderer/core/CoreProbesInl.h"
 
 #endif  // !defined(CoreProbes_h)

@@ -12,8 +12,8 @@
 #include "content/renderer/indexed_db/indexed_db_key_builders.h"
 #include "content/renderer/indexed_db/webidbcursor_impl.h"
 #include "ipc/ipc_channel.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBObservation.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_observation.h"
 
 using blink::WebIDBKey;
 using blink::WebIDBObservation;

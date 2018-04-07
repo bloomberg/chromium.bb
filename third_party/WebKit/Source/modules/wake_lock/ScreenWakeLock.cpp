@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/wake_lock/ScreenWakeLock.h"
+#include "third_party/blink/renderer/modules/wake_lock/screen_wake_lock.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Screen.h"
-#include "core/page/PageVisibilityState.h"
-#include "platform/runtime_enabled_features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/screen.h"
+#include "third_party/blink/renderer/core/page/page_visibility_state.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

@@ -23,22 +23,22 @@
  *
  */
 
-#include "platform/wtf/text/StringImpl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
-#include "platform/wtf/DynamicAnnotations.h"
-#include "platform/wtf/LeakAnnotations.h"
-#include "platform/wtf/StaticConstructors.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/allocator/Partitions.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/AtomicStringTable.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/StringBuffer.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/StringToNumber.h"
 #include <algorithm>
 #include <memory>
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/dynamic_annotations.h"
+#include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
+#include "third_party/blink/renderer/platform/wtf/static_constructors.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 
 using std::numeric_limits;
 

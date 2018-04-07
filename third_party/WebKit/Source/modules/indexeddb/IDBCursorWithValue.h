@@ -23,14 +23,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IDBCursorWithValue_h
-#define IDBCursorWithValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_CURSOR_WITH_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_CURSOR_WITH_VALUE_H_
 
-#include "modules/indexeddb/IDBCursor.h"
-#include "modules/indexeddb/IndexedDB.h"
-#include "public/platform/modules/indexeddb/WebIDBCursor.h"
-#include "public/platform/modules/indexeddb/WebIDBTypes.h"
 #include <memory>
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_cursor.h"
+#include "third_party/blink/renderer/modules/indexeddb/indexed_db.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ DEFINE_TYPE_CASTS(IDBCursorWithValue,
 
 }  // namespace blink
 
-#endif  // IDBCursorWithValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_CURSOR_WITH_VALUE_H_

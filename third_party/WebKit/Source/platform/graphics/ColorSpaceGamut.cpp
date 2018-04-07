@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/ColorSpaceGamut.h"
+#include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
 
-#include "public/platform/WebScreenInfo.h"
+#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 
 namespace blink {

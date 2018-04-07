@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/url/URLSearchParams.h"
+#include "third_party/blink/renderer/core/url/url_search_params.h"
 
 #include <algorithm>
 #include <utility>
-#include "core/url/DOMURL.h"
-#include "platform/network/FormDataEncoder.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/core/url/dom_url.h"
+#include "third_party/blink/renderer/platform/network/form_data_encoder.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 

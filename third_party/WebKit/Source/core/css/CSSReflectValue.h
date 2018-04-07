@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSReflectValue_h
-#define CSSReflectValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_REFLECT_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_REFLECT_VALUE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/css/CSSValue.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSReflectValue, IsReflectValue());
 }  // namespace cssvalue
 }  // namespace blink
 
-#endif  // CSSReflectValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_REFLECT_VALUE_H_

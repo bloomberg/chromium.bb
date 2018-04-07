@@ -24,9 +24,9 @@
  *
  */
 
-#include "core/dom/ElementDataCache.h"
+#include "third_party/blink/renderer/core/dom/element_data_cache.h"
 
-#include "core/dom/ElementData.h"
+#include "third_party/blink/renderer/core/dom/element_data.h"
 
 namespace blink {
 

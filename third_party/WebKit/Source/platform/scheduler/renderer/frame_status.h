@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_FRAME_STATUS_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_FRAME_STATUS_H_
 
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 class FrameScheduler;

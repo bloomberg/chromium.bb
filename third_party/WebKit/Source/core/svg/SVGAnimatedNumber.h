@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedNumber_h
-#define SVGAnimatedNumber_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_NUMBER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_NUMBER_H_
 
-#include "core/svg/SVGNumberTearOff.h"
-#include "core/svg/properties/SVGAnimatedProperty.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
+#include "third_party/blink/renderer/core/svg/svg_number_tear_off.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -79,4 +79,4 @@ class SVGAnimatedNumber : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // SVGAnimatedNumber_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_NUMBER_H_

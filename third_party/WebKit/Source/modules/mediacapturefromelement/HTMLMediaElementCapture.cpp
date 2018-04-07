@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediacapturefromelement/HTMLMediaElementCapture.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/html_media_element_capture.h"
 
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/events/EventListener.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/track/AudioTrackList.h"
-#include "core/html/track/VideoTrackList.h"
-#include "modules/encryptedmedia/HTMLMediaElementEncryptedMedia.h"
-#include "modules/encryptedmedia/MediaKeys.h"
-#include "modules/mediastream/MediaStream.h"
-#include "modules/mediastream/MediaStreamRegistry.h"
-#include "platform/mediastream/MediaStreamCenter.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebMediaStream.h"
-#include "public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/track/audio_track_list.h"
+#include "third_party/blink/renderer/core/html/track/video_track_list.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/html_media_element_encrypted_media.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_keys.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_registry.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 
 namespace blink {
 

@@ -27,10 +27,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ShapeInterval_h
-#define ShapeInterval_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_SHAPE_INTERVAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_SHAPE_INTERVAL_H_
 
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -100,4 +100,4 @@ typedef Vector<FloatShapeInterval> FloatShapeIntervals;
 
 }  // namespace blink
 
-#endif  // ShapeInterval_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_SHAPE_INTERVAL_H_

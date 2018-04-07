@@ -23,15 +23,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/indexeddb/IDBKeyRange.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/modules/v8/ToV8ForModules.h"
-#include "bindings/modules/v8/V8BindingForModules.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/indexeddb/IDBDatabase.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/modules/v8/to_v8_for_modules.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
 
 namespace blink {
 

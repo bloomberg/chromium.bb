@@ -26,13 +26,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SQLResultSetRowList_h
-#define SQLResultSetRowList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_RESULT_SET_ROW_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_RESULT_SET_ROW_LIST_H_
 
-#include "modules/webdatabase/sqlite/SQLValue.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sql_value.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 class ScriptValue;
@@ -63,4 +63,4 @@ class SQLResultSetRowList final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // SQLResultSetRowList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_RESULT_SET_ROW_LIST_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSPaintImageGeneratorImpl_h
-#define CSSPaintImageGeneratorImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_CSS_PAINT_IMAGE_GENERATOR_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_CSS_PAINT_IMAGE_GENERATOR_IMPL_H_
 
-#include "core/css/CSSPaintImageGenerator.h"
-#include "core/css/cssom/CSSStyleValue.h"
-#include "modules/ModulesExport.h"
-#include "platform/bindings/ScopedPersistent.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
+#include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -69,4 +69,4 @@ class MODULES_EXPORT CSSPaintImageGeneratorImpl final
 
 }  // namespace blink
 
-#endif  // CSSPaintImageGeneratorImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_CSS_PAINT_IMAGE_GENERATOR_IMPL_H_

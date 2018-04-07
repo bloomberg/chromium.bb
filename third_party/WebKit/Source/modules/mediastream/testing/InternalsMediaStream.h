@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InternalsMediaStream_h
-#define InternalsMediaStream_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_TESTING_INTERNALS_MEDIA_STREAM_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_TESTING_INTERNALS_MEDIA_STREAM_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -29,4 +29,4 @@ class InternalsMediaStream {
 
 }  // namespace blink
 
-#endif  // InternalsMediaStream_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_TESTING_INTERNALS_MEDIA_STREAM_H_

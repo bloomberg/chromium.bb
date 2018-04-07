@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/peerconnection/RTCDataChannel.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_data_channel.h"
 
 #include <memory>
 #include <string>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/events/Event.h"
-#include "core/testing/NullExecutionContext.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "platform/heap/Heap.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebRTCDataChannelHandler.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_rtc_data_channel_handler.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/testing/null_execution_context.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 namespace {

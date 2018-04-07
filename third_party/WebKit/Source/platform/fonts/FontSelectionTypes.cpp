@@ -23,9 +23,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/FontSelectionTypes.h"
+#include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
 
-#include "platform/wtf/StringHasher.h"
+#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
 
 namespace {
 

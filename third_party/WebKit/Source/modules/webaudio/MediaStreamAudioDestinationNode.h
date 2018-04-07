@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#ifndef MediaStreamAudioDestinationNode_h
-#define MediaStreamAudioDestinationNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_MEDIA_STREAM_AUDIO_DESTINATION_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_MEDIA_STREAM_AUDIO_DESTINATION_NODE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/mediastream/MediaStream.h"
-#include "modules/webaudio/AudioBasicInspectorNode.h"
-#include "platform/audio/AudioBus.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_basic_inspector_node.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
 
 namespace blink {
 
@@ -93,4 +93,4 @@ class MediaStreamAudioDestinationNode final : public AudioBasicInspectorNode {
 
 }  // namespace blink
 
-#endif  // MediaStreamAudioDestinationNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_MEDIA_STREAM_AUDIO_DESTINATION_NODE_H_

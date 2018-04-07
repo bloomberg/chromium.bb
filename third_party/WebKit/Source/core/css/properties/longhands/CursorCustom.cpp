@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/cursor.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/cursor.h"
 
-#include "core/css/CSSCursorImageValue.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/parser/CSSParserMode.h"
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/frame/UseCounter.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/css/css_cursor_image_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 namespace CSSLonghand {

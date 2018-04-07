@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AdjustPaintOffsetScope_h
-#define AdjustPaintOffsetScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_ADJUST_PAINT_OFFSET_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_ADJUST_PAINT_OFFSET_SCOPE_H_
 
-#include "core/layout/LayoutBox.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/ng/ng_paint_fragment.h"
-#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class AdjustPaintOffsetScope {
 
 }  // namespace blink
 
-#endif  // AdjustPaintOffsetScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_ADJUST_PAINT_OFFSET_SCOPE_H_

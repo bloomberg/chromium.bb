@@ -11,10 +11,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/common/browser_side_navigation_policy.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/platform/web_url_response.h"
 
 using blink::WebApplicationCacheHost;
 using blink::WebApplicationCacheHostClient;

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/indexeddb/IDBValueWrapping.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value_wrapping.h"
 
 #include <memory>
 #include <utility>
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/serialization/SerializationTag.h"
-#include "bindings/modules/v8/V8BindingForModules.h"
-#include "modules/indexeddb/IDBRequest.h"
-#include "modules/indexeddb/IDBValue.h"
-#include "platform/blob/BlobData.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialization_tag.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

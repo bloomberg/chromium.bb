@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkletGlobalScopeProxy_h
-#define WorkletGlobalScopeProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_GLOBAL_SCOPE_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_GLOBAL_SCOPE_PROXY_H_
 
 #include "base/single_thread_task_runner.h"
-#include "core/CoreExport.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/weborigin/KURL.h"
-#include "public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class CORE_EXPORT WorkletGlobalScopeProxy : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // WorkletGlobalScopeProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_GLOBAL_SCOPE_PROXY_H_

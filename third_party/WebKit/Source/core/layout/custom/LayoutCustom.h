@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayoutCustom_h
-#define LayoutCustom_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_LAYOUT_CUSTOM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_LAYOUT_CUSTOM_H_
 
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/custom/CSSLayoutDefinition.h"
+#include "third_party/blink/renderer/core/layout/custom/css_layout_definition.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutCustom, IsLayoutCustom());
 
 }  // namespace blink
 
-#endif  // LayoutCustom_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_LAYOUT_CUSTOM_H_

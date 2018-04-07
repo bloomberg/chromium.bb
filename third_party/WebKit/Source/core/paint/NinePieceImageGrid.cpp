@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/NinePieceImageGrid.h"
+#include "third_party/blink/renderer/core/paint/nine_piece_image_grid.h"
 
-#include "core/style/NinePieceImage.h"
-#include "platform/LengthFunctions.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/geometry/IntSize.h"
+#include "third_party/blink/renderer/core/style/nine_piece_image.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
 
 namespace blink {
 

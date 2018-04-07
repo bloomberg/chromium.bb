@@ -20,10 +20,10 @@
  *
  */
 
-#ifndef HTMLParamElement_h
-#define HTMLParamElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_PARAM_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_PARAM_ELEMENT_H_
 
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class HTMLParamElement final : public HTMLElement {
 
 }  // namespace blink
 
-#endif  // HTMLParamElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_PARAM_ELEMENT_H_

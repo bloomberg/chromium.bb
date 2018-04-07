@@ -6,9 +6,9 @@
 #define THIRD_PARTY_WEBKIT_COMMON_MESSAGE_PORT_TRANSFERABLE_MESSAGE_STRUCT_TRAITS_H_
 
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
-#include "third_party/WebKit/common/message_port/cloneable_message_struct_traits.h"
-#include "third_party/WebKit/public/common/message_port/transferable_message.h"
-#include "third_party/WebKit/public/mojom/message_port/message_port.mojom.h"
+#include "third_party/blink/common/message_port/cloneable_message_struct_traits.h"
+#include "third_party/blink/public/common/message_port/transferable_message.h"
+#include "third_party/blink/public/mojom/message_port/message_port.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace mojo {

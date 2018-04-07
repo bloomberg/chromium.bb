@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebNotificationConstants_h
-#define WebNotificationConstants_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_CONSTANTS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_CONSTANTS_H_
 
 namespace blink {
 
@@ -35,4 +35,4 @@ static constexpr int kWebNotificationMaxActionIconSizePx = 128;  // 32 dip * 4
 
 }  // namespace blink
 
-#endif  // WebNotificationConstants_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_CONSTANTS_H_

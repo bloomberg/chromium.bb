@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/indexeddb/IDBRequestQueueItem.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_request_queue_item.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/DOMException.h"
-#include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBRequest.h"
-#include "modules/indexeddb/IDBRequestLoader.h"
-#include "modules/indexeddb/IDBValue.h"
-#include "public/platform/modules/indexeddb/WebIDBCursor.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_request_loader.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 
 namespace blink {
 

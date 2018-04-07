@@ -22,22 +22,22 @@
  *
  */
 
-#include "core/html/forms/HTMLLabelElement.h"
+#include "third_party/blink/renderer/core/html/forms/html_label_element.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionController.h"
-#include "core/editing/VisibleSelection.h"
-#include "core/events/MouseEvent.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/forms/HTMLFormControlElement.h"
-#include "core/html/forms/ListedElement.h"
-#include "core/html_names.h"
-#include "core/input/EventHandler.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/selection_controller.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/core/html/forms/listed_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 

@@ -7,7 +7,7 @@
 #include "content/shell/test_runner/layout_test_runtime_flags.h"
 #include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/web_test_delegate.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 namespace test_runner {
 

@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextTrackCueList_h
-#define TextTrackCueList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_CUE_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_CUE_LIST_H_
 
-#include "core/html/track/TextTrackCue.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/html/track/text_track_cue.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class TextTrackCueList final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // TextTrackCueList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_CUE_LIST_H_

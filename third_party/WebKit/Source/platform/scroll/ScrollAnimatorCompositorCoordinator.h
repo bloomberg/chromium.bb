@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScrollAnimatorCompositorCoordinator_h
-#define ScrollAnimatorCompositorCoordinator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_ANIMATOR_COMPOSITOR_COORDINATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_ANIMATOR_COMPOSITOR_COORDINATOR_H_
 
 #include <memory>
 #include "base/gtest_prod_util.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/scroll_offset_animations.h"
-#include "platform/PlatformExport.h"
-#include "platform/animation/CompositorAnimationClient.h"
-#include "platform/animation/CompositorAnimationDelegate.h"
-#include "platform/graphics/CompositorElementId.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -196,4 +196,4 @@ class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator
 
 }  // namespace blink
 
-#endif  // ScrollAnimatorCompositorCoordinator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_ANIMATOR_COMPOSITOR_COORDINATOR_H_

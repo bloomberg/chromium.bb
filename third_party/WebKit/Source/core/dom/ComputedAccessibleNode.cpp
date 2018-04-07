@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/ComputedAccessibleNode.h"
+#include "third_party/blink/renderer/core/dom/computed_accessible_node.h"
 
 #include <stdint.h>
 #include <utility>
 
-#include "core/dom/DOMException.h"
-#include "core/dom/FrameRequestCallbackCollection.h"
-#include "core/frame/LocalFrame.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/heap/Handle.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "public/platform/Platform.h"
-#include "public/web/WebFrameClient.h"
-#include "third_party/WebKit/Source/core/frame/WebLocalFrameImpl.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
 
 namespace blink {
 

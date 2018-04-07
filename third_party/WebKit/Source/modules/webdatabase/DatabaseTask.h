@@ -26,21 +26,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DatabaseTask_h
-#define DatabaseTask_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_TASK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_TASK_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/DatabaseBasicTypes.h"
-#include "modules/webdatabase/DatabaseError.h"
-#include "modules/webdatabase/SQLTransactionBackend.h"
-#include "platform/WaitableEvent.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/modules/webdatabase/database.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_basic_types.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_error.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction_backend.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -166,4 +166,4 @@ class Database::DatabaseTableNamesTask final : public DatabaseTask {
 
 }  // namespace blink
 
-#endif  // DatabaseTask_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_TASK_H_

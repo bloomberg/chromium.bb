@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("imagecapture") {
   sources = [
-    "ImageCapture.cpp",
-    "ImageCapture.h",
-    "MediaSettingsRange.h",
-    "PhotoCapabilities.cpp",
-    "PhotoCapabilities.h",
+    "image_capture.cc",
+    "image_capture.h",
+    "media_settings_range.h",
+    "photo_capabilities.cc",
+    "photo_capabilities.h",
   ]
 
   deps = [

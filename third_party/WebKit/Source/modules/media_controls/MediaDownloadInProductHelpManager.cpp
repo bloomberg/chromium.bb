@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/MediaDownloadInProductHelpManager.h"
+#include "third_party/blink/renderer/modules/media_controls/media_download_in_product_help_manager.h"
 
-#include "core/frame/LocalFrameClient.h"
-#include "modules/media_controls/MediaControlsImpl.h"
-#include "modules/media_controls/elements/MediaControlDownloadButtonElement.h"
-#include "modules/media_controls/elements/MediaControlOverflowMenuButtonElement.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_download_button_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_overflow_menu_button_element.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 
 namespace blink {
 

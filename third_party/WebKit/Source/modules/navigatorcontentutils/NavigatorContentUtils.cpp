@@ -24,12 +24,12 @@
  * DAMAGE.
  */
 
-#include "modules/navigatorcontentutils/NavigatorContentUtils.h"
+#include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/UseCounter.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 
 namespace blink {
 

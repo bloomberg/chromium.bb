@@ -21,13 +21,13 @@
  *
  */
 
-#ifndef HTMLFrameSetElement_h
-#define HTMLFrameSetElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_SET_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_SET_ELEMENT_H_
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/html/HTMLDimension.h"
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/html/html_dimension.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -95,4 +95,4 @@ class HTMLFrameSetElement final : public HTMLElement {
 
 }  // namespace blink
 
-#endif  // HTMLFrameSetElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_SET_ELEMENT_H_

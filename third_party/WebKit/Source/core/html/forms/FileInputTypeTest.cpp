@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/forms/FileInputType.h"
+#include "third_party/blink/renderer/core/html/forms/file_input_type.h"
 
-#include "core/clipboard/DataObject.h"
-#include "core/dom/Document.h"
-#include "core/fileapi/FileList.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html_names.h"
-#include "core/page/DragData.h"
-#include "platform/wtf/DateMath.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/clipboard/data_object.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/fileapi/file_list.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/page/drag_data.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
 
 namespace blink {
 

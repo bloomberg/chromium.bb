@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/CompositorFilterOperations.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
 
-#include "platform/geometry/IntRect.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/geometry/rect.h"
 

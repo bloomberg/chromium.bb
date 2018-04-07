@@ -471,7 +471,7 @@ def AddLiteralActions(actions):
                 GrepForActions)
   webkit_core_root = os.path.normpath(
                      os.path.join(REPOSITORY_ROOT,
-                                  'third_party/WebKit/Source/core'))
+                                  'third_party/blink/renderer/core'))
   WalkDirectory(webkit_core_root, actions, EXTENSIONS, GrepForActions)
 
 def AddWebUIActions(actions):

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WaitUntilObserver_h
-#define WaitUntilObserver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_WAIT_UNTIL_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_WAIT_UNTIL_OBSERVER_H_
 
 #include "base/callback.h"
-#include "modules/ModulesExport.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
-#include "platform/Timer.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_client.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -114,4 +114,4 @@ class MODULES_EXPORT WaitUntilObserver final
 
 }  // namespace blink
 
-#endif  // WaitUntilObserver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_WAIT_UNTIL_OBSERVER_H_

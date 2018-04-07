@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TraceWrapperV8String_h
-#define TraceWrapperV8String_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_V8_STRING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_V8_STRING_H_
 
-#include "platform/bindings/TraceWrapperBase.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_base.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -45,4 +45,4 @@ class PLATFORM_EXPORT TraceWrapperV8String final : public TraceWrapperBase {
 
 }  // namespace blink
 
-#endif  // TraceWrapperV8String_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_V8_STRING_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RemoteFontFaceSource_h
-#define RemoteFontFaceSource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_REMOTE_FONT_FACE_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_REMOTE_FONT_FACE_SOURCE_H_
 
-#include "core/css/CSSFontFaceSource.h"
-#include "core/loader/resource/FontResource.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/css/css_font_face_source.h"
+#include "third_party/blink/renderer/core/loader/resource/font_resource.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RootScrollerController_h
-#define RootScrollerController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_ROOT_SCROLLER_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_ROOT_SCROLLER_CONTROLLER_H_
 
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -158,4 +158,4 @@ class CORE_EXPORT RootScrollerController
 
 }  // namespace blink
 
-#endif  // RootScrollerController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_ROOT_SCROLLER_CONTROLLER_H_

@@ -10,7 +10,7 @@
 
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/common/fileapi/file_system_types.h"
-#include "third_party/WebKit/public/mojom/quota/quota_types.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 class GURL;
 

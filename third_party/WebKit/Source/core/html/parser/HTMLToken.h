@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLToken_h
-#define HTMLToken_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_TOKEN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_TOKEN_H_
 
 #include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "core/dom/Attribute.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/dom/attribute.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

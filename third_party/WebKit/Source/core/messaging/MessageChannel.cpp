@@ -24,10 +24,10 @@
  *
  */
 
-#include "core/messaging/MessageChannel.h"
+#include "third_party/blink/renderer/core/messaging/message_channel.h"
 
-#include "core/messaging/MessagePort.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
 
 namespace blink {
 

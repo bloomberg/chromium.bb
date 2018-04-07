@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CrossfadeGeneratedImage_h
-#define CrossfadeGeneratedImage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CROSSFADE_GENERATED_IMAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CROSSFADE_GENERATED_IMAGE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/GeneratedImage.h"
-#include "platform/graphics/Image.h"
-#include "platform/graphics/ImageObserver.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/generated_image.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/image_observer.h"
 
 namespace blink {
 

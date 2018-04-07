@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ConsoleMessageStructTraits_h
-#define ConsoleMessageStructTraits_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_CONSOLE_MESSAGE_STRUCT_TRAITS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_CONSOLE_MESSAGE_STRUCT_TRAITS_H_
 
-#include "WebConsoleMessage.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
-#include "third_party/WebKit/public/web/console_message.mojom-shared.h"
+#include "third_party/blink/public/web/console_message.mojom-shared.h"
+#include "third_party/blink/public/web/web_console_message.h"
 
 namespace mojo {
 

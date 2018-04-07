@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLTableRowsCollection.h"
+#include "third_party/blink/renderer/core/html/html_table_rows_collection.h"
 
-#include "core/dom/ElementTraversal.h"
-#include "core/html/HTMLTableElement.h"
-#include "core/html/HTMLTableRowElement.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/html/html_table_element.h"
+#include "third_party/blink/renderer/core/html/html_table_row_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

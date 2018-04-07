@@ -23,14 +23,14 @@
  *
  */
 
-#ifndef TextControlElement_h
-#define TextControlElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_TEXT_CONTROL_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_TEXT_CONTROL_ELEMENT_H_
 
 #include "base/gtest_prod_util.h"
-#include "core/CoreExport.h"
-#include "core/editing/Forward.h"
-#include "core/html/forms/HTMLFormControlElementWithState.h"
-#include "public/platform/WebFocusType.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
 
 namespace blink {
 

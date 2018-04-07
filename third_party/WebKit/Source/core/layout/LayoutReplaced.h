@@ -19,11 +19,11 @@
  *
  */
 
-#ifndef LayoutReplaced_h
-#define LayoutReplaced_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_REPLACED_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_REPLACED_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutBox.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 
 namespace blink {
 

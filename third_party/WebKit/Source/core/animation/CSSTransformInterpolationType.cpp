@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSTransformInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_transform_interpolation_type.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/animation/LengthUnitsChecker.h"
-#include "core/css/CSSFunctionValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include "core/css/resolver/TransformBuilder.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/transforms/TransformOperations.h"
-#include "platform/transforms/TranslateTransformOperation.h"
+#include "third_party/blink/renderer/core/animation/length_units_checker.h"
+#include "third_party/blink/renderer/core/css/css_function_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/css/resolver/transform_builder.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operations.h"
+#include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
 
 namespace blink {
 

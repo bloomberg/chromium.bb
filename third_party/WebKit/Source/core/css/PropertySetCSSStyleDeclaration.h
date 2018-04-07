@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PropertySetCSSStyleDeclaration_h
-#define PropertySetCSSStyleDeclaration_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTY_SET_CSS_STYLE_DECLARATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTY_SET_CSS_STYLE_DECLARATION_H_
 
-#include "core/css/AbstractPropertySetCSSStyleDeclaration.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/css/abstract_property_set_css_style_declaration.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 

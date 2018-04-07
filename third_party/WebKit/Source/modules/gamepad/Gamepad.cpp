@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-#include "modules/gamepad/Gamepad.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad.h"
 
 #include <algorithm>
 

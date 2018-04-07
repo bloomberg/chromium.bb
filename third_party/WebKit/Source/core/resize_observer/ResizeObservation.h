@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ResizeObservation_h
-#define ResizeObservation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_RESIZE_OBSERVER_RESIZE_OBSERVATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_RESIZE_OBSERVER_RESIZE_OBSERVATION_H_
 
-#include "core/CoreExport.h"
-#include "core/resize_observer/ResizeObserverEntry.h"
-#include "platform/geometry/LayoutSize.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -43,4 +43,4 @@ class CORE_EXPORT ResizeObservation final
 
 }  // namespace blink
 
-#endif  // ResizeObservation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_RESIZE_OBSERVER_RESIZE_OBSERVATION_H_

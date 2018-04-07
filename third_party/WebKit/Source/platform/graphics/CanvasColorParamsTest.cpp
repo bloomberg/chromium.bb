@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/CanvasColorParams.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 
-#include "platform/graphics/ColorCorrectionTestUtils.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/color_correction_test_utils.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "ui/gfx/color_space.h"
 

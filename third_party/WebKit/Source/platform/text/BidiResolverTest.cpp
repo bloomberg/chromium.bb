@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/text/BidiResolver.h"
+#include "third_party/blink/renderer/platform/text/bidi_resolver.h"
 
-#include "platform/text/BidiTestHarness.h"
-#include "platform/text/TextRunIterator.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include <fstream>
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/text/bidi_test_harness.h"
+#include "third_party/blink/renderer/platform/text/text_run_iterator.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebMockClipboard_h
-#define WebMockClipboard_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MOCK_CLIPBOARD_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MOCK_CLIPBOARD_H_
 
 #include "base/containers/span.h"
-#include "public/platform/WebClipboard.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebImage.h"
+#include "third_party/blink/public/platform/web_clipboard.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_image.h"
 
 namespace blink {
 

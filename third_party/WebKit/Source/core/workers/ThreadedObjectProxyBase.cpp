@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/ThreadedObjectProxyBase.h"
+#include "third_party/blink/renderer/core/workers/threaded_object_proxy_base.h"
 
 #include <memory>
-#include "core/execution_context/ExecutionContext.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/workers/ParentFrameTaskRunners.h"
-#include "core/workers/ThreadedMessagingProxyBase.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/wtf/Functional.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/core/workers/threaded_messaging_proxy_base.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

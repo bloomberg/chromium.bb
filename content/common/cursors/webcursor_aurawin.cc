@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-#include "third_party/WebKit/public/platform/WebCursorInfo.h"
+#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/gfx/icon_util.h"
 
 namespace content {

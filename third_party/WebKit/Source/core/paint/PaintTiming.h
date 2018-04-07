@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintTiming_h
-#define PaintTiming_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TIMING_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_TIMING_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/dom/Document.h"
-#include "core/paint/FirstMeaningfulPaintDetector.h"
-#include "core/paint/PaintEvent.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/WebLayerTreeView.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
+#include "third_party/blink/renderer/core/paint/paint_event.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

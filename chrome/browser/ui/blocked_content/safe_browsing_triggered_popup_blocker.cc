@@ -20,7 +20,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/console_message_level.h"
-#include "third_party/WebKit/public/web/WebTriggeringEventInfo.h"
+#include "third_party/blink/public/web/web_triggering_event_info.h"
 
 namespace {
 

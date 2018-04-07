@@ -28,30 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/frame/FrameTestHelpers.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 
 #include <utility>
 
-#include "core/exported/WebRemoteFrameImpl.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/testing/URLTestHelpers.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebData.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebThread.h"
-#include "public/platform/WebURLLoaderMockFactory.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/WebURLResponse.h"
-#include "public/web/WebFrameWidget.h"
-#include "public/web/WebSettings.h"
-#include "public/web/WebTreeScopeType.h"
-#include "public/web/WebViewClient.h"
-#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
+#include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/public/web/web_tree_scope_type.h"
+#include "third_party/blink/public/web/web_view_client.h"
+#include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 namespace FrameTestHelpers {

@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/bindings/modules/v8/generated.gni")
-import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
-import("//third_party/WebKit/Source/modules/modules.gni")
-import("//third_party/WebKit/Source/modules/modules_idl_files.gni")
+import("//third_party/blink/renderer/bindings/modules/v8/generated.gni")
+import("//third_party/blink/renderer/bindings/scripts/scripts.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules_idl_files.gni")
 
-visibility = [ "//third_party/WebKit/*" ]
+visibility = [ "//third_party/blink/*" ]
 
 group("bindings_modules_v8_generated") {
   public_deps = [
@@ -62,7 +62,7 @@ generate_origin_trial_features("bindings_modules_origin_trial_features") {
   component = "modules"
   output_dir = bindings_modules_output_dir + "/v8"
   deps = [
-    "//third_party/WebKit/Source/bindings/modules:modules_global_constructors_idls",
+    "//third_party/blink/renderer/bindings/modules:modules_global_constructors_idls",
   ]
 }
 
@@ -92,7 +92,7 @@ action("bindings_modules_v8_generated_init_partial") {
   }
 
   deps = [
-    "//third_party/WebKit/Source/bindings/modules:interfaces_info",
+    "//third_party/blink/renderer/bindings/modules:interfaces_info",
   ]
 }
 
@@ -111,7 +111,7 @@ group("generate_mojo_bindings") {
     "//services/device/public/mojom:generic_sensor__generator",
     "//services/device/public/mojom:mojom_blink__generator",
     "//services/shape_detection/public/mojom:mojom_blink__generator",
-    "//third_party/WebKit/public:media_devices_mojo_bindings_blink__generator",
+    "//third_party/blink/public:media_devices_mojo_bindings_blink__generator",
   ]
 }
 
@@ -168,10 +168,10 @@ action("generate_v8_context_snapshot_external_references") {
   }
 
   deps = [
-    "//third_party/WebKit/Source/bindings/core:interfaces_info_individual_core",
-    "//third_party/WebKit/Source/bindings/modules:interfaces_info",
-    "//third_party/WebKit/Source/bindings/modules:interfaces_info_individual_modules",
-    "//third_party/WebKit/Source/bindings/scripts:cached_jinja_templates",
-    "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables",
+    "//third_party/blink/renderer/bindings/core:interfaces_info_individual_core",
+    "//third_party/blink/renderer/bindings/modules:interfaces_info",
+    "//third_party/blink/renderer/bindings/modules:interfaces_info_individual_modules",
+    "//third_party/blink/renderer/bindings/scripts:cached_jinja_templates",
+    "//third_party/blink/renderer/bindings/scripts:cached_lex_yacc_tables",
   ]
 }

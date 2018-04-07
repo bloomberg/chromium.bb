@@ -23,14 +23,14 @@
  * DAMAGE.
  */
 
-#ifndef AudioDestinationNode_h
-#define AudioDestinationNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_DESTINATION_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_DESTINATION_NODE_H_
 
-#include "modules/webaudio/AudioBuffer.h"
-#include "modules/webaudio/AudioNode.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioIOCallback.h"
-#include "platform/audio/AudioSourceProvider.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_io_callback.h"
+#include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
 
 namespace blink {
 
@@ -132,4 +132,4 @@ class AudioDestinationNode : public AudioNode {
 
 }  // namespace blink
 
-#endif  // AudioDestinationNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_DESTINATION_NODE_H_

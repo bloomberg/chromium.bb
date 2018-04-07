@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerContentSettingsClient_h
-#define WorkerContentSettingsClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_CONTENT_SETTINGS_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_CONTENT_SETTINGS_CLIENT_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/workers/WorkerClients.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/WebContentSettingsClient.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ ProvideContentSettingsClientToWorker(WorkerClients*,
 
 }  // namespace blink
 
-#endif  // WorkerContentSettingsClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_CONTENT_SETTINGS_CLIENT_H_

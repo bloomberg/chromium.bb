@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebPrintParams_h
-#define WebPrintParams_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PRINT_PARAMS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PRINT_PARAMS_H_
 
-#include "public/platform/WebRect.h"
-#include "public/platform/WebSize.h"
-#include "WebPrintScalingOption.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/web/web_print_scaling_option.h"
 
 namespace blink {
 

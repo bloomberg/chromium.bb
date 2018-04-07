@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ThrowOnDynamicMarkupInsertionCountIncrementer_h
-#define ThrowOnDynamicMarkupInsertionCountIncrementer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_THROW_ON_DYNAMIC_MARKUP_INSERTION_COUNT_INCREMENTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_THROW_ON_DYNAMIC_MARKUP_INSERTION_COUNT_INCREMENTER_H_
 
 #include "base/macros.h"
-#include "core/dom/Document.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

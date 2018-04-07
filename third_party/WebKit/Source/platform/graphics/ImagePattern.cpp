@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/ImagePattern.h"
+#include "third_party/blink/renderer/platform/graphics/image_pattern.h"
 
-#include "platform/graphics/Image.h"
-#include "platform/graphics/paint/PaintRecorder.h"
-#include "platform/graphics/paint/PaintShader.h"
-#include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_shader.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 

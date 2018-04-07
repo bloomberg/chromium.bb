@@ -28,23 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef KeyframeEffectModel_h
-#define KeyframeEffectModel_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_KEYFRAME_EFFECT_MODEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_KEYFRAME_EFFECT_MODEL_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/animation/AnimationEffect.h"
-#include "core/animation/EffectModel.h"
-#include "core/animation/InterpolationEffect.h"
-#include "core/animation/PropertyHandle.h"
-#include "core/animation/StringKeyframe.h"
-#include "core/animation/TransitionKeyframe.h"
-#include "platform/animation/TimingFunction.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/animation/animation_effect.h"
+#include "third_party/blink/renderer/core/animation/effect_model.h"
+#include "third_party/blink/renderer/core/animation/interpolation_effect.h"
+#include "third_party/blink/renderer/core/animation/property_handle.h"
+#include "third_party/blink/renderer/core/animation/string_keyframe.h"
+#include "third_party/blink/renderer/core/animation/transition_keyframe.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/animation/timing_function.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -268,4 +268,4 @@ inline bool KeyframeEffectModel<
 
 }  // namespace blink
 
-#endif  // KeyframeEffectModel_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_KEYFRAME_EFFECT_MODEL_H_

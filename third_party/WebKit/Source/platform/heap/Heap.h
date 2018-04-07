@@ -28,26 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Heap_h
-#define Heap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "platform/PlatformExport.h"
-#include "platform/heap/GCInfo.h"
-#include "platform/heap/HeapPage.h"
-#include "platform/heap/ProcessHeap.h"
-#include "platform/heap/StackFrameDepth.h"
-#include "platform/heap/ThreadState.h"
-#include "platform/heap/Visitor.h"
-#include "platform/heap/Worklist.h"
-#include "platform/wtf/AddressSanitizer.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Atomics.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/heap/gc_info.h"
+#include "third_party/blink/renderer/platform/heap/heap_page.h"
+#include "third_party/blink/renderer/platform/heap/process_heap.h"
+#include "third_party/blink/renderer/platform/heap/stack_frame_depth.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/heap/worklist.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/atomics.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -746,4 +746,4 @@ void Visitor::HandleWeakCell(Visitor* self, void* object) {
 
 }  // namespace blink
 
-#endif  // Heap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_H_

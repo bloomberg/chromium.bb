@@ -21,10 +21,10 @@
  *
  */
 
-#ifndef LayoutSearchField_h
-#define LayoutSearchField_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SEARCH_FIELD_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SEARCH_FIELD_H_
 
-#include "core/layout/LayoutTextControlSingleLine.h"
+#include "third_party/blink/renderer/core/layout/layout_text_control_single_line.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSearchField, IsTextField());
 
 }  // namespace blink
 
-#endif  // LayoutSearchField_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SEARCH_FIELD_H_

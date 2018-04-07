@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/crypto/DOMWindowCrypto.h"
+#include "third_party/blink/renderer/modules/crypto/dom_window_crypto.h"
 
-#include "core/frame/LocalDOMWindow.h"
-#include "modules/crypto/Crypto.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/modules/crypto/crypto.h"
 
 namespace blink {
 

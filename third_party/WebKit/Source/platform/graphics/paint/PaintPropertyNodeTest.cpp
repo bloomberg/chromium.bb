@@ -2,11 +2,11 @@
 // Use of this source code is governed by node BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/PaintPropertyNode.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 
-#include "platform/geometry/FloatRoundedRect.h"
-#include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
 
 namespace blink {
 

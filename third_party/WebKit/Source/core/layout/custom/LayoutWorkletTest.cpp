@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/custom/LayoutWorklet.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_worklet.h"
 
 #include <memory>
-#include "bindings/core/v8/ScriptModule.h"
-#include "bindings/core/v8/V8GCController.h"
-#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/frame/LocalFrame.h"
-#include "core/layout/custom/CSSLayoutDefinition.h"
-#include "core/layout/custom/LayoutWorkletGlobalScope.h"
-#include "core/layout/custom/LayoutWorkletGlobalScopeProxy.h"
-#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/custom/css_layout_definition.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope_proxy.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

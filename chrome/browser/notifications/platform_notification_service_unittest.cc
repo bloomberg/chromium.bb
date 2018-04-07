@@ -39,7 +39,7 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/value_builder.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #endif
 
 using content::NotificationResources;

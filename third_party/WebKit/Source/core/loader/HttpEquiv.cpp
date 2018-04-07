@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/HttpEquiv.h"
+#include "third_party/blink/renderer/core/loader/http_equiv.h"
 
-#include "core/css/StyleEngine.h"
-#include "core/dom/Document.h"
-#include "core/dom/ScriptableDocumentParser.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/private/FrameClientHintsPreferencesContext.h"
-#include "core/origin_trials/OriginTrialContext.h"
-#include "platform/loader/fetch/ClientHintsPreferences.h"
-#include "platform/network/HTTPParsers.h"
-#include "platform/network/http_names.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityViolationReportingPolicy.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/private/frame_client_hints_preferences_context.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 
 namespace blink {
 

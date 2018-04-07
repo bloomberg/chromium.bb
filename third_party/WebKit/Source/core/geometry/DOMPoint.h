@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DOMPoint_h
-#define DOMPoint_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_GEOMETRY_DOM_POINT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_GEOMETRY_DOM_POINT_H_
 
-#include "core/CoreExport.h"
-#include "core/geometry/DOMPointReadOnly.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 
 namespace blink {
 

@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8CacheOptions_h
-#define V8CacheOptions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_CACHE_OPTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_CACHE_OPTIONS_H_
 
 namespace blink {
 
@@ -45,4 +45,4 @@ enum V8CacheOptions {
 
 }  // namespace blink
 
-#endif  // V8CacheOptions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_CACHE_OPTIONS_H_

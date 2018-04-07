@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TransitionKeyframe_h
-#define TransitionKeyframe_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_TRANSITION_KEYFRAME_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_TRANSITION_KEYFRAME_H_
 
-#include "core/CoreExport.h"
-#include "core/animation/Keyframe.h"
-#include "core/animation/TypedInterpolationValue.h"
-#include "core/animation/animatable/AnimatableValue.h"
+#include "third_party/blink/renderer/core/animation/animatable/animatable_value.h"
+#include "third_party/blink/renderer/core/animation/keyframe.h"
+#include "third_party/blink/renderer/core/animation/typed_interpolation_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 

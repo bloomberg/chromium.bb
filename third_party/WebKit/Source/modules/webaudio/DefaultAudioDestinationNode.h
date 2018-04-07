@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#ifndef DefaultAudioDestinationNode_h
-#define DefaultAudioDestinationNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DEFAULT_AUDIO_DESTINATION_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DEFAULT_AUDIO_DESTINATION_NODE_H_
 
 #include <memory>
-#include "modules/webaudio/AudioDestinationNode.h"
-#include "platform/audio/AudioDestination.h"
-#include "public/platform/WebAudioLatencyHint.h"
+#include "third_party/blink/public/platform/web_audio_latency_hint.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_destination_node.h"
+#include "third_party/blink/renderer/platform/audio/audio_destination.h"
 
 namespace blink {
 
@@ -98,4 +98,4 @@ class DefaultAudioDestinationNode final : public AudioDestinationNode {
 
 }  // namespace blink
 
-#endif  // DefaultAudioDestinationNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DEFAULT_AUDIO_DESTINATION_NODE_H_

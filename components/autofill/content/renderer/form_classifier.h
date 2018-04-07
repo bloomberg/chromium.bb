@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_FORM_CLASSIFIER_H_
 #define COMPONENTS_AUTOFILL_CONTENT_RENDERER_FORM_CLASSIFIER_H_
 
-#include "third_party/WebKit/public/web/WebFormElement.h"
+#include "third_party/blink/public/web/web_form_element.h"
 
 namespace autofill {
 

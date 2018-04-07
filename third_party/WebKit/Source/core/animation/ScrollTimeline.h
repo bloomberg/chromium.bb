@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScrollTimeline_h
-#define ScrollTimeline_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SCROLL_TIMELINE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SCROLL_TIMELINE_H_
 
-#include "core/CoreExport.h"
-#include "core/animation/AnimationTimeline.h"
-#include "core/animation/ScrollTimelineOptions.h"
-#include "core/dom/Element.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/animation/animation_timeline.h"
+#include "third_party/blink/renderer/core/animation/scroll_timeline_options.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

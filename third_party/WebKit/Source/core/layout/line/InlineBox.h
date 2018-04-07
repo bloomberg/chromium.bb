@@ -19,17 +19,17 @@
  *
  */
 
-#ifndef InlineBox_h
-#define InlineBox_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_BOX_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_BOX_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/layout/api/LineLayoutBoxModel.h"
-#include "core/layout/api/LineLayoutItem.h"
-#include "core/layout/api/SelectionState.h"
-#include "platform/fonts/FontVerticalPositionType.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
-#include "platform/text/TextDirection.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_box_model.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/core/layout/api/selection_state.h"
+#include "third_party/blink/renderer/platform/fonts/font_vertical_position_type.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
 
 namespace blink {
 
@@ -550,4 +550,4 @@ void showTree(const blink::InlineBox*);
 void showLineTree(const blink::InlineBox*);
 #endif
 
-#endif  // InlineBox_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_BOX_H_

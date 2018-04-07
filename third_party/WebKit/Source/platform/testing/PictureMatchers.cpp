@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/testing/PictureMatchers.h"
+#include "third_party/blink/renderer/platform/testing/picture_matchers.h"
 
 #include <utility>
 
-#include "platform/geometry/FloatQuad.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 

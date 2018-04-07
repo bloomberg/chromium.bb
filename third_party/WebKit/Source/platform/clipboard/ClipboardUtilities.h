@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ClipboardUtilities_h
-#define ClipboardUtilities_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_CLIPBOARD_CLIPBOARD_UTILITIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CLIPBOARD_CLIPBOARD_UTILITIES_H_
 
 #include "build/build_config.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ PLATFORM_EXPORT String ConvertURIListToURL(const String& uri_list);
 
 }  // namespace blink
 
-#endif  // ClipboardUtilities_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_CLIPBOARD_CLIPBOARD_UTILITIES_H_

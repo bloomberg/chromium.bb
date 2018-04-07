@@ -27,13 +27,13 @@
  * SUCH DAMAGE.
  */
 
-#ifndef ViewportStyleResolver_h
-#define ViewportStyleResolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_VIEWPORT_STYLE_RESOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_VIEWPORT_STYLE_RESOLVER_H_
 
-#include "core/CoreExport.h"
-#include "core/css/RuleSet.h"
-#include "core/css_property_names.h"
-#include "platform/Length.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/rule_set.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/length.h"
 
 namespace blink {
 
@@ -89,4 +89,4 @@ class CORE_EXPORT ViewportStyleResolver
 
 }  // namespace blink
 
-#endif  // ViewportStyleResolver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_VIEWPORT_STYLE_RESOLVER_H_

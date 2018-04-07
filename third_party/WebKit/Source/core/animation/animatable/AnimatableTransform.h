@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimatableTransform_h
-#define AnimatableTransform_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_ANIMATABLE_TRANSFORM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_ANIMATABLE_TRANSFORM_H_
 
-#include "core/CoreExport.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "platform/transforms/TransformOperations.h"
+#include "third_party/blink/renderer/core/animation/animatable/animatable_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operations.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableTransform, IsTransform());
 
 }  // namespace blink
 
-#endif  // AnimatableTransform_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_ANIMATABLE_TRANSFORM_H_

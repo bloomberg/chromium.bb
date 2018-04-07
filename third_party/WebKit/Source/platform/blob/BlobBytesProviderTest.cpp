@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/blob/BlobBytesProvider.h"
+#include "third_party/blink/renderer/platform/blob/blob_bytes_provider.h"
 
 #include <algorithm>
 #include <memory>
@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace blink {
 

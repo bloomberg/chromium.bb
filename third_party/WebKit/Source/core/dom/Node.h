@@ -23,20 +23,20 @@
  *
  */
 
-#ifndef Node_h
-#define Node_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/MutationObserver.h"
-#include "core/dom/NodeRareData.h"
-#include "core/dom/TreeScope.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/dom/events/SimulatedClickOptions.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/geometry/LayoutRect.h"
-#include "public/platform/WebFocusType.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer.h"
+#include "third_party/blink/renderer/core/dom/node_rare_data.h"
+#include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 // This needs to be here because Element.cpp also depends on it.
 #define DUMP_NODE_STATISTICS 0
@@ -1042,4 +1042,4 @@ void showTree(const blink::Node*);
 void showNodePath(const blink::Node*);
 #endif
 
-#endif  // Node_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_H_

@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef BidiRun_h
-#define BidiRun_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_BIDI_RUN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_BIDI_RUN_H_
 
-#include "core/layout/api/LineLayoutItem.h"
-#include "platform/text/BidiResolver.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/platform/text/bidi_resolver.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ struct BidiRun : BidiCharacterRun {
 
 }  // namespace blink
 
-#endif  // BidiRun_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_BIDI_RUN_H_

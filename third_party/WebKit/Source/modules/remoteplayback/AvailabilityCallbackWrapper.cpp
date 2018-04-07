@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/remoteplayback/AvailabilityCallbackWrapper.h"
+#include "third_party/blink/renderer/modules/remoteplayback/availability_callback_wrapper.h"
 
-#include "bindings/modules/v8/v8_remote_playback_availability_callback.h"
-#include "modules/remoteplayback/RemotePlayback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_remote_playback_availability_callback.h"
+#include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 
 namespace blink {
 

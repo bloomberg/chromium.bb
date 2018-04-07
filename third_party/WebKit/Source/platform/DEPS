@@ -47,7 +47,7 @@ include_rules = [
     "+mojo/public",
     "+mozilla",
     #TODO(nverne): remove this
-    "+public/web/WebKit.h",
+    "+third_party/blink/public/web/blink.h",
     "+services/metrics/public/cpp/ukm_entry_builder.h",
     "+services/metrics/public/cpp/ukm_recorder.h",
     "+services/network/public/mojom/data_pipe_getter.mojom-blink.h",
@@ -61,16 +61,16 @@ include_rules = [
     "+webp",
     "+build/mac",
     "+build/win",
-    "-bindings",
-    "-core",
-    "-modules",
+    "-third_party/blink/renderer/bindings",
+    "-third_party/blink/renderer/core",
+    "-third_party/blink/renderer/modules",
 ]
 
 specific_include_rules = {
     "WebURLError\.cpp": [
         "+net/base/net_errors.h"
     ],
-    "UkmTimeAggregatorTest.cpp" : [
+    "ukm_time_aggregator_test.cc" : [
         "+components/ukm/test_ukm_recorder.h"
     ],
 }

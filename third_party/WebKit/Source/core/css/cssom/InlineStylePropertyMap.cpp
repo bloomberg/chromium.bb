@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/InlineStylePropertyMap.h"
+#include "third_party/blink/renderer/core/css/cssom/inline_style_property_map.h"
 
-#include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/CSSVariableReferenceValue.h"
-#include "core/css/StylePropertySerializer.h"
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
+#include "third_party/blink/renderer/core/css/style_property_serializer.h"
 
 namespace blink {
 

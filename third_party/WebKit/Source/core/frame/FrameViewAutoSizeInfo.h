@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FrameViewAutoSizeInfo_h
-#define FrameViewAutoSizeInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_VIEW_AUTO_SIZE_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_VIEW_AUTO_SIZE_INFO_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class FrameViewAutoSizeInfo final
 
 }  // namespace blink
 
-#endif  // FrameViewAutoSizeInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_VIEW_AUTO_SIZE_INFO_H_

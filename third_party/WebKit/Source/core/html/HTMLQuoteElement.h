@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef HTMLQuoteElement_h
-#define HTMLQuoteElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_QUOTE_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_QUOTE_ELEMENT_H_
 
-#include "core/html/HTMLElement.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLQuoteElement);
 
 }  // namespace blink
 
-#endif  // HTMLQuoteElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_QUOTE_ELEMENT_H_

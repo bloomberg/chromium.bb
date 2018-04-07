@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CryptoResultImpl_h
-#define CryptoResultImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_CRYPTO_RESULT_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_CRYPTO_RESULT_IMPL_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/ModulesExport.h"
-#include "platform/CryptoResult.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/WebCrypto.h"
+#include "third_party/blink/public/platform/web_crypto.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/crypto_result.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -114,4 +114,4 @@ class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
 
 }  // namespace blink
 
-#endif  // CryptoResultImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_CRYPTO_RESULT_IMPL_H_

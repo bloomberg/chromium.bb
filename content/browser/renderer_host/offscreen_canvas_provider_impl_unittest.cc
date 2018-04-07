@@ -22,7 +22,7 @@
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h"
+#include "third_party/blink/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h"
 #include "ui/compositor/compositor.h"
 
 #if !defined(OS_ANDROID)

@@ -22,14 +22,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaStreamRegistry_h
-#define MediaStreamRegistry_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_REGISTRY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_REGISTRY_H_
 
-#include "core/fileapi/URLRegistry.h"
-#include "modules/ModulesExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/core/fileapi/url_registry.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 
@@ -56,4 +56,4 @@ class MODULES_EXPORT MediaStreamRegistry final : public URLRegistry {
 
 }  // namespace blink
 
-#endif  // MediaStreamRegistry_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_REGISTRY_H_

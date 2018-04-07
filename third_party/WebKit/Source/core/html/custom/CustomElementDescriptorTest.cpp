@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/custom/CustomElementDescriptor.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_descriptor.h"
 
-#include "core/html/custom/CustomElementDescriptorHash.h"
-#include "core/html/custom/CustomElementTestHelpers.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/AtomicString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_descriptor_hash.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

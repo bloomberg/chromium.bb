@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WTF_StringView_h
-#define WTF_StringView_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_STRING_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_STRING_VIEW_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/GetPtr.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 #if DCHECK_IS_ON()
 #include "base/memory/scoped_refptr.h"
 #endif
-#include "platform/wtf/text/StringImpl.h"
-#include "platform/wtf/text/Unicode.h"
 #include <cstring>
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace WTF {
 

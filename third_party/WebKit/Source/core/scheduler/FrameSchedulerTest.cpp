@@ -2,11 +2,11 @@
 // Use of this source code if governed by a BSD-style license that can be
 // found in LICENSE file.
 
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/testing/sim/SimRequest.h"
-#include "core/testing/sim/SimTest.h"
-#include "platform/scheduler/public/frame_scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 
 using testing::ElementsAre;
 

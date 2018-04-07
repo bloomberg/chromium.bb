@@ -28,8 +28,8 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef WTF_ByteOrder_h
-#define WTF_ByteOrder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_BYTE_ORDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_BYTE_ORDER_H_
 
 #include "build/build_config.h"
 
@@ -39,7 +39,7 @@
 
 #if defined(OS_WIN)
 
-#include "platform/wtf/ByteSwap.h"
+#include "third_party/blink/renderer/platform/wtf/byte_swap.h"
 
 #if defined(ARCH_CPU_BIG_ENDIAN)
 inline uint16_t ntohs(uint16_t x) {
@@ -71,4 +71,4 @@ inline uint32_t htonl(uint32_t x) {
 
 #endif  // defined(OS_WIN)
 
-#endif  // WTF_ByteOrder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_BYTE_ORDER_H_

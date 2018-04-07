@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AXVirtualObject_h
-#define AXVirtualObject_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_VIRTUAL_OBJECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_VIRTUAL_OBJECT_H_
 
-#include "core/dom/AccessibleNode.h"
-#include "modules/ModulesExport.h"
-#include "modules/accessibility/AXObject.h"
+#include "third_party/blink/renderer/core/dom/accessible_node.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ DEFINE_AX_OBJECT_TYPE_CASTS(AXVirtualObject, IsVirtualObject());
 
 }  // namespace blink
 
-#endif  // AXVirtualObject_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_VIRTUAL_OBJECT_H_

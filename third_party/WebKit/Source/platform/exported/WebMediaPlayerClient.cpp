@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebMediaPlayerClient.h"
+#include "third_party/blink/public/platform/web_media_player_client.h"
 
 // This WebMediaPlayerClient.cpp, which includes only
 // and WebMediaPlayerClient.h, should be in

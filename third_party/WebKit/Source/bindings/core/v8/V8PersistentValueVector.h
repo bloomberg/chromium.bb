@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8PersistentValueVector_h
-#define V8PersistentValueVector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_PERSISTENT_VALUE_VECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_PERSISTENT_VALUE_VECTOR_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
 
@@ -72,4 +72,4 @@ class V8PersistentValueVector
 
 }  // namespace blink
 
-#endif  // V8PersistentValueVector_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_PERSISTENT_VALUE_VECTOR_H_

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InspectorEmulationAgent_h
-#define InspectorEmulationAgent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOREMULATIONAGENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOREMULATIONAGENT_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/protocol/Emulation.h"
-#include "core/loader/FrameLoaderTypes.h"
-#include "platform/scheduler/public/page_scheduler.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Emulation.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

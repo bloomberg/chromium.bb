@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef KURLHash_h
-#define KURLHash_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_KURL_HASH_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_KURL_HASH_H_
 
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ struct HashTraits<blink::KURL> : SimpleClassHashTraits<blink::KURL> {
 
 }  // namespace WTF
 
-#endif  // KURLHash_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_KURL_HASH_H_

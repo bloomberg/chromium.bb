@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FetchDataLoader_h
-#define FetchDataLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FETCH_DATA_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FETCH_DATA_LOADER_H_
 
-#include "core/CoreExport.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "platform/blob/BlobData.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ class CORE_EXPORT FetchDataLoader
 
 }  // namespace blink
 
-#endif  // FetchDataLoader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FETCH_DATA_LOADER_H_

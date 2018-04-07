@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/MixedContentChecker.h"
+#include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 
 #include <base/macros.h>
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "core/frame/Settings.h"
-#include "core/loader/EmptyClients.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebMixedContent.h"
-#include "public/platform/WebMixedContentContextType.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock-generated-function-mockers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_mixed_content.h"
+#include "third_party/blink/public/platform/web_mixed_content_context_type.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

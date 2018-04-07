@@ -18,11 +18,11 @@
 #include "content/public/common/manifest_share_target_util.h"
 #include "content/public/common/manifest_util.h"
 #include "content/renderer/manifest/manifest_uma_util.h"
-#include "third_party/WebKit/public/platform/WebColor.h"
-#include "third_party/WebKit/public/platform/WebIconSizesParser.h"
-#include "third_party/WebKit/public/platform/WebSize.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebCSSParser.h"
+#include "third_party/blink/public/platform/web_color.h"
+#include "third_party/blink/public/platform/web_icon_sizes_parser.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_css_parser.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {

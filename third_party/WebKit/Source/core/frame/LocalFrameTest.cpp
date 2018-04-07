@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/LocalFrame.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 
-#include "core/loader/EmptyClients.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/loader/fetch/FetchParameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 
 namespace blink {
 

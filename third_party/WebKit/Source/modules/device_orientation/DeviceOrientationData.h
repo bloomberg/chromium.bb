@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DeviceOrientationData_h
-#define DeviceOrientationData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ORIENTATION_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ORIENTATION_DATA_H_
 
-#include "modules/ModulesExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace device {
 class OrientationData;
@@ -75,4 +75,4 @@ class MODULES_EXPORT DeviceOrientationData final
 
 }  // namespace blink
 
-#endif  // DeviceOrientationData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_ORIENTATION_DATA_H_

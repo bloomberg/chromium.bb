@@ -9,7 +9,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/script_context.h"
-#include "third_party/WebKit/public/web/WebBlob.h"
+#include "third_party/blink/public/web/web_blob.h"
 #include "v8/include/v8.h"
 
 namespace extensions {

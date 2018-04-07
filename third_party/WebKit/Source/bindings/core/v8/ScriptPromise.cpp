@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "core/dom/DOMException.h"
-#include "platform/InstanceCounters.h"
-#include "platform/bindings/V8ThrowException.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/instance_counters.h"
 #include "v8/include/v8.h"
 
 namespace blink {

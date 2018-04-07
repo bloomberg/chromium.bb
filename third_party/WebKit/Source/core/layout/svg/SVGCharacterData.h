@@ -17,12 +17,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGCharacterData_h
-#define SVGCharacterData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_CHARACTER_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_CHARACTER_DATA_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

@@ -8,11 +8,11 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/protocol/CacheStorage.h"
-#include "modules/ModulesExport.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache_storage.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/protocol/CacheStorage.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

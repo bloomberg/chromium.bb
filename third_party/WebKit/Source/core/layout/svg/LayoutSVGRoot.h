@@ -20,10 +20,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LayoutSVGRoot_h
-#define LayoutSVGRoot_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_ROOT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_ROOT_H_
 
-#include "core/layout/LayoutReplaced.h"
+#include "third_party/blink/renderer/core/layout/layout_replaced.h"
 
 namespace blink {
 
@@ -181,4 +181,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGRoot, IsSVGRoot());
 
 }  // namespace blink
 
-#endif  // LayoutSVGRoot_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_ROOT_H_

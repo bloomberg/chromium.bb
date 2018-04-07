@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HTMLMediaElementRemotePlayback_h
-#define HTMLMediaElementRemotePlayback_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_REMOTEPLAYBACK_HTML_MEDIA_ELEMENT_REMOTE_PLAYBACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_REMOTEPLAYBACK_HTML_MEDIA_ELEMENT_REMOTE_PLAYBACK_H_
 
-#include "core/html/media/HTMLMediaElement.h"
-#include "modules/ModulesExport.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class MODULES_EXPORT HTMLMediaElementRemotePlayback final
 
 }  // namespace blink
 
-#endif  // HTMLMediaElementRemotePlayback_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_REMOTEPLAYBACK_HTML_MEDIA_ELEMENT_REMOTE_PLAYBACK_H_

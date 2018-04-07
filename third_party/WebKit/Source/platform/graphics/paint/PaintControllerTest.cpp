@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/PaintControllerTest.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller_test.h"
 
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/ClipPathDisplayItem.h"
-#include "platform/graphics/paint/ClipPathRecorder.h"
-#include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/CompositingRecorder.h"
-#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/ScopedDisplayItemFragment.h"
-#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
-#include "platform/graphics/paint/SubsequenceRecorder.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/testing/PaintTestConfigurations.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_path_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_path_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/compositing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_display_item_fragment.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/graphics/paint/subsequence_recorder.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 
 using blink::test::CreateOpacityOnlyEffect;
 using testing::UnorderedElementsAre;

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FallbackListCompositeKey_h
-#define FallbackListCompositeKey_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FALLBACK_LIST_COMPOSITE_KEY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FALLBACK_LIST_COMPOSITE_KEY_H_
 
-#include "platform/fonts/FontCacheKey.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashTableDeletedValueType.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache_key.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
 
 namespace blink {
 
@@ -98,4 +98,4 @@ struct FallbackListCompositeKeyTraits
 
 }  // namespace blink
 
-#endif  // FallbackListCompositeKey_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FALLBACK_LIST_COMPOSITE_KEY_H_

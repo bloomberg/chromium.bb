@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLTreeBuilderSimulator_h
-#define HTMLTreeBuilderSimulator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_TREE_BUILDER_SIMULATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_TREE_BUILDER_SIMULATOR_H_
 
-#include "core/CoreExport.h"
-#include "core/html/parser/HTMLParserOptions.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

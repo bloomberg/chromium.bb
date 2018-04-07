@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScriptModuleResolverImpl_h
-#define ScriptModuleResolverImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_MODULE_RESOLVER_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_MODULE_RESOLVER_IMPL_H_
 
-#include "bindings/core/v8/ScriptModule.h"
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/script/ScriptModuleResolver.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/script/script_module_resolver.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ class CORE_EXPORT ScriptModuleResolverImpl final
 
 }  // namespace blink
 
-#endif  // ScriptModuleResolverImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_MODULE_RESOLVER_IMPL_H_

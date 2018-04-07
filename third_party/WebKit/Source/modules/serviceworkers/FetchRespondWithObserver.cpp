@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/serviceworkers/FetchRespondWithObserver.h"
+#include "third_party/blink/renderer/modules/serviceworkers/fetch_respond_with_observer.h"
 
 #include <memory>
 #include <utility>
 
 #include <v8.h>
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8Response.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fetch/BodyStreamBuffer.h"
-#include "core/fetch/BytesConsumer.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/ConsoleTypes.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
-#include "modules/serviceworkers/WaitUntilObserver.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_response.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/console_types.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_client.h"
+#include "third_party/blink/renderer/modules/serviceworkers/wait_until_observer.h"
 
 using blink::mojom::ServiceWorkerResponseError;
 

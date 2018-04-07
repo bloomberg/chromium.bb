@@ -19,16 +19,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGGradientElement.h"
+#include "third_party/blink/renderer/core/svg/svg_gradient_element.h"
 
-#include "core/css/StyleChangeReason.h"
-#include "core/dom/Attribute.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/IdTargetObserver.h"
-#include "core/layout/svg/LayoutSVGResourceContainer.h"
-#include "core/svg/GradientAttributes.h"
-#include "core/svg/SVGStopElement.h"
-#include "core/svg/SVGTransformList.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/dom/attribute.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/id_target_observer.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
+#include "third_party/blink/renderer/core/svg/gradient_attributes.h"
+#include "third_party/blink/renderer/core/svg/svg_stop_element.h"
+#include "third_party/blink/renderer/core/svg/svg_transform_list.h"
 
 namespace blink {
 

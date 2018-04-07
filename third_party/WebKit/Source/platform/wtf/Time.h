@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WTF_Time_h
-#define WTF_Time_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TIME_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TIME_H_
 
 #include "base/time/time.h"
-#include "platform/wtf/WTFExport.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 // Provides thin wrappers around the following basic time types from
@@ -72,4 +72,4 @@ using WTF::TimeTicks;
 using WTF::TimeTicksFromSeconds;
 using WTF::TimeTicksInSeconds;
 
-#endif  // Time_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TIME_H_

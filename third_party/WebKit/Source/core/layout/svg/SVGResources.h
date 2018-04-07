@@ -17,16 +17,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGResources_h
-#define SVGResources_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_RESOURCES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_RESOURCES_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "core/layout/svg/LayoutSVGResourceContainer.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 

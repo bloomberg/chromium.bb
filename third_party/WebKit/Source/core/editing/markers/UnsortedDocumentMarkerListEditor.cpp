@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/markers/UnsortedDocumentMarkerListEditor.h"
+#include "third_party/blink/renderer/core/editing/markers/unsorted_document_marker_list_editor.h"
 
-#include "core/editing/markers/SpellCheckMarkerListImpl.h"
+#include "third_party/blink/renderer/core/editing/markers/spell_check_marker_list_impl.h"
 
 namespace blink {
 

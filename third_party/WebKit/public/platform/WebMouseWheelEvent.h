@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebMouseWheelEvent_h
-#define WebMouseWheelEvent_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MOUSE_WHEEL_EVENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MOUSE_WHEEL_EVENT_H_
 
-#include "WebMouseEvent.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
 
 namespace blink {
 
@@ -117,4 +117,4 @@ class WebMouseWheelEvent : public WebMouseEvent {
 
 }  // namespace blink
 
-#endif  // WebMouseWheelEvent_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MOUSE_WHEEL_EVENT_H_

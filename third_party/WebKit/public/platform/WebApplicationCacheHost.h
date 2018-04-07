@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebApplicationCacheHost_h
-#define WebApplicationCacheHost_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_H_
 
-#include "WebCommon.h"
-#include "WebURL.h"
-#include "WebVector.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -141,4 +141,4 @@ class WebApplicationCacheHost {
 
 }  // namespace blink
 
-#endif  // WebApplicationCacheHost_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_APPLICATION_CACHE_HOST_H_

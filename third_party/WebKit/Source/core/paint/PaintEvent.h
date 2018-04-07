@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintEvent_h
-#define PaintEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_EVENT_H_
 
 namespace blink {
 

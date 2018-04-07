@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/svg/SVGResource.h"
+#include "third_party/blink/renderer/core/svg/svg_resource.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/IdTargetObserver.h"
-#include "core/dom/TreeScope.h"
-#include "core/layout/svg/LayoutSVGResourceContainer.h"
-#include "core/layout/svg/SVGResources.h"
-#include "core/layout/svg/SVGResourcesCache.h"
-#include "core/loader/resource/DocumentResource.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGResourceClient.h"
-#include "core/svg/SVGURIReference.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/id_target_observer.h"
+#include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/loader/resource/document_resource.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_resource_client.h"
+#include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 
 namespace blink {
 

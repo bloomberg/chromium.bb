@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8EventListenerInfo_h
-#define V8EventListenerInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EVENT_LISTENER_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EVENT_LISTENER_INFO_H_
 
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -38,4 +38,4 @@ using V8EventListenerInfoList = Vector<V8EventListenerInfo>;
 
 }  // namespace blink
 
-#endif  // V8EventListenerInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EVENT_LISTENER_INFO_H_

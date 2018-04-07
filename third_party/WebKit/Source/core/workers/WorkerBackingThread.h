@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerBackingThread_h
-#define WorkerBackingThread_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_BACKING_THREAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_BACKING_THREAD_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/CoreExport.h"
-#include "platform/heap/ThreadState.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/ThreadingPrimitives.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -78,4 +78,4 @@ class CORE_EXPORT WorkerBackingThread final {
 
 }  // namespace blink
 
-#endif  // WorkerBackingThread_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_BACKING_THREAD_H_

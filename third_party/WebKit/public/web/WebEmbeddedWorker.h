@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebEmbeddedWorker_h
-#define WebEmbeddedWorker_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EMBEDDED_WORKER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EMBEDDED_WORKER_H_
 
 #include <memory>
 
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 
@@ -77,4 +77,4 @@ class BLINK_EXPORT WebEmbeddedWorker {
 
 }  // namespace blink
 
-#endif  // WebEmbeddedWorker_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EMBEDDED_WORKER_H_

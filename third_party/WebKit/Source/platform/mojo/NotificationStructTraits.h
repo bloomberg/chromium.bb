@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NotificationStructTraits_h
-#define NotificationStructTraits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_NOTIFICATION_STRUCT_TRAITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_NOTIFICATION_STRUCT_TRAITS_H_
 
 #include "base/containers/span.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
-#include "platform/PlatformExport.h"
-#include "platform/mojo/KURLStructTraits.h"
-#include "platform/mojo/String16MojomTraits.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/notifications/WebNotificationAction.h"
-#include "public/platform/modules/notifications/notification.mojom-blink.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
+#include "third_party/blink/public/platform/modules/notifications/notification.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_action.h"
+#include "third_party/blink/renderer/platform/mojo/kurl_struct_traits.h"
+#include "third_party/blink/renderer/platform/mojo/string16_mojom_traits.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace mojo {
@@ -137,4 +137,4 @@ struct PLATFORM_EXPORT StructTraits<blink::mojom::NotificationResourcesDataView,
 
 }  // namespace mojo
 
-#endif  // NotificationStructTraits_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_NOTIFICATION_STRUCT_TRAITS_H_

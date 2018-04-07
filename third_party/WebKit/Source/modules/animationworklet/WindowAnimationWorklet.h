@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WindowAnimationWorklet_h
-#define WindowAnimationWorklet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_WINDOW_ANIMATION_WORKLET_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_WINDOW_ANIMATION_WORKLET_H_
 
-#include "core/dom/ContextLifecycleObserver.h"
-#include "modules/ModulesExport.h"
-#include "modules/animationworklet/AnimationWorklet.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/animationworklet/animation_worklet.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -41,4 +41,4 @@ class MODULES_EXPORT WindowAnimationWorklet final
 
 }  // namespace blink
 
-#endif  // WindowAnimationWorklet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_WINDOW_ANIMATION_WORKLET_H_

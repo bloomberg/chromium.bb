@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScreenWakeLock_h
-#define ScreenWakeLock_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WAKE_LOCK_SCREEN_WAKE_LOCK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WAKE_LOCK_SCREEN_WAKE_LOCK_H_
 
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/frame/LocalFrame.h"
-#include "core/page/PageVisibilityObserver.h"
-#include "modules/ModulesExport.h"
-#include "platform/wtf/Noncopyable.h"
 #include "services/device/public/mojom/wake_lock.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class MODULES_EXPORT ScreenWakeLock final
 
 }  // namespace blink
 
-#endif  // ScreenWakeLock_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WAKE_LOCK_SCREEN_WAKE_LOCK_H_

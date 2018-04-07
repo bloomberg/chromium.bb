@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaymentRequest_h
-#define PaymentRequest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptValue.h"
 #include "components/payments/mojom/payment_request_data.mojom-blink.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/events/EventTarget.h"
-#include "modules/ModulesExport.h"
-#include "modules/payments/PaymentCompleter.h"
-#include "modules/payments/PaymentMethodData.h"
-#include "modules/payments/PaymentOptions.h"
-#include "modules/payments/PaymentUpdater.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/Timer.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/payments/payment_request.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/payments/payment_request.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/payments/payment_completer.h"
+#include "third_party/blink/renderer/modules/payments/payment_method_data.h"
+#include "third_party/blink/renderer/modules/payments/payment_options.h"
+#include "third_party/blink/renderer/modules/payments/payment_updater.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -143,4 +143,4 @@ class MODULES_EXPORT PaymentRequest final
 
 }  // namespace blink
 
-#endif  // PaymentRequest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_H_

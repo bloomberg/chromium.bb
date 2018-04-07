@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/PaintLayerPainter.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 
-#include "core/layout/LayoutBoxModelObject.h"
-#include "core/paint/PaintControllerPaintTest.h"
-#include "core/paint/compositing/CompositedLayerMapping.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 

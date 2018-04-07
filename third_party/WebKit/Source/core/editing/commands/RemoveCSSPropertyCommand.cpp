@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/RemoveCSSPropertyCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/remove_css_property_command.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/CSSStyleDeclaration.h"
-#include "core/dom/Element.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_style_declaration.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

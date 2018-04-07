@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef KeyboardClickableInputTypeView_h
-#define KeyboardClickableInputTypeView_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_KEYBOARD_CLICKABLE_INPUT_TYPE_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_KEYBOARD_CLICKABLE_INPUT_TYPE_VIEW_H_
 
-#include "core/CoreExport.h"
-#include "core/html/forms/InputTypeView.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/input_type_view.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ class CORE_EXPORT KeyboardClickableInputTypeView : public InputTypeView {
 
 }  // namespace blink
 
-#endif  // KeyboardClickableInputTypeView_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_KEYBOARD_CLICKABLE_INPUT_TYPE_VIEW_H_

@@ -19,13 +19,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGFELightElement.h"
+#include "third_party/blink/renderer/core/svg/svg_fe_light_element.h"
 
-#include "core/dom/ElementTraversal.h"
-#include "core/layout/LayoutObject.h"
-#include "core/svg/SVGFEDiffuseLightingElement.h"
-#include "core/svg/SVGFESpecularLightingElement.h"
-#include "core/svg_names.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/svg/svg_fe_diffuse_lighting_element.h"
+#include "third_party/blink/renderer/core/svg/svg_fe_specular_lighting_element.h"
+#include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 

@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/MutationObserverRegistration.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
 
-#include "core/dom/Node.h"
-#include "core/dom/QualifiedName.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
 
 namespace blink {
 

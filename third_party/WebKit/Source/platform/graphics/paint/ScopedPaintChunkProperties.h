@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScopedPaintChunkProperties_h
-#define ScopedPaintChunkProperties_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCOPED_PAINT_CHUNK_PROPERTIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCOPED_PAINT_CHUNK_PROPERTIES_H_
 
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/graphics/paint/PaintChunk.h"
-#include "platform/graphics/paint/PaintChunkProperties.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -130,4 +130,4 @@ class ScopedPaintChunkProperties {
 
 }  // namespace blink
 
-#endif  // ScopedPaintChunkProperties_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCOPED_PAINT_CHUNK_PROPERTIES_H_

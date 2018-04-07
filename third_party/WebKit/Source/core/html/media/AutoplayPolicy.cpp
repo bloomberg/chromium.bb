@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/media/AutoplayPolicy.h"
+#include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/ElementVisibilityObserver.h"
-#include "core/frame/ContentSettingsClient.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "core/html/media/AutoplayUmaHelper.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/page/Page.h"
-#include "platform/network/NetworkStateNotifier.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/WebMediaPlayer.h"
-#include "public/web/WebSettings.h"
-#include "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/platform/web_media_player.h"
+#include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
+#include "third_party/blink/renderer/core/frame/content_settings_client.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/media/autoplay_uma_helper.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

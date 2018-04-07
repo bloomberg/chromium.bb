@@ -11,8 +11,8 @@
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFormElement.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_form_element.h"
 
 namespace autofill {
 

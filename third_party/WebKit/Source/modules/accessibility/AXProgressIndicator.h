@@ -18,11 +18,11 @@
  *
  */
 
-#ifndef AXProgressIndicator_h
-#define AXProgressIndicator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_PROGRESS_INDICATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_PROGRESS_INDICATOR_H_
 
 #include "base/macros.h"
-#include "modules/accessibility/AXLayoutObject.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class AXProgressIndicator final : public AXLayoutObject {
 
 }  // namespace blink
 
-#endif  // AXProgressIndicator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_PROGRESS_INDICATOR_H_

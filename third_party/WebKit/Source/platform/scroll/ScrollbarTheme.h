@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollbarTheme_h
-#define ScrollbarTheme_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLLBAR_THEME_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLLBAR_THEME_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/scroll/Scrollbar.h"
-#include "public/platform/WebScrollbarButtonsPlacement.h"
+#include "third_party/blink/public/platform/web_scrollbar_buttons_placement.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar.h"
 
 namespace blink {
 

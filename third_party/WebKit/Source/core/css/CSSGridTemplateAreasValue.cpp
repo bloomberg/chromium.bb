@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSGridTemplateAreasValue.h"
+#include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
 
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

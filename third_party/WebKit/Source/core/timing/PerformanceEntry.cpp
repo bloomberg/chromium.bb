@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/timing/PerformanceEntry.h"
+#include "third_party/blink/renderer/core/timing/performance_entry.h"
 
 #include "base/atomic_sequence_num.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8ObjectBuilder.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 
 namespace blink {
 

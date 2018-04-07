@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StyleableMarker_h
-#define StyleableMarker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_STYLEABLE_MARKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_STYLEABLE_MARKER_H_
 
-#include "core/editing/markers/DocumentMarker.h"
 #include "services/ui/public/interfaces/ime/ime.mojom-shared.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker.h"
 
 namespace blink {
 

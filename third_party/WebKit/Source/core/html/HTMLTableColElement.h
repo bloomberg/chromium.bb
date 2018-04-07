@@ -23,10 +23,10 @@
  *
  */
 
-#ifndef HTMLTableColElement_h
-#define HTMLTableColElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TABLE_COL_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TABLE_COL_ELEMENT_H_
 
-#include "core/html/HTMLTablePartElement.h"
+#include "third_party/blink/renderer/core/html/html_table_part_element.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableColElement);
 
 }  // namespace blink
 
-#endif  // HTMLTableColElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TABLE_COL_ELEMENT_H_

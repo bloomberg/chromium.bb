@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextPaintStyle_h
-#define TextPaintStyle_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TEXT_PAINT_STYLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TEXT_PAINT_STYLE_H_
 
-#include "core/CoreExport.h"
-#include "platform/graphics/Color.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -34,4 +34,4 @@ struct CORE_EXPORT TextPaintStyle {
 
 }  // namespace blink
 
-#endif  // TextPaintStyle_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TEXT_PAINT_STYLE_H_

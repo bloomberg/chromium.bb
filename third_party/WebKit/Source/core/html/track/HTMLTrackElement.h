@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLTrackElement_h
-#define HTMLTrackElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_HTML_TRACK_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_HTML_TRACK_ELEMENT_H_
 
-#include "core/html/HTMLElement.h"
-#include "core/html/track/TextTrack.h"
-#include "core/loader/TextTrackLoader.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
+#include "third_party/blink/renderer/core/loader/text_track_loader.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -91,4 +91,4 @@ class HTMLTrackElement final : public HTMLElement,
 
 }  // namespace blink
 
-#endif  // HTMLTrackElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_HTML_TRACK_ELEMENT_H_

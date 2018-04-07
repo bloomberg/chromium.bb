@@ -3,23 +3,23 @@
 # found in the LICENSE file.
 
 import("//build/config/jumbo.gni")
-import("//third_party/WebKit/Source/platform/platform.gni")
+import("//third_party/blink/renderer/platform/platform.gni")
 
 blink_platform_sources("instrumentation") {
   sources = [
-    "PlatformInstrumentation.cpp",
-    "PlatformInstrumentation.h",
-    "resource_coordinator/BlinkResourceCoordinatorBase.h",
-    "resource_coordinator/FrameResourceCoordinator.cpp",
-    "resource_coordinator/FrameResourceCoordinator.h",
-    "resource_coordinator/RendererResourceCoordinator.cpp",
-    "resource_coordinator/RendererResourceCoordinator.h",
-    "tracing/MemoryCacheDumpProvider.cpp",
-    "tracing/MemoryCacheDumpProvider.h",
-    "tracing/TraceEvent.cpp",
-    "tracing/TraceEvent.h",
-    "tracing/TracedValue.cpp",
-    "tracing/TracedValue.h",
+    "platform_instrumentation.cc",
+    "platform_instrumentation.h",
+    "resource_coordinator/blink_resource_coordinator_base.h",
+    "resource_coordinator/frame_resource_coordinator.cc",
+    "resource_coordinator/frame_resource_coordinator.h",
+    "resource_coordinator/renderer_resource_coordinator.cc",
+    "resource_coordinator/renderer_resource_coordinator.h",
+    "tracing/memory_cache_dump_provider.cc",
+    "tracing/memory_cache_dump_provider.h",
+    "tracing/trace_event.cc",
+    "tracing/trace_event.h",
+    "tracing/traced_value.cc",
+    "tracing/traced_value.h",
     "tracing/web_memory_allocator_dump.cc",
     "tracing/web_memory_allocator_dump.h",
     "tracing/web_process_memory_dump.cc",
@@ -35,7 +35,7 @@ jumbo_source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "tracing/TracedValueTest.cpp",
+    "tracing/traced_value_test.cc",
     "tracing/web_process_memory_dump_test.cc",
   ]
 
@@ -46,5 +46,5 @@ jumbo_source_set("unit_tests") {
     "//testing/gtest",
   ]
 
-  configs += [ "//third_party/WebKit/Source/platform:blink_platform_config" ]
+  configs += [ "//third_party/blink/renderer/platform:blink_platform_config" ]
 }

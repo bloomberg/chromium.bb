@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/ng/geometry/ng_physical_offset_rect.h"
-#include "core/layout/ng/inline/ng_physical_text_fragment.h"
-#include "core/layout/ng/layout_ng_block_flow.h"
-#include "core/layout/ng/ng_physical_box_fragment.h"
-#include "core/layout/ng/ng_physical_container_fragment.h"
-#include "core/layout/ng/ng_physical_fragment.h"
-#include "core/paint/ng/ng_box_fragment_painter.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 
 namespace blink {
 

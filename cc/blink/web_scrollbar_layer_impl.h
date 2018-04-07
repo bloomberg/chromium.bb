@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "cc/blink/cc_blink_export.h"
-#include "third_party/WebKit/public/platform/WebScrollbar.h"
-#include "third_party/WebKit/public/platform/WebScrollbarLayer.h"
+#include "third_party/blink/public/platform/web_scrollbar.h"
+#include "third_party/blink/public/platform/web_scrollbar_layer.h"
 
 namespace blink {
 class WebScrollbarThemeGeometry;

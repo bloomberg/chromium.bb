@@ -24,28 +24,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ResourceResponse_h
-#define ResourceResponse_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_RESPONSE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_RESPONSE_H_
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
-#include "platform/PlatformExport.h"
-#include "platform/blob/BlobData.h"
-#include "platform/loader/fetch/ResourceLoadInfo.h"
-#include "platform/loader/fetch/ResourceLoadTiming.h"
-#include "platform/network/HTTPHeaderMap.h"
-#include "platform/network/HTTPParsers.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/CString.h"
-#include "public/platform/WebURLResponse.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -622,4 +622,4 @@ struct CrossThreadResourceResponseData {
 
 }  // namespace blink
 
-#endif  // ResourceResponse_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_RESPONSE_H_

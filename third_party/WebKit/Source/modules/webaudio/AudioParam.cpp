@@ -23,15 +23,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webaudio/AudioParam.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param.h"
 
-#include "core/dom/ExceptionCode.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "modules/webaudio/AudioNode.h"
-#include "modules/webaudio/AudioNodeOutput.h"
-#include "platform/Histogram.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

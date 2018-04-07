@@ -22,11 +22,11 @@
  *
  */
 
-#ifndef NodeIteratorBase_h
-#define NodeIteratorBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_ITERATOR_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_ITERATOR_BASE_H_
 
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ class NodeIteratorBase : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // NodeIteratorBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_ITERATOR_BASE_H_

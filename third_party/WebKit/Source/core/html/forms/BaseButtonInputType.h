@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BaseButtonInputType_h
-#define BaseButtonInputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_BASE_BUTTON_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_BASE_BUTTON_INPUT_TYPE_H_
 
-#include "core/html/forms/InputType.h"
-#include "core/html/forms/KeyboardClickableInputTypeView.h"
+#include "third_party/blink/renderer/core/html/forms/input_type.h"
+#include "third_party/blink/renderer/core/html/forms/keyboard_clickable_input_type_view.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class BaseButtonInputType : public InputType,
 
 }  // namespace blink
 
-#endif  // BaseButtonInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_BASE_BUTTON_INPUT_TYPE_H_

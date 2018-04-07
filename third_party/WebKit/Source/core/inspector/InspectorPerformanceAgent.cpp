@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/InspectorPerformanceAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorPerformanceAgent.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/inspector/InspectedFrames.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/paint/PaintTiming.h"
-#include "core/probe/CoreProbes.h"
-#include "platform/InstanceCounters.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/wtf/dtoa/utils.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/inspected_frames.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 
 namespace blink {
 

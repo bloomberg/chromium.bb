@@ -30,16 +30,16 @@
  *
  */
 
-#ifndef EventListenerMap_h
-#define EventListenerMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_LISTENER_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_LISTENER_MAP_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/events/AddEventListenerOptionsResolved.h"
-#include "core/dom/events/EventListenerOptions.h"
-#include "core/events/RegisteredEventListener.h"
-#include "platform/bindings/ScriptWrappableVisitor.h"
-#include "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener_options.h"
+#include "third_party/blink/renderer/core/events/registered_event_listener.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
 
@@ -98,4 +98,4 @@ inline void EventListenerMap::CheckNoActiveIterators() {}
 
 }  // namespace blink
 
-#endif  // EventListenerMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_LISTENER_MAP_H_

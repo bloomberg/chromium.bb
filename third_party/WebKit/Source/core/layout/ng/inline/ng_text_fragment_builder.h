@@ -5,12 +5,12 @@
 #ifndef NGTextFragmentBuilder_h
 #define NGTextFragmentBuilder_h
 
-#include "core/layout/ng/geometry/ng_logical_size.h"
-#include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/inline/ng_physical_text_fragment.h"
-#include "core/layout/ng/inline/ng_text_end_effect.h"
-#include "core/layout/ng/ng_base_fragment_builder.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_text_end_effect.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_base_fragment_builder.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

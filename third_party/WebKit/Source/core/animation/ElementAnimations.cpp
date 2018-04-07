@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/ElementAnimations.h"
+#include "third_party/blink/renderer/core/animation/element_animations.h"
 
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

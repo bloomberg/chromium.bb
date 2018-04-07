@@ -6,7 +6,7 @@
 
 #include "content/common/unique_name_helper.h"
 #include "content/renderer/render_frame_impl.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {
 

@@ -22,14 +22,14 @@
  *
  */
 
-#ifndef TransformOperation_h
-#define TransformOperation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORM_OPERATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORM_OPERATION_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -113,4 +113,4 @@ class PLATFORM_EXPORT TransformOperation
 
 }  // namespace blink
 
-#endif  // TransformOperation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORM_OPERATION_H_

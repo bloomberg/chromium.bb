@@ -5,14 +5,14 @@
 #ifndef NGInlineBoxState_h
 #define NGInlineBoxState_h
 
-#include "core/layout/ng/geometry/ng_border_edges.h"
-#include "core/layout/ng/geometry/ng_logical_size.h"
-#include "core/layout/ng/inline/ng_line_box_fragment_builder.h"
-#include "core/layout/ng/inline/ng_line_height_metrics.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/LayoutUnit.h"
-#include "platform/fonts/FontBaseline.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/fonts/font_baseline.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

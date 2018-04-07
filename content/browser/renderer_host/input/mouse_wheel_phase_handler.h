@@ -7,7 +7,7 @@
 
 #include "base/timer/timer.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
-#include "third_party/WebKit/public/platform/WebMouseWheelEvent.h"
+#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 
 namespace content {
 class RenderWidgetHostViewBase;

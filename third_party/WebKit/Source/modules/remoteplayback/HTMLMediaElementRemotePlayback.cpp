@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
+#include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
 
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/QualifiedName.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "modules/remoteplayback/RemotePlayback.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 
 namespace blink {
 

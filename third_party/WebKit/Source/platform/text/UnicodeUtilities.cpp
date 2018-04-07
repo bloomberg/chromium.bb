@@ -25,11 +25,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/text/UnicodeUtilities.h"
+#include "third_party/blink/renderer/platform/text/unicode_utilities.h"
 
 #include <unicode/normalizer2.h>
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/StringBuffer.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 
 namespace blink {
 

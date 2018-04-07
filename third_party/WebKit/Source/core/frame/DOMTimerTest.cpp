@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/DOMTimer.h"
+#include "third_party/blink/renderer/core/frame/dom_timer.h"
 
 #include <vector>
 
-#include "bindings/core/v8/IDLTypes.h"
-#include "bindings/core/v8/NativeValueTraitsImpl.h"
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/Document.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 using testing::DoubleNear;
 using testing::ElementsAreArray;

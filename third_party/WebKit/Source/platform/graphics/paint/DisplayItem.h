@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DisplayItem_h
-#define DisplayItem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DISPLAY_ITEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DISPLAY_ITEM_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/ContiguousContainer.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/contiguous_container.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 #if DCHECK_IS_ON()
-#include "platform/json/JSONValues.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #endif
 
 namespace blink {
@@ -433,4 +433,4 @@ class PLATFORM_EXPORT PairedEndDisplayItem : public DisplayItem {
 
 }  // namespace blink
 
-#endif  // DisplayItem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DISPLAY_ITEM_H_

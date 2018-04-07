@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PresentationController_h
-#define PresentationController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONTROLLER_H_
 
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
-#include "modules/ModulesExport.h"
-#include "modules/presentation/Presentation.h"
-#include "modules/presentation/PresentationAvailabilityCallbacks.h"
-#include "modules/presentation/PresentationRequest.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/modules/presentation/WebPresentationClient.h"
-#include "public/platform/modules/presentation/presentation.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/modules/presentation/presentation.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/presentation/web_presentation_client.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/presentation/presentation.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability_callbacks.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_request.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -131,4 +131,4 @@ class MODULES_EXPORT PresentationController
 
 }  // namespace blink
 
-#endif  // PresentationController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONTROLLER_H_

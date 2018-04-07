@@ -23,25 +23,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/speech/SpeechRecognitionClientProxy.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_client_proxy.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/speech/SpeechGrammarList.h"
-#include "modules/speech/SpeechRecognition.h"
-#include "modules/speech/SpeechRecognitionError.h"
-#include "modules/speech/SpeechRecognitionResult.h"
-#include "modules/speech/SpeechRecognitionResultList.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebSecurityOrigin.h"
-#include "public/web/WebSpeechGrammar.h"
-#include "public/web/WebSpeechRecognitionHandle.h"
-#include "public/web/WebSpeechRecognitionParams.h"
-#include "public/web/WebSpeechRecognitionResult.h"
-#include "public/web/WebSpeechRecognizer.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/web/web_speech_grammar.h"
+#include "third_party/blink/public/web/web_speech_recognition_handle.h"
+#include "third_party/blink/public/web/web_speech_recognition_params.h"
+#include "third_party/blink/public/web/web_speech_recognition_result.h"
+#include "third_party/blink/public/web/web_speech_recognizer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/speech/speech_grammar_list.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_error.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_result.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_result_list.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

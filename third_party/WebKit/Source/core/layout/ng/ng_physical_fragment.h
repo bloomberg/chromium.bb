@@ -6,13 +6,13 @@
 #define NGPhysicalFragment_h
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/editing/Forward.h"
-#include "core/layout/ng/geometry/ng_physical_offset.h"
-#include "core/layout/ng/geometry/ng_physical_size.h"
-#include "core/layout/ng/ng_break_token.h"
-#include "core/layout/ng/ng_style_variant.h"
-#include "platform/geometry/LayoutRect.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 namespace blink {
 

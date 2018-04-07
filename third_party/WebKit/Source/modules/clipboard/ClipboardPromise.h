@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ClipboardPromise_h
-#define ClipboardPromise_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CLIPBOARD_CLIPBOARD_PROMISE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CLIPBOARD_CLIPBOARD_PROMISE_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "public/platform/modules/permissions/permission.mojom-blink.h"
-#include "third_party/WebKit/public/mojom/clipboard/clipboard.mojom-blink.h"
+#include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class ClipboardPromise final
 
 }  // namespace blink
 
-#endif  // ClipboardPromise_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CLIPBOARD_CLIPBOARD_PROMISE_H_

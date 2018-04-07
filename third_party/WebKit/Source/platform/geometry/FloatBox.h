@@ -27,14 +27,14 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef FloatBox_h
-#define FloatBox_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_FLOAT_BOX_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_FLOAT_BOX_H_
 
 #include <cmath>
 #include <iosfwd>
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatPoint3D.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

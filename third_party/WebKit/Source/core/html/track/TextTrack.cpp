@@ -29,14 +29,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/track/TextTrack.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/track/CueTimeline.h"
-#include "core/html/track/TextTrackCueList.h"
-#include "core/html/track/TextTrackList.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/track/cue_timeline.h"
+#include "third_party/blink/renderer/core/html/track/text_track_cue_list.h"
+#include "third_party/blink/renderer/core/html/track/text_track_list.h"
 
 namespace blink {
 

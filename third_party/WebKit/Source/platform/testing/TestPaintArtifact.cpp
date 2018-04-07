@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/testing/TestPaintArtifact.h"
+#include "third_party/blink/renderer/platform/testing/test_paint_artifact.h"
 
 #include <memory>
 #include "cc/layers/layer.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
-#include "platform/graphics/paint/ForeignLayerDisplayItem.h"
-#include "platform/graphics/paint/PaintArtifact.h"
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/paint/PaintRecorder.h"
-#include "platform/graphics/paint/ScrollHitTestDisplayItem.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/testing/FakeDisplayItemClient.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

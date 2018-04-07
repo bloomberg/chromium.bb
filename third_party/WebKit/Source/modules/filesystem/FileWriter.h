@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FileWriter_h
-#define FileWriter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_H_
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fileapi/FileError.h"
-#include "modules/EventTargetModules.h"
-#include "modules/filesystem/FileWriterBase.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebFileWriterClient.h"
+#include "third_party/blink/public/platform/web_file_writer_client.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/filesystem/file_writer_base.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -131,4 +131,4 @@ class FileWriter final : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // FileWriter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_H_

@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InspectorFrontendClient_h
-#define InspectorFrontendClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_FRONTEND_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_FRONTEND_CLIENT_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

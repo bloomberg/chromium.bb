@@ -22,10 +22,10 @@
  *
  */
 
-#ifndef NodeFilter_h
-#define NodeFilter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_FILTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_FILTER_H_
 
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class NodeFilter final {
 
 }  // namespace blink
 
-#endif  // NodeFilter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_FILTER_H_

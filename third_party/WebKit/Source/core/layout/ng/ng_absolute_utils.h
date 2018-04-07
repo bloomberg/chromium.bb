@@ -5,12 +5,12 @@
 #ifndef NGAbsoluteUtils_h
 #define NGAbsoluteUtils_h
 
-#include "core/CoreExport.h"
-#include "core/layout/MinMaxSize.h"
-#include "core/layout/ng/geometry/ng_logical_size.h"
-#include "core/layout/ng/geometry/ng_physical_size.h"
-#include "platform/LayoutUnit.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

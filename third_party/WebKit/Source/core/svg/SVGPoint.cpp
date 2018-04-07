@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/SVGPoint.h"
+#include "third_party/blink/renderer/core/svg/svg_point.h"
 
-#include "core/svg/SVGAnimationElement.h"
-#include "core/svg/SVGParserUtilities.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/svg/svg_animation_element.h"
+#include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

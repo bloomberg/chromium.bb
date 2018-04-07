@@ -20,12 +20,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/graphics/filters/FEMerge.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_merge.h"
 
 #include <memory>
 #include "SkMergeImageFilter.h"
-#include "platform/graphics/filters/PaintFilterBuilder.h"
-#include "platform/text/TextStream.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
 
 namespace blink {
 

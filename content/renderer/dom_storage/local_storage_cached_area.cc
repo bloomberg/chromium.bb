@@ -19,8 +19,8 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebStorageEventDispatcher.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_storage_event_dispatcher.h"
 
 namespace content {
 

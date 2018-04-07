@@ -23,14 +23,14 @@
  *
  */
 
-#include "core/layout/LayoutListMarker.h"
+#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 
-#include "core/layout/LayoutAnalyzer.h"
-#include "core/layout/LayoutListItem.h"
-#include "core/layout/ListMarkerText.h"
-#include "core/layout/api/LineLayoutBlockFlow.h"
-#include "core/paint/ListMarkerPainter.h"
-#include "platform/fonts/Font.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/list_marker_text.h"
+#include "third_party/blink/renderer/core/paint/list_marker_painter.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
 
 namespace blink {
 

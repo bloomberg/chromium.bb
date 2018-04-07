@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ParsedContentDisposition_h
-#define ParsedContentDisposition_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_PARSED_CONTENT_DISPOSITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_PARSED_CONTENT_DISPOSITION_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/network/ParsedContentHeaderFieldParameters.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/network/parsed_content_header_field_parameters.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

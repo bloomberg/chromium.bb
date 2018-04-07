@@ -17,8 +17,8 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/silent_sink_suspender.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_view.h"
 
 using blink::WebAudioDevice;
 using blink::WebAudioLatencyHint;

@@ -46,7 +46,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_navigation_throttle_inserter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/web_feature.mojom.h"
+#include "third_party/blink/public/platform/web_feature.mojom.h"
 #include "url/gurl.h"
 
 namespace {

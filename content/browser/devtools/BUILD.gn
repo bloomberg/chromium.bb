@@ -15,13 +15,14 @@ group("resources") {
 }
 
 compressed_protocol_file =
-    "$root_gen_dir/blink/core/inspector/protocol.json.bro"
+    "$root_gen_dir/third_party/blink/renderer/core/inspector/protocol.json.bro"
 
 compress_file_brotli("compressed_protocol_json") {
-  input_file = "$root_gen_dir/blink/core/inspector/protocol.json"
+  input_file =
+      "$root_gen_dir/third_party/blink/renderer/core/inspector/protocol.json"
   output_file = compressed_protocol_file
   deps = [
-    "//third_party/WebKit/Source/core/inspector:protocol_version",
+    "//third_party/blink/renderer/core/inspector:protocol_version",
   ]
 }
 
@@ -49,18 +50,18 @@ grit("devtools_resources") {
     ":compressed_protocol_json",
 
     # This is the action that generates out .grd input file.
-    "//third_party/WebKit/public:blink_generate_devtools_grd",
+    "//third_party/blink/public:blink_generate_devtools_grd",
   ]
 }
 
 inspector_protocol_generate("protocol_sources") {
   visibility = [ "//content/browser" ]
   deps = [
-    "//third_party/WebKit/Source/core/inspector:protocol_version",
+    "//third_party/blink/renderer/core/inspector:protocol_version",
   ]
-  _blink_protocol_path =
-      rebase_path("$root_gen_dir/blink/core/inspector/protocol.json",
-                  root_build_dir)
+  _blink_protocol_path = rebase_path(
+          "$root_gen_dir/third_party/blink/renderer/core/inspector/protocol.json",
+          root_build_dir)
 
   inspector_protocol_dir = "//third_party/inspector_protocol"
   out_dir = target_gen_dir
@@ -68,7 +69,7 @@ inspector_protocol_generate("protocol_sources") {
   config_values = [ "protocol.path=$_blink_protocol_path" ]
 
   inputs = [
-    "$root_gen_dir/blink/core/inspector/protocol.json",
+    "$root_gen_dir/third_party/blink/renderer/core/inspector/protocol.json",
     config_file,
   ]
 

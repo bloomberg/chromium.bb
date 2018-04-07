@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPointerProperties_h
-#define WebPointerProperties_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_POINTER_PROPERTIES_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_POINTER_PROPERTIES_H_
 
-#include "WebCommon.h"
-#include "WebFloatPoint.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_float_point.h"
 
 #include <cstdint>
 #include <limits>

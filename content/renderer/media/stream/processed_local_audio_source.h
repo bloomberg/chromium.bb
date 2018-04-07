@@ -15,7 +15,7 @@
 #include "content/renderer/media/stream/media_stream_audio_processor.h"
 #include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "media/base/audio_capturer_source.h"
-#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
+#include "third_party/blink/public/platform/web_media_constraints.h"
 
 namespace media {
 class AudioBus;

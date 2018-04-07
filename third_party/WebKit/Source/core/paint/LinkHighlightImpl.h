@@ -23,21 +23,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LinkHighlightImpl_h
-#define LinkHighlightImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_LINK_HIGHLIGHT_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_LINK_HIGHLIGHT_IMPL_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "platform/animation/CompositorAnimation.h"
-#include "platform/animation/CompositorAnimationClient.h"
-#include "platform/animation/CompositorAnimationDelegate.h"
-#include "platform/graphics/CompositorElementId.h"
-#include "platform/graphics/LinkHighlight.h"
-#include "platform/graphics/Path.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/WebContentLayer.h"
-#include "public/platform/WebContentLayerClient.h"
+#include "third_party/blink/public/platform/web_content_layer.h"
+#include "third_party/blink/public/platform/web_content_layer_client.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/link_highlight.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -114,4 +114,4 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
 
 }  // namespace blink
 
-#endif  // LinkHighlightImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_LINK_HIGHLIGHT_IMPL_H_

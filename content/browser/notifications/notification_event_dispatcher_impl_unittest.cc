@@ -14,7 +14,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/modules/notifications/notification_service.mojom.h"
+#include "third_party/blink/public/platform/modules/notifications/notification_service.mojom.h"
 
 namespace content {
 

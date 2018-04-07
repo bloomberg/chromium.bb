@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MainThreadWorkletGlobalScope_h
-#define MainThreadWorkletGlobalScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_MAIN_THREAD_WORKLET_GLOBAL_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_MAIN_THREAD_WORKLET_GLOBAL_SCOPE_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/workers/WorkletGlobalScope.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ DEFINE_TYPE_CASTS(MainThreadWorkletGlobalScope,
 
 }  // namespace blink
 
-#endif  // MainThreadWorkletGlobalScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_MAIN_THREAD_WORKLET_GLOBAL_SCOPE_H_

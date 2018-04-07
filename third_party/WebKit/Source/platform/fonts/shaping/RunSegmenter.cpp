@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/shaping/RunSegmenter.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/run_segmenter.h"
 
 #include <memory>
 
-#include "platform/fonts/ScriptRunIterator.h"
-#include "platform/fonts/SmallCapsIterator.h"
-#include "platform/fonts/SymbolsIterator.h"
-#include "platform/fonts/UTF16TextIterator.h"
-#include "platform/text/Character.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/fonts/script_run_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/small_caps_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/symbols_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/utf16_text_iterator.h"
+#include "third_party/blink/renderer/platform/text/character.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

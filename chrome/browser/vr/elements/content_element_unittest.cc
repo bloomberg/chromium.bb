@@ -17,7 +17,7 @@
 #include "chrome/browser/vr/text_edit_action.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 
 using ::testing::_;
 using ::testing::InSequence;

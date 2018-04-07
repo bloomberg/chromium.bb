@@ -22,23 +22,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/PluginDocument.h"
+#include "third_party/blink/renderer/core/html/plugin_document.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/RawDataDocumentParser.h"
-#include "core/exported/WebPluginContainerImpl.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLEmbedElement.h"
-#include "core/html/HTMLHtmlElement.h"
-#include "core/html/HTMLPlugInElement.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutEmbeddedObject.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/FrameLoader.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/raw_data_document_parser.h"
+#include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/html/html_embed_element.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/core/html/html_plugin_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
 
 namespace blink {
 

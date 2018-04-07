@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TypedInterpolationValue_h
-#define TypedInterpolationValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_TYPED_INTERPOLATION_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_TYPED_INTERPOLATION_VALUE_H_
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/animation/InterpolationValue.h"
+#include "third_party/blink/renderer/core/animation/interpolation_value.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class TypedInterpolationValue {
 
 }  // namespace blink
 
-#endif  // TypedInterpolationValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_TYPED_INTERPOLATION_VALUE_H_

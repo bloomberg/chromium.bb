@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedPreserveAspectRatio_h
-#define SVGAnimatedPreserveAspectRatio_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_PRESERVE_ASPECT_RATIO_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_PRESERVE_ASPECT_RATIO_H_
 
-#include "core/svg/SVGPreserveAspectRatioTearOff.h"
-#include "core/svg/properties/SVGAnimatedProperty.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
+#include "third_party/blink/renderer/core/svg/svg_preserve_aspect_ratio_tear_off.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class SVGAnimatedPreserveAspectRatio
 
 }  // namespace blink
 
-#endif  // SVGAnimatedPreserveAspectRatio_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_PRESERVE_ASPECT_RATIO_H_

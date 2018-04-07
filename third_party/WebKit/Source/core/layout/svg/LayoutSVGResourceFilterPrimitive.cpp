@@ -25,9 +25,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/svg/LayoutSVGResourceFilterPrimitive.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter_primitive.h"
 
-#include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+#include "third_party/blink/renderer/core/svg/svg_filter_primitive_standard_attributes.h"
 
 namespace blink {
 

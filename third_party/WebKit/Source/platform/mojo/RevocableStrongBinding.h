@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RevocableStrongBinding_h
-#define RevocableStrongBinding_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_REVOCABLE_STRONG_BINDING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_REVOCABLE_STRONG_BINDING_H_
 
 #include <memory>
 #include <utility>
@@ -17,7 +17,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message_header_validator.h"
 #include "mojo/public/cpp/system/core.h"
-#include "platform/mojo/RevocableBinding.h"
+#include "third_party/blink/renderer/platform/mojo/revocable_binding.h"
 
 namespace blink {
 
@@ -132,4 +132,4 @@ RevocableStrongBindingPtr<Interface> MakeRevocableStrongBinding(
 
 }  // namespace blink
 
-#endif  // RevocableStrongBinding_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_REVOCABLE_STRONG_BINDING_H_

@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/origin_trials/OriginTrialContext.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 
 #include <memory>
-#include "core/dom/DOMException.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLHeadElement.h"
-#include "core/html/HTMLMetaElement.h"
-#include "core/html_names.h"
-#include "core/testing/DummyPageHolder.h"
-#include "core/testing/NullExecutionContext.h"
-#include "platform/testing/HistogramTester.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Vector.h"
-#include "public/common/origin_trials/trial_token.h"
-#include "public/platform/WebTrialTokenValidator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/origin_trials/trial_token.h"
+#include "third_party/blink/public/platform/web_trial_token_validator.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_head_element.h"
+#include "third_party/blink/renderer/core/html/html_meta_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/testing/null_execution_context.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 namespace {

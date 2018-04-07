@@ -28,25 +28,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FileSystemCallbacks_h
-#define FileSystemCallbacks_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_SYSTEM_CALLBACKS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_SYSTEM_CALLBACKS_H_
 
 #include <memory>
 
-#include "bindings/core/v8/V8VoidCallback.h"
-#include "bindings/modules/v8/V8EntryCallback.h"
-#include "bindings/modules/v8/V8ErrorCallback.h"
-#include "bindings/modules/v8/V8FileCallback.h"
-#include "bindings/modules/v8/V8FileSystemCallback.h"
-#include "bindings/modules/v8/V8FileWriterCallback.h"
-#include "bindings/modules/v8/V8MetadataCallback.h"
-#include "core/fileapi/FileError.h"
-#include "modules/filesystem/EntryHeapVector.h"
-#include "platform/AsyncFileSystemCallbacks.h"
-#include "platform/FileSystemType.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_void_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_entry_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_error_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_file_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_file_system_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_file_writer_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_metadata_callback.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/modules/filesystem/entry_heap_vector.h"
+#include "third_party/blink/renderer/platform/async_file_system_callbacks.h"
+#include "third_party/blink/renderer/platform/file_system_type.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -446,4 +446,4 @@ class VoidCallbacks final : public FileSystemCallbacksBase {
 
 }  // namespace blink
 
-#endif  // FileSystemCallbacks_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_SYSTEM_CALLBACKS_H_

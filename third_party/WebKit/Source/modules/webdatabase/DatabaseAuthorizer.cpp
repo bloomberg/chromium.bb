@@ -26,14 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/DatabaseAuthorizer.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_authorizer.h"
 
-#include "core/frame/UseCounter.h"
-#include "modules/webdatabase/DatabaseContext.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_context.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 

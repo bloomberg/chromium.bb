@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef OffscreenCanvas_h
-#define OffscreenCanvas_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_OFFSCREENCANVAS_OFFSCREEN_CANVAS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_OFFSCREENCANVAS_OFFSCREEN_CANVAS_H_
 
 #include <memory>
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/DOMNodeIds.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/html/canvas/CanvasImageSource.h"
-#include "core/html/canvas/CanvasRenderingContextHost.h"
-#include "core/html/canvas/HTMLCanvasElement.h"
-#include "core/imagebitmap/ImageBitmapSource.h"
-#include "core/offscreencanvas/ImageEncodeOptions.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
+#include "third_party/blink/renderer/core/offscreencanvas/image_encode_options.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_frame_dispatcher.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -199,4 +199,4 @@ class CORE_EXPORT OffscreenCanvas final
 
 }  // namespace blink
 
-#endif  // OffscreenCanvas_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_OFFSCREENCANVAS_OFFSCREEN_CANVAS_H_

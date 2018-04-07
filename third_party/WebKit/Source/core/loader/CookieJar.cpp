@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/loader/CookieJar.h"
+#include "third_party/blink/renderer/core/loader/cookie_jar.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
-#include "platform/Histogram.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCookieJar.h"
-#include "public/platform/WebURL.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_cookie_jar.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
 

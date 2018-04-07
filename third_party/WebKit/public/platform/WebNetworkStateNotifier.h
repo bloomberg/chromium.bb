@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebNetworkStateNotifier_h
-#define WebNetworkStateNotifier_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_NETWORK_STATE_NOTIFIER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_NETWORK_STATE_NOTIFIER_H_
 
 #include "base/time/time.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebConnectionType.h"
-#include "public/platform/WebEffectiveConnectionType.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_connection_type.h"
+#include "third_party/blink/public/platform/web_effective_connection_type.h"
 
 namespace blink {
 

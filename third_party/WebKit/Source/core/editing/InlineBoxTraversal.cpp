@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/InlineBoxTraversal.h"
+#include "third_party/blink/renderer/core/editing/inline_box_traversal.h"
 
-#include "core/layout/line/InlineBox.h"
+#include "third_party/blink/renderer/core/layout/line/inline_box.h"
 
 namespace blink {
 

@@ -23,17 +23,17 @@
  *
  */
 
-#ifndef Range_h
-#define Range_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_RANGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_RANGE_H_
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/CoreExport.h"
-#include "core/dom/RangeBoundaryPoint.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/range_boundary_point.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -223,4 +223,4 @@ using RangeVector = HeapVector<Member<Range>>;
 void showTree(const blink::Range*);
 #endif
 
-#endif  // Range_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_RANGE_H_

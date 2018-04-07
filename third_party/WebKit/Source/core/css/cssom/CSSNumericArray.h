@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSNumericArray_h
-#define CSSNumericArray_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_NUMERIC_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_NUMERIC_ARRAY_H_
 
 #include "base/macros.h"
-#include "core/css/cssom/CSSNumericValue.h"
+#include "third_party/blink/renderer/core/css/cssom/css_numeric_value.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ class CORE_EXPORT CSSNumericArray final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // CSSNumericArray_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_NUMERIC_ARRAY_H_

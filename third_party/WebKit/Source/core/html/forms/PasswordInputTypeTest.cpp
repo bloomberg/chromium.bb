@@ -4,16 +4,16 @@
 #include <memory>
 #include <utility>
 
-#include "core/html/forms/PasswordInputType.h"
+#include "third_party/blink/renderer/core/html/forms/password_input_type.h"
 
-#include "core/frame/LocalFrameView.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/testing/DummyPageHolder.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/modules/insecure_input/insecure_input_service.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/insecure_input/insecure_input_service.mojom-blink.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 

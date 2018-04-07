@@ -55,10 +55,10 @@ android_library("content_java") {
     "//services/service_manager/public/mojom:mojom_java",
     "//services/shape_detection:shape_detection_java",
     "//services/shape_detection/public/mojom:mojom_java",
-    "//third_party/WebKit/public:android_mojo_bindings_java",
-    "//third_party/WebKit/public:blink_headers_java",
-    "//third_party/WebKit/public/mojom:mojom_core_java",
     "//third_party/android_tools:android_support_annotations_java",
+    "//third_party/blink/public:android_mojo_bindings_java",
+    "//third_party/blink/public:blink_headers_java",
+    "//third_party/blink/public/mojom:mojom_core_java",
     "//third_party/jsr-305:jsr_305_javalib",
     "//ui/android:ui_java",
     "//ui/gfx/geometry/mojo:mojo_java",
@@ -409,7 +409,7 @@ android_library("content_javatests") {
 
   srcjar_deps = [
     "//content/shell/android:content_javatests_aidl",
-    "//third_party/WebKit/public:blink_cursor_type_java_enums_srcjar",
+    "//third_party/blink/public:blink_cursor_type_java_enums_srcjar",
   ]
 
   deps = [
@@ -532,7 +532,7 @@ junit_binary("content_junit_tests") {
     "//base:base_junit_test_support",
     "//media/mojo/interfaces:interfaces_java",
     "//mojo/public/java:bindings_java",
-    "//third_party/WebKit/public:android_mojo_bindings_java",
+    "//third_party/blink/public:android_mojo_bindings_java",
     "//ui/android:ui_java",
     "//ui/gfx/geometry/mojo:mojo_java",
   ]

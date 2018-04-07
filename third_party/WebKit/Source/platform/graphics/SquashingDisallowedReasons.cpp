@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/SquashingDisallowedReasons.h"
+#include "third_party/blink/renderer/platform/graphics/squashing_disallowed_reasons.h"
 
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

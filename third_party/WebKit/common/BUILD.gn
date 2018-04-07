@@ -7,7 +7,7 @@ import("//testing/test.gni")
 
 jumbo_source_set("common") {
   visibility = [
-    "//third_party/WebKit/*",
+    "//third_party/blink/*",
     ":*",
   ]
 
@@ -35,7 +35,7 @@ jumbo_source_set("common") {
   ]
 
   public_deps = [
-    "//third_party/WebKit/public/common:headers",
+    "//third_party/blink/public/common:headers",
   ]
 
   deps = [
@@ -54,7 +54,7 @@ test("blink_common_unittests") {
   visibility = [ "*" ]
   deps = [
     ":common_unittests_sources",
-    "//third_party/WebKit/public/common",
+    "//third_party/blink/public/common",
   ]
 }
 
@@ -76,7 +76,7 @@ jumbo_source_set("common_unittests_sources") {
     "//base/test:test_support",
     "//net",
     "//testing/gtest",
-    "//third_party/WebKit/public/common:headers",
+    "//third_party/blink/public/common:headers",
     "//third_party/boringssl",
   ]
 }

@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ProfilingCanvas_h
-#define ProfilingCanvas_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PROFILING_CANVAS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PROFILING_CANVAS_H_
 
-#include "platform/graphics/InterceptingCanvas.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/graphics/intercepting_canvas.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class ProfilingCanvas : public InterceptingCanvas<ProfilingCanvas> {
 
 }  // namespace blink
 
-#endif  // ProfilingCanvas_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PROFILING_CANVAS_H_

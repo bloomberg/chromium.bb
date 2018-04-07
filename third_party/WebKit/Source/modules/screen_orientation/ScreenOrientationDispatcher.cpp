@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/screen_orientation/ScreenOrientationDispatcher.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_dispatcher.h"
 
-#include "public/platform/Platform.h"
 #include "services/device/public/mojom/constants.mojom-blink.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/platform/platform.h"
 
 namespace blink {
 

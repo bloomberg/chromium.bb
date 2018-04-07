@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NetworkUtils_h
-#define NetworkUtils_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_UTILS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_UTILS_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ PLATFORM_EXPORT bool IsLegacySymantecCertError(int);
 
 }  // namespace blink
 
-#endif  // NetworkUtils_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_UTILS_H_

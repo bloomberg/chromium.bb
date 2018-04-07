@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RejectedPromises_h
-#define RejectedPromises_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_REJECTED_PROMISES_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_REJECTED_PROMISES_H_
 
 #include <memory>
-#include "bindings/core/v8/SourceLocation.h"
-#include "platform/loader/fetch/AccessControlStatus.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace v8 {
 class PromiseRejectMessage;
@@ -57,4 +57,4 @@ class RejectedPromises final : public RefCounted<RejectedPromises> {
 
 }  // namespace blink
 
-#endif  // RejectedPromises_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_REJECTED_PROMISES_H_

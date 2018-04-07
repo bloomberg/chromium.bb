@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SubresourceFilter_h
-#define SubresourceFilter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_SUBRESOURCE_FILTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_SUBRESOURCE_FILTER_H_
 
 #include <memory>
 #include <utility>
 
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityViolationReportingPolicy.h"
-#include "public/platform/WebDocumentSubresourceFilter.h"
-#include "public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_document_subresource_filter.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ class CORE_EXPORT SubresourceFilter final
 
 }  // namespace blink
 
-#endif  // SubresourceFilter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_SUBRESOURCE_FILTER_H_

@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/clipboard/DataObject.h"
+#include "third_party/blink/renderer/core/clipboard/data_object.h"
 
-#include "core/clipboard/DraggedIsolatedFileSystem.h"
-#include "core/clipboard/Pasteboard.h"
-#include "platform/PasteMode.h"
-#include "platform/clipboard/ClipboardMimeTypes.h"
-#include "platform/clipboard/ClipboardUtilities.h"
-#include "platform/wtf/HashSet.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebClipboard.h"
-#include "public/platform/WebDragData.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_clipboard.h"
+#include "third_party/blink/public/platform/web_drag_data.h"
+#include "third_party/blink/renderer/core/clipboard/dragged_isolated_file_system.h"
+#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
+#include "third_party/blink/renderer/platform/clipboard/clipboard_mime_types.h"
+#include "third_party/blink/renderer/platform/clipboard/clipboard_utilities.h"
+#include "third_party/blink/renderer/platform/paste_mode.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 

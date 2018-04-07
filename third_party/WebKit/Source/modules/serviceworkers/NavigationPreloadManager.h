@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigationPreloadManager_h
-#define NavigationPreloadManager_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_NAVIGATION_PRELOAD_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_NAVIGATION_PRELOAD_MANAGER_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -39,4 +39,4 @@ class NavigationPreloadManager final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // NavigationPreloadManager_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_NAVIGATION_PRELOAD_MANAGER_H_

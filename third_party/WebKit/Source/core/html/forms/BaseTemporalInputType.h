@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BaseTemporalInputType_h
-#define BaseTemporalInputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_BASE_TEMPORAL_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_BASE_TEMPORAL_INPUT_TYPE_H_
 
-#include "core/html/forms/DateTimeEditElement.h"
-#include "core/html/forms/InputType.h"
-#include "platform/DateComponents.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_edit_element.h"
+#include "third_party/blink/renderer/core/html/forms/input_type.h"
+#include "third_party/blink/renderer/platform/date_components.h"
 
 namespace blink {
 
@@ -105,4 +105,4 @@ class BaseTemporalInputType : public InputType {
 };
 
 }  // namespace blink
-#endif  // BaseTemporalInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_BASE_TEMPORAL_INPUT_TYPE_H_

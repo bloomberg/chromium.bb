@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/UUID.h"
+#include "third_party/blink/renderer/platform/uuid.h"
 
 #include "base/guid.h"
-#include "platform/wtf/text/StringUTF8Adaptor.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 

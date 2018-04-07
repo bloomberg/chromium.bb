@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EncryptedMediaUtils_h
-#define EncryptedMediaUtils_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_ENCRYPTED_MEDIA_UTILS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_ENCRYPTED_MEDIA_UTILS_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebEncryptedMediaKeyInformation.h"
-#include "public/platform/WebEncryptedMediaTypes.h"
+#include "third_party/blink/public/platform/web_encrypted_media_key_information.h"
+#include "third_party/blink/public/platform/web_encrypted_media_types.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -30,4 +30,4 @@ class EncryptedMediaUtils {
 
 }  // namespace blink
 
-#endif  // EncryptedMediaUtils_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_ENCRYPTED_MEDIA_UTILS_H_

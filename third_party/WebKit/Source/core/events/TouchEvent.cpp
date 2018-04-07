@@ -24,21 +24,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/events/TouchEvent.h"
+#include "third_party/blink/renderer/core/events/touch_event.h"
 
-#include "core/dom/events/EventDispatcher.h"
-#include "core/frame/FrameConsole.h"
-#include "core/frame/Intervention.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLElement.h"
-#include "core/input/InputDeviceCapabilities.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "platform/Histogram.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScriptState.h"
-#include "public/platform/WebCoalescedInputEvent.h"
+#include "third_party/blink/public/platform/web_coalesced_input_event.h"
+#include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/intervention.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/input/input_device_capabilities.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
 

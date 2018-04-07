@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/WebKit/common/message_port/cloneable_message_struct_traits.h"
+#include "third_party/blink/common/message_port/cloneable_message_struct_traits.h"
 
 #include "base/containers/span.h"
 

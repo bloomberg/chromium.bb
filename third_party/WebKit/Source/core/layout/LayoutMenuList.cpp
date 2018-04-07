@@ -24,17 +24,17 @@
  *
  */
 
-#include "core/layout/LayoutMenuList.h"
+#include "third_party/blink/renderer/core/layout/layout_menu_list.h"
 
 #include <math.h>
-#include "core/dom/AXObjectCache.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/forms/HTMLOptionElement.h"
-#include "core/html/forms/HTMLSelectElement.h"
-#include "core/layout/LayoutText.h"
-#include "core/layout/LayoutTheme.h"
-#include "platform/text/PlatformLocale.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 

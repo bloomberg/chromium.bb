@@ -20,10 +20,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/svg/line/SVGInlineFlowBox.h"
+#include "third_party/blink/renderer/core/layout/svg/line/svg_inline_flow_box.h"
 
-#include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "core/paint/SVGInlineFlowBoxPainter.h"
+#include "third_party/blink/renderer/core/layout/svg/line/svg_inline_text_box.h"
+#include "third_party/blink/renderer/core/paint/svg_inline_flow_box_painter.h"
 
 namespace blink {
 

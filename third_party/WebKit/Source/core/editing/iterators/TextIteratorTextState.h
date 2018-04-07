@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextIteratorTextState_h
-#define TextIteratorTextState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_ITERATOR_TEXT_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_ITERATOR_TEXT_STATE_H_
 
-#include "core/CoreExport.h"
-#include "core/editing/iterators/ForwardsTextBuffer.h"
-#include "core/editing/iterators/TextIteratorBehavior.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/iterators/forwards_text_buffer.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator_behavior.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -113,4 +113,4 @@ class CORE_EXPORT TextIteratorTextState {
 
 }  // namespace blink
 
-#endif  // TextIteratorTextState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_ITERATOR_TEXT_STATE_H_

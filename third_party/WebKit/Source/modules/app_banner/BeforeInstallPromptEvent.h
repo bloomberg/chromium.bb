@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BeforeInstallPromptEvent_h
-#define BeforeInstallPromptEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_APP_BANNER_BEFORE_INSTALL_PROMPT_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_APP_BANNER_BEFORE_INSTALL_PROMPT_EVENT_H_
 
 #include <utility>
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseProperty.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/frame/LocalFrame.h"
-#include "modules/EventModules.h"
-#include "modules/app_banner/AppBannerPromptResult.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "public/platform/modules/app_banner/app_banner.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/app_banner/app_banner.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/app_banner/app_banner_prompt_result.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
 
 namespace blink {
 
@@ -100,4 +100,4 @@ DEFINE_TYPE_CASTS(BeforeInstallPromptEvent,
 
 }  // namespace blink
 
-#endif  // BeforeInstallPromptEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_APP_BANNER_BEFORE_INSTALL_PROMPT_EVENT_H_

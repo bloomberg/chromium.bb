@@ -22,15 +22,15 @@
  *
  */
 
-#ifndef CollapsedBorderValue_h
-#define CollapsedBorderValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_COLLAPSED_BORDER_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_COLLAPSED_BORDER_VALUE_H_
 
-#include "core/CoreExport.h"
-#include "core/style/BorderValue.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/Color.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/style/border_value.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -217,4 +217,4 @@ class CollapsedBorderValues {
 
 }  // namespace blink
 
-#endif  // CollapsedBorderValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_COLLAPSED_BORDER_VALUE_H_

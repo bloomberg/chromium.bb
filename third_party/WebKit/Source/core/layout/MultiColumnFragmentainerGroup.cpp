@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/MultiColumnFragmentainerGroup.h"
+#include "third_party/blink/renderer/core/layout/multi_column_fragmentainer_group.h"
 
-#include "core/layout/ColumnBalancer.h"
-#include "core/layout/FragmentationContext.h"
-#include "core/layout/LayoutMultiColumnSet.h"
+#include "third_party/blink/renderer/core/layout/column_balancer.h"
+#include "third_party/blink/renderer/core/layout/fragmentation_context.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
 
 namespace blink {
 

@@ -5,7 +5,7 @@
 module client_hints.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
-import "third_party/WebKit/public/platform/web_client_hints_types.mojom";
+import "third_party/blink/public/platform/web_client_hints_types.mojom";
 import "url/mojom/origin.mojom";
 
 // Sent from renderer to browser process when the lifetime of the client hints

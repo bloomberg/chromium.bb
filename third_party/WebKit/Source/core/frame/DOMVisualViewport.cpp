@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/frame/DOMVisualViewport.h"
+#include "third_party/blink/renderer/core/frame/dom_visual_viewport.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/VisualViewport.h"
-#include "core/layout/AdjustForAbsoluteZoom.h"
-#include "core/page/Page.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

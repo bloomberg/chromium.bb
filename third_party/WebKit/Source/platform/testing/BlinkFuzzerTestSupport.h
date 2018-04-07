@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BlinkFuzzerTestSupport_h
-#define BlinkFuzzerTestSupport_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_BLINK_FUZZER_TEST_SUPPORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_BLINK_FUZZER_TEST_SUPPORT_H_
 
 namespace blink {
 
@@ -21,4 +21,4 @@ class BlinkFuzzerTestSupport {
 
 }  // namespace blink
 
-#endif  // BlinkFuzzerTestSupport_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_BLINK_FUZZER_TEST_SUPPORT_H_

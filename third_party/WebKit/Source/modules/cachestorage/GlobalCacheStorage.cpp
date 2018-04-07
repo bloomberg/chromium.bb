@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/cachestorage/GlobalCacheStorage.h"
+#include "third_party/blink/renderer/modules/cachestorage/global_cache_storage.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/UseCounter.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "modules/cachestorage/CacheStorage.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebSecurityOrigin.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/modules/cachestorage/cache_storage.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 

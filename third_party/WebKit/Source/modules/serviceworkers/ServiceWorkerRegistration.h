@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ServiceWorkerRegistration_h
-#define ServiceWorkerRegistration_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_REGISTRATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_REGISTRATION_H_
 
 #include <memory>
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/events/EventTarget.h"
-#include "modules/serviceworkers/NavigationPreloadManager.h"
-#include "modules/serviceworkers/ServiceWorker.h"
-#include "modules/serviceworkers/ServiceWorkerRegistration.h"
-#include "platform/Supplementable.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerRegistrationProxy.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration_proxy.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/modules/serviceworkers/navigation_preload_manager.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -126,4 +126,4 @@ class ServiceWorkerRegistrationArray {
 
 }  // namespace blink
 
-#endif  // ServiceWorkerRegistration_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_REGISTRATION_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebRTCCertificate_h
-#define WebRTCCertificate_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_CERTIFICATE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_CERTIFICATE_H_
 
-#include "WebVector.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
-#include "public/platform/WebRTCKeyParams.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_rtc_key_params.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 #include <memory>
 
@@ -76,4 +76,4 @@ class WebRTCCertificate {
 
 }  // namespace blink
 
-#endif  // WebRTCCertificate_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_CERTIFICATE_H_

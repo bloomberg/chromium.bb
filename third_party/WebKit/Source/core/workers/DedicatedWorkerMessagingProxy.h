@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DedicatedWorkerMessagingProxy_h
-#define DedicatedWorkerMessagingProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_MESSAGING_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_MESSAGING_PROXY_H_
 
 #include <memory>
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/messaging/MessagePort.h"
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/ThreadedMessagingProxyBase.h"
-#include "core/workers/WorkerBackingThreadStartupData.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/ReferrerPolicy.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/threaded_messaging_proxy_base.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace v8_inspector {
 struct V8StackTraceId;
@@ -96,4 +96,4 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
 
 }  // namespace blink
 
-#endif  // DedicatedWorkerMessagingProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_MESSAGING_PROXY_H_

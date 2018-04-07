@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebRelatedAppsFetcher_h
-#define WebRelatedAppsFetcher_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INSTALLEDAPP_WEB_RELATED_APPS_FETCHER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INSTALLEDAPP_WEB_RELATED_APPS_FETCHER_H_
 
-#include "public/platform/WebCallbacks.h"
-#include "public/platform/WebSecurityOrigin.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/installedapp/WebRelatedApplication.h"
+#include "third_party/blink/public/platform/modules/installedapp/web_related_application.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 #include <memory>
 
@@ -28,4 +28,4 @@ class WebRelatedAppsFetcher {
 
 }  // namespace blink
 
-#endif  // WebRelatedAppsFetcher_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INSTALLEDAPP_WEB_RELATED_APPS_FETCHER_H_

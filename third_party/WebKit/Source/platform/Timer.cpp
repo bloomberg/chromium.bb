@@ -24,19 +24,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/Timer.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 #include <limits.h>
 #include <math.h>
 #include <algorithm>
 #include <limits>
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/AddressSanitizer.h"
-#include "platform/wtf/Atomics.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
+#include "third_party/blink/renderer/platform/wtf/atomics.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

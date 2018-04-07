@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/SelectionEditor.h"
+#include "third_party/blink/renderer/core/editing/selection_editor.h"
 
-#include "core/dom/NodeWithIndex.h"
-#include "core/dom/Text.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/Editor.h"
-#include "core/editing/SelectionAdjuster.h"
-#include "core/frame/LocalFrame.h"
+#include "third_party/blink/renderer/core/dom/node_with_index.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/editing/selection_adjuster.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
 

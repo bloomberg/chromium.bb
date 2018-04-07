@@ -18,12 +18,12 @@
  *
  */
 
-#ifndef StyleElement_h
-#define StyleElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_ELEMENT_H_
 
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/StyleEngineContext.h"
-#include "platform/wtf/text/TextPosition.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/style_engine_context.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
 namespace blink {
 

@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextCodecLatin1_h
-#define TextCodecLatin1_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_CODEC_LATIN1_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_CODEC_LATIN1_H_
 
-#include "platform/wtf/text/TextCodec.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec.h"
 
 namespace WTF {
 
@@ -50,4 +50,4 @@ class TextCodecLatin1 final : public TextCodec {
 
 }  // namespace WTF
 
-#endif  // TextCodecLatin1_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_CODEC_LATIN1_H_

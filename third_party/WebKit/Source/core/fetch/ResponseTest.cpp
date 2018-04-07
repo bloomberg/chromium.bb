@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/Response.h"
+#include "third_party/blink/renderer/core/fetch/response.h"
 
 #include <memory>
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fetch/BodyStreamBuffer.h"
-#include "core/fetch/BytesConsumer.h"
-#include "core/fetch/BytesConsumerTestUtil.h"
-#include "core/fetch/DataConsumerHandleTestUtil.h"
-#include "core/fetch/FetchResponseData.h"
-#include "core/frame/Frame.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/blob/BlobData.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
+#include "third_party/blink/renderer/core/fetch/data_consumer_handle_test_util.h"
+#include "third_party/blink/renderer/core/fetch/fetch_response_data.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 namespace {

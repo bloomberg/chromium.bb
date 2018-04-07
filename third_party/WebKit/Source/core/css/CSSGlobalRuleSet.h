@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSGlobalRuleSet_h
-#define CSSGlobalRuleSet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GLOBAL_RULE_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GLOBAL_RULE_SET_H_
 
 #include "base/macros.h"
-#include "core/css/RuleFeatureSet.h"
+#include "third_party/blink/renderer/core/css/rule_feature_set.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ class CSSGlobalRuleSet : public GarbageCollectedFinalized<CSSGlobalRuleSet> {
 
 }  // namespace blink
 
-#endif  // CSSGlobalRuleSet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GLOBAL_RULE_SET_H_

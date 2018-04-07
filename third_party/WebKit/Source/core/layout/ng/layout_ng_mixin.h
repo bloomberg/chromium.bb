@@ -7,11 +7,11 @@
 
 #include <type_traits>
 
-#include "core/layout/LayoutTableCell.h"
-#include "core/layout/ng/inline/ng_inline_node_data.h"
-#include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_physical_box_fragment.h"
-#include "core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
 namespace blink {
 

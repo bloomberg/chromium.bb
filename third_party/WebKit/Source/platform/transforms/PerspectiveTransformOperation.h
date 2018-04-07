@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PerspectiveTransformOperation_h
-#define PerspectiveTransformOperation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_PERSPECTIVE_TRANSFORM_OPERATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_PERSPECTIVE_TRANSFORM_OPERATION_H_
 
-#include "platform/transforms/TransformOperation.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operation.h"
 
 namespace blink {
 
@@ -77,4 +77,4 @@ DEFINE_TRANSFORM_TYPE_CASTS(PerspectiveTransformOperation);
 
 }  // namespace blink
 
-#endif  // PerspectiveTransformOperation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_PERSPECTIVE_TRANSFORM_OPERATION_H_

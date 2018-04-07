@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/properties/SVGAnimatedProperty.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
 
-#include "core/svg/SVGElement.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
 
 namespace blink {
 

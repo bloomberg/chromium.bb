@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/resolver/AnimatedStyleBuilder.h"
+#include "third_party/blink/renderer/core/css/resolver/animated_style_builder.h"
 
-#include "core/animation/animatable/AnimatableDouble.h"
-#include "core/animation/animatable/AnimatableFilterOperations.h"
-#include "core/animation/animatable/AnimatableTransform.h"
-#include "core/css/properties/css_property.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/animation/animatable/animatable_double.h"
+#include "third_party/blink/renderer/core/animation/animatable/animatable_filter_operations.h"
+#include "third_party/blink/renderer/core/animation/animatable/animatable_transform.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 #include <type_traits>
 

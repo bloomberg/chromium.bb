@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef WTF_GetPtr_h
-#define WTF_GetPtr_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_GET_PTR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_GET_PTR_H_
 
 template <typename>
 class scoped_refptr;
@@ -43,4 +43,4 @@ inline T* GetPtr(const scoped_refptr<T>& p) {
 
 }  // namespace WTF
 
-#endif  // WTF_GetPtr_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_GET_PTR_H_

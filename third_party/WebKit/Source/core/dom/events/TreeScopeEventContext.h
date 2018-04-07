@@ -24,14 +24,14 @@
  *
  */
 
-#ifndef TreeScopeEventContext_h
-#define TreeScopeEventContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_TREE_SCOPE_EVENT_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_TREE_SCOPE_EVENT_CONTEXT_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Node.h"
-#include "core/dom/TreeScope.h"
-#include "core/dom/events/EventTarget.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -163,4 +163,4 @@ inline bool TreeScopeEventContext::IsExclusivePartOf(
 
 }  // namespace blink
 
-#endif  // TreeScopeEventContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_TREE_SCOPE_EVENT_CONTEXT_H_

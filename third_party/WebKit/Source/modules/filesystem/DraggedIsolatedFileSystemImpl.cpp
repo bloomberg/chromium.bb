@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
+#include "third_party/blink/renderer/modules/filesystem/dragged_isolated_file_system_impl.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/filesystem/DOMFileSystem.h"
-#include "platform/Supplementable.h"
-#include "platform/weborigin/SecurityOrigin.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

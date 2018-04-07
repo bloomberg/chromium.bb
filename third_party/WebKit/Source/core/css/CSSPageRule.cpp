@@ -19,16 +19,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/CSSPageRule.h"
+#include "third_party/blink/renderer/core/css/css_page_rule.h"
 
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/CSSSelector.h"
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/StyleRule.h"
-#include "core/css/StyleRuleCSSStyleDeclaration.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_selector.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/core/css/style_rule_css_style_declaration.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

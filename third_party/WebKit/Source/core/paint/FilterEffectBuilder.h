@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FilterEffectBuilder_h
-#define FilterEffectBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FILTER_EFFECT_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FILTER_EFFECT_BUILDER_H_
 
-#include "core/CoreExport.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class CORE_EXPORT FilterEffectBuilder final {
 
 }  // namespace blink
 
-#endif  // FilterEffectBuilder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FILTER_EFFECT_BUILDER_H_

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WTF_PartitionAllocator_h
-#define WTF_PartitionAllocator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALLOCATOR_PARTITION_ALLOCATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALLOCATOR_PARTITION_ALLOCATOR_H_
 
 // This is the allocator that is used for allocations that are not on the
 // traced, garbage collected heap. It uses FastMalloc for collections,
 // but uses the partition allocator for the backing store of the collections.
 
-#include "base/allocator/partition_allocator/partition_alloc.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/TypeTraits.h"
-#include "platform/wtf/WTFExport.h"
 #include <string.h>
+#include "base/allocator/partition_allocator/partition_alloc.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -149,4 +149,4 @@ WTF_EXPORT char* PartitionAllocator::AllocateExpandedVectorBacking<char>(
  private:                                                         \
   typedef int __thisIsHereToForceASemicolonAfterThisMacro
 
-#endif  // WTF_PartitionAllocator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALLOCATOR_PARTITION_ALLOCATOR_H_

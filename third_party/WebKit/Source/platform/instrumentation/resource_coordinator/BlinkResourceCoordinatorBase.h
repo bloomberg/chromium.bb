@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BlinkResourceCoordinatorBase_h
-#define BlinkResourceCoordinatorBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_BLINK_RESOURCE_COORDINATOR_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_BLINK_RESOURCE_COORDINATOR_BASE_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Noncopyable.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -25,4 +25,4 @@ class PLATFORM_EXPORT BlinkResourceCoordinatorBase {
 
 }  // namespace blink
 
-#endif  // BlinkResourceCoordinatorBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_BLINK_RESOURCE_COORDINATOR_BASE_H_

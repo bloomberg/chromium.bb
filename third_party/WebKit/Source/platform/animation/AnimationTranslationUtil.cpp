@@ -22,19 +22,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/animation/AnimationTranslationUtil.h"
+#include "third_party/blink/renderer/platform/animation/animation_translation_util.h"
 
-#include "platform/animation/CompositorTransformOperations.h"
-#include "platform/transforms/InterpolatedTransformOperation.h"
-#include "platform/transforms/Matrix3DTransformOperation.h"
-#include "platform/transforms/MatrixTransformOperation.h"
-#include "platform/transforms/PerspectiveTransformOperation.h"
-#include "platform/transforms/RotateTransformOperation.h"
-#include "platform/transforms/ScaleTransformOperation.h"
-#include "platform/transforms/SkewTransformOperation.h"
-#include "platform/transforms/TransformOperations.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/transforms/TranslateTransformOperation.h"
+#include "third_party/blink/renderer/platform/animation/compositor_transform_operations.h"
+#include "third_party/blink/renderer/platform/transforms/interpolated_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/matrix_3d_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/matrix_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/perspective_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/rotate_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/scale_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/skew_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operations.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
 
 namespace blink {
 

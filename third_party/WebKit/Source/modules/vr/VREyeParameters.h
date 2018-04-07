@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VREyeParameters_h
-#define VREyeParameters_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_EYE_PARAMETERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_EYE_PARAMETERS_H_
 
-#include "core/typed_arrays/DOMTypedArray.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "modules/vr/VRFieldOfView.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/vr/vr_field_of_view.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class VREyeParameters final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // VREyeParameters_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_EYE_PARAMETERS_H_

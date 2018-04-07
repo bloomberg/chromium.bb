@@ -23,14 +23,14 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/DynamicsCompressorNode.h"
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "modules/webaudio/AudioNodeInput.h"
-#include "modules/webaudio/AudioNodeOutput.h"
-#include "modules/webaudio/DynamicsCompressorOptions.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/audio/DynamicsCompressor.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
+#include "third_party/blink/renderer/modules/webaudio/dynamics_compressor_node.h"
+#include "third_party/blink/renderer/modules/webaudio/dynamics_compressor_options.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/audio/dynamics_compressor.h"
 
 // Set output to stereo by default.
 static const unsigned defaultNumberOfOutputChannels = 2;

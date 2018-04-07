@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSParsingUtils_h
-#define CSSParsingUtils_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_CSS_PARSING_UTILS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_CSS_PARSING_UTILS_H_
 
-#include "core/css/parser/CSSParserMode.h"
-#include "core/css/parser/CSSParserTokenRange.h"
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css_value_keywords.h"
-#include "core/style/GridArea.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/style/grid_area.h"
 
 namespace blink {
 
@@ -259,4 +259,4 @@ CSSValue* ConsumePositionLonghand(CSSParserTokenRange& range,
 }  // namespace CSSParsingUtils
 }  // namespace blink
 
-#endif  // CSSParsingUtils_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_CSS_PARSING_UTILS_H_

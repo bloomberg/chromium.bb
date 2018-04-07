@@ -23,20 +23,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLParserScriptRunner_h
-#define HTMLParserScriptRunner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_HTML_PARSER_SCRIPT_RUNNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_HTML_PARSER_SCRIPT_RUNNER_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ScriptStreamer.h"
-#include "core/html/parser/HTMLParserReentryPermit.h"
-#include "core/script/PendingScript.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ResourceClient.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/text/TextPosition.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_reentry_permit.h"
+#include "third_party/blink/renderer/core/script/pending_script.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
 namespace blink {
 

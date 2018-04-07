@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/track/CueTimeline.h"
+#include "third_party/blink/renderer/core/html/track/cue_timeline.h"
 
 #include <algorithm>
-#include "core/dom/events/Event.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/track/HTMLTrackElement.h"
-#include "core/html/track/LoadableTextTrack.h"
-#include "core/html/track/TextTrack.h"
-#include "core/html/track/TextTrackCue.h"
-#include "core/html/track/TextTrackCueList.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/track/html_track_element.h"
+#include "third_party/blink/renderer/core/html/track/loadable_text_track.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
+#include "third_party/blink/renderer/core/html/track/text_track_cue.h"
+#include "third_party/blink/renderer/core/html/track/text_track_cue_list.h"
 
 namespace blink {
 

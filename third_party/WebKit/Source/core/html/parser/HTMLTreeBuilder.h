@@ -24,18 +24,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLTreeBuilder_h
-#define HTMLTreeBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_TREE_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_TREE_BUILDER_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/html/parser/HTMLConstructionSite.h"
-#include "core/html/parser/HTMLElementStack.h"
-#include "core/html/parser/HTMLParserOptions.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/TextPosition.h"
+#include "third_party/blink/renderer/core/html/parser/html_construction_site.h"
+#include "third_party/blink/renderer/core/html/parser/html_element_stack.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

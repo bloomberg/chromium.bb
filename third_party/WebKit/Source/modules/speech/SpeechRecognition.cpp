@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/speech/SpeechRecognition.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/frame/LocalFrame.h"
-#include "modules/speech/SpeechRecognitionController.h"
-#include "modules/speech/SpeechRecognitionError.h"
-#include "modules/speech/SpeechRecognitionEvent.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_controller.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_error.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_event.h"
 
 namespace blink {
 

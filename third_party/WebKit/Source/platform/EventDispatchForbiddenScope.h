@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EventDispatchForbiddenScope_h
-#define EventDispatchForbiddenScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_EVENT_DISPATCH_FORBIDDEN_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_EVENT_DISPATCH_FORBIDDEN_SCOPE_H_
 
 #include "base/macros.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/AutoReset.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class EventDispatchForbiddenScope {
 
 }  // namespace blink
 
-#endif  // EventDispatchForbiddenScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_EVENT_DISPATCH_FORBIDDEN_SCOPE_H_

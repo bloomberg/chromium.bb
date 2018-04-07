@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LineLayoutSVGInline_h
-#define LineLayoutSVGInline_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_SVG_INLINE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_SVG_INLINE_H_
 
-#include "core/layout/api/LineLayoutInline.h"
-#include "core/layout/svg/LayoutSVGInline.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_inline.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_inline.h"
 
 namespace blink {
 
@@ -36,4 +36,4 @@ class LineLayoutSVGInline : public LineLayoutInline {
 
 }  // namespace blink
 
-#endif  // LineLayoutSVGInline_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_SVG_INLINE_H_

@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V0CustomElementCallbackInvocation_h
-#define V0CustomElementCallbackInvocation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_CALLBACK_INVOCATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_CALLBACK_INVOCATION_H_
 
 #include "base/macros.h"
-#include "core/html/custom/V0CustomElementLifecycleCallbacks.h"
-#include "core/html/custom/V0CustomElementProcessingStep.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_lifecycle_callbacks.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_step.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class V0CustomElementCallbackInvocation : public V0CustomElementProcessingStep {
 
 }  // namespace blink
 
-#endif  // V0CustomElementCallbackInvocation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_CALLBACK_INVOCATION_H_

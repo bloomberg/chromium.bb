@@ -24,11 +24,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/XPathUtil.h"
+#include "third_party/blink/renderer/core/xml/xpath_util.h"
 
-#include "core/dom/ContainerNode.h"
-#include "core/dom/NodeTraversal.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 namespace XPath {

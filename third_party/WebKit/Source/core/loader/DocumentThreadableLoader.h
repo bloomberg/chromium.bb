@@ -29,21 +29,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DocumentThreadableLoader_h
-#define DocumentThreadableLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_DOCUMENT_THREADABLE_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_DOCUMENT_THREADABLE_LOADER_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/loader/ThreadableLoader.h"
-#include "platform/Timer.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/RawResource.h"
-#include "platform/loader/fetch/ResourceError.h"
-#include "platform/network/HTTPHeaderMap.h"
-#include "platform/weborigin/Referrer.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/WTFString.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -284,4 +284,4 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
 
 }  // namespace blink
 
-#endif  // DocumentThreadableLoader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_DOCUMENT_THREADABLE_LOADER_H_

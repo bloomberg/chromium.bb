@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ThemeMac_h
-#define ThemeMac_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_THEME_MAC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_THEME_MAC_H_
 
 #import <AppKit/AppKit.h>
 
-#include "platform/Theme.h"
+#include "third_party/blink/renderer/platform/theme.h"
 
 namespace blink {
 
@@ -123,4 +123,4 @@ class ThemeMac : public Theme {
 
 }  // namespace blink
 
-#endif  // ThemeMac_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_THEME_MAC_H_

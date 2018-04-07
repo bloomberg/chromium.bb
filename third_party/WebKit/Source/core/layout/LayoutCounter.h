@@ -19,11 +19,11 @@
  *
  */
 
-#ifndef LayoutCounter_h
-#define LayoutCounter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_COUNTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_COUNTER_H_
 
-#include "core/layout/LayoutText.h"
-#include "core/style/CounterContent.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/style/counter_content.h"
 
 namespace blink {
 
@@ -99,4 +99,4 @@ void showCounterLayoutTree(const blink::LayoutObject*,
                            const char* counterName = nullptr);
 #endif
 
-#endif  // LayoutCounter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_COUNTER_H_

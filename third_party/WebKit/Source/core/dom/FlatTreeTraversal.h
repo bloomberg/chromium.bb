@@ -24,17 +24,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FlatTreeTraversal_h
-#define FlatTreeTraversal_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_FLAT_TREE_TRAVERSAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_FLAT_TREE_TRAVERSAL_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Document.h"
-#include "core/dom/LayoutTreeBuilderTraversal.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/V0InsertionPoint.h"
-#include "core/dom/ng/flat_tree_traversal_ng.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
+#include "third_party/blink/renderer/core/dom/ng/flat_tree_traversal_ng.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

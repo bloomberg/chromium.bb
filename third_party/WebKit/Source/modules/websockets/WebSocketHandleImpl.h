@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSocketHandleImpl_h
-#define WebSocketHandleImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_HANDLE_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_HANDLE_IMPL_H_
 
-#include "modules/websockets/WebSocketHandle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_handle.h"
 
 namespace blink {
 
@@ -84,4 +84,4 @@ class WebSocketHandleImpl : public WebSocketHandle,
 
 }  // namespace blink
 
-#endif  // WebSocketHandleImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_HANDLE_IMPL_H_

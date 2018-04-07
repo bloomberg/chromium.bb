@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "third_party/WebKit/common/common_export.h"
+#include "third_party/blink/common/common_export.h"
 
 namespace blink {
 

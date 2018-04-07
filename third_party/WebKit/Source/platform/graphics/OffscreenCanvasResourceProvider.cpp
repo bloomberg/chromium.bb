@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/OffscreenCanvasResourceProvider.h"
+#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_resource_provider.h"
 
 #include "base/numerics/checked_math.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
-#include "platform/graphics/gpu/SharedGpuContext.h"
-#include "platform/wtf/typed_arrays/ArrayBuffer.h"
-#include "platform/wtf/typed_arrays/Uint8Array.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebGraphicsContext3DProvider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/uint8_array.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkColor.h"

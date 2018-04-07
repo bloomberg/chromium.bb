@@ -23,15 +23,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/indexeddb/IDBAny.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_any.h"
 
 #include <memory>
 
-#include "core/dom/DOMStringList.h"
-#include "modules/indexeddb/IDBCursorWithValue.h"
-#include "modules/indexeddb/IDBDatabase.h"
-#include "modules/indexeddb/IDBIndex.h"
-#include "modules/indexeddb/IDBObjectStore.h"
+#include "third_party/blink/renderer/core/dom/dom_string_list.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_cursor_with_value.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_index.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_object_store.h"
 
 namespace blink {
 

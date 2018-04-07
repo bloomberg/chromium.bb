@@ -23,11 +23,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/TreeNode.h"
+#include "third_party/blink/renderer/platform/wtf/tree_node.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/RefCounted.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace WTF {
 

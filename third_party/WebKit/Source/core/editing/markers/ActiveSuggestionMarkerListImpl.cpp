@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/markers/ActiveSuggestionMarkerListImpl.h"
+#include "third_party/blink/renderer/core/editing/markers/active_suggestion_marker_list_impl.h"
 
-#include "core/editing/markers/SortedDocumentMarkerListEditor.h"
+#include "third_party/blink/renderer/core/editing/markers/sorted_document_marker_list_editor.h"
 
 namespace blink {
 

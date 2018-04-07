@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLContextObject_h
-#define WebGLContextObject_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_CONTEXT_OBJECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_CONTEXT_OBJECT_H_
 
-#include "modules/webgl/WebGLObject.h"
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_object.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ class WebGLContextObject : public WebGLObject {
 
 }  // namespace blink
 
-#endif  // WebGLContextObject_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_CONTEXT_OBJECT_H_

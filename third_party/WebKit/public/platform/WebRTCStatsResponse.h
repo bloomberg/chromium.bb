@@ -22,13 +22,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebRTCStatsResponse_h
-#define WebRTCStatsResponse_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_STATS_RESPONSE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_STATS_RESPONSE_H_
 
-#include "WebCommon.h"
-#include "WebPrivatePtr.h"
-#include "WebRTCLegacyStats.h"
-#include "WebString.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_rtc_legacy_stats.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class WebRTCStatsResponse {
 
 }  // namespace blink
 
-#endif  // WebRTCStatsResponse_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_STATS_RESPONSE_H_

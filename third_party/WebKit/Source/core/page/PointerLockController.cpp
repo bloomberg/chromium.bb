@@ -23,15 +23,15 @@
  * DAMAGE.
  */
 
-#include "core/page/PointerLockController.h"
+#include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 
-#include "core/dom/Element.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "public/platform/WebMouseEvent.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
 

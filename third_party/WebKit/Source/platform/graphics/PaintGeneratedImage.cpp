@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/PaintGeneratedImage.h"
+#include "third_party/blink/renderer/platform/graphics/paint_generated_image.h"
 
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/PaintRecord.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 
 namespace blink {
 

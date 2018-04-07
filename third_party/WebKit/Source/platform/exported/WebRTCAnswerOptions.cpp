@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebRTCAnswerOptions.h"
+#include "third_party/blink/public/platform/web_rtc_answer_options.h"
 
-#include "platform/peerconnection/RTCAnswerOptionsPlatform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
 
 namespace blink {
 

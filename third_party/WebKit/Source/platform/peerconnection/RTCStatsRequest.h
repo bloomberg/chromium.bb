@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCStatsRequest_h
-#define RTCStatsRequest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_REQUEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_REQUEST_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class RTCStatsRequest : public GarbageCollectedFinalized<RTCStatsRequest> {
 
 }  // namespace blink
 
-#endif  // RTCStatsRequest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_REQUEST_H_

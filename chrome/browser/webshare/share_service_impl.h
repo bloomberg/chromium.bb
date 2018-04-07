@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h"
-#include "third_party/WebKit/public/platform/site_engagement.mojom.h"
+#include "third_party/blink/public/platform/modules/webshare/webshare.mojom.h"
+#include "third_party/blink/public/platform/site_engagement.mojom.h"
 
 namespace base {
 class DictionaryValue;

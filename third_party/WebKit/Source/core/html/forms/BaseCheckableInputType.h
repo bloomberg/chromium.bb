@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BaseCheckableInputType_h
-#define BaseCheckableInputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_BASE_CHECKABLE_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_BASE_CHECKABLE_INPUT_TYPE_H_
 
-#include "core/html/forms/InputType.h"
-#include "core/html/forms/InputTypeView.h"
+#include "third_party/blink/renderer/core/html/forms/input_type.h"
+#include "third_party/blink/renderer/core/html/forms/input_type_view.h"
 
 namespace blink {
 
@@ -74,4 +74,4 @@ class BaseCheckableInputType : public InputType, public InputTypeView {
 
 }  // namespace blink
 
-#endif  // BaseCheckableInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_BASE_CHECKABLE_INPUT_TYPE_H_

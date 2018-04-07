@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebRTCOfferOptions.h"
+#include "third_party/blink/public/platform/web_rtc_offer_options.h"
 
-#include "platform/peerconnection/RTCOfferOptionsPlatform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 
 namespace blink {
 

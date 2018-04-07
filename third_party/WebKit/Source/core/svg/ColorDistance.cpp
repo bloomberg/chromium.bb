@@ -17,10 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/ColorDistance.h"
+#include "third_party/blink/renderer/core/svg/color_distance.h"
 
-#include "platform/graphics/Color.h"
-#include "platform/graphics/ColorBlend.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/color_blend.h"
 
 #include <math.h>
 

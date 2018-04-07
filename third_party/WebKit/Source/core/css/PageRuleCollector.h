@@ -20,11 +20,11 @@
  *
  */
 
-#ifndef PageRuleCollector_h
-#define PageRuleCollector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PAGE_RULE_COLLECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PAGE_RULE_COLLECTOR_H_
 
-#include "core/css/resolver/MatchResult.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/css/resolver/match_result.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -64,4 +64,4 @@ class PageRuleCollector {
 
 }  // namespace blink
 
-#endif  // PageRuleCollector_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PAGE_RULE_COLLECTOR_H_

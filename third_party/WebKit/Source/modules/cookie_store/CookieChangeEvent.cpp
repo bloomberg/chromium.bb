@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/cookie_store/CookieChangeEvent.h"
+#include "third_party/blink/renderer/modules/cookie_store/cookie_change_event.h"
 
-#include "modules/EventModules.h"
-#include "modules/cookie_store/CookieChangeEventInit.h"
-#include "modules/cookie_store/CookieListItem.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/modules/cookie_store/cookie_change_event_init.h"
+#include "third_party/blink/renderer/modules/cookie_store/cookie_list_item.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

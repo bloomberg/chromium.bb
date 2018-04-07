@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/installedapp/NavigatorInstalledApp.h"
+#include "third_party/blink/renderer/modules/installedapp/navigator_installed_app.h"
 
 #include <memory>
 
-#include "bindings/core/v8/CallbackPromiseAdapter.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Navigator.h"
-#include "modules/installedapp/InstalledAppController.h"
-#include "modules/installedapp/RelatedApplication.h"
-#include "platform/bindings/ScriptState.h"
-#include "public/platform/modules/installedapp/WebRelatedApplication.h"
+#include "third_party/blink/public/platform/modules/installedapp/web_related_application.h"
+#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/installedapp/installed_app_controller.h"
+#include "third_party/blink/renderer/modules/installedapp/related_application.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

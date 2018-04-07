@@ -23,15 +23,15 @@
  * DAMAGE.
  */
 
-#ifndef AudioNodeOutput_h
-#define AudioNodeOutput_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_NODE_OUTPUT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_NODE_OUTPUT_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "modules/webaudio/AudioNode.h"
-#include "modules/webaudio/AudioParam.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -183,4 +183,4 @@ class AudioNodeOutput final {
 
 }  // namespace blink
 
-#endif  // AudioNodeOutput_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_NODE_OUTPUT_H_

@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/websockets/DocumentWebSocketChannel.h"
+#include "third_party/blink/renderer/modules/websockets/document_web_socket_channel.h"
 
 #include <stdint.h>
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/dom/Document.h"
-#include "core/fileapi/Blob.h"
-#include "core/testing/PageTestBase.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "modules/websockets/WebSocketChannel.h"
-#include "modules/websockets/WebSocketChannelClient.h"
-#include "modules/websockets/WebSocketHandle.h"
-#include "modules/websockets/WebSocketHandleClient.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebCallbacks.h"
-#include "public/platform/WebSocketHandshakeThrottle.h"
-#include "public/platform/WebURL.h"
-#include "public/web/WebLocalFrame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/public/platform/web_socket_handshake_throttle.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_channel.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_channel_client.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_handle.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_handle_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 using testing::_;
 using testing::InSequence;

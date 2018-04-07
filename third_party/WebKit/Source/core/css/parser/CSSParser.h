@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSParser_h
-#define CSSParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css_property_names.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
 
 namespace blink {
 
@@ -114,4 +114,4 @@ class CORE_EXPORT CSSParser {
 
 }  // namespace blink
 
-#endif  // CSSParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_H_

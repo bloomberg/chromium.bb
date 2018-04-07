@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/image-decoders/FastSharedBufferReader.h"
-#include "platform/image-decoders/ImageDecoderTestHelpers.h"
-#include "platform/image-decoders/SegmentReader.h"
+#include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
+#include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRWBuffer.h"
 

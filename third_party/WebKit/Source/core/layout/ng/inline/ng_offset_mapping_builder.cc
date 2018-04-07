@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/inline/ng_offset_mapping_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping_builder.h"
 
-#include "core/layout/LayoutText.h"
-#include "core/layout/LayoutTextFragment.h"
-#include "core/layout/ng/inline/ng_offset_mapping.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 
 namespace blink {
 

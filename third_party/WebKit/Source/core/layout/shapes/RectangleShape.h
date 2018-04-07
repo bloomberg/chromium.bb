@@ -27,14 +27,14 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RectangleShape_h
-#define RectangleShape_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_RECTANGLE_SHAPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_RECTANGLE_SHAPE_H_
 
-#include "core/layout/shapes/Shape.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/layout/shapes/shape.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class RectangleShape final : public Shape {
 
 }  // namespace blink
 
-#endif  // RectangleShape_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_RECTANGLE_SHAPE_H_

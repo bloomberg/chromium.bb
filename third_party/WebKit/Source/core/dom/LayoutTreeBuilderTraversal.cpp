@@ -24,12 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/LayoutTreeBuilderTraversal.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 
-#include "core/dom/FlatTreeTraversal.h"
-#include "core/dom/PseudoElement.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 

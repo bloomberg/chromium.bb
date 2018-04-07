@@ -26,15 +26,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AudioParamTimeline_h
-#define AudioParamTimeline_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_PARAM_TIMELINE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_PARAM_TIMELINE_H_
 
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "modules/webaudio/AudioDestinationNode.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_destination_node.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 #include <tuple>
 
@@ -485,4 +485,4 @@ class AudioParamTimeline {
 
 }  // namespace blink
 
-#endif  // AudioParamTimeline_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_PARAM_TIMELINE_H_

@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
-#include "third_party/WebKit/public/platform/WebCryptoKey.h"
+#include "third_party/blink/public/platform/web_crypto_algorithm.h"
+#include "third_party/blink/public/platform/web_crypto_key.h"
 
 // This file contains functions shared by multiple symmetric key algorithms.
 

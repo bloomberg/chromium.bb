@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/worker/worker_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
 #include <memory>
 
@@ -11,12 +11,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "platform/Histogram.h"
-#include "platform/scheduler/base/task_queue.h"
-#include "platform/scheduler/base/task_queue_manager.h"
-#include "platform/scheduler/child/default_params.h"
-#include "platform/scheduler/child/worker_scheduler_helper.h"
-#include "platform/scheduler/child/worker_scheduler_proxy.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/child/default_params.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_proxy.h"
 
 namespace blink {
 namespace scheduler {

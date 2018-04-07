@@ -19,7 +19,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/WebKit/public/web/devtools_agent.mojom.h"
+#include "third_party/blink/public/web/devtools_agent.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "services/device/public/mojom/wake_lock.mojom.h"

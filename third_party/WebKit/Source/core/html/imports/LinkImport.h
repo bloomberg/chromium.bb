@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LinkImport_h
-#define LinkImport_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_LINK_IMPORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_LINK_IMPORT_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/html/LinkResource.h"
-#include "core/html/imports/HTMLImportChildClient.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_child_client.h"
+#include "third_party/blink/renderer/core/html/link_resource.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class LinkImport final : public LinkResource, public HTMLImportChildClient {
 
 }  // namespace blink
 
-#endif  // LinkImport_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_LINK_IMPORT_H_

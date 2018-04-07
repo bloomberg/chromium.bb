@@ -21,7 +21,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "ipc/message_filter.h"
-#include "third_party/WebKit/public/mojom/clipboard/clipboard.mojom.h"
+#include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/clipboard_observer.h"
 

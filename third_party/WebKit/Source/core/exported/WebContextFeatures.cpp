@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/web/WebContextFeatures.h"
+#include "third_party/blink/public/web/web_context_features.h"
 
-#include "core/context_features/ContextFeatureSettings.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/core/context_features/context_feature_settings.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

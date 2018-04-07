@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebFloatSize.h"
-#include "third_party/WebKit/public/platform/WebGestureCurve.h"
-#include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
+#include "third_party/blink/public/platform/web_float_size.h"
+#include "third_party/blink/public/platform/web_gesture_curve.h"
+#include "third_party/blink/public/platform/web_gesture_curve_target.h"
 #include "ui/events/gestures/fling_curve.h"
 
 using blink::WebFloatSize;

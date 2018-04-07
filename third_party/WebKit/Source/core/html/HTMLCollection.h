@@ -22,14 +22,14 @@
  *
  */
 
-#ifndef HTMLCollection_h
-#define HTMLCollection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_COLLECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_COLLECTION_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/LiveNodeListBase.h"
-#include "core/html/CollectionItemsCache.h"
-#include "core/html/CollectionType.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/live_node_list_base.h"
+#include "third_party/blink/renderer/core/html/collection_items_cache.h"
+#include "third_party/blink/renderer/core/html/collection_type.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -231,4 +231,4 @@ inline void HTMLCollection::InvalidateCacheForAttribute(
 
 }  // namespace blink
 
-#endif  // HTMLCollection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_COLLECTION_H_

@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/timing/WorkerPerformance.h"
+#include "third_party/blink/renderer/core/timing/worker_performance.h"
 
-#include "core/workers/DedicatedWorkerGlobalScope.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

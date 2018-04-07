@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GridBaselineAlignment_h
-#define GridBaselineAlignment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_BASELINE_ALIGNMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_BASELINE_ALIGNMENT_H_
 
-#include "core/layout/GridLayoutUtils.h"
-#include "core/layout/LayoutBox.h"
+#include "third_party/blink/renderer/core/layout/grid_layout_utils.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 
 namespace blink {
 

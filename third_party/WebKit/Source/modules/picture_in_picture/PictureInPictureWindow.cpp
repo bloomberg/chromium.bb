@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/picture_in_picture/PictureInPictureWindow.h"
+#include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
 
-#include "core/execution_context/ExecutionContext.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
 namespace blink {
 

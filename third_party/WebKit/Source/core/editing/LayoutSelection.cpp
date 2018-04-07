@@ -19,22 +19,22 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/editing/LayoutSelection.h"
+#include "third_party/blink/renderer/core/editing/layout_selection.h"
 
-#include "core/dom/Document.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleUnits.h"
-#include "core/html/forms/TextControlElement.h"
-#include "core/layout/LayoutText.h"
-#include "core/layout/LayoutTextFragment.h"
-#include "core/layout/LayoutView.h"
-#include "core/layout/ng/inline/ng_offset_mapping.h"
-#include "core/layout/ng/inline/ng_physical_text_fragment.h"
-#include "core/paint/PaintLayer.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
 

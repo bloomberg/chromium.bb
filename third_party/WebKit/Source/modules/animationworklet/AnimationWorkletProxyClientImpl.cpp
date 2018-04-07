@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/animationworklet/AnimationWorkletProxyClientImpl.h"
+#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client_impl.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/WebFrameWidgetBase.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/workers/WorkerThread.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/graphics/CompositorMutatorImpl.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
 
 namespace blink {
 

@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLViewSourceParser_h
-#define HTMLViewSourceParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_VIEW_SOURCE_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_VIEW_SOURCE_PARSER_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/DecodedDataDocumentParser.h"
-#include "core/html/HTMLViewSourceDocument.h"
-#include "core/html/parser/HTMLInputStream.h"
-#include "core/html/parser/HTMLSourceTracker.h"
-#include "core/html/parser/HTMLTokenizer.h"
-#include "core/html/parser/XSSAuditor.h"
 #include <memory>
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/decoded_data_document_parser.h"
+#include "third_party/blink/renderer/core/html/html_view_source_document.h"
+#include "third_party/blink/renderer/core/html/parser/html_input_stream.h"
+#include "third_party/blink/renderer/core/html/parser/html_source_tracker.h"
+#include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
+#include "third_party/blink/renderer/core/html/parser/xss_auditor.h"
 
 namespace blink {
 

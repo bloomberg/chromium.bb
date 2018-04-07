@@ -20,11 +20,11 @@
  *
  */
 
-#ifndef StringOperators_h
-#define StringOperators_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_STRING_OPERATORS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_STRING_OPERATORS_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/StringConcatenate.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
 
 namespace WTF {
 
@@ -201,4 +201,4 @@ StringAppend<StringAppend<U, V>, W> operator+(const StringAppend<U, V>& string1,
 
 }  // namespace WTF
 
-#endif  // StringOperators_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_STRING_OPERATORS_H_

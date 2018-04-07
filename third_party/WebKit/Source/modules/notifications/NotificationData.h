@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NotificationData_h
-#define NotificationData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_DATA_H_
 
-#include "modules/ModulesExport.h"
-#include "public/platform/modules/notifications/WebNotificationData.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace WTF {
 class String;
@@ -29,4 +29,4 @@ CreateWebNotificationData(ExecutionContext*,
 
 }  // namespace blink
 
-#endif  // NotificationData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_DATA_H_

@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/locks/LockManager.h"
+#include "third_party/blink/renderer/modules/locks/lock_manager.h"
 
 #include <algorithm>
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/modules/v8/v8_lock_granted_callback.h"
-#include "core/dom/AbortSignal.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/frame/UseCounter.h"
-#include "modules/locks/Lock.h"
-#include "modules/locks/LockInfo.h"
-#include "modules/locks/LockManagerSnapshot.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/bindings/Microtask.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Persistent.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/Vector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_lock_granted_callback.h"
+#include "third_party/blink/renderer/core/dom/abort_signal.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/modules/locks/lock.h"
+#include "third_party/blink/renderer/modules/locks/lock_info.h"
+#include "third_party/blink/renderer/modules/locks/lock_manager_snapshot.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

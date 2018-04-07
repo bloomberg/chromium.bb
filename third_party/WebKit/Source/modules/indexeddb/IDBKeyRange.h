@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IDBKeyRange_h
-#define IDBKeyRange_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_KEY_RANGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_KEY_RANGE_H_
 
-#include "modules/ModulesExport.h"
-#include "modules/indexeddb/IDBKey.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -137,4 +137,4 @@ class MODULES_EXPORT IDBKeyRange final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // IDBKeyRange_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_KEY_RANGE_H_

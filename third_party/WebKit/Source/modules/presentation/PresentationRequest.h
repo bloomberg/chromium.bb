@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PresentationRequest_h
-#define PresentationRequest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_REQUEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_REQUEST_H_
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/events/EventTarget.h"
-#include "modules/ModulesExport.h"
-#include "modules/presentation/PresentationPromiseProperty.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/Heap.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_promise_property.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class MODULES_EXPORT PresentationRequest final
 
 }  // namespace blink
 
-#endif  // PresentationRequest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_REQUEST_H_

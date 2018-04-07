@@ -28,31 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Animation_h
-#define Animation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseProperty.h"
-#include "core/CoreExport.h"
-#include "core/animation/AnimationEffect.h"
-#include "core/animation/AnimationEffectOwner.h"
-#include "core/animation/CompositorAnimations.h"
-#include "core/animation/DocumentTimeline.h"
-#include "core/css_property_names.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/events/EventTarget.h"
-#include "platform/animation/CompositorAnimationClient.h"
-#include "platform/animation/CompositorAnimationDelegate.h"
-#include "platform/graphics/CompositorElementId.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
+#include "third_party/blink/renderer/core/animation/animation_effect.h"
+#include "third_party/blink/renderer/core/animation/animation_effect_owner.h"
+#include "third_party/blink/renderer/core/animation/compositor_animations.h"
+#include "third_party/blink/renderer/core/animation/document_timeline.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -405,4 +405,4 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // Animation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_H_

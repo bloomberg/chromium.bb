@@ -26,13 +26,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXTableColumn_h
-#define AXTableColumn_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_TABLE_COLUMN_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_TABLE_COLUMN_H_
 
 #include "base/macros.h"
-#include "modules/ModulesExport.h"
-#include "modules/accessibility/AXMockObject.h"
-#include "modules/accessibility/AXTable.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_mock_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_table.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ DEFINE_AX_OBJECT_TYPE_CASTS(AXTableColumn, IsTableCol());
 
 }  // namespace blink
 
-#endif  // AXTableColumn_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_TABLE_COLUMN_H_

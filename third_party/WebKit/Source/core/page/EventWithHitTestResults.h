@@ -18,12 +18,12 @@
    Boston, MA 02110-1301, USA.
 */
 
-#ifndef EventWithHitTestResults_h
-#define EventWithHitTestResults_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_EVENT_WITH_HIT_TEST_RESULTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_EVENT_WITH_HIT_TEST_RESULTS_H_
 
-#include "core/layout/HitTestResult.h"
-#include "public/platform/WebGestureEvent.h"
-#include "public/platform/WebMouseEvent.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ using GestureEventWithHitTestResults = EventWithHitTestResults<WebGestureEvent>;
 
 }  // namespace blink
 
-#endif  // EventWithHitTestResults_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_EVENT_WITH_HIT_TEST_RESULTS_H_

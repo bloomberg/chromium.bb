@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebIDBDatabaseError_h
-#define WebIDBDatabaseError_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_DATABASE_ERROR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_DATABASE_ERROR_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class WebIDBDatabaseError {
 
 }  // namespace blink
 
-#endif  // WebIDBDatabaseError_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_DATABASE_ERROR_H_

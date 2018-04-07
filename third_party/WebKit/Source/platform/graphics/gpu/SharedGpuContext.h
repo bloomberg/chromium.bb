@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SharedGpuContext_h
-#define SharedGpuContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_SHARED_GPU_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_SHARED_GPU_CONTEXT_H_
 
 #include <memory>
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "platform/PlatformExport.h"
-#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
-#include "platform/wtf/ThreadSpecific.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class PLATFORM_EXPORT SharedGpuContext {
 
 }  // blink
 
-#endif  // SharedGpuContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_SHARED_GPU_CONTEXT_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ResolveNode_h
-#define ResolveNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_RESOLVE_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_RESOLVE_NODE_H_
 
 #include <memory>
 
-#include "core/inspector/protocol/Runtime.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Runtime.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8-inspector.h"
 
 namespace blink {
@@ -30,4 +30,4 @@ NullRemoteObject(v8_inspector::V8InspectorSession* v8_session,
 
 }  // namespace blink
 
-#endif  // ResolveNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_RESOLVE_NODE_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ClipPathRecorder_h
-#define ClipPathRecorder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_PATH_RECORDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_PATH_RECORDER_H_
 
-#include "platform/graphics/Path.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -29,4 +29,4 @@ class PLATFORM_EXPORT ClipPathRecorder {
 
 }  // namespace blink
 
-#endif  // ClipPathRecorder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_PATH_RECORDER_H_

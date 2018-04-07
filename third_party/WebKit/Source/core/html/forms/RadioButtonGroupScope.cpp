@@ -18,12 +18,12 @@
  *
  */
 
-#include "core/html/forms/RadioButtonGroupScope.h"
+#include "third_party/blink/renderer/core/html/forms/radio_button_group_scope.h"
 
-#include "core/dom/AXObjectCache.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/input_type_names.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 

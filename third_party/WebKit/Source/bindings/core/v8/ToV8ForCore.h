@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ToV8ForCore_h
-#define ToV8ForCore_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_TO_V8_FOR_CORE_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_TO_V8_FOR_CORE_H_
 
 // ToV8() provides C++ -> V8 conversion. Note that ToV8() can return an empty
 // handle. Call sites must check IsEmpty() before using return value.
 
-#include "bindings/core/v8/IDLDictionaryBase.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/core/v8/V8NodeFilterCondition.h"
-#include "core/dom/Node.h"
-#include "core/typed_arrays/ArrayBufferViewHelpers.h"
-#include "platform/bindings/ToV8.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_dictionary_base.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_node_filter_condition.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -87,4 +87,4 @@ v8::Local<v8::Value> ToV8(V8TestingScope* scope, T value) {
 
 }  // namespace blink
 
-#endif  // ToV8ForCore_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_TO_V8_FOR_CORE_H_

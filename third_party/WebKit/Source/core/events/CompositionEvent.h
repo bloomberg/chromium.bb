@@ -24,11 +24,11 @@
  *
  */
 
-#ifndef CompositionEvent_h
-#define CompositionEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_COMPOSITION_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_COMPOSITION_EVENT_H_
 
-#include "core/events/CompositionEventInit.h"
-#include "core/events/UIEvent.h"
+#include "third_party/blink/renderer/core/events/composition_event_init.h"
+#include "third_party/blink/renderer/core/events/ui_event.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class CompositionEvent final : public UIEvent {
 
 }  // namespace blink
 
-#endif  // CompositionEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_COMPOSITION_EVENT_H_

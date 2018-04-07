@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SpeechSynthesis_h
-#define SpeechSynthesis_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_SYNTHESIS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_SYNTHESIS_H_
 
-#include "core/dom/ContextLifecycleObserver.h"
-#include "modules/EventTargetModules.h"
-#include "modules/ModulesExport.h"
-#include "modules/speech/SpeechSynthesisUtterance.h"
-#include "modules/speech/SpeechSynthesisVoice.h"
-#include "platform/heap/Handle.h"
-#include "platform/speech/PlatformSpeechSynthesisUtterance.h"
-#include "platform/speech/PlatformSpeechSynthesizer.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/speech/speech_synthesis_utterance.h"
+#include "third_party/blink/renderer/modules/speech/speech_synthesis_voice.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/speech/platform_speech_synthesis_utterance.h"
+#include "third_party/blink/renderer/platform/speech/platform_speech_synthesizer.h"
 
 namespace blink {
 
@@ -106,4 +106,4 @@ class MODULES_EXPORT SpeechSynthesis final
 
 }  // namespace blink
 
-#endif  // SpeechSynthesis_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_SYNTHESIS_H_

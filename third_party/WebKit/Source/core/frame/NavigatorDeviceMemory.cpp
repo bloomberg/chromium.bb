@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/NavigatorDeviceMemory.h"
+#include "third_party/blink/renderer/core/frame/navigator_device_memory.h"
 
-#include "third_party/WebKit/public/common/device_memory/approximated_device_memory.h"
+#include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
 
 namespace blink {
 

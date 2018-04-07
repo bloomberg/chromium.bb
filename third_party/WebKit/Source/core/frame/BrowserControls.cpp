@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/BrowserControls.h"
+#include "third_party/blink/renderer/core/frame/browser_controls.h"
 
 #include <algorithm>  // for std::min and std::max
 
-#include "core/frame/VisualViewport.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "platform/geometry/FloatSize.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
 
 namespace blink {
 

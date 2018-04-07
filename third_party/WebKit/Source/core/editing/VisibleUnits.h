@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef VisibleUnits_h
-#define VisibleUnits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_VISIBLE_UNITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_VISIBLE_UNITS_H_
 
-#include "core/CoreExport.h"
-#include "core/editing/EditingBoundary.h"
-#include "core/editing/Forward.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/text/TextDirection.h"
-#include "platform/wtf/text/icu/UnicodeIcu.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/editing_boundary.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/wtf/text/icu/unicode_icu.h"
 
 namespace blink {
 
@@ -331,4 +331,4 @@ PreviousRootInlineBoxCandidatePosition(Node*,
 
 }  // namespace blink
 
-#endif  // VisibleUnits_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_VISIBLE_UNITS_H_

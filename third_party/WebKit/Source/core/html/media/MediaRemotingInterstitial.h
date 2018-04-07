@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaRemotingInterstitial_h
-#define MediaRemotingInterstitial_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_MEDIA_REMOTING_INTERSTITIAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_MEDIA_REMOTING_INTERSTITIAL_H_
 
-#include "core/html/HTMLDivElement.h"
-#include "platform/Timer.h"
-#include "public/platform/WebLocalizedString.h"
+#include "third_party/blink/public/platform/web_localized_string.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class MediaRemotingInterstitial final : public HTMLDivElement {
 
 }  // namespace blink
 
-#endif  // MediaRemotingInterstitial_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_MEDIA_REMOTING_INTERSTITIAL_H_

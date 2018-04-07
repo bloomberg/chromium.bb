@@ -18,12 +18,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef TableLayoutAlgorithmFixed_h
-#define TableLayoutAlgorithmFixed_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TABLE_LAYOUT_ALGORITHM_FIXED_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TABLE_LAYOUT_ALGORITHM_FIXED_H_
 
-#include "core/layout/TableLayoutAlgorithm.h"
-#include "platform/Length.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/layout/table_layout_algorithm.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class TableLayoutAlgorithmFixed final : public TableLayoutAlgorithm {
 
 }  // namespace blink
 
-#endif  // TableLayoutAlgorithmFixed_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TABLE_LAYOUT_ALGORITHM_FIXED_H_

@@ -26,7 +26,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/network/mime/ContentType.h"
+#include "third_party/blink/renderer/platform/network/mime/content_type.h"
 
 namespace blink {
 

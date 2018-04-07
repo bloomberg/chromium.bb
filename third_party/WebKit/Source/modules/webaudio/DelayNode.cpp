@@ -23,17 +23,17 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/DelayNode.h"
+#include "third_party/blink/renderer/modules/webaudio/delay_node.h"
 
 #include <memory>
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/webaudio/AudioBasicProcessorHandler.h"
-#include "modules/webaudio/DelayOptions.h"
-#include "modules/webaudio/DelayProcessor.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_basic_processor_handler.h"
+#include "third_party/blink/renderer/modules/webaudio/delay_options.h"
+#include "third_party/blink/renderer/modules/webaudio/delay_processor.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

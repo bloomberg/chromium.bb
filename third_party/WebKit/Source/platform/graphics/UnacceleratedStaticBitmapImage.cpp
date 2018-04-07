@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/UnacceleratedStaticBitmapImage.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 
 #include "components/viz/common/gpu/context_provider.h"
-#include "platform/graphics/AcceleratedStaticBitmapImage.h"
-#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
-#include "public/platform/WebGraphicsContext3DProvider.h"
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {

@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebDocumentLoaderImpl_h
-#define WebDocumentLoaderImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_DOCUMENT_LOADER_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_DOCUMENT_LOADER_IMPL_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/frame/FrameTypes.h"
-#include "core/loader/DocumentLoader.h"
-#include "platform/exported/WrappedResourceRequest.h"
-#include "platform/exported/WrappedResourceResponse.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Vector.h"
-#include "public/web/WebDocumentLoader.h"
+#include "third_party/blink/public/web/web_document_loader.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/frame_types.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -117,4 +117,4 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
 
 }  // namespace blink
 
-#endif  // WebDocumentLoaderImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_DOCUMENT_LOADER_IMPL_H_

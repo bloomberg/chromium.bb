@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/ThreadedMessagingProxyBase.h"
+#include "third_party/blink/renderer/core/workers/threaded_messaging_proxy_base.h"
 
 #include "base/synchronization/waitable_event.h"
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/dom/Document.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/ThreadableLoadingContext.h"
-#include "core/loader/WorkerFetchContext.h"
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerInspectorProxy.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebWorkerFetchContext.h"
-#include "public/web/WebFrameClient.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_worker_fetch_context.h"
+#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
+#include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

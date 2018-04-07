@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebRTCRtpContributingSource_h
-#define WebRTCRtpContributingSource_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_CONTRIBUTING_SOURCE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_CONTRIBUTING_SOURCE_H_
 
-#include "WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 
@@ -26,4 +26,4 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpContributingSource {
 
 }  // namespace blink
 
-#endif  // WebRTCRtpContributingSource_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_CONTRIBUTING_SOURCE_H_

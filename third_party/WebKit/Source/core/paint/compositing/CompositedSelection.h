@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CompositedSelection_h
-#define CompositedSelection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITED_SELECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITED_SELECTION_H_
 
-#include "core/editing/SelectionType.h"
-#include "core/paint/compositing/CompositedSelectionBound.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/editing/selection_type.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_selection_bound.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ struct CompositedSelection {
 
 }  // namespace blink
 
-#endif  // CompositedSelection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITED_SELECTION_H_

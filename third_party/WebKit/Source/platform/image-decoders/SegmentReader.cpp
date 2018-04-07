@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/image-decoders/SegmentReader.h"
+#include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/SharedBuffer.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/ThreadingPrimitives.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRWBuffer.h"
 

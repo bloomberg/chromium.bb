@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InspectorMemoryAgent_h
-#define InspectorMemoryAgent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORMEMORYAGENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORMEMORYAGENT_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/protocol/Memory.h"
-#include "core/leak_detector/BlinkLeakDetector.h"
-#include "core/leak_detector/BlinkLeakDetectorClient.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Memory.h"
+#include "third_party/blink/renderer/core/leak_detector/blink_leak_detector.h"
+#include "third_party/blink/renderer/core/leak_detector/blink_leak_detector_client.h"
 
 namespace blink {
 

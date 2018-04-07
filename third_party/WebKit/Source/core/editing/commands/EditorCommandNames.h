@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EditorCommandNames_h
-#define EditorCommandNames_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_EDITOR_COMMAND_NAMES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_EDITOR_COMMAND_NAMES_H_
 
 namespace blink {
 
@@ -152,4 +152,4 @@ namespace blink {
 
 }  // namespace blink
 
-#endif  // EditorCommandNames_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_EDITOR_COMMAND_NAMES_H_

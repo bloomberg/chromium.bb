@@ -19,9 +19,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/CSSRuleList.h"
+#include "third_party/blink/renderer/core/css/css_rule_list.h"
 
-#include "core/css/CSSRule.h"
+#include "third_party/blink/renderer/core/css/css_rule.h"
 
 namespace blink {
 

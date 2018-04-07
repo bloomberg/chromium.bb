@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLSlotElement_h
-#define HTMLSlotElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_SLOT_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_SLOT_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -242,4 +242,4 @@ inline HTMLSlotElement* ToHTMLSlotElementIfSupportsAssignmentOrNull(
 
 }  // namespace blink
 
-#endif  // HTMLSlotElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_SLOT_ELEMENT_H_

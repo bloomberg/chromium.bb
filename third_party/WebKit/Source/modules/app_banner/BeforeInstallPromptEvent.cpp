@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/app_banner/BeforeInstallPromptEvent.h"
+#include "third_party/blink/renderer/modules/app_banner/before_install_prompt_event.h"
 
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/UseCounter.h"
-#include "modules/app_banner/BeforeInstallPromptEventInit.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/modules/app_banner/before_install_prompt_event_init.h"
 
 namespace blink {
 

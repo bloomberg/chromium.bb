@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/PODArena.h"
+#include "third_party/blink/renderer/platform/pod_arena.h"
 
 #include <algorithm>
 #include "base/memory/scoped_refptr.h"
-#include "platform/testing/ArenaTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/testing/arena_test_helpers.h"
 
 namespace blink {
 

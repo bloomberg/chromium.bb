@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SmartClip_h
-#define SmartClip_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SMART_CLIP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SMART_CLIP_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Node.h"
-#include "core/frame/LocalFrame.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -85,4 +85,4 @@ class CORE_EXPORT SmartClip {
 
 }  // namespace blink
 
-#endif  // SmartClip_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SMART_CLIP_H_

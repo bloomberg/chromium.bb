@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigatorVR_h
-#define NavigatorVR_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VR_NAVIGATOR_VR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_VR_NAVIGATOR_VR_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/Navigator.h"
-#include "core/page/FocusChangedObserver.h"
-#include "modules/ModulesExport.h"
-#include "modules/vr/VRDisplay.h"
-#include "modules/vr/VRDisplayEvent.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/page/focus_changed_observer.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/vr/vr_display.h"
+#include "third_party/blink/renderer/modules/vr/vr_display_event.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -90,4 +90,4 @@ class MODULES_EXPORT NavigatorVR final
 
 }  // namespace blink
 
-#endif  // NavigatorVR_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_VR_NAVIGATOR_VR_H_

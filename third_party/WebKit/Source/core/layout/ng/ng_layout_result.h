@@ -6,13 +6,13 @@
 #define NGLayoutResult_h
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_bfc_offset.h"
-#include "core/layout/ng/geometry/ng_margin_strut.h"
-#include "core/layout/ng/ng_out_of_flow_positioned_descendant.h"
-#include "core/layout/ng/ng_physical_fragment.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_descendant.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

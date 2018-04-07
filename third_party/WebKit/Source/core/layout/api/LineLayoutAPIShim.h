@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LineLayoutAPIShim_h
-#define LineLayoutAPIShim_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_API_SHIM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_API_SHIM_H_
 
-#include "core/layout/api/LineLayoutItem.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
 
 namespace blink {
 
@@ -26,4 +26,4 @@ class LineLayoutAPIShim {
 
 }  // namespace blink
 
-#endif  // LineLayoutAPIShim_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_API_SHIM_H_

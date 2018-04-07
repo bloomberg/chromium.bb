@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/LiveNodeListRegistry.h"
+#include "third_party/blink/renderer/core/dom/live_node_list_registry.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/NameNodeList.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/heap/Persistent.h"
-#include "platform/heap/ThreadState.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/name_node_list.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
 
 namespace blink {
 namespace {

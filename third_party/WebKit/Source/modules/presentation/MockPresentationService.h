@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockPresentationService_h
-#define MockPresentationService_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_MOCK_PRESENTATION_SERVICE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_MOCK_PRESENTATION_SERVICE_H_
 
-#include "public/platform/modules/presentation/presentation.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/platform/modules/presentation/presentation.mojom-blink.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ class MockPresentationService : public mojom::blink::PresentationService {
 
 }  // namespace blink
 
-#endif  // MockPresentationService_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_MOCK_PRESENTATION_SERVICE_H_

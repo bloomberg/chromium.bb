@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/HostsUsingFeatures.h"
+#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/page/Page.h"
-#include "platform/bindings/ScriptState.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

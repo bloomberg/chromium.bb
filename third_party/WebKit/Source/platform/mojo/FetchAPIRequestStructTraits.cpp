@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/mojo/FetchAPIRequestStructTraits.h"
+#include "third_party/blink/renderer/platform/mojo/fetch_api_request_struct_traits.h"
 
 #include "mojo/public/cpp/bindings/map_traits_wtf_hash_map.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
-#include "platform/blob/BlobData.h"
-#include "platform/mojo/KURLStructTraits.h"
-#include "platform/mojo/ReferrerStructTraits.h"
-#include "platform/weborigin/Referrer.h"
-#include "public/platform/WebReferrerPolicy.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/mojo/kurl_struct_traits.h"
+#include "third_party/blink/renderer/platform/mojo/referrer_struct_traits.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
 
 namespace mojo {
 

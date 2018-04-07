@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/peerconnection/RTCTrackEvent.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_track_event.h"
 
-#include "modules/mediastream/MediaStream.h"
-#include "modules/mediastream/MediaStreamTrack.h"
-#include "modules/peerconnection/RTCRtpReceiver.h"
-#include "modules/peerconnection/RTCTrackEventInit.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_track_event_init.h"
 
 namespace blink {
 

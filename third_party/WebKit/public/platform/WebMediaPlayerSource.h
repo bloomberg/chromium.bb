@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebMediaPlayerSource_h
-#define WebMediaPlayerSource_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_SOURCE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_SOURCE_H_
 
-#include "WebCommon.h"
-#include "WebMediaStream.h"
-#include "WebURL.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 namespace blink {
 
@@ -31,4 +31,4 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerSource {
 
 }  // namespace blink
 
-#endif  // WebMediaPlayerSource_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_SOURCE_H_

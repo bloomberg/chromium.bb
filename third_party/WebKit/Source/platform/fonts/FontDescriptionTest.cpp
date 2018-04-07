@@ -23,10 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/FontDescription.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
 
-#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

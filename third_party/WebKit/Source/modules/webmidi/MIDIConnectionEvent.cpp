@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webmidi/MIDIConnectionEvent.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_connection_event.h"
 
-#include "modules/webmidi/MIDIConnectionEventInit.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_connection_event_init.h"
 
 namespace blink {
 

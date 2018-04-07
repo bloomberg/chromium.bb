@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8EventTarget.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
 
-#include "bindings/core/v8/V8Window.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/UseCounter.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 
 namespace blink {
 

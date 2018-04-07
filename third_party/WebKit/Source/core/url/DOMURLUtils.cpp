@@ -24,10 +24,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/url/DOMURLUtils.h"
+#include "third_party/blink/renderer/core/url/dom_url_utils.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "platform/weborigin/KnownPorts.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 
 namespace blink {
 

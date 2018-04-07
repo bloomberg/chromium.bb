@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebFontTypefaceFactory_h
-#define WebFontTypefaceFactory_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_WEB_FONT_TYPEFACE_FACTORY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_WEB_FONT_TYPEFACE_FACTORY_H_
 
 #include "third_party/skia/include/ports/SkFontMgr.h"
 
@@ -48,4 +48,4 @@ class WebFontTypefaceFactory {
 
 }  // namespace blink
 
-#endif  // WebFontTypefaceFactory_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_WEB_FONT_TYPEFACE_FACTORY_H_

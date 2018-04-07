@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/values.h"
-#include "third_party/WebKit/public/platform/WebCrypto.h"
+#include "third_party/blink/public/platform/web_crypto.h"
 
 namespace webcrypto {
 

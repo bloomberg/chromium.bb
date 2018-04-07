@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/storage/StorageEvent.h"
+#include "third_party/blink/renderer/modules/storage/storage_event.h"
 
-#include "modules/EventModules.h"
-#include "modules/storage/Storage.h"
-#include "modules/storage/StorageEventInit.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/storage/storage.h"
+#include "third_party/blink/renderer/modules/storage/storage_event_init.h"
 
 namespace blink {
 

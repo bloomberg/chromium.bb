@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/netinfo/WorkerNavigatorNetworkInformation.h"
+#include "third_party/blink/renderer/modules/netinfo/worker_navigator_network_information.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/workers/WorkerNavigator.h"
-#include "modules/netinfo/NetworkInformation.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/workers/worker_navigator.h"
+#include "third_party/blink/renderer/modules/netinfo/network_information.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CustomElementDefinition_h
-#define CustomElementDefinition_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_DEFINITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_DEFINITION_H_
 
 #include "base/macros.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/CoreExport.h"
-#include "core/dom/CreateElementFlags.h"
-#include "core/html/custom/CustomElementDescriptor.h"
-#include "platform/bindings/ScriptWrappable.h"  // For TraceWrapperBase
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/create_element_flags.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_descriptor.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"  // For TraceWrapperBase
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
 
@@ -138,4 +138,4 @@ class CORE_EXPORT CustomElementDefinition
 
 }  // namespace blink
 
-#endif  // CustomElementDefinition_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_DEFINITION_H_

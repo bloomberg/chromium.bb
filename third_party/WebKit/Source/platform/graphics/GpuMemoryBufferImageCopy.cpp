@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/GpuMemoryBufferImageCopy.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
-#include "platform/graphics/GraphicsTypes3D.h"
-#include "platform/graphics/Image.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebGraphicsContext3DProvider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/gpu_memory_buffer_image_copy.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types_3d.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 
-#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 

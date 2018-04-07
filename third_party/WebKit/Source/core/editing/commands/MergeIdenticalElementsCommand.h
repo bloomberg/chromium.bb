@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MergeIdenticalElementsCommand_h
-#define MergeIdenticalElementsCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_MERGE_IDENTICAL_ELEMENTS_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_MERGE_IDENTICAL_ELEMENTS_COMMAND_H_
 
-#include "core/editing/commands/EditCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/edit_command.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class MergeIdenticalElementsCommand final : public SimpleEditCommand {
 
 }  // namespace blink
 
-#endif  // MergeIdenticalElementsCommand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_MERGE_IDENTICAL_ELEMENTS_COMMAND_H_

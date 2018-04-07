@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLTemplateElement_h
-#define HTMLTemplateElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TEMPLATE_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TEMPLATE_ELEMENT_H_
 
-#include "core/html/HTMLElement.h"
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class CORE_EXPORT HTMLTemplateElement final : public HTMLElement {
 
 }  // namespace blink
 
-#endif  // HTMLTemplateElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TEMPLATE_ELEMENT_H_

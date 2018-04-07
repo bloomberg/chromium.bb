@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PerformanceNavigationTiming_h
-#define PerformanceNavigationTiming_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_NAVIGATION_TIMING_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_NAVIGATION_TIMING_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/DOMHighResTimeStamp.h"
-#include "core/loader/FrameLoaderTypes.h"
-#include "core/timing/PerformanceResourceTiming.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/timing/performance_resource_timing.h"
 
 namespace blink {
 
@@ -88,4 +88,4 @@ class CORE_EXPORT PerformanceNavigationTiming final
 };
 }  // namespace blink
 
-#endif  // PerformanceNavigationTiming_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_NAVIGATION_TIMING_H_

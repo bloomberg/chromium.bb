@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/cookie_store/GlobalCookieStore.h"
+#include "third_party/blink/renderer/modules/cookie_store/global_cookie_store.h"
 
 #include <utility>
 
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/workers/WorkerThread.h"
-#include "modules/cookie_store/CookieStore.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/modules/cookie_store/cookie_store.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/compositing/PaintChunksToCcLayer.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
 
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "cc/paint/render_surface_filters.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/compositing/ChunkToLayerMapper.h"
-#include "platform/graphics/paint/DisplayItemList.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
-#include "platform/graphics/paint/GeometryMapper.h"
-#include "platform/graphics/paint/PaintChunk.h"
-#include "platform/graphics/paint/PropertyTreeState.h"
-#include "platform/graphics/paint/RasterInvalidationTracking.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/chunk_to_layer_mapper.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_list.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
+#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
+#include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 
 namespace blink {
 

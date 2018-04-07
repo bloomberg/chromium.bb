@@ -17,15 +17,15 @@
  *
  */
 
-#include "core/layout/LayoutSlider.h"
+#include "third_party/blink/renderer/core/layout/layout_slider.h"
 
-#include "core/dom/ShadowRoot.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/forms/SliderThumbElement.h"
-#include "core/html/shadow/ShadowElementNames.h"
-#include "core/input_type_names.h"
-#include "core/layout/LayoutSliderThumb.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/slider_thumb_element.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/layout/layout_slider_thumb.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

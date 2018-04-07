@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ToV8ForCore.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 
-#include "bindings/core/v8/WindowProxy.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
-#include "platform/bindings/RuntimeCallStats.h"
+#include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/frame/dom_window.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 
 namespace blink {
 

@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimatableValue_h
-#define AnimatableValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_ANIMATABLE_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_ANIMATABLE_VALUE_H_
 
-#include "core/CoreExport.h"
-#include "core/css/CSSValue.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -93,4 +93,4 @@ class CORE_EXPORT AnimatableValue : public RefCounted<AnimatableValue> {
 
 }  // namespace blink
 
-#endif  // AnimatableValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_ANIMATABLE_VALUE_H_

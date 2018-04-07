@@ -24,17 +24,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SelectorQuery_h
-#define SelectorQuery_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_SELECTOR_QUERY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_SELECTOR_QUERY_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/css/CSSSelectorList.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/core/css/css_selector_list.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutTreeBuilderTraversal_h
-#define LayoutTreeBuilderTraversal_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_LAYOUT_TREE_BUILDER_TRAVERSAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_LAYOUT_TREE_BUILDER_TRAVERSAL_H_
 
 #include <cstdint>
-#include "core/CoreExport.h"
-#include "core/dom/Element.h"
-#include "core/dom/V0InsertionPoint.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 
 namespace blink {
 

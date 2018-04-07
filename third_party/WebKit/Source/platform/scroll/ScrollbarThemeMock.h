@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollbarThemeMock_h
-#define ScrollbarThemeMock_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLLBAR_THEME_MOCK_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLLBAR_THEME_MOCK_H_
 
-#include "platform/scroll/ScrollbarTheme.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class PLATFORM_EXPORT ScrollbarThemeMock : public ScrollbarTheme {
 };
 
 }  // namespace blink
-#endif  // ScrollbarThemeMock_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLLBAR_THEME_MOCK_H_

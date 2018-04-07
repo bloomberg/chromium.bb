@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/wtf/text/IntegerToStringConversion.h"
+#include "third_party/blink/renderer/platform/wtf/text/integer_to_string_conversion.h"
 
-#include "platform/wtf/text/StringView.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace WTF {
 

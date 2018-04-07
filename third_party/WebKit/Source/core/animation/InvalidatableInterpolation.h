@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InvalidatableInterpolation_h
-#define InvalidatableInterpolation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INVALIDATABLE_INTERPOLATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INVALIDATABLE_INTERPOLATION_H_
 
-#include "core/animation/Interpolation.h"
-#include "core/animation/InterpolationType.h"
-#include "core/animation/InterpolationTypesMap.h"
-#include "core/animation/PrimitiveInterpolation.h"
-#include "core/animation/TypedInterpolationValue.h"
 #include <memory>
+#include "third_party/blink/renderer/core/animation/interpolation.h"
+#include "third_party/blink/renderer/core/animation/interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/interpolation_types_map.h"
+#include "third_party/blink/renderer/core/animation/primitive_interpolation.h"
+#include "third_party/blink/renderer/core/animation/typed_interpolation_value.h"
 
 namespace blink {
 
@@ -109,4 +109,4 @@ DEFINE_TYPE_CASTS(InvalidatableInterpolation,
 
 }  // namespace blink
 
-#endif  // InvalidatableInterpolation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INVALIDATABLE_INTERPOLATION_H_

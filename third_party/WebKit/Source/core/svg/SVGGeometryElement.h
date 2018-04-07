@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGGeometryElement_h
-#define SVGGeometryElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_GEOMETRY_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_GEOMETRY_ELEMENT_H_
 
-#include "core/svg/SVGAnimatedNumber.h"
-#include "core/svg/SVGGraphicsElement.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_number.h"
+#include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
 
 namespace blink {
 
@@ -87,4 +87,4 @@ DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGeometryElement);
 
 }  // namespace blink
 
-#endif  // SVGGeometryElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_GEOMETRY_ELEMENT_H_

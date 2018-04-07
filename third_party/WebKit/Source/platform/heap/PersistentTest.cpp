@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/heap/Persistent.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 #include <memory>
-#include "platform/CrossThreadFunctional.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/HeapTestUtilities.h"
-#include "platform/wtf/Functional.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 namespace {

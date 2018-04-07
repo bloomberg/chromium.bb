@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/webkit_padding_before.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/webkit_padding_before.h"
 
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/parser/CSSParserTokenRange.h"
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/style_property_shorthand.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
 namespace CSSLonghand {

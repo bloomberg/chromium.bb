@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebPrerender_h
-#define WebPrerender_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PRERENDER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PRERENDER_H_
 
-#include "WebCommon.h"
-#include "WebPrivatePtr.h"
-#include "WebReferrerPolicy.h"
-#include "WebString.h"
-#include "WebURL.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 namespace blink {
 
@@ -92,4 +92,4 @@ class WebPrerender {
 
 }  // namespace blink
 
-#endif  // WebPrerender_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PRERENDER_H_

@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutRubyText_h
-#define LayoutRubyText_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_RUBY_TEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_RUBY_TEXT_H_
 
-#include "core/layout/LayoutBlockFlow.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutRubyText, IsRubyText());
 
 }  // namespace blink
 
-#endif  // LayoutRubyText_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_RUBY_TEXT_H_

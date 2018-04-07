@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DocumentWriteIntervention_h
-#define DocumentWriteIntervention_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_DOCUMENT_WRITE_INTERVENTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_DOCUMENT_WRITE_INTERVENTION_H_
 
-#include "platform/loader/fetch/FetchParameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 
 // document.write() intervention may
 // - block network loading of a script inserted by document.write() and
@@ -43,4 +43,4 @@ void PossiblyFetchBlockedDocWriteScript(const Resource*,
 
 }  // namespace blink
 
-#endif  // DocumentWriteIntervention_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_DOCUMENT_WRITE_INTERVENTION_H_

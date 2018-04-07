@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebFormElementObserverImpl_h
-#define WebFormElementObserverImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_FORM_ELEMENT_OBSERVER_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_FORM_ELEMENT_OBSERVER_IMPL_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/heap/Member.h"
-#include "platform/heap/SelfKeepAlive.h"
-#include "platform/wtf/Compiler.h"
-#include "public/web/modules/autofill/WebFormElementObserver.h"
+#include "third_party/blink/public/web/modules/autofill/web_form_element_observer.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 
@@ -44,4 +44,4 @@ class CORE_EXPORT WebFormElementObserverImpl final
 
 }  // namespace blink
 
-#endif  // WebFormElementObserverImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_FORM_ELEMENT_OBSERVER_IMPL_H_

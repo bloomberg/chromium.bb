@@ -26,15 +26,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AudioBuffer_h
-#define AudioBuffer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_BUFFER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_BUFFER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/typed_arrays/ArrayBufferViewHelpers.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "modules/ModulesExport.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -132,4 +132,4 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // AudioBuffer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_BUFFER_H_

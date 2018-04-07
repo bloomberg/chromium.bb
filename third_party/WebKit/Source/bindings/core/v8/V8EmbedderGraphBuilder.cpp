@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/V8EmbedderGraphBuilder.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_embedder_graph_builder.h"
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/V8GCController.h"
-#include "bindings/core/v8/V8Node.h"
-#include "core/dom/Document.h"
-#include "platform/bindings/DOMWrapperMap.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/ScriptWrappableVisitor.h"
-#include "platform/bindings/WrapperTypeInfo.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_map.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 
 namespace blink {
 

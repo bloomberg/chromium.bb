@@ -19,12 +19,12 @@
  *
  */
 
-#include "platform/text/TextBreakIteratorInternalICU.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator_internal_icu.h"
 
-#include "platform/Language.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

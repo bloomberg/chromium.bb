@@ -10,8 +10,8 @@
 #include "content/public/renderer/render_thread.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 SpellCheckPanel::SpellCheckPanel(
     content::RenderFrame* render_frame,

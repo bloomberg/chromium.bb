@@ -22,11 +22,11 @@
  *
  */
 
-#ifndef MatrixTransformOperation_h
-#define MatrixTransformOperation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_MATRIX_TRANSFORM_OPERATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_MATRIX_TRANSFORM_OPERATION_H_
 
-#include "platform/transforms/TransformOperation.h"
-#include "platform/transforms/TransformationMatrix.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
 
@@ -106,4 +106,4 @@ DEFINE_TRANSFORM_TYPE_CASTS(MatrixTransformOperation);
 
 }  // namespace blink
 
-#endif  // MatrixTransformOperation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_MATRIX_TRANSFORM_OPERATION_H_

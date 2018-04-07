@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ServiceWorkerGlobalScopeClient_h
-#define ServiceWorkerGlobalScopeClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_GLOBAL_SCOPE_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_GLOBAL_SCOPE_CLIENT_H_
 
 #include <memory>
-#include "core/messaging/MessagePort.h"
-#include "core/workers/WorkerClients.h"
-#include "modules/ModulesExport.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerClientsClaimCallbacks.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerStreamHandle.h"
-#include "third_party/WebKit/public/common/message_port/transferable_message.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
+#include "third_party/blink/public/common/message_port/transferable_message.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_clients_claim_callbacks.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_clients_info.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_skip_waiting_callbacks.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_stream_handle.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
+#include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -166,4 +166,4 @@ MODULES_EXPORT void ProvideServiceWorkerGlobalScopeClientToWorker(
 
 }  // namespace blink
 
-#endif  // ServiceWorkerGlobalScopeClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_GLOBAL_SCOPE_CLIENT_H_

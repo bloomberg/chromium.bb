@@ -7,8 +7,8 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop.h"
-#include "platform/PlatformExport.h"
-#include "public/platform/scheduler/child/webthread_base.h"
+#include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 class WebScheduler;

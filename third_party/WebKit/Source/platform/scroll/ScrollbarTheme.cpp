@@ -23,30 +23,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/scroll/ScrollbarTheme.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
 #include "build/build_config.h"
-#include "platform/graphics/Color.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/paint/CompositingRecorder.h"
-#include "platform/graphics/paint/CullRect.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/scroll/Scrollbar.h"
-#include "platform/scroll/ScrollbarThemeMock.h"
-#include "platform/scroll/ScrollbarThemeOverlayMock.h"
-#include "platform/wtf/Optional.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebMouseEvent.h"
-#include "public/platform/WebPoint.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebScrollbarBehavior.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_scrollbar_behavior.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/paint/compositing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_mock.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_overlay_mock.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 #if !defined(OS_MACOSX)
-#include "public/platform/WebThemeEngine.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
 #endif
 
 namespace blink {

@@ -26,10 +26,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/indexeddb/IDBEventDispatcher.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_event_dispatcher.h"
 
-#include "modules/EventModules.h"
-#include "modules/EventTargetModules.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
 
 namespace blink {
 

@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebRTCSessionDescription.h"
+#include "third_party/blink/public/platform/web_rtc_session_description.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/RefCounted.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 

@@ -13,7 +13,7 @@
 #include "gin/arguments.h"
 #include "gin/function_template.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/blink/public/web/blink.h"
 #include "v8/include/v8.h"
 
 namespace dom_distiller {

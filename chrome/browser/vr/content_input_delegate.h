@@ -14,7 +14,7 @@
 #include "chrome/browser/vr/macros.h"
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/text_edit_action.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 
 namespace blink {
 class WebGestureEvent;

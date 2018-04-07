@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/NodeListsNodeData.h"
+#include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 
-#include "core/dom/LiveNodeList.h"
+#include "third_party/blink/renderer/core/dom/live_node_list.h"
 
 namespace blink {
 

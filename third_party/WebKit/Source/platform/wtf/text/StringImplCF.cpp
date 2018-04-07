@@ -18,16 +18,16 @@
  *
  */
 
-#include "platform/wtf/text/StringImpl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX)
 
-#include "platform/wtf/RetainPtr.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/allocator/Partitions.h"
 #include <CoreFoundation/CoreFoundation.h>
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace WTF {
 

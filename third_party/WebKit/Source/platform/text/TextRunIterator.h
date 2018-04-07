@@ -26,11 +26,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef TextRunIterator_h
-#define TextRunIterator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_RUN_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_RUN_ITERATOR_H_
 
-#include "platform/text/TextRun.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -72,4 +72,4 @@ class TextRunIterator {
 
 }  // namespace blink
 
-#endif  // TextRunIterator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_RUN_ITERATOR_H_

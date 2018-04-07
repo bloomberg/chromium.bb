@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/script/ModuleMap.h"
+#include "third_party/blink/renderer/core/script/module_map.h"
 
-#include "core/loader/modulescript/ModuleScriptFetchRequest.h"
-#include "core/loader/modulescript/ModuleScriptLoaderClient.h"
-#include "core/script/Modulator.h"
-#include "core/script/ModuleScript.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_client.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/script/module_script.h"
 
 namespace blink {
 

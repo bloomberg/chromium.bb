@@ -22,7 +22,7 @@ include_rules = [
     "+media/base/media_switches.h",
     "+media/base/video_frame.h",
     "+services/viz/public/interfaces",
-    "+public/web/WebSettings.h",
+    "+third_party/blink/public/web/web_settings.h",
 ]
 
 specific_include_rules = {

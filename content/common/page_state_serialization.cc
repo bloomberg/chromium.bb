@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "third_party/WebKit/public/platform/WebHistoryScrollRestorationType.h"
+#include "third_party/blink/public/platform/web_history_scroll_restoration_type.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"

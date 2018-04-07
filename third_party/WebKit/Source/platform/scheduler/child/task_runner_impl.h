@@ -12,8 +12,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "platform/PlatformExport.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 namespace scheduler {

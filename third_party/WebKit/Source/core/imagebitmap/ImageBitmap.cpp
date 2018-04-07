@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/imagebitmap/ImageBitmap.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "core/html/canvas/HTMLCanvasElement.h"
-#include "core/html/canvas/ImageData.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/offscreencanvas/OffscreenCanvas.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/graphics/CanvasColorParams.h"
-#include "platform/graphics/CanvasResourceProvider.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/image-decoders/ImageDecoder.h"
-#include "platform/threading/BackgroundTaskRunner.h"
-#include "platform/wtf/CheckedNumeric.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/html/canvas/image_data.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/blink/renderer/platform/threading/background_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"

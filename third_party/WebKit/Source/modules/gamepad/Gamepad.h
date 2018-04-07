@@ -23,17 +23,17 @@
  * DAMAGE.
  */
 
-#ifndef Gamepad_h
-#define Gamepad_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_H_
 
 #include "device/gamepad/public/cpp/gamepad.h"
-#include "modules/gamepad/GamepadButton.h"
-#include "modules/gamepad/GamepadHapticActuator.h"
-#include "modules/gamepad/GamepadPose.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad_button.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad_haptic_actuator.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad_pose.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -105,4 +105,4 @@ class Gamepad final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // Gamepad_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_H_

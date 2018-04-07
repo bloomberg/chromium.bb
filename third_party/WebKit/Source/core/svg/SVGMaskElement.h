@@ -17,15 +17,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGMaskElement_h
-#define SVGMaskElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_MASK_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_MASK_ELEMENT_H_
 
-#include "core/svg/SVGAnimatedEnumeration.h"
-#include "core/svg/SVGAnimatedLength.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGTests.h"
-#include "core/svg/SVGUnitTypes.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_enumeration.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_tests.h"
+#include "third_party/blink/renderer/core/svg/svg_unit_types.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class SVGMaskElement final : public SVGElement, public SVGTests {
 
 }  // namespace blink
 
-#endif  // SVGMaskElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_MASK_ELEMENT_H_

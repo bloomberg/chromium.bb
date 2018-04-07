@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BidiTextRun_h
-#define BidiTextRun_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_TEXT_RUN_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_TEXT_RUN_H_
 
-#include "platform/text/TextDirection.h"
-#include "platform/text/TextRun.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ TextRunWithDirectionality(const String& value,
 
 }  // namespace blink
 
-#endif  // BidiTextRun_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_TEXT_RUN_H_

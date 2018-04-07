@@ -24,8 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_DynamicAnnotations_h
-#define WTF_DynamicAnnotations_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DYNAMIC_ANNOTATIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DYNAMIC_ANNOTATIONS_H_
 
 /* This file defines dynamic annotations for use with dynamic analysis
  * tool such as ThreadSanitizer, Valgrind, etc.
@@ -49,7 +49,7 @@
  * information.
  */
 
-#include "platform/wtf/WTFExport.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 #if defined(WTF_USE_DYNAMIC_ANNOTATIONS)
 /* Tell data race detector that we're not interested in reports on the given
@@ -110,4 +110,4 @@ WTF_EXPORT void WTFAnnotateHappensAfter(const char* file,
 #define WTF_ANNOTATE_HAPPENS_AFTER(address)
 #endif  // defined(WTF_USE_DYNAMIC_ANNOTATIONS)
 
-#endif  // WTF_DynamicAnnotations_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DYNAMIC_ANNOTATIONS_H_

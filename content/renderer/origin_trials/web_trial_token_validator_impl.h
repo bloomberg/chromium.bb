@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebTrialTokenValidator.h"
+#include "third_party/blink/public/platform/web_trial_token_validator.h"
 
 namespace blink {
 class TrialTokenValidator;

@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PathTraversalState_h
-#define PathTraversalState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PATH_TRAVERSAL_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PATH_TRAVERSAL_STATE_H_
 
 #include "base/macros.h"
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

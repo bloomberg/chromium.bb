@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/xml/XPathFunctions.h"
+#include "third_party/blink/renderer/core/xml/xpath_functions.h"
 
-#include "core/dom/Document.h"
-#include "core/xml/XPathExpressionNode.h"  // EvaluationContext
-#include "core/xml/XPathPredicate.h"       // Number, StringExpression
-#include "core/xml/XPathValue.h"
-#include "platform/heap/Handle.h"  // HeapVector, Member, etc.
-#include "platform/wtf/Allocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/xml/xpath_expression_node.h"  // EvaluationContext
+#include "third_party/blink/renderer/core/xml/xpath_predicate.h"  // Number, StringExpression
+#include "third_party/blink/renderer/core/xml/xpath_value.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"  // HeapVector, Member, etc.
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 #include <cmath>
 #include <limits>

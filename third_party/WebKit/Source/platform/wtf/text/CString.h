@@ -24,17 +24,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CString_h
-#define CString_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_CSTRING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_CSTRING_H_
 
 #include <string.h>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/allocator/PartitionAllocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -117,4 +117,4 @@ WTF_EXPORT std::ostream& operator<<(std::ostream&, const CString&);
 
 using WTF::CString;
 
-#endif  // CString_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_CSTRING_H_

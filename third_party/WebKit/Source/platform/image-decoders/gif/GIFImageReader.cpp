@@ -72,13 +72,13 @@ or revised. This service is offered free of charge; please provide us with your
 mailing address.
 */
 
-#include "platform/image-decoders/gif/GIFImageReader.h"
+#include "third_party/blink/renderer/platform/image-decoders/gif/gif_image_reader.h"
 
 #include <string.h>
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
-#include "platform/image-decoders/FastSharedBufferReader.h"
+#include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
 
 namespace blink {
 

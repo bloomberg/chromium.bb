@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AutoplayPolicy_h
-#define AutoplayPolicy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_AUTOPLAY_POLICY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_AUTOPLAY_POLICY_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/ExceptionCode.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -160,4 +160,4 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
 
 }  // namespace blink
 
-#endif  // AutoplayPolicy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_AUTOPLAY_POLICY_H_

@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebCompositeAndReadbackAsyncCallback_h
-#define WebCompositeAndReadbackAsyncCallback_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_COMPOSITE_AND_READBACK_ASYNC_CALLBACK_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_COMPOSITE_AND_READBACK_ASYNC_CALLBACK_H_
 
 class SkBitmap;
 
@@ -37,4 +37,4 @@ class WebCompositeAndReadbackAsyncCallback {
 
 }  // namespace blink
 
-#endif  // WebCompositeAndReadbackAsyncCallback_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_COMPOSITE_AND_READBACK_ASYNC_CALLBACK_H_

@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScopedEventQueue_h
-#define ScopedEventQueue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_SCOPED_EVENT_QUEUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_SCOPED_EVENT_QUEUE_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/dom/events/Event.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -77,4 +77,4 @@ class EventQueueScope {
 
 }  // namespace blink
 
-#endif  // ScopedEventQueue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_SCOPED_EVENT_QUEUE_H_

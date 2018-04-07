@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/clipboard/DraggedIsolatedFileSystem.h"
+#include "third_party/blink/renderer/core/clipboard/dragged_isolated_file_system.h"
 
 namespace blink {
 

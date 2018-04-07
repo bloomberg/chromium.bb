@@ -21,12 +21,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/HTMLFrameElement.h"
+#include "third_party/blink/renderer/core/html/html_frame_element.h"
 
-#include "core/dom/ElementTraversal.h"
-#include "core/html/HTMLFrameSetElement.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutFrame.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/html/html_frame_set_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_frame.h"
 
 namespace blink {
 

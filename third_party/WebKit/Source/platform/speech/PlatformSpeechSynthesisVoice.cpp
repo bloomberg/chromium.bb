@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/speech/PlatformSpeechSynthesisVoice.h"
+#include "third_party/blink/renderer/platform/speech/platform_speech_synthesis_voice.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/scheduler/test/fake_renderer_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 namespace scheduler {

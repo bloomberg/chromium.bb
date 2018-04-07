@@ -26,13 +26,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/accessibility/AXSlider.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_slider.h"
 
-#include "core/dom/ShadowRoot.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/shadow/ShadowElementNames.h"
-#include "core/layout/LayoutObject.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 
 namespace blink {
 

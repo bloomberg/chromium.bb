@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGLCompressedTextureS3TCsRGB_h
-#define WebGLCompressedTextureS3TCsRGB_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_COMPRESSED_TEXTURE_S3TC_SRGB_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_COMPRESSED_TEXTURE_S3TC_SRGB_H_
 
-#include "modules/webgl/WebGLExtension.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_extension.h"
 
 namespace blink {
 
@@ -25,4 +25,4 @@ class WebGLCompressedTextureS3TCsRGB final : public WebGLExtension {
 
 }  // namespace blink
 
-#endif  // WebGLCompressedTextureS3TCsRGB_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_COMPRESSED_TEXTURE_S3TC_SRGB_H_

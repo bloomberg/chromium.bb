@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/network/NetworkUtils.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
 
 #include "net/base/data_url.h"
 #include "net/base/ip_address.h"
@@ -11,14 +11,14 @@
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_data_job.h"
-#include "platform/SharedBuffer.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/StringUTF8Adaptor.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/URLConversion.h"
-#include "public/platform/WebString.h"
-#include "third_party/WebKit/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/platform/url_conversion.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "url/gurl.h"
 
 namespace {

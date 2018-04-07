@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/track/TrackEvent.h"
+#include "third_party/blink/renderer/core/html/track/track_event.h"
 
-#include "bindings/core/v8/video_track_or_audio_track_or_text_track.h"
-#include "core/html/track/AudioTrack.h"
-#include "core/html/track/TextTrack.h"
-#include "core/html/track/VideoTrack.h"
-#include "public/platform/WebMediaPlayer.h"
+#include "third_party/blink/public/platform/web_media_player.h"
+#include "third_party/blink/renderer/bindings/core/v8/video_track_or_audio_track_or_text_track.h"
+#include "third_party/blink/renderer/core/html/track/audio_track.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
+#include "third_party/blink/renderer/core/html/track/video_track.h"
 
 namespace blink {
 

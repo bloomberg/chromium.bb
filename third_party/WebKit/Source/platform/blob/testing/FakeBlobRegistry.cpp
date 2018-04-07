@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/blob/testing/FakeBlobRegistry.h"
+#include "third_party/blink/renderer/platform/blob/testing/fake_blob_registry.h"
 
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "platform/blob/testing/FakeBlob.h"
+#include "third_party/blink/renderer/platform/blob/testing/fake_blob.h"
 
 namespace blink {
 

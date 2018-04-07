@@ -23,9 +23,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/exported/WebScrollbarThemeClientImpl.h"
+#include "third_party/blink/renderer/platform/exported/web_scrollbar_theme_client_impl.h"
 
-#include "platform/scroll/ScrollbarTheme.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
 namespace blink {
 

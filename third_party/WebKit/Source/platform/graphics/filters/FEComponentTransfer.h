@@ -20,11 +20,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef FEComponentTransfer_h
-#define FEComponentTransfer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_COMPONENT_TRANSFER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_COMPONENT_TRANSFER_H_
 
-#include "platform/graphics/filters/FilterEffect.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -93,4 +93,4 @@ class PLATFORM_EXPORT FEComponentTransfer final : public FilterEffect {
 
 }  // namespace blink
 
-#endif  // FEComponentTransfer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_COMPONENT_TRANSFER_H_

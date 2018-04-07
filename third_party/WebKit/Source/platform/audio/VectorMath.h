@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#ifndef VectorMath_h
-#define VectorMath_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_VECTOR_MATH_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_VECTOR_MATH_H_
 
 #include <cstddef>
 
-#include "platform/PlatformExport.h"
-#include "platform/audio/AudioArray.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 // Defines the interface for several vector math functions whose implementation
 // will ideally be optimized.
@@ -144,4 +144,4 @@ PLATFORM_EXPORT void Vclip(const float* source_p,
 }  // namespace VectorMath
 }  // namespace blink
 
-#endif  // VectorMath_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_VECTOR_MATH_H_

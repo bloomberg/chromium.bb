@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ColorSpaceProfileData_h
-#define ColorSpaceProfileData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_SPACE_PROFILE_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_SPACE_PROFILE_DATA_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -15,4 +15,4 @@ PLATFORM_EXPORT void Bt601ColorProfileData(Vector<char>& data);
 
 }  // namespace blink
 
-#endif  // ColorSpaceProfileData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_SPACE_PROFILE_DATA_H_

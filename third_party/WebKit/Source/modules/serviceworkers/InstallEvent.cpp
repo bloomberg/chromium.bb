@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/serviceworkers/InstallEvent.h"
+#include "third_party/blink/renderer/modules/serviceworkers/install_event.h"
 
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
-#include "platform/bindings/ScriptState.h"
-#include "public/platform/WebSecurityOrigin.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_client.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

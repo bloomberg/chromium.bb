@@ -5,8 +5,8 @@
 #include "content/renderer/presentation/presentation_dispatcher.h"
 
 #include "content/public/renderer/render_frame.h"
-#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationReceiver.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/platform/modules/presentation/web_presentation_receiver.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {
 

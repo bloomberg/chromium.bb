@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DeathAwareScriptWrappable_h
-#define DeathAwareScriptWrappable_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_DEATH_AWARE_SCRIPT_WRAPPABLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_DEATH_AWARE_SCRIPT_WRAPPABLE_H_
 
 #include <signal.h>
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Heap.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -79,4 +79,4 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // DeathAwareScriptWrappable_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_DEATH_AWARE_SCRIPT_WRAPPABLE_H_

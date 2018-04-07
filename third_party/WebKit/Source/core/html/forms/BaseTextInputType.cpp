@@ -21,13 +21,13 @@
  *
  */
 
-#include "core/html/forms/BaseTextInputType.h"
+#include "third_party/blink/renderer/core/html/forms/base_text_input_type.h"
 
-#include "bindings/core/v8/ScriptRegexp.h"
-#include "core/dom/Document.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html_names.h"
-#include "core/inspector/ConsoleMessage.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 
 namespace blink {
 

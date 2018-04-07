@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/InlineBoxPosition.h"
+#include "third_party/blink/renderer/core/editing/inline_box_position.h"
 
-#include "core/editing/Position.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/layout/line/InlineTextBox.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 
 namespace blink {
 

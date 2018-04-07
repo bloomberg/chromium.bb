@@ -2,36 +2,36 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("device_orientation") {
   sources = [
-    "DOMWindowDeviceMotion.h",
-    "DOMWindowDeviceOrientation.h",
-    "DeviceAcceleration.cpp",
-    "DeviceAcceleration.h",
-    "DeviceMotionController.cpp",
-    "DeviceMotionController.h",
-    "DeviceMotionData.cpp",
-    "DeviceMotionData.h",
-    "DeviceMotionDispatcher.cpp",
-    "DeviceMotionDispatcher.h",
-    "DeviceMotionEvent.cpp",
-    "DeviceMotionEvent.h",
-    "DeviceOrientationAbsoluteController.cpp",
-    "DeviceOrientationAbsoluteController.h",
-    "DeviceOrientationController.cpp",
-    "DeviceOrientationController.h",
-    "DeviceOrientationData.cpp",
-    "DeviceOrientationData.h",
-    "DeviceOrientationDispatcher.cpp",
-    "DeviceOrientationDispatcher.h",
-    "DeviceOrientationEvent.cpp",
-    "DeviceOrientationEvent.h",
-    "DeviceOrientationInspectorAgent.cpp",
-    "DeviceOrientationInspectorAgent.h",
-    "DeviceRotationRate.cpp",
-    "DeviceRotationRate.h",
+    "device_acceleration.cc",
+    "device_acceleration.h",
+    "device_motion_controller.cc",
+    "device_motion_controller.h",
+    "device_motion_data.cc",
+    "device_motion_data.h",
+    "device_motion_dispatcher.cc",
+    "device_motion_dispatcher.h",
+    "device_motion_event.cc",
+    "device_motion_event.h",
+    "device_orientation_absolute_controller.cc",
+    "device_orientation_absolute_controller.h",
+    "device_orientation_controller.cc",
+    "device_orientation_controller.h",
+    "device_orientation_data.cc",
+    "device_orientation_data.h",
+    "device_orientation_dispatcher.cc",
+    "device_orientation_dispatcher.h",
+    "device_orientation_event.cc",
+    "device_orientation_event.h",
+    "device_orientation_inspector_agent.cc",
+    "device_orientation_inspector_agent.h",
+    "device_rotation_rate.cc",
+    "device_rotation_rate.h",
+    "dom_window_device_motion.h",
+    "dom_window_device_orientation.h",
   ]
 
   deps = [

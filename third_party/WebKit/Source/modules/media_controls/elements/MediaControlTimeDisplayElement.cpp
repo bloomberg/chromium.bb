@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlTimeDisplayElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_time_display_element.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "modules/media_controls/MediaControlsImpl.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 
 namespace blink {
 

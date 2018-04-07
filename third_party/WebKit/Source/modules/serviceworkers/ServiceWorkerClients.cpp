@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/serviceworkers/ServiceWorkerClients.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_clients.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/CallbackPromiseAdapter.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerLocation.h"
-#include "modules/serviceworkers/ServiceWorkerError.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
-#include "modules/serviceworkers/ServiceWorkerWindowClient.h"
-#include "modules/serviceworkers/ServiceWorkerWindowClientCallback.h"
-#include "platform/bindings/V8ThrowException.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerClientQueryOptions.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_client.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_client_query_options.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_clients_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_location.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_error.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_client.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_window_client.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_window_client_callback.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

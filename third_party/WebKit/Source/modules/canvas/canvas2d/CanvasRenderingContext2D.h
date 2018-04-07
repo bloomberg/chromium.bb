@@ -24,23 +24,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CanvasRenderingContext2D_h
-#define CanvasRenderingContext2D_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_H_
 
-#include "core/html/canvas/CanvasContextCreationAttributesCore.h"
-#include "core/html/canvas/CanvasRenderingContext.h"
-#include "core/html/canvas/CanvasRenderingContextFactory.h"
-#include "core/style/FilterOperations.h"
-#include "core/svg/SVGResourceClient.h"
-#include "modules/ModulesExport.h"
-#include "modules/canvas/canvas2d/BaseRenderingContext2D.h"
-#include "modules/canvas/canvas2d/CanvasRenderingContext2DSettings.h"
-#include "modules/canvas/canvas2d/CanvasRenderingContext2DState.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
+#include "third_party/blink/renderer/core/style/filter_operations.h"
+#include "third_party/blink/renderer/core/svg/svg_resource_client.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d_settings.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d_state.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 class WebLayer;
@@ -276,4 +276,4 @@ DEFINE_TYPE_CASTS(CanvasRenderingContext2D,
 
 }  // namespace blink
 
-#endif  // CanvasRenderingContext2D_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_H_

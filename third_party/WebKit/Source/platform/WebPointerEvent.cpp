@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebPointerEvent.h"
+#include "third_party/blink/public/platform/web_pointer_event.h"
 
-#include "public/platform/WebFloatPoint.h"
+#include "third_party/blink/public/platform/web_float_point.h"
 
 namespace blink {
 

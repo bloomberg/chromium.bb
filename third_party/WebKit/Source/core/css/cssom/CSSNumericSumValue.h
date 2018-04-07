@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSNumericSumValue_h
-#define CSSNumericSumValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_NUMERIC_SUM_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_NUMERIC_SUM_VALUE_H_
 
-#include "core/css/CSSPrimitiveValue.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
 
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 

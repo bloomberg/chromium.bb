@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FetchRequestData_h
-#define FetchRequestData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FETCH_REQUEST_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FETCH_REQUEST_DATA_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/Referrer.h"
-#include "platform/weborigin/ReferrerPolicy.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -150,4 +150,4 @@ class FetchRequestData final
 
 }  // namespace blink
 
-#endif  // FetchRequestData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FETCH_REQUEST_DATA_H_

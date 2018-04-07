@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSPendingSubstitutionValue.h"
+#include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
 
 namespace blink {
 

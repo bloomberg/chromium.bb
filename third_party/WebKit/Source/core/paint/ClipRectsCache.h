@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ClipRectsCache_h
-#define ClipRectsCache_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_CLIP_RECTS_CACHE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_CLIP_RECTS_CACHE_H_
 
-#include "core/paint/ClipRects.h"
+#include "third_party/blink/renderer/core/paint/clip_rects.h"
 
 #if DCHECK_IS_ON()
-#include "platform/scroll/ScrollTypes.h"  // For OverlayScrollbarClipBehavior.
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"  // For OverlayScrollbarClipBehavior.
 #endif
 
 namespace blink {
@@ -65,4 +65,4 @@ class ClipRectsCache {
 
 }  // namespace blink
 
-#endif  // ClipRectsCache_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_CLIP_RECTS_CACHE_H_

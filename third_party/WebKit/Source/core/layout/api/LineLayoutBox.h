@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LineLayoutBox_h
-#define LineLayoutBox_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_BOX_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_BOX_H_
 
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/api/LineLayoutBoxModel.h"
-#include "platform/LayoutUnit.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_box_model.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
 
 namespace blink {
 
@@ -123,4 +123,4 @@ inline LineLayoutBox LineLayoutItem::ContainingBlock() const {
 
 }  // namespace blink
 
-#endif  // LineLayoutBox_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_BOX_H_

@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/text/LocaleWin.h"
+#include "third_party/blink/renderer/platform/text/locale_win.h"
 
 #include <memory>
-#include "platform/DateComponents.h"
-#include "platform/wtf/DateMath.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/CString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/date_components.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 namespace blink {
 

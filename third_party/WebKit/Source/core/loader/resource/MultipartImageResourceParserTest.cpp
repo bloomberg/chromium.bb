@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/resource/MultipartImageResourceParser.h"
+#include "third_party/blink/renderer/core/loader/resource/multipart_image_resource_parser.h"
 
-#include "platform/loader/fetch/ResourceResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
 #include <stddef.h>
 #include <stdint.h>

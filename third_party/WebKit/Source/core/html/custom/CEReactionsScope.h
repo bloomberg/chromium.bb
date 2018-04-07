@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CEReactionsScope_h
-#define CEReactionsScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CE_REACTIONS_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CE_REACTIONS_SCOPE_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ class CORE_EXPORT CEReactionsScope final {
 
 }  // namespace blink
 
-#endif  // CEReactionsScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CE_REACTIONS_SCOPE_H_

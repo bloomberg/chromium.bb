@@ -17,7 +17,7 @@ _SRC_DIR = os.path.abspath(os.path.join(
 class EmulationTestCase(unittest.TestCase):
   def testLoadDevices(self):
     devices = emulation.LoadEmulatedDevices(file(os.path.join(
-        _SRC_DIR, 'third_party/WebKit/Source/devtools/front_end',
+        _SRC_DIR, 'third_party/blink/renderer/devtools/front_end',
         'emulated_devices/module.json')))
     # Just check we have something. We'll assume that if we were able to read
     # the file without dying we must be ok.

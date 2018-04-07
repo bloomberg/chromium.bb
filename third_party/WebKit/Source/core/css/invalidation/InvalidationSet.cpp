@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/invalidation/InvalidationSet.h"
+#include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
 
 #include <memory>
 #include <utility>
 
-#include "core/css/resolver/StyleResolver.h"
-#include "core/dom/Element.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "platform/instrumentation/tracing/TracedValue.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

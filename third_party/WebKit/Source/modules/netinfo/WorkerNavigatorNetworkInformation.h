@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerNavigatorNetworkInformation_h
-#define WorkerNavigatorNetworkInformation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NETINFO_WORKER_NAVIGATOR_NETWORK_INFORMATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_NETINFO_WORKER_NAVIGATOR_NETWORK_INFORMATION_H_
 
-#include "core/workers/WorkerNavigator.h"
-#include "platform/Supplementable.h"
+#include "third_party/blink/renderer/core/workers/worker_navigator.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class WorkerNavigatorNetworkInformation final
 
 }  // namespace blink
 
-#endif  // WorkerNavigatorNetworkInformation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_NETINFO_WORKER_NAVIGATOR_NETWORK_INFORMATION_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerNavigatorBudget_h
-#define WorkerNavigatorBudget_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BUDGET_WORKER_NAVIGATOR_BUDGET_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BUDGET_WORKER_NAVIGATOR_BUDGET_H_
 
-#include "core/workers/WorkerNavigator.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/core/workers/worker_navigator.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -41,4 +41,4 @@ class WorkerNavigatorBudget final
 
 }  // namespace blink
 
-#endif  // WorkerNavigatorBudget_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BUDGET_WORKER_NAVIGATOR_BUDGET_H_

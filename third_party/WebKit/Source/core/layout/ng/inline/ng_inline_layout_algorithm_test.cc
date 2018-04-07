@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_base_layout_algorithm_test.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_base_layout_algorithm_test.h"
 
-#include "core/dom/TagCollection.h"
-#include "core/layout/line/InlineTextBox.h"
-#include "core/layout/ng/inline/ng_inline_box_state.h"
-#include "core/layout/ng/inline/ng_inline_break_token.h"
-#include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "core/layout/ng/inline/ng_physical_text_fragment.h"
-#include "core/layout/ng/layout_ng_block_flow.h"
-#include "core/layout/ng/ng_block_break_token.h"
-#include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_layout_result.h"
-#include "core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/dom/tag_collection.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
 namespace {

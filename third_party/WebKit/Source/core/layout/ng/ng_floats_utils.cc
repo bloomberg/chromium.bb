@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_floats_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 
-#include "core/layout/MinMaxSize.h"
-#include "core/layout/ng/ng_box_fragment.h"
-#include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_layout_result.h"
-#include "core/layout/ng/ng_length_utils.h"
-#include "core/layout/ng/ng_positioned_float.h"
-#include "core/layout/ng/ng_space_utils.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 namespace {

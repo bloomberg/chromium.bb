@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WTF_AddressSanitizer_h
-#define WTF_AddressSanitizer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ADDRESS_SANITIZER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ADDRESS_SANITIZER_H_
 // TODO(kojii): This file will need to be renamed, because it's no more
 // specific to AddressSanitizer.
 
@@ -37,4 +37,4 @@
 #define NO_SANITIZE_THREAD
 #endif
 
-#endif  // WTF_AddressSanitizer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ADDRESS_SANITIZER_H_

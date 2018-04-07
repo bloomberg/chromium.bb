@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ClientHintsPreferences_h
-#define ClientHintsPreferences_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_CLIENT_HINTS_PREFERENCES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_CLIENT_HINTS_PREFERENCES_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebClientHintsType.h"
+#include "third_party/blink/public/platform/web_client_hints_type.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

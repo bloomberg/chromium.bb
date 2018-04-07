@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/track/TrackBase.h"
+#include "third_party/blink/renderer/core/html/track/track_base.h"
 
-#include "core/html/media/HTMLMediaElement.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
 
 namespace blink {
 

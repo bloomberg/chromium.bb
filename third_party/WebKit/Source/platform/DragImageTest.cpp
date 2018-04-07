@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/DragImage.h"
+#include "third_party/blink/renderer/platform/drag_image.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/BitmapImage.h"
-#include "platform/graphics/Image.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/weborigin/KURL.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImage.h"

@@ -10,7 +10,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager.h"
-#include "third_party/WebKit/public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "ui/events/blink/did_overscroll_params.h"
 
 namespace content {

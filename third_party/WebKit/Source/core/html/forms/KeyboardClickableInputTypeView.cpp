@@ -29,10 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/KeyboardClickableInputTypeView.h"
+#include "third_party/blink/renderer/core/html/forms/keyboard_clickable_input_type_view.h"
 
-#include "core/events/KeyboardEvent.h"
-#include "core/html/forms/HTMLInputElement.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 
 namespace blink {
 

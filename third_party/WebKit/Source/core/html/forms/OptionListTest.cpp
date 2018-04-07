@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/forms/OptionList.h"
+#include "third_party/blink/renderer/core/html/forms/option_list.h"
 
-#include "core/html/HTMLDocument.h"
-#include "core/html/forms/HTMLOptionElement.h"
-#include "core/html/forms/HTMLSelectElement.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 
 namespace blink {
 

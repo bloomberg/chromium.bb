@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ShapeResultBloberizer_h
-#define ShapeResultBloberizer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_RESULT_BLOBERIZER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_RESULT_BLOBERIZER_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/fonts/CanvasRotationInVertical.h"
-#include "platform/fonts/Glyph.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/shaping/ShapeResultBuffer.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/graphics/paint/PaintTextBlob.h"
-#include "platform/graphics/paint/PaintTypeface.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/fonts/canvas_rotation_in_vertical.h"
+#include "third_party/blink/renderer/platform/fonts/glyph.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_text_blob.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_typeface.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
 
 namespace blink {
@@ -167,4 +167,4 @@ class PLATFORM_EXPORT ShapeResultBloberizer {
 
 }  // namespace blink
 
-#endif  // ShapeResultBloberizer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_RESULT_BLOBERIZER_H_

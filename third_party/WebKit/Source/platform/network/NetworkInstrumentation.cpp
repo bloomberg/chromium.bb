@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/network/NetworkInstrumentation.h"
+#include "third_party/blink/renderer/platform/network/network_instrumentation.h"
 
 #include "base/trace_event/trace_event.h"
-#include "platform/instrumentation/tracing/TracedValue.h"
-#include "platform/loader/fetch/ResourceLoadPriority.h"
-#include "platform/loader/fetch/ResourceRequest.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 
 namespace blink {
 namespace network_instrumentation {

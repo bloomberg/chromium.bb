@@ -29,22 +29,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/NumberInputType.h"
+#include "third_party/blink/renderer/core/html/forms/number_input_type.h"
 
 #include <limits>
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/events/ScopedEventQueue.h"
-#include "core/events/BeforeTextInsertedEvent.h"
-#include "core/events/KeyboardEvent.h"
-#include "core/frame/WebFeature.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html_names.h"
-#include "core/input_type_names.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/layout/LayoutObject.h"
-#include "platform/text/PlatformLocale.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
+#include "third_party/blink/renderer/core/events/before_text_inserted_event.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

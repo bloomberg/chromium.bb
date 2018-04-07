@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BrowserControls_h
-#define BrowserControls_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_BROWSER_CONTROLS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_BROWSER_CONTROLS_H_
 
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebBrowserControlsState.h"
+#include "third_party/blink/public/platform/web_browser_controls_state.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 class Page;
@@ -93,4 +93,4 @@ class CORE_EXPORT BrowserControls final
 };
 }  // namespace blink
 
-#endif  // BrowserControls_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_BROWSER_CONTROLS_H_

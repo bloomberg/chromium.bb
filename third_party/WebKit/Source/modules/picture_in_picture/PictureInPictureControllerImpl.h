@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PictureInPictureControllerImpl_h
-#define PictureInPictureControllerImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_CONTROLLER_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_CONTROLLER_IMPL_H_
 
-#include "core/frame/PictureInPictureController.h"
+#include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 
 namespace blink {
 
@@ -79,4 +79,4 @@ class PictureInPictureControllerImpl : public PictureInPictureController {
 
 }  // namespace blink
 
-#endif  // PictureInPictureControllerImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_CONTROLLER_IMPL_H_

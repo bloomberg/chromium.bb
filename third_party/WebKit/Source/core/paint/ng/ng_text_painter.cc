@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ng/ng_text_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_text_painter.h"
 
-#include "core/css_property_names.h"
-#include "core/frame/Settings.h"
-#include "core/layout/ng/inline/ng_physical_text_fragment.h"
-#include "core/layout/ng/ng_unpositioned_float.h"
-#include "core/paint/BoxPainter.h"
-#include "core/paint/PaintInfo.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/ShadowList.h"
-#include "platform/fonts/Font.h"
-#include "platform/fonts/NGTextFragmentPaintInfo.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/shadow_list.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/ng_text_fragment_paint_info.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
 

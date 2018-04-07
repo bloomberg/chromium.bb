@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/notifications/ServiceWorkerRegistrationNotifications.h"
+#include "third_party/blink/renderer/modules/notifications/service_worker_registration_notifications.h"
 
 #include <memory>
 #include <utility>
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/CallbackPromiseAdapter.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/notifications/GetNotificationOptions.h"
-#include "modules/notifications/Notification.h"
-#include "modules/notifications/NotificationData.h"
-#include "modules/notifications/NotificationManager.h"
-#include "modules/notifications/NotificationOptions.h"
-#include "modules/notifications/NotificationResourcesLoader.h"
-#include "modules/serviceworkers/ServiceWorkerRegistration.h"
-#include "platform/Histogram.h"
-#include "platform/heap/Handle.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebSecurityOrigin.h"
-#include "public/platform/modules/notifications/WebNotificationData.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/notifications/get_notification_options.h"
+#include "third_party/blink/renderer/modules/notifications/notification.h"
+#include "third_party/blink/renderer/modules/notifications/notification_data.h"
+#include "third_party/blink/renderer/modules/notifications/notification_manager.h"
+#include "third_party/blink/renderer/modules/notifications/notification_options.h"
+#include "third_party/blink/renderer/modules/notifications/notification_resources_loader.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 namespace {

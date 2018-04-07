@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ng_flex_layout_algorithm_h
-#define ng_flex_layout_algorithm_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_FLEX_LAYOUT_ALGORITHM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_FLEX_LAYOUT_ALGORITHM_H_
 
-#include "core/layout/ng/ng_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
 
-#include "core/layout/ng/ng_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 
 namespace blink {
 
@@ -30,4 +30,4 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
 
 }  // namespace blink
 
-#endif  // ng_flex_layout_algorithm_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_FLEX_LAYOUT_ALGORITHM_H_

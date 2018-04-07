@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebCryptoKeyAlgorithm_h
-#define WebCryptoKeyAlgorithm_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CRYPTO_KEY_ALGORITHM_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CRYPTO_KEY_ALGORITHM_H_
 
-#include "WebCommon.h"
-#include "WebCryptoAlgorithm.h"
-#include "WebCryptoKeyAlgorithmParams.h"
-#include "WebPrivatePtr.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_crypto_algorithm.h"
+#include "third_party/blink/public/platform/web_crypto_key_algorithm_params.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
 
 #if INSIDE_BLINK
 #include <memory>

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScheduledNavigation_h
-#define ScheduledNavigation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_SCHEDULED_NAVIGATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_SCHEDULED_NAVIGATION_H_
 
 #include "base/macros.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ class ScheduledNavigation
 
 }  // namespace blink
 
-#endif  // ScheduledNavigation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_SCHEDULED_NAVIGATION_H_

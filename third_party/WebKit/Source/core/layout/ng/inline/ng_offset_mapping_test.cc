@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/inline/ng_offset_mapping.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 
-#include "core/dom/FirstLetterPseudoElement.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/Position.h"
-#include "core/layout/LayoutTextFragment.h"
-#include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/layout_ng_block_flow.h"
-#include "core/layout/ng/ng_layout_test.h"
-#include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

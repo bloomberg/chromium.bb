@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/permissions/PermissionStatus.h"
+#include "third_party/blink/renderer/modules/permissions/permission_status.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/Document.h"
-#include "core/dom/events/Event.h"
-#include "modules/event_target_modules_names.h"
-#include "modules/permissions/PermissionUtils.h"
-#include "platform/wtf/Functional.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/modules/event_target_modules_names.h"
+#include "third_party/blink/renderer/modules/permissions/permission_utils.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

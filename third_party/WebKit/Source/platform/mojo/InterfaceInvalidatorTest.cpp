@@ -13,11 +13,11 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/interfaces/bindings/tests/ping_service.mojom-blink.h"
-#include "platform/mojo/InterfaceInvalidator.h"
-#include "platform/mojo/RevocableBinding.h"
-#include "platform/mojo/RevocableInterfacePtr.h"
-#include "platform/mojo/RevocableStrongBinding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
+#include "third_party/blink/renderer/platform/mojo/revocable_binding.h"
+#include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
+#include "third_party/blink/renderer/platform/mojo/revocable_strong_binding.h"
 
 namespace blink {
 

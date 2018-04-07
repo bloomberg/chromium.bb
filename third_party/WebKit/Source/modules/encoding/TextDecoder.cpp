@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/encoding/TextDecoder.h"
+#include "third_party/blink/renderer/modules/encoding/text_decoder.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "core/typed_arrays/DOMArrayBufferView.h"
-#include "modules/encoding/Encoding.h"
-#include "platform/wtf/StringExtras.h"
-#include "platform/wtf/text/TextEncodingRegistry.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
+#include "third_party/blink/renderer/modules/encoding/encoding.h"
+#include "third_party/blink/renderer/platform/wtf/string_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
 
 namespace blink {
 

@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGEnumeration_h
-#define SVGEnumeration_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ENUMERATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ENUMERATION_H_
 
-#include "core/svg/SVGParsingError.h"
-#include "core/svg/properties/SVGProperty.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 
 namespace blink {
 
@@ -138,4 +138,4 @@ class SVGEnumeration : public SVGEnumerationBase {
 
 }  // namespace blink
 
-#endif  // SVGEnumeration_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ENUMERATION_H_

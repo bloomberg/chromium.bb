@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LiveNodeListRegistry_h
-#define LiveNodeListRegistry_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_LIVE_NODE_LIST_REGISTRY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_LIVE_NODE_LIST_REGISTRY_H_
 
 #include <algorithm>
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Heap.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class CORE_EXPORT LiveNodeListRegistry {
 
 }  // namespace blink
 
-#endif  // LiveNodeListRegistry_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_LIVE_NODE_LIST_REGISTRY_H_

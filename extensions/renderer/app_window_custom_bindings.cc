@@ -13,9 +13,9 @@
 #include "extensions/common/switches.h"
 #include "extensions/grit/extensions_renderer_resources.h"
 #include "extensions/renderer/script_context.h"
-#include "third_party/WebKit/public/web/WebDocumentLoader.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/blink/public/web/web_document_loader.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_view.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "v8/include/v8.h"
 

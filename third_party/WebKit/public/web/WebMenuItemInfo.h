@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMenuItemInfo_h
-#define WebMenuItemInfo_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_MENU_ITEM_INFO_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_MENU_ITEM_INFO_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "WebTextDirection.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_text_direction.h"
 
 namespace blink {
 

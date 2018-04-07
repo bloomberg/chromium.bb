@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintPropertyTreeBuilderTest_h
-#define PaintPropertyTreeBuilderTest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_PROPERTY_TREE_BUILDER_TEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_PROPERTY_TREE_BUILDER_TEST_H_
 
-#include "core/paint/PaintControllerPaintTest.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class PaintPropertyTreeBuilderTest : public PaintControllerPaintTest {
 
 }  // namespace blink
 
-#endif  // PaintPropertyTreeBuilderTest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_PROPERTY_TREE_BUILDER_TEST_H_

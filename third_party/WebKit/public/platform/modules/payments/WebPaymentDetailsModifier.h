@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPaymentDetailsModifier_h
-#define WebPaymentDetailsModifier_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PAYMENTS_WEB_PAYMENT_DETAILS_MODIFIER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PAYMENTS_WEB_PAYMENT_DETAILS_MODIFIER_H_
 
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/payments/WebPaymentItem.h"
+#include "third_party/blink/public/platform/modules/payments/web_payment_item.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -21,4 +21,4 @@ struct WebPaymentDetailsModifier {
 
 }  // namespace blink
 
-#endif  // WebPaymentDetailsModifier_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PAYMENTS_WEB_PAYMENT_DETAILS_MODIFIER_H_

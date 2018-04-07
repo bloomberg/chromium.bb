@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSImageListInterpolationType_h
-#define CSSImageListInterpolationType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_IMAGE_LIST_INTERPOLATION_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_IMAGE_LIST_INTERPOLATION_TYPE_H_
 
-#include "core/animation/CSSInterpolationType.h"
-#include "core/animation/ImageListPropertyFunctions.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/image_list_property_functions.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class CSSImageListInterpolationType : public CSSInterpolationType {
 
 }  // namespace blink
 
-#endif  // CSSImageListInterpolationType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_IMAGE_LIST_INTERPOLATION_TYPE_H_

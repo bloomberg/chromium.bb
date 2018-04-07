@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ModulePendingScript_h
-#define ModulePendingScript_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_MODULE_PENDING_SCRIPT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_MODULE_PENDING_SCRIPT_H_
 
-#include "core/script/Modulator.h"
-#include "core/script/ModuleScript.h"
-#include "core/script/PendingScript.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/core/script/pending_script.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -101,4 +101,4 @@ class CORE_EXPORT ModulePendingScript : public PendingScript {
 
 }  // namespace blink
 
-#endif  // ModulePendingScript_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_MODULE_PENDING_SCRIPT_H_

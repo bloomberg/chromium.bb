@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/WindowProxy.h"
+#include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 
 #include <utility>
 
 #include "base/debug/alias.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8GCForContextDispose.h"
-#include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
-#include "platform/bindings/V8DOMWrapper.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
+#include "third_party/blink/renderer/core/frame/dom_window.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "v8/include/v8.h"
 
 namespace blink {

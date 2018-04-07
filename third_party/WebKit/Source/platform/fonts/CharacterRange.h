@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CharacterRange_h
-#define CharacterRange_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_CHARACTER_RANGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_CHARACTER_RANGE_H_
 
 namespace blink {
 
@@ -25,4 +25,4 @@ struct CharacterRange {
 
 }  // namespace blink
 
-#endif  // CharacterRange_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_CHARACTER_RANGE_H_

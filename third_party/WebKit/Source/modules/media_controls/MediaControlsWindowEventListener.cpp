@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/MediaControlsWindowEventListener.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_window_event_listener.h"
 
-#include "core/dom/events/Event.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "modules/media_controls/MediaControlsImpl.h"
-#include "modules/media_controls/elements/MediaControlCastButtonElement.h"
-#include "modules/media_controls/elements/MediaControlOverlayPlayButtonElement.h"
-#include "modules/media_controls/elements/MediaControlPanelElement.h"
-#include "modules/media_controls/elements/MediaControlTimelineElement.h"
-#include "modules/media_controls/elements/MediaControlVolumeSliderElement.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_cast_button_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_overlay_play_button_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_panel_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_timeline_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_volume_slider_element.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 
 namespace blink {
 

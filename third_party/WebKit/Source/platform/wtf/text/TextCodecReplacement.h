@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextCodecReplacement_h
-#define TextCodecReplacement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_CODEC_REPLACEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_CODEC_REPLACEMENT_H_
 
-#include "platform/wtf/text/TextCodec.h"
-#include "platform/wtf/text/TextCodecUTF8.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec_utf8.h"
 
 namespace WTF {
 
@@ -34,4 +34,4 @@ class TextCodecReplacement final : public TextCodecUTF8 {
 
 }  // namespace WTF
 
-#endif  // TextCodecReplacement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_CODEC_REPLACEMENT_H_

@@ -24,10 +24,10 @@
  *
  */
 
-#include "core/dom/PausableObject.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "platform/InstanceCounters.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/instance_counters.h"
 
 namespace blink {
 

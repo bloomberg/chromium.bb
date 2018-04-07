@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_space_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 
-#include "core/layout/ng/geometry/ng_bfc_offset.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/text/WritingMode.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
 

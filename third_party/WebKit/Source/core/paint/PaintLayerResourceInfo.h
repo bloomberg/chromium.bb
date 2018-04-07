@@ -27,12 +27,12 @@
  * SUCH DAMAGE.
  */
 
-#ifndef PaintLayerResourceInfo_h
-#define PaintLayerResourceInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_RESOURCE_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_RESOURCE_INFO_H_
 
 #include "base/macros.h"
-#include "core/svg/SVGResourceClient.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/svg_resource_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -77,4 +77,4 @@ class PaintLayerResourceInfo final
 
 }  // namespace blink
 
-#endif  // PaintLayerResourceInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_RESOURCE_INFO_H_

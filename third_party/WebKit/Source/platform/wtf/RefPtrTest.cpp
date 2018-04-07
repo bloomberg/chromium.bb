@@ -4,10 +4,10 @@
 
 #include "base/memory/scoped_refptr.h"
 
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/text/StringImpl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace WTF {
 namespace {

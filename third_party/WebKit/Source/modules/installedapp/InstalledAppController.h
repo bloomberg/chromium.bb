@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InstalledAppController_h
-#define InstalledAppController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INSTALLEDAPP_INSTALLED_APP_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INSTALLEDAPP_INSTALLED_APP_CONTROLLER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/frame/LocalFrame.h"
-#include "modules/ModulesExport.h"
-#include "platform/Supplementable.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/installedapp/WebRelatedApplication.h"
-#include "public/platform/modules/installedapp/WebRelatedAppsFetcher.h"
-#include "public/platform/modules/installedapp/installed_app_provider.mojom-blink.h"
-#include "public/platform/modules/installedapp/related_application.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/installedapp/related_application.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/installedapp/web_related_application.h"
+#include "third_party/blink/public/platform/modules/installedapp/web_related_apps_fetcher.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 #include <memory>
 
@@ -68,4 +68,4 @@ class MODULES_EXPORT InstalledAppController final
 
 }  // namespace blink
 
-#endif  // InstalledAppController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INSTALLEDAPP_INSTALLED_APP_CONTROLLER_H_

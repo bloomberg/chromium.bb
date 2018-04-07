@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/WorkerOrWorkletModuleFetchCoordinatorProxy.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator_proxy.h"
 
-#include "core/loader/modulescript/ModuleScriptCreationParams.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 

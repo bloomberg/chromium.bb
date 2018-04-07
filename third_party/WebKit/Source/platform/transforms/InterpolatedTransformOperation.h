@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InterpolatedTransformOperation_h
-#define InterpolatedTransformOperation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_INTERPOLATED_TRANSFORM_OPERATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_INTERPOLATED_TRANSFORM_OPERATION_H_
 
-#include "platform/transforms/TransformOperation.h"
-#include "platform/transforms/TransformOperations.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operations.h"
 
 namespace blink {
 
@@ -83,4 +83,4 @@ class PLATFORM_EXPORT InterpolatedTransformOperation final
 
 }  // namespace blink
 
-#endif  // InterpolatedTransformOperation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_INTERPOLATED_TRANSFORM_OPERATION_H_

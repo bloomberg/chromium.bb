@@ -21,16 +21,16 @@
  *
  */
 
-#ifndef LayoutBoxModelObject_h
-#define LayoutBoxModelObject_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BOX_MODEL_OBJECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BOX_MODEL_OBJECT_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/layout/BackgroundBleedAvoidance.h"
-#include "core/layout/ContentChangeType.h"
-#include "core/layout/LayoutObject.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/text/WritingModeUtils.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
+#include "third_party/blink/renderer/core/layout/content_change_type.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/text/writing_mode_utils.h"
 
 namespace blink {
 
@@ -571,4 +571,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBoxModelObject, IsBoxModelObject());
 
 }  // namespace blink
 
-#endif  // LayoutBoxModelObject_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BOX_MODEL_OBJECT_H_

@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V0CustomElementConstructorBuilder_h
-#define V0CustomElementConstructorBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V0_CUSTOM_ELEMENT_CONSTRUCTOR_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V0_CUSTOM_ELEMENT_CONSTRUCTOR_BUILDER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8V0CustomElementLifecycleCallbacks.h"
-#include "core/dom/QualifiedName.h"
-#include "core/html/custom/V0CustomElementLifecycleCallbacks.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_v0_custom_element_lifecycle_callbacks.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_lifecycle_callbacks.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -93,4 +93,4 @@ class V0CustomElementConstructorBuilder {
 
 }  // namespace blink
 
-#endif  // V0CustomElementConstructorBuilder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V0_CUSTOM_ELEMENT_CONSTRUCTOR_BUILDER_H_

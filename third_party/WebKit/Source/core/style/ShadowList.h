@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ShadowList_h
-#define ShadowList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_SHADOW_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_SHADOW_LIST_H_
 
 #include <memory>
-#include "core/style/ShadowData.h"
-#include "platform/geometry/FloatRectOutsets.h"
-#include "platform/graphics/DrawLooperBuilder.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/style/shadow_data.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect_outsets.h"
+#include "third_party/blink/renderer/platform/graphics/draw_looper_builder.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class ShadowList : public RefCounted<ShadowList> {
 
 }  // namespace blink
 
-#endif  // ShadowList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_SHADOW_LIST_H_

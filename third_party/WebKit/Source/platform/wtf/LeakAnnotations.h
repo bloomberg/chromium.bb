@@ -29,16 +29,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_LeakAnnotations_h
-#define WTF_LeakAnnotations_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_LEAK_ANNOTATIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_LEAK_ANNOTATIONS_H_
 
 // This file defines macros for working with LeakSanitizer, allowing memory
 // and allocations to be registered as exempted from LSan consideration.
 
 #include "base/macros.h"
 #if defined(LEAK_SANITIZER)
-#include "platform/wtf/AddressSanitizer.h"
-#include "platform/wtf/TypeTraits.h"
+#include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #endif
 
 namespace WTF {
@@ -139,4 +139,4 @@ class RegisterStaticLocalReference<T, true> {
 
 }  // namespace WTF
 
-#endif  // WTF_LeakAnnotations_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_LEAK_ANNOTATIONS_H_

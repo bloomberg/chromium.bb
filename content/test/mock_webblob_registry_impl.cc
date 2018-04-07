@@ -4,8 +4,8 @@
 
 #include "content/test/mock_webblob_registry_impl.h"
 
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 using blink::WebString;
 using blink::WebURL;

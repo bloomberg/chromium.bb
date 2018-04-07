@@ -26,20 +26,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/frame/FrameConsole.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
 
 #include <memory>
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/frame/LocalFrame.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/ConsoleMessageStorage.h"
-#include "core/inspector/MainThreadDebugger.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "platform/loader/fetch/ResourceError.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/console_message_storage.h"
+#include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

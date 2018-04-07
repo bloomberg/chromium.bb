@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebData.h"
+#include "third_party/blink/public/platform/web_data.h"
 
-#include "platform/SharedBuffer.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 
 namespace blink {
 

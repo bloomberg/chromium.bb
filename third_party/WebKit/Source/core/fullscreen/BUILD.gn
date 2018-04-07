@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/core/core.gni")
+import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("fullscreen") {
   sources = [
-    "DocumentFullscreen.cpp",
-    "DocumentFullscreen.h",
-    "ElementFullscreen.cpp",
-    "ElementFullscreen.h",
-    "Fullscreen.cpp",
-    "Fullscreen.h",
+    "document_fullscreen.cc",
+    "document_fullscreen.h",
+    "element_fullscreen.cc",
+    "element_fullscreen.h",
+    "fullscreen.cc",
+    "fullscreen.h",
   ]
 }

@@ -4,7 +4,7 @@
 
 #include "ui/events/blink/snap_fling_controller.h"
 
-#include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
 #include "ui/events/blink/snap_fling_curve.h"
 
 namespace ui {

@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/events/ScopedEventQueue.h"
+#include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/dom/events/Event.h"
-#include "core/dom/events/EventDispatcher.h"
-#include "core/dom/events/EventTarget.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
 
 namespace blink {
 

@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/FlexibleBoxAlgorithm.h"
+#include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
 
-#include "core/layout/LayoutBox.h"
-#include "core/layout/MinMaxSize.h"
-#include "core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 
 namespace blink {
 

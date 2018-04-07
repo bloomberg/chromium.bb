@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PlatformProbes_h
-#define PlatformProbes_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PROBE_PLATFORM_PROBES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PROBE_PLATFORM_PROBES_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/loader/fetch/FetchContext.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -36,6 +36,6 @@ inline PlatformProbeSink* ToPlatformProbeSink(FetchContext* context) {
 }  // namespace probe
 }  // namespace blink
 
-#include "platform/PlatformProbesInl.h"
+#include "third_party/blink/renderer/platform/PlatformProbesInl.h"
 
-#endif  // PlatformProbes_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PROBE_PLATFORM_PROBES_H_

@@ -28,17 +28,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/SelectionModifier.h"
+#include "third_party/blink/renderer/core/editing/selection_modifier.h"
 
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/InlineBoxPosition.h"
-#include "core/editing/InlineBoxTraversal.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleUnits.h"
-#include "core/layout/api/LineLayoutAPIShim.h"
-#include "core/layout/api/LineLayoutItem.h"
-#include "core/layout/line/InlineTextBox.h"
-#include "core/layout/line/RootInlineBox.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/inline_box_position.h"
+#include "third_party/blink/renderer/core/editing/inline_box_traversal.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
 
 namespace blink {
 

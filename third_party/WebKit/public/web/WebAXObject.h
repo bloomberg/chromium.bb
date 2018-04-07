@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebAXObject_h
-#define WebAXObject_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_AX_OBJECT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_AX_OBJECT_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebPoint.h"
-#include "public/platform/WebPrivatePtr.h"
-#include "public/platform/WebSize.h"
-#include "public/platform/WebVector.h"
-#include "WebAXEnums.h"
 #include <memory>
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_ax_enums.h"
 
 class SkMatrix44;
 

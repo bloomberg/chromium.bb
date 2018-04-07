@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/Canvas2DLayerBridge.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
 
 #include <memory>
 #include <utility>
@@ -33,21 +33,21 @@
 #include "base/single_thread_task_runner.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "platform/Histogram.h"
-#include "platform/graphics/CanvasHeuristicParameters.h"
-#include "platform/graphics/CanvasMetrics.h"
-#include "platform/graphics/CanvasResource.h"
-#include "platform/graphics/CanvasResourceProvider.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
-#include "platform/graphics/gpu/SharedContextRateLimiter.h"
-#include "platform/graphics/gpu/SharedGpuContext.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCompositorSupport.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_compositor_support.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_metrics.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_context_rate_limiter.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkSurface.h"
 

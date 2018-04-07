@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/OffscreenCanvasFrameDispatcherImpl.h"
+#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_frame_dispatcher_impl.h"
 
 #include <memory>
 #include "base/single_thread_task_runner.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/resource_format.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/Histogram.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/graphics/OffscreenCanvasPlaceholder.h"
-#include "platform/graphics/gpu/SharedGpuContext.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "public/platform/InterfaceProvider.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebGraphicsContext3DProvider.h"
-#include "public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_placeholder.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 

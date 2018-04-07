@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextEncodingRegistry_h
-#define TextEncodingRegistry_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_ENCODING_REGISTRY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_ENCODING_REGISTRY_H_
 
 #include <memory>
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/text/Unicode.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -65,4 +65,4 @@ using WTF::NoExtendedTextEncodingNameUsed;
 using WTF::DumpTextEncodingNameMap;
 #endif
 
-#endif  // TextEncodingRegistry_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_ENCODING_REGISTRY_H_

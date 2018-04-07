@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NetworkLog_h
-#define NetworkLog_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_LOG_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_LOG_H_
 
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #if DCHECK_IS_ON()
 // We can see logs with |--v=N| or |--vmodule=NetworkLog=N| where N is a
@@ -17,4 +17,4 @@
 #define NETWORK_DVLOG(verbose_level) EAT_STREAM_PARAMETERS
 #endif
 
-#endif  // NetworkLog_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_LOG_H_

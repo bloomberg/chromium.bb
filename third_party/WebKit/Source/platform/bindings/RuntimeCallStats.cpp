@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/bindings/RuntimeCallStats.h"
+#include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 
 #include <inttypes.h>
 #include <algorithm>
 #include "base/time/tick_clock.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/web/WebKit.h"
+#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebPublicSuffixList_h
-#define WebPublicSuffixList_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PUBLIC_SUFFIX_LIST_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PUBLIC_SUFFIX_LIST_H_
 
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class WebPublicSuffixList {
 
 }  // namespace blink
 
-#endif  // WebPublicSuffixList_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PUBLIC_SUFFIX_LIST_H_

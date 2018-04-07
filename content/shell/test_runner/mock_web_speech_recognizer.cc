@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "content/shell/test_runner/web_test_delegate.h"
-#include "third_party/WebKit/public/web/WebSpeechRecognitionResult.h"
-#include "third_party/WebKit/public/web/WebSpeechRecognizerClient.h"
+#include "third_party/blink/public/web/web_speech_recognition_result.h"
+#include "third_party/blink/public/web/web_speech_recognizer_client.h"
 
 namespace test_runner {
 

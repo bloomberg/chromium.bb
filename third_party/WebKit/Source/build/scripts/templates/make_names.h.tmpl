@@ -7,13 +7,13 @@
 #define {{namespace}}{{suffix}}Names_h
 
 {% set symbol_export = '%s ' % export if export else '' %}
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 {% if export == 'CORE_EXPORT' %}
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/core/core_export.h"
 {% elif export == 'MODULES_EXPORT' %}
-#include "modules/ModulesExport.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 {% else %}
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 {% endif %}
 
 namespace blink {

@@ -25,23 +25,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/loader/EmptyClients.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
 
 #include <memory>
-#include "core/frame/ContentSettingsClient.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/VisualViewport.h"
-#include "core/html/forms/ColorChooser.h"
-#include "core/html/forms/DateTimeChooser.h"
-#include "core/html/forms/FileChooser.h"
-#include "core/html/forms/HTMLFormElement.h"
-#include "core/loader/DocumentLoader.h"
-#include "platform/scheduler/child/worker_scheduler_proxy.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebApplicationCacheHost.h"
-#include "public/platform/WebMediaPlayer.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider_client.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_application_cache_host.h"
+#include "third_party/blink/public/platform/web_media_player.h"
+#include "third_party/blink/renderer/core/frame/content_settings_client.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/html/forms/color_chooser.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
+#include "third_party/blink/renderer/core/html/forms/file_chooser.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_proxy.h"
 
 namespace blink {
 

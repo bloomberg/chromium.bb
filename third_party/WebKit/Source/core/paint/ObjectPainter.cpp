@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ObjectPainter.h"
+#include "third_party/blink/renderer/core/paint/object_painter.h"
 
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutTheme.h"
-#include "core/paint/PaintInfo.h"
-#include "core/style/BorderEdge.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/style/border_edge.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

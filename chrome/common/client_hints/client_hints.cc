@@ -5,7 +5,7 @@
 #include "chrome/common/client_hints/client_hints.h"
 
 #include "content/public/common/origin_util.h"
-#include "third_party/WebKit/public/platform/WebClientHintsType.h"
+#include "third_party/blink/public/platform/web_client_hints_type.h"
 #include "url/gurl.h"
 
 namespace client_hints {

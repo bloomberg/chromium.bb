@@ -19,9 +19,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/Comment.h"
+#include "third_party/blink/renderer/core/dom/comment.h"
 
-#include "core/dom/Document.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
 

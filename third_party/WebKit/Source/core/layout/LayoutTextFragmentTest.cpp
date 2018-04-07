@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/LayoutTextFragment.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 
-#include "core/html/HTMLHeadElement.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/core/html/html_head_element.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 

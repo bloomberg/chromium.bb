@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScreenScreenOrientation_h
-#define ScreenScreenOrientation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_SCREEN_ORIENTATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_SCREEN_ORIENTATION_H_
 
-#include "core/frame/Screen.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/frame/screen.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -35,4 +35,4 @@ class ScreenScreenOrientation final
 
 }  // namespace blink
 
-#endif  // ScreenScreenOrientation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_SCREEN_ORIENTATION_H_

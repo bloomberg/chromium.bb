@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebLeakDetector.h"
+#include "third_party/blink/public/web/web_leak_detector.h"
 
 #include "base/macros.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/leak_detector/BlinkLeakDetector.h"
-#include "core/leak_detector/BlinkLeakDetectorClient.h"
-#include "platform/InstanceCounters.h"
-#include "public/web/WebFrame.h"
+#include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/leak_detector/blink_leak_detector.h"
+#include "third_party/blink/renderer/core/leak_detector/blink_leak_detector_client.h"
+#include "third_party/blink/renderer/platform/instance_counters.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/svg/SVGPathParser.h"
+#include "third_party/blink/renderer/core/svg/svg_path_parser.h"
 
-#include "core/svg/SVGPathStringBuilder.h"
-#include "core/svg/SVGPathStringSource.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/svg/svg_path_string_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_path_string_source.h"
 
 namespace blink {
 

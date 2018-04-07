@@ -18,11 +18,11 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef LengthSize_h
-#define LengthSize_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LENGTH_SIZE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LENGTH_SIZE_H_
 
-#include "platform/Length.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class LengthSize {
 
 }  // namespace blink
 
-#endif  // LengthSize_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LENGTH_SIZE_H_

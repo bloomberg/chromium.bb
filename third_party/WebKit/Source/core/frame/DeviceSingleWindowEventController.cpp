@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/DeviceSingleWindowEventController.h"
+#include "third_party/blink/renderer/core/frame/device_single_window_event_controller.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/events/Event.h"
-#include "core/page/Page.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
 

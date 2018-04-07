@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/bindings/StringResource.h"
+#include "third_party/blink/renderer/platform/bindings/string_resource.h"
 
-#include "platform/bindings/V8Binding.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 
 namespace blink {
 

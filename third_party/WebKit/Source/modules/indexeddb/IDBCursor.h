@@ -23,20 +23,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IDBCursor_h
-#define IDBCursor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_CURSOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_CURSOR_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/modules/v8/idb_object_store_or_idb_index.h"
-#include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBRequest.h"
-#include "modules/indexeddb/IndexedDB.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/Compiler.h"
-#include "public/platform/modules/indexeddb/WebIDBCursor.h"
-#include "public/platform/modules/indexeddb/WebIDBTypes.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/modules/v8/idb_object_store_or_idb_index.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
+#include "third_party/blink/renderer/modules/indexeddb/indexed_db.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 
@@ -138,4 +138,4 @@ class IDBCursor : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // IDBCursor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_CURSOR_H_

@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebURLResponse_h
-#define WebURLResponse_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_RESPONSE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_RESPONSE_H_
 
 #include <memory>
 
 #include "base/time/time.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/http/http_response_info.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebSecurityStyle.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_security_style.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 

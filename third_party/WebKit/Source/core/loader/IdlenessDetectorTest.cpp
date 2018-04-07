@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/IdlenessDetector.h"
+#include "third_party/blink/renderer/core/loader/idleness_detector.h"
 
-#include "core/testing/PageTestBase.h"
-#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 namespace blink {
 

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/CSSTransformComponent.h"
+#include "third_party/blink/renderer/core/css/cssom/css_transform_component.h"
 
-#include "core/css/cssom/CSSMatrixComponent.h"
-#include "core/css/cssom/CSSPerspective.h"
-#include "core/css/cssom/CSSRotate.h"
-#include "core/css/cssom/CSSScale.h"
-#include "core/css/cssom/CSSSkew.h"
-#include "core/css/cssom/CSSSkewX.h"
-#include "core/css/cssom/CSSSkewY.h"
-#include "core/css/cssom/CSSTranslate.h"
+#include "third_party/blink/renderer/core/css/cssom/css_matrix_component.h"
+#include "third_party/blink/renderer/core/css/cssom/css_perspective.h"
+#include "third_party/blink/renderer/core/css/cssom/css_rotate.h"
+#include "third_party/blink/renderer/core/css/cssom/css_scale.h"
+#include "third_party/blink/renderer/core/css/cssom/css_skew.h"
+#include "third_party/blink/renderer/core/css/cssom/css_skew_x.h"
+#include "third_party/blink/renderer/core/css/cssom/css_skew_y.h"
+#include "third_party/blink/renderer/core/css/cssom/css_translate.h"
 
 namespace blink {
 

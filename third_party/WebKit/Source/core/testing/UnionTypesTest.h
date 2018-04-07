@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UnionTypesTest_h
-#define UnionTypesTest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_UNION_TYPES_TEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_UNION_TYPES_TEST_H_
 
-#include "bindings/core/v8/double_or_internal_enum.h"
-#include "bindings/core/v8/double_or_string.h"
-#include "bindings/core/v8/double_or_string_or_string_sequence.h"
-#include "bindings/core/v8/node_list_or_element.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/double_or_internal_enum.h"
+#include "third_party/blink/renderer/bindings/core/v8/double_or_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/double_or_string_or_string_sequence.h"
+#include "third_party/blink/renderer/bindings/core/v8/node_list_or_element.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ class UnionTypesTest final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // UnionTypesTest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_UNION_TYPES_TEST_H_

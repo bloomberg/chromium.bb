@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebCustomElement.h"
+#include "third_party/blink/public/web/web_custom_element.h"
 
-#include "core/html/custom/V0CustomElement.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 
 namespace blink {
 

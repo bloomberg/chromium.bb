@@ -28,7 +28,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/Threading.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 #include "build/build_config.h"
 
@@ -38,14 +38,14 @@
 #include <limits.h>
 #include <sched.h>
 #include <sys/time.h>
-#include "platform/wtf/DateMath.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/ThreadSpecific.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/WTFThreadData.h"
-#include "platform/wtf/dtoa/double-conversion.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/double-conversion.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_thread_data.h"
 
 #if defined(OS_MACOSX)
 #include <objc/objc-auto.h>

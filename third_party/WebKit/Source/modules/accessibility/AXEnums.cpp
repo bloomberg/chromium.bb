@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/accessibility/AXEnums.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_enums.h"
 
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/web/WebAXEnums.h"
+#include "third_party/blink/public/web/web_ax_enums.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

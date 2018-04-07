@@ -17,7 +17,7 @@
 #include "ipc/message_filter.h"
 #include "media/midi/midi_port_info.h"
 #include "media/midi/midi_service.mojom.h"
-#include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessorClient.h"
+#include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor_client.h"
 
 namespace base {
 class SingleThreadTaskRunner;

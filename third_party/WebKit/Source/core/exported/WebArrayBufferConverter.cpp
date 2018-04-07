@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebArrayBufferConverter.h"
+#include "third_party/blink/public/web/web_array_buffer_converter.h"
 
-#include "bindings/core/v8/V8ArrayBuffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 
 namespace blink {
 

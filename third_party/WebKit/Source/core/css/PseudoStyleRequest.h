@@ -20,12 +20,12 @@
  *
  */
 
-#ifndef PseudoStyleRequest_h
-#define PseudoStyleRequest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PSEUDO_STYLE_REQUEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PSEUDO_STYLE_REQUEST_H_
 
-#include "core/layout/LayoutScrollbar.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/scroll/ScrollTypes.h"
+#include "third_party/blink/renderer/core/layout/layout_scrollbar.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class PseudoStyleRequest {
 
 }  // namespace blink
 
-#endif  // PseudoStyleRequest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PSEUDO_STYLE_REQUEST_H_

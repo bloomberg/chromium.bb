@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "content/common/cursors/webcursor.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebCursorInfo.h"
+#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 #if defined(OS_WIN)

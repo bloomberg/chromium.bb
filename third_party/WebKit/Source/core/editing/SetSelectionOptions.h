@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SetSelectionOptions_h
-#define SetSelectionOptions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SET_SELECTION_OPTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SET_SELECTION_OPTIONS_H_
 
-#include "core/CoreExport.h"
-#include "core/editing/TextGranularity.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/text_granularity.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ class CORE_EXPORT SetSelectionOptions::Builder final {
 
 }  // namespace blink
 
-#endif  // SetSelectionOptions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SET_SELECTION_OPTIONS_H_

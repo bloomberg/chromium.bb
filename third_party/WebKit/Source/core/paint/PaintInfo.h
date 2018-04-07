@@ -24,25 +24,26 @@
  *
  */
 
-#ifndef PaintInfo_h
-#define PaintInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_INFO_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 // TODO(jchaffraix): Once we unify PaintBehavior and PaintLayerFlags, we should
 // move PaintLayerFlags to PaintPhase and rename it. Thus removing the need for
-// this #include "core/paint/PaintLayerPaintingInfo.h"
-#include "core/paint/PaintLayerPaintingInfo.h"
-#include "core/paint/PaintPhase.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/Image.h"
-#include "platform/graphics/paint/CullRect.h"
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
+// this #include
+// "third_party/blink/renderer/core/paint/paint_layer_painting_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_painting_info.h"
+#include "third_party/blink/renderer/core/paint/paint_phase.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 #include <limits>
 
@@ -183,4 +184,4 @@ Image::ImageDecodingMode GetImageDecodingMode(Node*);
 
 }  // namespace blink
 
-#endif  // PaintInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_INFO_H_

@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/geometry/IntPoint.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 

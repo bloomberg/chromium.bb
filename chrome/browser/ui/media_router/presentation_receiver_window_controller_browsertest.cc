@@ -31,7 +31,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/filename_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h"
+#include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"

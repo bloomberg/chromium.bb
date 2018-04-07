@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LockOrientationCallback_h
-#define LockOrientationCallback_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_LOCK_ORIENTATION_CALLBACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_LOCK_ORIENTATION_CALLBACK_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
-#include "public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
-#include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_lock_orientation_callback.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_type.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -35,4 +35,4 @@ class LockOrientationCallback final : public WebLockOrientationCallback {
 
 }  // namespace blink
 
-#endif  // LockOrientationCallback_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_LOCK_ORIENTATION_CALLBACK_H_

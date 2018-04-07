@@ -30,13 +30,13 @@
 #include "gin/wrappable.h"
 #include "ipc/ipc_sync_channel.h"
 #include "services/network/public/cpp/features.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/web/WebAssociatedURLLoader.h"
-#include "third_party/WebKit/public/web/WebAssociatedURLLoaderOptions.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebRemoteFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/web_associated_url_loader.h"
+#include "third_party/blink/public/web/web_associated_url_loader_options.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_remote_frame.h"
+#include "third_party/blink/public/web/web_view.h"
 
 namespace extensions {
 

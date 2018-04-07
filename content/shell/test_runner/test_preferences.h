@@ -6,9 +6,9 @@
 #define CONTENT_SHELL_TEST_RUNNER_TEST_PREFERENCES_H_
 
 #include "content/shell/test_runner/test_runner_export.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebSettings.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_settings.h"
 
 namespace test_runner {
 

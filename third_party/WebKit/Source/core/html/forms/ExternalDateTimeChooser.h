@@ -23,11 +23,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef ExternalDateTimeChooser_h
-#define ExternalDateTimeChooser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_EXTERNAL_DATE_TIME_CHOOSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_EXTERNAL_DATE_TIME_CHOOSER_H_
 
-#include "core/CoreExport.h"
-#include "core/html/forms/DateTimeChooser.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
 
 namespace blink {
 

@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NativeXPathNSResolver_h
-#define NativeXPathNSResolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_NATIVE_XPATH_NS_RESOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_NATIVE_XPATH_NS_RESOLVER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/xml/XPathNSResolver.h"
+#include "third_party/blink/renderer/core/xml/xpath_ns_resolver.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ class NativeXPathNSResolver final : public XPathNSResolver {
 
 }  // namespace blink
 
-#endif  // NativeXPathNSResolver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_NATIVE_XPATH_NS_RESOLVER_H_

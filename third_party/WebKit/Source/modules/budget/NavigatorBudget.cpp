@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/budget/NavigatorBudget.h"
+#include "third_party/blink/renderer/modules/budget/navigator_budget.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/frame/Navigator.h"
-#include "modules/budget/BudgetService.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/budget/budget_service.h"
 
 namespace blink {
 

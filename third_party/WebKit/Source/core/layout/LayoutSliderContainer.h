@@ -29,10 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutSliderContainer_h
-#define LayoutSliderContainer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SLIDER_CONTAINER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SLIDER_CONTAINER_H_
 
-#include "core/layout/LayoutFlexibleBox.h"
+#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class LayoutSliderContainer final : public LayoutFlexibleBox {
 
 }  // namespace blink
 
-#endif  // LayoutSliderContainer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SLIDER_CONTAINER_H_

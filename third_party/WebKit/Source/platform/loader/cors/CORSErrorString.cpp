@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/loader/cors/CORSErrorString.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors_error_string.h"
 
-#include "platform/network/HTTPHeaderMap.h"
-#include "platform/network/http_names.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

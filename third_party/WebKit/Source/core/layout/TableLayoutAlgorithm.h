@@ -18,12 +18,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef TableLayoutAlgorithm_h
-#define TableLayoutAlgorithm_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TABLE_LAYOUT_ALGORITHM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TABLE_LAYOUT_ALGORITHM_H_
 
 #include "base/macros.h"
-#include "platform/LayoutUnit.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class TableLayoutAlgorithm {
 
 }  // namespace blink
 
-#endif  // TableLayoutAlgorithm_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TABLE_LAYOUT_ALGORITHM_H_

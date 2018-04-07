@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/serviceworkers/ServiceWorkerClient.h"
-#include "modules/serviceworkers/ServiceWorkerWindowClient.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_client.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_window_client.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/CallbackPromiseAdapter.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/UseCounter.h"
-#include "core/messaging/BlinkTransferableMessage.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
-#include "platform/bindings/ScriptState.h"
-#include "public/platform/WebString.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_client.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom-blink.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_client.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/renderer/renderer_metrics_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/renderer_metrics_helper.h"
 
 #include <memory>
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
-#include "platform/scheduler/main_thread/main_thread_scheduler.h"
-#include "platform/scheduler/public/frame_scheduler.h"
-#include "platform/scheduler/test/fake_frame_scheduler.h"
-#include "platform/scheduler/test/fake_page_scheduler.h"
-#include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/common/page/launching_process_state.h"
+#include "third_party/blink/public/common/page/launching_process_state.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_page_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
 
 namespace blink {
 namespace scheduler {

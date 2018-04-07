@@ -20,9 +20,9 @@
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/video_frame_pool.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_media_stream_registry.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
 #include "url/gurl.h"
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/markers/SuggestionMarkerListImpl.h"
+#include "third_party/blink/renderer/core/editing/markers/suggestion_marker_list_impl.h"
 
-#include "core/editing/markers/SuggestionMarker.h"
-#include "core/editing/markers/SuggestionMarkerReplacementScope.h"
-#include "core/editing/markers/UnsortedDocumentMarkerListEditor.h"
+#include "third_party/blink/renderer/core/editing/markers/suggestion_marker.h"
+#include "third_party/blink/renderer/core/editing/markers/suggestion_marker_replacement_scope.h"
+#include "third_party/blink/renderer/core/editing/markers/unsorted_document_marker_list_editor.h"
 
 namespace blink {
 

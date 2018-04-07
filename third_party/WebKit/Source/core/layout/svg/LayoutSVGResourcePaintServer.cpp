@@ -20,14 +20,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
 
-#include "core/layout/svg/SVGResources.h"
-#include "core/layout/svg/SVGResourcesCache.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/skia/include/core/SkPaint.h"
 
 namespace blink {

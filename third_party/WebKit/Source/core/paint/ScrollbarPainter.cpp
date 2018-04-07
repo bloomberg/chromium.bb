@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ScrollbarPainter.h"
+#include "third_party/blink/renderer/core/paint/scrollbar_painter.h"
 
-#include "core/layout/LayoutScrollbar.h"
-#include "core/layout/LayoutScrollbarPart.h"
-#include "core/paint/ObjectPainter.h"
-#include "core/paint/PaintInfo.h"
-#include "platform/graphics/GraphicsContext.h"
+#include "third_party/blink/renderer/core/layout/layout_scrollbar.h"
+#include "third_party/blink/renderer/core/layout/layout_scrollbar_part.h"
+#include "third_party/blink/renderer/core/paint/object_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 namespace blink {
 

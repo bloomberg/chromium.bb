@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/notifications/NotificationData.h"
+#include "third_party/blink/renderer/modules/notifications/notification_data.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/testing/NullExecutionContext.h"
-#include "modules/notifications/Notification.h"
-#include "modules/notifications/NotificationOptions.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/testing/null_execution_context.h"
+#include "third_party/blink/renderer/modules/notifications/notification.h"
+#include "third_party/blink/renderer/modules/notifications/notification_options.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 namespace {

@@ -18,12 +18,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGStopElement_h
-#define SVGStopElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_STOP_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_STOP_ELEMENT_H_
 
-#include "core/svg/SVGAnimatedNumber.h"
-#include "core/svg/SVGElement.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_number.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class SVGStopElement final : public SVGElement {
 
 }  // namespace blink
 
-#endif  // SVGStopElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_STOP_ELEMENT_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GlobalCacheStorage_h
-#define GlobalCacheStorage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CACHESTORAGE_GLOBAL_CACHE_STORAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CACHESTORAGE_GLOBAL_CACHE_STORAGE_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -24,4 +24,4 @@ class GlobalCacheStorage {
 
 }  // namespace blink
 
-#endif  // GlobalCacheStorage_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CACHESTORAGE_GLOBAL_CACHE_STORAGE_H_

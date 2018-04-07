@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/LinkManifest.h"
+#include "third_party/blink/renderer/core/html/link_manifest.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/html/HTMLLinkElement.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/html/html_link_element.h"
 
 namespace blink {
 

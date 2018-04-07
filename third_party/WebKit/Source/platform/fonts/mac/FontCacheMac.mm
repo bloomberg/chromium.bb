@@ -27,21 +27,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import "platform/fonts/FontCache.h"
+#import "third_party/blink/renderer/platform/fonts/font_cache.h"
 
 #import <AppKit/AppKit.h>
 #include <memory>
 #include "base/location.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/font_family_names.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontFaceCreationParams.h"
-#include "platform/fonts/FontPlatformData.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/mac/FontFamilyMatcherMac.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/font_family_names.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_face_creation_params.h"
+#include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
+#include "third_party/blink/renderer/platform/fonts/mac/font_family_matcher_mac.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 // Forward declare Mac SPIs.
 // Request for public API: rdar://13803570

@@ -81,7 +81,7 @@
       field_template: "external",
       field_group: "*",
       type_name: "AtomicString",
-      include_paths: ["platform/wtf/text/AtomicString.h"],
+      include_paths: ["platform/wtf/text/atomic_string.h"],
       default_value: "g_null_atom",
     },
     {
@@ -89,7 +89,7 @@
       field_template: "external",
       field_group: "*",
       type_name: "AtomicString",
-      include_paths: ["platform/wtf/text/AtomicString.h"],
+      include_paths: ["platform/wtf/text/atomic_string.h"],
       default_value: "g_null_atom",
     },
     {
@@ -228,7 +228,7 @@
       name: "VerticalAlignLength",
       field_template: "external",
       default_value: "Length()",
-      include_paths: ["platform/Length.h"],
+      include_paths: ["platform/length.h"],
       type_name: "Length",
       field_group: "box",
       getter: "GetVerticalAlignLength",
@@ -237,7 +237,7 @@
     {
       name: "border-image",
       field_template: "external",
-      include_paths: ["core/style/NinePieceImage.h"],
+      include_paths: ["core/style/nine_piece_image.h"],
       type_name: "NinePieceImage",
       field_group: "surround",
       default_value: "NinePieceImage()",
@@ -245,7 +245,7 @@
     {
       name: "Background",
       field_template: "external",
-      include_paths: ["core/style/FillLayer.h"],
+      include_paths: ["core/style/fill_layer.h"],
       type_name: "FillLayer",
       default_value: "FillLayer(EFillLayerType::kBackground, true)",
       field_group: "background",
@@ -270,7 +270,7 @@
     {
       name: "font",
       field_template: "external",
-      include_paths: ["platform/fonts/Font.h"],
+      include_paths: ["platform/fonts/font.h"],
       type_name: "Font",
       field_group: "inherited->font",
       inherited: true,
@@ -298,7 +298,7 @@
       inherited: true,
       field_template: "external",
       type_name: "Color",
-      include_paths: ["platform/graphics/Color.h"],
+      include_paths: ["platform/graphics/color.h"],
       default_value: "Color()",
       field_group: "*",
       computed_style_custom_functions: ["getter", "setter"],
@@ -308,7 +308,7 @@
       inherited: true,
       field_template: "external",
       type_name: "Color",
-      include_paths: ["platform/graphics/Color.h"],
+      include_paths: ["platform/graphics/color.h"],
       default_value: "Color()",
       field_group: "*",
       computed_style_custom_functions: ["getter", "setter"],
@@ -318,7 +318,7 @@
       inherited: true,
       field_template: "external",
       type_name: "Color",
-      include_paths: ["platform/graphics/Color.h"],
+      include_paths: ["platform/graphics/color.h"],
       default_value: "Color()",
       field_group: "*",
       computed_style_custom_functions: ["getter", "setter"],
@@ -328,7 +328,7 @@
       inherited: true,
       field_template: "external",
       type_name: "Color",
-      include_paths: ["platform/graphics/Color.h"],
+      include_paths: ["platform/graphics/color.h"],
       default_value: "Color()",
       field_group: "*",
       computed_style_custom_functions: ["getter", "setter"],
@@ -338,7 +338,7 @@
       inherited: true,
       field_template: "external",
       type_name: "CursorList",
-      include_paths: ["core/style/CursorList.h"],
+      include_paths: ["core/style/cursor_list.h"],
       default_value: "nullptr",
       wrapper_pointer_name: "Persistent",
       field_group: "*",
@@ -539,7 +539,7 @@
       name: "EffectiveTouchAction",
       inherited: true,
       field_template: "primitive",
-      include_paths: ["platform/graphics/TouchAction.h"],
+      include_paths: ["platform/graphics/touch_action.h"],
       type_name: "TouchAction",
       field_size: 6,
       default_value: "TouchAction::kTouchActionAuto",
@@ -551,7 +551,7 @@
       inherited: true,
       field_template: "external",
       type_name: "AtomicString",
-      include_paths: ["platform/wtf/text/AtomicString.h"],
+      include_paths: ["platform/wtf/text/atomic_string.h"],
       default_value: "AtomicString()",
       field_group: "*",
     },
@@ -560,7 +560,7 @@
       inherited: true,
       field_template: "external",
       type_name: "AppliedTextDecorationList",
-      include_paths: ["core/style/AppliedTextDecorationList.h"],
+      include_paths: ["core/style/applied_text_decoration_list.h"],
       default_value: "nullptr",
       wrapper_pointer_name: "scoped_refptr",
       field_group: "*",
@@ -571,7 +571,7 @@
       inherited: true,
       field_template: "external",
       type_name: "StyleInheritedVariables",
-      include_paths: ["core/style/StyleInheritedVariables.h"],
+      include_paths: ["core/style/style_inherited_variables.h"],
       default_value: "nullptr",
       wrapper_pointer_name: "scoped_refptr",
       field_group: "*",
@@ -592,7 +592,7 @@
       field_group: "*",
       default_value: "nullptr",
       wrapper_pointer_name: "std::unique_ptr",
-      include_paths: ["core/style/CounterDirectives.h"],
+      include_paths: ["core/style/counter_directives.h"],
       computed_style_custom_functions: ["getter", "setter"],
     },
     {
@@ -602,7 +602,7 @@
       field_group: "*",
       default_value: "nullptr",
       wrapper_pointer_name: "std::unique_ptr",
-      include_paths: ["core/animation/css/CSSAnimationData.h"],
+      include_paths: ["core/animation/css/css_animation_data.h"],
       computed_style_custom_functions: ["getter", "setter"],
     },
     {
@@ -612,7 +612,7 @@
       field_group: "*",
       default_value: "nullptr",
       wrapper_pointer_name: "std::unique_ptr",
-      include_paths: ["core/animation/css/CSSTransitionData.h"],
+      include_paths: ["core/animation/css/css_transition_data.h"],
       computed_style_custom_functions: ["getter", "setter"],
     },
     {
@@ -621,7 +621,7 @@
       type_name: "NinePieceImage",
       field_group: "*",
       default_value: "NinePieceImage::MaskDefaults()",
-      include_paths: ["core/style/NinePieceImage.h"],
+      include_paths: ["core/style/nine_piece_image.h"],
       computed_style_custom_functions: ["getter", "setter"],
     },
     {
@@ -630,7 +630,7 @@
       type_name: "FloatSize",
       field_group: "*",
       default_value: "FloatSize()",
-      include_paths: ["platform/geometry/FloatSize.h"],
+      include_paths: ["platform/geometry/float_size.h"],
     },
     {
       name: "OutlineColorIsCurrentColor",
@@ -708,7 +708,7 @@
       type_name: "Vector<String>",
       field_group: "*",
       default_value: "Vector<String>()",
-      include_paths: ["platform/wtf/Vector.h", "platform/wtf/text/WTFString.h"],
+      include_paths: ["platform/wtf/vector.h", "platform/wtf/text/wtf_string.h"],
       computed_style_custom_functions: ["getter", "setter"],
     },
     {
@@ -719,7 +719,7 @@
       default_value: "nullptr",
       wrapper_pointer_name: "std::unique_ptr",
       custom_compare: true,
-      include_paths: ["core/style/PaintImages.h"],
+      include_paths: ["core/style/paint_images.h"],
       computed_style_custom_functions: ["getter", "setter"],
     },
     {
@@ -729,7 +729,7 @@
       field_group: "*",
       default_value: "nullptr",
       wrapper_pointer_name: "std::unique_ptr",
-      include_paths: ["core/style/StyleNonInheritedVariables.h"],
+      include_paths: ["core/style/style_non_inherited_variables.h"],
       computed_style_custom_functions: ["getter", "setter"],
     },
     {
@@ -850,7 +850,7 @@
       type_name: "Vector<CSSPropertyID>",
       field_group: "*->will-change",
       default_value: "Vector<CSSPropertyID>()",
-      include_paths: ["platform/wtf/Vector.h", "core/css_property_names.h"],
+      include_paths: ["platform/wtf/vector.h", "core/css_property_names.h"],
     },
     {
       name: "WillChangeContents",
@@ -879,7 +879,7 @@
       type_name: "StyleColor",
       field_group: "*->multi-col",
       default_value: "StyleColor::CurrentColor()",
-      include_paths: ["core/css/StyleColor.h"],
+      include_paths: ["core/css/style_color.h"],
       computed_style_custom_functions: ["getter", "setter"],
     },
     {
@@ -904,7 +904,7 @@
       type_name: "NamedGridLinesMap",
       field_group: "*->grid",
       default_value: "NamedGridLinesMap()",
-      include_paths: ["core/style/NamedGridLinesMap.h"],
+      include_paths: ["core/style/named_grid_lines_map.h"],
     },
     {
       name: "NamedGridRowLines",
@@ -912,7 +912,7 @@
       type_name: "NamedGridLinesMap",
       field_group: "*->grid",
       default_value: "NamedGridLinesMap()",
-      include_paths: ["core/style/NamedGridLinesMap.h"],
+      include_paths: ["core/style/named_grid_lines_map.h"],
     },
     {
       name: "OrderedNamedGridColumnLines",
@@ -920,7 +920,7 @@
       type_name: "OrderedNamedGridLines",
       field_group: "*->grid",
       default_value: "OrderedNamedGridLines()",
-      include_paths: ["core/style/OrderedNamedGridLines.h"],
+      include_paths: ["core/style/ordered_named_grid_lines.h"],
     },
     {
       name: "OrderedNamedGridRowLines",
@@ -928,7 +928,7 @@
       type_name: "OrderedNamedGridLines",
       field_group: "*->grid",
       default_value: "OrderedNamedGridLines()",
-      include_paths: ["core/style/OrderedNamedGridLines.h"],
+      include_paths: ["core/style/ordered_named_grid_lines.h"],
     },
     {
       name: "AutoRepeatNamedGridColumnLines",
@@ -936,7 +936,7 @@
       type_name: "NamedGridLinesMap",
       field_group: "*->grid",
       default_value: "NamedGridLinesMap()",
-      include_paths: ["core/style/NamedGridLinesMap.h"],
+      include_paths: ["core/style/named_grid_lines_map.h"],
     },
     {
       name: "AutoRepeatNamedGridRowLines",
@@ -944,7 +944,7 @@
       type_name: "NamedGridLinesMap",
       field_group: "*->grid",
       default_value: "NamedGridLinesMap()",
-      include_paths: ["core/style/NamedGridLinesMap.h"],
+      include_paths: ["core/style/named_grid_lines_map.h"],
     },
     {
       name: "AutoRepeatOrderedNamedGridColumnLines",
@@ -952,7 +952,7 @@
       type_name: "OrderedNamedGridLines",
       field_group: "*->grid",
       default_value: "OrderedNamedGridLines()",
-      include_paths: ["core/style/OrderedNamedGridLines.h"],
+      include_paths: ["core/style/ordered_named_grid_lines.h"],
     },
     {
       name: "AutoRepeatOrderedNamedGridRowLines",
@@ -960,7 +960,7 @@
       type_name: "OrderedNamedGridLines",
       field_group: "*->grid",
       default_value: "OrderedNamedGridLines()",
-      include_paths: ["core/style/OrderedNamedGridLines.h"],
+      include_paths: ["core/style/ordered_named_grid_lines.h"],
     },
     {
       name: "NamedGridArea",
@@ -968,7 +968,7 @@
       type_name: "NamedGridAreaMap",
       field_group: "*->grid",
       default_value: "NamedGridAreaMap()",
-      include_paths: ["core/style/GridArea.h"]
+      include_paths: ["core/style/grid_area.h"]
     },
     {
       name: "NamedGridAreaRowCount",
@@ -990,7 +990,7 @@
       type_name: "Vector<GridTrackSize>",
       field_group: "*->grid",
       default_value: "Vector<GridTrackSize>()",
-      include_paths: ["platform/wtf/Vector.h", "core/style/GridTrackSize.h"],
+      include_paths: ["platform/wtf/vector.h", "core/style/grid_track_size.h"],
     },
     {
       name: "GridAutoRepeatRows",
@@ -998,7 +998,7 @@
       type_name: "Vector<GridTrackSize>",
       field_group: "*->grid",
       default_value: "Vector<GridTrackSize>()",
-      include_paths: ["platform/wtf/Vector.h", "core/style/GridTrackSize.h"],
+      include_paths: ["platform/wtf/vector.h", "core/style/grid_track_size.h"],
     },
     {
       name: "GridAutoRepeatColumnsInsertionPoint",

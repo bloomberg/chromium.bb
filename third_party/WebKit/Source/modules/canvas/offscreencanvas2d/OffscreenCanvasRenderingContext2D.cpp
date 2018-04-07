@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/canvas/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
+#include "third_party/blink/renderer/modules/canvas/offscreencanvas2d/offscreen_canvas_rendering_context_2d.h"
 
-#include "bindings/modules/v8/offscreen_rendering_context.h"
-#include "core/css/OffscreenFontSelector.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css/resolver/FontStyleResolver.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/Settings.h"
-#include "core/html/canvas/TextMetrics.h"
-#include "core/imagebitmap/ImageBitmap.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerSettings.h"
-#include "platform/graphics/CanvasResourceProvider.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/text/BidiTextRun.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/bindings/modules/v8/offscreen_rendering_context.h"
+#include "third_party/blink/renderer/core/css/offscreen_font_selector.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/resolver/font_style_resolver.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/canvas/text_metrics.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_settings.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/text/bidi_text_run.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

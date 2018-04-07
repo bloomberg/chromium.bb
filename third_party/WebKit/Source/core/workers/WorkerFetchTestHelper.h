@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerFetchTestHelper_h
-#define WorkerFetchTestHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_FETCH_TEST_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_FETCH_TEST_HELPER_H_
 
-#include "core/loader/modulescript/ModuleScriptCreationParams.h"
-#include "core/workers/WorkerOrWorkletModuleFetchCoordinator.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/testing/FetchTestingPlatformSupport.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/Optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/testing/fetch_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class ClientImpl final : public GarbageCollectedFinalized<ClientImpl>,
 
 }  // namespace blink
 
-#endif  // WorkerFetchTestHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_FETCH_TEST_HELPER_H_

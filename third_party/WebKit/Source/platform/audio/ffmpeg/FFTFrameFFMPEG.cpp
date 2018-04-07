@@ -28,15 +28,15 @@
 
 #if defined(WTF_USE_WEBAUDIO_FFMPEG)
 
-#include "platform/audio/FFTFrame.h"
+#include "third_party/blink/renderer/platform/audio/fft_frame.h"
 
-#include "platform/audio/VectorMath.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
 
 extern "C" {
 #include <libavcodec/avfft.h>
 }
 
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

@@ -28,24 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/Animation.h"
+#include "third_party/blink/renderer/core/animation/animation.h"
 
 #include <memory>
-#include "core/animation/AnimationClock.h"
-#include "core/animation/DocumentTimeline.h"
-#include "core/animation/ElementAnimations.h"
-#include "core/animation/KeyframeEffect.h"
-#include "core/animation/KeyframeEffectModel.h"
-#include "core/animation/PendingAnimations.h"
-#include "core/dom/DOMNodeIds.h"
-#include "core/dom/Document.h"
-#include "core/dom/QualifiedName.h"
-#include "core/paint/PaintLayer.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "platform/weborigin/KURL.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/animation/animation_clock.h"
+#include "third_party/blink/renderer/core/animation/document_timeline.h"
+#include "third_party/blink/renderer/core/animation/element_animations.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/animation/pending_animations.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

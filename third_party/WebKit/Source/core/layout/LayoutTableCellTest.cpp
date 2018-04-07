@@ -23,10 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutTableCell.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 
 #include "build/build_config.h"
-#include "core/testing/CoreUnitTestHelper.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/compositing/CompositedLayerRasterInvalidator.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/composited_layer_raster_invalidator.h"
 
-#include "platform/testing/FakeDisplayItemClient.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "platform/wtf/dtoa/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 
 namespace blink {
 

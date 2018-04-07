@@ -14,8 +14,8 @@
 #include "content/renderer/shared_worker/shared_worker_client_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
-#include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
-#include "third_party/WebKit/public/web/WebSharedWorkerRepositoryClient.h"
+#include "third_party/blink/public/platform/web_content_security_policy.h"
+#include "third_party/blink/public/web/web_shared_worker_repository_client.h"
 
 namespace blink {
 class MessagePortChannel;

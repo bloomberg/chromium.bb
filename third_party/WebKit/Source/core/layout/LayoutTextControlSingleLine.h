@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef LayoutTextControlSingleLine_h
-#define LayoutTextControlSingleLine_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TEXT_CONTROL_SINGLE_LINE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TEXT_CONTROL_SINGLE_LINE_H_
 
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/layout/LayoutTextControl.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/layout/layout_text_control.h"
 
 namespace blink {
 

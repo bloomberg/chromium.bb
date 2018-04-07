@@ -25,26 +25,26 @@
  *
  */
 
-#include "core/workers/WorkerClassicScriptLoader.h"
+#include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/html/parser/TextResourceDecoder.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/loader/AllowedByNosniff.h"
-#include "core/loader/WorkerThreadableLoader.h"
-#include "core/loader/resource/ScriptResource.h"
-#include "core/origin_trials/OriginTrialContext.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/loader/fetch/TextResourceDecoderOptions.h"
-#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
-#include "platform/network/NetworkUtils.h"
-#include "platform/network/http_names.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/mojom/net/ip_address_space.mojom-blink.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/allowed_by_nosniff.h"
+#include "third_party/blink/renderer/core/loader/resource/script_resource.h"
+#include "third_party/blink/renderer/core/loader/worker_threadable_loader.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

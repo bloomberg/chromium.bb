@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/GranularityStrategy.h"
+#include "third_party/blink/renderer/core/editing/granularity_strategy.h"
 
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/LocalCaretRect.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleSelection.h"
-#include "core/editing/VisibleUnits.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/local_caret_rect.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
 
 namespace blink {
 

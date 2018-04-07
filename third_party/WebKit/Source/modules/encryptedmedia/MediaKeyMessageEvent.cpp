@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/encryptedmedia/MediaKeyMessageEvent.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_key_message_event.h"
 
-#include "core/typed_arrays/DOMArrayBuffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 
 namespace blink {
 

@@ -24,22 +24,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/TextControlInnerElements.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_inner_elements.h"
 
-#include "core/css/StyleChangeReason.h"
-#include "core/css/resolver/StyleAdjuster.h"
-#include "core/dom/Document.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/dom/UserGestureIndicator.h"
-#include "core/events/MouseEvent.h"
-#include "core/events/TextEvent.h"
-#include "core/events/TextEventInputType.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/shadow/ShadowElementNames.h"
-#include "core/html_names.h"
-#include "core/input/EventHandler.h"
-#include "core/layout/LayoutTextControlSingleLine.h"
+#include "third_party/blink/renderer/core/css/resolver/style_adjuster.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/events/text_event.h"
+#include "third_party/blink/renderer/core/events/text_event_input_type.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/layout_text_control_single_line.h"
 
 namespace blink {
 

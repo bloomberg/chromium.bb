@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/speech/testing/InternalsSpeechSynthesis.h"
+#include "third_party/blink/renderer/modules/speech/testing/internals_speech_synthesis.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/testing/Internals.h"
-#include "modules/speech/DOMWindowSpeechSynthesis.h"
-#include "modules/speech/SpeechSynthesis.h"
-#include "modules/speech/testing/PlatformSpeechSynthesizerMock.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/testing/internals.h"
+#include "third_party/blink/renderer/modules/speech/dom_window_speech_synthesis.h"
+#include "third_party/blink/renderer/modules/speech/speech_synthesis.h"
+#include "third_party/blink/renderer/modules/speech/testing/platform_speech_synthesizer_mock.h"
 
 namespace blink {
 

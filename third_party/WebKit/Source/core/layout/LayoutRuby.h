@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutRuby_h
-#define LayoutRuby_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_RUBY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_RUBY_H_
 
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutInline.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
 
 namespace blink {
 
@@ -101,4 +101,4 @@ class LayoutRubyAsBlock final : public LayoutBlockFlow {
 
 }  // namespace blink
 
-#endif  // LayoutRuby_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_RUBY_H_

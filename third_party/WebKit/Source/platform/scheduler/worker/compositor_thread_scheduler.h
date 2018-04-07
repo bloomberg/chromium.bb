@@ -8,12 +8,12 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "platform/PlatformExport.h"
-#include "platform/scheduler/child/compositor_metrics_helper.h"
-#include "platform/scheduler/public/non_main_thread_scheduler.h"
-#include "platform/scheduler/util/task_duration_metric_reporter.h"
-#include "public/platform/WebThreadType.h"
-#include "public/platform/scheduler/single_thread_idle_task_runner.h"
+#include "third_party/blink/public/platform/scheduler/single_thread_idle_task_runner.h"
+#include "third_party/blink/public/platform/web_thread_type.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/child/compositor_metrics_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/util/task_duration_metric_reporter.h"
 
 namespace base {
 class Thread;

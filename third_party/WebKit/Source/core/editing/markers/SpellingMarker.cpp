@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/markers/SpellingMarker.h"
+#include "third_party/blink/renderer/core/editing/markers/spelling_marker.h"
 
 namespace blink {
 

@@ -20,33 +20,33 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef ChromeClient_h
-#define ChromeClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_CHROME_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_CHROME_CLIENT_H_
 
 #include <memory>
 #include "base/gtest_prod_util.h"
-#include "core/CoreExport.h"
-#include "core/dom/AXObjectCache.h"
-#include "core/dom/AnimationWorkletProxyClient.h"
-#include "core/frame/SandboxFlags.h"
-#include "core/html/forms/PopupMenu.h"
-#include "core/inspector/ConsoleTypes.h"
-#include "core/loader/FrameLoader.h"
-#include "core/loader/NavigationPolicy.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/Cursor.h"
-#include "platform/PlatformChromeClient.h"
-#include "platform/graphics/TouchAction.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/text/TextDirection.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Optional.h"
-#include "public/platform/BlameContext.h"
-#include "public/platform/WebDragOperation.h"
-#include "public/platform/WebEventListenerProperties.h"
-#include "public/platform/WebFocusType.h"
-#include "public/platform/WebOverscrollBehavior.h"
+#include "third_party/blink/public/platform/blame_context.h"
+#include "third_party/blink/public/platform/web_drag_operation.h"
+#include "third_party/blink/public/platform/web_event_listener_properties.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/platform/web_overscroll_behavior.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
+#include "third_party/blink/renderer/core/html/forms/popup_menu.h"
+#include "third_party/blink/renderer/core/inspector/console_types.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/loader/navigation_policy.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/cursor.h"
+#include "third_party/blink/renderer/platform/graphics/touch_action.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_chrome_client.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CreateWindow
@@ -376,4 +376,4 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
 
 }  // namespace blink
 
-#endif  // ChromeClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_CHROME_CLIENT_H_

@@ -19,12 +19,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/network/EncodedFormData.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 
-#include "platform/FileMetadata.h"
-#include "platform/network/FormDataEncoder.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/network/form_data_encoder.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 

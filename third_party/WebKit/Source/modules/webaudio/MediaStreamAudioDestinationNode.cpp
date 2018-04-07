@@ -23,17 +23,17 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/MediaStreamAudioDestinationNode.h"
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/webaudio/AudioNodeInput.h"
-#include "modules/webaudio/AudioNodeOptions.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "platform/UUID.h"
-#include "platform/mediastream/MediaStreamCenter.h"
-#include "platform/wtf/Locker.h"
-#include "public/platform/WebRTCPeerConnectionHandler.h"
+#include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_options.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/media_stream_audio_destination_node.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
+#include "third_party/blink/renderer/platform/uuid.h"
+#include "third_party/blink/renderer/platform/wtf/locker.h"
 
 namespace blink {
 

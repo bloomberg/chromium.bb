@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/compositing/PaintLayerCompositor.h"
+#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 
-#include "core/animation/Animation.h"
-#include "core/animation/ElementAnimation.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "core/paint/PaintLayer.h"
+#include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/animation/element_animation.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
 

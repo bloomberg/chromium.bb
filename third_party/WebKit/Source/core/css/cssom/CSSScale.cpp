@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/CSSScale.h"
+#include "third_party/blink/renderer/core/css/cssom/css_scale.h"
 
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/cssom/CSSNumericValue.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_numeric_value.h"
 
 namespace blink {
 

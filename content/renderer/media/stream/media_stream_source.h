@@ -10,7 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
+#include "third_party/blink/public/platform/web_media_stream_source.h"
 
 namespace content {
 

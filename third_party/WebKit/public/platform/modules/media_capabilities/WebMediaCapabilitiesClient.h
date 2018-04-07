@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebMediaCapabilitiesClient_h
-#define WebMediaCapabilitiesClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIA_CAPABILITIES_WEB_MEDIA_CAPABILITIES_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIA_CAPABILITIES_WEB_MEDIA_CAPABILITIES_CLIENT_H_
 
 #include <memory>
 
-#include "public/platform/modules/media_capabilities/WebMediaCapabilitiesInfo.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
 
 namespace blink {
 
@@ -25,4 +25,4 @@ class WebMediaCapabilitiesClient {
 
 }  // namespace blink
 
-#endif  // WebMediaCapabilitiesClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIA_CAPABILITIES_WEB_MEDIA_CAPABILITIES_CLIENT_H_

@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InsertTextCommand_h
-#define InsertTextCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_INSERT_TEXT_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_INSERT_TEXT_COMMAND_H_
 
-#include "core/editing/commands/CompositeEditCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/composite_edit_command.h"
 
 namespace blink {
 
@@ -69,4 +69,4 @@ class CORE_EXPORT InsertTextCommand : public CompositeEditCommand {
 
 }  // namespace blink
 
-#endif  // InsertTextCommand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_INSERT_TEXT_COMMAND_H_

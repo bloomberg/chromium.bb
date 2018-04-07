@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FontVariantNumeric_h
-#define FontVariantNumeric_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_VARIANT_NUMERIC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_VARIANT_NUMERIC_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -100,4 +100,4 @@ class FontVariantNumeric {
 };
 }
 
-#endif  // FontVariantNumeric_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_VARIANT_NUMERIC_H_

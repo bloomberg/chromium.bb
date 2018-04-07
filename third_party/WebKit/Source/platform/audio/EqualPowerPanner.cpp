@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#include "platform/audio/EqualPowerPanner.h"
+#include "third_party/blink/renderer/platform/audio/equal_power_panner.h"
 
 #include <algorithm>
 #include <cmath>
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

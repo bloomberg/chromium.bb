@@ -17,12 +17,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef GradientAttributes_h
-#define GradientAttributes_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRADIENT_ATTRIBUTES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRADIENT_ATTRIBUTES_H_
 
-#include "core/svg/SVGGradientElement.h"
-#include "core/svg/SVGUnitTypes.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/svg/svg_gradient_element.h"
+#include "third_party/blink/renderer/core/svg/svg_unit_types.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

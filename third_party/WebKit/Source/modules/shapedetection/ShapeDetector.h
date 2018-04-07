@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ShapeDetector_h
-#define ShapeDetector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_SHAPE_DETECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_SHAPE_DETECTOR_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/imagebitmap/ImageBitmapFactories.h"
-#include "modules/ModulesExport.h"
-#include "modules/canvas/canvas2d/CanvasRenderingContext2D.h"
-#include "platform/bindings/ScriptWrappable.h"
 #include "skia/public/interfaces/bitmap.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_factories.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
@@ -32,4 +32,4 @@ class MODULES_EXPORT ShapeDetector : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // ShapeDetector_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_SHAPE_DETECTOR_H_

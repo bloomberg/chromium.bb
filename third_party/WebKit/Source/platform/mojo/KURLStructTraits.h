@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef KURLStructTraits_h
-#define KURLStructTraits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_KURL_STRUCT_TRAITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_KURL_STRUCT_TRAITS_H_
 
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "url/mojom/url.mojom-blink.h"
 #include "url/url_constants.h"
 
@@ -39,4 +39,4 @@ struct StructTraits<url::mojom::blink::Url::DataView, ::blink::KURL> {
 };
 }
 
-#endif  // KURLStructTraits_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_KURL_STRUCT_TRAITS_H_

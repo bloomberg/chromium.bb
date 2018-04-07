@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebRTCStatsRequest.h"
+#include "third_party/blink/public/platform/web_rtc_stats_request.h"
 
-#include "platform/peerconnection/RTCStatsRequest.h"
-#include "platform/peerconnection/RTCStatsResponseBase.h"
-#include "public/platform/WebMediaStream.h"
-#include "public/platform/WebMediaStreamTrack.h"
-#include "public/platform/WebRTCStatsResponse.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/platform/web_rtc_stats_response.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats_request.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats_response_base.h"
 
 namespace blink {
 

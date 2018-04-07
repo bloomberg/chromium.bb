@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DoubleRect_h
-#define DoubleRect_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_DOUBLE_RECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_DOUBLE_RECT_H_
 
-#include "platform/geometry/DoublePoint.h"
-#include "platform/geometry/DoubleSize.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/geometry/double_point.h"
+#include "third_party/blink/renderer/platform/geometry/double_size.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

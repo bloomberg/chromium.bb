@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ColumnBalancer.h"
+#include "third_party/blink/renderer/core/layout/column_balancer.h"
 
-#include "core/layout/LayoutMultiColumnFlowThread.h"
-#include "core/layout/LayoutMultiColumnSet.h"
-#include "core/layout/api/LineLayoutBlockFlow.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
 
 namespace blink {
 

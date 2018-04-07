@@ -18,18 +18,18 @@
  *
  */
 
-#include "core/html/HTMLMeterElement.h"
+#include "third_party/blink/renderer/core/html/html_meter_element.h"
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/html/HTMLSlotElement.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html_names.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/html/html_slot_element.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

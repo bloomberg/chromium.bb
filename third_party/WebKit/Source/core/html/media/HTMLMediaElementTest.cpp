@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/media/HTMLMediaElement.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
 
-#include "core/frame/Settings.h"
-#include "core/html/media/HTMLAudioElement.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/page/Page.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/network/NetworkStateNotifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/media/html_audio_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 
 namespace blink {
 

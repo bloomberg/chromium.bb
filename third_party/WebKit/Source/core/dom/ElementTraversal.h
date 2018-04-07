@@ -25,12 +25,12 @@
  *
  */
 
-#ifndef ElementTraversal_h
-#define ElementTraversal_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_TRAVERSAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_TRAVERSAL_H_
 
-#include "core/dom/Element.h"
-#include "core/dom/NodeTraversal.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

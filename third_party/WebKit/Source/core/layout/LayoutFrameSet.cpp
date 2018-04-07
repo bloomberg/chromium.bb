@@ -21,19 +21,19 @@
  *
  */
 
-#include "core/layout/LayoutFrameSet.h"
+#include "third_party/blink/renderer/core/layout/layout_frame_set.h"
 
-#include "core/dom/Document.h"
-#include "core/events/MouseEvent.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/HTMLDimension.h"
-#include "core/html/HTMLFrameSetElement.h"
-#include "core/input/EventHandler.h"
-#include "core/layout/LayoutFrame.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/FrameSetPainter.h"
-#include "platform/Cursor.h"
-#include "platform/graphics/GraphicsContext.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/html_dimension.h"
+#include "third_party/blink/renderer/core/html/html_frame_set_element.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/layout_frame.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/frame_set_painter.h"
+#include "third_party/blink/renderer/platform/cursor.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 namespace blink {
 

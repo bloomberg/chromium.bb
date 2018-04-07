@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigatorServiceWorker_h
-#define NavigatorServiceWorker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_NAVIGATOR_SERVICE_WORKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_NAVIGATOR_SERVICE_WORKER_H_
 
-#include "core/frame/Navigator.h"
-#include "modules/ModulesExport.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class MODULES_EXPORT NavigatorServiceWorker final
 
 }  // namespace blink
 
-#endif  // NavigatorServiceWorker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_NAVIGATOR_SERVICE_WORKER_H_

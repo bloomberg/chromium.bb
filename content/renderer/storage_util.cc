@@ -4,8 +4,8 @@
 
 #include "content/renderer/storage_util.h"
 
-#include "third_party/WebKit/public/platform/URLConversion.h"
-#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
+#include "third_party/blink/public/platform/url_conversion.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

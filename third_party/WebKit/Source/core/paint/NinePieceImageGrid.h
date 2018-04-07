@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NinePieceImageGrid_h
-#define NinePieceImageGrid_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NINE_PIECE_IMAGE_GRID_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NINE_PIECE_IMAGE_GRID_H_
 
-#include "core/CoreExport.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/Image.h"
-#include "platform/heap/Heap.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -111,4 +111,4 @@ class CORE_EXPORT NinePieceImageGrid {
 
 }  // namespace blink
 
-#endif  // NinePieceImageGrid_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NINE_PIECE_IMAGE_GRID_H_

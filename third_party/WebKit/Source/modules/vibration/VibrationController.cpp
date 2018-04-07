@@ -17,17 +17,17 @@
  *  Boston, MA 02110-1301, USA.
  */
 
-#include "modules/vibration/VibrationController.h"
+#include "third_party/blink/renderer/modules/vibration/vibration_controller.h"
 
-#include "bindings/modules/v8/unsigned_long_or_unsigned_long_sequence.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Navigator.h"
-#include "core/page/Page.h"
-#include "platform/mojo/MojoHelper.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_or_unsigned_long_sequence.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 
 // Maximum number of entries in a vibration pattern.
 const unsigned kVibrationPatternLengthMax = 99;

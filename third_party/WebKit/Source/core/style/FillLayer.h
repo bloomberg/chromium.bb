@@ -22,17 +22,17 @@
  *
  */
 
-#ifndef FillLayer_h
-#define FillLayer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_FILL_LAYER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_FILL_LAYER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "core/style/StyleImage.h"
-#include "platform/Length.h"
-#include "platform/LengthSize.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/length_size.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -356,4 +356,4 @@ class CORE_EXPORT FillLayer {
 
 }  // namespace blink
 
-#endif  // FillLayer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_FILL_LAYER_H_

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/peerconnection/RTCRtpReceiver.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver.h"
 
-#include "modules/peerconnection/WebRTCStatsReportCallbackResolver.h"
-#include "platform/bindings/Microtask.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebMediaStream.h"
-#include "public/platform/WebMediaStreamTrack.h"
-#include "public/platform/WebRTCRtpContributingSource.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_contributing_source.h"
+#include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

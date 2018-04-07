@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DocumentPaintDefinition_h
-#define DocumentPaintDefinition_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_DOCUMENT_PAINT_DEFINITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_DOCUMENT_PAINT_DEFINITION_H_
 
-#include "core/css/CSSSyntaxDescriptor.h"
-#include "core/css/cssom/CSSStyleValue.h"
-#include "modules/csspaint/CSSPaintDefinition.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
+#include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class DocumentPaintDefinition final
 
 }  // namespace blink
 
-#endif  // DocumentPaintDefinition_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_DOCUMENT_PAINT_DEFINITION_H_

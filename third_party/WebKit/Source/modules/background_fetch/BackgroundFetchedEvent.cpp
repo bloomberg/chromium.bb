@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/background_fetch/BackgroundFetchedEvent.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetched_event.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/fetch/Request.h"
-#include "core/fetch/Response.h"
-#include "modules/background_fetch/BackgroundFetchBridge.h"
-#include "modules/background_fetch/BackgroundFetchSettledFetch.h"
-#include "modules/background_fetch/BackgroundFetchedEventInit.h"
-#include "modules/event_modules_names.h"
-#include "platform/bindings/ScriptState.h"
-#include "public/platform/modules/background_fetch/WebBackgroundFetchSettledFetch.h"
+#include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_settled_fetch.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/fetch/request.h"
+#include "third_party/blink/renderer/core/fetch/response.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_bridge.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_settled_fetch.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetched_event_init.h"
+#include "third_party/blink/renderer/modules/event_modules_names.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

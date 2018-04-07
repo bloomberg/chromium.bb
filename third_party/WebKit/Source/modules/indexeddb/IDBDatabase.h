@@ -23,31 +23,31 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IDBDatabase_h
-#define IDBDatabase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_DATABASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_DATABASE_H_
 
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/string_or_string_sequence.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/DOMStringList.h"
-#include "modules/EventModules.h"
-#include "modules/EventTargetModules.h"
-#include "modules/ModulesExport.h"
-#include "modules/indexeddb/IDBDatabaseCallbacks.h"
-#include "modules/indexeddb/IDBHistograms.h"
-#include "modules/indexeddb/IDBMetadata.h"
-#include "modules/indexeddb/IDBObjectStore.h"
-#include "modules/indexeddb/IDBObjectStoreParameters.h"
-#include "modules/indexeddb/IDBTransaction.h"
-#include "modules/indexeddb/IndexedDB.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabase.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_string_sequence.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/dom_string_list.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_histograms.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_object_store.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_object_store_parameters.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_transaction.h"
+#include "third_party/blink/renderer/modules/indexeddb/indexed_db.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -210,4 +210,4 @@ class MODULES_EXPORT IDBDatabase final
 
 }  // namespace blink
 
-#endif  // IDBDatabase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_DATABASE_H_

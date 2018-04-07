@@ -24,9 +24,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/XPathExpressionNode.h"
+#include "third_party/blink/renderer/core/xml/xpath_expression_node.h"
 
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 namespace XPath {

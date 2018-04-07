@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/heap/HeapCompact.h"
+#include "third_party/blink/renderer/platform/heap/heap_compact.h"
 
-#include "platform/heap/Handle.h"
-#include "platform/heap/HeapTestUtilities.h"
-#include "platform/heap/SparseHeapBitmap.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/LinkedHashSet.h"
-#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
+#include "third_party/blink/renderer/platform/heap/sparse_heap_bitmap.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 #include <memory>
 

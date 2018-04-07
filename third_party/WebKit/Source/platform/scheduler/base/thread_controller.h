@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace base {
 class TickClock;

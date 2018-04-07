@@ -24,12 +24,12 @@
  *
  */
 
-#ifndef PausableTimer_h
-#define PausableTimer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PAUSABLE_TIMER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PAUSABLE_TIMER_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/PausableObject.h"
-#include "platform/Timer.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class CORE_EXPORT PausableTimer : public TimerBase, public PausableObject {
 
 }  // namespace blink
 
-#endif  // PausableTimer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PAUSABLE_TIMER_H_

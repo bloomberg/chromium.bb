@@ -5,14 +5,14 @@
 #ifndef NGLengthUtils_h
 #define NGLengthUtils_h
 
-#include "core/CoreExport.h"
-#include "core/layout/MinMaxSize.h"
-#include "core/layout/ng/geometry/ng_box_strut.h"
-#include "core/layout/ng/geometry/ng_logical_size.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/text/TextDirection.h"
-#include "platform/text/WritingMode.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 class ComputedStyle;

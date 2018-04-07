@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ExceptionState_h
-#define ExceptionState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_EXCEPTION_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_EXCEPTION_STATE_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/CoreExport.h"
-#include "core/dom/ExceptionCode.h"
-#include "platform/bindings/ScopedPersistent.h"
-#include "platform/bindings/V8ThrowException.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -225,4 +225,4 @@ class CORE_EXPORT DummyExceptionStateForTesting final : public ExceptionState {
 
 }  // namespace blink
 
-#endif  // ExceptionState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_EXCEPTION_STATE_H_

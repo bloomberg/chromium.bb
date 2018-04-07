@@ -23,18 +23,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/HTMLTableRowElement.h"
+#include "third_party/blink/renderer/core/html/html_table_row_element.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/NodeListsNodeData.h"
-#include "core/html/HTMLCollection.h"
-#include "core/html/HTMLTableCellElement.h"
-#include "core/html/HTMLTableElement.h"
-#include "core/html/HTMLTableRowsCollection.h"
-#include "core/html/HTMLTableSectionElement.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
+#include "third_party/blink/renderer/core/html/html_table_cell_element.h"
+#include "third_party/blink/renderer/core/html/html_table_element.h"
+#include "third_party/blink/renderer/core/html/html_table_rows_collection.h"
+#include "third_party/blink/renderer/core/html/html_table_section_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

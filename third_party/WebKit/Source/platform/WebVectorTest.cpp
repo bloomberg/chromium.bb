@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

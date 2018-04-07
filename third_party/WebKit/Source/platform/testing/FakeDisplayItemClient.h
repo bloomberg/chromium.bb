@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FakeDisplayItemClient_h
-#define FakeDisplayItemClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FAKE_DISPLAY_ITEM_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FAKE_DISPLAY_ITEM_CLIENT_H_
 
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class FakeDisplayItemClient : public DisplayItemClient {
 
 }  // namespace blink
 
-#endif  // FakeDisplayItemClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FAKE_DISPLAY_ITEM_CLIENT_H_

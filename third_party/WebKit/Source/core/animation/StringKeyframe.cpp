@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/StringKeyframe.h"
+#include "third_party/blink/renderer/core/animation/string_keyframe.h"
 
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/animation/AnimationInputHelpers.h"
-#include "core/animation/css/CSSAnimations.h"
-#include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/style_property_shorthand.h"
-#include "core/svg/SVGElement.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
+#include "third_party/blink/renderer/core/animation/css/css_animations.h"
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/style_property_shorthand.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
 
 namespace blink {
 

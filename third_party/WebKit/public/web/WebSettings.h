@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSettings_h
-#define WebSettings_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SETTINGS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SETTINGS_H_
 
 #include <unicode/uscript.h>
 
-#include "public/platform/PointerProperties.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebEffectiveConnectionType.h"
-#include "public/platform/WebSize.h"
-#include "public/platform/WebViewportStyle.h"
+#include "third_party/blink/public/platform/pointer_properties.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_effective_connection_type.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_viewport_style.h"
 
 namespace blink {
 

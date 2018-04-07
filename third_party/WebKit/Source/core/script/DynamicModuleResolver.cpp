@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/script/DynamicModuleResolver.h"
+#include "third_party/blink/renderer/core/script/dynamic_module_resolver.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ReferrerScriptInfo.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/loader/modulescript/ModuleScriptFetchRequest.h"
-#include "core/script/Modulator.h"
-#include "core/script/ModuleScript.h"
-#include "platform/bindings/V8ThrowException.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "v8/include/v8.h"
 
 namespace blink {

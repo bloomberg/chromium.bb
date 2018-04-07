@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ColdModeSpellCheckRequester_h
-#define ColdModeSpellCheckRequester_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_COLD_MODE_SPELL_CHECK_REQUESTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_COLD_MODE_SPELL_CHECK_REQUESTER_H_
 
-#include "core/editing/Forward.h"
-#include "core/editing/Position.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

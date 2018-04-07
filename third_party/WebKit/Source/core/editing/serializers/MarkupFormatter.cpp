@@ -25,24 +25,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/serializers/MarkupFormatter.h"
+#include "third_party/blink/renderer/core/editing/serializers/markup_formatter.h"
 
-#include "core/dom/CDATASection.h"
-#include "core/dom/Comment.h"
-#include "core/dom/Document.h"
-#include "core/dom/DocumentFragment.h"
-#include "core/dom/DocumentType.h"
-#include "core/dom/ProcessingInstruction.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/Editor.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLTemplateElement.h"
-#include "core/html_names.h"
-#include "core/xlink_names.h"
-#include "core/xml_names.h"
-#include "core/xmlns_names.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/core/dom/cdata_section.h"
+#include "third_party/blink/renderer/core/dom/comment.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/dom/document_type.h"
+#include "third_party/blink/renderer/core/dom/processing_instruction.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_template_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/xlink_names.h"
+#include "third_party/blink/renderer/core/xml_names.h"
+#include "third_party/blink/renderer/core/xmlns_names.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
 

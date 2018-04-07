@@ -18,18 +18,18 @@
  * 02110-1301  USA
  */
 
-#ifndef CSSComputedStyleDeclaration_h
-#define CSSComputedStyleDeclaration_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_COMPUTED_STYLE_DECLARATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_COMPUTED_STYLE_DECLARATION_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/css/CSSStyleDeclaration.h"
-#include "core/css/properties/css_property.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/AtomicStringHash.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_style_declaration.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -129,4 +129,4 @@ class CORE_EXPORT CSSComputedStyleDeclaration final
 
 }  // namespace blink
 
-#endif  // CSSComputedStyleDeclaration_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_COMPUTED_STYLE_DECLARATION_H_

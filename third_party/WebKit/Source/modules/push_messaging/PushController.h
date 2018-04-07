@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PushController_h
-#define PushController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_CONTROLLER_H_
 
-#include "core/frame/LocalFrame.h"
-#include "modules/ModulesExport.h"
-#include "platform/Supplementable.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -44,4 +44,4 @@ MODULES_EXPORT void ProvidePushControllerTo(LocalFrame&, WebPushClient*);
 
 }  // namespace blink
 
-#endif  // PushController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_CONTROLLER_H_

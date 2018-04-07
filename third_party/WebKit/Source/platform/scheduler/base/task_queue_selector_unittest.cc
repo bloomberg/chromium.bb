@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/base/task_queue_selector.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 
 #include <stddef.h>
 
@@ -12,12 +12,12 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/pending_task.h"
-#include "platform/scheduler/base/task_queue_impl.h"
-#include "platform/scheduler/base/virtual_time_domain.h"
-#include "platform/scheduler/base/work_queue.h"
-#include "platform/scheduler/base/work_queue_sets.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
 
 using testing::_;
 

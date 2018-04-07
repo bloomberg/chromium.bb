@@ -17,13 +17,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPathByteStream_h
-#define SVGPathByteStream_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_BYTE_STREAM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_BYTE_STREAM_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -74,4 +74,4 @@ class SVGPathByteStream {
 
 }  // namespace blink
 
-#endif  // SVGPathByteStream_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_BYTE_STREAM_H_

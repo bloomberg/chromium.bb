@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/background_sync/ServiceWorkerRegistrationSync.h"
+#include "third_party/blink/renderer/modules/background_sync/service_worker_registration_sync.h"
 
-#include "modules/background_sync/SyncManager.h"
-#include "modules/serviceworkers/ServiceWorkerRegistration.h"
+#include "third_party/blink/renderer/modules/background_sync/sync_manager.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_registration.h"
 
 namespace blink {
 

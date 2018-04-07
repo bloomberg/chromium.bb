@@ -13,7 +13,7 @@ import os
 import sys
 
 sys.path.append(os.path.join(
-    os.path.dirname(__file__), '..', '..', 'WebKit', 'Source', 'devtools', 'scripts'))
+    os.path.dirname(__file__), '..', '..', 'blink', 'renderer', 'devtools', 'scripts'))
 import compile_frontend
 
 if __name__ == '__main__':

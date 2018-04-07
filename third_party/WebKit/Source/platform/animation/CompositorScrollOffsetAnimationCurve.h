@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorScrollOffsetAnimationCurve_h
-#define CompositorScrollOffsetAnimationCurve_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_SCROLL_OFFSET_ANIMATION_CURVE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_SCROLL_OFFSET_ANIMATION_CURVE_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "platform/PlatformExport.h"
-#include "platform/animation/CompositorAnimationCurve.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_curve.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace cc {
 class ScrollOffsetAnimationCurve;
@@ -63,4 +63,4 @@ class PLATFORM_EXPORT CompositorScrollOffsetAnimationCurve
 
 }  // namespace blink
 
-#endif  // CompositorScrollOffsetAnimationCurve_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_SCROLL_OFFSET_ANIMATION_CURVE_H_

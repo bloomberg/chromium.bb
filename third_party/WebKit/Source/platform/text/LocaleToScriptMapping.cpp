@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/text/LocaleToScriptMapping.h"
+#include "third_party/blink/renderer/platform/text/locale_to_script_mapping.h"
 
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 

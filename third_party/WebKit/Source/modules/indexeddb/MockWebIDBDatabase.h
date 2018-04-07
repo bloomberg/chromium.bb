@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockWebIDBDatabase_h
-#define MockWebIDBDatabase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_MOCK_WEB_IDB_DATABASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_MOCK_WEB_IDB_DATABASE_H_
 
-#include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBKeyRange.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabase.h"
-#include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
 #include <gmock/gmock.h>
 #include <memory>
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_range.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 
 namespace blink {
 
@@ -151,4 +151,4 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
 
 }  // namespace blink
 
-#endif  // MockWebIDBDatabase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_MOCK_WEB_IDB_DATABASE_H_

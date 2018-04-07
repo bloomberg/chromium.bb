@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/FloatClipDisplayItem.h"
+#include "third_party/blink/renderer/platform/graphics/paint/float_clip_display_item.h"
 
-#include "platform/graphics/GraphicsContext.h"
-#include "public/platform/WebDisplayItemList.h"
+#include "third_party/blink/public/platform/web_display_item_list.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/skia/include/core/SkScalar.h"
 
 namespace blink {

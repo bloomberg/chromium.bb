@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ServiceWorkerError_h
-#define ServiceWorkerError_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_ERROR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_ERROR_H_
 
-#include "platform/heap/Handle.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerError.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_error.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -61,4 +61,4 @@ class ServiceWorkerErrorForUpdate : public ServiceWorkerError {
 
 }  // namespace blink
 
-#endif  // ServiceWorkerError_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_ERROR_H_

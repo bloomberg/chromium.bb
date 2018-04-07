@@ -26,20 +26,20 @@
  *
  */
 
-#include "core/layout/LayoutImage.h"
+#include "third_party/blink/renderer/core/layout/layout_image.h"
 
-#include "core/dom/PseudoElement.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLAreaElement.h"
-#include "core/html/HTMLImageElement.h"
-#include "core/html_names.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutView.h"
-#include "core/loader/resource/ImageResourceContent.h"
-#include "core/paint/ImagePainter.h"
-#include "core/svg/graphics/SVGImage.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_area_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/paint/image_painter.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 
 namespace blink {
 

@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#ifndef HRTFPanner_h
-#define HRTFPanner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_HRTF_PANNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_HRTF_PANNER_H_
 
-#include "platform/audio/AudioDelayDSPKernel.h"
-#include "platform/audio/FFTConvolver.h"
-#include "platform/audio/HRTFDatabaseLoader.h"
-#include "platform/audio/Panner.h"
+#include "third_party/blink/renderer/platform/audio/audio_delay_dsp_kernel.h"
+#include "third_party/blink/renderer/platform/audio/fft_convolver.h"
+#include "third_party/blink/renderer/platform/audio/hrtf_database_loader.h"
+#include "third_party/blink/renderer/platform/audio/panner.h"
 
 namespace blink {
 
@@ -121,4 +121,4 @@ class PLATFORM_EXPORT HRTFPanner final : public Panner {
 
 }  // namespace blink
 
-#endif  // HRTFPanner_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_HRTF_PANNER_H_

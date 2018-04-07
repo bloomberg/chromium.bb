@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMWindowQuota_h
-#define DOMWindowQuota_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_DOM_WINDOW_QUOTA_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_DOM_WINDOW_QUOTA_H_
 
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class DOMWindowQuota final : public GarbageCollected<DOMWindowQuota>,
 
 }  // namespace blink
 
-#endif  // DOMWindowQuota_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_DOM_WINDOW_QUOTA_H_

@@ -5,14 +5,14 @@
 #ifndef NGInlineItemsBuilder_h
 #define NGInlineItemsBuilder_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/inline/empty_offset_mapping_builder.h"
-#include "core/layout/ng/inline/ng_inline_item.h"
-#include "core/layout/ng/inline/ng_offset_mapping_builder.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/empty_offset_mapping_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping_builder.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

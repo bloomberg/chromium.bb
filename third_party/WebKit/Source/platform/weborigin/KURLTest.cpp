@@ -31,12 +31,12 @@
 // Basic tests that verify our KURL's interface behaves the same as the
 // original KURL's.
 
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "url/url_util.h"
 
 namespace blink {

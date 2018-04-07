@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RemoteFrameView_h
-#define RemoteFrameView_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_VIEW_H_
 
-#include "core/dom/DocumentLifecycle.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/LocalFrameView.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebCanvas.h"
+#include "third_party/blink/public/platform/web_canvas.h"
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/core/frame/frame_view.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -94,4 +94,4 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
 
 }  // namespace blink
 
-#endif  // RemoteFrameView_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_VIEW_H_

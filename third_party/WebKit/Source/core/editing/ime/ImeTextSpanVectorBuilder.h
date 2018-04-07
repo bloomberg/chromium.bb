@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ImeTextSpanVectorBuilder_h
-#define ImeTextSpanVectorBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_IME_IME_TEXT_SPAN_VECTOR_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_IME_IME_TEXT_SPAN_VECTOR_BUILDER_H_
 
-#include "core/CoreExport.h"
-#include "core/editing/ime/ImeTextSpan.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebVector.h"
-#include "public/web/WebImeTextSpan.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_ime_text_span.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/ime/ime_text_span.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

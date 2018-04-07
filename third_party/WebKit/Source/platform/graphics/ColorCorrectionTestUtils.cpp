@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/ColorCorrectionTestUtils.h"
+#include "third_party/blink/renderer/platform/graphics/color_correction_test_utils.h"
 
-#include "platform/wtf/ByteSwap.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/byte_swap.h"
 
 namespace blink {
 

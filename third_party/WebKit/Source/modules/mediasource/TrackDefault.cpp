@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediasource/TrackDefault.h"
+#include "third_party/blink/renderer/modules/mediasource/track_default.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "core/html/track/AudioTrack.h"
-#include "core/html/track/TextTrack.h"
-#include "core/html/track/VideoTrack.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/core/html/track/audio_track.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
+#include "third_party/blink/renderer/core/html/track/video_track.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

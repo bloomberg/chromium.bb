@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "third_party/WebKit/public/platform/modules/installedapp/installed_app_provider.mojom.h"
-#include "third_party/WebKit/public/platform/modules/installedapp/related_application.mojom.h"
+#include "third_party/blink/public/platform/modules/installedapp/installed_app_provider.mojom.h"
+#include "third_party/blink/public/platform/modules/installedapp/related_application.mojom.h"
 
 namespace content {
 

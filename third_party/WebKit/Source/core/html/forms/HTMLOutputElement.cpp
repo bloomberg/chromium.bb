@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/HTMLOutputElement.h"
+#include "third_party/blink/renderer/core/html/forms/html_output_element.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

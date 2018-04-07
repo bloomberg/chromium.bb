@@ -24,8 +24,8 @@ include_rules = [
     "+base/tuple.h",
     # To avoid recursive dependency, we impose a blanket ban on using other
     # platform files. Think carefully if you want to relax this restriction.
-    "-platform",
-    "+platform/wtf",
+    "-third_party/blink/renderer/platform",
+    "+third_party/blink/renderer/platform/wtf",
     "-v8",
 ]
 

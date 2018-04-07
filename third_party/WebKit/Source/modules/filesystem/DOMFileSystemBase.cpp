@@ -28,26 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/filesystem/DOMFileSystemBase.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system_base.h"
 
 #include <memory>
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fileapi/File.h"
-#include "core/fileapi/FileError.h"
-#include "modules/filesystem/DOMFilePath.h"
-#include "modules/filesystem/DirectoryEntry.h"
-#include "modules/filesystem/DirectoryReaderBase.h"
-#include "modules/filesystem/Entry.h"
-#include "modules/filesystem/EntryBase.h"
-#include "modules/filesystem/FileSystemCallbacks.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/TextEncoding.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebFileSystem.h"
-#include "public/platform/WebFileSystemCallbacks.h"
-#include "public/platform/WebSecurityOrigin.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_file_system.h"
+#include "third_party/blink/public/platform/web_file_system_callbacks.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/file.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
+#include "third_party/blink/renderer/modules/filesystem/directory_reader_base.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_path.h"
+#include "third_party/blink/renderer/modules/filesystem/entry.h"
+#include "third_party/blink/renderer/modules/filesystem/entry_base.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 

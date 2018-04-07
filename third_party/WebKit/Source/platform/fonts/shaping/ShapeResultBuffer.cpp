@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/shaping/ShapeResultBuffer.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
 
-#include "platform/fonts/CharacterRange.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/text/TextDirection.h"
+#include "third_party/blink/renderer/platform/fonts/character_range.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
 
 namespace blink {
 

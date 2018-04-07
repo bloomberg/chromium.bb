@@ -23,19 +23,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/DeferredImageDecoder.h"
+#include "third_party/blink/renderer/platform/graphics/deferred_image_decoder.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "platform/SharedBuffer.h"
-#include "platform/graphics/DecodingImageGenerator.h"
-#include "platform/graphics/ImageDecodingStore.h"
-#include "platform/graphics/ImageFrameGenerator.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/image-decoders/SegmentReader.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/graphics/decoding_image_generator.h"
+#include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
+#include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {

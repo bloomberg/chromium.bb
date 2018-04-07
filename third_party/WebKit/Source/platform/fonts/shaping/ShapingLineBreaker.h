@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ShapingLineBreaker_h
-#define ShapingLineBreaker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPING_LINE_BREAKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPING_LINE_BREAKER_H_
 
-#include "platform/LayoutUnit.h"
-#include "platform/PlatformExport.h"
-#include "platform/text/TextDirection.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -113,4 +113,4 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
 
 }  // namespace blink
 
-#endif  // ShapingLineBreaker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPING_LINE_BREAKER_H_

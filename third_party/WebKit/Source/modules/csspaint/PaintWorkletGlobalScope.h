@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintWorkletGlobalScope_h
-#define PaintWorkletGlobalScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_GLOBAL_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_GLOBAL_SCOPE_H_
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/workers/MainThreadWorkletGlobalScope.h"
-#include "modules/ModulesExport.h"
-#include "modules/csspaint/PaintWorkletPendingGeneratorRegistry.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_worklet_pending_generator_registry.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ DEFINE_TYPE_CASTS(PaintWorkletGlobalScope,
 
 }  // namespace blink
 
-#endif  // PaintWorkletGlobalScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_GLOBAL_SCOPE_H_

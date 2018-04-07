@@ -21,12 +21,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPathParser_h
-#define SVGPathParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_PARSER_H_
 
-#include "core/CoreExport.h"
-#include "core/svg/SVGPathData.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/svg/svg_path_data.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -72,4 +72,4 @@ class SVGPathNormalizer {
 
 }  // namespace blink
 
-#endif  // SVGPathParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_PARSER_H_

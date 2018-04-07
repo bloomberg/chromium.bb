@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/image-decoders/ImageDecoderTestHelpers.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
 
 #include <memory>
-#include "platform/SharedBuffer.h"
-#include "platform/image-decoders/ImageFrame.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/StringHasher.h"
-#include "platform/wtf/text/StringBuilder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_frame.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

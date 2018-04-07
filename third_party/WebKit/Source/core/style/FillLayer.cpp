@@ -19,10 +19,10 @@
  *
  */
 
-#include "core/style/FillLayer.h"
+#include "third_party/blink/renderer/core/style/fill_layer.h"
 
-#include "core/layout/LayoutObject.h"
-#include "core/style/DataEquivalency.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/style/data_equivalency.h"
 
 namespace blink {
 

@@ -26,9 +26,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/DOMException.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 
-#include "core/dom/ExceptionCode.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 

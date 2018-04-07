@@ -4,8 +4,8 @@
 
 module content.mojom;
 
-import "third_party/WebKit/public/mojom/net/ip_address_space.mojom";
-import "third_party/WebKit/public/platform/content_security_policy.mojom";
+import "third_party/blink/public/mojom/net/ip_address_space.mojom";
+import "third_party/blink/public/platform/content_security_policy.mojom";
 import "url/mojom/url.mojom";
 
 // Meta data that is necessary to create a new shared worker context. This

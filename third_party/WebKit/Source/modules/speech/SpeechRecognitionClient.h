@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SpeechRecognitionClient_h
-#define SpeechRecognitionClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_CLIENT_H_
 
 #include <memory>
 
-#include "modules/ModulesExport.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ MODULES_EXPORT void ProvideSpeechRecognitionTo(
 
 }  // namespace blink
 
-#endif  // SpeechRecognitionClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_CLIENT_H_

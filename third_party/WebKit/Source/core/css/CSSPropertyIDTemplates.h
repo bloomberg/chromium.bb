@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSPropertyIDTemplates_h
-#define CSSPropertyIDTemplates_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_ID_TEMPLATES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_ID_TEMPLATES_H_
 
-#include "core/css_property_names.h"
-#include "platform/wtf/HashFunctions.h"
-#include "platform/wtf/HashTraits.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 
 namespace WTF {
 template <>
@@ -27,4 +27,4 @@ struct HashTraits<blink::CSSPropertyID>
 };
 }  // namespace WTF
 
-#endif  // CSSPropertyIDTemplates_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_ID_TEMPLATES_H_

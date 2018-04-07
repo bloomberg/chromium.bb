@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Platform_h
-#define Platform_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_PLATFORM_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_PLATFORM_H_
 
 #ifdef WIN32
 #include <windows.h>
@@ -37,23 +37,6 @@
 
 #include <memory>
 
-#include "BlameContext.h"
-#include "UserMetricsAction.h"
-#include "WebAudioDevice.h"
-#include "WebCommon.h"
-#include "WebData.h"
-#include "WebDataConsumerHandle.h"
-#include "WebGamepadListener.h"
-#include "WebGestureDevice.h"
-#include "WebLocalizedString.h"
-#include "WebPlatformEventType.h"
-#include "WebRTCAPIName.h"
-#include "WebSize.h"
-#include "WebSpeechSynthesizer.h"
-#include "WebString.h"
-#include "WebURLError.h"
-#include "WebURLLoader.h"
-#include "WebURLLoaderFactory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_piece.h"
@@ -62,7 +45,24 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/platform/blame_context.h"
+#include "third_party/blink/public/platform/user_metrics_action.h"
+#include "third_party/blink/public/platform/web_audio_device.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_data_consumer_handle.h"
+#include "third_party/blink/public/platform/web_gamepad_listener.h"
+#include "third_party/blink/public/platform/web_gesture_device.h"
+#include "third_party/blink/public/platform/web_localized_string.h"
+#include "third_party/blink/public/platform/web_platform_event_type.h"
+#include "third_party/blink/public/platform/web_rtc_api_name.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_speech_synthesizer.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/public/platform/web_url_loader.h"
+#include "third_party/blink/public/platform/web_url_loader_factory.h"
 
 namespace base {
 class SingleThreadTaskRunner;

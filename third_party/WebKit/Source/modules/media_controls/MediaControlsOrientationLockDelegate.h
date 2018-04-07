@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlsOrientationLockDelegate_h
-#define MediaControlsOrientationLockDelegate_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_ORIENTATION_LOCK_DELEGATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_ORIENTATION_LOCK_DELEGATE_H_
 
-#include "core/dom/events/EventListener.h"
-#include "modules/ModulesExport.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "services/device/public/mojom/screen_orientation.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_lock_type.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -148,4 +148,4 @@ class MediaControlsOrientationLockDelegate final : public EventListener {
 
 }  // namespace blink
 
-#endif  // MediaControlsOrientationLockDelegate_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_ORIENTATION_LOCK_DELEGATE_H_

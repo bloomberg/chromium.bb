@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSAnimationData_h
-#define CSSAnimationData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_CSS_ANIMATION_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_CSS_ANIMATION_DATA_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/animation/Timing.h"
-#include "core/animation/css/CSSTimingData.h"
-#include "core/style/ComputedStyleConstants.h"
+#include "third_party/blink/renderer/core/animation/css/css_timing_data.h"
+#include "third_party/blink/renderer/core/animation/timing.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
 
 namespace blink {
 
@@ -72,4 +72,4 @@ class CSSAnimationData final : public CSSTimingData {
 
 }  // namespace blink
 
-#endif  // CSSAnimationData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_CSS_ANIMATION_DATA_H_

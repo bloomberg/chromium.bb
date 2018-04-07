@@ -28,27 +28,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/loader/WorkerThreadableLoader.h"
+#include "third_party/blink/renderer/core/loader/worker_threadable_loader.h"
 
 #include <memory>
 
 #include "base/debug/alias.h"
-#include "core/loader/DocumentThreadableLoader.h"
-#include "core/loader/ThreadableLoadingContext.h"
-#include "core/timing/WorkerGlobalScopePerformance.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerThread.h"
-#include "core/workers/WorkerThreadLifecycleContext.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/heap/SafePoint.h"
-#include "platform/loader/fetch/ResourceError.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/loader/fetch/ResourceTimingInfo.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityPolicy.h"
-#include "platform/wtf/Functional.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/loader/document_threadable_loader.h"
+#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
+#include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_context.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/heap/safe_point.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

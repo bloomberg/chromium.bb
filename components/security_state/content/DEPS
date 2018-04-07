@@ -5,7 +5,7 @@ include_rules = [
   "+content/public/test",
   "+third_party/boringssl/src/include",
   # Allow inclusion of WebKit API headers (POD/enum only).
-  "+third_party/WebKit/public/platform/WebSecurityStyle.h",
+  "+third_party/blink/public/platform/web_security_style.h",
   "+ui/base",
 ]
 

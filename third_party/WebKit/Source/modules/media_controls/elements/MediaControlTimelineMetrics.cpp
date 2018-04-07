@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlTimelineMetrics.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_timeline_metrics.h"
 
 #include <stdint.h>
 #include <cmath>
 #include <limits>
-#include "platform/KeyboardCodes.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/platform/keyboard_codes.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

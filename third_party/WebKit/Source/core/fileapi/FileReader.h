@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FileReader_h
-#define FileReader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_READER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_READER_H_
 
 #include <memory>
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/fileapi/FileError.h"
-#include "core/fileapi/FileReaderLoader.h"
-#include "core/fileapi/FileReaderLoaderClient.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
+#include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -137,4 +137,4 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // FileReader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_READER_H_

@@ -9,11 +9,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "platform/PlatformExport.h"
-#include "platform/scheduler/child/page_visibility_state.h"
-#include "platform/scheduler/main_thread/frame_origin_type.h"
-#include "platform/scheduler/public/frame_scheduler.h"
-#include "platform/wtf/WTF.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/child/page_visibility_state.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_origin_type.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 namespace scheduler {

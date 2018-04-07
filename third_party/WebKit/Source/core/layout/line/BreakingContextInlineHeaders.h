@@ -22,30 +22,30 @@
  *
  */
 
-#ifndef BreakingContextInlineHeaders_h
-#define BreakingContextInlineHeaders_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_BREAKING_CONTEXT_INLINE_HEADERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_BREAKING_CONTEXT_INLINE_HEADERS_H_
 
-#include "core/layout/TextRunConstructor.h"
-#include "core/layout/api/LineLayoutBox.h"
-#include "core/layout/api/LineLayoutListMarker.h"
-#include "core/layout/api/LineLayoutRubyRun.h"
-#include "core/layout/api/LineLayoutSVGInlineText.h"
-#include "core/layout/api/LineLayoutText.h"
-#include "core/layout/api/LineLayoutTextCombine.h"
-#include "core/layout/line/InlineIterator.h"
-#include "core/layout/line/InlineTextBox.h"
-#include "core/layout/line/LayoutTextInfo.h"
-#include "core/layout/line/LineBreaker.h"
-#include "core/layout/line/LineInfo.h"
-#include "core/layout/line/LineWidth.h"
-#include "core/layout/line/TrailingObjects.h"
-#include "core/layout/line/WordMeasurement.h"
-#include "core/paint/PaintLayer.h"
-#include "platform/fonts/CharacterRange.h"
-#include "platform/text/Hyphenation.h"
-#include "platform/text/TextBreakIterator.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_list_marker.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_ruby_run.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_svg_inline_text.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_text.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_text_combine.h"
+#include "third_party/blink/renderer/core/layout/line/inline_iterator.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/line/layout_text_info.h"
+#include "third_party/blink/renderer/core/layout/line/line_breaker.h"
+#include "third_party/blink/renderer/core/layout/line/line_info.h"
+#include "third_party/blink/renderer/core/layout/line/line_width.h"
+#include "third_party/blink/renderer/core/layout/line/trailing_objects.h"
+#include "third_party/blink/renderer/core/layout/line/word_measurement.h"
+#include "third_party/blink/renderer/core/layout/text_run_constructor.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/fonts/character_range.h"
+#include "third_party/blink/renderer/platform/text/hyphenation.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -1596,4 +1596,4 @@ inline IndentTextOrNot RequiresIndent(bool is_first_line,
 
 }  // namespace blink
 
-#endif  // BreakingContextInlineHeaders_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_BREAKING_CONTEXT_INLINE_HEADERS_H_

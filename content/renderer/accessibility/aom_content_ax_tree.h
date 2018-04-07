@@ -7,11 +7,11 @@
 
 #include <stdint.h>
 
-#include "third_party/WebKit/public/platform/WebComputedAXTree.h"
+#include "third_party/blink/public/platform/web_computed_ax_tree.h"
 
 #include "base/macros.h"
 #include "content/renderer/render_frame_impl.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "ui/accessibility/ax_tree.h"
 
 namespace content {

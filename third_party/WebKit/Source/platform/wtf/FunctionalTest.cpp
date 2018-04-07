@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/Functional.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 #include <memory>
 #include <utility>
@@ -31,10 +31,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/test/gtest_util.h"
 #include "base/threading/thread.h"
-#include "platform/wtf/LeakAnnotations.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/WTFTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_test_helper.h"
 
 namespace WTF {
 

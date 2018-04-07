@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutMedia_h
-#define LayoutMedia_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_MEDIA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_MEDIA_H_
 
-#include "core/layout/LayoutImage.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -92,4 +92,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMedia, IsMedia());
 
 }  // namespace blink
 
-#endif  // LayoutMedia_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_MEDIA_H_

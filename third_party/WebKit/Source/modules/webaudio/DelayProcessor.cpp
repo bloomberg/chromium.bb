@@ -23,10 +23,10 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/DelayProcessor.h"
 #include <memory>
-#include "modules/webaudio/DelayDSPKernel.h"
-#include "platform/audio/AudioUtilities.h"
+#include "third_party/blink/renderer/modules/webaudio/delay_dsp_kernel.h"
+#include "third_party/blink/renderer/modules/webaudio/delay_processor.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 
 namespace blink {
 

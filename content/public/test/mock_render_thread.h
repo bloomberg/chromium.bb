@@ -18,7 +18,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "ipc/message_filter.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
-#include "third_party/WebKit/public/web/WebPopupType.h"
+#include "third_party/blink/public/web/web_popup_type.h"
 
 #if defined(OS_MACOSX)
 #include "mojo/public/cpp/system/buffer.h"

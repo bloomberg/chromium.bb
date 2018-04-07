@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SharedBufferReader_h
-#define SharedBufferReader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_PARSER_SHARED_BUFFER_READER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_PARSER_SHARED_BUFFER_READER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class CORE_EXPORT SharedBufferReader {
 
 }  // namespace blink
 
-#endif  // SharedBufferReader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_PARSER_SHARED_BUFFER_READER_H_

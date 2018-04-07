@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/FFTFrame.h"
+#include "third_party/blink/renderer/platform/audio/fft_frame.h"
 
 #include <complex>
 #include <memory>
-#include "platform/audio/VectorMath.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

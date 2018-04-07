@@ -25,11 +25,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FELighting_h
-#define FELighting_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_LIGHTING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_LIGHTING_H_
 
-#include "platform/graphics/Color.h"
-#include "platform/graphics/filters/FilterEffect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
 
 // Common base class for FEDiffuseLighting and FESpecularLighting
 
@@ -69,4 +69,4 @@ class PLATFORM_EXPORT FELighting : public FilterEffect {
 
 }  // namespace blink
 
-#endif  // FELighting_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_LIGHTING_H_

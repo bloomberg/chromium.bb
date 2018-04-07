@@ -18,14 +18,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGFECompositeElement_h
-#define SVGFECompositeElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_FE_COMPOSITE_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_FE_COMPOSITE_ELEMENT_H_
 
-#include "core/svg/SVGAnimatedEnumeration.h"
-#include "core/svg/SVGAnimatedNumber.h"
-#include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
-#include "platform/graphics/filters/FEComposite.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_enumeration.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_number.h"
+#include "third_party/blink/renderer/core/svg/svg_filter_primitive_standard_attributes.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_composite.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class SVGFECompositeElement final
 
 }  // namespace blink
 
-#endif  // SVGFECompositeElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_FE_COMPOSITE_ELEMENT_H_

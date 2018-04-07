@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/SQLError.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_error.h"
 
 namespace blink {
 

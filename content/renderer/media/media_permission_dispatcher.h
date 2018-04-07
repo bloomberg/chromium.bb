@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "media/base/media_permission.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
+#include "third_party/blink/public/platform/modules/permissions/permission.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;

@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AutoscrollController_h
-#define AutoscrollController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_AUTOSCROLL_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_AUTOSCROLL_CONTROLLER_H_
 
 #include "base/gtest_prod_util.h"
-#include "core/CoreExport.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/geometry/IntPoint.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -122,4 +122,4 @@ class CORE_EXPORT AutoscrollController final
 
 }  // namespace blink
 
-#endif  // AutoscrollController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_AUTOSCROLL_CONTROLLER_H_

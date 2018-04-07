@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PagePool_h
-#define PagePool_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_PAGE_POOL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_PAGE_POOL_H_
 
-#include "platform/heap/ThreadState.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

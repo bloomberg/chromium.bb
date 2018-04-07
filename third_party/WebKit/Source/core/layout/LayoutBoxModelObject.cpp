@@ -23,24 +23,24 @@
  *
  */
 
-#include "core/layout/LayoutBoxModelObject.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLBodyElement.h"
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/LayoutFlexibleBox.h"
-#include "core/layout/LayoutGeometryMap.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/ObjectPaintInvalidator.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/compositing/CompositedLayerMapping.h"
-#include "core/paint/compositing/PaintLayerCompositor.h"
-#include "core/style/ShadowList.h"
-#include "platform/LengthFunctions.h"
-#include "platform/geometry/TransformState.h"
-#include "platform/scroll/MainThreadScrollingReason.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
+#include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/style/shadow_list.h"
+#include "third_party/blink/renderer/platform/geometry/transform_state.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 
 namespace blink {
 

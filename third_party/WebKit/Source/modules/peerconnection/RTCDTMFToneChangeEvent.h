@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCDTMFToneChangeEvent_h
-#define RTCDTMFToneChangeEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DTMF_TONE_CHANGE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DTMF_TONE_CHANGE_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/peerconnection/RTCDTMFToneChangeEventInit.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_dtmf_tone_change_event_init.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class RTCDTMFToneChangeEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // RTCDTMFToneChangeEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DTMF_TONE_CHANGE_EVENT_H_

@@ -24,12 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/sqlite/SQLiteDatabase.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_database.h"
 
-#include "modules/webdatabase/sqlite/SQLLog.h"
-#include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
-#include "modules/webdatabase/sqlite/SQLiteStatement.h"
-#include "modules/webdatabase/DatabaseAuthorizer.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_authorizer.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sql_log.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_file_system.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_statement.h"
 #include "third_party/sqlite/sqlite3.h"
 
 namespace blink {

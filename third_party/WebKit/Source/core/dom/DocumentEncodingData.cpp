@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/DocumentEncodingData.h"
+#include "third_party/blink/renderer/core/dom/document_encoding_data.h"
 
-#include "core/html/parser/TextResourceDecoder.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 
 namespace blink {
 

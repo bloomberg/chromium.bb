@@ -26,13 +26,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/inspector/NetworkResourcesData.h"
+#include "third_party/blink/renderer/core/inspector/network_resources_data.h"
 
 #include <memory>
-#include "core/dom/DOMImplementation.h"
-#include "platform/SharedBuffer.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/ResourceResponse.h"
+#include "third_party/blink/renderer/core/dom/dom_implementation.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 
 namespace blink {
 

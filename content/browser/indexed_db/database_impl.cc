@@ -19,8 +19,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
-#include "third_party/WebKit/public/mojom/quota/quota_types.mojom.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 
 using std::swap;
 

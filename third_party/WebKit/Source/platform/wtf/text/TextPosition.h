@@ -23,15 +23,15 @@
  * DAMAGE.
  */
 
-#ifndef TextPosition_h
-#define TextPosition_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_POSITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_POSITION_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/text/WTFString.h"
 #include <memory>
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -117,4 +117,4 @@ using WTF::TextPosition;
 
 using WTF::GetLineEndings;
 
-#endif  // TextPosition_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_POSITION_H_

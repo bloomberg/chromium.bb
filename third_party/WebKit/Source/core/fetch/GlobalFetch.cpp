@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/GlobalFetch.h"
+#include "third_party/blink/renderer/core/fetch/global_fetch.h"
 
-#include "core/fetch/FetchManager.h"
-#include "core/fetch/Request.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/UseCounter.h"
-#include "core/probe/CoreProbes.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/fetch/fetch_manager.h"
+#include "third_party/blink/renderer/core/fetch/request.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 

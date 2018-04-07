@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UnsortedDocumentMarkerListEditor_h
-#define UnsortedDocumentMarkerListEditor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_UNSORTED_DOCUMENT_MARKER_LIST_EDITOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_UNSORTED_DOCUMENT_MARKER_LIST_EDITOR_H_
 
-#include "core/editing/markers/DocumentMarkerList.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_list.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ class CORE_EXPORT UnsortedDocumentMarkerListEditor final {
 
 }  // namespace blink
 
-#endif  // UnsortedDocumentMarkerListEditor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_UNSORTED_DOCUMENT_MARKER_LIST_EDITOR_H_

@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/timing/MemoryInfo.h"
+#include "third_party/blink/renderer/core/timing/memory_info.h"
 
 #include <limits>
 
 #include "base/macros.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/ThreadSpecific.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "v8/include/v8.h"
 
 namespace blink {

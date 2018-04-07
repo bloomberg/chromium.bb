@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/LinkLoader.h"
+#include "third_party/blink/renderer/core/loader/link_loader.h"
 
 #include <base/macros.h>
 #include <memory>
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/frame/Settings.h"
-#include "core/html/LinkRelAttribute.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/LinkLoaderClient.h"
-#include "core/loader/NetworkHintsInterface.h"
-#include "core/loader/modulescript/ModuleScriptFetchRequest.h"
-#include "core/testing/DummyModulator.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/loader/fetch/MemoryCache.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/ResourceLoadPriority.h"
-#include "platform/testing/URLTestHelpers.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/link_rel_attribute.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/link_loader_client.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
+#include "third_party/blink/renderer/core/loader/network_hints_interface.h"
+#include "third_party/blink/renderer/core/testing/dummy_modulator.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
 namespace blink {
 

@@ -25,12 +25,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/ListItemOrdinal.h"
+#include "third_party/blink/renderer/core/html/list_item_ordinal.h"
 
-#include "core/dom/LayoutTreeBuilderTraversal.h"
-#include "core/html/HTMLOListElement.h"
-#include "core/layout/LayoutListItem.h"
-#include "core/layout/ng/list/layout_ng_list_item.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
+#include "third_party/blink/renderer/core/html/html_olist_element.h"
+#include "third_party/blink/renderer/core/layout/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 
 namespace blink {
 

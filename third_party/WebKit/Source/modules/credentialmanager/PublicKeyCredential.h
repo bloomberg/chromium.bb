@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PublicKeyCredential_h
-#define PublicKeyCredential_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_PUBLIC_KEY_CREDENTIAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_PUBLIC_KEY_CREDENTIAL_H_
 
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "modules/credentialmanager/AuthenticationExtensionsClientOutputs.h"
-#include "modules/credentialmanager/AuthenticatorResponse.h"
-#include "modules/credentialmanager/Credential.h"
-#include "modules/ModulesExport.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/credentialmanager/authentication_extensions_client_outputs.h"
+#include "third_party/blink/renderer/modules/credentialmanager/authenticator_response.h"
+#include "third_party/blink/renderer/modules/credentialmanager/credential.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class MODULES_EXPORT PublicKeyCredential final : public Credential {
 
 }  // namespace blink
 
-#endif  // PublicKeyCredential_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_PUBLIC_KEY_CREDENTIAL_H_

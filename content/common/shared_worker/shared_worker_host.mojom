@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "third_party/WebKit/public/platform/web_feature.mojom";
+import "third_party/blink/public/platform/web_feature.mojom";
 
 // Each shared worker has a corresponding host. The host controls the lifetime
 // of the shared worker. This interface is used by the shared worker to talk to

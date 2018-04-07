@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintTypeface_h
-#define PaintTypeface_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_TYPEFACE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_TYPEFACE_H_
 
 #include "cc/paint/paint_typeface.h"
 
@@ -11,4 +11,4 @@ namespace blink {
 using cc::PaintTypeface;
 }
 
-#endif  // PaintTypeface_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_TYPEFACE_H_

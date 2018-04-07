@@ -10,8 +10,8 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
-#include "third_party/WebKit/common/common_export.h"
-#include "third_party/WebKit/public/mojom/blob/serialized_blob.mojom.h"
+#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
 
 namespace blink {
 

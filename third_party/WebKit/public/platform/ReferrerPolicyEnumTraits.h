@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ReferrerPolicyEnumTraits_h
-#define ReferrerPolicyEnumTraits_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_REFERRER_POLICY_ENUM_TRAITS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_REFERRER_POLICY_ENUM_TRAITS_H_
 
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
-#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
-#include "third_party/WebKit/public/platform/referrer.mojom-shared.h"
+#include "third_party/blink/public/platform/referrer.mojom-shared.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
 
 namespace mojo {
 

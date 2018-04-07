@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/markers/TextMatchMarkerListImpl.h"
+#include "third_party/blink/renderer/core/editing/markers/text_match_marker_list_impl.h"
 
-#include "core/dom/Node.h"
-#include "core/dom/Range.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/markers/SortedDocumentMarkerListEditor.h"
-#include "core/editing/markers/TextMatchMarker.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "third_party/WebKit/Source/core/editing/VisibleUnits.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/markers/sorted_document_marker_list_editor.h"
+#include "third_party/blink/renderer/core/editing/markers/text_match_marker.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 
 namespace blink {
 

@@ -22,11 +22,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/MediaStreamRegistry.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_registry.h"
 
-#include "core/html/media/HTMLMediaElement.h"
-#include "modules/mediastream/MediaStream.h"
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

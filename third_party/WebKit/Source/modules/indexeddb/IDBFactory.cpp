@@ -26,28 +26,28 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/indexeddb/IDBFactory.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_factory.h"
 
 #include <memory>
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/modules/v8/V8BindingForModules.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/UseCounter.h"
-#include "modules/indexeddb/IDBDatabase.h"
-#include "modules/indexeddb/IDBDatabaseCallbacks.h"
-#include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBTracing.h"
-#include "modules/indexeddb/IndexedDBClient.h"
-#include "platform/Histogram.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebSecurityOrigin.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
-#include "public/platform/modules/indexeddb/WebIDBFactory.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_factory.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
+#include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

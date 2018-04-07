@@ -8,7 +8,7 @@
 #include "chrome/renderer/prerender/prerender_extra_data.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "content/public/renderer/render_view.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/blink/public/web/web_view.h"
 
 namespace {
 static int s_last_prerender_id = 0;

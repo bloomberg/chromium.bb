@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TrackEvent_h
-#define TrackEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TRACK_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TRACK_EVENT_H_
 
-#include "core/dom/events/Event.h"
-#include "core/html/track/TrackBase.h"
-#include "core/html/track/TrackEventInit.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/html/track/track_base.h"
+#include "third_party/blink/renderer/core/html/track/track_event_init.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class CORE_EXPORT TrackEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // TrackEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TRACK_EVENT_H_

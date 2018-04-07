@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/LocalFrame.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/TextAutosizer.h"
-#include "core/loader/EmptyClients.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/PlatformFrameView.h"
-#include "platform/geometry/IntRect.h"
-#include "public/platform/WebFloatRect.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_float_rect.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/text_autosizer.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/platform_frame_view.h"
 
 namespace blink {
 class TextAutosizerClient : public EmptyChromeClient {

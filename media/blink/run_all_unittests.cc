@@ -12,10 +12,10 @@
 #include "media/base/media.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebThread.h"
-#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/WebKit/public/platform/scheduler/web_main_thread_scheduler.h"
-#include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/public/web/blink.h"
 
 #if defined(OS_ANDROID)
 #include "media/base/android/media_codec_util.h"

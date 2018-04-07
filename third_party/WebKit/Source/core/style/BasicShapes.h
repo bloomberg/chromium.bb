@@ -27,17 +27,17 @@
  * SUCH DAMAGE.
  */
 
-#ifndef BasicShapes_h
-#define BasicShapes_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_BASIC_SHAPES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_BASIC_SHAPES_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "platform/Length.h"
-#include "platform/LengthSize.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/length_size.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

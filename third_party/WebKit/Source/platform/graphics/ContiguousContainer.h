@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ContiguousContainer_h
-#define ContiguousContainer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CONTIGUOUS_CONTAINER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CONTIGUOUS_CONTAINER_H_
 
 #include <cstddef>
 #include <iterator>
 #include <memory>
 #include <utility>
 #include "base/compiler_specific.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Alignment.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/TypeTraits.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/alignment.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -251,4 +251,4 @@ class ContiguousContainer : public ContiguousContainerBase {
 
 }  // namespace blink
 
-#endif  // ContiguousContainer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CONTIGUOUS_CONTAINER_H_

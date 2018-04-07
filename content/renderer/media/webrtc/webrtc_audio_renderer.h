@@ -24,7 +24,7 @@
 #include "media/base/audio_pull_fifo.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/channel_layout.h"
-#include "third_party/WebKit/public/platform/WebMediaStream.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
 
 namespace webrtc {
 class AudioSourceInterface;

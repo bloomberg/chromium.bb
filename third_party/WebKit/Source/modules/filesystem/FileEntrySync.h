@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FileEntrySync_h
-#define FileEntrySync_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_ENTRY_SYNC_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_ENTRY_SYNC_H_
 
-#include "modules/filesystem/EntrySync.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/modules/filesystem/entry_sync.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -69,4 +69,4 @@ DEFINE_TYPE_CASTS(FileEntrySync,
 
 }  // namespace blink
 
-#endif  // FileEntrySync_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_ENTRY_SYNC_H_

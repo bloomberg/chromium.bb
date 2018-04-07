@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/text/TextCodecUTF16.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec_utf16.h"
 
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/StringBuffer.h"
-#include "platform/wtf/text/WTFString.h"
 #include <memory>
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace WTF {
 

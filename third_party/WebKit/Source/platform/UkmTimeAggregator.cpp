@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/UkmTimeAggregator.h"
+#include "third_party/blink/renderer/platform/ukm_time_aggregator.h"
 
-#include "platform/Histogram.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

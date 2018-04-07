@@ -26,17 +26,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webaudio/AudioBuffer.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/webaudio/AudioBufferOptions.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioFileReader.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/wtf/typed_arrays/Float32Array.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_buffer_options.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_file_reader.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/float32_array.h"
 
 namespace blink {
 

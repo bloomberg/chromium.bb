@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/shaping/CachingWordShaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
 
 #include <memory>
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/shaping/CachingWordShapeIterator.h"
-#include "platform/fonts/shaping/ShapeResultTestInfo.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shape_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_test_info.h"
 
 namespace blink {
 

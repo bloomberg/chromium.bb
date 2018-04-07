@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/DocumentAnimations.h"
+#include "third_party/blink/renderer/core/animation/document_animations.h"
 
-#include "core/animation/AnimationClock.h"
-#include "core/animation/DocumentTimeline.h"
-#include "core/animation/PendingAnimations.h"
-#include "core/animation/WorkletAnimationController.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/Node.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "platform/animation/CompositorAnimationHost.h"
+#include "third_party/blink/renderer/core/animation/animation_clock.h"
+#include "third_party/blink/renderer/core/animation/document_timeline.h"
+#include "third_party/blink/renderer/core/animation/pending_animations.h"
+#include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 
 namespace blink {
 

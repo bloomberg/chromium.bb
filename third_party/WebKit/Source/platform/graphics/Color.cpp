@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/Color.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 
 #include "build/build_config.h"
-#include "platform/Decimal.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/HexNumber.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/dtoa.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/StringView.h"
+#include "third_party/blink/renderer/platform/decimal.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/hex_number.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 

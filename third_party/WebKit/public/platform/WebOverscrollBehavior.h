@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebOverscrollBehavior_h
-#define WebOverscrollBehavior_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_OVERSCROLL_BEHAVIOR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_OVERSCROLL_BEHAVIOR_H_
 
 #include "cc/input/overscroll_behavior.h"
 

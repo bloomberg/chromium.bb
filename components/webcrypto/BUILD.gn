@@ -59,7 +59,7 @@ static_library("webcrypto") {
     "//base",
     "//crypto",
     "//crypto:platform",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
   ]
 }
 
@@ -89,7 +89,7 @@ source_set("unit_tests") {
     "//crypto:platform",
     "//testing/gtest",
     "//testing/perf",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//third_party/re2",
   ]
 }
@@ -110,7 +110,7 @@ source_set("fuzzer_support") {
     "//crypto",
     "//crypto:platform",
     "//mojo/edk",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
   ]
 }
 
@@ -122,7 +122,7 @@ fuzzer_test("webcrypto_ec_import_key_pkcs8_fuzzer") {
   deps = [
     ":fuzzer_support",
     ":webcrypto",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
   ]
 }
 
@@ -134,7 +134,7 @@ fuzzer_test("webcrypto_ec_import_key_spki_fuzzer") {
   deps = [
     ":fuzzer_support",
     ":webcrypto",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
   ]
 }
 
@@ -146,7 +146,7 @@ fuzzer_test("webcrypto_ec_import_key_raw_fuzzer") {
   deps = [
     ":fuzzer_support",
     ":webcrypto",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
   ]
 }
 
@@ -158,7 +158,7 @@ fuzzer_test("webcrypto_rsa_import_key_pkcs8_fuzzer") {
   deps = [
     ":fuzzer_support",
     ":webcrypto",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
   ]
 }
 
@@ -170,6 +170,6 @@ fuzzer_test("webcrypto_rsa_import_key_spki_fuzzer") {
   deps = [
     ":fuzzer_support",
     ":webcrypto",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
   ]
 }

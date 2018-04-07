@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/MainThreadWorkletReportingProxy.h"
+#include "third_party/blink/renderer/core/workers/main_thread_worklet_reporting_proxy.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/UseCounter.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 
 namespace blink {
 

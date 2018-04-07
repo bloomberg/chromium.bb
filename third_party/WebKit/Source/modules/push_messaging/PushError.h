@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PushError_h
-#define PushError_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_ERROR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_ERROR_H_
 
-#include "core/dom/DOMException.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
-#include "public/platform/modules/push_messaging/WebPushError.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -26,4 +26,4 @@ class PushError {
 
 }  // namespace blink
 
-#endif  // PushError_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_ERROR_H_

@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollTypes_h
-#define ScrollTypes_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_TYPES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_TYPES_H_
 
-#include "platform/geometry/FloatPoint.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/WebGestureEvent.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

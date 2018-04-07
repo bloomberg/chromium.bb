@@ -23,11 +23,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebScrollbarThemeGeometry_h
-#define WebScrollbarThemeGeometry_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLLBAR_THEME_GEOMETRY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLLBAR_THEME_GEOMETRY_H_
 
-#include "WebRect.h"
-#include "WebSize.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_size.h"
 
 namespace blink {
 

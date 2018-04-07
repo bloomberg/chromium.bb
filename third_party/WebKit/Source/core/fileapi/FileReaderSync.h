@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FileReaderSync_h
-#define FileReaderSync_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_READER_SYNC_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_READER_SYNC_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class FileReaderSync final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // FileReaderSync_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_READER_SYNC_H_

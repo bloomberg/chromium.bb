@@ -23,19 +23,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CompositedLayerMapping_h
-#define CompositedLayerMapping_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITED_LAYER_MAPPING_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITED_LAYER_MAPPING_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/PaintLayerPaintingInfo.h"
-#include "core/paint/compositing/GraphicsLayerUpdater.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatPoint3D.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/GraphicsLayerClient.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/paint/compositing/graphics_layer_updater.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_painting_info.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -754,4 +754,4 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
 }  // namespace blink
 
-#endif  // CompositedLayerMapping_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITED_LAYER_MAPPING_H_

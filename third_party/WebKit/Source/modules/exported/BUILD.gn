@@ -1,26 +1,26 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("exported") {
   sources = [
-    "WebAXObject.cpp",
-    "WebApplyConstraintsRequest.cpp",
-    "WebCryptoNormalize.cpp",
-    "WebDOMFileSystem.cpp",
-    "WebDOMMediaStreamTrack.cpp",
-    "WebEmbeddedWorkerImpl.cpp",
-    "WebEmbeddedWorkerImpl.h",
-    "WebIDBKey.cpp",
-    "WebIDBKeyRange.cpp",
-    "WebIDBValue.cpp",
-    "WebMediaStreamRegistry.cpp",
-    "WebSpeechGrammar.cpp",
-    "WebSpeechRecognitionHandle.cpp",
-    "WebSpeechRecognitionResult.cpp",
-    "WebStorageEventDispatcherImpl.cpp",
-    "WebUserMediaRequest.cpp",
+    "web_apply_constraints_request.cc",
+    "web_ax_object.cc",
+    "web_crypto_normalize.cc",
+    "web_dom_file_system.cc",
+    "web_dom_media_stream_track.cc",
+    "web_embedded_worker_impl.cc",
+    "web_embedded_worker_impl.h",
+    "web_idb_key.cc",
+    "web_idb_key_range.cc",
+    "web_idb_value.cc",
+    "web_media_stream_registry.cc",
+    "web_speech_grammar.cc",
+    "web_speech_recognition_handle.cc",
+    "web_speech_recognition_result.cc",
+    "web_storage_event_dispatcher_impl.cc",
+    "web_user_media_request.cc",
   ]
 
   defines = [ "BLINK_MODULES_IMPLEMENTATION=1" ]
@@ -29,20 +29,20 @@ blink_modules_sources("exported") {
 static_library("test_support") {
   deps = [
     "//skia",
-    "//third_party/WebKit/Source/core:testing",
-    "//third_party/WebKit/Source/modules:modules_testing",
-    "//third_party/WebKit/Source/platform",
+    "//third_party/blink/renderer/core:testing",
+    "//third_party/blink/renderer/modules:modules_testing",
+    "//third_party/blink/renderer/platform",
     "//v8",
   ]
 
   sources = [
-    "WebTestingSupport.cpp",
+    "web_testing_support.cc",
   ]
 
   configs += [
-    "//third_party/WebKit/Source:config",
-    "//third_party/WebKit/Source/core:blink_core_pch",
+    "//third_party/blink/renderer:config",
+    "//third_party/blink/renderer/core:blink_core_pch",
   ]
 
-  include_dirs = [ "$root_gen_dir/blink" ]
+  include_dirs = [ "$root_gen_dir/third_party/blink/renderer" ]
 }

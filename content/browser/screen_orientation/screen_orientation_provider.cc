@@ -13,7 +13,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/screen_orientation_delegate.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/WebKit/public/platform/modules/screen_orientation/WebLockOrientationError.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_lock_orientation_error.h"
 
 namespace content {
 

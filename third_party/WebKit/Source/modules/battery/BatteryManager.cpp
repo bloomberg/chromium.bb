@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/battery/BatteryManager.h"
+#include "third_party/blink/renderer/modules/battery/battery_manager.h"
 
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/events/Event.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/battery/BatteryDispatcher.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/battery/battery_dispatcher.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

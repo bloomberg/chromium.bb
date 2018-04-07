@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/Position.h"
+#include "third_party/blink/renderer/core/editing/position.h"
 
-#include "core/editing/testing/EditingTestBase.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 
 namespace blink {
 

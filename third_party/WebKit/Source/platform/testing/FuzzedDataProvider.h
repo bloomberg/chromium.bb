@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FuzzedDataProvider_h
-#define FuzzedDataProvider_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FUZZED_DATA_PROVIDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FUZZED_DATA_PROVIDER_H_
 
 #include "base/test/fuzzed_data_provider.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/text/CString.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class FuzzedDataProvider {
 
 }  // namespace blink
 
-#endif  // FuzzedDataProvider_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FUZZED_DATA_PROVIDER_H_

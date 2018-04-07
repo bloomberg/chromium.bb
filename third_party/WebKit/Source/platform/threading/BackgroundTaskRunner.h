@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BackgroundTaskRunner_h
-#define BackgroundTaskRunner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_THREADING_BACKGROUND_TASK_RUNNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_THREADING_BACKGROUND_TASK_RUNNER_H_
 
 #include "base/location.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Functional.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

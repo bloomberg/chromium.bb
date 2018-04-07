@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerInspectorProxy_h
-#define WorkerInspectorProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_INSPECTOR_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_INSPECTOR_PROXY_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/ThreadDebugger.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/thread_debugger.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class CORE_EXPORT WorkerInspectorProxy final
 
 }  // namespace blink
 
-#endif  // WorkerInspectorProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_INSPECTOR_PROXY_H_

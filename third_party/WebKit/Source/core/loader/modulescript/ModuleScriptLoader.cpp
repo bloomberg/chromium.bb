@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/modulescript/ModuleScriptLoader.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_loader.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/loader/modulescript/DocumentModuleScriptFetcher.h"
-#include "core/loader/modulescript/ModuleScriptFetcher.h"
-#include "core/loader/modulescript/ModuleScriptLoaderClient.h"
-#include "core/loader/modulescript/ModuleScriptLoaderRegistry.h"
-#include "core/script/Modulator.h"
-#include "core/script/ModuleScript.h"
-#include "core/workers/MainThreadWorkletGlobalScope.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/ResourceLoadingLog.h"
-#include "platform/weborigin/SecurityPolicy.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_client.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

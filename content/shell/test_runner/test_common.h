@@ -9,8 +9,8 @@
 
 #include "base/strings/string_util.h"
 #include "content/shell/test_runner/test_runner_export.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebNavigationPolicy.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_navigation_policy.h"
 #include "v8/include/v8.h"
 
 class GURL;

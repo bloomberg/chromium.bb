@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EditingBoundary_h
-#define EditingBoundary_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_BOUNDARY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_BOUNDARY_H_
 
 namespace blink {
 
@@ -36,4 +36,4 @@ enum EditingBoundaryCrossingRule {
 
 }  // namespace blink
 
-#endif  // EditingBoundary_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_BOUNDARY_H_

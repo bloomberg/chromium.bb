@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Maplike_h
-#define Maplike_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_MAPLIKE_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_MAPLIKE_H_
 
-#include "bindings/core/v8/Iterable.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/ToV8ForCore.h"
+#include "third_party/blink/renderer/bindings/core/v8/iterable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 
 namespace blink {
 
@@ -41,4 +41,4 @@ class Maplike : public PairIterable<KeyType, ValueType> {
 
 }  // namespace blink
 
-#endif  // Maplike_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_MAPLIKE_H_

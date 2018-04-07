@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutTextFragment.h"
-#include "core/layout/LayoutView.h"
-#include "core/svg/SVGGElement.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/json/JSONValues.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/svg/svg_g_element.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 

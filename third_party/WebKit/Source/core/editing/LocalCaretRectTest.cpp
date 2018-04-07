@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/LocalCaretRect.h"
+#include "third_party/blink/renderer/core/editing/local_caret_rect.h"
 
-#include "core/editing/PositionWithAffinity.h"
-#include "core/editing/TextAffinity.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/html/forms/TextControlElement.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/ng/ng_physical_box_fragment.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 

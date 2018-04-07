@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BroadcastChannel_h
-#define BroadcastChannel_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BROADCASTCHANNEL_BROADCAST_CHANNEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BROADCASTCHANNEL_BROADCAST_CHANNEL_H_
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/events/EventTarget.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/modules/broadcastchannel/broadcast_channel.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/broadcastchannel/broadcast_channel.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class BroadcastChannel final : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // BroadcastChannel_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BROADCASTCHANNEL_BROADCAST_CHANNEL_H_

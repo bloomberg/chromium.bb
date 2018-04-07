@@ -17,16 +17,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef TouchAdjustment_h
-#define TouchAdjustment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_TOUCH_ADJUSTMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_TOUCH_ADJUSTMENT_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/IntPoint.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/LayoutSize.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

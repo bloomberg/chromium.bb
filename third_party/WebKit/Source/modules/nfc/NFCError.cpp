@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/nfc/NFCError.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_error.h"
 
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 using device::mojom::blink::NFCErrorType;
 

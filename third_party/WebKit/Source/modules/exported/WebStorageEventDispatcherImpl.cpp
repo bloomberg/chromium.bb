@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebStorageEventDispatcher.h"
+#include "third_party/blink/public/web/web_storage_event_dispatcher.h"
 
-#include "core/exported/WebViewImpl.h"
-#include "modules/storage/StorageArea.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/modules/storage/storage_area.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

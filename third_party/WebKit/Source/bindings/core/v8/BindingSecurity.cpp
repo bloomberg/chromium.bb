@@ -28,23 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/BindingSecurity.h"
+#include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8Location.h"
-#include "bindings/core/v8/V8Window.h"
-#include "core/dom/Document.h"
-#include "core/frame/DOMWindow.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Location.h"
-#include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLFrameElementBase.h"
-#include "core/workers/MainThreadWorkletGlobalScope.h"
-#include "platform/bindings/WrapperCreationSecurityCheck.h"
-#include "platform/weborigin/SecurityOrigin.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/location.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_frame_element_base.h"
+#include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_creation_security_check.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

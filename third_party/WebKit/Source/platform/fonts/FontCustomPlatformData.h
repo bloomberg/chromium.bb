@@ -29,17 +29,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontCustomPlatformData_h
-#define FontCustomPlatformData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_CUSTOM_PLATFORM_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_CUSTOM_PLATFORM_DATA_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/fonts/FontOrientation.h"
-#include "platform/fonts/FontSelectionTypes.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/fonts/font_orientation.h"
+#include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkTypeface;
@@ -82,4 +82,4 @@ class PLATFORM_EXPORT FontCustomPlatformData
 
 }  // namespace blink
 
-#endif  // FontCustomPlatformData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_CUSTOM_PLATFORM_DATA_H_

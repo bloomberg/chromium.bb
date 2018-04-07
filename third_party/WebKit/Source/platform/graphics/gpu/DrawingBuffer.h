@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DrawingBuffer_h
-#define DrawingBuffer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_DRAWING_BUFFER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_DRAWING_BUFFER_H_
 
 #include <memory>
 
@@ -38,14 +38,14 @@
 #include "cc/resources/shared_bitmap_id_registrar.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "platform/PlatformExport.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/GraphicsTypes3D.h"
-#include "platform/graphics/gpu/WebGLImageConversion.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/webgl_image_conversion.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types_3d.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_space.h"
@@ -582,4 +582,4 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
 }  // namespace blink
 
-#endif  // DrawingBuffer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_DRAWING_BUFFER_H_

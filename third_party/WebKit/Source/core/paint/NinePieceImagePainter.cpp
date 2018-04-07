@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/NinePieceImagePainter.h"
+#include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
 
-#include "core/layout/LayoutBoxModelObject.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "core/paint/NinePieceImageGrid.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/NinePieceImage.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/ScopedInterpolationQuality.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/nine_piece_image_grid.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/nine_piece_image.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
 
 namespace blink {
 

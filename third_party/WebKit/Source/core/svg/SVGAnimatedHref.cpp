@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/svg/SVGAnimatedHref.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_href.h"
 
-#include "core/frame/UseCounter.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg_names.h"
-#include "core/xlink_names.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/core/xlink_names.h"
 
 namespace blink {
 

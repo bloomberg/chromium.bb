@@ -20,16 +20,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/events/KeyboardEvent.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
 
 #include "build/build_config.h"
-#include "core/editing/ime/InputMethodController.h"
-#include "core/input/InputDeviceCapabilities.h"
-#include "platform/WindowsKeyboardCodes.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScriptState.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
+#include "third_party/blink/renderer/core/input/input_device_capabilities.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/windows_keyboard_codes.h"
 
 namespace blink {
 

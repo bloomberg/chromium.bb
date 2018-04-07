@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V0CustomElementLifecycleCallbacks_h
-#define V0CustomElementLifecycleCallbacks_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_LIFECYCLE_CALLBACKS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_LIFECYCLE_CALLBACKS_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class V0CustomElementLifecycleCallbacks
 
 }  // namespace blink
 
-#endif  // V0CustomElementLifecycleCallbacks_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_LIFECYCLE_CALLBACKS_H_

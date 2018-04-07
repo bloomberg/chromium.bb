@@ -22,13 +22,13 @@
  *
  */
 
-#ifndef BorderValue_h
-#define BorderValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_BORDER_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_BORDER_VALUE_H_
 
-#include "core/css/StyleColor.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/graphics/Color.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/css/style_color.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -135,4 +135,4 @@ class BorderValue {
 
 }  // namespace blink
 
-#endif  // BorderValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_BORDER_VALUE_H_

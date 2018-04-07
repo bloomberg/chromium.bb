@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HTMLTimeElement_h
-#define HTMLTimeElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TIME_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TIME_ELEMENT_H_
 
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -21,4 +21,4 @@ class CORE_EXPORT HTMLTimeElement final : public HTMLElement {
 
 }  // namespace blink
 
-#endif  // HTMLTimeElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TIME_ELEMENT_H_

@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GraphicsLayerTreeBuilder_h
-#define GraphicsLayerTreeBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_GRAPHICS_LAYER_TREE_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_GRAPHICS_LAYER_TREE_BUILDER_H_
 
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class GraphicsLayerTreeBuilder {
 
 }  // namespace blink
 
-#endif  // GraphicsLayerTreeBuilder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_GRAPHICS_LAYER_TREE_BUILDER_H_

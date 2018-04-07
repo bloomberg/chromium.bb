@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutTreeAsText_h
-#define LayoutTreeAsText_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TREE_AS_TEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TREE_AS_TEXT_H_
 
-#include "core/CoreExport.h"
-#include "platform/text/TextStream.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -115,4 +115,4 @@ TextStream& operator<<(TextStream&, const Color&);
 
 }  // namespace blink
 
-#endif  // LayoutTreeAsText_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TREE_AS_TEXT_H_

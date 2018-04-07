@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintRecordPattern_h
-#define PaintRecordPattern_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_RECORD_PATTERN_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_RECORD_PATTERN_H_
 
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/Pattern.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/pattern.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {

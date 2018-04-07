@@ -24,14 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CanvasImageSource_h
-#define CanvasImageSource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_CANVAS_IMAGE_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_CANVAS_IMAGE_SOURCE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

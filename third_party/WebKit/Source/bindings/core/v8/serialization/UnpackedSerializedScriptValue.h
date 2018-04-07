@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UnpackedSerializedScriptValue_h
-#define UnpackedSerializedScriptValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_UNPACKED_SERIALIZED_SCRIPT_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_UNPACKED_SERIALIZED_SCRIPT_VALUE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/CoreExport.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class CORE_EXPORT UnpackedSerializedScriptValue
 
 }  // namespace blink
 
-#endif  // UnpackedSerializedScriptValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_UNPACKED_SERIALIZED_SCRIPT_VALUE_H_

@@ -14,7 +14,7 @@
 #include "content/renderer/media/webrtc/webrtc_audio_renderer.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_thread_impl.h"
-#include "third_party/WebKit/public/platform/WebMediaStream.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 
 namespace content {

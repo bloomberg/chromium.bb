@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/GridTrackSizingAlgorithm.h"
+#include "third_party/blink/renderer/core/layout/grid_track_sizing_algorithm.h"
 
-#include "core/frame/UseCounter.h"
-#include "core/layout/Grid.h"
-#include "core/layout/GridLayoutUtils.h"
-#include "core/layout/LayoutGrid.h"
-#include "platform/LengthFunctions.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/layout/grid.h"
+#include "third_party/blink/renderer/core/layout/grid_layout_utils.h"
+#include "third_party/blink/renderer/core/layout/layout_grid.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
 
 namespace blink {
 

@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "third_party/WebKit/public/platform/modules/webdatabase/web_database.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/webdatabase/web_database.mojom-blink.h"
 
 namespace blink {
 

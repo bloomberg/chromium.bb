@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/SubresourceIntegrityHelper.h"
+#include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/UseCounter.h"
-#include "core/inspector/ConsoleTypes.h"
-#include "core/origin_trials/origin_trials.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/inspector/console_types.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

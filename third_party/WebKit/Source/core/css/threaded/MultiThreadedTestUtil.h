@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MultiThreadedTestUtil_h
-#define MultiThreadedTestUtil_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_THREADED_MULTI_THREADED_TEST_UTIL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_THREADED_MULTI_THREADED_TEST_UTIL_H_
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WaitableEvent.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/WebThreadSupportingGC.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/RefCounted.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -102,4 +102,4 @@ class MultiThreadedTest : public testing::Test {
 
 }  // namespace blink
 
-#endif  // MultiThreadedTestUtil_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_THREADED_MULTI_THREADED_TEST_UTIL_H_

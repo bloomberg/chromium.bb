@@ -1,8 +1,8 @@
 include_rules = [
-    "-modules",
-    "+modules/EventModules.h",
-    "+modules/ModulesExport.h",
-    "+modules/permissions",
-    "+modules/push_messaging",
-    "+modules/serviceworkers",
+    "-third_party/blink/renderer/modules",
+    "+third_party/blink/renderer/modules/event_modules.h",
+    "+third_party/blink/renderer/modules/modules_export.h",
+    "+third_party/blink/renderer/modules/permissions",
+    "+third_party/blink/renderer/modules/push_messaging",
+    "+third_party/blink/renderer/modules/serviceworkers",
 ]

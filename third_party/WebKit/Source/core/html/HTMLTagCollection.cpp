@@ -22,7 +22,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/HTMLTagCollection.h"
+#include "third_party/blink/renderer/core/html/html_tag_collection.h"
 
 namespace blink {
 

@@ -25,18 +25,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ImageDataBuffer_h
-#define ImageDataBuffer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_DATA_BUFFER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_DATA_BUFFER_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
-#include "platform/wtf/typed_arrays/Uint8ClampedArray.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/uint8_clamped_array.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
@@ -73,4 +73,4 @@ class PLATFORM_EXPORT ImageDataBuffer {
 
 }  // namespace blink
 
-#endif  // ImageDataBuffer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_DATA_BUFFER_H_

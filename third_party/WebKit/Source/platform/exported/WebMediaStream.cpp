@@ -22,18 +22,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebMediaStream.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
 
 #include <memory>
-#include "platform/UUID.h"
-#include "platform/mediastream/MediaStreamComponent.h"
-#include "platform/mediastream/MediaStreamDescriptor.h"
-#include "platform/mediastream/MediaStreamSource.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebMediaStreamSource.h"
-#include "public/platform/WebMediaStreamTrack.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
+#include "third_party/blink/renderer/platform/uuid.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

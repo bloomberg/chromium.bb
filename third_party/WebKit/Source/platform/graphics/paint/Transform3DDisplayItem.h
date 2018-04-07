@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Transform3DDisplayItem_h
-#define Transform3DDisplayItem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_TRANSFORM_3D_DISPLAY_ITEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_TRANSFORM_3D_DISPLAY_ITEM_H_
 
-#include "platform/geometry/FloatPoint3D.h"
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -72,4 +72,4 @@ class PLATFORM_EXPORT EndTransform3DDisplayItem final
 
 }  // namespace blink
 
-#endif  // Transform3DDisplayItem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_TRANSFORM_3D_DISPLAY_ITEM_H_

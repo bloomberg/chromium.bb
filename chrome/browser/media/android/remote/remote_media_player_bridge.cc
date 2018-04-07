@@ -16,7 +16,7 @@
 #include "media/base/android/media_resource_getter.h"
 #include "media/base/timestamp_constants.h"
 #include "net/base/escape.h"
-#include "third_party/WebKit/public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
+#include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_availability.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
 

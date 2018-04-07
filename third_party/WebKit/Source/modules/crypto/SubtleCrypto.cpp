@@ -28,25 +28,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/crypto/SubtleCrypto.h"
+#include "third_party/blink/renderer/modules/crypto/subtle_crypto.h"
 
 #include "base/single_thread_task_runner.h"
-#include "bindings/core/v8/Dictionary.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/Deprecation.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "core/typed_arrays/DOMArrayBufferView.h"
-#include "core/typed_arrays/DOMArrayPiece.h"
-#include "modules/crypto/CryptoHistograms.h"
-#include "modules/crypto/CryptoKey.h"
-#include "modules/crypto/CryptoResultImpl.h"
-#include "modules/crypto/CryptoUtilities.h"
-#include "modules/crypto/NormalizeAlgorithm.h"
-#include "platform/json/JSONValues.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebCrypto.h"
-#include "public/platform/WebCryptoAlgorithm.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_crypto.h"
+#include "third_party/blink/public/platform/web_crypto_algorithm.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
+#include "third_party/blink/renderer/modules/crypto/crypto_histograms.h"
+#include "third_party/blink/renderer/modules/crypto/crypto_key.h"
+#include "third_party/blink/renderer/modules/crypto/crypto_result_impl.h"
+#include "third_party/blink/renderer/modules/crypto/crypto_utilities.h"
+#include "third_party/blink/renderer/modules/crypto/normalize_algorithm.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
 
 namespace blink {
 

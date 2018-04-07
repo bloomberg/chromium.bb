@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ServiceWorkerGlobalScopeNotifications_h
-#define ServiceWorkerGlobalScopeNotifications_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_SERVICE_WORKER_GLOBAL_SCOPE_NOTIFICATIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_SERVICE_WORKER_GLOBAL_SCOPE_NOTIFICATIONS_H_
 
-#include "core/dom/events/EventTarget.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -20,4 +20,4 @@ class ServiceWorkerGlobalScopeNotifications {
 
 }  // namespace blink
 
-#endif  // ServiceWorkerGlobalScopeNotifications_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_SERVICE_WORKER_GLOBAL_SCOPE_NOTIFICATIONS_H_

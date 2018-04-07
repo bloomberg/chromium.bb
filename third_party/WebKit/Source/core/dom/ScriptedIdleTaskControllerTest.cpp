@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/ScriptedIdleTaskController.h"
+#include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
 
-#include "bindings/core/v8/v8_idle_request_callback.h"
-#include "core/dom/IdleRequestOptions.h"
-#include "core/testing/NullExecutionContext.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_callback.h"
+#include "third_party/blink/renderer/core/dom/idle_request_options.h"
+#include "third_party/blink/renderer/core/testing/null_execution_context.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 namespace {

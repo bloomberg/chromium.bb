@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/engagement/site_engagement_details.mojom.h"
-#include "third_party/WebKit/public/platform/site_engagement.mojom.h"
+#include "third_party/blink/public/platform/site_engagement.mojom.h"
 #include "url/gurl.h"
 
 namespace base {

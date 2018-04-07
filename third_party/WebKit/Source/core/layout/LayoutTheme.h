@@ -20,19 +20,19 @@
  *
  */
 
-#ifndef LayoutTheme_h
-#define LayoutTheme_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_H_
 
-#include "core/CoreExport.h"
-#include "core/css_value_keywords.h"
-#include "platform/LayoutUnit.h"
-#include "platform/ThemeTypes.h"
-#include "platform/fonts/FontSelectionTypes.h"
-#include "platform/graphics/Color.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/theme_types.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -309,4 +309,4 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
 
 }  // namespace blink
 
-#endif  // LayoutTheme_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_H_

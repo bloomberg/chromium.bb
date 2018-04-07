@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/imports/HTMLImportTreeRoot.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_tree_root.h"
 
-#include "core/css/StyleEngine.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/imports/HTMLImportChild.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_child.h"
 
 namespace blink {
 

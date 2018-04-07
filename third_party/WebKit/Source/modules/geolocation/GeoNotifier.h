@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GeoNotifier_h
-#define GeoNotifier_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEO_NOTIFIER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEO_NOTIFIER_H_
 
-#include "bindings/modules/v8/v8_position_callback.h"
-#include "bindings/modules/v8/v8_position_error_callback.h"
-#include "modules/geolocation/PositionOptions.h"
-#include "platform/Timer.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_position_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_position_error_callback.h"
+#include "third_party/blink/renderer/modules/geolocation/position_options.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -105,4 +105,4 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
 
 }  // namespace blink
 
-#endif  // GeoNotifier_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEO_NOTIFIER_H_

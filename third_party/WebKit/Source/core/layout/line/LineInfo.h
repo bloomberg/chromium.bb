@@ -22,12 +22,12 @@
  *
  */
 
-#ifndef LineInfo_h
-#define LineInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_INFO_H_
 
-#include "core/layout/line/LineWidth.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/layout/line/line_width.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class LineInfo {
 
 }  // namespace blink
 
-#endif  // LineInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_INFO_H_

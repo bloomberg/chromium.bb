@@ -18,11 +18,11 @@
  *
  */
 
-#ifndef WTF_Forward_h
-#define WTF_Forward_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_FORWARD_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_FORWARD_H_
 
-#include "platform/wtf/Compiler.h"
 #include <stddef.h>
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 template <typename T>
 class scoped_refptr;
@@ -81,4 +81,4 @@ using WTF::Uint8ClampedArray;
 using WTF::Uint16Array;
 using WTF::Uint32Array;
 
-#endif  // WTF_Forward_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_FORWARD_H_

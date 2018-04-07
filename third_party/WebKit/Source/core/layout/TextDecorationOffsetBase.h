@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextDecorationOffsetBase_h
-#define TextDecorationOffsetBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TEXT_DECORATION_OFFSET_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TEXT_DECORATION_OFFSET_BASE_H_
 
-#include "core/CoreExport.h"
-#include "platform/LayoutUnit.h"
-#include "platform/fonts/FontBaseline.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/fonts/font_baseline.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ class CORE_EXPORT TextDecorationOffsetBase {
 
 }  // namespace blink
 
-#endif  // TextDecorationOffsetBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TEXT_DECORATION_OFFSET_BASE_H_

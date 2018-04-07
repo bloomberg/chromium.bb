@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ContextMenuProvider_h
-#define ContextMenuProvider_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_CONTEXT_MENU_PROVIDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_CONTEXT_MENU_PROVIDER_H_
 
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ class ContextMenuProvider
 
 }  // namespace blink
 
-#endif  // ContextMenuProvider_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_CONTEXT_MENU_PROVIDER_H_

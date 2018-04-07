@@ -48,7 +48,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message.h"
 #include "net/base/filename_util.h"
-#include "third_party/WebKit/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/list_selection_model.h"

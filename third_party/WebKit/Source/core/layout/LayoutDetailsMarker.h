@@ -18,10 +18,10 @@
  *
  */
 
-#ifndef LayoutDetailsMarker_h
-#define LayoutDetailsMarker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_DETAILS_MARKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_DETAILS_MARKER_H_
 
-#include "core/layout/LayoutBlockFlow.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutDetailsMarker, IsDetailsMarker());
 
 }  // namespace blink
 
-#endif  // LayoutDetailsMarker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_DETAILS_MARKER_H_

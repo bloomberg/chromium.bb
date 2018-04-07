@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLVideoElementMediaSource_h
-#define HTMLVideoElementMediaSource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_HTML_VIDEO_ELEMENT_MEDIA_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_HTML_VIDEO_ELEMENT_MEDIA_SOURCE_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

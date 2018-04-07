@@ -18,11 +18,11 @@
  *
  */
 
-#ifndef LayoutFileUploadControl_h
-#define LayoutFileUploadControl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FILE_UPLOAD_CONTROL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FILE_UPLOAD_CONTROL_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutBlockFlow.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 
 namespace blink {
 
@@ -72,4 +72,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFileUploadControl, IsFileUploadControl());
 
 }  // namespace blink
 
-#endif  // LayoutFileUploadControl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FILE_UPLOAD_CONTROL_H_

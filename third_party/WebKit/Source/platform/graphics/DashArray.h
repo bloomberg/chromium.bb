@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DashArray_h
-#define DashArray_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DASH_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DASH_ARRAY_H_
 
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 typedef float DashArrayElement;
 
 typedef Vector<DashArrayElement> DashArray;
 
-#endif  // DashArray_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_DASH_ARRAY_H_

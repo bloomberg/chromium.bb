@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/EventHandlerRegistry.h"
+#include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 
-#include "core/dom/events/EventListenerOptions.h"
-#include "core/events/EventUtil.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/scrolling/ScrollingCoordinator.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener_options.h"
+#include "third_party/blink/renderer/core/events/event_util.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 
 namespace blink {
 

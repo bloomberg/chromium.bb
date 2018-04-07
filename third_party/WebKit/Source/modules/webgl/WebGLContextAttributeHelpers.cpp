@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webgl/WebGLContextAttributeHelpers.h"
-#include "modules/xr/XRDevice.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_context_attribute_helpers.h"
+#include "third_party/blink/renderer/modules/xr/xr_device.h"
 
-#include "core/frame/Settings.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 
 namespace blink {
 

@@ -24,12 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/geometry/FloatRect.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/geometry/rect_f.h"
 

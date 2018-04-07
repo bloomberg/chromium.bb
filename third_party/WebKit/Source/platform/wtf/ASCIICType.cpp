@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/ASCIICType.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 
 namespace WTF {
 

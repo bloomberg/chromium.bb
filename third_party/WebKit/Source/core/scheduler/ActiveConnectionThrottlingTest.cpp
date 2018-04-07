@@ -2,15 +2,15 @@
 // Use of this source code if governed by a BSD-style license that can be
 // found in LICENSE file.
 
-#include "core/exported/WebViewImpl.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/testing/sim/SimRequest.h"
-#include "core/testing/sim/SimTest.h"
-#include "platform/scheduler/public/page_scheduler.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/testing/TestingPlatformSupportWithWebRTC.h"
-#include "public/web/WebScriptSource.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/web/web_script_source.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_web_rtc.h"
 
 using testing::_;
 

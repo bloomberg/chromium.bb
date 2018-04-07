@@ -27,13 +27,13 @@
  * SUCH DAMAGE.
  */
 
-#include "core/css/CSSBasicShapeValues.h"
+#include "third_party/blink/renderer/core/css/css_basic_shape_values.h"
 
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSValuePair.h"
-#include "platform/Length.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 namespace cssvalue {

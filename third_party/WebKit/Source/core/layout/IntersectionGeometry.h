@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IntersectionGeometry_h
-#define IntersectionGeometry_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_INTERSECTION_GEOMETRY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_INTERSECTION_GEOMETRY_H_
 
-#include "platform/Length.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -86,4 +86,4 @@ class IntersectionGeometry {
 
 }  // namespace blink
 
-#endif  // IntersectionGeometry_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_INTERSECTION_GEOMETRY_H_

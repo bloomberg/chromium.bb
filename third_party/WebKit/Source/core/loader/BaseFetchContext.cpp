@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/BaseFetchContext.h"
+#include "third_party/blink/renderer/core/loader/base_fetch_context.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/ContentSettingsClient.h"
-#include "core/frame/Settings.h"
-#include "core/frame/WebFeature.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/loader/SubresourceFilter.h"
-#include "core/loader/private/FrameClientHintsPreferencesContext.h"
-#include "platform/exported/WrappedResourceRequest.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/ResourceLoadPriority.h"
-#include "platform/loader/fetch/ResourceLoadingLog.h"
-#include "platform/loader/fetch/fetch_initiator_type_names.h"
-#include "platform/network/mime/MIMETypeRegistry.h"
-#include "platform/weborigin/SchemeRegistry.h"
-#include "platform/weborigin/SecurityPolicy.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/content_settings_client.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/private/frame_client_hints_preferences_context.h"
+#include "third_party/blink/renderer/core/loader/subresource_filter.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
 

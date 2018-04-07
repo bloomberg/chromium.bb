@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/speech/PlatformSpeechSynthesizer.h"
+#include "third_party/blink/renderer/platform/speech/platform_speech_synthesizer.h"
 
 #include "build/build_config.h"
-#include "platform/exported/WebSpeechSynthesizerClientImpl.h"
-#include "platform/speech/PlatformSpeechSynthesisUtterance.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebSpeechSynthesisUtterance.h"
-#include "public/platform/WebSpeechSynthesizer.h"
-#include "public/platform/WebSpeechSynthesizerClient.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_speech_synthesis_utterance.h"
+#include "third_party/blink/public/platform/web_speech_synthesizer.h"
+#include "third_party/blink/public/platform/web_speech_synthesizer_client.h"
+#include "third_party/blink/renderer/platform/exported/web_speech_synthesizer_client_impl.h"
+#include "third_party/blink/renderer/platform/speech/platform_speech_synthesis_utterance.h"
 
 namespace blink {
 

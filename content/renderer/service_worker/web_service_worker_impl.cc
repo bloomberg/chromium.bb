@@ -11,9 +11,9 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
-#include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProxy.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_proxy.h"
+#include "third_party/blink/public/platform/web_runtime_features.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 using blink::WebString;
 

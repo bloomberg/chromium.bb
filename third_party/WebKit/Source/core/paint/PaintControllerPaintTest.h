@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintControllerPaintTest_h
-#define PaintControllerPaintTest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_CONTROLLER_PAINT_TEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_CONTROLLER_PAINT_TEST_H_
 
-#include "core/editing/FrameSelection.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/PaintLayer.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/paint/CullRect.h"
-#include "platform/graphics/paint/PaintControllerTest.h"
-#include "platform/testing/PaintTestConfigurations.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller_test.h"
+#include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 
 namespace blink {
 
@@ -123,4 +123,4 @@ class PaintControllerPaintTest : public PaintTestConfigurations,
 
 }  // namespace blink
 
-#endif  // PaintControllerPaintTest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_CONTROLLER_PAINT_TEST_H_

@@ -1,6 +1,6 @@
 include_rules = [
-    "-modules",
-    "+modules/encryptedmedia",
-    "+modules/mediacapturefromelement",
-    "+modules/mediastream",
+    "-third_party/blink/renderer/modules",
+    "+third_party/blink/renderer/modules/encryptedmedia",
+    "+third_party/blink/renderer/modules/mediacapturefromelement",
+    "+third_party/blink/renderer/modules/mediastream",
 ]

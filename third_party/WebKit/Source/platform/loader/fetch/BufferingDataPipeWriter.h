@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BufferingDataPipeWriter_h
-#define BufferingDataPipeWriter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_BUFFERING_DATA_PIPE_WRITER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_BUFFERING_DATA_PIPE_WRITER_H_
 
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

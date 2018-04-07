@@ -24,13 +24,13 @@
  *
  */
 
-#ifndef WindowEventContext_h
-#define WindowEventContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_WINDOW_EVENT_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_WINDOW_EVENT_CONTEXT_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -64,4 +64,4 @@ inline EventTarget* WindowEventContext::Target() const {
 
 }  // namespace blink
 
-#endif  // WindowEventContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_WINDOW_EVENT_CONTEXT_H_

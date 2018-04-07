@@ -20,18 +20,18 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef RawResource_h
-#define RawResource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RAW_RESOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RAW_RESOURCE_H_
 
 #include <memory>
 
-#include "platform/PlatformExport.h"
-#include "platform/loader/fetch/BufferingDataPipeWriter.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/ResourceClient.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/wtf/Optional.h"
-#include "public/platform/WebDataConsumerHandle.h"
+#include "third_party/blink/public/platform/web_data_consumer_handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/buffering_data_pipe_writer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 class WebDataConsumerHandle;
@@ -244,4 +244,4 @@ class PLATFORM_EXPORT RawResourceClientStateChecker final {
 
 }  // namespace blink
 
-#endif  // RawResource_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RAW_RESOURCE_H_

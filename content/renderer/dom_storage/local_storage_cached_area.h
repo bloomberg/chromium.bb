@@ -15,7 +15,7 @@
 #include "content/common/leveldb_wrapper.mojom.h"
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "third_party/WebKit/public/platform/WebScopedVirtualTimePauser.h"
+#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

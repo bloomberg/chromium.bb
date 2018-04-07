@@ -27,13 +27,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EditorCommand_h
-#define EditorCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_EDITOR_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_EDITOR_COMMAND_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/StaticRange.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/static_range.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ class CORE_EXPORT EditorCommand {
 
 }  // namespace blink
 
-#endif  // EditorCommand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_EDITOR_COMMAND_H_

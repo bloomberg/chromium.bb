@@ -18,16 +18,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/page/ScopedPagePauser.h"
+#include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
 
-#include "core/dom/Document.h"
-#include "core/loader/FrameLoader.h"
-#include "core/page/Page.h"
-#include "platform/heap/Handle.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

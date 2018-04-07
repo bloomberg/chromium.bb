@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DocumentAnimation_h
-#define DocumentAnimation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_DOCUMENT_ANIMATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_DOCUMENT_ANIMATION_H_
 
-#include "core/animation/Animation.h"
-#include "core/animation/DocumentTimeline.h"
-#include "core/dom/Document.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/animation/document_timeline.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -27,4 +27,4 @@ class DocumentAnimation {
 
 }  // namespace blink
 
-#endif  // DocumentAnimation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_DOCUMENT_ANIMATION_H_

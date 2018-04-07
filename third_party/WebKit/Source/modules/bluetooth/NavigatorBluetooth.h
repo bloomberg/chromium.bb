@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigatorBluetooth_h
-#define NavigatorBluetooth_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_NAVIGATOR_BLUETOOTH_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_NAVIGATOR_BLUETOOTH_H_
 
-#include "core/frame/Navigator.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>,
 
 }  // namespace blink
 
-#endif  // NavigatorBluetooth_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_NAVIGATOR_BLUETOOTH_H_

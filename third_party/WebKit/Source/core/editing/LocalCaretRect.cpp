@@ -28,18 +28,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/LocalCaretRect.h"
+#include "third_party/blink/renderer/core/editing/local_caret_rect.h"
 
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/InlineBoxPosition.h"
-#include "core/editing/NGFlatTreeShorthands.h"
-#include "core/editing/PositionWithAffinity.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/layout/api/LineLayoutAPIShim.h"
-#include "core/layout/line/InlineTextBox.h"
-#include "core/layout/line/RootInlineBox.h"
-#include "core/layout/ng/inline/ng_caret_rect.h"
-#include "core/layout/ng/inline/ng_offset_mapping.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/inline_box_position.h"
+#include "third_party/blink/renderer/core/editing/ng_flat_tree_shorthands.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 
 namespace blink {
 

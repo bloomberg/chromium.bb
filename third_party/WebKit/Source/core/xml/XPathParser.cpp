@@ -25,17 +25,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/XPathParser.h"
+#include "third_party/blink/renderer/core/xml/xpath_parser.h"
 
 #include "base/memory/ptr_util.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/xml/XPathEvaluator.h"
-#include "core/xml/XPathNSResolver.h"
-#include "core/xml/XPathPath.h"
-#include "core/xpath_grammar.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/xml/xpath_evaluator.h"
+#include "third_party/blink/renderer/core/xml/xpath_ns_resolver.h"
+#include "third_party/blink/renderer/core/xml/xpath_path.h"
+#include "third_party/blink/renderer/core/xpath_grammar.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 

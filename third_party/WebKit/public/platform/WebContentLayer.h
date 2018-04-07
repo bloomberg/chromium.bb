@@ -23,11 +23,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebContentLayer_h
-#define WebContentLayer_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_LAYER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_LAYER_H_
 
-#include "WebCommon.h"
-#include "WebLayer.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_layer.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ class WebContentLayer {
 
 }  // namespace blink
 
-#endif  // WebContentLayer_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_LAYER_H_

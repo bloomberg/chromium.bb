@@ -30,11 +30,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ImageInputType_h
-#define ImageInputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_IMAGE_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_IMAGE_INPUT_TYPE_H_
 
-#include "core/html/forms/BaseButtonInputType.h"
-#include "platform/geometry/IntPoint.h"
+#include "third_party/blink/renderer/core/html/forms/base_button_input_type.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ class ImageInputType final : public BaseButtonInputType {
 
 }  // namespace blink
 
-#endif  // ImageInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_IMAGE_INPUT_TYPE_H_

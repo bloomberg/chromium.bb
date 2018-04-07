@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/CaretDisplayItemClient.h"
+#include "third_party/blink/renderer/core/editing/caret_display_item_client.h"
 
-#include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutView.h"
-#include "core/page/FocusController.h"
-#include "core/paint/PaintLayer.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/paint/RasterInvalidationTracking.h"
-#include "platform/testing/PaintTestConfigurations.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
+#include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 
 namespace blink {
 

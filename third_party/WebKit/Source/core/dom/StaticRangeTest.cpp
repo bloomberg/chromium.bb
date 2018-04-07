@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/StaticRange.h"
+#include "third_party/blink/renderer/core/dom/static_range.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/dom/Element.h"
-#include "core/dom/NodeList.h"
-#include "core/dom/Range.h"
-#include "core/dom/Text.h"
-#include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLDocument.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLHtmlElement.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/text/AtomicString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_list.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

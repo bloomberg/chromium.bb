@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebServiceWorkerInstalledScriptsManager_h
-#define WebServiceWorkerInstalledScriptsManager_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_INSTALLED_SCRIPTS_MANAGER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_INSTALLED_SCRIPTS_MANAGER_H_
 
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 #if INSIDE_BLINK
 #include <memory>
-#include "platform/network/HTTPHeaderMap.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
 #endif  // INSIDE_BLINK
 
 namespace blink {
@@ -94,4 +94,4 @@ class WebServiceWorkerInstalledScriptsManager {
 
 }  // namespace blink
 
-#endif  // WebServiceWorkerInstalledScriptsManager_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_INSTALLED_SCRIPTS_MANAGER_H_

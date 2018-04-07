@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIInput_h
-#define MIDIInput_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_INPUT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_INPUT_H_
 
 #include "media/midi/midi_service.mojom-blink.h"
-#include "modules/EventTargetModules.h"
-#include "modules/webmidi/MIDIAccessor.h"
-#include "modules/webmidi/MIDIPort.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_accessor.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_port.h"
 
 namespace blink {
 
@@ -82,4 +82,4 @@ class MIDIInput final : public MIDIPort {
 
 }  // namespace blink
 
-#endif  // MIDIInput_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_INPUT_H_

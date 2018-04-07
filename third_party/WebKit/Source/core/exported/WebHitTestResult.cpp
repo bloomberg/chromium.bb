@@ -23,16 +23,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebHitTestResult.h"
+#include "third_party/blink/public/web/web_hit_test_result.h"
 
-#include "core/dom/Element.h"
-#include "core/dom/Node.h"
-#include "core/layout/HitTestResult.h"
-#include "platform/weborigin/KURL.h"
-#include "public/platform/WebPoint.h"
-#include "public/platform/WebURL.h"
-#include "public/web/WebElement.h"
-#include "public/web/WebNode.h"
+#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_element.h"
+#include "third_party/blink/public/web/web_node.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

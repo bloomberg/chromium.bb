@@ -32,7 +32,7 @@
 #include "base/win/windows_version.h"
 #include "content/child/dwrite_font_proxy/dwrite_font_proxy_init_impl_win.h"
 #include "sandbox/win/src/sandbox.h"
-#include "third_party/WebKit/public/web/win/WebFontRendering.h"
+#include "third_party/blink/public/web/win/web_font_rendering.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/win/direct_write.h"

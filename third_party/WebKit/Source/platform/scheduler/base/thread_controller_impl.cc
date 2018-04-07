@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/base/thread_controller_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/thread_controller_impl.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
-#include "platform/scheduler/base/lazy_now.h"
+#include "third_party/blink/renderer/platform/scheduler/base/lazy_now.h"
 
 namespace blink {
 namespace scheduler {

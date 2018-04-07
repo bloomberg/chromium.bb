@@ -21,7 +21,7 @@
 #include "printing/page_range.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
-#include "third_party/WebKit/public/web/WebPrintScalingOption.h"
+#include "third_party/blink/public/web/web_print_scaling_option.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"

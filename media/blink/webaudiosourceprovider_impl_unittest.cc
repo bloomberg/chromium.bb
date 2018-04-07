@@ -15,7 +15,7 @@
 #include "media/blink/webaudiosourceprovider_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebAudioSourceProviderClient.h"
+#include "third_party/blink/public/platform/web_audio_source_provider_client.h"
 
 using ::testing::_;
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/audio/PushPullFIFO.h"
+#include "third_party/blink/renderer/platform/audio/push_pull_fifo.h"
 
 #include <memory>
 #include "build/build_config.h"
-#include "platform/Histogram.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 

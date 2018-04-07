@@ -17,10 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/graphics/PathTraversalState.h"
+#include "third_party/blink/renderer/platform/graphics/path_traversal_state.h"
 
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

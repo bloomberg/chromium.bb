@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CreateElementFlags_h
-#define CreateElementFlags_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CREATE_ELEMENT_FLAGS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CREATE_ELEMENT_FLAGS_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 class CreateElementFlags {
   STACK_ALLOCATED();
@@ -99,4 +99,4 @@ class CreateElementFlags {
   bool created_during_document_write_ : 1;
 };
 
-#endif  // CreateElementFlags_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CREATE_ELEMENT_FLAGS_H_

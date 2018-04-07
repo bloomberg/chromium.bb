@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_capabilities/NavigatorMediaCapabilities.h"
+#include "third_party/blink/renderer/modules/media_capabilities/navigator_media_capabilities.h"
 
-#include "modules/media_capabilities/MediaCapabilities.h"
-#include "platform/Supplementable.h"
+#include "third_party/blink/renderer/modules/media_capabilities/media_capabilities.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 

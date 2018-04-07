@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontDataForRangeSet_h
-#define FontDataForRangeSet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_DATA_FOR_RANGE_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_DATA_FOR_RANGE_SET_H_
 
-#include "platform/fonts/FontData.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/UnicodeRangeSet.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/platform/fonts/font_data.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/fonts/unicode_range_set.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
 

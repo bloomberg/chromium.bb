@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/modules/v8/ModuleBindingsInitializer.h"
+#include "third_party/blink/renderer/bindings/modules/v8/module_bindings_initializer.h"
 
-#include "bindings/modules/v8/origin_trial_features_for_modules.h"
-#include "bindings/modules/v8/serialization/SerializedScriptValueForModulesFactory.h"
-#include "platform/bindings/V8PerIsolateData.h"
+#include "third_party/blink/renderer/bindings/modules/v8/origin_trial_features_for_modules.h"
+#include "third_party/blink/renderer/bindings/modules/v8/serialization/serialized_script_value_for_modules_factory.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 
 namespace blink {
 

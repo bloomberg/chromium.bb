@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/accessibility/AXPosition.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_position.h"
 
-#include "core/dom/AXObjectCache.h"
-#include "core/dom/Document.h"
-#include "core/dom/Node.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/Position.h"
-#include "core/editing/PositionWithAffinity.h"
-#include "core/editing/iterators/CharacterIterator.h"
-#include "core/editing/iterators/TextIterator.h"
-#include "modules/accessibility/AXObject.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/iterators/character_iterator.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 
 namespace blink {
 

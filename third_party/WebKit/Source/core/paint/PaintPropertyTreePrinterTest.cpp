@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/PaintPropertyTreePrinter.h"
+#include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
 
-#include "core/layout/LayoutObject.h"
-#include "core/paint/PaintControllerPaintTest.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 #if DCHECK_IS_ON()
 

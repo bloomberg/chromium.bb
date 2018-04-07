@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/IdleDeadline.h"
+#include "third_party/blink/renderer/core/dom/idle_deadline.h"
 
 #include "base/single_thread_task_runner.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 namespace {

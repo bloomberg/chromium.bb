@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/bindings/DOMWrapperWorld.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 
 #include <memory>
 #include <utility>
 
-#include "platform/bindings/DOMDataStore.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/wtf/HashTraits.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

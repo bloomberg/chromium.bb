@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HttpEquiv_h
-#define HttpEquiv_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_HTTP_EQUIV_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_HTTP_EQUIV_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

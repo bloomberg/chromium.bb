@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SQLResultSet_h
-#define SQLResultSet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_RESULT_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_RESULT_SET_H_
 
-#include "modules/webdatabase/DatabaseBasicTypes.h"
-#include "modules/webdatabase/SQLResultSetRowList.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_basic_types.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_result_set_row_list.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class SQLResultSet final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // SQLResultSet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_RESULT_SET_H_

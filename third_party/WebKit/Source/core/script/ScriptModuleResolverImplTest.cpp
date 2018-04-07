@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/script/ScriptModuleResolverImpl.h"
+#include "third_party/blink/renderer/core/script/script_module_resolver_impl.h"
 
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/script/Modulator.h"
-#include "core/script/ModuleScript.h"
-#include "core/testing/DummyModulator.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8ThrowException.h"
-#include "platform/heap/Handle.h"
-#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
-#include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/core/testing/dummy_modulator.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "v8/include/v8.h"
 
 namespace blink {

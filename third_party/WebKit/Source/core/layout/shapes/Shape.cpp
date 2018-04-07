@@ -27,30 +27,30 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/shapes/Shape.h"
+#include "third_party/blink/renderer/core/layout/shapes/shape.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
-#include "core/css/BasicShapeFunctions.h"
-#include "core/layout/shapes/BoxShape.h"
-#include "core/layout/shapes/PolygonShape.h"
-#include "core/layout/shapes/RasterShape.h"
-#include "core/layout/shapes/RectangleShape.h"
-#include "core/svg/graphics/SVGImage.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "platform/LengthFunctions.h"
-#include "platform/geometry/FloatRoundedRect.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/css/basic_shape_functions.h"
+#include "third_party/blink/renderer/core/layout/shapes/box_shape.h"
+#include "third_party/blink/renderer/core/layout/shapes/polygon_shape.h"
+#include "third_party/blink/renderer/core/layout/shapes/raster_shape.h"
+#include "third_party/blink/renderer/core/layout/shapes/rectangle_shape.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {

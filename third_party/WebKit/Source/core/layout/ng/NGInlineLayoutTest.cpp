@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/exported/WebViewImpl.h"
-#include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/layout_ng_block_flow.h"
-#include "core/layout/ng/ng_block_layout_algorithm.h"
-#include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_layout_result.h"
-#include "core/testing/sim/SimCompositor.h"
-#include "core/testing/sim/SimRequest.h"
-#include "core/testing/sim/SimTest.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/CSSMathSum.h"
+#include "third_party/blink/renderer/core/css/cssom/css_math_sum.h"
 
-#include "core/css/CSSCalculationValue.h"
-#include "core/css/cssom/CSSMathNegate.h"
+#include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_math_negate.h"
 
 namespace blink {
 

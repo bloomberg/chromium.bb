@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/CanvasColorParams.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 
 #include "cc/paint/skia_paint_canvas.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/khronos/GLES3/gl3.h"

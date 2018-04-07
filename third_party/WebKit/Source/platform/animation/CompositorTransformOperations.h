@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorTransformOperations_h
-#define CompositorTransformOperations_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_TRANSFORM_OPERATIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_TRANSFORM_OPERATIONS_H_
 
 #include "cc/animation/transform_operations.h"
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 class SkMatrix44;
 
@@ -38,4 +38,4 @@ class PLATFORM_EXPORT CompositorTransformOperations {
 
 }  // namespace blink
 
-#endif  // CompositorTransformOperations_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_TRANSFORM_OPERATIONS_H_

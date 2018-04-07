@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webusb/USBDevice.h"
+#include "third_party/blink/renderer/modules/webusb/usb_device.h"
 
 #include <algorithm>
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "core/typed_arrays/DOMArrayBufferView.h"
-#include "modules/webusb/USBConfiguration.h"
-#include "modules/webusb/USBControlTransferParameters.h"
-#include "modules/webusb/USBInTransferResult.h"
-#include "modules/webusb/USBIsochronousInTransferResult.h"
-#include "modules/webusb/USBIsochronousOutTransferResult.h"
-#include "modules/webusb/USBOutTransferResult.h"
-#include "platform/mojo/MojoHelper.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
+#include "third_party/blink/renderer/modules/webusb/usb_configuration.h"
+#include "third_party/blink/renderer/modules/webusb/usb_control_transfer_parameters.h"
+#include "third_party/blink/renderer/modules/webusb/usb_in_transfer_result.h"
+#include "third_party/blink/renderer/modules/webusb/usb_isochronous_in_transfer_result.h"
+#include "third_party/blink/renderer/modules/webusb/usb_isochronous_out_transfer_result.h"
+#include "third_party/blink/renderer/modules/webusb/usb_out_transfer_result.h"
+#include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 using device::mojom::blink::UsbControlTransferParamsPtr;
 using device::mojom::blink::UsbControlTransferType;

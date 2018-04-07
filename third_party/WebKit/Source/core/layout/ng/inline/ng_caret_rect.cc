@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/inline/ng_caret_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_rect.h"
 
-#include "core/editing/LocalCaretRect.h"
-#include "core/editing/PositionWithAffinity.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutTextFragment.h"
-#include "core/layout/ng/geometry/ng_physical_offset_rect.h"
-#include "core/layout/ng/inline/ng_inline_fragment_traversal.h"
-#include "core/layout/ng/inline/ng_offset_mapping.h"
-#include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "core/layout/ng/inline/ng_physical_text_fragment.h"
-#include "core/layout/ng/ng_physical_box_fragment.h"
-#include "platform/fonts/CharacterRange.h"
+#include "third_party/blink/renderer/core/editing/local_caret_rect.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/platform/fonts/character_range.h"
 
 namespace blink {
 

@@ -7,7 +7,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "third_party/WebKit/public/web/WebPopupType.h"
+#include "third_party/blink/public/web/web_popup_type.h"
 #include "ui/gfx/geometry/rect.h"
 
 @class NSWindow;

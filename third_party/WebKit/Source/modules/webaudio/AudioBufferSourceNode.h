@@ -23,17 +23,17 @@
  * DAMAGE.
  */
 
-#ifndef AudioBufferSourceNode_h
-#define AudioBufferSourceNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_BUFFER_SOURCE_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_BUFFER_SOURCE_NODE_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "modules/webaudio/AudioBuffer.h"
-#include "modules/webaudio/AudioParam.h"
-#include "modules/webaudio/AudioScheduledSourceNode.h"
-#include "modules/webaudio/PannerNode.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/wtf/Threading.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_scheduled_source_node.h"
+#include "third_party/blink/renderer/modules/webaudio/panner_node.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 
@@ -224,4 +224,4 @@ class AudioBufferSourceNode final : public AudioScheduledSourceNode {
 
 }  // namespace blink
 
-#endif  // AudioBufferSourceNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_BUFFER_SOURCE_NODE_H_

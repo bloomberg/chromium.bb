@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/serviceworkers/ServiceWorkerWindowClientCallback.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_window_client_callback.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "modules/serviceworkers/ServiceWorkerError.h"
-#include "modules/serviceworkers/ServiceWorkerWindowClient.h"
-#include "platform/bindings/V8ThrowException.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_error.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_window_client.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 
 namespace blink {
 

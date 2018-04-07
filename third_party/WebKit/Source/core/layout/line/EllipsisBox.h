@@ -17,11 +17,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef EllipsisBox_h
-#define EllipsisBox_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_ELLIPSIS_BOX_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_ELLIPSIS_BOX_H_
 
-#include "core/layout/api/SelectionState.h"
-#include "core/layout/line/InlineBox.h"
+#include "third_party/blink/renderer/core/layout/api/selection_state.h"
+#include "third_party/blink/renderer/core/layout/line/inline_box.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ class EllipsisBox final : public InlineBox {
 
 }  // namespace blink
 
-#endif  // EllipsisBox_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_ELLIPSIS_BOX_H_

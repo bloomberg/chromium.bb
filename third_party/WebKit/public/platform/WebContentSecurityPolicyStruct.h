@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebContentSecurityPolicyStruct_h
-#define WebContentSecurityPolicyStruct_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_SECURITY_POLICY_STRUCT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_SECURITY_POLICY_STRUCT_H_
 
-#include "public/platform/WebContentSecurityPolicy.h"
-#include "public/platform/WebSourceLocation.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_content_security_policy.h"
+#include "third_party/blink/public/platform/web_source_location.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 

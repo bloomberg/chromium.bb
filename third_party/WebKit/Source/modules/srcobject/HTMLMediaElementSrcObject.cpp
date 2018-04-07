@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/srcobject/HTMLMediaElementSrcObject.h"
+#include "third_party/blink/renderer/modules/srcobject/html_media_element_src_object.h"
 
-#include "core/html/media/HTMLMediaElement.h"
-#include "modules/mediastream/MediaStream.h"
-#include "platform/mediastream/MediaStreamDescriptor.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 
 namespace blink {
 

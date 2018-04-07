@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/SplitTextNodeCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/split_text_node_command.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Document.h"
-#include "core/dom/Text.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/markers/DocumentMarkerController.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

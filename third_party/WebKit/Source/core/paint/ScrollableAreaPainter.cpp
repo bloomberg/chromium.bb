@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ScrollableAreaPainter.h"
+#include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 
-#include "core/layout/LayoutView.h"
-#include "core/page/Page.h"
-#include "core/paint/ObjectPaintProperties.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/PaintLayerScrollableArea.h"
-#include "core/paint/ScrollbarPainter.h"
-#include "core/paint/TransformRecorder.h"
-#include "platform/PlatformChromeClient.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/object_paint_properties.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/scrollbar_painter.h"
+#include "third_party/blink/renderer/core/paint/transform_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/platform_chrome_client.h"
 
 namespace blink {
 

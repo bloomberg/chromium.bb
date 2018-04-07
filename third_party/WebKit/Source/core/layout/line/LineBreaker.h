@@ -21,14 +21,14 @@
  *
  */
 
-#ifndef LineBreaker_h
-#define LineBreaker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_BREAKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_BREAKER_H_
 
-#include "core/layout/api/LineLayoutBlockFlow.h"
-#include "core/layout/line/InlineIterator.h"
-#include "core/layout/line/LineInfo.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/line/inline_iterator.h"
+#include "third_party/blink/renderer/core/layout/line/line_info.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class LineBreaker {
 
 }  // namespace blink
 
-#endif  // LineBreaker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_BREAKER_H_

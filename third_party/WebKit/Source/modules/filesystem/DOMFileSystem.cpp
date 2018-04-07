@@ -28,23 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/filesystem/DOMFileSystem.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 
 #include <memory>
 
-#include "core/probe/CoreProbes.h"
-#include "modules/filesystem/DOMFilePath.h"
-#include "modules/filesystem/DirectoryEntry.h"
-#include "modules/filesystem/FileEntry.h"
-#include "modules/filesystem/FileSystemCallbacks.h"
-#include "modules/filesystem/FileWriter.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebFileSystem.h"
-#include "public/platform/WebFileSystemCallbacks.h"
-#include "public/platform/WebSecurityOrigin.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_file_system.h"
+#include "third_party/blink/public/platform/web_file_system_callbacks.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_path.h"
+#include "third_party/blink/renderer/modules/filesystem/file_entry.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
+#include "third_party/blink/renderer/modules/filesystem/file_writer.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

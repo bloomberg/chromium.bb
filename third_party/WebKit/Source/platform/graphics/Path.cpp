@@ -27,15 +27,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/Path.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
 
 #include <math.h>
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 
 namespace blink {

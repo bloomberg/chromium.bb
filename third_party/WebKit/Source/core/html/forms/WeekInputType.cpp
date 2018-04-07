@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/WeekInputType.h"
+#include "third_party/blink/renderer/core/html/forms/week_input_type.h"
 
-#include "core/frame/WebFeature.h"
-#include "core/html/forms/DateTimeFieldsState.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html_names.h"
-#include "core/input_type_names.h"
-#include "platform/DateComponents.h"
-#include "platform/text/PlatformLocale.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_fields_state.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/platform/date_components.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

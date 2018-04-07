@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/animation/CompositorFilterKeyframe.h"
+#include "third_party/blink/renderer/platform/animation/compositor_filter_keyframe.h"
 
-#include "platform/animation/TimingFunction.h"
 #include <memory>
+#include "third_party/blink/renderer/platform/animation/timing_function.h"
 
 namespace blink {
 

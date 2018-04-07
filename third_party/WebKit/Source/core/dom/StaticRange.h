@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StaticRange_h
-#define StaticRange_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_STATIC_RANGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_STATIC_RANGE_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Range.h"
-#include "core/editing/Forward.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -82,4 +82,4 @@ using StaticRangeVector = HeapVector<Member<StaticRange>>;
 
 }  // namespace blink
 
-#endif  // StaticRange_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_STATIC_RANGE_H_

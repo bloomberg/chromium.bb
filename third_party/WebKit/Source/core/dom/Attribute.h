@@ -23,12 +23,12 @@
  *
  */
 
-#ifndef Attribute_h
-#define Attribute_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ATTRIBUTE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ATTRIBUTE_H_
 
 #include "build/build_config.h"
-#include "core/dom/QualifiedName.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -90,4 +90,4 @@ inline bool Attribute::MatchesCaseInsensitive(
 
 }  // namespace blink
 
-#endif  // Attribute_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ATTRIBUTE_H_

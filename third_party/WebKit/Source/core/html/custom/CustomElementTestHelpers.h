@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CustomElementTestHelpers_h
-#define CustomElementTestHelpers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_TEST_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_TEST_HELPERS_H_
 
 #include "base/macros.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/ElementDefinitionOptions.h"
-#include "core/dom/QualifiedName.h"
-#include "core/html/HTMLDocument.h"
-#include "core/html/custom/CEReactionsScope.h"
-#include "core/html/custom/CustomElementDefinition.h"
-#include "core/html/custom/CustomElementDefinitionBuilder.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/element_definition_options.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_definition_builder.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 #include <utility>
 #include <vector>
@@ -160,4 +160,4 @@ class CreateElement {
 
 }  // namespace blink
 
-#endif  // CustomElementTestHelpers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_TEST_HELPERS_H_

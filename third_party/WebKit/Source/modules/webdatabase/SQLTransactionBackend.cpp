@@ -26,23 +26,23 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/SQLTransactionBackend.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction_backend.h"
 
 #include <memory>
-#include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/DatabaseAuthorizer.h"
-#include "modules/webdatabase/DatabaseContext.h"
-#include "modules/webdatabase/DatabaseThread.h"
-#include "modules/webdatabase/DatabaseTracker.h"
-#include "modules/webdatabase/SQLError.h"
-#include "modules/webdatabase/SQLStatementBackend.h"
-#include "modules/webdatabase/SQLTransaction.h"
-#include "modules/webdatabase/SQLTransactionClient.h"
-#include "modules/webdatabase/SQLTransactionCoordinator.h"
-#include "modules/webdatabase/StorageLog.h"
-#include "modules/webdatabase/sqlite/SQLValue.h"
-#include "modules/webdatabase/sqlite/SQLiteTransaction.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/modules/webdatabase/database.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_authorizer.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_context.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_thread.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_tracker.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_error.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_statement_backend.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction_client.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction_coordinator.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sql_value.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_transaction.h"
+#include "third_party/blink/renderer/modules/webdatabase/storage_log.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 // How does a SQLTransaction work?
 // ==============================

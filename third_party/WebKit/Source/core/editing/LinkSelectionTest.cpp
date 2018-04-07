@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/Range.h"
-#include "core/frame/FrameTestHelpers.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/input/EventHandler.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/ContextMenuController.h"
-#include "core/page/FocusController.h"
-#include "core/page/Page.h"
-#include "platform/Cursor.h"
-#include "platform/testing/URLTestHelpers.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/WebCoalescedInputEvent.h"
-#include "public/web/WebSettings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_coalesced_input_event.h"
+#include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/context_menu_controller.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/cursor.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
 using testing::_;
 

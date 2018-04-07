@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPluginScriptForbiddenScope_h
-#define WebPluginScriptForbiddenScope_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_SCRIPT_FORBIDDEN_SCOPE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_SCRIPT_FORBIDDEN_SCOPE_H_
 
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 
@@ -17,4 +17,4 @@ class BLINK_EXPORT WebPluginScriptForbiddenScope {
 
 }  // namespace blink
 
-#endif  // WebPluginScriptForbiddenScope_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_SCRIPT_FORBIDDEN_SCOPE_H_

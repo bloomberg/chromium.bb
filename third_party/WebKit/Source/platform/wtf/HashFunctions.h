@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef WTF_HashFunctions_h
-#define WTF_HashFunctions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_FUNCTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_FUNCTIONS_H_
 
 #include <stdint.h>
 #include <memory>
@@ -27,7 +27,7 @@
 #include "base/bit_cast.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace WTF {
 
@@ -283,4 +283,4 @@ using WTF::DefaultHash;
 using WTF::IntHash;
 using WTF::PtrHash;
 
-#endif  // WTF_HashFunctions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_FUNCTIONS_H_

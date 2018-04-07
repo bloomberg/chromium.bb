@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/timing/PerformanceUserTiming.h"
+#include "third_party/blink/renderer/core/timing/performance_user_timing.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/timing/Performance.h"
-#include "core/timing/PerformanceMark.h"
-#include "core/timing/PerformanceMeasure.h"
-#include "platform/Histogram.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/text/StringHash.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/timing/performance.h"
+#include "third_party/blink/renderer/core/timing/performance_mark.h"
+#include "third_party/blink/renderer/core/timing/performance_measure.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 

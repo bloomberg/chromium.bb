@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DecorationInfo_h
-#define DecorationInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_DECORATION_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_DECORATION_INFO_H_
 
-#include "platform/LayoutUnit.h"
-#include "platform/fonts/FontBaseline.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/fonts/font_baseline.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -37,4 +37,4 @@ struct DecorationInfo final {
 
 }  // namespace blink
 
-#endif  // DecorationInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_DECORATION_INFO_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StyleInheritedVariables_h
-#define StyleInheritedVariables_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_INHERITED_VARIABLES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_INHERITED_VARIABLES_H_
 
-#include "core/css/CSSValue.h"
-#include "core/css/CSSVariableData.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class StyleInheritedVariables : public RefCounted<StyleInheritedVariables> {
 
 }  // namespace blink
 
-#endif  // StyleInheritedVariables_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_INHERITED_VARIABLES_H_

@@ -24,10 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/paint/ClipRect.h"
+#include "third_party/blink/renderer/core/paint/clip_rect.h"
 
-#include "core/layout/HitTestLocation.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/layout/hit_test_location.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

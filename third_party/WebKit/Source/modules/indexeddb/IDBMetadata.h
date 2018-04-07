@@ -26,17 +26,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IDBMetadata_h
-#define IDBMetadata_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_METADATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_METADATA_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/indexeddb/IDBKeyPath.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/indexeddb/WebIDBMetadata.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -118,4 +118,4 @@ struct MODULES_EXPORT IDBDatabaseMetadata {
 
 }  // namespace blink
 
-#endif  // IDBMetadata_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_METADATA_H_

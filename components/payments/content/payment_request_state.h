@@ -18,7 +18,7 @@
 #include "components/payments/core/payments_profile_comparator.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
+#include "third_party/blink/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace autofill {
 class AutofillProfile;

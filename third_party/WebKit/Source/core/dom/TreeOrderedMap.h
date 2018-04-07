@@ -29,16 +29,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TreeOrderedMap_h
-#define TreeOrderedMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TREE_ORDERED_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TREE_ORDERED_MAP_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/AtomicStringHash.h"
-#include "platform/wtf/text/StringImpl.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 namespace blink {
 
@@ -124,4 +124,4 @@ inline bool TreeOrderedMap::ContainsMultiple(const AtomicString& id) const {
 
 }  // namespace blink
 
-#endif  // TreeOrderedMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TREE_ORDERED_MAP_H_

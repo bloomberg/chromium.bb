@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/PaintRecordBuilder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 
-#include "platform/graphics/paint/PaintControllerTest.h"
-#include "platform/graphics/test/MockPaintCanvas.h"
-#include "platform/testing/FakeDisplayItemClient.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller_test.h"
+#include "third_party/blink/renderer/platform/graphics/test/mock_paint_canvas.h"
+#include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
 
 using testing::_;
 

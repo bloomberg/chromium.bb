@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "cc/input/overscroll_behavior.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebGestureEvent.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/events/blink/did_overscroll_params.h"
 
 namespace content {

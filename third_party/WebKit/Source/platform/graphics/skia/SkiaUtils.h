@@ -31,14 +31,14 @@
 // All of the functions in this file should move to new homes and this file
 // should be deleted.
 
-#ifndef SkiaUtils_h
-#define SkiaUtils_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SKIA_SKIA_UTILS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SKIA_SKIA_UTILS_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/Image.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -176,4 +176,4 @@ inline PaintCanvas::SrcRectConstraint WebCoreClampingModeToSkiaRectConstraint(
 
 }  // namespace blink
 
-#endif  // SkiaUtils_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SKIA_SKIA_UTILS_H_

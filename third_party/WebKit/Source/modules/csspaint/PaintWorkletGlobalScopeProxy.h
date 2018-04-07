@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintWorkletGlobalScopeProxy_h
-#define PaintWorkletGlobalScopeProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_GLOBAL_SCOPE_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_GLOBAL_SCOPE_PROXY_H_
 
-#include "core/workers/WorkletGlobalScopeProxy.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope_proxy.h"
 
-#include "core/workers/MainThreadWorkletReportingProxy.h"
-#include "modules/ModulesExport.h"
-#include "modules/csspaint/PaintWorkletGlobalScope.h"
+#include "third_party/blink/renderer/core/workers/main_thread_worklet_reporting_proxy.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ class MODULES_EXPORT PaintWorkletGlobalScopeProxy
 
 }  // namespace blink
 
-#endif  // PaintWorkletGlobalScopeProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_GLOBAL_SCOPE_PROXY_H_

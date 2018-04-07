@@ -23,8 +23,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebCoreNSCellExtras_h
-#define WebCoreNSCellExtras_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_WEB_CORE_NS_CELL_EXTRAS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_WEB_CORE_NS_CELL_EXTRAS_H_
 
 #import <AppKit/AppKit.h>
 
@@ -32,4 +32,4 @@
 - (void)cr_drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView*)controlView;
 @end
 
-#endif  // WebCoreNSCellExtras_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_WEB_CORE_NS_CELL_EXTRAS_H_

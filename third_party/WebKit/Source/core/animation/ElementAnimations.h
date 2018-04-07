@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ElementAnimations_h
-#define ElementAnimations_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ELEMENT_ANIMATIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ELEMENT_ANIMATIONS_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/animation/EffectStack.h"
-#include "core/animation/WorkletAnimationBase.h"
-#include "core/animation/css/CSSAnimations.h"
-#include "platform/wtf/HashCountedSet.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/animation/css/css_animations.h"
+#include "third_party/blink/renderer/core/animation/effect_stack.h"
+#include "third_party/blink/renderer/core/animation/worklet_animation_base.h"
+#include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -103,4 +103,4 @@ class CORE_EXPORT ElementAnimations
 
 }  // namespace blink
 
-#endif  // ElementAnimations_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ELEMENT_ANIMATIONS_H_

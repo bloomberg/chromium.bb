@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerModuleFetchCoordinator_h
-#define WorkerModuleFetchCoordinator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_MODULE_FETCH_COORDINATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_MODULE_FETCH_COORDINATOR_H_
 
-#include "core/CoreExport.h"
-#include "core/workers/WorkerOrWorkletModuleFetchCoordinator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class CORE_EXPORT WorkerModuleFetchCoordinator final
 
 }  // namespace blink
 
-#endif  // WorkerModuleFetchCoordinator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_MODULE_FETCH_COORDINATOR_H_

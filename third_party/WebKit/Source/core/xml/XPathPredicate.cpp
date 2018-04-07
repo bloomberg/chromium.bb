@@ -25,12 +25,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/XPathPredicate.h"
+#include "third_party/blink/renderer/core/xml/xpath_predicate.h"
 
 #include <math.h>
-#include "core/xml/XPathFunctions.h"
-#include "core/xml/XPathUtil.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/core/xml/xpath_functions.h"
+#include "third_party/blink/renderer/core/xml/xpath_util.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

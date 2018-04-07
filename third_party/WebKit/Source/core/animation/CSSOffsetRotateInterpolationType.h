@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSOffsetRotateInterpolationType_h
-#define CSSOffsetRotateInterpolationType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_OFFSET_ROTATE_INTERPOLATION_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_OFFSET_ROTATE_INTERPOLATION_TYPE_H_
 
-#include "core/animation/CSSInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_type.h"
 
 namespace blink {
 
@@ -43,4 +43,4 @@ class CSSOffsetRotateInterpolationType : public CSSInterpolationType {
 
 }  // namespace blink
 
-#endif  // CSSOffsetRotateInterpolationType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_OFFSET_ROTATE_INTERPOLATION_TYPE_H_

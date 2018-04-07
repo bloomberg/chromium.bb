@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef USB_h
-#define USB_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/events/EventTarget.h"
 #include "device/usb/public/mojom/chooser_service.mojom-blink.h"
 #include "device/usb/public/mojom/device_manager.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -89,4 +89,4 @@ class USB final : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // USB_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_H_

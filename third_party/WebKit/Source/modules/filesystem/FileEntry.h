@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FileEntry_h
-#define FileEntry_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_ENTRY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_ENTRY_H_
 
-#include "modules/ModulesExport.h"
-#include "modules/filesystem/Entry.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/filesystem/entry.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ DEFINE_TYPE_CASTS(FileEntry, Entry, entry, entry->isFile(), entry.isFile());
 
 }  // namespace blink
 
-#endif  // FileEntry_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_ENTRY_H_

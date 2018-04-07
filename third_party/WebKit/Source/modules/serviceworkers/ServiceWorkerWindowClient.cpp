@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/serviceworkers/ServiceWorkerWindowClient.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_window_client.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/CallbackPromiseAdapter.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/page/PageVisibilityState.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerLocation.h"
-#include "modules/serviceworkers/ServiceWorkerError.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
-#include "modules/serviceworkers/ServiceWorkerWindowClientCallback.h"
-#include "platform/bindings/V8ThrowException.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/page/page_visibility_state.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_location.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_error.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_client.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_window_client_callback.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 
 namespace blink {
 

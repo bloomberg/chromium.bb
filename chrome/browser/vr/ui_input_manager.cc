@@ -16,7 +16,7 @@
 #include "chrome/browser/vr/ui_scene.h"
 // TODO(tiborg): Remove include once we use a generic type to pass scroll/fling
 // gestures.
-#include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
 
 namespace vr {
 

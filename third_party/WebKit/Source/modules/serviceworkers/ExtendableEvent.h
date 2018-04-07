@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ExtendableEvent_h
-#define ExtendableEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_EXTENDABLE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_EXTENDABLE_EVENT_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "modules/EventModules.h"
-#include "modules/ModulesExport.h"
-#include "modules/serviceworkers/ExtendableEventInit.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/serviceworkers/extendable_event_init.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ class MODULES_EXPORT ExtendableEvent : public Event {
 
 }  // namespace blink
 
-#endif  // ExtendableEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_EXTENDABLE_EVENT_H_

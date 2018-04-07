@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LinkResource_h
-#define LinkResource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LINK_RESOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LINK_RESOURCE_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 
@@ -76,4 +76,4 @@ class CORE_EXPORT LinkResource
 
 }  // namespace blink
 
-#endif  // LinkResource_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LINK_RESOURCE_H_

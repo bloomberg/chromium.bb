@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CompactHTMLToken_h
-#define CompactHTMLToken_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_COMPACT_HTML_TOKEN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_COMPACT_HTML_TOKEN_H_
 
-#include "core/html/parser/HTMLToken.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/TextPosition.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/html/parser/html_token.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

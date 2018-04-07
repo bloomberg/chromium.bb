@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/image-encoders/ImageEncoderUtils.h"
+#include "third_party/blink/renderer/platform/image-encoders/image_encoder_utils.h"
 
-#include "platform/Histogram.h"
-#include "platform/network/mime/MIMETypeRegistry.h"
-#include "platform/wtf/Threading.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 

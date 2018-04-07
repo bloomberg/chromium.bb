@@ -19,7 +19,7 @@
 #include "media/base/video_renderer_sink.h"
 #include "media/blink/media_blink_export.h"
 #include "media/blink/webmediaplayer_params.h"
-#include "third_party/WebKit/public/platform/WebVideoFrameSubmitter.h"
+#include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SerializedBlobStructTraits_h
-#define SerializedBlobStructTraits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_SERIALIZED_BLOB_STRUCT_TRAITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_SERIALIZED_BLOB_STRUCT_TRAITS_H_
 
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
-#include "platform/PlatformExport.h"
-#include "platform/blob/BlobData.h"
-#include "third_party/WebKit/public/mojom/blob/serialized_blob.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/serialized_blob.mojom-blink.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace mojo {
 
@@ -49,4 +49,4 @@ struct PLATFORM_EXPORT
 
 }  // namespace mojo
 
-#endif  // SerializedBlobStructTraits_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_SERIALIZED_BLOB_STRUCT_TRAITS_H_

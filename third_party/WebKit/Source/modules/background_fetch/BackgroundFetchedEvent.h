@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BackgroundFetchedEvent_h
-#define BackgroundFetchedEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCHED_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCHED_EVENT_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "modules/ModulesExport.h"
-#include "modules/background_fetch/BackgroundFetchEvent.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "public/platform/modules/background_fetch/background_fetch.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_event.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ class MODULES_EXPORT BackgroundFetchedEvent final
 
 }  // namespace blink
 
-#endif  // BackgroundFetchedEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCHED_EVENT_H_

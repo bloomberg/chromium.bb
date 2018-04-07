@@ -20,17 +20,17 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef ImageResource_h
-#define ImageResource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_IMAGE_RESOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_IMAGE_RESOURCE_H_
 
-#include "core/CoreExport.h"
-#include "core/loader/resource/ImageResourceContent.h"
-#include "core/loader/resource/ImageResourceInfo.h"
-#include "core/loader/resource/MultipartImageResourceParser.h"
-#include "platform/Timer.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/Resource.h"
 #include <memory>
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_info.h"
+#include "third_party/blink/renderer/core/loader/resource/multipart_image_resource_parser.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 

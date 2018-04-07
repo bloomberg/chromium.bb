@@ -24,20 +24,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/fileapi/PublicURLManager.h"
+#include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 
-#include "core/fileapi/URLRegistry.h"
-#include "platform/blob/BlobData.h"
-#include "platform/blob/BlobURL.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/weborigin/URLSecurityOriginMap.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/ThreadSpecific.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringHash.h"
-#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/renderer/core/fileapi/url_registry.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/blob/blob_url.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/weborigin/url_security_origin_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

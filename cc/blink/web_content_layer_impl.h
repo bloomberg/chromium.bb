@@ -13,7 +13,7 @@
 #include "cc/blink/cc_blink_export.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/content_layer_client.h"
-#include "third_party/WebKit/public/platform/WebContentLayer.h"
+#include "third_party/blink/public/platform/web_content_layer.h"
 
 namespace blink {
 class WebContentLayerClient;

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/web/WebPageImportanceSignals.h"
+#include "third_party/blink/public/web/web_page_importance_signals.h"
 
-#include "platform/Histogram.h"
-#include "public/web/WebViewClient.h"
+#include "third_party/blink/public/web/web_view_client.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
 

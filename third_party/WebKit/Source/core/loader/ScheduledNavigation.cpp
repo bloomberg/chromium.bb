@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/ScheduledNavigation.h"
+#include "third_party/blink/renderer/core/loader/scheduled_navigation.h"
 
 #include <memory>
 
-#include "core/frame/Frame.h"
-#include "core/frame/LocalFrame.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
 

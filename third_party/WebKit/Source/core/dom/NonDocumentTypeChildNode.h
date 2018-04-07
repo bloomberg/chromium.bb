@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NonDocumentTypeChildNode_h
-#define NonDocumentTypeChildNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NON_DOCUMENT_TYPE_CHILD_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NON_DOCUMENT_TYPE_CHILD_NODE_H_
 
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/Node.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 
 namespace blink {
 
@@ -23,4 +23,4 @@ class NonDocumentTypeChildNode {
 
 }  // namespace blink
 
-#endif  // NonDocumentTypeChildNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NON_DOCUMENT_TYPE_CHILD_NODE_H_

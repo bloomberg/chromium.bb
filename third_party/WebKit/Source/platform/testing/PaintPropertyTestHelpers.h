@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintPropertyTestHelpers_h
-#define PaintPropertyTestHelpers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_PAINT_PROPERTY_TEST_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_PAINT_PROPERTY_TEST_HELPERS_H_
 
-#include "platform/graphics/paint/ClipPaintPropertyNode.h"
-#include "platform/graphics/paint/EffectPaintPropertyNode.h"
-#include "platform/graphics/paint/PaintChunkProperties.h"
-#include "platform/graphics/paint/TransformPaintPropertyNode.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
 
 namespace blink {
 namespace test {
@@ -35,4 +35,4 @@ static inline PaintChunkProperties DefaultPaintChunkProperties() {
 }  // namespace test
 }  // namespace blink
 
-#endif  // PaintPropertyTestHelpers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_PAINT_PROPERTY_TEST_HELPERS_H_

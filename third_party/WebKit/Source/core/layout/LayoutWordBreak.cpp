@@ -24,10 +24,10 @@
  *
  */
 
-#include "core/layout/LayoutWordBreak.h"
+#include "third_party/blink/renderer/core/layout/layout_word_break.h"
 
-#include "core/editing/Position.h"
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 

@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_client.h"
 
 #include <memory>
 #include <utility>
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fetch/Response.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/modules/payments/WebPaymentHandlerResponse.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
-#include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
+#include "third_party/blink/public/platform/modules/payments/web_payment_handler_response.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/modules/serviceworker/web_service_worker_context_client.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fetch/response.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 
 namespace blink {
 

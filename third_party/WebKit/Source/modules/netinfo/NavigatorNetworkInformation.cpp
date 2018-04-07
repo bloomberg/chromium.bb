@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/netinfo/NavigatorNetworkInformation.h"
+#include "third_party/blink/renderer/modules/netinfo/navigator_network_information.h"
 
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Navigator.h"
-#include "modules/netinfo/NetworkInformation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/netinfo/network_information.h"
 
 namespace blink {
 

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkletAnimation_h
-#define WorkletAnimation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_WORKLET_ANIMATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_WORKLET_ANIMATION_H_
 
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "bindings/modules/v8/document_timeline_or_scroll_timeline.h"
-#include "core/animation/Animation.h"
-#include "core/animation/KeyframeEffect.h"
-#include "core/animation/WorkletAnimationBase.h"
-#include "modules/ModulesExport.h"
-#include "platform/animation/CompositorAnimation.h"
-#include "platform/animation/CompositorAnimationClient.h"
-#include "platform/animation/CompositorAnimationDelegate.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/modules/v8/document_timeline_or_scroll_timeline.h"
+#include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
+#include "third_party/blink/renderer/core/animation/worklet_animation_base.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef OriginTrialsTest_h
-#define OriginTrialsTest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_ORIGIN_TRIALS_TEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_ORIGIN_TRIALS_TEST_H_
 
-#include "bindings/core/v8/IDLDictionaryBase.h"
-#include "core/testing/OriginTrialsTestDictionary.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_dictionary_base.h"
+#include "third_party/blink/renderer/core/testing/origin_trials_test_dictionary.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class OriginTrialsTest : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // OriginTrialsTest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_ORIGIN_TRIALS_TEST_H_

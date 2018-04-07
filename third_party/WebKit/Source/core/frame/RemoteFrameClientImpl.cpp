@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/RemoteFrameClientImpl.h"
+#include "third_party/blink/renderer/core/frame/remote_frame_client_impl.h"
 
 #include <memory>
-#include "core/events/KeyboardEvent.h"
-#include "core/events/MouseEvent.h"
-#include "core/events/WebInputEventConversion.h"
-#include "core/events/WheelEvent.h"
-#include "core/exported/WebRemoteFrameImpl.h"
-#include "core/frame/RemoteFrame.h"
-#include "core/frame/RemoteFrameView.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/layout/LayoutEmbeddedContent.h"
-#include "platform/exported/WrappedResourceRequest.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/weborigin/SecurityPolicy.h"
-#include "public/web/WebRemoteFrameClient.h"
+#include "third_party/blink/public/web/web_remote_frame_client.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
+#include "third_party/blink/renderer/core/events/wheel_event.h"
+#include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
+#include "third_party/blink/renderer/core/frame/remote_frame.h"
+#include "third_party/blink/renderer/core/frame/remote_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
 

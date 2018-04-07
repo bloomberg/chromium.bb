@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSize_h
-#define WebSize_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SIZE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SIZE_H_
 
-#include "WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 #if INSIDE_BLINK
-#include "platform/geometry/IntSize.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #else
 #include <algorithm>
 #include <cmath>

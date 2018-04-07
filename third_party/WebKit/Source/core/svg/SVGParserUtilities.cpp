@@ -20,10 +20,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGParserUtilities.h"
+#include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 
 #include <limits>
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

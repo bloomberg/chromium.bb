@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PageTestBase_h
-#define PageTestBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_PAGE_TEST_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_PAGE_TEST_BASE_H_
 
 #include <gtest/gtest.h>
-#include "core/testing/DummyPageHolder.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class PageTestBase : public testing::Test {
 
 }  // namespace blink
 
-#endif  // PageTestBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_PAGE_TEST_BASE_H_

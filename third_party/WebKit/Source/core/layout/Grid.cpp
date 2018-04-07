@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/Grid.h"
+#include "third_party/blink/renderer/core/layout/grid.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
-#include "core/layout/LayoutGrid.h"
+#include "third_party/blink/renderer/core/layout/layout_grid.h"
 
 namespace blink {
 

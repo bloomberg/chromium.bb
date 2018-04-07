@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLMetaCharsetParser_h
-#define HTMLMetaCharsetParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_META_CHARSET_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_META_CHARSET_PARSER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "core/html/parser/HTMLToken.h"
-#include "platform/text/SegmentedString.h"
-#include "platform/wtf/text/TextCodec.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/core/html/parser/html_token.h"
+#include "third_party/blink/renderer/platform/text/segmented_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 

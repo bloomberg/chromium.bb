@@ -24,15 +24,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/Editor.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
 
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/commands/EditorCommand.h"
-#include "core/events/KeyboardEvent.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
-#include "public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/renderer/core/editing/commands/editor_command.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 
 namespace blink {
 

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/custom/CustomElement.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element.h"
 
 #include <ios>
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/custom/CustomElementDefinition.h"
-#include "core/html/custom/CustomElementRegistry.h"
-#include "core/html/custom/CustomElementTestHelpers.h"
-#include "core/html_names.h"
-#include "core/svg_names.h"
-#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_test_helpers.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 namespace blink {
 

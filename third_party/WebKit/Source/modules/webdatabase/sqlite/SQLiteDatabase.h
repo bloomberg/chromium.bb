@@ -24,16 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SQLiteDatabase_h
-#define SQLiteDatabase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQLITE_SQLITE_DATABASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQLITE_SQLITE_DATABASE_H_
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 #if defined(COMPILER_MSVC)
 #pragma warning(disable : 4800)

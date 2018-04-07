@@ -28,19 +28,19 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_ThreadSpecific_h
-#define WTF_ThreadSpecific_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREAD_SPECIFIC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREAD_SPECIFIC_H_
 
 #include "base/macros.h"
 #include "base/threading/thread_local_storage.h"
 #include "build/build_config.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/StackUtil.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/WTF.h"
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/allocator/PartitionAllocator.h"
-#include "platform/wtf/allocator/Partitions.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/stack_util.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -154,4 +154,4 @@ inline T& ThreadSpecific<T>::operator*() {
 
 using WTF::ThreadSpecific;
 
-#endif  // WTF_ThreadSpecific_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREAD_SPECIFIC_H_

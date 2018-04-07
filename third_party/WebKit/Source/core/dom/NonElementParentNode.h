@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NonElementParentNode_h
-#define NonElementParentNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NON_ELEMENT_PARENT_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NON_ELEMENT_PARENT_NODE_H_
 
-#include "core/dom/Document.h"
-#include "core/dom/DocumentFragment.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_fragment.h"
 
 namespace blink {
 
@@ -24,4 +24,4 @@ class NonElementParentNode {
 
 }  // namespace blink
 
-#endif  // NonElementParentNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NON_ELEMENT_PARENT_NODE_H_

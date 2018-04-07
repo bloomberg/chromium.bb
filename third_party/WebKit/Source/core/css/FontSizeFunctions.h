@@ -20,11 +20,11 @@
  *
  */
 
-#ifndef FontSizeFunctions_h
-#define FontSizeFunctions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_SIZE_FUNCTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_SIZE_FUNCTIONS_H_
 
-#include "core/css_value_keywords.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -76,4 +76,4 @@ class FontSizeFunctions {
 
 }  // namespace blink
 
-#endif  // FontSizeFunctions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_SIZE_FUNCTIONS_H_

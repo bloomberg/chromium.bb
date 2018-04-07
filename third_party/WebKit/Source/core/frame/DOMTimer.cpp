@@ -24,14 +24,14 @@
  *
  */
 
-#include "core/frame/DOMTimer.h"
+#include "third_party/blink/renderer/core/frame/dom_timer.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/probe/CoreProbes.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

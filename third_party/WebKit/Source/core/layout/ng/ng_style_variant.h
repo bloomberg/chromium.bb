@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ng_style_variant_h
-#define ng_style_variant_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_STYLE_VARIANT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_STYLE_VARIANT_H_
 
 namespace blink {
 
@@ -12,4 +12,4 @@ enum class NGStyleVariant { kStandard, kFirstLine, kEllipsis };
 
 }  // namespace blink
 
-#endif  // ng_style_variant_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_STYLE_VARIANT_H_

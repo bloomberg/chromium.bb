@@ -23,22 +23,22 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/LayoutTableCell.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/html/HTMLTableCellElement.h"
-#include "core/html_names.h"
-#include "core/layout/CollapsedBorderValue.h"
-#include "core/layout/LayoutAnalyzer.h"
-#include "core/layout/LayoutTableCol.h"
-#include "core/layout/SubtreeLayoutScope.h"
-#include "core/paint/ObjectPaintInvalidator.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/TableCellPaintInvalidator.h"
-#include "core/paint/TableCellPainter.h"
-#include "platform/geometry/FloatQuad.h"
-#include "platform/geometry/TransformState.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/html/html_table_cell_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/collapsed_border_value.h"
+#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_table_col.h"
+#include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/table_cell_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/table_cell_painter.h"
+#include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/geometry/transform_state.h"
 
 namespace blink {
 

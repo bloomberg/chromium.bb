@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/DepthOrderedLayoutObjectList.h"
+#include "third_party/blink/renderer/core/layout/depth_ordered_layout_object_list.h"
 
 #include <algorithm>
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 

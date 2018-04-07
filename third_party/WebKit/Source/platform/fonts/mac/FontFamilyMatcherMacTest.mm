@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "platform/fonts/mac/FontFamilyMatcherMac.h"
+#import "third_party/blink/renderer/platform/fonts/mac/font_family_matcher_mac.h"
 
 #include <AppKit/AppKit.h>
 
-#include "platform/font_family_names.h"
-#include "platform/mac/VersionUtilMac.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/font_family_names.h"
+#include "third_party/blink/renderer/platform/mac/version_util_mac.h"
 
 @interface NSString (YosemiteAdditions)
 - (BOOL)containsString:(NSString*)string;

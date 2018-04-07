@@ -4,7 +4,7 @@
 
 #include "content/public/test/mock_permission_manager.h"
 
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 
 namespace content {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/forms/HTMLOutputElement.h"
+#include "third_party/blink/renderer/core/html/forms/html_output_element.h"
 
-#include "core/dom/DOMTokenList.h"
-#include "core/dom/Document.h"
-#include "core/html_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

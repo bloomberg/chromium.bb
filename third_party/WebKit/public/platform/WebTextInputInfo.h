@@ -23,13 +23,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebTextInputInfo_h
-#define WebTextInputInfo_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TEXT_INPUT_INFO_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TEXT_INPUT_INFO_H_
 
-#include "WebCommon.h"
-#include "WebString.h"
-#include "WebTextInputMode.h"
-#include "WebTextInputType.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_text_input_mode.h"
+#include "third_party/blink/public/platform/web_text_input_type.h"
 
 namespace blink {
 

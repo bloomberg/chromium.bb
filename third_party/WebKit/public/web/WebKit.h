@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebKit_h
-#define WebKit_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_BLINK_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_BLINK_H_
 
-#include "public/platform/Platform.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "v8/include/v8.h"
 
 namespace blink {

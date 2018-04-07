@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutScrollbarTheme_h
-#define LayoutScrollbarTheme_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_THEME_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_THEME_H_
 
-#include "platform/scroll/ScrollbarTheme.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
 namespace blink {
 
@@ -121,4 +121,4 @@ class LayoutScrollbarTheme final : public ScrollbarTheme {
 
 }  // namespace blink
 
-#endif  // LayoutScrollbarTheme_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_THEME_H_

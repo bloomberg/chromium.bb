@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/loader/fetch/BufferingDataPipeWriter.h"
+#include "third_party/blink/renderer/platform/loader/fetch/buffering_data_pipe_writer.h"
 
 #include "base/single_thread_task_runner.h"
 

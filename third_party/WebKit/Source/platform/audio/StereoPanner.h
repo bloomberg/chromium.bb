@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StereoPanner_h
-#define StereoPanner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_STEREO_PANNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_STEREO_PANNER_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ class PLATFORM_EXPORT StereoPanner {
 
 }  // namespace blink
 
-#endif  // StereoPanner_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_STEREO_PANNER_H_

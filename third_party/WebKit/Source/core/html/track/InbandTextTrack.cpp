@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/track/InbandTextTrack.h"
+#include "third_party/blink/renderer/core/html/track/inband_text_track.h"
 
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/track/vtt/VTTCue.h"
-#include "public/platform/WebInbandTextTrack.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_inband_text_track.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_cue.h"
 
 using blink::WebInbandTextTrack;
 using blink::WebString;

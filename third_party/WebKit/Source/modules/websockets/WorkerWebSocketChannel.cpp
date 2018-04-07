@@ -28,26 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/websockets/WorkerWebSocketChannel.h"
+#include "third_party/blink/renderer/modules/websockets/worker_web_socket_channel.h"
 
 #include <memory>
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fileapi/Blob.h"
-#include "core/loader/ThreadableLoadingContext.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerThread.h"
-#include "core/workers/WorkerThreadLifecycleContext.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WaitableEvent.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/heap/SafePoint.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/TaskType.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_context.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/heap/safe_point.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

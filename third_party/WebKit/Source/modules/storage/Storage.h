@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Storage_h
-#define Storage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_STORAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_STORAGE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "modules/storage/StorageArea.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/storage/storage_area.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -82,4 +82,4 @@ class Storage final : public ScriptWrappable, public ContextClient {
 
 }  // namespace blink
 
-#endif  // Storage_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_STORAGE_H_

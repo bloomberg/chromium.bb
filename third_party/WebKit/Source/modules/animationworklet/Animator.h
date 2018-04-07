@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Animator_h
-#define Animator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATOR_H_
 
-#include "modules/animationworklet/EffectProxy.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/graphics/CompositorAnimatorsState.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/modules/animationworklet/effect_proxy.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_animators_state.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -53,4 +53,4 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
 
 }  // namespace blink
 
-#endif  // Animator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATOR_H_

@@ -23,26 +23,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/scroll/ScrollbarThemeMac.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_mac.h"
 
 #include <Carbon/Carbon.h>
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/mac/ColorMac.h"
-#include "platform/mac/LocalCurrentGraphicsContext.h"
-#include "platform/mac/NSScrollerImpDetails.h"
-#include "platform/mac/ScrollAnimatorMac.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/scroll/ScrollbarThemeClient.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/RetainPtr.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebMouseEvent.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebThemeEngine.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/mac/color_mac.h"
+#include "third_party/blink/renderer/platform/mac/local_current_graphics_context.h"
+#include "third_party/blink/renderer/platform/mac/ns_scroller_imp_details.h"
+#include "third_party/blink/renderer/platform/mac/scroll_animator_mac.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_client.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 // FIXME: There are repainting problems due to Aqua scroll bar buttons' visual
 // overflow.

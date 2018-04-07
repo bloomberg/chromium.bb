@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom.h"
+#include "third_party/blink/public/platform/modules/background_sync/background_sync.mojom.h"
 
 namespace content {
 

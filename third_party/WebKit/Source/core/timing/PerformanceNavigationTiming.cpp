@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/timing/PerformanceNavigationTiming.h"
+#include "third_party/blink/renderer/core/timing/performance_navigation_timing.h"
 
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/dom/Document.h"
-#include "core/dom/DocumentTiming.h"
-#include "core/frame/LocalFrame.h"
-#include "core/loader/DocumentLoadTiming.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/timing/Performance.h"
-#include "platform/loader/fetch/ResourceTimingInfo.h"
-#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_timing.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/loader/document_load_timing.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/timing/performance.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 
 namespace blink {
 

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/Request.h"
+#include "third_party/blink/renderer/core/fetch/request.h"
 
 #include <memory>
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 namespace {

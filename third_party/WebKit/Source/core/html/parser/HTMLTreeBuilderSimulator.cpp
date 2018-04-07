@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/HTMLTreeBuilderSimulator.h"
+#include "third_party/blink/renderer/core/html/parser/html_tree_builder_simulator.h"
 
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/parser/HTMLTokenizer.h"
-#include "core/html/parser/HTMLTreeBuilder.h"
-#include "core/html_names.h"
-#include "core/mathml_names.h"
-#include "core/svg_names.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
+#include "third_party/blink/renderer/core/html/parser/html_tree_builder.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/mathml_names.h"
+#include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 

@@ -11,7 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "content/public/browser/service_worker_usage_info.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_registration.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

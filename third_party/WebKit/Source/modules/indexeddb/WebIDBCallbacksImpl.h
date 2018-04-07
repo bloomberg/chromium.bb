@@ -26,14 +26,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebIDBCallbacksImpl_h
-#define WebIDBCallbacksImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_CALLBACKS_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_CALLBACKS_IMPL_H_
 
 #include <memory>
 
-#include "platform/heap/Persistent.h"
-#include "platform/wtf/Allocator.h"
-#include "public/platform/modules/indexeddb/WebIDBCallbacks.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -83,4 +83,4 @@ class WebIDBCallbacksImpl final : public WebIDBCallbacks {
 
 }  // namespace blink
 
-#endif  // WebIDBCallbacksImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_CALLBACKS_IMPL_H_

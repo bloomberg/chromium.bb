@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/indexeddb/IDBDatabaseCallbacks.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
 
-#include "modules/indexeddb/IDBDatabase.h"
-#include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/indexeddb/WebIDBObservation.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_observation.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks_impl.h"
 
 namespace blink {
 

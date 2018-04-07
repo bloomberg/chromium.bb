@@ -24,24 +24,24 @@
     sheets and html pages from the web. It has a memory cache for these objects.
 */
 
-#ifndef ResourceFetcher_h
-#define ResourceFetcher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_FETCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_FETCHER_H_
 
 #include <memory>
-#include "platform/PlatformExport.h"
-#include "platform/Timer.h"
-#include "platform/loader/fetch/FetchContext.h"
-#include "platform/loader/fetch/FetchInitiatorInfo.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/PreloadKey.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/ResourceError.h"
-#include "platform/loader/fetch/ResourceLoadPriority.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/SubstituteData.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/preload_key.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/substitute_data.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 
@@ -342,4 +342,4 @@ class ResourceCacheValidationSuppressor {
 
 }  // namespace blink
 
-#endif  // ResourceFetcher_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_FETCHER_H_

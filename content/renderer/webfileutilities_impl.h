@@ -6,8 +6,8 @@
 #define CONTENT_RENDERER_WEBFILEUTILITIES_IMPL_H_
 
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebFileInfo.h"
-#include "third_party/WebKit/public/platform/WebFileUtilities.h"
+#include "third_party/blink/public/platform/web_file_info.h"
+#include "third_party/blink/public/platform/web_file_utilities.h"
 
 namespace content {
 

@@ -22,9 +22,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/FontCache.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
 
-#include "platform/fonts/FontPlatformData.h"
+#include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 
 namespace blink {
 

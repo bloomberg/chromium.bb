@@ -12,11 +12,10 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/mojom/base/string16.mojom-blink.h"
-#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/platform/mojo/String16MojomTraits.h"
-#include "third_party/WebKit/Source/platform/wtf/Vector.h"
-#include "third_party/WebKit/Source/platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/mojo/string16_mojom_traits.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

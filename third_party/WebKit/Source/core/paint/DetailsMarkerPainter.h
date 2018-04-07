@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DetailsMarkerPainter_h
-#define DetailsMarkerPainter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_DETAILS_MARKER_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_DETAILS_MARKER_PAINTER_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -32,4 +32,4 @@ class DetailsMarkerPainter {
 
 }  // namespace blink
 
-#endif  // DetailsMarkerPainter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_DETAILS_MARKER_PAINTER_H_

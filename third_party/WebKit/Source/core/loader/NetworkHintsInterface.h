@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NetworkHintsInterface_h
-#define NetworkHintsInterface_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_NETWORK_HINTS_INTERFACE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_NETWORK_HINTS_INTERFACE_H_
 
-#include "platform/network/NetworkHints.h"
+#include "third_party/blink/renderer/platform/network/network_hints.h"
 
 namespace blink {
 

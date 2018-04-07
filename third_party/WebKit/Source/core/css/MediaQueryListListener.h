@@ -17,12 +17,12 @@
  *  Boston, MA 02110-1301, USA.
  */
 
-#ifndef MediaQueryListListener_h
-#define MediaQueryListListener_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_QUERY_LIST_LISTENER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_QUERY_LIST_LISTENER_H_
 
-#include "core/CoreExport.h"
-#include "core/css/MediaQueryList.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/media_query_list.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ class CORE_EXPORT MediaQueryListListener
 
 }  // namespace blink
 
-#endif  // MediaQueryListListener_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_QUERY_LIST_LISTENER_H_

@@ -1,5 +1,5 @@
 %{
-#include "platform/graphics/Color.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 #include <string.h>
 
 namespace blink {

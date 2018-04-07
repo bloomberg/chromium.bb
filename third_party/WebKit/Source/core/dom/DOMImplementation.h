@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef DOMImplementation_h
-#define DOMImplementation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_IMPLEMENTATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_IMPLEMENTATION_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Document.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
 
@@ -76,4 +76,4 @@ class CORE_EXPORT DOMImplementation final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // DOMImplementation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_IMPLEMENTATION_H_

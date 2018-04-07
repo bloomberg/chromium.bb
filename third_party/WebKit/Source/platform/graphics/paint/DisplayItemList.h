@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DisplayItemList_h
-#define DisplayItemList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DISPLAY_ITEM_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DISPLAY_ITEM_LIST_H_
 
-#include "platform/graphics/ContiguousContainer.h"
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/graphics/paint/Transform3DDisplayItem.h"
-#include "platform/wtf/Alignment.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/graphics/contiguous_container.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/transform_3d_display_item.h"
+#include "third_party/blink/renderer/platform/wtf/alignment.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -108,4 +108,4 @@ class PLATFORM_EXPORT DisplayItemList
 
 }  // namespace blink
 
-#endif  // DisplayItemList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DISPLAY_ITEM_LIST_H_

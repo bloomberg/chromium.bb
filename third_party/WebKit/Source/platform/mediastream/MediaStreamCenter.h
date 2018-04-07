@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaStreamCenter_h
-#define MediaStreamCenter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_CENTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_CENTER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebMediaStreamCenterClient.h"
+#include "third_party/blink/public/platform/web_media_stream_center_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -84,4 +84,4 @@ class PLATFORM_EXPORT MediaStreamCenter final
 
 }  // namespace blink
 
-#endif  // MediaStreamCenter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_CENTER_H_

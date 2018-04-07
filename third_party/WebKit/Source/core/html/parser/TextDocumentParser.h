@@ -22,10 +22,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextDocumentParser_h
-#define TextDocumentParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_TEXT_DOCUMENT_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_TEXT_DOCUMENT_PARSER_H_
 
-#include "core/html/parser/HTMLDocumentParser.h"
+#include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
 
 namespace blink {
 

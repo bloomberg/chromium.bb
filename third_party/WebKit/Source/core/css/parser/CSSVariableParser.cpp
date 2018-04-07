@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSVariableParser.h"
+#include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
 
-#include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/CSSVariableReferenceValue.h"
-#include "core/css/parser/CSSParserTokenRange.h"
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 
 namespace blink {
 

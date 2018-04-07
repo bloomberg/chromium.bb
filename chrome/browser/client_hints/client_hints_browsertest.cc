@@ -33,7 +33,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "third_party/WebKit/public/common/client_hints/client_hints.h"
+#include "third_party/blink/public/common/client_hints/client_hints.h"
 
 namespace {
 

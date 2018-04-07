@@ -12,7 +12,7 @@ static_library("renderer") {
     "//components/data_reduction_proxy/core/common",
     "//content/public/common",
     "//content/public/renderer",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
   ]
 }
 
@@ -26,6 +26,6 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//content/public/common",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
   ]
 }

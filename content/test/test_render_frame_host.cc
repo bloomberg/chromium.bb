@@ -30,10 +30,10 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
-#include "third_party/WebKit/public/common/frame/frame_policy.h"
-#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
-#include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
-#include "third_party/WebKit/public/web/WebTreeScopeType.h"
+#include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
+#include "third_party/blink/public/platform/web_mixed_content_context_type.h"
+#include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "ui/base/page_transition_types.h"
 
 namespace content {

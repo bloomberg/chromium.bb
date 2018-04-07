@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RawDataDocumentParser_h
-#define RawDataDocumentParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_RAW_DATA_DOCUMENT_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_RAW_DATA_DOCUMENT_PARSER_H_
 
-#include "core/dom/Document.h"
-#include "core/dom/DocumentParser.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_parser.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class RawDataDocumentParser : public DocumentParser {
 
 }  // namespace blink
 
-#endif  // RawDataDocumentParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_RAW_DATA_DOCUMENT_PARSER_H_

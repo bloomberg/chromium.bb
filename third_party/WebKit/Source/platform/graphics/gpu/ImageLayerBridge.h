@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ImageLayerBridge_h
-#define ImageLayerBridge_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_IMAGE_LAYER_BRIDGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_IMAGE_LAYER_BRIDGE_H_
 
 #include "cc/layers/texture_layer_client.h"
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/heap/Heap.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace viz {
 class SharedBitmap;

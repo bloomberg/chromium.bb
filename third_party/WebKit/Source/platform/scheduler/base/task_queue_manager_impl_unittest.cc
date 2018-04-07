@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/base/task_queue_manager_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager_impl.h"
 
 #include <stddef.h>
 #include <memory>
@@ -20,19 +20,19 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/blame_context.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
-#include "platform/scheduler/base/real_time_domain.h"
-#include "platform/scheduler/base/task_queue_impl.h"
-#include "platform/scheduler/base/task_queue_selector.h"
-#include "platform/scheduler/base/test_count_uses_time_source.h"
-#include "platform/scheduler/base/test_task_time_observer.h"
-#include "platform/scheduler/base/thread_controller_impl.h"
-#include "platform/scheduler/base/virtual_time_domain.h"
-#include "platform/scheduler/base/work_queue.h"
-#include "platform/scheduler/base/work_queue_sets.h"
-#include "platform/scheduler/test/task_queue_manager_for_test.h"
-#include "platform/scheduler/test/test_task_queue.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test_count_uses_time_source.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test_task_time_observer.h"
+#include "third_party/blink/renderer/platform/scheduler/base/thread_controller_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
+#include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/test/test_task_queue.h"
 
 using testing::AnyNumber;
 using testing::Contains;

@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/sqlite/SQLiteStatement.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_statement.h"
 
 #include <memory>
-#include "modules/webdatabase/sqlite/SQLLog.h"
-#include "modules/webdatabase/sqlite/SQLValue.h"
-#include "platform/heap/SafePoint.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/CString.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sql_log.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sql_value.h"
+#include "third_party/blink/renderer/platform/heap/safe_point.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/sqlite/sqlite3.h"
 
 // SQLite 3.6.16 makes sqlite3_prepare_v2 automatically retry preparing the

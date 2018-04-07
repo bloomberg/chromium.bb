@@ -24,12 +24,12 @@
  *
  */
 
-#ifndef MessageChannel_h
-#define MessageChannel_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_MESSAGE_CHANNEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_MESSAGE_CHANNEL_H_
 
-#include "core/CoreExport.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class CORE_EXPORT MessageChannel final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // MessageChannel_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_MESSAGE_CHANNEL_H_

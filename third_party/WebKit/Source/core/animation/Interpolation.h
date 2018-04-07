@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Interpolation_h
-#define Interpolation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATION_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/animation/InterpolableValue.h"
-#include "core/animation/PropertyHandle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/core/animation/interpolable_value.h"
+#include "third_party/blink/renderer/core/animation/property_handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -84,4 +84,4 @@ using ActiveInterpolationsMap = HashMap<PropertyHandle, ActiveInterpolations>;
 
 }  // namespace blink
 
-#endif  // Interpolation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATION_H_

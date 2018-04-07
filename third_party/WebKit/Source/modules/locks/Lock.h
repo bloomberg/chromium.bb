@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Lock_h
-#define Lock_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_LOCKS_LOCK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_LOCKS_LOCK_H_
 
-#include "core/dom/PausableObject.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/locks/lock_manager.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/locks/lock_manager.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -79,4 +79,4 @@ class Lock final : public ScriptWrappable, public PausableObject {
 
 }  // namespace blink
 
-#endif  // Lock_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_LOCKS_LOCK_H_

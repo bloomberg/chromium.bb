@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SpellingMarker_h
-#define SpellingMarker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_SPELLING_MARKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_SPELLING_MARKER_H_
 
-#include "core/editing/markers/SpellCheckMarker.h"
+#include "third_party/blink/renderer/core/editing/markers/spell_check_marker.h"
 
 namespace blink {
 

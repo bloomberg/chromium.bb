@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8ErrorHandler_h
-#define V8ErrorHandler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ERROR_HANDLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ERROR_HANDLER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/V8EventListener.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -69,4 +69,4 @@ class V8ErrorHandler final : public V8EventListener {
 
 }  // namespace blink
 
-#endif  // V8ErrorHandler_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ERROR_HANDLER_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/resize_observer/ResizeObservation.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
 
-#include "core/layout/LayoutBox.h"
-#include "core/resize_observer/ResizeObserver.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGGraphicsElement.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
 
 namespace blink {
 

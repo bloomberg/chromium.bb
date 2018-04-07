@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/resolver/FontBuilder.h"
+#include "third_party/blink/renderer/core/css/resolver/font_builder.h"
 
 #include <memory>
-#include "core/css/CSSFontSelector.h"
-#include "core/css/StyleEngine.h"
-#include "core/dom/Document.h"
-#include "core/frame/Settings.h"
-#include "core/style/ComputedStyle.h"
-#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_font_selector.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 namespace blink {
 

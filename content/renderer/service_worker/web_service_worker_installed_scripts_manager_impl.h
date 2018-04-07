@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "content/renderer/service_worker/thread_safe_script_container.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerInstalledScriptsManager.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_installed_scripts_manager.h"
 
 namespace content {
 

@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMEditor_h
-#define DOMEditor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_DOM_EDITOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_DOM_EDITOR_H_
 
 #include "base/macros.h"
-#include "core/inspector/protocol/Forward.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Forward.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

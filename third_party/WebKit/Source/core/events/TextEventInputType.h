@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextEventInputType_h
-#define TextEventInputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TEXT_EVENT_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TEXT_EVENT_INPUT_TYPE_H_
 
 namespace blink {
 
@@ -42,4 +42,4 @@ enum TextEventInputType {
 
 }  // namespace blink
 
-#endif  // TextEventInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TEXT_EVENT_INPUT_TYPE_H_

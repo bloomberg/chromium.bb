@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/FontCache.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
 
-#include "platform/Language.h"
-#include "platform/font_family_names.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontFaceCreationParams.h"
-#include "platform/fonts/SimpleFontData.h"
+#include "third_party/blink/renderer/platform/font_family_names.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_face_creation_params.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/language.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
 

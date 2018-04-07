@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NavigatorStorageQuota_h
-#define NavigatorStorageQuota_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_NAVIGATOR_STORAGE_QUOTA_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_NAVIGATOR_STORAGE_QUOTA_H_
 
-#include "core/frame/Navigator.h"
-#include "modules/quota/DeprecatedStorageQuota.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/quota/deprecated_storage_quota.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class NavigatorStorageQuota final
 
 }  // namespace blink
 
-#endif  // NavigatorStorageQuota_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_NAVIGATOR_STORAGE_QUOTA_H_

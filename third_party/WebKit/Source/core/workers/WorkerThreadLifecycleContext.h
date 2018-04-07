@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerThreadLifecycleContext_h
-#define WorkerThreadLifecycleContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_THREAD_LIFECYCLE_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_THREAD_LIFECYCLE_CONTEXT_H_
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "core/CoreExport.h"
-#include "platform/LifecycleNotifier.h"
-#include "platform/heap/GarbageCollected.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/lifecycle_notifier.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ class CORE_EXPORT WorkerThreadLifecycleContext final
 
 }  // namespace blink
 
-#endif  // WorkerThreadLifecycleContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_THREAD_LIFECYCLE_CONTEXT_H_

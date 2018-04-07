@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SharedPersistent_h
-#define SharedPersistent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SHARED_PERSISTENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SHARED_PERSISTENT_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/bindings/ScopedPersistent.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -69,4 +69,4 @@ class SharedPersistent : public RefCounted<SharedPersistent<T>> {
 
 }  // namespace blink
 
-#endif  // SharedPersistent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SHARED_PERSISTENT_H_

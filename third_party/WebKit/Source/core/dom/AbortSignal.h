@@ -6,11 +6,11 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_CORE_DOM_ABORTSIGNAL_H_
 
 #include "base/callback_forward.h"
-#include "core/CoreExport.h"
-#include "core/dom/events/EventTarget.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/heap/Member.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

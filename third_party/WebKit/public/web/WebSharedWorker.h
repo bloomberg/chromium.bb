@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSharedWorker_h
-#define WebSharedWorker_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SHARED_WORKER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SHARED_WORKER_H_
 
 #include <memory>
 
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebContentSecurityPolicy.h"
-#include "third_party/WebKit/public/mojom/net/ip_address_space.mojom-shared.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-shared.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_content_security_policy.h"
 
 namespace blink {
 

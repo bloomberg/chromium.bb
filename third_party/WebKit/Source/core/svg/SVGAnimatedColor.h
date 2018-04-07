@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedColor_h
-#define SVGAnimatedColor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_COLOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_COLOR_H_
 
-#include "core/css/StyleColor.h"
-#include "core/svg/properties/SVGProperty.h"
+#include "third_party/blink/renderer/core/css/style_color.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGColorProperty);
 
 }  // namespace blink
 
-#endif  // SVGAnimatedColor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_COLOR_H_

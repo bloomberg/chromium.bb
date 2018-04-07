@@ -18,21 +18,21 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/forms/FormController.h"
+#include "third_party/blink/renderer/core/html/forms/form_controller.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "core/dom/events/ScopedEventQueue.h"
-#include "core/html/forms/FileChooser.h"
-#include "core/html/forms/HTMLFormControlElementWithState.h"
-#include "core/html/forms/HTMLFormElement.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/HashTableDeletedValueType.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
+#include "third_party/blink/renderer/core/html/forms/file_chooser.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

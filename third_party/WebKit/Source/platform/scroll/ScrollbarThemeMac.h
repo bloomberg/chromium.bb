@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollbarThemeMac_h
-#define ScrollbarThemeMac_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLLBAR_THEME_MAC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLLBAR_THEME_MAC_H_
 
 #include <AppKit/AppKit.h>
 
-#include "platform/mac/NSScrollerImpDetails.h"
-#include "platform/scroll/ScrollbarTheme.h"
+#include "third_party/blink/renderer/platform/mac/ns_scroller_imp_details.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
 typedef id ScrollbarPainter;
 
@@ -116,4 +116,4 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
 };
 }
 
-#endif  // ScrollbarThemeMac_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLLBAR_THEME_MAC_H_

@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webaudio/AudioWorkletNode.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_node.h"
 
-#include "core/messaging/MessageChannel.h"
-#include "core/messaging/MessagePort.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "modules/EventModules.h"
-#include "modules/webaudio/AudioBuffer.h"
-#include "modules/webaudio/AudioNodeInput.h"
-#include "modules/webaudio/AudioNodeOutput.h"
-#include "modules/webaudio/AudioParamDescriptor.h"
-#include "modules/webaudio/AudioWorklet.h"
-#include "modules/webaudio/AudioWorkletProcessor.h"
-#include "modules/webaudio/AudioWorkletProcessorDefinition.h"
-#include "modules/webaudio/CrossThreadAudioWorkletProcessorInfo.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/heap/Persistent.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/messaging/message_channel.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param_descriptor.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_processor.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_processor_definition.h"
+#include "third_party/blink/renderer/modules/webaudio/cross_thread_audio_worklet_processor_info.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 

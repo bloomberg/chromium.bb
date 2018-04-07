@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "ppapi/c/pp_var.h"
-#include "third_party/WebKit/public/web/WebPlugin.h"
+#include "third_party/blink/public/web/web_plugin.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {

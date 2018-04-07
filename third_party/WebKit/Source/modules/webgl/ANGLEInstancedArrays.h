@@ -27,10 +27,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef ANGLEInstancedArrays_h
-#define ANGLEInstancedArrays_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_ANGLE_INSTANCED_ARRAYS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_ANGLE_INSTANCED_ARRAYS_H_
 
-#include "modules/webgl/WebGLExtension.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_extension.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class ANGLEInstancedArrays final : public WebGLExtension {
 
 }  // namespace blink
 
-#endif  // ANGLEInstancedArrays_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_ANGLE_INSTANCED_ARRAYS_H_

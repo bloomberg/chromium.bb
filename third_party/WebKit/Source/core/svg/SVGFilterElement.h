@@ -20,16 +20,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGFilterElement_h
-#define SVGFilterElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_FILTER_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_FILTER_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/svg/SVGAnimatedEnumeration.h"
-#include "core/svg/SVGAnimatedLength.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGURIReference.h"
-#include "core/svg/SVGUnitTypes.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_enumeration.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_unit_types.h"
+#include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -88,4 +88,4 @@ class CORE_EXPORT SVGFilterElement final : public SVGElement,
 
 }  // namespace blink
 
-#endif  // SVGFilterElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_FILTER_ELEMENT_H_

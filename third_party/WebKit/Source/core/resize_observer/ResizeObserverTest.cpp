@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/resize_observer/ResizeObserver.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8GCController.h"
-#include "core/exported/WebViewImpl.h"
-#include "core/resize_observer/ResizeObservation.h"
-#include "core/resize_observer/ResizeObserverController.h"
-#include "core/testing/sim/SimCompositor.h"
-#include "core/testing/sim/SimRequest.h"
-#include "core/testing/sim/SimTest.h"
-#include "platform/loader/fetch/ScriptFetchOptions.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/Time.h"
-#include "public/web/WebHeap.h"
+#include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer_controller.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/loader/fetch/script_fetch_options.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

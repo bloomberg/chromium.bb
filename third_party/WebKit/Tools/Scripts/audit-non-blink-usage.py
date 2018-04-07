@@ -11,7 +11,7 @@ script can be run in standalone mode to check for existing violations.
 
 Example command:
 
-$ git ls-files third_party/WebKit \
+$ git ls-files third_party/blink \
     | python third_party/WebKit/Tools/Scripts/audit-non-blink-usage.py
 """
 
@@ -21,7 +21,7 @@ import sys
 
 _CONFIG = [
     {
-        'paths': ['third_party/WebKit/Source/'],
+        'paths': ['third_party/blink/renderer/'],
         'allowed': [
             # TODO(dcheng): Should these be in a more specific config?
             'gfx::ColorSpace',
@@ -128,36 +128,36 @@ _CONFIG = [
         'disallowed': ['.+'],
     },
     {
-        'paths': ['third_party/WebKit/Source/bindings/'],
+        'paths': ['third_party/blink/renderer/bindings/'],
         'allowed': ['gin::.+'],
     },
     {
-        'paths': ['third_party/WebKit/Source/core/css'],
+        'paths': ['third_party/blink/renderer/core/css'],
         'allowed': [
             # Internal implementation details for CSS.
             'detail::.+',
         ],
     },
     {
-        'paths': ['third_party/WebKit/Source/core/inspector/InspectorMemoryAgent.cpp'],
+        'paths': ['third_party/blink/renderer/core/inspector/InspectorMemoryAgent.cpp'],
         'allowed': [
             'base::SamplingHeapProfiler',
         ],
     },
     {
         'paths': [
-            'third_party/WebKit/Source/modules/device_orientation/',
-            'third_party/WebKit/Source/modules/gamepad/',
-            'third_party/WebKit/Source/modules/sensor/',
+            'third_party/blink/renderer/modules/device_orientation/',
+            'third_party/blink/renderer/modules/gamepad/',
+            'third_party/blink/renderer/modules/sensor/',
         ],
         'allowed': ['device::.+'],
     },
     {
         'paths': [
-            'third_party/WebKit/Source/core/html/media/',
-            'third_party/WebKit/Source/modules/vr/',
-            'third_party/WebKit/Source/modules/webgl/',
-            'third_party/WebKit/Source/modules/xr/',
+            'third_party/blink/renderer/core/html/media/',
+            'third_party/blink/renderer/modules/vr/',
+            'third_party/blink/renderer/modules/webgl/',
+            'third_party/blink/renderer/modules/xr/',
         ],
         # These modules need access to GL drawing.
         'allowed': [
@@ -166,7 +166,7 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/WebKit/Source/platform/',
+            'third_party/blink/renderer/platform/',
         ],
         # Suppress almost all checks on platform since code in this directory
         # is meant to be a bridge between Blink and non-Blink code. However,
@@ -176,8 +176,8 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/WebKit/Source/core/exported/',
-            'third_party/WebKit/Source/modules/exported/',
+            'third_party/blink/renderer/core/exported/',
+            'third_party/blink/renderer/modules/exported/',
         ],
         'allowed': [
             'base::Time',
@@ -187,7 +187,7 @@ _CONFIG = [
     },
     {
         'paths': [
-            'third_party/WebKit/Source/modules/webdatabase/',
+            'third_party/blink/renderer/modules/webdatabase/',
         ],
         'allowed': ['sql::.+'],
     },

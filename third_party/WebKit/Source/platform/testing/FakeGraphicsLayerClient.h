@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FakeGraphicsLayerClient_h
-#define FakeGraphicsLayerClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FAKE_GRAPHICS_LAYER_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FAKE_GRAPHICS_LAYER_CLIENT_H_
 
-#include "platform/graphics/GraphicsLayerClient.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class FakeGraphicsLayerClient : public GraphicsLayerClient {
 
 }  // namespace blink
 
-#endif  // FakeGraphicsLayerClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FAKE_GRAPHICS_LAYER_CLIENT_H_

@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TypingCommand_h
-#define TypingCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_TYPING_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_TYPING_COMMAND_H_
 
-#include "core/editing/TextGranularity.h"
-#include "core/editing/commands/CompositeEditCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/composite_edit_command.h"
+#include "third_party/blink/renderer/core/editing/text_granularity.h"
 
 namespace blink {
 
@@ -203,4 +203,4 @@ DEFINE_TYPE_CASTS(TypingCommand,
 
 }  // namespace blink
 
-#endif  // TypingCommand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_TYPING_COMMAND_H_

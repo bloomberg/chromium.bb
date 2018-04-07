@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSFontSizeInterpolationType_h
-#define CSSFontSizeInterpolationType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_FONT_SIZE_INTERPOLATION_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_FONT_SIZE_INTERPOLATION_TYPE_H_
 
-#include "core/animation/CSSInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_type.h"
 
 namespace blink {
 
@@ -36,4 +36,4 @@ class CSSFontSizeInterpolationType : public CSSInterpolationType {
 
 }  // namespace blink
 
-#endif  // CSSFontSizeInterpolationType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_FONT_SIZE_INTERPOLATION_TYPE_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/CompositingRecorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/compositing_recorder.h"
 
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/paint/CompositingDisplayItem.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/PaintController.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/compositing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 
 namespace blink {
 

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/FirstMeaningfulPaintDetector.h"
+#include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 
-#include "core/paint/PaintEvent.h"
-#include "core/paint/PaintTiming.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/WebLayerTreeView.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/renderer/core/paint/paint_event.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

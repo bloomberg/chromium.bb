@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSPaintDefinition_h
-#define CSSPaintDefinition_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_CSS_PAINT_DEFINITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_CSS_PAINT_DEFINITION_H_
 
-#include "core/css/CSSSyntaxDescriptor.h"
-#include "core/css/cssom/CSSStyleValue.h"
-#include "core/css_property_names.h"
-#include "modules/ModulesExport.h"
-#include "modules/csspaint/PaintRenderingContext2DSettings.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_rendering_context_2d_settings.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -111,4 +111,4 @@ class MODULES_EXPORT CSSPaintDefinition final
 
 }  // namespace blink
 
-#endif  // CSSPaintDefinition_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_CSS_PAINT_DEFINITION_H_

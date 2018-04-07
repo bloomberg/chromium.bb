@@ -26,19 +26,19 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/AXObjectCache.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/dom/Element.h"
-#include "core/dom/Node.h"
-#include "core/html_element_type_helpers.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/web/WebAXEnums.h"
+#include "third_party/blink/public/web/web_ax_enums.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/html_element_type_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

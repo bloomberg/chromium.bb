@@ -23,10 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutThemeMobile_h
-#define LayoutThemeMobile_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_MOBILE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_MOBILE_H_
 
-#include "core/layout/LayoutThemeDefault.h"
+#include "third_party/blink/renderer/core/layout/layout_theme_default.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class LayoutThemeMobile : public LayoutThemeDefault {
 
 }  // namespace blink
 
-#endif  // LayoutThemeMobile_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_MOBILE_H_

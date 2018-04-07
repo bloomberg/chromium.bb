@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSResourceValue_h
-#define CSSResourceValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_RESOURCE_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_RESOURCE_VALUE_H_
 
 #include "base/macros.h"
-#include "core/css/cssom/CSSStyleValue.h"
-#include "platform/loader/fetch/Resource.h"
+#include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class CORE_EXPORT CSSResourceValue : public CSSStyleValue {
 
 }  // namespace blink
 
-#endif  // CSSResourceValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_RESOURCE_VALUE_H_

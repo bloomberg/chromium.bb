@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DetectedFace_h
-#define DetectedFace_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_DETECTED_FACE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_DETECTED_FACE_H_
 
-#include "modules/ModulesExport.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -36,4 +36,4 @@ class MODULES_EXPORT DetectedFace final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // DetectedFace_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_DETECTED_FACE_H_

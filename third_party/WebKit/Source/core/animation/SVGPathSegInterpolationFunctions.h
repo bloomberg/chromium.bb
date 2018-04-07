@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SVGPathSegInterpolationFunctions_h
-#define SVGPathSegInterpolationFunctions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SVG_PATH_SEG_INTERPOLATION_FUNCTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SVG_PATH_SEG_INTERPOLATION_FUNCTIONS_H_
 
-#include "core/animation/InterpolableValue.h"
-#include "core/svg/SVGPathData.h"
 #include <memory>
+#include "third_party/blink/renderer/core/animation/interpolable_value.h"
+#include "third_party/blink/renderer/core/svg/svg_path_data.h"
 
 namespace blink {
 
@@ -33,4 +33,4 @@ class SVGPathSegInterpolationFunctions {
 
 }  // namespace blink
 
-#endif  // SVGPathSegInterpolationFunctions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SVG_PATH_SEG_INTERPOLATION_FUNCTIONS_H_

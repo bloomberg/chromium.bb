@@ -4,8 +4,8 @@
 
 #include "content/common/frame_replication_state.h"
 
-#include "third_party/WebKit/public/common/frame/sandbox_flags.h"
-#include "third_party/WebKit/public/web/WebTreeScopeType.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/web/web_tree_scope_type.h"
 
 namespace content {
 

@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ng/ng_text_fragment_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_text_fragment_painter.h"
 
-#include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "core/layout/ng/inline/ng_physical_text_fragment.h"
-#include "core/layout/ng/layout_ng_block_flow.h"
-#include "core/layout/ng/ng_block_node.h"
-#include "core/paint/PaintControllerPaintTest.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/PaintLayerPainter.h"
-#include "core/style/ComputedStyle.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/runtime_enabled_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

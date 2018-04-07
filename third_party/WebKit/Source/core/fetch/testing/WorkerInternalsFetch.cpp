@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/testing/WorkerInternalsFetch.h"
+#include "third_party/blink/renderer/core/fetch/testing/worker_internals_fetch.h"
 
-#include "core/fetch/Response.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/fetch/response.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

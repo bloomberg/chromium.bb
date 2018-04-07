@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DirectoryReaderSync_h
-#define DirectoryReaderSync_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DIRECTORY_READER_SYNC_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DIRECTORY_READER_SYNC_H_
 
-#include "core/fileapi/FileError.h"
-#include "modules/filesystem/DirectoryReaderBase.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/modules/filesystem/directory_reader_base.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class DirectoryReaderSync : public DirectoryReaderBase {
 
 }  // namespace blink
 
-#endif  // DirectoryReaderSync_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DIRECTORY_READER_SYNC_H_

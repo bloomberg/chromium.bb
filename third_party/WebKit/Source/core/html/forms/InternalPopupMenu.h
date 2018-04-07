@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InternalPopupMenu_h
-#define InternalPopupMenu_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_INTERNAL_POPUP_MENU_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_INTERNAL_POPUP_MENU_H_
 
-#include "core/CoreExport.h"
-#include "core/html/forms/PopupMenu.h"
-#include "core/page/PagePopupClient.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/popup_menu.h"
+#include "third_party/blink/renderer/core/page/page_popup_client.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class CORE_EXPORT InternalPopupMenu final : public PopupMenu,
 
 }  // namespace blink
 
-#endif  // InternalPopupMenu_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_INTERNAL_POPUP_MENU_H_

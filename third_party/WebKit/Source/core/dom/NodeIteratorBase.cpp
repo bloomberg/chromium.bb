@@ -22,12 +22,12 @@
  *
  */
 
-#include "core/dom/NodeIteratorBase.h"
+#include "third_party/blink/renderer/core/dom/node_iterator_base.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8NodeFilterCondition.h"
-#include "core/dom/Node.h"
-#include "core/dom/NodeFilter.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_node_filter_condition.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_filter.h"
 
 namespace blink {
 

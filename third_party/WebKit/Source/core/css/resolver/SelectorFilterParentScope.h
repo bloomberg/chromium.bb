@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SelectorFilterParentScope_h
-#define SelectorFilterParentScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_SELECTOR_FILTER_PARENT_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_SELECTOR_FILTER_PARENT_SCOPE_H_
 
-#include "core/css/SelectorFilter.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/css/selector_filter.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ inline void SelectorFilterParentScope::PushParentIfNeeded() {
 
 }  // namespace blink
 
-#endif  // SelectorFilterParentScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_SELECTOR_FILTER_PARENT_SCOPE_H_

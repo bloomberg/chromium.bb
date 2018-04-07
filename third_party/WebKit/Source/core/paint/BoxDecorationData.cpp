@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/BoxDecorationData.h"
+#include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 
-#include "core/layout/LayoutBox.h"
-#include "core/layout/ng/ng_physical_fragment.h"
-#include "core/paint/BoxPainter.h"
-#include "core/style/BorderEdge.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/graphics/GraphicsContext.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
+#include "third_party/blink/renderer/core/style/border_edge.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 namespace blink {
 

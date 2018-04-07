@@ -23,18 +23,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/loader/TextTrackLoader.h"
+#include "third_party/blink/renderer/core/loader/text_track_loader.h"
 
-#include "core/dom/Document.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "platform/SharedBuffer.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/RawResource.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/fetch_initiator_type_names.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

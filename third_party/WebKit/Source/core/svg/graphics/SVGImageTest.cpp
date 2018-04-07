@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/svg/graphics/SVGImage.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/PaintLayer.h"
-#include "core/svg/graphics/SVGImageChromeClient.h"
-#include "platform/SharedBuffer.h"
-#include "platform/Timer.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/utils/SkNullCanvas.h"
 

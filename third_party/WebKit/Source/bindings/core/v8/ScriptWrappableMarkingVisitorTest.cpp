@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/bindings/ScriptWrappableMarkingVisitor.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/core/v8/V8GCController.h"
-#include "core/testing/DeathAwareScriptWrappable.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/bindings/V8DOMWrapper.h"
-#include "platform/bindings/V8PerIsolateData.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/core/testing/death_aware_script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 
 namespace blink {
 

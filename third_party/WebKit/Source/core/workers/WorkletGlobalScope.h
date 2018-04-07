@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkletGlobalScope_h
-#define WorkletGlobalScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_GLOBAL_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_GLOBAL_SCOPE_H_
 
 #include <memory>
 #include "base/single_thread_task_runner.h"
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/CoreExport.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/workers/WorkerOrWorkletGlobalScope.h"
-#include "core/workers/WorkerOrWorkletModuleFetchCoordinatorProxy.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator_proxy.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -122,4 +122,4 @@ DEFINE_TYPE_CASTS(WorkletGlobalScope,
 
 }  // namespace blink
 
-#endif  // WorkletGlobalScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_GLOBAL_SCOPE_H_

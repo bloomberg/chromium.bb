@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FloatClipRecorder_h
-#define FloatClipRecorder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FLOAT_CLIP_RECORDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FLOAT_CLIP_RECORDER_H_
 
 #include "base/macros.h"
-#include "core/paint/PaintPhase.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/paint/paint_phase.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -37,4 +37,4 @@ class FloatClipRecorder {
 
 }  // namespace blink
 
-#endif  // FloatClipRecorder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FLOAT_CLIP_RECORDER_H_

@@ -29,31 +29,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/RangeInputType.h"
+#include "third_party/blink/renderer/core/html/forms/range_input_type.h"
 
 #include <algorithm>
 #include <limits>
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/AXObjectCache.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/events/ScopedEventQueue.h"
-#include "core/events/KeyboardEvent.h"
-#include "core/events/MouseEvent.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/html/forms/HTMLDataListElement.h"
-#include "core/html/forms/HTMLDataListOptionsCollection.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/forms/HTMLOptionElement.h"
-#include "core/html/forms/SliderThumbElement.h"
-#include "core/html/forms/StepRange.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/shadow/ShadowElementNames.h"
-#include "core/html_names.h"
-#include "core/input_type_names.h"
-#include "core/layout/LayoutSlider.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_data_list_options_collection.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
+#include "third_party/blink/renderer/core/html/forms/slider_thumb_element.h"
+#include "third_party/blink/renderer/core/html/forms/step_range.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/layout/layout_slider.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

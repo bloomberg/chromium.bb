@@ -21,19 +21,19 @@
  *
  */
 
-#import "platform/fonts/FontPlatformData.h"
+#import "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 
 #import <AppKit/NSFont.h>
 #import <AvailabilityMacros.h>
-#import "platform/LayoutTestSupport.h"
-#import "platform/fonts/Font.h"
-#import "platform/fonts/opentype/FontSettings.h"
-#import "platform/fonts/shaping/HarfBuzzFace.h"
-#import "platform/graphics/skia/SkiaUtils.h"
-#import "platform/wtf/RetainPtr.h"
-#import "platform/wtf/text/WTFString.h"
-#import "public/platform/Platform.h"
-#import "public/platform/mac/WebSandboxSupport.h"
+#import "third_party/blink/public/platform/mac/web_sandbox_support.h"
+#import "third_party/blink/public/platform/platform.h"
+#import "third_party/blink/renderer/platform/fonts/font.h"
+#import "third_party/blink/renderer/platform/fonts/opentype/font_settings.h"
+#import "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_face.h"
+#import "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#import "third_party/blink/renderer/platform/layout_test_support.h"
+#import "third_party/blink/renderer/platform/wtf/retain_ptr.h"
+#import "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #import "third_party/skia/include/ports/SkTypeface_mac.h"
 
 namespace blink {

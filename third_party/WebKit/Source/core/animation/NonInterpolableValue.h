@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NonInterpolableValue_h
-#define NonInterpolableValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_NON_INTERPOLABLE_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_NON_INTERPOLABLE_VALUE_H_
 
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class NonInterpolableValue : public RefCounted<NonInterpolableValue> {
 
 }  // namespace blink
 
-#endif  // NonInterpolableValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_NON_INTERPOLABLE_VALUE_H_

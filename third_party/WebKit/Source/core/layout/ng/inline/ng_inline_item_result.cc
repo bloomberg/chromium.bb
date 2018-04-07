@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/inline/ng_inline_item_result.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 
-#include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 
 namespace blink {
 

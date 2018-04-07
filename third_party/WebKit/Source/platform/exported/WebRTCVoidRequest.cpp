@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebRTCVoidRequest.h"
+#include "third_party/blink/public/platform/web_rtc_void_request.h"
 
-#include "platform/peerconnection/RTCVoidRequest.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

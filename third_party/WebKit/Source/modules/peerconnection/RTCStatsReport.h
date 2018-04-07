@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RTCStatsReport_h
-#define RTCStatsReport_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_STATS_REPORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_STATS_REPORT_H_
 
-#include "bindings/core/v8/Maplike.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebRTCStats.h"
+#include "third_party/blink/public/platform/web_rtc_stats.h"
+#include "third_party/blink/renderer/bindings/core/v8/maplike.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #include <map>
 
@@ -40,4 +40,4 @@ class RTCStatsReport final : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // RTCStatsReport_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_STATS_REPORT_H_

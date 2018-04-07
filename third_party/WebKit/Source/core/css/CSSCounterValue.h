@@ -18,13 +18,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSCounterValue_h
-#define CSSCounterValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_COUNTER_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_COUNTER_VALUE_H_
 
-#include "core/css/CSSCustomIdentValue.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSStringValue.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_string_value.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSCounterValue, IsCounterValue());
 
 }  // namespace blink
 
-#endif  // CSSCounterValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_COUNTER_VALUE_H_

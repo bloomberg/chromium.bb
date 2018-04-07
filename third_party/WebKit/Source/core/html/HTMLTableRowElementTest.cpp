@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/HTMLTableRowElement.h"
+#include "third_party/blink/renderer/core/html/html_table_row_element.h"
 
-#include "core/dom/Document.h"
-#include "core/html/HTMLParagraphElement.h"
-#include "core/html/HTMLTableElement.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/html_paragraph_element.h"
+#include "third_party/blink/renderer/core/html/html_table_element.h"
 
 namespace blink {
 

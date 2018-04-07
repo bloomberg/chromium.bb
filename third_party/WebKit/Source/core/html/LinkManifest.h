@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LinkManifest_h
-#define LinkManifest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LINK_MANIFEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LINK_MANIFEST_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/html/LinkResource.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/html/link_resource.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -31,4 +31,4 @@ class LinkManifest final : public LinkResource {
 
 }  // namespace blink
 
-#endif  // LinkManifest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LINK_MANIFEST_H_

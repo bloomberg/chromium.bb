@@ -21,22 +21,22 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/CSSPropertyValueSet.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
 
-#include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/StylePropertySerializer.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/properties/css_property.h"
-#include "core/frame/UseCounter.h"
-#include "core/style_property_shorthand.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/style_property_serializer.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/style_property_shorthand.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 #ifndef NDEBUG
 #include <stdio.h>
-#include "platform/wtf/text/CString.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #endif
 
 namespace blink {

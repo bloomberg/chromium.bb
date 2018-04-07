@@ -30,10 +30,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMWindowBase64_h
-#define DOMWindowBase64_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_BASE64_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_BASE64_H_
 
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -47,4 +47,4 @@ class DOMWindowBase64 {
 
 }  // namespace blink
 
-#endif  // DOMWindowBase64_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_BASE64_H_

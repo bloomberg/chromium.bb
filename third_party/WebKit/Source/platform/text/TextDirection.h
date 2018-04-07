@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextDirection_h
-#define TextDirection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_DIRECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_DIRECTION_H_
 
 #include <cstdint>
 #include <iosfwd>
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 

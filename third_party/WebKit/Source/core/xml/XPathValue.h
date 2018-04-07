@@ -24,12 +24,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XPathValue_h
-#define XPathValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_VALUE_H_
 
-#include "core/CoreExport.h"
-#include "core/xml/XPathNodeSet.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/xml/xpath_node_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -145,4 +145,4 @@ inline Value::Value(bool value)
 
 }  // namespace blink
 
-#endif  // XPathValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_VALUE_H_

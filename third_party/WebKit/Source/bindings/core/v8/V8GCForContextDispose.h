@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8GCForContextDispose_h
-#define V8GCForContextDispose_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_GC_FOR_CONTEXT_DISPOSE_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_GC_FOR_CONTEXT_DISPOSE_H_
 
-#include "bindings/core/v8/WindowProxy.h"
-#include "platform/Timer.h"
+#include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class V8GCForContextDispose {
 
 }  // namespace blink
 
-#endif  // V8GCForContextDispose_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_GC_FOR_CONTEXT_DISPOSE_H_

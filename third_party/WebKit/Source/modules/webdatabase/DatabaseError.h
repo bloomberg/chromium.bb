@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DatabaseError_h
-#define DatabaseError_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_ERROR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_ERROR_H_
 
 namespace blink {
 
@@ -36,4 +36,4 @@ enum class DatabaseError {
 
 }  // namespace blink
 
-#endif  // DatabaseError_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_ERROR_H_

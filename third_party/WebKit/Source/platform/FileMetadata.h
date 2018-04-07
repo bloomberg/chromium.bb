@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FileMetadata_h
-#define FileMetadata_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FILE_METADATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FILE_METADATA_H_
 
 #include <time.h>
-#include "platform/PlatformExport.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -76,4 +76,4 @@ PLATFORM_EXPORT KURL FilePathToURL(const String&);
 
 }  // namespace blink
 
-#endif  // FileMetadata_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FILE_METADATA_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/indexeddb/GlobalIndexedDB.h"
+#include "third_party/blink/renderer/modules/indexeddb/global_indexed_db.h"
 
-#include "core/frame/LocalDOMWindow.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "modules/indexeddb/IDBFactory.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_factory.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 

@@ -24,12 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PageVisibilityObserver_h
-#define PageVisibilityObserver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_VISIBILITY_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_VISIBILITY_OBSERVER_H_
 
-#include "core/CoreExport.h"
-#include "core/page/Page.h"
-#include "platform/LifecycleObserver.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/lifecycle_observer.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class CORE_EXPORT PageVisibilityObserver
 
 }  // namespace blink
 
-#endif  // PageVisibilityObserver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_VISIBILITY_OBSERVER_H_

@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/InsertNodeBeforeCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/insert_node_before_command.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/editing/EditingUtilities.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 
 namespace blink {
 

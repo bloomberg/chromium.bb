@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaStreamWebAudioSource_h
-#define MediaStreamWebAudioSource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_WEB_AUDIO_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_WEB_AUDIO_SOURCE_H_
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "platform/audio/AudioSourceProvider.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/ThreadingPrimitives.h"
+#include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ class MediaStreamWebAudioSource : public AudioSourceProvider {
 
 }  // namespace blink
 
-#endif  // MediaStreamWebAudioSource_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_WEB_AUDIO_SOURCE_H_

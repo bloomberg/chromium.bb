@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/state_machines/BackspaceStateMachine.h"
+#include "third_party/blink/renderer/core/editing/state_machines/backspace_state_machine.h"
 
 #include <ostream>  // NOLINT
-#include "platform/text/Character.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/text/character.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
 

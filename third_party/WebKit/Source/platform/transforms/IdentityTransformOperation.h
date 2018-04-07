@@ -22,10 +22,10 @@
  *
  */
 
-#ifndef IdentityTransformOperation_h
-#define IdentityTransformOperation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_IDENTITY_TRANSFORM_OPERATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_IDENTITY_TRANSFORM_OPERATION_H_
 
-#include "platform/transforms/TransformOperation.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operation.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class PLATFORM_EXPORT IdentityTransformOperation final
 
 }  // namespace blink
 
-#endif  // IdentityTransformOperation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_IDENTITY_TRANSFORM_OPERATION_H_

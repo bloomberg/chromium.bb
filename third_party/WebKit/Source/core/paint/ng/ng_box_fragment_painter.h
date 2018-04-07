@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ng_box_fragment_painter_h
-#define ng_box_fragment_painter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_BOX_FRAGMENT_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_BOX_FRAGMENT_PAINTER_H_
 
-#include "core/layout/BackgroundBleedAvoidance.h"
-#include "core/layout/api/HitTestAction.h"
-#include "core/layout/ng/geometry/ng_border_edges.h"
-#include "core/layout/ng/ng_physical_box_fragment.h"
-#include "core/paint/BoxPainterBase.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/geometry/LayoutSize.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/layout/api/hit_test_action.h"
+#include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/paint/box_painter_base.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -133,4 +133,4 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
 }  // namespace blink
 
-#endif  // ng_box_fragment_painter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_BOX_FRAGMENT_PAINTER_H_

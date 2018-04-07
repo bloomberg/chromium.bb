@@ -23,14 +23,14 @@
  * DAMAGE.
  */
 
-#include "core/layout/LayoutFullScreen.h"
+#include "third_party/blink/renderer/core/layout/layout_full_screen.h"
 
-#include "core/frame/VisualViewport.h"
-#include "core/fullscreen/Fullscreen.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/page/Page.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/page/page.h"
 
-#include "public/platform/WebScreenInfo.h"
+#include "third_party/blink/public/platform/web_screen_info.h"
 
 namespace blink {
 

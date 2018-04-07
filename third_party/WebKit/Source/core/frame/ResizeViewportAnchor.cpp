@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/ResizeViewportAnchor.h"
+#include "third_party/blink/renderer/core/frame/resize_viewport_anchor.h"
 
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/RootFrameViewport.h"
-#include "core/frame/VisualViewport.h"
-#include "core/page/Page.h"
-#include "platform/geometry/DoubleRect.h"
-#include "platform/geometry/FloatSize.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/geometry/double_rect.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
 
 namespace blink {
 

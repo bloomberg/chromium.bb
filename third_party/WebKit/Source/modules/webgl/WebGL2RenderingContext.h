@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGL2RenderingContext_h
-#define WebGL2RenderingContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL2_RENDERING_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL2_RENDERING_CONTEXT_H_
 
-#include "core/html/canvas/CanvasRenderingContextFactory.h"
-#include "modules/webgl/WebGL2RenderingContextBase.h"
 #include <memory>
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
+#include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context_base.h"
 
 namespace blink {
 

@@ -23,10 +23,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LayoutSVGPath_h
-#define LayoutSVGPath_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_PATH_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_PATH_H_
 
-#include "core/layout/svg/LayoutSVGShape.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_shape.h"
 
 namespace blink {
 

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/FontFaceSetLoadEvent.h"
+#include "third_party/blink/renderer/core/css/font_face_set_load_event.h"
 
 namespace blink {
 

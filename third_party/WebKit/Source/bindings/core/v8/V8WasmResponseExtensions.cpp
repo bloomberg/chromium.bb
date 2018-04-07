@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/V8WasmResponseExtensions.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_wasm_response_extensions.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/V8Response.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fetch/BodyStreamBuffer.h"
-#include "core/fetch/FetchDataLoader.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_response.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
+#include "third_party/blink/renderer/core/fetch/fetch_data_loader.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

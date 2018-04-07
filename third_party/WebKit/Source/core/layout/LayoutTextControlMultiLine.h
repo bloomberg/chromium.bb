@@ -20,10 +20,10 @@
  *
  */
 
-#ifndef LayoutTextControlMultiLine_h
-#define LayoutTextControlMultiLine_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TEXT_CONTROL_MULTI_LINE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TEXT_CONTROL_MULTI_LINE_H_
 
-#include "core/layout/LayoutTextControl.h"
+#include "third_party/blink/renderer/core/layout/layout_text_control.h"
 
 namespace blink {
 

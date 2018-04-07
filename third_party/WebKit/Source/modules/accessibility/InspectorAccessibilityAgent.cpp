@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/accessibility/InspectorAccessibilityAgent.h"
+#include "third_party/blink/renderer/modules/accessibility/InspectorAccessibilityAgent.h"
 
 #include <memory>
-#include "core/dom/AXObjectCache.h"
-#include "core/dom/DOMNodeIds.h"
-#include "core/dom/Element.h"
-#include "core/dom/FlatTreeTraversal.h"
-#include "core/dom/Node.h"
-#include "core/dom/NodeList.h"
-#include "core/html_names.h"
-#include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/InspectorStyleSheet.h"
-#include "core/page/Page.h"
-#include "modules/accessibility/AXObject.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/accessibility/InspectorTypeBuilderHelper.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_list.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/inspector/InspectorDOMAgent.h"
+#include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
+#include "third_party/blink/renderer/core/inspector/inspector_style_sheet.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
+#include "third_party/blink/renderer/modules/accessibility/inspector_type_builder_helper.h"
 
 namespace blink {
 

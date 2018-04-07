@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/EditingBehavior.h"
+#include "third_party/blink/renderer/core/editing/editing_behavior.h"
 
 #include <memory>
 
 #include "build/build_config.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/editing/Editor.h"
-#include "core/events/KeyboardEvent.h"
-#include "core/frame/Settings.h"
-#include "platform/KeyboardCodes.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebInputEvent.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/platform/keyboard_codes.h"
 
 namespace blink {
 

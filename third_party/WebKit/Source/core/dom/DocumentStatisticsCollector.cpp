@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/DocumentStatisticsCollector.h"
+#include "third_party/blink/renderer/core/dom/document_statistics_collector.h"
 
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/dom/Text.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/VisualViewport.h"
-#include "core/html/HTMLHeadElement.h"
-#include "core/html/HTMLMetaElement.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html_names.h"
-#include "core/input_type_names.h"
-#include "core/page/Page.h"
-#include "platform/Histogram.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebDistillability.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_distillability.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/html_head_element.h"
+#include "third_party/blink/renderer/core/html/html_meta_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
 

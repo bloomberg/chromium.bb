@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSocketHandle_h
-#define WebSocketHandle_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_HANDLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_HANDLE_H_
 
 #include <stdint.h>
 #include "base/single_thread_task_runner.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Vector.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -74,4 +74,4 @@ class WebSocketHandle {
 
 }  // namespace blink
 
-#endif  // WebSocketHandle_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_HANDLE_H_

@@ -4,7 +4,7 @@
 
 import("//build/config/compiler/compiler.gni")
 import("//build/config/ui.gni")
-import("//third_party/WebKit/public/public_features.gni")
+import("//third_party/blink/public/public_features.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -47,7 +47,7 @@ use_openmax_dl_fft =
                    current_cpu == "arm64" || current_cpu == "mipsel")
 
 # TODO(tkent): Remove this flag after the great mv. crbug.com/760462
-snake_case_source_files = false
+snake_case_source_files = true
 
 # feature_defines_list ---------------------------------------------------------
 

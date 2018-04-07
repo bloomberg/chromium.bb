@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/HTMLParserOptions.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
 
-#include "bindings/core/v8/ScriptController.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "core/loader/FrameLoader.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
 
 namespace blink {
 

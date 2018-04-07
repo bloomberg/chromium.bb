@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSScale_h
-#define CSSScale_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_SCALE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_SCALE_H_
 
 #include "base/macros.h"
-#include "core/css/cssom/CSSTransformComponent.h"
-#include "core/css/cssom/CSSUnitValue.h"
-#include "core/geometry/DOMMatrix.h"
+#include "third_party/blink/renderer/core/css/cssom/css_transform_component.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
+#include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 
 namespace blink {
 

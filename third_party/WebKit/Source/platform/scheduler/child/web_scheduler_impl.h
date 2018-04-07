@@ -10,10 +10,10 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
-#include "platform/PlatformExport.h"
-#include "platform/scheduler/base/task_queue.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
 
 namespace blink {
 namespace scheduler {

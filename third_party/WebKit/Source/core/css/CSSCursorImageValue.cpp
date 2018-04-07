@@ -19,10 +19,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/CSSCursorImageValue.h"
+#include "third_party/blink/renderer/core/css/css_cursor_image_value.h"
 
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

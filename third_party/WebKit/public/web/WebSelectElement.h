@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSelectElement_h
-#define WebSelectElement_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SELECT_ELEMENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SELECT_ELEMENT_H_
 
-#include "public/platform/WebVector.h"
-#include "WebFormControlElement.h"
-#include "WebOptionElement.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_form_control_element.h"
+#include "third_party/blink/public/web/web_option_element.h"
 
 namespace blink {
 

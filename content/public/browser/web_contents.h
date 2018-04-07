@@ -29,7 +29,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/stop_find_action.h"
-#include "third_party/WebKit/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_modes.h"
 #include "ui/accessibility/ax_tree_update.h"

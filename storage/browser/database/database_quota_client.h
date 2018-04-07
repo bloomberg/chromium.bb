@@ -13,7 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "storage/browser/quota/quota_client.h"
 #include "storage/browser/storage_browser_export.h"
-#include "third_party/WebKit/public/mojom/quota/quota_types.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
 namespace storage {

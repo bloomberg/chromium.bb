@@ -24,10 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/UserActionElementSet.h"
+#include "third_party/blink/renderer/core/dom/user_action_element_set.h"
 
-#include "core/dom/Element.h"
-#include "core/dom/Node.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 
 namespace blink {
 

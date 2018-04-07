@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FakeWebPlugin_h
-#define FakeWebPlugin_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_FAKE_WEB_PLUGIN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_FAKE_WEB_PLUGIN_H_
 
-#include "public/web/WebPlugin.h"
+#include "third_party/blink/public/web/web_plugin.h"
 
 namespace blink {
 
@@ -85,4 +85,4 @@ class FakeWebPlugin : public WebPlugin {
 
 }  // namespace blink
 
-#endif  // FakeWebPlugin_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_FAKE_WEB_PLUGIN_H_

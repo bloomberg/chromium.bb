@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintControllerTest_h
-#define PaintControllerTest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CONTROLLER_TEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CONTROLLER_TEST_H_
 
-#include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/testing/FakeDisplayItemClient.h"
-#include "platform/testing/PaintPropertyTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
+#include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 
 namespace blink {
 
@@ -132,4 +132,4 @@ const DisplayItem::Type kClipType = DisplayItem::kClipFirst;
 
 }  // namespace blink
 
-#endif  // PaintControllerTest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CONTROLLER_TEST_H_

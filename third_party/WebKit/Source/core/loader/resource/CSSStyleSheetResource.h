@@ -23,14 +23,14 @@
     sheets and html pages from the web. It has a memory cache for these objects.
 */
 
-#ifndef CSSStyleSheetResource_h
-#define CSSStyleSheetResource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_CSS_STYLE_SHEET_RESOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_CSS_STYLE_SHEET_RESOURCE_H_
 
-#include "core/CoreExport.h"
-#include "core/loader/resource/TextResource.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/TextResourceDecoderOptions.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/loader/resource/text_resource.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ThreadableLoadingContext_h
-#define ThreadableLoadingContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_THREADABLE_LOADING_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_THREADABLE_LOADING_CONTEXT_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Heap.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class CORE_EXPORT ThreadableLoadingContext
 
 }  // namespace blink
 
-#endif  // ThreadableLoadingContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_THREADABLE_LOADING_CONTEXT_H_

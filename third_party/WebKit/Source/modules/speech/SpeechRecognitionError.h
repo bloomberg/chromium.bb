@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SpeechRecognitionError_h
-#define SpeechRecognitionError_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_ERROR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_ERROR_H_
 
-#include "modules/EventModules.h"
-#include "modules/ModulesExport.h"
-#include "modules/speech/SpeechRecognitionErrorInit.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_error_init.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class MODULES_EXPORT SpeechRecognitionError final : public Event {
 
 }  // namespace blink
 
-#endif  // SpeechRecognitionError_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_ERROR_H_

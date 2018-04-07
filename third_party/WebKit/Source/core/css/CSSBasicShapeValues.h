@@ -27,16 +27,16 @@
  * SUCH DAMAGE.
  */
 
-#ifndef CSSBasicShapeValues_h
-#define CSSBasicShapeValues_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_BASIC_SHAPE_VALUES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_BASIC_SHAPE_VALUES_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSValue.h"
-#include "core/css/CSSValuePair.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 namespace cssvalue {
@@ -220,4 +220,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapeInsetValue, IsBasicShapeInsetValue());
 }  // namespace cssvalue
 }  // namespace blink
 
-#endif  // CSSBasicShapeValues_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_BASIC_SHAPE_VALUES_H_

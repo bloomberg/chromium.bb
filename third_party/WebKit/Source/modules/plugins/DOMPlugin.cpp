@@ -17,10 +17,10 @@
  *  MA 02110-1301 USA
  */
 
-#include "modules/plugins/DOMPlugin.h"
+#include "third_party/blink/renderer/modules/plugins/dom_plugin.h"
 
-#include "platform/plugins/PluginData.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/plugins/plugin_data.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

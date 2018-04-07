@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebContentDecryptionModuleSession_h
-#define WebContentDecryptionModuleSession_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_DECRYPTION_MODULE_SESSION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_DECRYPTION_MODULE_SESSION_H_
 
-#include "WebCommon.h"
-#include "WebVector.h"
-#include "public/platform/WebContentDecryptionModuleException.h"
-#include "public/platform/WebContentDecryptionModuleResult.h"
-#include "public/platform/WebEncryptedMediaTypes.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_content_decryption_module_exception.h"
+#include "third_party/blink/public/platform/web_content_decryption_module_result.h"
+#include "third_party/blink/public/platform/web_encrypted_media_types.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -97,4 +97,4 @@ class BLINK_PLATFORM_EXPORT WebContentDecryptionModuleSession {
 
 }  // namespace blink
 
-#endif  // WebContentDecryptionModuleSession_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_DECRYPTION_MODULE_SESSION_H_

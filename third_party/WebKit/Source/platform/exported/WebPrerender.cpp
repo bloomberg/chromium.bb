@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebPrerender.h"
+#include "third_party/blink/public/platform/web_prerender.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/Prerender.h"
+#include "third_party/blink/renderer/platform/prerender.h"
 
 namespace blink {
 

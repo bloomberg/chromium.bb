@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/heap/StackFrameDepth.h"
+#include "third_party/blink/renderer/platform/heap/stack_frame_depth.h"
 
-#include "platform/wtf/StackUtil.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/wtf/stack_util.h"
 
 #if defined(OS_WIN)
 #include <stddef.h>

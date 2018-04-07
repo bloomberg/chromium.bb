@@ -73,7 +73,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
-#include "third_party/WebKit/public/public_buildflags.h"
+#include "third_party/blink/public/public_buildflags.h"
 #include "ui/base/page_transition_types.h"
 
 using base::DictionaryValue;

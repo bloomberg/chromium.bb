@@ -18,25 +18,25 @@
  *
  */
 
-#include "core/html/HTMLDetailsElement.h"
+#include "third_party/blink/renderer/core/html/html_details_element.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/css_property_names.h"
-#include "core/css_value_keywords.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/Text.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/html/HTMLSlotElement.h"
-#include "core/html/HTMLSummaryElement.h"
-#include "core/html/shadow/DetailsMarkerControl.h"
-#include "core/html/shadow/ShadowElementNames.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "platform/text/PlatformLocale.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/html/html_slot_element.h"
+#include "third_party/blink/renderer/core/html/html_summary_element.h"
+#include "third_party/blink/renderer/core/html/shadow/details_marker_control.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 

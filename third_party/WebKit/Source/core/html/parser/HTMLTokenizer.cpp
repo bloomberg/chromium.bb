@@ -25,16 +25,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/HTMLTokenizer.h"
+#include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
 
-#include "core/html/parser/HTMLEntityParser.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/parser/HTMLTreeBuilder.h"
-#include "core/html/parser/MarkupTokenizerInlines.h"
-#include "core/html_names.h"
-#include "core/html_tokenizer_names.h"
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/core/html/parser/html_entity_parser.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/parser/html_tree_builder.h"
+#include "third_party/blink/renderer/core/html/parser/markup_tokenizer_inlines.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/html_tokenizer_names.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
 

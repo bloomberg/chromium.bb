@@ -24,11 +24,11 @@
 #include "content/renderer/fileapi/webfilewriter_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "storage/common/fileapi/file_system_util.h"
-#include "third_party/WebKit/public/platform/FilePathConversion.h"
-#include "third_party/WebKit/public/platform/WebFileInfo.h"
-#include "third_party/WebKit/public/platform/WebFileSystemCallbacks.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/web_file_info.h"
+#include "third_party/blink/public/platform/web_file_system_callbacks.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
 #include "url/gurl.h"
 
 using blink::WebFileInfo;

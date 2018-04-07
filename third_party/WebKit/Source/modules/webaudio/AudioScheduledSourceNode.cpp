@@ -23,18 +23,18 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/AudioScheduledSourceNode.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_scheduled_source_node.h"
 
 #include <algorithm>
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/EventModules.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/wtf/MathExtras.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

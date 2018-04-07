@@ -3,32 +3,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/serviceworkers/ServiceWorkerContainer.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_container.h"
 
 #include <memory>
 #include <utility>
 
-#include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/ScriptFunction.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8DOMException.h"
-#include "bindings/core/v8/V8GCController.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/page/FocusController.h"
-#include "core/testing/PageTestBase.h"
-#include "modules/serviceworkers/NavigatorServiceWorker.h"
-#include "modules/serviceworkers/ServiceWorkerContainerClient.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_clients_info.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/modules/serviceworkers/navigator_service_worker.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_container_client.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {

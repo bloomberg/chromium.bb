@@ -13,7 +13,7 @@
 #include "media/base/video_frame_pool.h"
 #include "media/base/video_types.h"
 #include "media/capture/video_capturer_source.h"
-#include "third_party/WebKit/public/platform/WebSize.h"
+#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 

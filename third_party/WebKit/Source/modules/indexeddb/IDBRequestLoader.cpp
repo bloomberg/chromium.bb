@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/indexeddb/IDBRequestLoader.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_request_loader.h"
 
-#include "core/dom/DOMException.h"
-#include "core/fileapi/FileReaderLoader.h"
-#include "modules/indexeddb/IDBRequest.h"
-#include "modules/indexeddb/IDBRequestQueueItem.h"
-#include "modules/indexeddb/IDBValue.h"
-#include "modules/indexeddb/IDBValueWrapping.h"
-#include "platform/Histogram.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabaseException.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_request_queue_item.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value_wrapping.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SafePoint_h
-#define SafePoint_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_SAFE_POINT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_SAFE_POINT_H_
 
 #include "base/macros.h"
-#include "platform/heap/ThreadState.h"
-#include "platform/wtf/ThreadingPrimitives.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 

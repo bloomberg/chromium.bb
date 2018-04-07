@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IFramePolicy_h
-#define IFramePolicy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_POLICY_IFRAME_POLICY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_POLICY_IFRAME_POLICY_H_
 
-#include "core/CoreExport.h"
-#include "core/policy/Policy.h"
-#include "platform/heap/Member.h"
-#include "platform/weborigin/SecurityOrigin.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/policy/policy.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class IFramePolicy final : public Policy {
 
 }  // namespace blink
 
-#endif  // IFramePolicy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_POLICY_IFRAME_POLICY_H_

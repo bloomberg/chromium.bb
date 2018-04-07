@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BoxPainterBase_h
-#define BoxPainterBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_PAINTER_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_PAINTER_BASE_H_
 
-#include "core/layout/BackgroundBleedAvoidance.h"
-#include "core/style/StyleImage.h"
-#include "platform/geometry/LayoutRectOutsets.h"
-#include "platform/geometry/LayoutSize.h"
-#include "platform/graphics/Color.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace blink {

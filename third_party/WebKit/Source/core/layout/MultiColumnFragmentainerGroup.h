@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MultiColumnFragmentainerGroup_h
-#define MultiColumnFragmentainerGroup_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_MULTI_COLUMN_FRAGMENTAINER_GROUP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_MULTI_COLUMN_FRAGMENTAINER_GROUP_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutMultiColumnFlowThread.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -261,4 +261,4 @@ class CORE_EXPORT MultiColumnFragmentainerGroupList {
 
 }  // namespace blink
 
-#endif  // MultiColumnFragmentainerGroup_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_MULTI_COLUMN_FRAGMENTAINER_GROUP_H_

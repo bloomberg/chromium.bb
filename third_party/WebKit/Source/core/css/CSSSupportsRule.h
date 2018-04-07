@@ -26,10 +26,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSSupportsRule_h
-#define CSSSupportsRule_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SUPPORTS_RULE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SUPPORTS_RULE_H_
 
-#include "core/css/CSSConditionRule.h"
+#include "third_party/blink/renderer/core/css/css_condition_rule.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ DEFINE_CSS_RULE_TYPE_CASTS(CSSSupportsRule, kSupportsRule);
 
 }  // namespace blink
 
-#endif  // CSSSupportsRule_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SUPPORTS_RULE_H_

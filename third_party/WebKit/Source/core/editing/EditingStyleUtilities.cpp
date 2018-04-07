@@ -24,19 +24,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/EditingStyleUtilities.h"
+#include "third_party/blink/renderer/core/editing/editing_style_utilities.h"
 
-#include "core/css/CSSColorValue.h"
-#include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css_property_names.h"
-#include "core/editing/EditingStyle.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleSelection.h"
+#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/editing/editing_style.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
 
 namespace blink {
 

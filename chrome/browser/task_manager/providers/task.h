@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/sessions/core/session_id.h"
-#include "third_party/WebKit/public/platform/WebCache.h"
+#include "third_party/blink/public/platform/web_cache.h"
 #include "ui/gfx/image/image_skia.h"
 
 class Profile;

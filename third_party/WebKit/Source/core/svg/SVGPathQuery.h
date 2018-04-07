@@ -18,8 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPathQuery_h
-#define SVGPathQuery_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_QUERY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_QUERY_H_
 
 namespace blink {
 
@@ -39,4 +39,4 @@ class SVGPathQuery {
 
 }  // namespace blink
 
-#endif  // SVGPathQuery_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_QUERY_H_

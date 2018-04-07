@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/InspectorSession.h"
+#include "third_party/blink/renderer/core/inspector/inspector_session.h"
 
-#include "bindings/core/v8/ScriptController.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/UseCounter.h"
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/V8InspectorString.h"
-#include "core/inspector/protocol/Protocol.h"
-#include "core/probe/CoreProbes.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Protocol.h"
+#include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 
 namespace blink {
 

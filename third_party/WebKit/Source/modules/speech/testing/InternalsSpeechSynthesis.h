@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InternalsSpeechSynthesis_h
-#define InternalsSpeechSynthesis_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_TESTING_INTERNALS_SPEECH_SYNTHESIS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_TESTING_INTERNALS_SPEECH_SYNTHESIS_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ class InternalsSpeechSynthesis {
 
 }  // namespace blink
 
-#endif  // InternalsSpeechSynthesis_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_TESTING_INTERNALS_SPEECH_SYNTHESIS_H_

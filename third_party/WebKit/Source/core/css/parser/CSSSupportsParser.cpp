@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSSupportsParser.h"
+#include "third_party/blink/renderer/core/css/parser/css_supports_parser.h"
 
-#include "core/css/parser/CSSParserImpl.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_impl.h"
 
 namespace blink {
 

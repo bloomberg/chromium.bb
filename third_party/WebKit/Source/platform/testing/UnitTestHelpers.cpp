@@ -23,20 +23,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/testing/UnitTestHelpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "platform/SharedBuffer.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/StringUTF8Adaptor.h"
-#include "public/platform/FilePathConversion.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 namespace test {

@@ -20,12 +20,12 @@
  *
  */
 
-#ifndef HTMLElement_h
-#define HTMLElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Element.h"
-#include "platform/text/TextDirection.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
 
 namespace blink {
 
@@ -253,6 +253,6 @@ class HasHTMLTagName {
 
 }  // namespace blink
 
-#include "core/html_element_type_helpers.h"
+#include "third_party/blink/renderer/core/html_element_type_helpers.h"
 
-#endif  // HTMLElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_ELEMENT_H_

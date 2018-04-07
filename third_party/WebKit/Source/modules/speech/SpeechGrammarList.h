@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SpeechGrammarList_h
-#define SpeechGrammarList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_GRAMMAR_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_GRAMMAR_LIST_H_
 
-#include "modules/ModulesExport.h"
-#include "modules/speech/SpeechGrammar.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/speech/speech_grammar.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class MODULES_EXPORT SpeechGrammarList final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // SpeechGrammarList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_GRAMMAR_LIST_H_

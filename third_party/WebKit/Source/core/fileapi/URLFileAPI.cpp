@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fileapi/URLFileAPI.h"
+#include "third_party/blink/renderer/core/fileapi/url_file_api.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fileapi/Blob.h"
-#include "core/fileapi/PublicURLManager.h"
-#include "core/frame/UseCounter.h"
-#include "core/url/DOMURL.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/url/dom_url.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

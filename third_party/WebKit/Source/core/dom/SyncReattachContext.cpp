@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/SyncReattachContext.h"
+#include "third_party/blink/renderer/core/dom/sync_reattach_context.h"
 
 namespace blink {
 

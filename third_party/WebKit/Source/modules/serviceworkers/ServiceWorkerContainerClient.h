@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ServiceWorkerContainerClient_h
-#define ServiceWorkerContainerClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_CONTAINER_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_CONTAINER_CLIENT_H_
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/workers/WorkerClients.h"
-#include "modules/ModulesExport.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ MODULES_EXPORT void ProvideServiceWorkerContainerClientToWorker(
 
 }  // namespace blink
 
-#endif  // ServiceWorkerContainerClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_CONTAINER_CLIENT_H_

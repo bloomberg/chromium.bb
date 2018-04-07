@@ -23,24 +23,24 @@
  *
  */
 
-#ifndef XMLDocumentParser_h
-#define XMLDocumentParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_PARSER_XML_DOCUMENT_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_PARSER_XML_DOCUMENT_PARSER_H_
 
 #include <libxml/tree.h>
 #include <memory>
-#include "core/dom/ParserContentPolicy.h"
-#include "core/dom/ScriptableDocumentParser.h"
-#include "core/script/XMLParserScriptRunner.h"
-#include "core/script/XMLParserScriptRunnerHost.h"
-#include "core/xml/parser/XMLErrors.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ResourceClient.h"
-#include "platform/text/SegmentedString.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/core/dom/parser_content_policy.h"
+#include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
+#include "third_party/blink/renderer/core/script/xml_parser_script_runner.h"
+#include "third_party/blink/renderer/core/script/xml_parser_script_runner_host.h"
+#include "third_party/blink/renderer/core/xml/parser/xml_errors.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
+#include "third_party/blink/renderer/platform/text/segmented_string.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 
@@ -223,4 +223,4 @@ HashMap<String, String> ParseAttributes(const String&, bool& attrs_ok);
 
 }  // namespace blink
 
-#endif  // XMLDocumentParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_PARSER_XML_DOCUMENT_PARSER_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScopedWindowFocusAllowedIndicator_h
-#define ScopedWindowFocusAllowedIndicator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SCOPED_WINDOW_FOCUS_ALLOWED_INDICATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SCOPED_WINDOW_FOCUS_ALLOWED_INDICATOR_H_
 
 #include "base/macros.h"
-#include "core/execution_context/ExecutionContext.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
 namespace blink {
 
@@ -32,4 +32,4 @@ class ScopedWindowFocusAllowedIndicator final {
 
 }  // namespace blink
 
-#endif  // ScopedWindowFocusAllowedIndicator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SCOPED_WINDOW_FOCUS_ALLOWED_INDICATOR_H_

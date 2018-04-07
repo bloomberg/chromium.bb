@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Coordinates_h
-#define Coordinates_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_COORDINATES_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_COORDINATES_H_
 
-#include "modules/EventModules.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -101,4 +101,4 @@ class Coordinates : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // Coordinates_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_COORDINATES_H_

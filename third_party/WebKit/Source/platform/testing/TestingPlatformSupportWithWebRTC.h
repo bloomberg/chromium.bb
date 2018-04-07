@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TestingPlatformSupportWithWebRTC_h
-#define TestingPlatformSupportWithWebRTC_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_WITH_WEB_RTC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_WITH_WEB_RTC_H_
 
-#include "platform/testing/TestingPlatformSupport.h"
-#include "public/platform/WebRTCPeerConnectionHandler.h"
+#include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ class TestingPlatformSupportWithWebRTC : public TestingPlatformSupport {
 
 }  // namespace blink
 
-#endif  // TestingPlatformSupportWithWebRTC_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_WITH_WEB_RTC_H_

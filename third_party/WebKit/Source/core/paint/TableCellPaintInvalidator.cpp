@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/TableCellPaintInvalidator.h"
+#include "third_party/blink/renderer/core/paint/table_cell_paint_invalidator.h"
 
-#include "core/layout/LayoutTable.h"
-#include "core/layout/LayoutTableCell.h"
-#include "core/layout/LayoutTableCol.h"
-#include "core/layout/LayoutTableRow.h"
-#include "core/layout/LayoutTableSection.h"
-#include "core/paint/BlockPaintInvalidator.h"
-#include "core/paint/ObjectPaintInvalidator.h"
-#include "core/paint/PaintInvalidator.h"
-#include "core/paint/PaintLayer.h"
+#include "third_party/blink/renderer/core/layout/layout_table.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/layout_table_col.h"
+#include "third_party/blink/renderer/core/layout/layout_table_row.h"
+#include "third_party/blink/renderer/core/layout/layout_table_section.h"
+#include "third_party/blink/renderer/core/paint/block_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
 

@@ -21,7 +21,7 @@
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ServiceWorkerPaymentAppBridge_jni.h"
-#include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
+#include "third_party/blink/public/platform/modules/payments/payment_app.mojom.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 namespace {

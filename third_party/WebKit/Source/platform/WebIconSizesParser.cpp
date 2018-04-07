@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebIconSizesParser.h"
+#include "third_party/blink/public/platform/web_icon_sizes_parser.h"
 
 #include <algorithm>
-#include "platform/wtf/text/StringToNumber.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebSize.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

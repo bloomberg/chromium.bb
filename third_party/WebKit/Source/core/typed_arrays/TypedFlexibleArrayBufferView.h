@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TypedFlexibleArrayBufferView_h
-#define TypedFlexibleArrayBufferView_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_TYPED_FLEXIBLE_ARRAY_BUFFER_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_TYPED_FLEXIBLE_ARRAY_BUFFER_VIEW_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/typed_arrays/FlexibleArrayBufferView.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/typed_arrays/flexible_array_buffer_view.h"
 
 namespace blink {
 
@@ -41,4 +41,4 @@ using FlexibleUint32ArrayView = TypedFlexibleArrayBufferView<WTF::Uint32Array>;
 
 }  // namespace blink
 
-#endif  // TypedFlexibleArrayBufferView_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_TYPED_FLEXIBLE_ARRAY_BUFFER_VIEW_H_

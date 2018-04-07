@@ -22,12 +22,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaStreamTrackEvent_h
-#define MediaStreamTrackEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_TRACK_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_TRACK_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/mediastream/MediaStreamTrackEventInit.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track_event_init.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ class MediaStreamTrackEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // MediaStreamTrackEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_TRACK_EVENT_H_

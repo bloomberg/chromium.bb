@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebArrayBuffer.h"
+#include "third_party/blink/public/web/web_array_buffer.h"
 
-#include "core/typed_arrays/DOMArrayBuffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 
 namespace blink {
 

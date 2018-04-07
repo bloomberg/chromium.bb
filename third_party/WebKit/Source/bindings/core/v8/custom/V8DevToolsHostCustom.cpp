@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8DevToolsHost.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dev_tools_host.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8HTMLDocument.h"
-#include "bindings/core/v8/V8MouseEvent.h"
-#include "bindings/core/v8/V8Window.h"
 #include "build/build_config.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/inspector/DevToolsHost.h"
-#include "core/inspector/InspectorFrontendClient.h"
-#include "platform/ContextMenu.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_html_document.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_mouse_event.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/inspector/dev_tools_host.h"
+#include "third_party/blink/renderer/core/inspector/inspector_frontend_client.h"
+#include "third_party/blink/renderer/platform/context_menu.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

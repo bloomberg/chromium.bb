@@ -27,18 +27,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/page/AutoscrollController.h"
+#include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/input/EventHandler.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutListBox.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_list_box.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

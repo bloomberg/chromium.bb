@@ -27,10 +27,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/DOMImplementation.h"
+#include "third_party/blink/renderer/core/dom/dom_implementation.h"
 
-#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

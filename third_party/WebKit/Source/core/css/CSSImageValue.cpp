@@ -18,20 +18,20 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/CSSImageValue.h"
+#include "third_party/blink/renderer/core/css/css_image_value.h"
 
-#include "core/css/CSSMarkup.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/loader/resource/ImageResourceContent.h"
-#include "core/style/StyleFetchedImage.h"
-#include "platform/CrossOriginAttributeValue.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/fetch_initiator_type_names.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityPolicy.h"
+#include "third_party/blink/renderer/core/css/css_markup.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/style/style_fetched_image.h"
+#include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
 

@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EntrySync_h
-#define EntrySync_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_ENTRY_SYNC_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_ENTRY_SYNC_H_
 
-#include "modules/filesystem/DOMFileSystemSync.h"
-#include "modules/filesystem/EntryBase.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system_sync.h"
+#include "third_party/blink/renderer/modules/filesystem/entry_base.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class EntrySync : public EntryBase {
 
 }  // namespace blink
 
-#endif  // EntrySync_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_ENTRY_SYNC_H_

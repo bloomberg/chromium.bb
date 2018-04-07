@@ -5,9 +5,9 @@
 #ifndef NGTextFragment_h
 #define NGTextFragment_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/inline/ng_physical_text_fragment.h"
-#include "core/layout/ng/ng_fragment.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 
 namespace blink {
 

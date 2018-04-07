@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WindowProxy_h
-#define WindowProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WINDOW_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WINDOW_PROXY_H_
 
 #include "base/debug/stack_trace.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScopedPersistent.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -269,4 +269,4 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
 
 }  // namespace blink
 
-#endif  // WindowProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WINDOW_PROXY_H_

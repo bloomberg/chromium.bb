@@ -24,12 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
-#include "platform/wtf/dtoa.h"
-#include "platform/wtf/text/IntegerToStringConversion.h"
-#include "platform/wtf/text/WTFString.h"
 #include <algorithm>
+#include "third_party/blink/renderer/platform/wtf/dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/text/integer_to_string_conversion.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace WTF {
 

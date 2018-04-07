@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebLabelElement.h"
+#include "third_party/blink/public/web/web_label_element.h"
 
-#include "core/html/forms/HTMLLabelElement.h"
-#include "core/html/forms/LabelableElement.h"
-#include "core/html_names.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/core/html/forms/html_label_element.h"
+#include "third_party/blink/renderer/core/html/forms/labelable_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

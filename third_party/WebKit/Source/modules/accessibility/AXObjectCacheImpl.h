@@ -26,21 +26,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXObjectCacheImpl_h
-#define AXObjectCacheImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_OBJECT_CACHE_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_OBJECT_CACHE_IMPL_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/dom/AXObjectCacheBase.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "modules/ModulesExport.h"
-#include "modules/accessibility/AXObject.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashSet.h"
-#include "public/platform/modules/permissions/permission.mojom-blink.h"
-#include "public/platform/modules/permissions/permission_status.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache_base.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/presentation/PresentationAvailability.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/Document.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/UseCounter.h"
-#include "modules/event_target_modules_names.h"
-#include "modules/presentation/PresentationAvailabilityState.h"
-#include "modules/presentation/PresentationController.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/Platform.h"
-#include "public/platform/modules/presentation/WebPresentationClient.h"
-#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/presentation/web_presentation_client.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/modules/event_target_modules_names.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability_state.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

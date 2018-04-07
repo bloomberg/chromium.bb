@@ -26,17 +26,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef StrokeData_h
-#define StrokeData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_STROKE_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_STROKE_DATA_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/PlatformExport.h"
-#include "platform/graphics/DashArray.h"
-#include "platform/graphics/Gradient.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/Pattern.h"
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/graphics/dash_array.h"
+#include "third_party/blink/renderer/platform/graphics/gradient.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/graphics/pattern.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPathEffect.h"
 
@@ -125,4 +125,4 @@ class PLATFORM_EXPORT StrokeData final {
 
 }  // namespace blink
 
-#endif  // StrokeData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_STROKE_DATA_H_

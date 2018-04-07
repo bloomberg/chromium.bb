@@ -23,8 +23,8 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/AudioProcessingEvent.h"
-#include "modules/webaudio/AudioProcessingEventInit.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_processing_event.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_processing_event_init.h"
 
 namespace blink {
 

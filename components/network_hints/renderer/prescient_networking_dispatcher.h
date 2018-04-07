@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "components/network_hints/renderer/renderer_dns_prefetch.h"
 #include "components/network_hints/renderer/renderer_preconnect.h"
-#include "third_party/WebKit/public/platform/WebPrescientNetworking.h"
+#include "third_party/blink/public/platform/web_prescient_networking.h"
 
 namespace network_hints {
 

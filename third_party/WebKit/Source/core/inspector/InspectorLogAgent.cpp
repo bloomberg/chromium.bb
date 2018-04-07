@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/InspectorLogAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorLogAgent.h"
 
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/frame/PerformanceMonitor.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/ConsoleMessageStorage.h"
-#include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/ResolveNode.h"
-#include "third_party/WebKit/Source/platform/bindings/ScriptForbiddenScope.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/frame/PerformanceMonitor.h"
+#include "third_party/blink/renderer/core/inspector/InspectorDOMAgent.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/console_message_storage.h"
+#include "third_party/blink/renderer/core/inspector/resolve_node.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 
 namespace blink {
 

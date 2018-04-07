@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WrappedResourceResponse_h
-#define WrappedResourceResponse_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WRAPPED_RESOURCE_RESPONSE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WRAPPED_RESOURCE_RESPONSE_H_
 
-#include "platform/wtf/Noncopyable.h"
-#include "public/platform/WebURLResponse.h"
+#include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 

@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/css/CSSAnimatableValueFactory.h"
+#include "third_party/blink/renderer/core/animation/css/css_animatable_value_factory.h"
 
-#include "core/animation/CompositorAnimations.h"
-#include "core/animation/animatable/AnimatableDouble.h"
-#include "core/animation/animatable/AnimatableFilterOperations.h"
-#include "core/animation/animatable/AnimatableTransform.h"
-#include "core/css/properties/css_property.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/animation/animatable/animatable_double.h"
+#include "third_party/blink/renderer/core/animation/animatable/animatable_filter_operations.h"
+#include "third_party/blink/renderer/core/animation/animatable/animatable_transform.h"
+#include "third_party/blink/renderer/core/animation/compositor_animations.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

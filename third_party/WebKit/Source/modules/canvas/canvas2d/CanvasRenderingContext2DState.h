@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CanvasRenderingContext2DState_h
-#define CanvasRenderingContext2DState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_STATE_H_
 
-#include "modules/canvas/canvas2d/ClipList.h"
-#include "platform/fonts/Font.h"
-#include "platform/fonts/FontSelectorClient.h"
-#include "platform/graphics/paint/PaintFilter.h"
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/clip_list.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_filter.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {

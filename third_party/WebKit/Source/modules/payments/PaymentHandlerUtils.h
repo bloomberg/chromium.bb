@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaymentHandlerUtils_h
-#define PaymentHandlerUtils_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_HANDLER_UTILS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_HANDLER_UTILS_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -24,4 +24,4 @@ class PaymentHandlerUtils {
 
 }  // namespace blink
 
-#endif  // PaymentHandlerUtils_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_HANDLER_UTILS_H_

@@ -28,23 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/mhtml/MHTMLArchive.h"
+#include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
 
 #include "build/build_config.h"
-#include "platform/DateComponents.h"
-#include "platform/SerializedResource.h"
-#include "platform/SharedBuffer.h"
-#include "platform/mhtml/ArchiveResource.h"
-#include "platform/mhtml/MHTMLParser.h"
-#include "platform/network/mime/MIMETypeRegistry.h"
-#include "platform/text/QuotedPrintable.h"
-#include "platform/weborigin/SchemeRegistry.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/CryptographicallyRandomNumber.h"
-#include "platform/wtf/DateMath.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/Base64.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/platform/date_components.h"
+#include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
+#include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/serialized_resource.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/text/quoted_printable.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/cryptographically_random_number.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

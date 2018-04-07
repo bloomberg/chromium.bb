@@ -9,12 +9,12 @@
 #if defined(OS_MACOSX)
 #include "base/mac/foundation_util.h"
 #include "content/child/child_process_sandbox_support_impl_mac.h"
-#include "third_party/WebKit/public/platform/mac/WebSandboxSupport.h"
+#include "third_party/blink/public/platform/mac/web_sandbox_support.h"
 #elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 #include "base/synchronization/lock.h"
 #include "content/child/child_process_sandbox_support_impl_linux.h"
-#include "third_party/WebKit/public/platform/linux/WebFallbackFont.h"
-#include "third_party/WebKit/public/platform/linux/WebSandboxSupport.h"
+#include "third_party/blink/public/platform/linux/web_fallback_font.h"
+#include "third_party/blink/public/platform/linux/web_sandbox_support.h"
 #endif
 
 namespace blink {

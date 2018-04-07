@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SVGTextPainter_h
-#define SVGTextPainter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_TEXT_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_TEXT_PAINTER_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -26,4 +26,4 @@ class SVGTextPainter {
 
 }  // namespace blink
 
-#endif  // SVGTextPainter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_TEXT_PAINTER_H_

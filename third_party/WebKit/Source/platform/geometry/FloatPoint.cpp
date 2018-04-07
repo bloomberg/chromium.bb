@@ -24,18 +24,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/geometry/FloatPoint.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
 
 #include <math.h>
 #include <algorithm>
 #include <limits>
 #include "SkPoint.h"
-#include "platform/geometry/DoublePoint.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/geometry/LayoutSize.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/geometry/double_point.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
 namespace blink {

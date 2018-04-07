@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DraggedIsolatedFileSystemImpl_h
-#define DraggedIsolatedFileSystemImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DRAGGED_ISOLATED_FILE_SYSTEM_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DRAGGED_ISOLATED_FILE_SYSTEM_IMPL_H_
 
-#include "core/clipboard/DataObject.h"
-#include "core/clipboard/DraggedIsolatedFileSystem.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/clipboard/data_object.h"
+#include "third_party/blink/renderer/core/clipboard/dragged_isolated_file_system.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -69,4 +69,4 @@ class DraggedIsolatedFileSystemImpl final
 
 }  // namespace blink
 
-#endif  // DraggedIsolatedFileSystemImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DRAGGED_ISOLATED_FILE_SYSTEM_IMPL_H_

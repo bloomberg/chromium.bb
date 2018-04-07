@@ -42,14 +42,14 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef PaintLayerStackingNode_h
-#define PaintLayerStackingNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_STACKING_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_STACKING_NODE_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/layout/LayoutBoxModelObject.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -253,4 +253,4 @@ class LayerListMutationDetector {
 
 }  // namespace blink
 
-#endif  // PaintLayerStackingNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_STACKING_NODE_H_

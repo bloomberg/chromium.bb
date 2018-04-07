@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8IntersectionObserverDelegate_h
-#define V8IntersectionObserverDelegate_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_INTERSECTION_OBSERVER_DELEGATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_INTERSECTION_OBSERVER_DELEGATE_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/intersection_observer/IntersectionObserverDelegate.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScopedPersistent.h"
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_delegate.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ class V8IntersectionObserverDelegate final
 };
 
 }  // namespace blink
-#endif  // V8IntersectionObserverDelegate_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_INTERSECTION_OBSERVER_DELEGATE_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediasource/SourceBufferTrackBaseSupplement.h"
+#include "third_party/blink/renderer/modules/mediasource/source_buffer_track_base_supplement.h"
 
-#include "core/html/track/TrackBase.h"
-#include "modules/mediasource/SourceBuffer.h"
+#include "third_party/blink/renderer/core/html/track/track_base.h"
+#include "third_party/blink/renderer/modules/mediasource/source_buffer.h"
 
 namespace blink {
 

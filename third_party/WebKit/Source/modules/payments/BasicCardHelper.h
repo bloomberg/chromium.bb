@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BasicCardHelper_h
-#define BasicCardHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_BASIC_CARD_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_BASIC_CARD_HELPER_H_
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/modules/payments/payment_request.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/payments/payment_request.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -31,4 +31,4 @@ class BasicCardHelper {
 
 }  // namespace blink
 
-#endif  // BasicCardHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_BASIC_CARD_HELPER_H_

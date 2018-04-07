@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/storage/StorageNamespaceController.h"
+#include "third_party/blink/renderer/modules/storage/storage_namespace_controller.h"
 
 #include <memory>
 
-#include "core/frame/ContentSettingsClient.h"
-#include "modules/storage/InspectorDOMStorageAgent.h"
-#include "modules/storage/StorageNamespace.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebStorageNamespace.h"
-#include "public/web/WebViewClient.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_storage_namespace.h"
+#include "third_party/blink/public/web/web_view_client.h"
+#include "third_party/blink/renderer/core/frame/content_settings_client.h"
+#include "third_party/blink/renderer/modules/storage/InspectorDOMStorageAgent.h"
+#include "third_party/blink/renderer/modules/storage/storage_namespace.h"
 
 namespace blink {
 

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/layout_ng_mixin.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
 
 #include <memory>
 #include <utility>
 
-#include "core/editing/PositionWithAffinity.h"
-#include "core/layout/HitTestLocation.h"
-#include "core/layout/ng/inline/ng_inline_node_data.h"
-#include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_layout_result.h"
-#include "core/layout/ng/ng_length_utils.h"
-#include "core/page/scrolling/RootScrollerUtil.h"
-#include "core/paint/ng/ng_block_flow_painter.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/layout/hit_test_location.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_block_flow_painter.h"
 
 namespace blink {
 

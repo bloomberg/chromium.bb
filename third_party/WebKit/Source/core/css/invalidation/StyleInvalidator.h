@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StyleInvalidator_h
-#define StyleInvalidator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_INVALIDATION_STYLE_INVALIDATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_INVALIDATION_STYLE_INVALIDATOR_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/css/invalidation/PendingInvalidations.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/core/css/invalidation/pending_invalidations.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -195,4 +195,4 @@ class CORE_EXPORT StyleInvalidator {
 
 }  // namespace blink
 
-#endif  // StyleInvalidator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_INVALIDATION_STYLE_INVALIDATOR_H_

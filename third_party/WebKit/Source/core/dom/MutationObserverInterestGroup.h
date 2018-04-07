@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MutationObserverInterestGroup_h
-#define MutationObserverInterestGroup_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_MUTATION_OBSERVER_INTEREST_GROUP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_MUTATION_OBSERVER_INTEREST_GROUP_H_
 
-#include "core/dom/Document.h"
-#include "core/dom/MutationObserver.h"
-#include "core/dom/Node.h"
-#include "core/dom/QualifiedName.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -102,4 +102,4 @@ class MutationObserverInterestGroup final
 
 }  // namespace blink
 
-#endif  // MutationObserverInterestGroup_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_MUTATION_OBSERVER_INTEREST_GROUP_H_

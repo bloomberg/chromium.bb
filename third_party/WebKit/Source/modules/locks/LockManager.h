@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LockManager_h
-#define LockManager_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_LOCKS_LOCK_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_LOCKS_LOCK_MANAGER_H_
 
-#include "bindings/core/v8/string_or_string_sequence.h"
-#include "modules/ModulesExport.h"
-#include "modules/locks/Lock.h"
-#include "modules/locks/LockOptions.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/HeapAllocator.h"
-#include "public/platform/modules/locks/lock_manager.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/locks/lock_manager.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_string_sequence.h"
+#include "third_party/blink/renderer/modules/locks/lock.h"
+#include "third_party/blink/renderer/modules/locks/lock_options.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class LockManager final : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // LockManager_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_LOCKS_LOCK_MANAGER_H_

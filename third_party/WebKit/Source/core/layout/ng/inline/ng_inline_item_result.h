@@ -5,13 +5,13 @@
 #ifndef NGInlineItemResult_h
 #define NGInlineItemResult_h
 
-#include "core/layout/ng/geometry/ng_box_strut.h"
-#include "core/layout/ng/inline/ng_physical_text_fragment.h"
-#include "core/layout/ng/inline/ng_text_end_effect.h"
-#include "core/layout/ng/ng_layout_result.h"
-#include "platform/LayoutUnit.h"
-#include "platform/fonts/shaping/ShapeResult.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_text_end_effect.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

@@ -6,7 +6,7 @@
 
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 using blink::WebString;
 using blink::WebURL;

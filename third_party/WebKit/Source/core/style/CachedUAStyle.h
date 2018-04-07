@@ -20,19 +20,19 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CachedUAStyle_h
-#define CachedUAStyle_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CACHED_UA_STYLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CACHED_UA_STYLE_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "core/css/StyleColor.h"
-#include "core/style/FillLayer.h"
-#include "core/style/NinePieceImage.h"
-#include "platform/LengthSize.h"
-#include "platform/graphics/Color.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/css/style_color.h"
+#include "third_party/blink/renderer/core/style/fill_layer.h"
+#include "third_party/blink/renderer/core/style/nine_piece_image.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/length_size.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -87,4 +87,4 @@ class CachedUAStyle {
 
 }  // namespace blink
 
-#endif  // CachedUAStyle_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CACHED_UA_STYLE_H_

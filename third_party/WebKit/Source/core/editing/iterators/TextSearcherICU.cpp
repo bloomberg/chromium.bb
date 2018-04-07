@@ -25,13 +25,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/iterators/TextSearcherICU.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_searcher_icu.h"
 
 #include <unicode/usearch.h>
 #include "base/macros.h"
-#include "platform/text/TextBreakIteratorInternalICU.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator_internal_icu.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

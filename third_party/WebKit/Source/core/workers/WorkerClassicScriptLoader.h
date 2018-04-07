@@ -25,24 +25,24 @@
  *
  */
 
-#ifndef WorkerClassicScriptLoader_h
-#define WorkerClassicScriptLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_CLASSIC_SCRIPT_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_CLASSIC_SCRIPT_LOADER_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/loader/ThreadableLoader.h"
-#include "core/loader/ThreadableLoaderClient.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/mojom/net/ip_address_space.mojom-blink.h"
-#include "public/platform/WebURLRequest.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -159,4 +159,4 @@ class CORE_EXPORT WorkerClassicScriptLoader final
 
 }  // namespace blink
 
-#endif  // WorkerClassicScriptLoader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_CLASSIC_SCRIPT_LOADER_H_

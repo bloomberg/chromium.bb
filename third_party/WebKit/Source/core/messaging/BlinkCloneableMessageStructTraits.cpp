@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/messaging/BlinkCloneableMessageStructTraits.h"
+#include "third_party/blink/renderer/core/messaging/blink_cloneable_message_struct_traits.h"
 
-#include "platform/blob/BlobData.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
 
 namespace mojo {
 

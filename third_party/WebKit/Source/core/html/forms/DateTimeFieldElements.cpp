@@ -23,13 +23,13 @@
  * SUCH DAMAGE.
  */
 
-#include "core/html/forms/DateTimeFieldElements.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_field_elements.h"
 
-#include "core/html/forms/DateTimeFieldsState.h"
-#include "platform/DateComponents.h"
-#include "platform/text/PlatformLocale.h"
-#include "platform/wtf/DateMath.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_fields_state.h"
+#include "third_party/blink/renderer/platform/date_components.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/StyleRuleKeyframe.h"
+#include "third_party/blink/renderer/core/css/style_rule_keyframe.h"
 
 #include <memory>
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/parser/CSSParser.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

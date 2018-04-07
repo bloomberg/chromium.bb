@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InterpolationEffect_h
-#define InterpolationEffect_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATION_EFFECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATION_EFFECT_H_
 
-#include "core/CoreExport.h"
-#include "core/animation/Interpolation.h"
-#include "core/animation/Keyframe.h"
-#include "platform/animation/TimingFunction.h"
+#include "third_party/blink/renderer/core/animation/interpolation.h"
+#include "third_party/blink/renderer/core/animation/keyframe.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/animation/timing_function.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ class CORE_EXPORT InterpolationEffect {
 
 }  // namespace blink
 
-#endif  // InterpolationEffect_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATION_EFFECT_H_

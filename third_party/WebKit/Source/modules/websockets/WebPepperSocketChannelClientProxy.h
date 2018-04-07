@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPepperSocketChannelClientProxy_h
-#define WebPepperSocketChannelClientProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_PEPPER_SOCKET_CHANNEL_CLIENT_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_PEPPER_SOCKET_CHANNEL_CLIENT_PROXY_H_
 
 #include <stdint.h>
 #include <memory>
-#include "modules/websockets/WebPepperSocketImpl.h"
-#include "modules/websockets/WebSocketChannelClient.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/modules/websockets/web_pepper_socket_impl.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_channel_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class WebPepperSocketChannelClientProxy final
 
 }  // namespace blink
 
-#endif  // WebPepperSocketChannelClientProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_PEPPER_SOCKET_CHANNEL_CLIENT_PROXY_H_

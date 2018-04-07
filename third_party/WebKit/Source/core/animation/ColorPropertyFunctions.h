@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ColorPropertyFunctions_h
-#define ColorPropertyFunctions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_COLOR_PROPERTY_FUNCTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_COLOR_PROPERTY_FUNCTIONS_H_
 
-#include "core/css/StyleColor.h"
-#include "core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/style_color.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class ColorPropertyFunctions {
 
 }  // namespace blink
 
-#endif  // ColorPropertyFunctions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_COLOR_PROPERTY_FUNCTIONS_H_

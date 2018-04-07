@@ -24,10 +24,10 @@
  *
  */
 
-#include "core/events/PopStateEvent.h"
+#include "third_party/blink/renderer/core/events/pop_state_event.h"
 
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/frame/History.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/frame/history.h"
 
 namespace blink {
 

@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/fileapi/FileError.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/WebFileError.h"
+#include "third_party/blink/public/platform/web_file_error.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

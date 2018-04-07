@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UndoStack_h
-#define UndoStack_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_UNDO_STACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_UNDO_STACK_H_
 
 #include "base/macros.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

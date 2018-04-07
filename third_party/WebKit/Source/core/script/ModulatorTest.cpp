@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/script/Modulator.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
 
-#include "platform/testing/TestingPlatformSupport.h"
-#include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 namespace blink {
 

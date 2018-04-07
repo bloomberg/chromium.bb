@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 
-#include "core/layout/MinMaxSize.h"
-#include "core/layout/ng/ng_layout_test.h"
+#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 
 namespace blink {
 namespace {

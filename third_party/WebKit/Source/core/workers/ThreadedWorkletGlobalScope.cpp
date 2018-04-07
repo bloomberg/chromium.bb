@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/ThreadedWorkletGlobalScope.h"
+#include "third_party/blink/renderer/core/workers/threaded_worklet_global_scope.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/ConsoleMessageStorage.h"
-#include "core/inspector/WorkerThreadDebugger.h"
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/WorkerReportingProxy.h"
-#include "core/workers/WorkerThread.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/console_message_storage.h"
+#include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/nfc/NFC.h"
+#include "third_party/blink/renderer/modules/nfc/nfc.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/V8ArrayBuffer.h"
-#include "bindings/core/v8/V8StringResource.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "modules/nfc/NFCError.h"
-#include "modules/nfc/NFCMessage.h"
-#include "modules/nfc/NFCPushOptions.h"
-#include "modules/nfc/NFCWatchOptions.h"
-#include "platform/mojo/MojoHelper.h"
-#include "public/platform/Platform.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_string_resource.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_error.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_message.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_push_options.h"
+#include "third_party/blink/renderer/modules/nfc/nfc_watch_options.h"
+#include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 
 namespace {
 const char kJsonMimePostfix[] = "+json";

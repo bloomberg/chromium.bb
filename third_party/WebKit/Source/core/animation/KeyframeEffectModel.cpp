@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/KeyframeEffectModel.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 
 #include <limits>
 #include <utility>
 
-#include "core/animation/AnimationEffect.h"
-#include "core/animation/CompositorAnimations.h"
-#include "core/animation/css/CSSAnimatableValueFactory.h"
-#include "core/css/CSSPropertyEquality.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/dom/Document.h"
-#include "core/frame/UseCounter.h"
-#include "platform/animation/AnimationUtilities.h"
-#include "platform/geometry/FloatBox.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/core/animation/animation_effect.h"
+#include "third_party/blink/renderer/core/animation/compositor_animations.h"
+#include "third_party/blink/renderer/core/animation/css/css_animatable_value_factory.h"
+#include "third_party/blink/renderer/core/css/css_property_equality.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
+#include "third_party/blink/renderer/platform/geometry/float_box.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DocumentParserClient_h
-#define DocumentParserClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_PARSER_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_PARSER_CLIENT_H_
 
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -22,4 +22,4 @@ class DocumentParserClient : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // DocumentParserClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_PARSER_CLIENT_H_

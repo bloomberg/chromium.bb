@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutRubyText.h"
+#include "third_party/blink/renderer/core/layout/layout_ruby_text.h"
 
 namespace blink {
 

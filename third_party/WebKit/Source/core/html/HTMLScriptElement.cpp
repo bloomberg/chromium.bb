@@ -21,20 +21,20 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/HTMLScriptElement.h"
+#include "third_party/blink/renderer/core/html/html_script_element.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptEventListener.h"
-#include "bindings/core/v8/html_script_element_or_svg_script_element.h"
-#include "core/dom/Attribute.h"
-#include "core/dom/Document.h"
-#include "core/dom/Text.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/UseCounter.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/html_names.h"
-#include "core/script/ScriptLoader.h"
-#include "core/script/ScriptRunner.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/html_script_element_or_svg_script_element.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
+#include "third_party/blink/renderer/core/dom/attribute.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/script/script_loader.h"
+#include "third_party/blink/renderer/core/script/script_runner.h"
 
 namespace blink {
 

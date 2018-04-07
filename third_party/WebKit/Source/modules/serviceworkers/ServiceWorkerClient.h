@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ServiceWorkerClient_h
-#define ServiceWorkerClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_CLIENT_H_
 
 #include <memory>
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "modules/ModulesExport.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_clients_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class MODULES_EXPORT ServiceWorkerClient : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // ServiceWorkerClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_CLIENT_H_

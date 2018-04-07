@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/text/CharacterPropertyDataGenerator.h"
+#include "third_party/blink/renderer/platform/text/character_property_data_generator.h"
 
 #include <stdio.h>
 #include <cassert>
 #include <cstring>
 #include <memory>
-#include "platform/text/CharacterProperty.h"
+#include "third_party/blink/renderer/platform/text/character_property.h"
 #if !defined(USING_SYSTEM_ICU)
 #define MUTEX_H  // Prevent compile failure of utrie2.h on Windows
 #include <utrie2.h>

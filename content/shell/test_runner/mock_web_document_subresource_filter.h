@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebDocumentSubresourceFilter.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_document_subresource_filter.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 
 namespace blink {
 class WebURL;

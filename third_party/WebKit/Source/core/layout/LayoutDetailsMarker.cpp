@@ -18,12 +18,12 @@
  *
  */
 
-#include "core/layout/LayoutDetailsMarker.h"
+#include "third_party/blink/renderer/core/layout/layout_details_marker.h"
 
-#include "core/dom/Element.h"
-#include "core/html/HTMLElement.h"
-#include "core/html_names.h"
-#include "core/paint/DetailsMarkerPainter.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/paint/details_marker_painter.h"
 
 namespace blink {
 

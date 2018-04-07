@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ChildFrameDisconnector_h
-#define ChildFrameDisconnector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHILD_FRAME_DISCONNECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHILD_FRAME_DISCONNECTOR_H_
 
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -33,4 +33,4 @@ class ChildFrameDisconnector {
 
 }  // namespace blink
 
-#endif  // ChildFrameDisconnector_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHILD_FRAME_DISCONNECTOR_H_

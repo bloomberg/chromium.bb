@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerError_h
-#define WebServiceWorkerError_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_ERROR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_ERROR_H_
 
-#include "public/platform/WebString.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_error_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-shared.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 

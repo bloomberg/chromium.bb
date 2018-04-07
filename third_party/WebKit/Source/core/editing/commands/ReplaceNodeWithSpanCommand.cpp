@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/ReplaceNodeWithSpanCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/replace_node_with_span_command.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLSpanElement.h"
-#include "core/html_names.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_span_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

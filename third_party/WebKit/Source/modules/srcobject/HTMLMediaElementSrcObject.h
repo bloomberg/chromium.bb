@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HTMLMediaElementSrcObject_h
-#define HTMLMediaElementSrcObject_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SRCOBJECT_HTML_MEDIA_ELEMENT_SRC_OBJECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SRCOBJECT_HTML_MEDIA_ELEMENT_SRC_OBJECT_H_
 
-#include "modules/ModulesExport.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/WebKit/Source/modules/webdatabase/WebDatabaseImpl.h"
+#include "third_party/blink/renderer/modules/webdatabase/web_database_impl.h"
 
-#include "modules/webdatabase/DatabaseTracker.h"
-#include "modules/webdatabase/QuotaTracker.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_tracker.h"
+#include "third_party/blink/renderer/modules/webdatabase/quota_tracker.h"
 
 namespace blink {
 

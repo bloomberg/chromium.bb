@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/exported/WebSettingsImpl.h"
+#include "third_party/blink/renderer/core/exported/web_settings_impl.h"
 
-#include "core/frame/Settings.h"
-#include "core/inspector/DevToolsEmulator.h"
-#include "platform/graphics/DeferredImageDecoder.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/inspector/dev_tools_emulator.h"
+#include "third_party/blink/renderer/platform/graphics/deferred_image_decoder.h"
 
 namespace blink {
 

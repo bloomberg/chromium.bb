@@ -20,10 +20,10 @@
  *
  */
 
-#include "core/html/HTMLUListElement.h"
+#include "third_party/blink/renderer/core/html/html_ulist_element.h"
 
-#include "core/css_property_names.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

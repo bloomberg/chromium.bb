@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/installation/InstallationServiceImpl.h"
+#include "third_party/blink/renderer/modules/installation/installation_service_impl.h"
 
 #include <memory>
 #include <utility>
 
-#include "core/dom/events/Event.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
 

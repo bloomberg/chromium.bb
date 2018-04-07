@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AudioDSPKernel_h
-#define AudioDSPKernel_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DSP_KERNEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DSP_KERNEL_H_
 
-#include "platform/audio/AudioDSPKernelProcessor.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/audio/audio_dsp_kernel_processor.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ class PLATFORM_EXPORT AudioDSPKernel {
 
 }  // namespace blink
 
-#endif  // AudioDSPKernel_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DSP_KERNEL_H_

@@ -15,8 +15,8 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media_recorder/audio_track_recorder.h"
 #include "content/renderer/media_recorder/video_track_recorder.h"
-#include "third_party/WebKit/public/platform/WebMediaRecorderHandler.h"
-#include "third_party/WebKit/public/platform/WebMediaStream.h"
+#include "third_party/blink/public/platform/web_media_recorder_handler.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
 
 namespace blink {
 class WebMediaRecorderHandlerClient;

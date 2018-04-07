@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/credentialmanager/CredentialManagerTypeConverters.h"
+#include "third_party/blink/renderer/modules/credentialmanager/credential_manager_type_converters.h"
 
 #include <algorithm>
 #include <utility>
 
-#include "bindings/core/v8/array_buffer_or_array_buffer_view.h"
-#include "modules/credentialmanager/AuthenticatorSelectionCriteria.h"
-#include "modules/credentialmanager/Credential.h"
-#include "modules/credentialmanager/FederatedCredential.h"
-#include "modules/credentialmanager/PasswordCredential.h"
-#include "modules/credentialmanager/PublicKeyCredential.h"
-#include "modules/credentialmanager/PublicKeyCredentialCreationOptions.h"
-#include "modules/credentialmanager/PublicKeyCredentialDescriptor.h"
-#include "modules/credentialmanager/PublicKeyCredentialParameters.h"
-#include "modules/credentialmanager/PublicKeyCredentialRequestOptions.h"
-#include "modules/credentialmanager/PublicKeyCredentialRpEntity.h"
-#include "modules/credentialmanager/PublicKeyCredentialUserEntity.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
+#include "third_party/blink/renderer/modules/credentialmanager/authenticator_selection_criteria.h"
+#include "third_party/blink/renderer/modules/credentialmanager/credential.h"
+#include "third_party/blink/renderer/modules/credentialmanager/federated_credential.h"
+#include "third_party/blink/renderer/modules/credentialmanager/password_credential.h"
+#include "third_party/blink/renderer/modules/credentialmanager/public_key_credential.h"
+#include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_creation_options.h"
+#include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_descriptor.h"
+#include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_parameters.h"
+#include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_request_options.h"
+#include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_rp_entity.h"
+#include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_user_entity.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace {
 // Time to wait for an authenticator to successfully complete an operation.

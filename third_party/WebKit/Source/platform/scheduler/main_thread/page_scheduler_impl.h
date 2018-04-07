@@ -12,13 +12,13 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "platform/PlatformExport.h"
-#include "platform/scheduler/base/task_queue.h"
-#include "platform/scheduler/child/page_visibility_state.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/scheduler/common/throttling/task_queue_throttler.h"
-#include "platform/scheduler/public/page_scheduler.h"
-#include "platform/scheduler/util/tracing_helper.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/child/page_visibility_state.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 
 namespace base {
 namespace trace_event {

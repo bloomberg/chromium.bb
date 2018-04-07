@@ -24,12 +24,12 @@
  *
  */
 
-#ifndef LayoutImageResourceStyleImage_h
-#define LayoutImageResourceStyleImage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_IMAGE_RESOURCE_STYLE_IMAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_IMAGE_RESOURCE_STYLE_IMAGE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/layout/LayoutImageResource.h"
-#include "core/style/StyleImage.h"
+#include "third_party/blink/renderer/core/layout/layout_image_resource.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
 
 namespace blink {
 

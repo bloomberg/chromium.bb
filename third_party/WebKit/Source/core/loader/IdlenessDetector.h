@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IdlenessDetector_h
-#define IdlenessDetector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_IDLENESS_DETECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_IDLENESS_DETECTOR_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/Timer.h"
-#include "platform/heap/Handle.h"
-#include "platform/scheduler/base/task_time_observer.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_time_observer.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 

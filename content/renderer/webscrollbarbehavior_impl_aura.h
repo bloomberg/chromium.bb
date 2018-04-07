@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_WEBSCROLLBARBEHAVIOR_IMPL_AURA_H_
 #define CONTENT_RENDERER_WEBSCROLLBARBEHAVIOR_IMPL_AURA_H_
 
-#include "third_party/WebKit/public/platform/WebScrollbarBehavior.h"
+#include "third_party/blink/public/platform/web_scrollbar_behavior.h"
 
 namespace content {
 

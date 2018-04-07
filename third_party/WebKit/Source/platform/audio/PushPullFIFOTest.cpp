@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/audio/PushPullFIFO.h"
+#include "third_party/blink/renderer/platform/audio/push_pull_fifo.h"
 
 #include <memory>
 #include <vector>
-#include "platform/CrossThreadFunctional.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/wtf/Functional.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

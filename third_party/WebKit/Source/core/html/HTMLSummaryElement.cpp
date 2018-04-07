@@ -18,18 +18,18 @@
  *
  */
 
-#include "core/html/HTMLSummaryElement.h"
+#include "third_party/blink/renderer/core/html/html_summary_element.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/FlatTreeTraversal.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/events/KeyboardEvent.h"
-#include "core/html/HTMLDetailsElement.h"
-#include "core/html/HTMLSlotElement.h"
-#include "core/html/shadow/DetailsMarkerControl.h"
-#include "core/html/shadow/ShadowElementNames.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutBlockFlow.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/html/html_details_element.h"
+#include "third_party/blink/renderer/core/html/html_slot_element.h"
+#include "third_party/blink/renderer/core/html/shadow/details_marker_control.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 
 namespace blink {
 

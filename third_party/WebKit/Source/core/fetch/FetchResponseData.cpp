@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/FetchResponseData.h"
+#include "third_party/blink/renderer/core/fetch/fetch_response_data.h"
 
-#include "core/fetch/BodyStreamBuffer.h"
-#include "core/fetch/FetchHeaderList.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/loader/fetch/FetchUtils.h"
-#include "platform/network/http_names.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
+#include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
+#include "third_party/blink/renderer/core/fetch/fetch_header_list.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
 
 using Type = network::mojom::FetchResponseType;
 

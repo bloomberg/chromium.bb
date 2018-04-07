@@ -28,24 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/exported/SharedWorkerRepositoryClientImpl.h"
+#include "third_party/blink/renderer/core/exported/shared_worker_repository_client_impl.h"
 
 #include <memory>
 #include <utility>
-#include "core/dom/events/Event.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/UseCounter.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/probe/CoreProbes.h"
-#include "core/workers/SharedWorker.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "public/platform/WebContentSecurityPolicy.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/web/WebKit.h"
-#include "public/web/WebSharedWorker.h"
-#include "public/web/WebSharedWorkerConnectListener.h"
-#include "public/web/WebSharedWorkerRepositoryClient.h"
+#include "third_party/blink/public/platform/web_content_security_policy.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/web/web_shared_worker.h"
+#include "third_party/blink/public/web/web_shared_worker_connect_listener.h"
+#include "third_party/blink/public/web/web_shared_worker_repository_client.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/workers/shared_worker.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
 namespace blink {
 namespace {

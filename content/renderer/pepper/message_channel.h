@@ -17,7 +17,7 @@
 #include "gin/wrappable.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/shared_impl/resource.h"
-#include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
+#include "third_party/blink/public/web/web_serialized_script_value.h"
 #include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
 

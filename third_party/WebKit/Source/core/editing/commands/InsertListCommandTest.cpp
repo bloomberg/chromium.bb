@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/commands/InsertListCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/insert_list_command.h"
 
-#include "core/dom/ParentNode.h"
-#include "core/dom/Text.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/testing/EditingTestBase.h"
+#include "third_party/blink/renderer/core/dom/parent_node.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 
 namespace blink {
 

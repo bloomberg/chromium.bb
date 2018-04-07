@@ -23,22 +23,22 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSImageSetValue.h"
+#include "third_party/blink/renderer/core/css/css_image_set_value.h"
 
 #include <algorithm>
-#include "core/css/CSSImageValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/loader/resource/ImageResourceContent.h"
-#include "core/style/StyleFetchedImageSet.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/fetch_initiator_type_names.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityPolicy.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/css_image_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/style/style_fetched_image_set.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

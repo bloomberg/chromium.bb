@@ -24,14 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/ShadowRootV0.h"
+#include "third_party/blink/renderer/core/dom/shadow_root_v0.h"
 
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/V0InsertionPoint.h"
-#include "core/html/HTMLContentElement.h"
-#include "core/html/HTMLShadowElement.h"
-#include "core/probe/CoreProbes.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
+#include "third_party/blink/renderer/core/html/html_content_element.h"
+#include "third_party/blink/renderer/core/html/html_shadow_element.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 
 namespace blink {
 

@@ -13,7 +13,7 @@
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/public/common/context_menu_params.h"
 #include "jni/SelectionPopupControllerImpl_jni.h"
-#include "third_party/WebKit/public/web/WebContextMenuData.h"
+#include "third_party/blink/public/web/web_context_menu_data.h"
 #include "ui/gfx/geometry/point_conversions.h"
 
 using base::android::AttachCurrentThread;

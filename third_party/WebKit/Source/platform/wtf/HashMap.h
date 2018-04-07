@@ -18,13 +18,13 @@
  *
  */
 
-#ifndef WTF_HashMap_h
-#define WTF_HashMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_MAP_H_
 
 #include <initializer_list>
-#include "platform/wtf/ConstructTraits.h"
-#include "platform/wtf/HashTable.h"
-#include "platform/wtf/allocator/PartitionAllocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/construct_traits.h"
+#include "third_party/blink/renderer/platform/wtf/hash_table.h"
 
 namespace WTF {
 
@@ -761,4 +761,4 @@ inline void CopyValuesToVector(const HashMap<T, U, V, W, X, Y>& collection,
 
 using WTF::HashMap;
 
-#endif  // WTF_HashMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_MAP_H_

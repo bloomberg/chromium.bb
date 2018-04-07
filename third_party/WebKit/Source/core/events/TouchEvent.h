@@ -24,16 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TouchEvent_h
-#define TouchEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TOUCH_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TOUCH_EVENT_H_
 
-#include "core/CoreExport.h"
-#include "core/events/TouchEventInit.h"
-#include "core/events/UIEventWithKeyState.h"
-#include "core/input/TouchList.h"
-#include "platform/graphics/TouchAction.h"
-#include "public/platform/WebCoalescedInputEvent.h"
-#include "public/platform/WebTouchEvent.h"
+#include "third_party/blink/public/platform/web_coalesced_input_event.h"
+#include "third_party/blink/public/platform/web_touch_event.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/events/touch_event_init.h"
+#include "third_party/blink/renderer/core/events/ui_event_with_key_state.h"
+#include "third_party/blink/renderer/core/input/touch_list.h"
+#include "third_party/blink/renderer/platform/graphics/touch_action.h"
 
 namespace blink {
 
@@ -119,4 +119,4 @@ DEFINE_EVENT_TYPE_CASTS(TouchEvent);
 
 }  // namespace blink
 
-#endif  // TouchEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TOUCH_EVENT_H_

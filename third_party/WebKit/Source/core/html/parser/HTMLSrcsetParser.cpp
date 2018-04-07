@@ -29,21 +29,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/HTMLSrcsetParser.h"
+#include "third_party/blink/renderer/core/html/parser/html_srcset_parser.h"
 
 #include <algorithm>
-#include "core/dom/Document.h"
-#include "core/frame/FrameConsole.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "platform/json/JSONValues.h"
-#include "platform/loader/fetch/MemoryCache.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/wtf/text/ParsingUtilities.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/StringToNumber.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 
 namespace blink {
 

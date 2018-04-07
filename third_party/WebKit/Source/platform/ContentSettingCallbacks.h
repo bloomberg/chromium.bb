@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ContentSettingCallbacks_h
-#define ContentSettingCallbacks_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_CONTENT_SETTING_CALLBACKS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CONTENT_SETTING_CALLBACKS_H_
 
 #include <memory>
 #include "base/callback.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -36,4 +36,4 @@ class PLATFORM_EXPORT ContentSettingCallbacks {
 
 }  // namespace blink
 
-#endif  // ContentSettingCallbacks_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_CONTENT_SETTING_CALLBACKS_H_

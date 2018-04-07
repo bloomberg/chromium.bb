@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/custom/V0CustomElementCallbackQueue.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_callback_queue.h"
 
-#include "core/dom/ShadowRoot.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 
 namespace blink {
 

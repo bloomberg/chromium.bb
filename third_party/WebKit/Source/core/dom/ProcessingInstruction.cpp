@@ -18,24 +18,24 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/ProcessingInstruction.h"
+#include "third_party/blink/renderer/core/dom/processing_instruction.h"
 
 #include <memory>
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/MediaList.h"
-#include "core/css/StyleEngine.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/dom/Document.h"
-#include "core/dom/IncrementLoadEventDelayCount.h"
-#include "core/loader/resource/CSSStyleSheetResource.h"
-#include "core/loader/resource/XSLStyleSheetResource.h"
-#include "core/xml/DocumentXSLT.h"
-#include "core/xml/XSLStyleSheet.h"
-#include "core/xml/parser/XMLDocumentParser.h"  // for parseAttributes()
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/media_list.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
+#include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
+#include "third_party/blink/renderer/core/loader/resource/xsl_style_sheet_resource.h"
+#include "third_party/blink/renderer/core/xml/document_xslt.h"
+#include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"  // for parseAttributes()
+#include "third_party/blink/renderer/core/xml/xsl_style_sheet.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 
 namespace blink {
 

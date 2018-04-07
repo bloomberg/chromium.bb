@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ObjectPainterBase_h
-#define ObjectPainterBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_OBJECT_PAINTER_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_OBJECT_PAINTER_BASE_H_
 
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class ObjectPainterBase {
 
 }  // namespace blink
 
-#endif  // ObjectPainterBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_OBJECT_PAINTER_BASE_H_

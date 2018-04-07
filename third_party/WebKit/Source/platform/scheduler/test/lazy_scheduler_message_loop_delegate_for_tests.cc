@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/test/lazy_scheduler_message_loop_delegate_for_tests.h"
+#include "third_party/blink/renderer/platform/scheduler/test/lazy_scheduler_message_loop_delegate_for_tests.h"
 
 #include <memory>
 #include <utility>

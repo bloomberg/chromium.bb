@@ -40,13 +40,13 @@
  *
  */
 
-#ifndef DateMath_h
-#define DateMath_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DATE_MATH_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DATE_MATH_H_
 
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/text/WTFString.h"
 #include <stdint.h>
 #include <string.h>
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -119,4 +119,4 @@ using WTF::ParseDateFromNullTerminatedCharacters;
 using WTF::MakeRFC2822DateString;
 using WTF::ConvertToLocalTime;
 
-#endif  // DateMath_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DATE_MATH_H_

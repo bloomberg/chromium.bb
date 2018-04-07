@@ -15,9 +15,9 @@
 #include "chrome/common/prerender.mojom.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
-#include "third_party/WebKit/public/common/associated_interfaces/associated_interface_registry.h"
-#include "third_party/WebKit/public/platform/WebPrerender.h"
-#include "third_party/WebKit/public/platform/WebPrerenderingSupport.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+#include "third_party/blink/public/platform/web_prerender.h"
+#include "third_party/blink/public/platform/web_prerendering_support.h"
 
 class GURL;
 

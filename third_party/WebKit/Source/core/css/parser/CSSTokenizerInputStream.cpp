@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSTokenizerInputStream.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer_input_stream.h"
 
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "platform/wtf/text/StringToNumber.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 
 namespace blink {
 

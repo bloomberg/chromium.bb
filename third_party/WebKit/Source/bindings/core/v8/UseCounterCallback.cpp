@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/UseCounterCallback.h"
+#include "third_party/blink/renderer/bindings/core/v8/use_counter_callback.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/UseCounter.h"
-#include "platform/bindings/V8PerIsolateData.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 
 namespace blink {
 

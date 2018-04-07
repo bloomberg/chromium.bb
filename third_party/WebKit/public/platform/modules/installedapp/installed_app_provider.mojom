@@ -5,7 +5,7 @@
 [JavaPackage="org.chromium.installedapp.mojom"]
 module blink.mojom;
 
-import "third_party/WebKit/public/platform/modules/installedapp/related_application.mojom";
+import "third_party/blink/public/platform/modules/installedapp/related_application.mojom";
 
 // Mojo service for the getInstalledRelatedApps implementation.
 interface InstalledAppProvider {

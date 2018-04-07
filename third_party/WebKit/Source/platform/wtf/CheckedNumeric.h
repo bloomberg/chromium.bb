@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_CheckedNumeric_h
-#define WTF_CheckedNumeric_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CHECKED_NUMERIC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CHECKED_NUMERIC_H_
 
 /* See base/numerics/safe_math.h for usage.
  */

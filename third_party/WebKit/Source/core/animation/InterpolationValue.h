@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InterpolationValue_h
-#define InterpolationValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATION_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATION_VALUE_H_
 
-#include "core/animation/InterpolableValue.h"
-#include "core/animation/NonInterpolableValue.h"
-#include "platform/heap/Handle.h"
 #include <memory>
+#include "third_party/blink/renderer/core/animation/interpolable_value.h"
+#include "third_party/blink/renderer/core/animation/non_interpolable_value.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ struct InterpolationValue {
 
 }  // namespace blink
 
-#endif  // InterpolationValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATION_VALUE_H_

@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutScrollbarPart.h"
+#include "third_party/blink/renderer/core/layout/layout_scrollbar_part.h"
 
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/UseCounter.h"
-#include "core/layout/LayoutScrollbar.h"
-#include "core/layout/LayoutScrollbarTheme.h"
-#include "core/layout/LayoutView.h"
-#include "platform/LengthFunctions.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/layout/layout_scrollbar.h"
+#include "third_party/blink/renderer/core/layout/layout_scrollbar_theme.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
 
 namespace blink {
 

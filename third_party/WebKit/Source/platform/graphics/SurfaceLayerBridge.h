@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SurfaceLayerBridge_h
-#define SurfaceLayerBridge_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SURFACE_LAYER_BRIDGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SURFACE_LAYER_BRIDGE_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/PlatformExport.h"
-#include "public/platform/WebSurfaceLayerBridge.h"
-#include "public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
+#include "third_party/blink/public/platform/web_surface_layer_bridge.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace cc {
 class Layer;
@@ -62,4 +62,4 @@ class PLATFORM_EXPORT SurfaceLayerBridge
 
 }  // namespace blink
 
-#endif  // SurfaceLayerBridge_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SURFACE_LAYER_BRIDGE_H_

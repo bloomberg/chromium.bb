@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ClipPathClipper.h"
+#include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 
-#include "core/dom/ElementTraversal.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/svg/LayoutSVGResourceClipper.h"
-#include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/layout/svg/SVGResources.h"
-#include "core/layout/svg/SVGResourcesCache.h"
-#include "core/paint/PaintInfo.h"
-#include "core/style/ClipPathOperation.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/graphics/paint/PaintRecordBuilder.h"
-#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_clipper.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/style/clip_path_operation.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 
 namespace blink {
 

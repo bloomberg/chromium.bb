@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FetchRespondWithObserver_h
-#define FetchRespondWithObserver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_FETCH_RESPOND_WITH_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_FETCH_RESPOND_WITH_OBSERVER_H_
 
-#include "modules/ModulesExport.h"
-#include "modules/serviceworkers/RespondWithObserver.h"
-#include "platform/weborigin/KURL.h"
-#include "public/platform/WebURLRequest.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/serviceworkers/respond_with_observer.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
 
 }  // namespace blink
 
-#endif  // FetchRespondWithObserver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_FETCH_RESPOND_WITH_OBSERVER_H_

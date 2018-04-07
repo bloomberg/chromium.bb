@@ -17,11 +17,11 @@
  *  MA 02110-1301 USA
  */
 
-#include "core/xml/DOMParser.h"
+#include "third_party/blink/renderer/core/xml/dom_parser.h"
 
-#include "core/dom/DOMImplementation.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/dom/dom_implementation.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

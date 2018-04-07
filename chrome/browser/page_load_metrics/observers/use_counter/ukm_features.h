@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_USE_COUNTER_UKM_FEATURES_H_
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_USE_COUNTER_UKM_FEATURES_H_
 
-#include "third_party/WebKit/public/platform/web_feature.mojom.h"
+#include "third_party/blink/public/platform/web_feature.mojom.h"
 
 // This file defines a list of UseCounter WebFeature measured in the
 // UKM-based UseCounter. Features must all satisfy UKM privacy requirements

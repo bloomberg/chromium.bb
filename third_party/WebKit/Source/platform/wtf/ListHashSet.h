@@ -20,12 +20,12 @@
  *
  */
 
-#ifndef WTF_ListHashSet_h
-#define WTF_ListHashSet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_LIST_HASH_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_LIST_HASH_SET_H_
 
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/allocator/PartitionAllocator.h"
 #include <memory>
+#include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace WTF {
 
@@ -1136,4 +1136,4 @@ void ListHashSet<T, inlineCapacity, U, V>::Trace(VisitorDispatcher visitor) {
 
 using WTF::ListHashSet;
 
-#endif  // WTF_ListHashSet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_LIST_HASH_SET_H_

@@ -8,11 +8,11 @@
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_frame.h"
-#include "third_party/WebKit/public/web/WebInputElement.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
-#include "third_party/WebKit/public/web/modules/autofill/WebFormElementObserver.h"
-#include "third_party/WebKit/public/web/modules/autofill/WebFormElementObserverCallback.h"
+#include "third_party/blink/public/web/modules/autofill/web_form_element_observer.h"
+#include "third_party/blink/public/web/modules/autofill/web_form_element_observer_callback.h"
+#include "third_party/blink/public/web/web_input_element.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "ui/base/page_transition_types.h"
 
 using blink::WebDocumentLoader;

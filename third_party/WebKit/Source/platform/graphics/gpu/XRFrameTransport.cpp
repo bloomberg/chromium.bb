@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/gpu/XRFrameTransport.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/xr_frame_transport.h"
 
 #include "build/build_config.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "platform/graphics/GpuMemoryBufferImageCopy.h"
-#include "platform/graphics/StaticBitmapImage.h"
+#include "third_party/blink/renderer/platform/graphics/gpu_memory_buffer_image_copy.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "ui/gfx/gpu_fence.h"
 
 namespace blink {

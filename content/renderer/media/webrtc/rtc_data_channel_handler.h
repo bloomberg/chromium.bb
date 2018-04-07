@@ -14,8 +14,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebRTCDataChannelHandler.h"
-#include "third_party/WebKit/public/platform/WebRTCDataChannelHandlerClient.h"
+#include "third_party/blink/public/platform/web_rtc_data_channel_handler.h"
+#include "third_party/blink/public/platform/web_rtc_data_channel_handler_client.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 
 namespace content {

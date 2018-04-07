@@ -22,17 +22,17 @@
  *
  */
 
-#ifndef TimingFunction_h
-#define TimingFunction_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_TIMING_FUNCTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_TIMING_FUNCTION_H_
 
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/timing_function.h"
-#include "platform/PlatformExport.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -249,4 +249,4 @@ DEFINE_TIMING_FUNCTION_TYPE_CASTS(Frames, FRAMES);
 
 }  // namespace blink
 
-#endif  // TimingFunction_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_TIMING_FUNCTION_H_

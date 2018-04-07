@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/InspectorResourceContentLoader.h"
+#include "third_party/blink/renderer/core/inspector/inspector_resource_content_loader.h"
 
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/inspector/InspectedFrames.h"
-#include "core/inspector/InspectorCSSAgent.h"
-#include "core/inspector/InspectorPageAgent.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/resource/CSSStyleSheetResource.h"
-#include "core/page/Page.h"
-#include "platform/loader/fetch/RawResource.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/fetch_initiator_type_names.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/InspectorCSSAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorPageAgent.h"
+#include "third_party/blink/renderer/core/inspector/inspected_frames.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 
 namespace blink {
 

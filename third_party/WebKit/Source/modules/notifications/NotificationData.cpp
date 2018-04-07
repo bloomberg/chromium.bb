@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/notifications/NotificationData.h"
+#include "third_party/blink/renderer/modules/notifications/notification_data.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/notifications/Notification.h"
-#include "modules/notifications/NotificationOptions.h"
-#include "modules/vibration/VibrationController.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/StringView.h"
-#include "public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/notifications/notification.h"
+#include "third_party/blink/renderer/modules/notifications/notification_options.h"
+#include "third_party/blink/renderer/modules/vibration/vibration_controller.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 namespace {

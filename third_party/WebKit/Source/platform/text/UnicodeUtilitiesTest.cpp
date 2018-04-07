@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/text/UnicodeUtilities.h"
+#include "third_party/blink/renderer/platform/text/unicode_utilities.h"
 
 #include <unicode/uchar.h>
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

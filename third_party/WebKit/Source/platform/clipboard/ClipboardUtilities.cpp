@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/clipboard/ClipboardUtilities.h"
+#include "third_party/blink/renderer/platform/clipboard/clipboard_utilities.h"
 
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

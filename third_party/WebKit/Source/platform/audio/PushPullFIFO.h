@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PushPullFIFO_h
-#define PushPullFIFO_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_PUSH_PULL_FIFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_PUSH_PULL_FIFO_H_
 
-#include "platform/audio/AudioBus.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 
@@ -98,4 +98,4 @@ class BLINK_PLATFORM_EXPORT PushPullFIFO {
 
 }  // namespace blink
 
-#endif  // PushPullFIFO_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_PUSH_PULL_FIFO_H_

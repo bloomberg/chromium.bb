@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSelector_h
-#define WebSelector_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SELECTOR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SELECTOR_H_
 
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 

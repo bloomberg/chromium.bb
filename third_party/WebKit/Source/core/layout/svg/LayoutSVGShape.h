@@ -23,16 +23,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LayoutSVGShape_h
-#define LayoutSVGShape_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_SHAPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_SHAPE_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "core/layout/svg/LayoutSVGModelObject.h"
-#include "core/layout/svg/SVGMarkerData.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_model_object.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_marker_data.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

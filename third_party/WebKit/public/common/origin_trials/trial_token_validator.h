@@ -11,7 +11,7 @@
 #include <vector>
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "third_party/WebKit/common/common_export.h"
+#include "third_party/blink/common/common_export.h"
 #include "url/origin.h"
 
 namespace net {

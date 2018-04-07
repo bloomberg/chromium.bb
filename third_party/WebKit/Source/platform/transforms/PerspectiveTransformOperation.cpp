@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/transforms/PerspectiveTransformOperation.h"
+#include "third_party/blink/renderer/platform/transforms/perspective_transform_operation.h"
 
-#include "platform/animation/AnimationUtilities.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

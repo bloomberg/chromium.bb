@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/compositing/CompositedLayerRasterInvalidator.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/composited_layer_raster_invalidator.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
-#include "platform/graphics/compositing/PaintChunksToCcLayer.h"
-#include "platform/graphics/paint/GeometryMapper.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
 namespace blink {
 

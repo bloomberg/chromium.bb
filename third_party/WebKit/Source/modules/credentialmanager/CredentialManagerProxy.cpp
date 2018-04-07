@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/credentialmanager/CredentialManagerProxy.h"
+#include "third_party/blink/renderer/modules/credentialmanager/credential_manager_proxy.h"
 
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/LocalFrame.h"
-#include "platform/bindings/ScriptState.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

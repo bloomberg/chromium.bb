@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSSelectorParser.h"
+#include "third_party/blink/renderer/core/css/parser/css_selector_parser.h"
 
-#include "core/css/CSSSelectorList.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/parser/CSSTokenizer.h"
-#include "core/frame/UseCounter.h"
-#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_selector_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 namespace blink {
 

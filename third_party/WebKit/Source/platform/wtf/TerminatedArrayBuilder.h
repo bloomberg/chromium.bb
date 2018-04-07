@@ -1,12 +1,12 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef TerminatedArrayBuilder_h
-#define TerminatedArrayBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TERMINATED_ARRAY_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TERMINATED_ARRAY_BUILDER_H_
 
 #include "base/macros.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/ConstructTraits.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/construct_traits.h"
 
 namespace WTF {
 
@@ -81,4 +81,4 @@ class TerminatedArrayBuilder {
 
 using WTF::TerminatedArrayBuilder;
 
-#endif  // TerminatedArrayBuilder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TERMINATED_ARRAY_BUILDER_H_

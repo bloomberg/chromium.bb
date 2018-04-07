@@ -24,9 +24,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/XPathVariableReference.h"
+#include "third_party/blink/renderer/core/xml/xpath_variable_reference.h"
 
-#include "core/xml/XPathValue.h"
+#include "third_party/blink/renderer/core/xml/xpath_value.h"
 
 namespace blink {
 namespace XPath {

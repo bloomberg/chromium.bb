@@ -22,19 +22,19 @@
  *
  */
 
-#ifndef Event_h
-#define Event_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/DOMHighResTimeStamp.h"
-#include "core/dom/DOMTimeStamp.h"
-#include "core/dom/events/EventDispatcher.h"
-#include "core/dom/events/EventInit.h"
-#include "core/dom/events/EventPath.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
+#include "third_party/blink/renderer/core/dom/dom_time_stamp.h"
+#include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
+#include "third_party/blink/renderer/core/dom/events/event_init.h"
+#include "third_party/blink/renderer/core/dom/events/event_path.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -324,4 +324,4 @@ class CORE_EXPORT Event : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // Event_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_H_

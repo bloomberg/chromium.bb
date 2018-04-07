@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationEvent_h
-#define AnimationEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_ANIMATION_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_ANIMATION_EVENT_H_
 
-#include "core/dom/events/Event.h"
-#include "core/events/AnimationEventInit.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/animation_event_init.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ class AnimationEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // AnimationEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_ANIMATION_EVENT_H_

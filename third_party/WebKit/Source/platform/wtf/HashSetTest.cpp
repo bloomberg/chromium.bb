@@ -23,14 +23,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/WTFTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_test_helper.h"
 
 namespace WTF {
 

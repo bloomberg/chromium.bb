@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SelectionType_h
-#define SelectionType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_TYPE_H_
 
 namespace blink {
 
@@ -32,4 +32,4 @@ enum SelectionType { kNoSelection, kCaretSelection, kRangeSelection };
 
 }  // namespace blink
 
-#endif  // SelectionType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_TYPE_H_

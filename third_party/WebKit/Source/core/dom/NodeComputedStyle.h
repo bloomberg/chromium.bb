@@ -22,14 +22,14 @@
  *
  */
 
-#ifndef NodeComputedStyle_h
-#define NodeComputedStyle_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_COMPUTED_STYLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_COMPUTED_STYLE_H_
 
-#include "core/dom/Element.h"
-#include "core/dom/LayoutTreeBuilderTraversal.h"
-#include "core/dom/Node.h"
-#include "core/dom/V0InsertionPoint.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 
@@ -64,4 +64,4 @@ inline const ComputedStyle& Node::ComputedStyleRef() const {
 }
 
 }  // namespace blink
-#endif  // NodeComputedStyle_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_COMPUTED_STYLE_H_

@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLFramebuffer_h
-#define WebGLFramebuffer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_FRAMEBUFFER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_FRAMEBUFFER_H_
 
-#include "modules/webgl/WebGLContextObject.h"
-#include "modules/webgl/WebGLSharedObject.h"
-#include "platform/bindings/ScriptWrappableVisitor.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_context_object.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_shared_object.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 
 namespace gpu {
 namespace gles2 {
@@ -172,4 +172,4 @@ class WebGLFramebuffer final : public WebGLContextObject {
 
 }  // namespace blink
 
-#endif  // WebGLFramebuffer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_FRAMEBUFFER_H_

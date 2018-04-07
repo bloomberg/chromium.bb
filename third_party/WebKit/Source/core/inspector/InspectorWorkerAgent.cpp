@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/inspector/InspectorWorkerAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorWorkerAgent.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/Document.h"
-#include "core/inspector/InspectedFrames.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/inspector/inspected_frames.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/encryptedmedia/MediaKeySystemAccess.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_key_system_access.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
-#include "modules/encryptedmedia/EncryptedMediaUtils.h"
-#include "modules/encryptedmedia/MediaKeySession.h"
-#include "modules/encryptedmedia/MediaKeys.h"
-#include "modules/encryptedmedia/MediaKeysController.h"
-#include "platform/Timer.h"
-#include "platform/bindings/ScriptState.h"
-#include "public/platform/WebContentDecryptionModule.h"
-#include "public/platform/WebEncryptedMediaTypes.h"
-#include "public/platform/WebMediaKeySystemConfiguration.h"
+#include "third_party/blink/public/platform/web_content_decryption_module.h"
+#include "third_party/blink/public/platform/web_encrypted_media_types.h"
+#include "third_party/blink/public/platform/web_media_key_system_configuration.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/content_decryption_module_result_promise.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_key_session.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_keys.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_keys_controller.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 

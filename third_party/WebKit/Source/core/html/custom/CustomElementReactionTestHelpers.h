@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CustomElementReactionTestHelpers_h
-#define CustomElementReactionTestHelpers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_REACTION_TEST_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_REACTION_TEST_HELPERS_H_
 
-#include "core/html/custom/CustomElementReaction.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction.h"
 
 #include <initializer_list>
 #include <memory>
 #include <vector>
 
 #include "base/macros.h"
-#include "core/html/custom/CustomElementReactionQueue.h"
-#include "core/html/custom/CustomElementReactionStack.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Functional.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction_queue.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction_stack.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -153,4 +153,4 @@ class ResetCustomElementReactionStackForTest final {
 
 }  // namespace blink
 
-#endif  // CustomElementReactionTestHelpers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_REACTION_TEST_HELPERS_H_

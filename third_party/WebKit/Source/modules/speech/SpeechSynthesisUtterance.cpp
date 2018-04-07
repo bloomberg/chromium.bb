@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/speech/SpeechSynthesisUtterance.h"
+#include "third_party/blink/renderer/modules/speech/speech_synthesis_utterance.h"
 
-#include "core/execution_context/ExecutionContext.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
 namespace blink {
 

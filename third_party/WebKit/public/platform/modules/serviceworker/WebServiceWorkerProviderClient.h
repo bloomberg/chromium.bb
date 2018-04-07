@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerProviderClient_h
-#define WebServiceWorkerProviderClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_PROVIDER_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_PROVIDER_CLIENT_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/serviceworker/WebServiceWorker.h"
-#include "public/platform/web_feature.mojom-shared.h"
-#include "third_party/WebKit/public/common/message_port/transferable_message.h"
+#include "third_party/blink/public/common/message_port/transferable_message.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_feature.mojom-shared.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 #include <memory>
 
@@ -62,4 +62,4 @@ class WebServiceWorkerProviderClient {
 
 }  // namespace blink
 
-#endif  // WebServiceWorkerProviderClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_PROVIDER_CLIENT_H_

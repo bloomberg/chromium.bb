@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BlobEvent_h
-#define BlobEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_BLOB_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_BLOB_EVENT_H_
 
-#include "core/dom/DOMHighResTimeStamp.h"
-#include "core/fileapi/Blob.h"
-#include "modules/EventModules.h"
-#include "modules/ModulesExport.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -44,4 +44,4 @@ class MODULES_EXPORT BlobEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // BlobEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_BLOB_EVENT_H_

@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/markers/DocumentMarkerController.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Document.h"
-#include "core/dom/Range.h"
-#include "core/dom/Text.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/markers/SuggestionMarker.h"
-#include "core/editing/markers/SuggestionMarkerProperties.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/html/HTMLElement.h"
-#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/markers/suggestion_marker.h"
+#include "third_party/blink/renderer/core/editing/markers/suggestion_marker_properties.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 namespace blink {
 

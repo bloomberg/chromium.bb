@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ShadowElementNames_h
-#define ShadowElementNames_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_SHADOW_SHADOW_ELEMENT_NAMES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_SHADOW_SHADOW_ELEMENT_NAMES_H_
 
-#include "core/CoreExport.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

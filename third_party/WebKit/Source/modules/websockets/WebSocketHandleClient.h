@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSocketHandleClient_h
-#define WebSocketHandleClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_HANDLE_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_HANDLE_CLIENT_H_
 
-#include "modules/websockets/WebSocketHandle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 class WebSocketHandshakeRequest;
@@ -89,4 +89,4 @@ class WebSocketHandleClient {
 
 }  // namespace blink
 
-#endif  // WebSocketHandleClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEB_SOCKET_HANDLE_CLIENT_H_

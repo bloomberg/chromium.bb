@@ -11,7 +11,7 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
 #include "storage/browser/storage_browser_export.h"
-#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 
 namespace storage {
 

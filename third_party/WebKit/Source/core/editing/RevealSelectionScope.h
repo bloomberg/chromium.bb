@@ -27,11 +27,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RevealSelectionScope_h
-#define RevealSelectionScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_REVEAL_SELECTION_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_REVEAL_SELECTION_SCOPE_H_
 
 #include "base/macros.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class RevealSelectionScope {
 
 }  // namespace blink
 
-#endif  // RevealSelectionScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_REVEAL_SELECTION_SCOPE_H_

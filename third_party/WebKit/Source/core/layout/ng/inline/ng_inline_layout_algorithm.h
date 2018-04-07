@@ -5,17 +5,17 @@
 #ifndef NGInlineLayoutAlgorithm_h
 #define NGInlineLayoutAlgorithm_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_logical_offset.h"
-#include "core/layout/ng/inline/ng_inline_box_state.h"
-#include "core/layout/ng/inline/ng_inline_item_result.h"
-#include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/inline/ng_line_box_fragment_builder.h"
-#include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_layout_algorithm.h"
-#include "platform/fonts/FontBaseline.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
+#include "third_party/blink/renderer/platform/fonts/font_baseline.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

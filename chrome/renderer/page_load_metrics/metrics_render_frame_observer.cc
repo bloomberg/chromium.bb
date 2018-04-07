@@ -13,11 +13,11 @@
 #include "chrome/renderer/page_load_metrics/page_timing_metrics_sender.h"
 #include "chrome/renderer/page_load_metrics/page_timing_sender.h"
 #include "content/public/renderer/render_frame.h"
-#include "third_party/WebKit/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebDocumentLoader.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebPerformance.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_document_loader.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_performance.h"
 #include "url/gurl.h"
 
 namespace page_load_metrics {

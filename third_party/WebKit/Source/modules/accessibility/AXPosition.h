@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AXPosition_h
-#define AXPosition_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_POSITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_POSITION_H_
 
 #include <base/logging.h>
 #include <base/optional.h>
 #include <stdint.h>
 #include <ostream>
 
-#include "core/editing/Forward.h"
-#include "core/editing/TextAffinity.h"
-#include "modules/ModulesExport.h"
-#include "platform/heap/Persistent.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -113,4 +113,4 @@ MODULES_EXPORT std::ostream& operator<<(std::ostream&, const AXPosition&);
 
 }  // namespace blink
 
-#endif  // AXPosition_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_POSITION_H_

@@ -5,7 +5,7 @@
 #include "chrome/browser/page_load_metrics/observers/css_scanning_page_load_metrics_observer.h"
 
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
+#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 
 CssScanningMetricsObserver::CssScanningMetricsObserver() {}
 

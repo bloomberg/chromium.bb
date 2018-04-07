@@ -12,7 +12,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "media/blink/renderer_media_player_interface.h"
 #include "media/gpu/ipc/common/media_param_traits.h"
-#include "third_party/WebKit/public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
+#include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_availability.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
 

@@ -1,7 +1,7 @@
 include_rules = [
     "+device/bluetooth/public/mojom",
-    "-modules",
-    "+modules/bluetooth",
-    "+modules/EventTargetModules.h",
+    "-third_party/blink/renderer/modules",
+    "+third_party/blink/renderer/modules/bluetooth",
+    "+third_party/blink/renderer/modules/event_target_modules.h",
     "+mojo/public/cpp/bindings",
 ]

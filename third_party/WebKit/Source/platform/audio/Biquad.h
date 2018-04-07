@@ -26,17 +26,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Biquad_h
-#define Biquad_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_BIQUAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_BIQUAD_H_
 
 #include <sys/types.h>
 
 #include <complex>
 
 #include "build/build_config.h"
-#include "platform/PlatformExport.h"
-#include "platform/audio/AudioArray.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -132,4 +132,4 @@ class PLATFORM_EXPORT Biquad final {
 
 }  // namespace blink
 
-#endif  // Biquad_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_BIQUAD_H_

@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ContextMenu_h
-#define ContextMenu_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_CONTEXT_MENU_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CONTEXT_MENU_H_
 
-#include "platform/ContextMenuItem.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/context_menu_item.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class PLATFORM_EXPORT ContextMenu {
 
 }  // namespace blink
 
-#endif  // ContextMenu_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_CONTEXT_MENU_H_

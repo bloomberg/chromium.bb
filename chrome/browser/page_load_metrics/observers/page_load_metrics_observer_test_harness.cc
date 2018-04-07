@@ -15,7 +15,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 

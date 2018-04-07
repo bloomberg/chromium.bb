@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V0CustomElementMicrotaskDispatcher_h
-#define V0CustomElementMicrotaskDispatcher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_MICROTASK_DISPATCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_MICROTASK_DISPATCHER_H_
 
 #include "base/macros.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -43,4 +43,4 @@ class V0CustomElementMicrotaskDispatcher final
 
 }  // namespace blink
 
-#endif  // V0CustomElementMicrotaskDispatcher_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_MICROTASK_DISPATCHER_H_

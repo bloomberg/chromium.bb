@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutGeometryMapStep_h
-#define LayoutGeometryMapStep_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_GEOMETRY_MAP_STEP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_GEOMETRY_MAP_STEP_H_
 
 #include <memory>
-#include "platform/geometry/LayoutSize.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -77,4 +77,4 @@ struct LayoutGeometryMapStep {
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
     blink::LayoutGeometryMapStep);
 
-#endif  // LayoutGeometryMapStep_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_GEOMETRY_MAP_STEP_H_

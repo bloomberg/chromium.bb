@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSDefaultInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_default_interpolation_type.h"
 
-#include "core/animation/CSSInterpolationEnvironment.h"
-#include "core/animation/StringKeyframe.h"
-#include "core/css/resolver/StyleBuilder.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_environment.h"
+#include "third_party/blink/renderer/core/animation/string_keyframe.h"
+#include "third_party/blink/renderer/core/css/resolver/style_builder.h"
 
 namespace blink {
 

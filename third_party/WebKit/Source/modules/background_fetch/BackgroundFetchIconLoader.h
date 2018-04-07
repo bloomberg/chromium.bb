@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BackgroundFetchIconLoader_h
-#define BackgroundFetchIconLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_ICON_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_ICON_LOADER_H_
 
 #include <memory>
 
-#include "core/loader/ThreadableLoader.h"
-#include "core/loader/ThreadableLoaderClient.h"
-#include "modules/ModulesExport.h"
-#include "modules/background_fetch/BackgroundFetchTypeConverters.h"
-#include "platform/SharedBuffer.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_type_converters.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
@@ -87,4 +87,4 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
 
 }  // namespace blink
 
-#endif  // BackgroundFetchIconLoader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_ICON_LOADER_H_

@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ContextFeaturesClientImpl_h
-#define ContextFeaturesClientImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTEXT_FEATURES_CLIENT_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTEXT_FEATURES_CLIENT_IMPL_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/CoreExport.h"
-#include "core/dom/ContextFeatures.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_features.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ class CORE_EXPORT ContextFeaturesClientImpl final
 
 }  // namespace blink
 
-#endif  // ContextFeaturesClientImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTEXT_FEATURES_CLIENT_IMPL_H_

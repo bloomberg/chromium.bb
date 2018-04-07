@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/page/PageVisibilityNotifier.h"
+#include "third_party/blink/renderer/core/page/page_visibility_notifier.h"
 
-#include "core/page/PageVisibilityObserver.h"
-#include "platform/wtf/AutoReset.h"
+#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 

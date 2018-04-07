@@ -18,15 +18,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGComponentTransferFunctionElement_h
-#define SVGComponentTransferFunctionElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_COMPONENT_TRANSFER_FUNCTION_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_COMPONENT_TRANSFER_FUNCTION_ELEMENT_H_
 
-#include "core/svg/SVGAnimatedEnumeration.h"
-#include "core/svg/SVGAnimatedNumber.h"
-#include "core/svg/SVGAnimatedNumberList.h"
-#include "core/svg/SVGElement.h"
-#include "platform/graphics/filters/FEComponentTransfer.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_enumeration.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_number.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_number_list.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_component_transfer.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class SVGComponentTransferFunctionElement : public SVGElement {
 
 }  // namespace blink
 
-#endif  // SVGComponentTransferFunctionElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_COMPONENT_TRANSFER_FUNCTION_ELEMENT_H_

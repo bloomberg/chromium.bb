@@ -24,7 +24,7 @@
 #include "jni/DownloadInfo_jni.h"
 #include "jni/DownloadItem_jni.h"
 #include "jni/DownloadManagerService_jni.h"
-#include "third_party/WebKit/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 
 using base::android::JavaParamRef;
 using base::android::ConvertJavaStringToUTF8;

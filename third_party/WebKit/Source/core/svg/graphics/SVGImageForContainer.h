@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGImageForContainer_h
-#define SVGImageForContainer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_SVG_IMAGE_FOR_CONTAINER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_SVG_IMAGE_FOR_CONTAINER_H_
 
-#include "core/svg/graphics/SVGImage.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/graphics/Image.h"
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
@@ -119,4 +119,4 @@ class SVGImageForContainer final : public Image {
 };
 }  // namespace blink
 
-#endif  // SVGImageForContainer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_SVG_IMAGE_FOR_CONTAINER_H_

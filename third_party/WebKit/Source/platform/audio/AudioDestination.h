@@ -26,18 +26,18 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AudioDestination_h
-#define AudioDestination_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DESTINATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DESTINATION_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioIOCallback.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebAudioDevice.h"
-#include "public/platform/WebThread.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_audio_device.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_io_callback.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 
@@ -149,4 +149,4 @@ class PLATFORM_EXPORT AudioDestination
 
 }  // namespace blink
 
-#endif  // AudioDestination_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DESTINATION_H_

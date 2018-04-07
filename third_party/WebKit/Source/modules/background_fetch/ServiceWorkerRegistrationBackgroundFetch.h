@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ServiceWorkerRegistrationBackgroundFetch_h
-#define ServiceWorkerRegistrationBackgroundFetch_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_SERVICE_WORKER_REGISTRATION_BACKGROUND_FETCH_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_SERVICE_WORKER_REGISTRATION_BACKGROUND_FETCH_H_
 
-#include "modules/serviceworkers/ServiceWorkerRegistration.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -43,4 +43,4 @@ class ServiceWorkerRegistrationBackgroundFetch final
 
 }  // namespace blink
 
-#endif  // ServiceWorkerRegistrationBackgroundFetch_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_SERVICE_WORKER_REGISTRATION_BACKGROUND_FETCH_H_

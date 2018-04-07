@@ -28,22 +28,22 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/RuleFeatureSet.h"
+#include "third_party/blink/renderer/core/css/rule_feature_set.h"
 
-#include "core/css/CSSCustomIdentValue.h"
-#include "core/css/CSSFunctionValue.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/CSSSelector.h"
-#include "core/css/CSSSelectorList.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/RuleSet.h"
-#include "core/css/StyleRule.h"
-#include "core/css/invalidation/InvalidationSet.h"
-#include "core/dom/Element.h"
-#include "core/dom/Node.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/BitVector.h"
+#include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
+#include "third_party/blink/renderer/core/css/css_function_value.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_selector.h"
+#include "third_party/blink/renderer/core/css/css_selector_list.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
+#include "third_party/blink/renderer/core/css/rule_set.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 
 namespace blink {
 

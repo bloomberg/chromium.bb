@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/InitializeV8ExtrasBinding.h"
+#include "third_party/blink/renderer/bindings/core/v8/initialize_v8_extras_binding.h"
 
 #include <algorithm>
 #include <iterator>
 
-#include "bindings/core/v8/ScriptFunction.h"
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/UseCounter.h"
-#include "core/frame/WebFeature.h"
-#include "platform/bindings/ToV8.h"
-#include "platform/bindings/V8Binding.h"
-#include "platform/bindings/V8ThrowException.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/platform/bindings/to_v8.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "v8/include/v8.h"
 
 namespace blink {

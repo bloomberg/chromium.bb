@@ -24,21 +24,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/SelectionModifier.h"
+#include "third_party/blink/renderer/core/editing/selection_modifier.h"
 
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/Editor.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/InlineBoxPosition.h"
-#include "core/editing/LocalCaretRect.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleUnits.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/line/InlineTextBox.h"
-#include "core/page/SpatialNavigation.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/inline_box_position.h"
+#include "third_party/blink/renderer/core/editing/local_caret_rect.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation.h"
 
 namespace blink {
 

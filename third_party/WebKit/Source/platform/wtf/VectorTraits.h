@@ -18,15 +18,15 @@
  *
  */
 
-#ifndef WTF_VectorTraits_h
-#define WTF_VectorTraits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_VECTOR_TRAITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_VECTOR_TRAITS_H_
 
 #include <memory>
 #include <type_traits>
 #include <utility>
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/TypeTraits.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 namespace WTF {
 
@@ -201,4 +201,4 @@ struct VectorTraits<std::pair<First, Second>> {
 using WTF::VectorTraits;
 using WTF::SimpleClassVectorTraits;
 
-#endif  // WTF_VectorTraits_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_VECTOR_TRAITS_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FetchAPIRequestStructTraits_h
-#define FetchAPIRequestStructTraits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_FETCH_API_REQUEST_STRUCT_TRAITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_FETCH_API_REQUEST_STRUCT_TRAITS_H_
 
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 class KURL;
@@ -96,4 +96,4 @@ struct StructTraits<::blink::mojom::FetchAPIRequestDataView,
 
 }  // namespace mojo
 
-#endif  // FetchAPIRequestStructTraits_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_FETCH_API_REQUEST_STRUCT_TRAITS_H_

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/SVGUnitTypes.h"
+#include "third_party/blink/renderer/core/svg/svg_unit_types.h"
 
 namespace blink {
 

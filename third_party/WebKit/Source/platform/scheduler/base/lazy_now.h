@@ -7,7 +7,7 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace base {
 class TickClock;

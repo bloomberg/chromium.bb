@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/EditingStyle.h"
+#include "third_party/blink/renderer/core/editing/editing_style.h"
 
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/dom/Document.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/html/HTMLHeadElement.h"
-#include "core/html/HTMLHtmlElement.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/html/html_head_element.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
 
 namespace blink {
 

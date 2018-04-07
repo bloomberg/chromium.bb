@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutFlexibleBox_h
-#define LayoutFlexibleBox_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FLEXIBLE_BOX_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FLEXIBLE_BOX_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/OrderIterator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/order_iterator.h"
 
 namespace blink {
 
@@ -222,4 +222,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFlexibleBox, IsFlexibleBox());
 
 }  // namespace blink
 
-#endif  // LayoutFlexibleBox_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FLEXIBLE_BOX_H_

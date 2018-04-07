@@ -8,7 +8,7 @@
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 ClipboardReadPermissionContext::ClipboardReadPermissionContext(Profile* profile)
     : PermissionContextBase(profile,

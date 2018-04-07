@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HarfBuzzFace_h
-#define HarfBuzzFace_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARF_BUZZ_FACE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARF_BUZZ_FACE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/fonts/TypesettingFeatures.h"
-#include "platform/fonts/UnicodeRangeSet.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/platform/fonts/typesetting_features.h"
+#include "third_party/blink/renderer/platform/fonts/unicode_range_set.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 #include <hb.h>
 
@@ -84,4 +84,4 @@ class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
 
 }  // namespace blink
 
-#endif  // HarfBuzzFace_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARF_BUZZ_FACE_H_

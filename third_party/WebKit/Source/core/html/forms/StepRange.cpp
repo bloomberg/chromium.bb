@@ -18,13 +18,13 @@
  *
  */
 
-#include "core/html/forms/StepRange.h"
+#include "third_party/blink/renderer/core/html/forms/step_range.h"
 
 #include <float.h>
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html_names.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

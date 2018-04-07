@@ -26,7 +26,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/manifest.h"
-#include "third_party/WebKit/public/platform/WebDisplayMode.h"
+#include "third_party/blink/public/platform/web_display_mode.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "url/gurl.h"
 

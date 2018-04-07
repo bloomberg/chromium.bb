@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/sensor/SensorReadingRemapper.h"
+#include "third_party/blink/renderer/modules/sensor/sensor_reading_remapper.h"
 
 using device::SensorReading;
 using device::SensorReadingXYZ;

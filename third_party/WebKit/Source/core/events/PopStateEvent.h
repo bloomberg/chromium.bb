@@ -24,14 +24,14 @@
  *
  */
 
-#ifndef PopStateEvent_h
-#define PopStateEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_POP_STATE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_POP_STATE_EVENT_H_
 
-#include "core/dom/events/Event.h"
-#include "core/events/PopStateEventInit.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/pop_state_event_init.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class PopStateEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // PopStateEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_POP_STATE_EVENT_H_

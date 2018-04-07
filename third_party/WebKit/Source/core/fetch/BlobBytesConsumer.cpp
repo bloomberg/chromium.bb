@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/BlobBytesConsumer.h"
+#include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
 
-#include "core/fetch/BytesConsumerForDataConsumerHandle.h"
-#include "core/loader/ThreadableLoader.h"
-#include "platform/blob/BlobData.h"
-#include "platform/blob/BlobRegistry.h"
-#include "platform/blob/BlobURL.h"
-#include "platform/loader/fetch/ResourceError.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/loader/fetch/fetch_initiator_type_names.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer_for_data_consumer_handle.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/blob/blob_registry.h"
+#include "third_party/blink/renderer/platform/blob/blob_url.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

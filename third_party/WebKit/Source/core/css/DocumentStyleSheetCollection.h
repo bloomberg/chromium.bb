@@ -27,11 +27,11 @@
  *
  */
 
-#ifndef DocumentStyleSheetCollection_h
-#define DocumentStyleSheetCollection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_DOCUMENT_STYLE_SHEET_COLLECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_DOCUMENT_STYLE_SHEET_COLLECTION_H_
 
 #include "base/macros.h"
-#include "core/css/TreeScopeStyleSheetCollection.h"
+#include "third_party/blink/renderer/core/css/tree_scope_style_sheet_collection.h"
 
 namespace blink {
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SensorProviderProxy_h
-#define SensorProviderProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_PROVIDER_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_PROVIDER_PROXY_H_
 
-#include "core/frame/LocalFrame.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
 #include "services/device/public/mojom/sensor.mojom-blink.h"
 #include "services/device/public/mojom/sensor_provider.mojom-blink.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class SensorProviderProxy final
 
 }  // namespace blink
 
-#endif  // SensorProviderProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_PROVIDER_PROXY_H_

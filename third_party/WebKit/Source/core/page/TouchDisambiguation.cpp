@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/page/TouchDisambiguation.h"
+#include "third_party/blink/renderer/core/page/touch_disambiguation.h"
 
 #include <algorithm>
 #include <cmath>
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLHtmlElement.h"
-#include "core/input/EventHandler.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutBlock.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
 
 namespace blink {
 

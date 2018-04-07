@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WindowNameCollection_h
-#define WindowNameCollection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_WINDOW_NAME_COLLECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_WINDOW_NAME_COLLECTION_H_
 
-#include "core/html/HTMLNameCollection.h"
+#include "third_party/blink/renderer/core/html/html_name_collection.h"
 
 namespace blink {
 
@@ -32,4 +32,4 @@ DEFINE_TYPE_CASTS(WindowNameCollection,
 
 }  // namespace blink
 
-#endif  // WindowNameCollection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_WINDOW_NAME_COLLECTION_H_

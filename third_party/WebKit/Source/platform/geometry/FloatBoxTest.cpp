@@ -22,11 +22,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/geometry/FloatBox.h"
+#include "third_party/blink/renderer/platform/geometry/float_box.h"
 
-#include "platform/geometry/FloatBoxTestHelpers.h"
-#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/geometry/float_box_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

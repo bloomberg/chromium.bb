@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/crypto/Crypto.h"
+#include "third_party/blink/renderer/modules/crypto/crypto.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/typed_arrays/DOMArrayBufferView.h"
-#include "platform/wtf/CryptographicallyRandomNumber.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
+#include "third_party/blink/renderer/platform/wtf/cryptographically_random_number.h"
 
 namespace blink {
 

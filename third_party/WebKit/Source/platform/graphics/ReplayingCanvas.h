@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ReplayingCanvas_h
-#define ReplayingCanvas_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_REPLAYING_CANVAS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_REPLAYING_CANVAS_H_
 
-#include "platform/graphics/InterceptingCanvas.h"
+#include "third_party/blink/renderer/platform/graphics/intercepting_canvas.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class ReplayingCanvas : public InterceptingCanvas<ReplayingCanvas>,
 
 }  // namespace blink
 
-#endif  // ReplayingCanvas_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_REPLAYING_CANVAS_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/skia/ImagePixelLocker.h"
+#include "third_party/blink/renderer/platform/graphics/skia/image_pixel_locker.h"
 
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"

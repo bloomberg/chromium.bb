@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Rotation_h
-#define Rotation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_ROTATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_ROTATION_H_
 
-#include "platform/geometry/FloatPoint3D.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ struct PLATFORM_EXPORT Rotation {
 
 }  // namespace blink
 
-#endif  // Rotation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_ROTATION_H_

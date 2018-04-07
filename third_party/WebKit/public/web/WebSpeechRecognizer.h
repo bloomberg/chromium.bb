@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSpeechRecognizer_h
-#define WebSpeechRecognizer_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNIZER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNIZER_H_
 
-#include "public/platform/WebCommon.h"
-#include "WebSpeechRecognitionHandle.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/web/web_speech_recognition_handle.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ class WebSpeechRecognizer {
 
 }  // namespace blink
 
-#endif  // WebSpeechRecognizer_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNIZER_H_

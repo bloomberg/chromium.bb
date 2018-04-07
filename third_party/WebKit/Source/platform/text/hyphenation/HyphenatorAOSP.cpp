@@ -24,7 +24,7 @@
 // HACK: for reading pattern file
 #include <fcntl.h>
 
-#include "platform/text/hyphenation/HyphenatorAOSP.h"
+#include "third_party/blink/renderer/platform/text/hyphenation/hyphenator_aosp.h"
 
 using std::vector;
 

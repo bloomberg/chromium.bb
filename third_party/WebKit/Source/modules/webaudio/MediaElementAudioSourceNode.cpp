@@ -23,19 +23,19 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/MediaElementAudioSourceNode.h"
+#include "third_party/blink/renderer/modules/webaudio/media_element_audio_source_node.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "modules/webaudio/AudioNodeOutput.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "modules/webaudio/MediaElementAudioSourceOptions.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Locker.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/media_element_audio_source_options.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/locker.h"
 
 namespace blink {
 

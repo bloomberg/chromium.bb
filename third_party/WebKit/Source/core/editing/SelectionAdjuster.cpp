@@ -24,16 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/SelectionAdjuster.h"
+#include "third_party/blink/renderer/core/editing/selection_adjuster.h"
 
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/Position.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleSelection.h"
-#include "core/editing/VisibleUnits.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 

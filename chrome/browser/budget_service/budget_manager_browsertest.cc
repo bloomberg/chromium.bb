@@ -23,7 +23,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
+#include "third_party/blink/public/platform/modules/budget_service/budget_service.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

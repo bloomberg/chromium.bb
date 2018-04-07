@@ -22,14 +22,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLParserIdioms_h
-#define HTMLParserIdioms_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_PARSER_IDIOMS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_PARSER_IDIOMS_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/QualifiedName.h"
-#include "platform/Decimal.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/platform/decimal.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace WTF {
 class TextEncoding;
@@ -141,4 +141,4 @@ inline static String AttemptStaticStringCreation(const String str) {
 
 }  // namespace blink
 
-#endif  // HTMLParserIdioms_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_PARSER_IDIOMS_H_

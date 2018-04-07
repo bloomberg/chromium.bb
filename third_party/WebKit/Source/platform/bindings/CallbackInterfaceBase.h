@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CallbackInterfaceBase_h
-#define CallbackInterfaceBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_CALLBACK_INTERFACE_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_CALLBACK_INTERFACE_BASE_H_
 
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/TraceWrapperBase.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_base.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -144,4 +144,4 @@ Persistent<CallbackInterfaceBase> WrapPersistent(CallbackInterfaceBase*) =
 
 }  // namespace blink
 
-#endif  // CallbackInterfaceBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_CALLBACK_INTERFACE_BASE_H_

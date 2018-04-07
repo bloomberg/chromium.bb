@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/resolver/FontStyleResolver.h"
+#include "third_party/blink/renderer/core/css/resolver/font_style_resolver.h"
 
-#include "core/css/CSSToLengthConversionData.h"
-#include "core/css/resolver/FontBuilder.h"
-#include "core/css/resolver/StyleBuilderConverter.h"
-#include "platform/fonts/Font.h"
-#include "platform/fonts/FontDescription.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/core/css/resolver/font_builder.h"
+#include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
 
 namespace blink {
 

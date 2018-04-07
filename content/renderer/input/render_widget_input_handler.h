@@ -12,7 +12,7 @@
 #include "content/common/input/input_event_ack.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/renderer/input/main_thread_event_queue.h"
-#include "third_party/WebKit/public/platform/WebCoalescedInputEvent.h"
+#include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/blink/did_overscroll_params.h"
 

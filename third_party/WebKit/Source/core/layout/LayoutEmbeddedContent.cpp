@@ -22,21 +22,21 @@
  *
  */
 
-#include "core/layout/LayoutEmbeddedContent.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 
-#include "core/dom/AXObjectCache.h"
-#include "core/exported/WebPluginContainerImpl.h"
-#include "core/frame/EmbeddedContentView.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/RemoteFrameView.h"
-#include "core/html/HTMLFrameElementBase.h"
-#include "core/html/HTMLPlugInElement.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutAnalyzer.h"
-#include "core/layout/LayoutView.h"
-#include "core/page/scrolling/RootScrollerUtil.h"
-#include "core/paint/EmbeddedContentPainter.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
+#include "third_party/blink/renderer/core/frame/embedded_content_view.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/remote_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_frame_element_base.h"
+#include "third_party/blink/renderer/core/html/html_plugin_element.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
+#include "third_party/blink/renderer/core/paint/embedded_content_painter.h"
 
 namespace blink {
 

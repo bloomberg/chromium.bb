@@ -24,17 +24,17 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  */
-#include "core/dom/TreeScopeAdopter.h"
+#include "third_party/blink/renderer/core/dom/tree_scope_adopter.h"
 
-#include "core/dom/Attr.h"
-#include "core/dom/Document.h"
-#include "core/dom/Node.h"
-#include "core/dom/NodeListsNodeData.h"
-#include "core/dom/NodeRareData.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/html/custom/CustomElement.h"
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/core/dom/attr.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
+#include "third_party/blink/renderer/core/dom/node_rare_data.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 

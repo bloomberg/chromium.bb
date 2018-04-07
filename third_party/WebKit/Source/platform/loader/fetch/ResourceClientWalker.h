@@ -22,12 +22,12 @@
     sheets and html pages from the web. It has a memory cache for these objects.
 */
 
-#ifndef ResourceClientWalker_h
-#define ResourceClientWalker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_CLIENT_WALKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_CLIENT_WALKER_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ResourceClient.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

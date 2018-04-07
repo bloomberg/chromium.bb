@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/HTMLEntitySearch.h"
+#include "third_party/blink/renderer/core/html/parser/html_entity_search.h"
 
-#include "core/html/parser/HTMLEntityTable.h"
+#include "third_party/blink/renderer/core/html/parser/html_entity_table.h"
 
 namespace blink {
 

@@ -22,13 +22,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/graphics/filters/FEComponentTransfer.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_component_transfer.h"
 
 #include <algorithm>
 #include "SkTableColorFilter.h"
-#include "platform/graphics/filters/PaintFilterBuilder.h"
-#include "platform/text/TextStream.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

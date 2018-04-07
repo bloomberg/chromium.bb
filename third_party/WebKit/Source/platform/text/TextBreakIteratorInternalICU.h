@@ -18,10 +18,10 @@
  *
  */
 
-#ifndef TextBreakIteratorInternalICU_h
-#define TextBreakIteratorInternalICU_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_BREAK_ITERATOR_INTERNAL_ICU_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_BREAK_ITERATOR_INTERNAL_ICU_H_
 
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 // FIXME: Now that this handles locales for ICU, not just for text breaking,
 // this file and the various implementation files should be renamed.

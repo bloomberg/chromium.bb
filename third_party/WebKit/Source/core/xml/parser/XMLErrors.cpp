@@ -26,15 +26,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/parser/XMLErrors.h"
+#include "third_party/blink/renderer/core/xml/parser/xml_errors.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/Text.h"
-#include "core/html_names.h"
-#include "core/svg_names.h"
-#include "core/xml/DocumentXSLT.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/core/xml/document_xslt.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

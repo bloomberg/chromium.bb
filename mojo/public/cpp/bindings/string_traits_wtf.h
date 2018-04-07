@@ -7,7 +7,7 @@
 
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/string_traits.h"
-#include "third_party/WebKit/Source/platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace mojo {
 

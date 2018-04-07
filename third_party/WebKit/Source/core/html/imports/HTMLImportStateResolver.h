@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLImportStateResolver_h
-#define HTMLImportStateResolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_HTML_IMPORT_STATE_RESOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_HTML_IMPORT_STATE_RESOLVER_H_
 
-#include "core/html/imports/HTMLImportState.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_state.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class HTMLImportStateResolver final {
 
 }  // namespace blink
 
-#endif  // HTMLImportStateResolver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_HTML_IMPORT_STATE_RESOLVER_H_

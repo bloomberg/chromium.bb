@@ -28,23 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/crypto/NormalizeAlgorithm.h"
+#include "third_party/blink/renderer/modules/crypto/normalize_algorithm.h"
 
 #include <algorithm>
 #include <memory>
-#include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/V8ArrayBuffer.h"
-#include "bindings/core/v8/V8ArrayBufferView.h"
-#include "bindings/core/v8/array_buffer_or_array_buffer_view.h"
-#include "bindings/modules/v8/V8CryptoKey.h"
-#include "core/typed_arrays/DOMArrayPiece.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "modules/crypto/CryptoUtilities.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/WebCryptoAlgorithmParams.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer_view.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_crypto_key.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/crypto/crypto_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

@@ -5,12 +5,12 @@
 #ifndef NGInlineNode_h
 #define NGInlineNode_h
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/ng/inline/ng_inline_item.h"
-#include "core/layout/ng/inline/ng_inline_node_data.h"
-#include "core/layout/ng/ng_layout_input_node.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

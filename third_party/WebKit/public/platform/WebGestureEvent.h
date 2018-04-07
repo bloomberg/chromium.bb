@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGestureEvent_h
-#define WebGestureEvent_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GESTURE_EVENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GESTURE_EVENT_H_
 
-#include "WebFloatSize.h"
-#include "WebGestureDevice.h"
-#include "WebInputEvent.h"
+#include "third_party/blink/public/platform/web_float_size.h"
+#include "third_party/blink/public/platform/web_gesture_device.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 
 namespace blink {
 
@@ -265,4 +265,4 @@ class WebGestureEvent : public WebInputEvent {
 
 }  // namespace blink
 
-#endif  // WebGestureEvent_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GESTURE_EVENT_H_

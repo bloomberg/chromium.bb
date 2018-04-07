@@ -29,11 +29,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MoveCommands_h
-#define MoveCommands_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_MOVE_COMMANDS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_MOVE_COMMANDS_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

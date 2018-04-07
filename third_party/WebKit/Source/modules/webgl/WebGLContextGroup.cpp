@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webgl/WebGLContextGroup.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_context_group.h"
 
 namespace blink {
 

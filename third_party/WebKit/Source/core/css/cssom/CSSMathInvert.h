@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSMathInvert_h
-#define CSSMathInvert_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_INVERT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_INVERT_H_
 
 #include "base/macros.h"
-#include "core/css/cssom/CSSMathValue.h"
+#include "third_party/blink/renderer/core/css/cssom/css_math_value.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
 
 }  // namespace blink
 
-#endif  // CSSMathInvert_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_INVERT_H_

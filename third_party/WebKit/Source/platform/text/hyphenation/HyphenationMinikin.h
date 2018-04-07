@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HyphenationMinikin_h
-#define HyphenationMinikin_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_HYPHENATION_HYPHENATION_MINIKIN_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_HYPHENATION_HYPHENATION_MINIKIN_H_
 
-#include "platform/text/Hyphenation.h"
+#include "third_party/blink/renderer/platform/text/hyphenation.h"
 
 #include "base/files/memory_mapped_file.h"
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace base {
 class File;
@@ -41,4 +41,4 @@ class PLATFORM_EXPORT HyphenationMinikin final : public Hyphenation {
 
 }  // namespace blink
 
-#endif  // HyphenationMinikin_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_HYPHENATION_HYPHENATION_MINIKIN_H_

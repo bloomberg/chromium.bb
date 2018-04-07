@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebLanguageDetectionDetails_h
-#define WebLanguageDetectionDetails_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LANGUAGE_DETECTION_DETAILS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LANGUAGE_DETECTION_DETAILS_H_
 
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 namespace blink {
 
@@ -24,4 +24,4 @@ struct WebLanguageDetectionDetails {
 
 }  // namespace blink
 
-#endif  // WebLanguageDetectionDetails_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LANGUAGE_DETECTION_DETAILS_H_

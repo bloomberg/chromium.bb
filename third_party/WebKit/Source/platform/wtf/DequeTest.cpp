@@ -23,12 +23,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/Deque.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
 
 #include <memory>
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/WTFTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_test_helper.h"
 
 namespace WTF {
 

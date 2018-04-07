@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/main_thread/main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler.h"
 
 #include <memory>
 #include <utility>
@@ -18,16 +18,16 @@
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
-#include "platform/scheduler/base/real_time_domain.h"
-#include "platform/scheduler/child/features.h"
-#include "platform/scheduler/common/throttling/budget_pool.h"
-#include "platform/scheduler/main_thread/frame_scheduler_impl.h"
-#include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
-#include "platform/scheduler/test/task_queue_manager_for_test.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/common/page/launching_process_state.h"
+#include "third_party/blink/public/common/page/launching_process_state.h"
+#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/child/features.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 namespace scheduler {

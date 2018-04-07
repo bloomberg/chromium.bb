@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_PAYMENT_HANDLER_SUPPORT_H_
 
 #include "base/callback.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 
 class GURL;
 

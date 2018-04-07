@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScriptWrappableVisitor_h
-#define ScriptWrappableVisitor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCRIPT_WRAPPABLE_VISITOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCRIPT_WRAPPABLE_VISITOR_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/bindings/TraceWrapperBase.h"
-#include "platform/heap/HeapPage.h"
-#include "platform/heap/ThreadingTraits.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_base.h"
+#include "third_party/blink/renderer/platform/heap/heap_page.h"
+#include "third_party/blink/renderer/platform/heap/threading_traits.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -150,4 +150,4 @@ class PLATFORM_EXPORT ScriptWrappableVisitor {
 
 }  // namespace blink
 
-#endif  // ScriptWrappableVisitor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCRIPT_WRAPPABLE_VISITOR_H_

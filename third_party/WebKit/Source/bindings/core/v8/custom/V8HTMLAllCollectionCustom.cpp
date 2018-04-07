@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8HTMLAllCollection.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_html_all_collection.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 
 namespace blink {
 

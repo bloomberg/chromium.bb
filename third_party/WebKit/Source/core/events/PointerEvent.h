@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PointerEvent_h
-#define PointerEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_POINTER_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_POINTER_EVENT_H_
 
-#include "core/events/MouseEvent.h"
-#include "core/events/PointerEventInit.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/events/pointer_event_init.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ DEFINE_EVENT_TYPE_CASTS(PointerEvent);
 
 }  // namespace blink
 
-#endif  // PointerEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_POINTER_EVENT_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8ScriptValueSerializerForModules_h
-#define V8ScriptValueSerializerForModules_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_SERIALIZATION_V8_SCRIPT_VALUE_SERIALIZER_FOR_MODULES_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_SERIALIZATION_V8_SCRIPT_VALUE_SERIALIZER_FOR_MODULES_H_
 
-#include "bindings/core/v8/serialization/V8ScriptValueSerializer.h"
-#include "modules/ModulesExport.h"
-#include "public/platform/WebCryptoAlgorithm.h"
+#include "third_party/blink/public/platform/web_crypto_algorithm.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/v8_script_value_serializer.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -32,4 +32,4 @@ class MODULES_EXPORT V8ScriptValueSerializerForModules final
 
 }  // namespace blink
 
-#endif  // V8ScriptValueSerializerForModules_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_SERIALIZATION_V8_SCRIPT_VALUE_SERIALIZER_FOR_MODULES_H_

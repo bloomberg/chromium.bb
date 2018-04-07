@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSInterpolationEnvironment_h
-#define CSSInterpolationEnvironment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_INTERPOLATION_ENVIRONMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_INTERPOLATION_ENVIRONMENT_H_
 
-#include "core/animation/InterpolationEnvironment.h"
-#include "core/css/resolver/StyleResolverState.h"
+#include "third_party/blink/renderer/core/animation/interpolation_environment.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 
 namespace blink {
 
@@ -64,4 +64,4 @@ DEFINE_TYPE_CASTS(CSSInterpolationEnvironment,
 
 }  // namespace blink
 
-#endif  // CSSInterpolationEnvironment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_INTERPOLATION_ENVIRONMENT_H_

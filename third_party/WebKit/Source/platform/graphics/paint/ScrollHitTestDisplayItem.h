@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScrollHitTestDisplayItem_h
-#define ScrollHitTestDisplayItem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCROLL_HIT_TEST_DISPLAY_ITEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCROLL_HIT_TEST_DISPLAY_ITEM_H_
 
 #include "base/memory/ref_counted.h"
-#include "platform/PlatformExport.h"
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/graphics/paint/TransformPaintPropertyNode.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class PLATFORM_EXPORT ScrollHitTestDisplayItem final : public DisplayItem {
 
 }  // namespace blink
 
-#endif  // ScrollHitTestDisplayItem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCROLL_HIT_TEST_DISPLAY_ITEM_H_

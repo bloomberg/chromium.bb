@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DragState_h
-#define DragState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_DRAG_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_DRAG_STATE_H_
 
 #include "base/macros.h"
-#include "core/page/DragActions.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/page/drag_actions.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -56,4 +56,4 @@ class DragState final : public GarbageCollected<DragState> {
 
 }  // namespace blink
 
-#endif  // DragState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_DRAG_STATE_H_

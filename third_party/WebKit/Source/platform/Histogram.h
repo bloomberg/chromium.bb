@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Histogram_h
-#define Histogram_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HISTOGRAM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HISTOGRAM_H_
 
 #include <stdint.h>
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/tick_clock.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace base {
 class HistogramBase;
@@ -101,4 +101,4 @@ class PLATFORM_EXPORT ScopedUsHistogramTimer {
 
 }  // namespace blink
 
-#endif  // Histogram_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HISTOGRAM_H_

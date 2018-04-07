@@ -15,8 +15,8 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/push_messaging.mojom.h"
 #include "content/public/renderer/worker_thread.h"
-#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushError.h"
-#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushProvider.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_provider.h"
 
 class GURL;
 

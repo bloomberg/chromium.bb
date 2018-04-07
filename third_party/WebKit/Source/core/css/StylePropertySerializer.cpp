@@ -21,20 +21,20 @@
  * Boston, MA 02110-1301, USA.
 */
 
-#include "core/css/StylePropertySerializer.h"
+#include "third_party/blink/renderer/core/css/style_property_serializer.h"
 
 #include <bitset>
-#include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSMarkup.h"
-#include "core/css/CSSPendingSubstitutionValue.h"
-#include "core/css/CSSValuePool.h"
-#include "core/css/properties/css_property.h"
-#include "core/css_value_keywords.h"
-#include "core/style_property_shorthand.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_markup.h"
+#include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
+#include "third_party/blink/renderer/core/css/css_value_pool.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/style_property_shorthand.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

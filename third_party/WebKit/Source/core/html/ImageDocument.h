@@ -22,13 +22,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ImageDocument_h
-#define ImageDocument_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMAGE_DOCUMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMAGE_DOCUMENT_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/html/HTMLDocument.h"
-#include "core/html/HTMLImageElement.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
 
 namespace blink {
 
@@ -102,4 +102,4 @@ DEFINE_DOCUMENT_TYPE_CASTS(ImageDocument);
 
 }  // namespace blink
 
-#endif  // ImageDocument_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMAGE_DOCUMENT_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FrameResourceCoordinator_h
-#define FrameResourceCoordinator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_FRAME_RESOURCE_COORDINATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_FRAME_RESOURCE_COORDINATOR_H_
 
-#include "platform/instrumentation/resource_coordinator/BlinkResourceCoordinatorBase.h"
 #include "services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/blink_resource_coordinator_base.h"
 
 namespace service_manager {
 class InterfaceProvider;
@@ -33,4 +33,4 @@ class PLATFORM_EXPORT FrameResourceCoordinator final
 
 }  // namespace blink
 
-#endif  // FrameResourceCoordinator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_RESOURCE_COORDINATOR_FRAME_RESOURCE_COORDINATOR_H_

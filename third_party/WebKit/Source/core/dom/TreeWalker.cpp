@@ -22,13 +22,13 @@
  *
  */
 
-#include "core/dom/TreeWalker.h"
+#include "third_party/blink/renderer/core/dom/tree_walker.h"
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ContainerNode.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/dom/NodeTraversalStrategy.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_traversal_strategy.h"
 
 namespace blink {
 

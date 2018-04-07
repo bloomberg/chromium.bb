@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/InteractiveDetector.h"
+#include "third_party/blink/renderer/core/loader/interactive_detector.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/loader/DocumentLoader.h"
-#include "platform/Histogram.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

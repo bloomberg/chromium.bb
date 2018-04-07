@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Grid_h
-#define Grid_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_H_
 
 #include "base/macros.h"
-#include "core/layout/OrderIterator.h"
-#include "core/style/GridArea.h"
-#include "core/style/GridPositionsResolver.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/LinkedHashSet.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/layout/order_iterator.h"
+#include "third_party/blink/renderer/core/style/grid_area.h"
+#include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -134,4 +134,4 @@ class GridIterator final {
 
 }  // namespace blink
 
-#endif  // Grid_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentTestHelper.h"
+#include "third_party/blink/renderer/modules/payments/payment_test_helper.h"
 
-#include "core/dom/Document.h"
-#include "modules/payments/PaymentCurrencyAmount.h"
-#include "modules/payments/PaymentMethodData.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/heap/HeapAllocator.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/modules/payments/payment_currency_amount.h"
+#include "third_party/blink/renderer/modules/payments/payment_method_data.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
 namespace {

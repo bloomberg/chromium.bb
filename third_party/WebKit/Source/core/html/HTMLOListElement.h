@@ -20,10 +20,10 @@
  *
  */
 
-#ifndef HTMLOListElement_h
-#define HTMLOListElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_OLIST_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_OLIST_ELEMENT_H_
 
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class HTMLOListElement final : public HTMLElement {
 
 }  // namespace blink
 
-#endif  // HTMLOListElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_OLIST_ELEMENT_H_

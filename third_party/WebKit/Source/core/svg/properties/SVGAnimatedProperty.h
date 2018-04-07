@@ -28,14 +28,14 @@ G*     * Redistributions in binary form must reproduce the above
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedProperty_h
-#define SVGAnimatedProperty_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_PROPERTIES_SVG_ANIMATED_PROPERTY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_PROPERTIES_SVG_ANIMATED_PROPERTY_H_
 
 #include "base/macros.h"
-#include "core/svg/SVGParsingError.h"
-#include "core/svg/properties/SVGPropertyInfo.h"
-#include "core/svg/properties/SVGPropertyTearOff.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property_info.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property_tear_off.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -342,4 +342,4 @@ class SVGAnimatedProperty<Property, void, void>
 
 }  // namespace blink
 
-#endif  // SVGAnimatedProperty_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_PROPERTIES_SVG_ANIMATED_PROPERTY_H_

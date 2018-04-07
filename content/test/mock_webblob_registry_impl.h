@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebBlobRegistry.h"
+#include "third_party/blink/public/platform/web_blob_registry.h"
 
 namespace content {
 

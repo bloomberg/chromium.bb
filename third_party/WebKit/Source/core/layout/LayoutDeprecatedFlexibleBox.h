@@ -20,10 +20,10 @@
  *
  */
 
-#ifndef LayoutDeprecatedFlexibleBox_h
-#define LayoutDeprecatedFlexibleBox_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_DEPRECATED_FLEXIBLE_BOX_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_DEPRECATED_FLEXIBLE_BOX_H_
 
-#include "core/layout/LayoutBlock.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutDeprecatedFlexibleBox,
 
 }  // namespace blink
 
-#endif  // LayoutDeprecatedFlexibleBox_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_DEPRECATED_FLEXIBLE_BOX_H_

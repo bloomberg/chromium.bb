@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebInputElement_h
-#define WebInputElement_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_INPUT_ELEMENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_INPUT_ELEMENT_H_
 
-#include "WebFormControlElement.h"
+#include "third_party/blink/public/web/web_form_control_element.h"
 
 namespace blink {
 

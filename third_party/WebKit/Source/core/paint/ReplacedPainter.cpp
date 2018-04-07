@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ReplacedPainter.h"
+#include "third_party/blink/renderer/core/paint/replaced_painter.h"
 
-#include "core/layout/LayoutReplaced.h"
-#include "core/layout/api/SelectionState.h"
-#include "core/layout/svg/LayoutSVGRoot.h"
-#include "core/paint/AdjustPaintOffsetScope.h"
-#include "core/paint/BoxPainter.h"
-#include "core/paint/ObjectPainter.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/RoundedInnerRectClipper.h"
-#include "core/paint/SelectionPaintingUtils.h"
-#include "core/paint/compositing/CompositedLayerMapping.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/layout/api/selection_state.h"
+#include "third_party/blink/renderer/core/layout/layout_replaced.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
+#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/object_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/rounded_inner_rect_clipper.h"
+#include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

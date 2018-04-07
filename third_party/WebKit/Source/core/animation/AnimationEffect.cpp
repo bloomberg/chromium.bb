@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/AnimationEffect.h"
+#include "third_party/blink/renderer/core/animation/animation_effect.h"
 
-#include "core/animation/Animation.h"
-#include "core/animation/AnimationInputHelpers.h"
-#include "core/animation/ComputedEffectTiming.h"
-#include "core/animation/EffectTiming.h"
-#include "core/animation/OptionalEffectTiming.h"
-#include "core/animation/TimingCalculations.h"
-#include "core/animation/TimingInput.h"
+#include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
+#include "third_party/blink/renderer/core/animation/computed_effect_timing.h"
+#include "third_party/blink/renderer/core/animation/effect_timing.h"
+#include "third_party/blink/renderer/core/animation/optional_effect_timing.h"
+#include "third_party/blink/renderer/core/animation/timing_calculations.h"
+#include "third_party/blink/renderer/core/animation/timing_input.h"
 
 namespace blink {
 

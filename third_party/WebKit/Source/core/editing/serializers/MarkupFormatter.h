@@ -24,14 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MarkupFormatter_h
-#define MarkupFormatter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_MARKUP_FORMATTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_MARKUP_FORMATTER_H_
 
 #include "base/macros.h"
-#include "core/editing/EditingStrategy.h"
-#include "core/editing/serializers/Serialization.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/editing/editing_strategy.h"
+#include "third_party/blink/renderer/core/editing/serializers/serialization.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

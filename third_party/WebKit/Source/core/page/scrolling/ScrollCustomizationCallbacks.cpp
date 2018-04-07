@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/scrolling/ScrollCustomizationCallbacks.h"
+#include "third_party/blink/renderer/core/page/scrolling/scroll_customization_callbacks.h"
 
-#include "core/page/scrolling/ScrollStateCallback.h"
+#include "third_party/blink/renderer/core/page/scrolling/scroll_state_callback.h"
 
 namespace blink {
 

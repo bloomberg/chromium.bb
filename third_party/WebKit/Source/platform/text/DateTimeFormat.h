@@ -23,14 +23,14 @@
  * DAMAGE.
  */
 
-#ifndef DateTimeFormat_h
-#define DateTimeFormat_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_DATE_TIME_FORMAT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_DATE_TIME_FORMAT_H_
 
 #include "base/macros.h"
-#include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -118,4 +118,4 @@ class PLATFORM_EXPORT DateTimeFormat {
 
 }  // namespace blink
 
-#endif  // DateTimeFormat_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_DATE_TIME_FORMAT_H_

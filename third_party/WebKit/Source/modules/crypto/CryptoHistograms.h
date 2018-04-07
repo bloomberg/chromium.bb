@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CryptoHistograms_h
-#define CryptoHistograms_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_CRYPTO_HISTOGRAMS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_CRYPTO_HISTOGRAMS_H_
 
-#include "public/platform/WebCrypto.h"
+#include "third_party/blink/public/platform/web_crypto.h"
 
 // -------------------------------------------------------------
 // Overview

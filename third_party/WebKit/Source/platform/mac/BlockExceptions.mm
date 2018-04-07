@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import "platform/mac/BlockExceptions.h"
+#import "third_party/blink/renderer/platform/mac/block_exceptions.h"
 
-#import "platform/wtf/Assertions.h"
+#import "third_party/blink/renderer/platform/wtf/assertions.h"
 
 void ReportBlockedObjCException(NSException* exception) {
 #if DCHECK_IS_ON()

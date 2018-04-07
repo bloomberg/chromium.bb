@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <iterator>
 
-#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission.mojom.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/platform/modules/permissions/permission.mojom.h"
 
 namespace content {
 

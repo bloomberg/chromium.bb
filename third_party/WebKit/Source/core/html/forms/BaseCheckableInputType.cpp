@@ -29,14 +29,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/BaseCheckableInputType.h"
+#include "third_party/blink/renderer/core/html/forms/base_checkable_input_type.h"
 
-#include "core/events/KeyboardEvent.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/forms/FormController.h"
-#include "core/html/forms/FormData.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/forms/form_controller.h"
+#include "third_party/blink/renderer/core/html/forms/form_data.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

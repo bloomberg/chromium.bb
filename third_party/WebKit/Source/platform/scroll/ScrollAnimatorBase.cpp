@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/scroll/ScrollAnimatorBase.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
 
-#include "platform/scroll/ScrollableArea.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

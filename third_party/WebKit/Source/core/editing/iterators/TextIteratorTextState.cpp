@@ -25,13 +25,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/iterators/TextIteratorTextState.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator_text_state.h"
 
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/iterators/BackwardsTextBuffer.h"
-#include "core/html/HTMLElement.h"
-#include "core/layout/LayoutObject.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/iterators/backwards_text_buffer.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

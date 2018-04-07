@@ -18,18 +18,18 @@
  *  MA 02110-1301 USA
  */
 
-#include "modules/plugins/DOMPluginArray.h"
+#include "third_party/blink/renderer/modules/plugins/dom_plugin_array.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Navigator.h"
-#include "core/page/Page.h"
-#include "modules/plugins/DOMMimeTypeArray.h"
-#include "modules/plugins/NavigatorPlugins.h"
-#include "platform/plugins/PluginData.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/modules/plugins/dom_mime_type_array.h"
+#include "third_party/blink/renderer/modules/plugins/navigator_plugins.h"
+#include "third_party/blink/renderer/platform/plugins/plugin_data.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

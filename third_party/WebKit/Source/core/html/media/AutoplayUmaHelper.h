@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AutoplayUmaHelper_h
-#define AutoplayUmaHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_AUTOPLAY_UMA_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_AUTOPLAY_UMA_HELPER_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/events/EventListener.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebMediaPlayerClient.h"
+#include "third_party/blink/public/platform/web_media_player_client.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 #include <set>
 
@@ -162,4 +162,4 @@ class CORE_EXPORT AutoplayUmaHelper : public EventListener,
 
 }  // namespace blink
 
-#endif  // AutoplayUmaHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_AUTOPLAY_UMA_HELPER_H_

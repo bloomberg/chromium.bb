@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NormalizeAlgorithm_h
-#define NormalizeAlgorithm_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_NORMALIZE_ALGORITHM_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_NORMALIZE_ALGORITHM_H_
 
-#include "bindings/modules/v8/dictionary_or_string.h"
-#include "modules/ModulesExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/WebCrypto.h"
-#include "public/platform/WebCryptoAlgorithm.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_crypto.h"
+#include "third_party/blink/public/platform/web_crypto_algorithm.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/bindings/modules/v8/dictionary_or_string.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

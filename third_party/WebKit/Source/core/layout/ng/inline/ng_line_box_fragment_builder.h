@@ -5,12 +5,12 @@
 #ifndef NGLineBoxFragmentBuilder_h
 #define NGLineBoxFragmentBuilder_h
 
-#include "core/layout/ng/geometry/ng_logical_offset.h"
-#include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/inline/ng_line_height_metrics.h"
-#include "core/layout/ng/ng_container_fragment_builder.h"
-#include "core/layout/ng/ng_positioned_float.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

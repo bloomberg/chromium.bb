@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationUtilities_h
-#define AnimationUtilities_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_ANIMATION_UTILITIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_ANIMATION_UTILITIES_H_
 
-#include "platform/LayoutUnit.h"
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/IntPoint.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
 
 #include <type_traits>
@@ -88,4 +88,4 @@ inline double AccuracyForDuration(double duration) {
 
 }  // namespace blink
 
-#endif  // AnimationUtilities_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_ANIMATION_UTILITIES_H_

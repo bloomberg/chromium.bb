@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/PositionIterator.h"
+#include "third_party/blink/renderer/core/editing/position_iterator.h"
 
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/Position.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/position.h"
 
 namespace blink {
 

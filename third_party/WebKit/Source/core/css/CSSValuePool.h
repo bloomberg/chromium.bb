@@ -23,25 +23,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSValuePool_h
-#define CSSValuePool_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_POOL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_POOL_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/css/CSSColorValue.h"
-#include "core/css/CSSCustomIdentValue.h"
-#include "core/css/CSSFontFamilyValue.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSInheritedValue.h"
-#include "core/css/CSSInitialValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSUnsetValue.h"
-#include "core/css/CSSValueList.h"
-#include "core/css_property_names.h"
-#include "core/css_value_keywords.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
+#include "third_party/blink/renderer/core/css/css_font_family_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_inherited_value.h"
+#include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_unset_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
 

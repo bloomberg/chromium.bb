@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/list/ng_list_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/list/ng_list_layout_algorithm.h"
 
-#include "core/layout/LayoutListMarker.h"
-#include "core/layout/ng/inline/ng_inline_box_state.h"
-#include "core/layout/ng/inline/ng_inline_item_result.h"
-#include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "core/layout/ng/list/layout_ng_list_marker.h"
-#include "core/layout/ng/ng_box_fragment.h"
-#include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 
 namespace blink {
 

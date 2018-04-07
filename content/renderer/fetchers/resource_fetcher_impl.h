@@ -15,7 +15,7 @@
 #include "content/public/renderer/resource_fetcher.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 
 class GURL;
 

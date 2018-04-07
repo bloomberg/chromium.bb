@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGRectTearOff_h
-#define SVGRectTearOff_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_RECT_TEAR_OFF_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_RECT_TEAR_OFF_H_
 
-#include "core/svg/SVGRect.h"
-#include "core/svg/properties/SVGPropertyTearOff.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property_tear_off.h"
+#include "third_party/blink/renderer/core/svg/svg_rect.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class SVGRectTearOff : public SVGPropertyTearOff<SVGRect> {
 
 }  // namespace blink
 
-#endif  // SVGRectTearOff_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_RECT_TEAR_OFF_H_

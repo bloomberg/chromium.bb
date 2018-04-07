@@ -24,12 +24,12 @@
  *
  */
 
-#include "core/dom/events/TreeScopeEventContext.h"
+#include "third_party/blink/renderer/core/dom/events/tree_scope_event_context.h"
 
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/StaticNodeList.h"
-#include "core/dom/events/EventPath.h"
-#include "core/events/TouchEventContext.h"
+#include "third_party/blink/renderer/core/dom/events/event_path.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/core/events/touch_event_context.h"
 
 namespace blink {
 

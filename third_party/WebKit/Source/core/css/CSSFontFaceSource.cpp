@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSFontFaceSource.h"
+#include "third_party/blink/renderer/core/css/css_font_face_source.h"
 
-#include "core/css/CSSFontFace.h"
-#include "platform/fonts/FontCacheKey.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontFaceCreationParams.h"
-#include "platform/fonts/SimpleFontData.h"
+#include "third_party/blink/renderer/core/css/css_font_face.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache_key.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_face_creation_params.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 
 namespace {
 // An excessive amount of SimpleFontData objects is generated from

@@ -24,16 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/FontFaceCache.h"
+#include "third_party/blink/renderer/core/css/font_face_cache.h"
 
-#include "core/css/CSSSegmentedFontFace.h"
-#include "core/css/CSSValueList.h"
-#include "core/loader/resource/FontResource.h"
-#include "platform/font_family_names.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontSelectionAlgorithm.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/css/css_segmented_font_face.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/loader/resource/font_resource.h"
+#include "third_party/blink/renderer/platform/font_family_names.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_selection_algorithm.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

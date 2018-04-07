@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/android/contextualsearch/unhandled_tap_web_contents_observer.h"
-#include "third_party/WebKit/public/platform/unhandled_tap_notifier.mojom.h"
+#include "third_party/blink/public/platform/unhandled_tap_notifier.mojom.h"
 
 namespace contextual_search {
 

@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AsyncMethodRunner_h
-#define AsyncMethodRunner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ASYNC_METHOD_RUNNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ASYNC_METHOD_RUNNER_H_
 
-#include "platform/Timer.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 

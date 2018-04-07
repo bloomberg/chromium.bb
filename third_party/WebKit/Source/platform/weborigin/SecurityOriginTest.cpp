@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/weborigin/SecurityOrigin.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 #include <stdint.h>
 
-#include "platform/blob/BlobURL.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityPolicy.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/blob/blob_url.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 

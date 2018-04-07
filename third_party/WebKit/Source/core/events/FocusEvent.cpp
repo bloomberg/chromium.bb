@@ -23,10 +23,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/events/FocusEvent.h"
+#include "third_party/blink/renderer/core/events/focus_event.h"
 
-#include "core/dom/events/Event.h"
-#include "core/dom/events/EventDispatcher.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef OffscreenCanvasFrameDispatcher_h
-#define OffscreenCanvasFrameDispatcher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_FRAME_DISPATCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_FRAME_DISPATCHER_H_
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "platform/PlatformExport.h"
-#include "platform/geometry/IntRect.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcher {
 
 }  // namespace blink
 
-#endif  // OffscreenCanvasFrameDispatcher_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_FRAME_DISPATCHER_H_

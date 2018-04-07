@@ -19,15 +19,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGMarkerElement_h
-#define SVGMarkerElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_MARKER_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_MARKER_ELEMENT_H_
 
-#include "core/svg/SVGAnimatedAngle.h"
-#include "core/svg/SVGAnimatedEnumeration.h"
-#include "core/svg/SVGAnimatedLength.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGFitToViewBox.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_angle.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_enumeration.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_fit_to_view_box.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -100,4 +100,4 @@ class SVGMarkerElement final : public SVGElement, public SVGFitToViewBox {
 
 }  // namespace blink
 
-#endif  // SVGMarkerElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_MARKER_ELEMENT_H_

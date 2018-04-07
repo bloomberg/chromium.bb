@@ -20,7 +20,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/LiveNodeList.h"
+#include "third_party/blink/renderer/core/dom/live_node_list.h"
 
 namespace blink {
 

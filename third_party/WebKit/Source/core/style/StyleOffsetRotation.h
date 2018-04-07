@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StyleOffsetRotation_h
-#define StyleOffsetRotation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_OFFSET_ROTATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_OFFSET_ROTATION_H_
 
-#include "core/style/ComputedStyleConstants.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
 
 namespace blink {
 
@@ -26,4 +26,4 @@ struct StyleOffsetRotation {
 
 }  // namespace blink
 
-#endif  // StyleOffsetRotation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_OFFSET_ROTATION_H_

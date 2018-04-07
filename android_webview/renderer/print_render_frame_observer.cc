@@ -7,7 +7,7 @@
 #include "components/printing/common/print_messages.h"
 #include "components/printing/renderer/print_render_frame_helper.h"
 #include "content/public/renderer/render_frame.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace android_webview {
 

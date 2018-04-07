@@ -17,13 +17,13 @@
  *  Boston, MA 02110-1301, USA.
  */
 
-#ifndef MediaQueryMatcher_h
-#define MediaQueryMatcher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_QUERY_MATCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_QUERY_MATCHER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ class CORE_EXPORT MediaQueryMatcher final
 
 }  // namespace blink
 
-#endif  // MediaQueryMatcher_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_QUERY_MATCHER_H_

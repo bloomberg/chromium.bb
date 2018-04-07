@@ -3,17 +3,17 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-#include "core/testing/sim/SimRequest.h"
-#include "core/testing/sim/SimTest.h"
-#include "platform/scheduler/public/page_scheduler.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "public/web/WebLocalFrame.h"
-#include "public/web/WebScriptExecutionCallback.h"
-#include "public/web/WebScriptSource.h"
-#include "public/web/WebView.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_script_execution_callback.h"
+#include "third_party/blink/public/web/web_script_source.h"
+#include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 namespace virtual_time_test {

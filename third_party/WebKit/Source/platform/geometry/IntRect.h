@@ -23,15 +23,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IntRect_h
-#define IntRect_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_RECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_RECT_H_
 
 #include <iosfwd>
 #include "build/build_config.h"
-#include "platform/geometry/IntPoint.h"
-#include "platform/geometry/IntRectOutsets.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect_outsets.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGRect CGRect;
@@ -229,4 +229,4 @@ PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const IntRect&);
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::IntRect);
 
-#endif  // IntRect_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_RECT_H_

@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGListPropertyTearOffHelper_h
-#define SVGListPropertyTearOffHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_PROPERTIES_SVG_LIST_PROPERTY_TEAR_OFF_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_PROPERTIES_SVG_LIST_PROPERTY_TEAR_OFF_HELPER_H_
 
-#include "core/svg/properties/SVGPropertyTearOff.h"
-#include "platform/wtf/TypeTraits.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property_tear_off.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 namespace blink {
 
@@ -221,4 +221,4 @@ class SVGListPropertyTearOffHelper : public SVGPropertyTearOff<ListProperty> {
 
 }  // namespace blink
 
-#endif  // SVGListPropertyTearOffHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_PROPERTIES_SVG_LIST_PROPERTY_TEAR_OFF_HELPER_H_

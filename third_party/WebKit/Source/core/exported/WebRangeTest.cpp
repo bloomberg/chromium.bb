@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebRange.h"
+#include "third_party/blink/public/web/web_range.h"
 
-#include "core/editing/EphemeralRange.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 
 namespace blink {
 

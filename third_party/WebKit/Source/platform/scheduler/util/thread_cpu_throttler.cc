@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/util/thread_cpu_throttler.h"
+#include "third_party/blink/renderer/platform/scheduler/util/thread_cpu_throttler.h"
 
 #include "base/atomicops.h"
 #include "base/macros.h"

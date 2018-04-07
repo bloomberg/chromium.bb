@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/OverflowModel.h"
+#include "third_party/blink/renderer/core/layout/overflow_model.h"
 
-#include "platform/geometry/LayoutRect.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 namespace blink {
 namespace {

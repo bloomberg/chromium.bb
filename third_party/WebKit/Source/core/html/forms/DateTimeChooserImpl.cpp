@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/DateTimeChooserImpl.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_chooser_impl.h"
 
-#include "core/frame/LocalFrameView.h"
-#include "core/html/forms/DateTimeChooserClient.h"
-#include "core/input_type_names.h"
-#include "core/layout/LayoutTheme.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/PagePopup.h"
-#include "platform/DateComponents.h"
-#include "platform/Language.h"
-#include "platform/text/PlatformLocale.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page_popup.h"
+#include "third_party/blink/renderer/platform/date_components.h"
+#include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 

@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ColorBlend_h
-#define ColorBlend_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_BLEND_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_BLEND_H_
 
-#include "platform/animation/AnimationUtilities.h"
-#include "platform/graphics/Color.h"
+#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ inline Color Blend(const Color& from,
 
 }  // namespace blink
 
-#endif  // ColorBlend_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_BLEND_H_

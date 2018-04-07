@@ -23,22 +23,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/BreakBlockquoteCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/break_blockquote_command.h"
 
-#include "core/dom/NodeTraversal.h"
-#include "core/dom/Text.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleSelection.h"
-#include "core/editing/VisibleUnits.h"
-#include "core/editing/commands/DeleteSelectionOptions.h"
-#include "core/editing/commands/EditingCommandsUtilities.h"
-#include "core/html/HTMLBRElement.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLQuoteElement.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutListItem.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/commands/delete_selection_options.h"
+#include "third_party/blink/renderer/core/editing/commands/editing_commands_utilities.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/html/html_br_element.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_quote_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_list_item.h"
 
 namespace blink {
 

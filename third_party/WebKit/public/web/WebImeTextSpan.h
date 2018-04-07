@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebImeTextSpan_h
-#define WebImeTextSpan_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_IME_TEXT_SPAN_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_IME_TEXT_SPAN_H_
 
 #include <string>
 #include <vector>
-#include "public/platform/WebColor.h"
 #include "services/ui/public/interfaces/ime/ime.mojom-shared.h"
+#include "third_party/blink/public/platform/web_color.h"
 
 namespace blink {
 

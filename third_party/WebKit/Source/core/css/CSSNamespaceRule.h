@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSNamespaceRule_h
-#define CSSNamespaceRule_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_NAMESPACE_RULE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_NAMESPACE_RULE_H_
 
-#include "core/css/CSSRule.h"
+#include "third_party/blink/renderer/core/css/css_rule.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ DEFINE_CSS_RULE_TYPE_CASTS(CSSNamespaceRule, kNamespaceRule);
 
 }  // namespace blink
 
-#endif  // CSSNamespaceRule_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_NAMESPACE_RULE_H_

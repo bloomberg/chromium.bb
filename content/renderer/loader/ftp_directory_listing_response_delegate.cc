@@ -22,8 +22,8 @@
 #include "net/base/net_errors.h"
 #include "net/ftp/ftp_directory_listing_parser.h"
 #include "net/net_buildflags.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_loader_client.h"
 
 using blink::WebURLLoader;
 using blink::WebURLLoaderClient;

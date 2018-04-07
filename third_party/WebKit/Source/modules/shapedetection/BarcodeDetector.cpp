@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/shapedetection/BarcodeDetector.h"
+#include "third_party/blink/renderer/modules/shapedetection/barcode_detector.h"
 
-#include "core/dom/DOMException.h"
-#include "core/frame/LocalFrame.h"
-#include "core/geometry/DOMRect.h"
-#include "core/html/canvas/CanvasImageSource.h"
-#include "core/workers/WorkerThread.h"
-#include "modules/imagecapture/Point2D.h"
-#include "modules/shapedetection/DetectedBarcode.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/modules/imagecapture/point_2d.h"
+#include "third_party/blink/renderer/modules/shapedetection/detected_barcode.h"
 
 namespace blink {
 

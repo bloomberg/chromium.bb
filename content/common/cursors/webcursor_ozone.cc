@@ -4,7 +4,7 @@
 
 #include "content/common/cursors/webcursor.h"
 
-#include "third_party/WebKit/public/platform/WebCursorInfo.h"
+#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_util.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"

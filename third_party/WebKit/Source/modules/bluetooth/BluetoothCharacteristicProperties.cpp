@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/bluetooth/BluetoothCharacteristicProperties.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_characteristic_properties.h"
 
 namespace blink {
 

@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/SubtreeLayoutScope.h"
+#include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
 
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FloatShapeHelpers_h
-#define FloatShapeHelpers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_FLOAT_SHAPE_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_FLOAT_SHAPE_HELPERS_H_
 
 // Code that is useful for both FloatPolygon and FloatQuad.
 
-#include "platform/geometry/FloatSize.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
 
 namespace blink {
 inline float Determinant(const FloatSize& a, const FloatSize& b) {
@@ -15,4 +15,4 @@ inline float Determinant(const FloatSize& a, const FloatSize& b) {
 }
 }  // namespace blink
 
-#endif  // FloatShapeHelpers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_FLOAT_SHAPE_HELPERS_H_

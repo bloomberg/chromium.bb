@@ -18,11 +18,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LayoutSVGResourceLinearGradient_h
-#define LayoutSVGResourceLinearGradient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_LINEAR_GRADIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_LINEAR_GRADIENT_H_
 
-#include "core/layout/svg/LayoutSVGResourceGradient.h"
-#include "core/svg/LinearGradientAttributes.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_gradient.h"
+#include "third_party/blink/renderer/core/svg/linear_gradient_attributes.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class LayoutSVGResourceLinearGradient final : public LayoutSVGResourceGradient {
 
 }  // namespace blink
 
-#endif  // LayoutSVGResourceLinearGradient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_LINEAR_GRADIENT_H_

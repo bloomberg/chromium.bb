@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorAnimation_h
-#define CompositorAnimation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_ANIMATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_ANIMATION_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
@@ -11,9 +11,9 @@
 #include "cc/animation/scroll_timeline.h"
 #include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/animation/worklet_animation.h"
-#include "platform/PlatformExport.h"
-#include "platform/graphics/CompositorElementId.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace cc {
 class AnimationCurve;
@@ -79,4 +79,4 @@ class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
 
 }  // namespace blink
 
-#endif  // CompositorAnimation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_ANIMATION_H_

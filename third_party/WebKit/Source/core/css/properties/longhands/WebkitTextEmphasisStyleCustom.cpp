@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/webkit_text_emphasis_style.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/webkit_text_emphasis_style.h"
 
-#include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/CSSStringValue.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
+#include "third_party/blink/renderer/core/css/css_string_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 namespace CSSLonghand {

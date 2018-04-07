@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Cursor_h
-#define Cursor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_CURSOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CURSOR_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/PlatformExport.h"
-#include "platform/geometry/IntPoint.h"
-#include "platform/graphics/Image.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CopyCursor
@@ -172,4 +172,4 @@ PLATFORM_EXPORT const Cursor& GrabbingCursor();
 
 }  // namespace blink
 
-#endif  // Cursor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_CURSOR_H_

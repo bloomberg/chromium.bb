@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/opentype/OpenTypeCapsSupport.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/open_type_caps_support.h"
 
 namespace blink {
 

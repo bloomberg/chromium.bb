@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DOMWindow_h
-#define DOMWindow_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_H_
 
-#include "bindings/core/v8/serialization/Transferables.h"
-#include "core/CoreExport.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/frame/DOMWindowBase64.h"
-#include "core/frame/Frame.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/transferables.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/frame/dom_window_base64.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -140,4 +140,4 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // DOMWindow_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_H_

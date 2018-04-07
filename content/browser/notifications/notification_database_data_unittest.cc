@@ -15,7 +15,7 @@
 #include "content/public/browser/notification_database_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
 
 namespace content {
 

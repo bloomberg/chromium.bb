@@ -41,9 +41,9 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#include "platform/scroll/ScrollAlignment.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
 
-#include "platform/geometry/LayoutRect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 namespace blink {
 

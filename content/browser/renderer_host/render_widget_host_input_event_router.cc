@@ -23,7 +23,7 @@
 #include "content/common/frame_messages.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/geometry/dip_util.h"
 

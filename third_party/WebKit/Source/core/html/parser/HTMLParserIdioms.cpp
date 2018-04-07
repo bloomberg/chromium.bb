@@ -22,15 +22,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/HTMLParserIdioms.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 
-#include "core/html_names.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/ParsingUtilities.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/StringToNumber.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 #include <limits>
 

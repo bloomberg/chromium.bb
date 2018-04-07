@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BlameContext_h
-#define BlameContext_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_BLAME_CONTEXT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_BLAME_CONTEXT_H_
 
 #include "base/trace_event/blame_context.h"
 
@@ -13,4 +13,4 @@ using BlameContext = base::trace_event::BlameContext;
 
 }  // namespace blink
 
-#endif  // BlameContext_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_BLAME_CONTEXT_H_

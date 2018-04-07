@@ -7,7 +7,7 @@ if (is_clang) {
   import("//build/config/clang/clang.gni")
 }
 
-visibility = [ "//third_party/WebKit/*" ]
+visibility = [ "//third_party/blink/*" ]
 
 # arguments --------------------------------------------------------------------
 
@@ -58,18 +58,18 @@ config("blink_pch") {
       # This is a string rather than a file GN knows about. It has to match
       # exactly what's in the /FI flag below, and what might appear in the
       # source code in quotes for an #include directive.
-      precompiled_header = rebase_path("build/win/Precompile.h", root_build_dir)
+      precompiled_header = rebase_path("build/win/precompile.h", root_build_dir)
 
       # This is a file that GN will compile with the above header. It will be
       # implicitly added to the sources (potentially multiple times, with one
       # variant for each language used in the target).
       precompiled_source =
-          "//third_party/WebKit/Source/build/win/Precompile.cpp"
+          "//third_party/blink/renderer/build/win/precompile.cc"
 
       # Force include the header.
       cflags = [ "/FI$precompiled_header" ]
     } else if (is_mac) {
-      precompiled_source = "//third_party/WebKit/Source/build/mac/Prefix.h"
+      precompiled_source = "//third_party/blink/renderer/build/mac/prefix.h"
     }
   }
 }
@@ -80,8 +80,8 @@ config("config") {
   include_dirs = [
     ".",
     "..",
-    "$root_gen_dir/blink",
-    "$root_gen_dir/third_party/WebKit",
+    "$root_gen_dir/third_party/blink/renderer",
+    "$root_gen_dir/third_party/blink",
   ]
 
   cflags = []

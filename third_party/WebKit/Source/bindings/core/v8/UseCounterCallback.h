@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UseCounterCallback_h
-#define UseCounterCallback_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_USE_COUNTER_CALLBACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_USE_COUNTER_CALLBACK_H_
 
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -16,4 +16,4 @@ CORE_EXPORT void UseCounterCallback(v8::Isolate*,
 
 }  // namespace blink
 
-#endif  // UseCounterCallback_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_USE_COUNTER_CALLBACK_H_

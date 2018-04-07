@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Handle_h
-#define Handle_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HANDLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HANDLE_H_
 
-#include "platform/heap/Heap.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/heap/HeapTraits.h"
-#include "platform/heap/Member.h"
-#include "platform/heap/Persistent.h"
-#include "platform/heap/ThreadState.h"
-#include "platform/heap/TraceTraits.h"
-#include "platform/heap/Visitor.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/heap_traits.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/heap/trace_traits.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 #if defined(LEAK_SANITIZER)
-#include "platform/wtf/LeakAnnotations.h"
+#include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
 #endif
 
 namespace blink {

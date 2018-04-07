@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InspectorAnimationAgent_h
-#define InspectorAnimationAgent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORANIMATIONAGENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORANIMATIONAGENT_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/animation/Animation.h"
-#include "core/css/CSSKeyframesRule.h"
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/protocol/Animation.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Animation.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8-inspector.h"
 
 namespace blink {
@@ -95,4 +95,4 @@ class CORE_EXPORT InspectorAnimationAgent final
 
 }  // namespace blink
 
-#endif  // InspectorAnimationAgent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORANIMATIONAGENT_H_

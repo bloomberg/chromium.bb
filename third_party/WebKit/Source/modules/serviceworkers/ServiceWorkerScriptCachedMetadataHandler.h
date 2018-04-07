@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ServiceWorkerScriptCachedMetadataHandler_h
-#define ServiceWorkerScriptCachedMetadataHandler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_SCRIPT_CACHED_METADATA_HANDLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_SCRIPT_CACHED_METADATA_HANDLER_H_
 
 #include <stdint.h>
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/CachedMetadataHandler.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class ServiceWorkerScriptCachedMetadataHandler
 
 }  // namespace blink
 
-#endif  // ServiceWorkerScriptCachedMetadataHandler_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_SCRIPT_CACHED_METADATA_HANDLER_H_

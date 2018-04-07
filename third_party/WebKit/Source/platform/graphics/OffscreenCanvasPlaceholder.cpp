@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/OffscreenCanvasPlaceholder.h"
+#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_placeholder.h"
 
 #include "base/single_thread_task_runner.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_frame_dispatcher.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace {
 

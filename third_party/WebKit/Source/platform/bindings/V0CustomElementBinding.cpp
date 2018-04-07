@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/bindings/V0CustomElementBinding.h"
+#include "third_party/blink/renderer/platform/bindings/v0_custom_element_binding.h"
 
 #include <memory>
 

@@ -5,7 +5,7 @@
 #include "components/payments/content/service_worker_payment_app_factory.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
+#include "third_party/blink/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace payments {
 

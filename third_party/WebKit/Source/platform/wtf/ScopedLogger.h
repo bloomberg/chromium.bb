@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WTF_ScopedLogger_h
-#define WTF_ScopedLogger_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SCOPED_LOGGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SCOPED_LOGGER_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "platform/wtf/WTFExport.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -68,4 +68,4 @@ class WTF_EXPORT ScopedLogger {
 
 }  // namespace WTF
 
-#endif  // WTF_ScopedLogger_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SCOPED_LOGGER_H_

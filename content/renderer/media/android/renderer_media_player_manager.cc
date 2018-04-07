@@ -9,7 +9,7 @@
 #include "content/public/common/renderer_preferences.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/base/media_switches.h"
-#include "third_party/WebKit/public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
+#include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_availability.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace content {

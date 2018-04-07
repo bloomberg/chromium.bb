@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/ParentFrameTaskRunners.h"
+#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 

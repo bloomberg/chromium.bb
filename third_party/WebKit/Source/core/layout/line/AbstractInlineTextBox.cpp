@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/line/AbstractInlineTextBox.h"
+#include "third_party/blink/renderer/core/layout/line/abstract_inline_text_box.h"
 
-#include "core/dom/AXObjectCache.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/iterators/TextIterator.h"
-#include "platform/text/TextBreakIterator.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 
 namespace blink {
 

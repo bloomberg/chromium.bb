@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/BitmapGlyphsBlacklist.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/fonts/bitmap_glyphs_blacklist.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #include "SkTypeface.h"
 

@@ -24,25 +24,25 @@
  *
  */
 
-#ifndef WorkerGlobalScope_h
-#define WorkerGlobalScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_GLOBAL_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_GLOBAL_SCOPE_H_
 
 #include <memory>
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/V8CacheOptions.h"
-#include "core/CoreExport.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/DOMTimerCoordinator.h"
-#include "core/frame/DOMWindowBase64.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/workers/WorkerOrWorkletGlobalScope.h"
-#include "core/workers/WorkerOrWorkletModuleFetchCoordinatorProxy.h"
-#include "core/workers/WorkerSettings.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/CachedMetadataHandler.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
+#include "third_party/blink/renderer/core/frame/dom_window_base64.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_settings.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 
 namespace service_manager {
 class InterfaceProvider;
@@ -227,4 +227,4 @@ DEFINE_TYPE_CASTS(WorkerGlobalScope,
 
 }  // namespace blink
 
-#endif  // WorkerGlobalScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_GLOBAL_SCOPE_H_

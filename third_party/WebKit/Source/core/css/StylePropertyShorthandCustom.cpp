@@ -19,7 +19,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/style_property_shorthand.h"
+#include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
 

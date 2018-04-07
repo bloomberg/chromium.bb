@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

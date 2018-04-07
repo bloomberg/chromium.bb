@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ClipPathClipper_h
-#define ClipPathClipper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_CLIP_PATH_CLIPPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_CLIP_PATH_CLIPPER_H_
 
-#include "core/CoreExport.h"
-#include "core/paint/FloatClipRecorder.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/paint/ClipPathRecorder.h"
-#include "platform/graphics/paint/CompositingRecorder.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/paint/float_clip_recorder.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_path_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/compositing_recorder.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class CORE_EXPORT ClipPathClipper {
 
 }  // namespace blink
 
-#endif  // ClipPathClipper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_CLIP_PATH_CLIPPER_H_

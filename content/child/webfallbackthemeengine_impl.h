@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebFallbackThemeEngine.h"
+#include "third_party/blink/public/platform/web_fallback_theme_engine.h"
 
 namespace content {
 

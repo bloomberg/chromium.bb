@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V0CustomElementSyncMicrotaskQueue_h
-#define V0CustomElementSyncMicrotaskQueue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_SYNC_MICROTASK_QUEUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_SYNC_MICROTASK_QUEUE_H_
 
-#include "core/html/custom/V0CustomElementMicrotaskQueueBase.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_queue_base.h"
 
 namespace blink {
 
@@ -25,4 +25,4 @@ class V0CustomElementSyncMicrotaskQueue
 
 }  // namespace blink
 
-#endif  // V0CustomElementSyncMicrotaskQueue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_SYNC_MICROTASK_QUEUE_H_

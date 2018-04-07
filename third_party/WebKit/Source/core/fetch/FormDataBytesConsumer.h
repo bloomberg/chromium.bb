@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FormDataBytesConsumer_h
-#define FormDataBytesConsumer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FORM_DATA_BYTES_CONSUMER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FORM_DATA_BYTES_CONSUMER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/fetch/BytesConsumer.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -76,4 +76,4 @@ class FormDataBytesConsumer final : public BytesConsumer {
 
 }  // namespace blink
 
-#endif  // FormDataBytesConsumer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FORM_DATA_BYTES_CONSUMER_H_

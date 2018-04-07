@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "third_party/WebKit/public/web/WebDateTimeChooserParams.h"
+#include "third_party/blink/public/web/web_date_time_chooser_params.h"
 
 namespace blink {
 class WebDateTimeChooserCompletion;

@@ -22,9 +22,9 @@
  *
  */
 
-#include "core/style/NinePieceImage.h"
+#include "third_party/blink/renderer/core/style/nine_piece_image.h"
 
-#include "core/style/DataEquivalency.h"
+#include "third_party/blink/renderer/core/style/data_equivalency.h"
 
 namespace blink {
 

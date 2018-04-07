@@ -30,18 +30,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/FontCustomPlatformData.h"
+#include "third_party/blink/renderer/platform/fonts/font_custom_platform_data.h"
 
 #include "build/build_config.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/SharedBuffer.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/FontPlatformData.h"
-#include "platform/fonts/WebFontDecoder.h"
-#include "platform/fonts/WebFontTypefaceFactory.h"
-#include "platform/fonts/opentype/FontFormatCheck.h"
-#include "platform/fonts/opentype/FontSettings.h"
-#include "platform/graphics/paint/PaintTypeface.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/font_format_check.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/font_settings.h"
+#include "third_party/blink/renderer/platform/fonts/web_font_decoder.h"
+#include "third_party/blink/renderer/platform/fonts/web_font_typeface_factory.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_typeface.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 

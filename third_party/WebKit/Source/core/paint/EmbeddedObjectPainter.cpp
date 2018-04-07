@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/EmbeddedObjectPainter.h"
+#include "third_party/blink/renderer/core/paint/embedded_object_painter.h"
 
-#include "core/frame/Settings.h"
-#include "core/layout/LayoutEmbeddedObject.h"
-#include "core/layout/LayoutTheme.h"
-#include "core/paint/PaintInfo.h"
-#include "platform/fonts/Font.h"
-#include "platform/fonts/FontSelector.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/Path.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/text/TextRun.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/font_selector.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
 
 namespace blink {
 

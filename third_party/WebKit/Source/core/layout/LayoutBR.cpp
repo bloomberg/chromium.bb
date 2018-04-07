@@ -19,12 +19,12 @@
  *
  */
 
-#include "core/layout/LayoutBR.h"
+#include "third_party/blink/renderer/core/layout/layout_br.h"
 
-#include "core/css/StyleEngine.h"
-#include "core/dom/Document.h"
-#include "core/editing/PositionWithAffinity.h"
-#include "core/layout/LayoutObjectInlines.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 
 namespace blink {
 

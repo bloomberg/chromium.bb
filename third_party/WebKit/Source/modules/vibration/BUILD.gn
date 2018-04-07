@@ -2,14 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("vibration") {
   sources = [
-    "NavigatorVibration.cpp",
-    "NavigatorVibration.h",
-    "VibrationController.cpp",
-    "VibrationController.h",
+    "navigator_vibration.cc",
+    "navigator_vibration.h",
+    "vibration_controller.cc",
+    "vibration_controller.h",
   ]
 
   deps = [

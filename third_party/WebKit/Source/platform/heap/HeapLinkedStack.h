@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HeapLinkedStack_h
-#define HeapLinkedStack_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_LINKED_STACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_LINKED_STACK_H_
 
-#include "platform/heap/Heap.h"
-#include "platform/heap/Visitor.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -119,4 +119,4 @@ class TraceEagerlyTrait<HeapLinkedStack<T>> {
 
 }  // namespace blink
 
-#endif  // HeapLinkedStack_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_LINKED_STACK_H_

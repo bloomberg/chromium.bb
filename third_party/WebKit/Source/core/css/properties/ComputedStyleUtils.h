@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ComputedStyleUtils_h
-#define ComputedStyleUtils_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_COMPUTED_STYLE_UTILS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_COMPUTED_STYLE_UTILS_H_
 
-#include "core/css/CSSBorderImageSliceValue.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/CSSValuePair.h"
-#include "core/css/ZoomAdjustedPixelValue.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/css/css_border_image_slice_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
+#include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -199,4 +199,4 @@ class ComputedStyleUtils {
 
 }  // namespace blink
 
-#endif  // ComputedStyleUtils_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_COMPUTED_STYLE_UTILS_H_

@@ -24,11 +24,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XPathEvaluator_h
-#define XPathEvaluator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_EVALUATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_EVALUATOR_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class XPathEvaluator final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // XPathEvaluator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_EVALUATOR_H_

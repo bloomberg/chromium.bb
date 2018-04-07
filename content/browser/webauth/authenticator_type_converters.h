@@ -7,7 +7,7 @@
 
 #include "device/fido/u2f_transport_protocol.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "third_party/WebKit/public/platform/modules/webauth/authenticator.mojom.h"
+#include "third_party/blink/public/platform/modules/webauth/authenticator.mojom.h"
 
 namespace mojo {
 

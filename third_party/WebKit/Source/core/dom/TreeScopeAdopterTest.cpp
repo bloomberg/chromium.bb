@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/TreeScopeAdopter.h"
+#include "third_party/blink/renderer/core/dom/tree_scope_adopter.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/ShadowRoot.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 
 namespace blink {
 

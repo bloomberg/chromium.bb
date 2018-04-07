@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/ReverbInputBuffer.h"
+#include "third_party/blink/renderer/platform/audio/reverb_input_buffer.h"
 
 namespace blink {
 

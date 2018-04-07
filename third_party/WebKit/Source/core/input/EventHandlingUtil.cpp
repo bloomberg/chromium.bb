@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/input/EventHandlingUtil.h"
+#include "third_party/blink/renderer/core/input/event_handling_util.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutEmbeddedContent.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/PaintLayer.h"
-#include "platform/scroll/ScrollableArea.h"
-#include "public/platform/WebMouseEvent.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 
 namespace blink {
 namespace EventHandlingUtil {

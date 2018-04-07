@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_ASCIICType_h
-#define WTF_ASCIICType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ASCII_CTYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ASCII_CTYPE_H_
 
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 // The behavior of many of the functions in the <ctype.h> header is dependent
 // on the current locale. But in the WebKit project, all uses of those functions

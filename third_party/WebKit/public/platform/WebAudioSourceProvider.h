@@ -22,10 +22,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebAudioSourceProvider_h
-#define WebAudioSourceProvider_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_AUDIO_SOURCE_PROVIDER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_AUDIO_SOURCE_PROVIDER_H_
 
-#include "WebVector.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class WebAudioSourceProvider {
 
 }  // namespace blink
 
-#endif  // WebAudioSourceProvider_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_AUDIO_SOURCE_PROVIDER_H_

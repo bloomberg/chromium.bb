@@ -23,15 +23,15 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/WaveShaperNode.h"
+#include "third_party/blink/renderer/modules/webaudio/wave_shaper_node.h"
 
 #include <memory>
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "modules/webaudio/WaveShaperOptions.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/wave_shaper_options.h"
 
 namespace blink {
 

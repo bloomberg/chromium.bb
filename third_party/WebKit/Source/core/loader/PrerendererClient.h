@@ -29,13 +29,13 @@
  *
  */
 
-#ifndef PrerendererClient_h
-#define PrerendererClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PRERENDERER_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PRERENDERER_CLIENT_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/page/Page.h"
-#include "platform/Supplementable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ CORE_EXPORT void ProvidePrerendererClientTo(Page&, PrerendererClient*);
 
 }  // namespace blink
 
-#endif  // PrerendererClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PRERENDERER_CLIENT_H_

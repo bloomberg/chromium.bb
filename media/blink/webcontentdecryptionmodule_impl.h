@@ -14,8 +14,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "media/blink/media_blink_export.h"
-#include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
-#include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
+#include "third_party/blink/public/platform/web_content_decryption_module.h"
+#include "third_party/blink/public/platform/web_content_decryption_module_result.h"
 
 namespace blink {
 class WebSecurityOrigin;

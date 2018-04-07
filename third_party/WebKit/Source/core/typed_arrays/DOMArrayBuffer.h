@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DOMArrayBuffer_h
-#define DOMArrayBuffer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_ARRAY_BUFFER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_ARRAY_BUFFER_H_
 
-#include "core/CoreExport.h"
-#include "core/typed_arrays/DOMArrayBufferBase.h"
-#include "platform/wtf/typed_arrays/ArrayBuffer.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_base.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
 
 }  // namespace blink
 
-#endif  // DOMArrayBuffer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_ARRAY_BUFFER_H_

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextResourceDecoderForFuzzing_h
-#define TextResourceDecoderForFuzzing_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_TEXT_RESOURCE_DECODER_FOR_FUZZING_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_TEXT_RESOURCE_DECODER_FOR_FUZZING_H_
 
-#include "core/html/parser/TextResourceDecoder.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 
-#include "platform/testing/FuzzedDataProvider.h"
-#include "platform/wtf/text/TextEncoding.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/testing/fuzzed_data_provider.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class TextResourceDecoderForFuzzing : public TextResourceDecoder {
 
 }  // namespace blink
 
-#endif  // TextResourceDecoderForFuzzing_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_TEXT_RESOURCE_DECODER_FOR_FUZZING_H_

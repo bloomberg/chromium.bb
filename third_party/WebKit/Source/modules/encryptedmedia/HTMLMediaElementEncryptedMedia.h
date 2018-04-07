@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HTMLMediaElementEncryptedMedia_h
-#define HTMLMediaElementEncryptedMedia_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_HTML_MEDIA_ELEMENT_ENCRYPTED_MEDIA_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_HTML_MEDIA_ELEMENT_ENCRYPTED_MEDIA_H_
 
-#include "core/dom/events/EventTarget.h"
-#include "core/event_type_names.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "modules/ModulesExport.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebEncryptedMediaTypes.h"
-#include "public/platform/WebMediaPlayerEncryptedMediaClient.h"
+#include "third_party/blink/public/platform/web_encrypted_media_types.h"
+#include "third_party/blink/public/platform/web_media_player_encrypted_media_client.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 

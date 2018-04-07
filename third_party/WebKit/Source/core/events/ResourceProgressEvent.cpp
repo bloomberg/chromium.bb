@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/events/ResourceProgressEvent.h"
+#include "third_party/blink/renderer/core/events/resource_progress_event.h"
 
 namespace blink {
 

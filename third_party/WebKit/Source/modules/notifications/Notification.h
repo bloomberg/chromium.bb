@@ -28,26 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Notification_h
-#define Notification_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_H_
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/DOMTimeStamp.h"
-#include "modules/EventTargetModules.h"
-#include "modules/ModulesExport.h"
-#include "modules/vibration/NavigatorVibration.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/AsyncMethodRunner.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "public/platform/modules/notifications/WebNotificationData.h"
-#include "public/platform/modules/notifications/notification_service.mojom-blink.h"
-#include "public/platform/modules/permissions/permission.mojom-blink.h"
-#include "public/platform/modules/permissions/permission_status.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/notifications/notification_service.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
+#include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/dom_time_stamp.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/vibration/navigator_vibration.h"
+#include "third_party/blink/renderer/platform/async_method_runner.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -194,4 +194,4 @@ class MODULES_EXPORT Notification final
 
 }  // namespace blink
 
-#endif  // Notification_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_H_

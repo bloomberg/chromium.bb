@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef ReferrerPolicy_h
-#define ReferrerPolicy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_REFERRER_POLICY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_REFERRER_POLICY_H_
 
 namespace blink {
 
@@ -59,4 +59,4 @@ enum ReferrerPolicy : uint8_t {
 
 }  // namespace blink
 
-#endif  // ReferrerPolicy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_REFERRER_POLICY_H_

@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TreeNode_h
-#define TreeNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TREE_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TREE_NODE_H_
 
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace WTF {
 

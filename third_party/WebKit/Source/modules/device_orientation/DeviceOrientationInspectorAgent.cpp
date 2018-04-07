@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/device_orientation/DeviceOrientationInspectorAgent.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_inspector_agent.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/inspector/InspectedFrames.h"
-#include "modules/device_orientation/DeviceOrientationController.h"
-#include "modules/device_orientation/DeviceOrientationData.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/inspected_frames.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_controller.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

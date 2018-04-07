@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/clipboard/Pasteboard.h"
+#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
 
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
-#include "core/clipboard/DataObject.h"
-#include "platform/clipboard/ClipboardUtilities.h"
-#include "platform/graphics/Image.h"
-#include "platform/weborigin/KURL.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebDragData.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_drag_data.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/renderer/core/clipboard/data_object.h"
+#include "third_party/blink/renderer/platform/clipboard/clipboard_utilities.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

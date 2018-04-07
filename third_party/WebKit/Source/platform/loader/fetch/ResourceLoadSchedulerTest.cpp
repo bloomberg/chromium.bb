@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/loader/fetch/ResourceLoadScheduler.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
 
-#include "platform/loader/testing/MockFetchContext.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/testing/TestingPlatformSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 namespace blink {
 namespace {

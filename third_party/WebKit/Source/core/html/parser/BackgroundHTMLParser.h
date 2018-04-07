@@ -23,24 +23,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BackgroundHTMLParser_h
-#define BackgroundHTMLParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_BACKGROUND_HTML_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_BACKGROUND_HTML_PARSER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "core/dom/DocumentEncodingData.h"
-#include "core/html/parser/BackgroundHTMLInputStream.h"
-#include "core/html/parser/CompactHTMLToken.h"
-#include "core/html/parser/HTMLParserOptions.h"
-#include "core/html/parser/HTMLPreloadScanner.h"
-#include "core/html/parser/HTMLSourceTracker.h"
-#include "core/html/parser/HTMLTreeBuilderSimulator.h"
-#include "core/html/parser/TextResourceDecoder.h"
-#include "core/html/parser/TokenizedChunkQueue.h"
-#include "core/html/parser/XSSAuditorDelegate.h"
+#include "third_party/blink/renderer/core/dom/document_encoding_data.h"
+#include "third_party/blink/renderer/core/html/parser/background_html_input_stream.h"
+#include "third_party/blink/renderer/core/html/parser/compact_html_token.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
+#include "third_party/blink/renderer/core/html/parser/html_preload_scanner.h"
+#include "third_party/blink/renderer/core/html/parser/html_source_tracker.h"
+#include "third_party/blink/renderer/core/html/parser/html_tree_builder_simulator.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/core/html/parser/tokenized_chunk_queue.h"
+#include "third_party/blink/renderer/core/html/parser/xss_auditor_delegate.h"
 
 namespace blink {
 

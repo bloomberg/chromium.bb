@@ -23,9 +23,9 @@
  * DAMAGE.
  */
 
-#include "platform/audio/AudioResamplerKernel.h"
-#include "platform/audio/AudioResampler.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/audio/audio_resampler.h"
+#include "third_party/blink/renderer/platform/audio/audio_resampler_kernel.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

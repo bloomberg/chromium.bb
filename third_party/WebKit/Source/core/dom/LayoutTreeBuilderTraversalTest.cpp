@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/LayoutTreeBuilderTraversal.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/Node.h"
-#include "core/dom/PseudoElement.h"
-#include "core/layout/LayoutText.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 namespace blink {
 

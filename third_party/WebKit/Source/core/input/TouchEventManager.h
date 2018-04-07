@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TouchEventManager_h
-#define TouchEventManager_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_TOUCH_EVENT_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_TOUCH_EVENT_MANAGER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/events/PointerEventFactory.h"
-#include "core/input/EventHandlingUtil.h"
-#include "platform/graphics/TouchAction.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebCoalescedInputEvent.h"
-#include "public/platform/WebInputEventResult.h"
-#include "public/platform/WebPointerEvent.h"
-#include "public/platform/WebTouchEvent.h"
+#include "third_party/blink/public/platform/web_coalesced_input_event.h"
+#include "third_party/blink/public/platform/web_input_event_result.h"
+#include "third_party/blink/public/platform/web_pointer_event.h"
+#include "third_party/blink/public/platform/web_touch_event.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/events/pointer_event_factory.h"
+#include "third_party/blink/renderer/core/input/event_handling_util.h"
+#include "third_party/blink/renderer/platform/graphics/touch_action.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -116,4 +116,4 @@ class CORE_EXPORT TouchEventManager
 
 }  // namespace blink
 
-#endif  // TouchEventManager_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_TOUCH_EVENT_MANAGER_H_

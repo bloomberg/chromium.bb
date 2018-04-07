@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/list/layout_ng_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 
-#include "core/layout/LayoutImageResourceStyleImage.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutListMarker.h"
-#include "core/layout/ListMarkerText.h"
-#include "core/layout/ng/list/layout_ng_list_marker.h"
-#include "core/layout/ng/list/layout_ng_list_marker_image.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/layout/layout_image_resource_style_image.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
+#include "third_party/blink/renderer/core/layout/list_marker_text.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker_image.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

@@ -9,7 +9,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "third_party/WebKit/public/web/WebPluginParams.h"
+#include "third_party/blink/public/web/web_plugin_params.h"
 #include "url/gurl.h"
 
 class SkBitmap;

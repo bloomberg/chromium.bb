@@ -26,24 +26,24 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/weborigin/SecurityOrigin.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 #include <stdint.h>
 #include <memory>
 
 #include "net/base/url_util.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/KnownPorts.h"
-#include "platform/weborigin/SchemeRegistry.h"
-#include "platform/weborigin/SecurityPolicy.h"
-#include "platform/weborigin/URLSecurityOriginMap.h"
-#include "platform/wtf/HexNumber.h"
-#include "platform/wtf/NotFound.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/StringUTF8Adaptor.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/known_ports.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/url_security_origin_map.h"
+#include "third_party/blink/renderer/platform/wtf/hex_number.h"
+#include "third_party/blink/renderer/platform/wtf/not_found.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "url/url_canon.h"
 #include "url/url_canon_ip.h"
 

@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebImageCache.h"
+#include "third_party/blink/public/web/web_image_cache.h"
 
-#include "platform/graphics/ImageDecodingStore.h"
+#include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
 
 namespace blink {
 

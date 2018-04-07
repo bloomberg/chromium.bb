@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintShader_h
-#define PaintShader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_SHADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_SHADER_H_
 
 #include "cc/paint/paint_shader.h"
 
@@ -11,4 +11,4 @@ namespace blink {
 using cc::PaintShader;
 }
 
-#endif  // PaintShader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_SHADER_H_

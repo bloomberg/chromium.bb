@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ContentSecurityPolicyStructTraits_h
-#define ContentSecurityPolicyStructTraits_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_CONTENT_SECURITY_POLICY_STRUCT_TRAITS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_CONTENT_SECURITY_POLICY_STRUCT_TRAITS_H_
 
 #include "mojo/public/cpp/bindings/enum_traits.h"
-#include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
-#include "third_party/WebKit/public/platform/content_security_policy.mojom-shared.h"
+#include "third_party/blink/public/platform/content_security_policy.mojom-shared.h"
+#include "third_party/blink/public/platform/web_content_security_policy.h"
 
 namespace mojo {
 
@@ -43,4 +43,4 @@ struct EnumTraits<::blink::mojom::ContentSecurityPolicyType,
 
 }  // namespace mojo
 
-#endif  // ContentSecurityPolicyStructTraits_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_CONTENT_SECURITY_POLICY_STRUCT_TRAITS_H_

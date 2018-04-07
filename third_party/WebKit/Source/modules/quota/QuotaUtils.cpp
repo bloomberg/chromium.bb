@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/quota/QuotaUtils.h"
+#include "third_party/blink/renderer/modules/quota/quota_utils.h"
 
-#include "core/execution_context/ExecutionContext.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
 namespace blink {
 

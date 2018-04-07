@@ -24,16 +24,16 @@
  *
  */
 
-#ifndef HTMLSelectElement_h
-#define HTMLSelectElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_SELECT_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_SELECT_ELEMENT_H_
 
 #include "base/gtest_prod_util.h"
-#include "core/CoreExport.h"
-#include "core/html/forms/HTMLFormControlElementWithState.h"
-#include "core/html/forms/HTMLOptionsCollection.h"
-#include "core/html/forms/OptionList.h"
-#include "core/html/forms/TypeAhead.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
+#include "third_party/blink/renderer/core/html/forms/html_options_collection.h"
+#include "third_party/blink/renderer/core/html/forms/option_list.h"
+#include "third_party/blink/renderer/core/html/forms/type_ahead.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -316,4 +316,4 @@ class CORE_EXPORT HTMLSelectElement final
 
 }  // namespace blink
 
-#endif  // HTMLSelectElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_SELECT_ELEMENT_H_

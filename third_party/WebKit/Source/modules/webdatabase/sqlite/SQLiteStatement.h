@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SQLiteStatement_h
-#define SQLiteStatement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQLITE_SQLITE_STATEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQLITE_SQLITE_STATEMENT_H_
 
 #include "base/macros.h"
-#include "modules/webdatabase/sqlite/SQLiteDatabase.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_database.h"
 
 struct sqlite3_stmt;
 
@@ -86,4 +86,4 @@ class SQLiteStatement {
 
 }  // namespace blink
 
-#endif  // SQLiteStatement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQLITE_SQLITE_STATEMENT_H_

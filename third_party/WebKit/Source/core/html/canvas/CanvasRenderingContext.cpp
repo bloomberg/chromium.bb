@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/canvas/CanvasRenderingContext.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 
-#include "core/html/canvas/CanvasContextCreationAttributesCore.h"
-#include "core/html/canvas/CanvasImageSource.h"
-#include "core/origin_trials/origin_trials.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

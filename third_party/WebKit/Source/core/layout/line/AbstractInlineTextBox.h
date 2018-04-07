@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AbstractInlineTextBox_h
-#define AbstractInlineTextBox_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_ABSTRACT_INLINE_TEXT_BOX_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_ABSTRACT_INLINE_TEXT_BOX_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/dom/Range.h"
-#include "core/layout/api/LineLayoutText.h"
-#include "core/layout/line/InlineTextBox.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_text.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -103,4 +103,4 @@ class CORE_EXPORT AbstractInlineTextBox
 
 }  // namespace blink
 
-#endif  // AbstractInlineTextBox_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_ABSTRACT_INLINE_TEXT_BOX_H_

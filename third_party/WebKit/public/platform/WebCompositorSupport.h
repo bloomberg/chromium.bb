@@ -23,14 +23,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebCompositorSupport_h
-#define WebCompositorSupport_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_COMPOSITOR_SUPPORT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_COMPOSITOR_SUPPORT_H_
 
-#include "WebCommon.h"
-#include "WebFloatPoint.h"
-#include "WebLayerTreeView.h"
-#include "WebScrollbar.h"
-#include "WebScrollbarThemePainter.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/public/platform/web_scrollbar.h"
+#include "third_party/blink/public/platform/web_scrollbar_theme_painter.h"
 
 #include <memory>
 
@@ -86,4 +86,4 @@ class WebCompositorSupport {
 };
 }
 
-#endif  // WebCompositorSupport_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_COMPOSITOR_SUPPORT_H_

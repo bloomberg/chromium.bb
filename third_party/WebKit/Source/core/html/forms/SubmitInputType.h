@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SubmitInputType_h
-#define SubmitInputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_SUBMIT_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_SUBMIT_INPUT_TYPE_H_
 
-#include "core/html/forms/BaseButtonInputType.h"
+#include "third_party/blink/renderer/core/html/forms/base_button_input_type.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class SubmitInputType final : public BaseButtonInputType {
 
 }  // namespace blink
 
-#endif  // SubmitInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_SUBMIT_INPUT_TYPE_H_

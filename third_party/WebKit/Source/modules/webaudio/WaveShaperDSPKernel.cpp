@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/WaveShaperDSPKernel.h"
+#include "third_party/blink/renderer/modules/webaudio/wave_shaper_dsp_kernel.h"
 
 #include <algorithm>
 #include <memory>
 
-#include "platform/audio/AudioUtilities.h"
-#include "platform/wtf/Threading.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 

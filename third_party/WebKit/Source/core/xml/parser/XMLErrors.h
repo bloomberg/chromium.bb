@@ -26,12 +26,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XMLErrors_h
-#define XMLErrors_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_PARSER_XML_ERRORS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_PARSER_XML_ERRORS_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/TextPosition.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ class XMLErrors {
 
 }  // namespace blink
 
-#endif  // XMLErrors_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_PARSER_XML_ERRORS_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/WorkerModuleFetchCoordinator.h"
+#include "third_party/blink/renderer/core/workers/worker_module_fetch_coordinator.h"
 
-#include "core/loader/modulescript/DocumentModuleScriptFetcher.h"
-#include "core/loader/modulescript/ModuleScriptFetcher.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
+#include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 namespace blink {
 

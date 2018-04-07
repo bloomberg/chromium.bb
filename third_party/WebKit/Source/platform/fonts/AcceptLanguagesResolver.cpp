@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/AcceptLanguagesResolver.h"
+#include "third_party/blink/renderer/platform/fonts/accept_languages_resolver.h"
 
-#include "platform/LayoutLocale.h"
-#include "platform/fonts/FontGlobalContext.h"
+#include "third_party/blink/renderer/platform/fonts/font_global_context.h"
+#include "third_party/blink/renderer/platform/layout_locale.h"
 
 namespace blink {
 

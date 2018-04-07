@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/StyleChangeReason.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
 
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/StaticConstructors.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/static_constructors.h"
 
 namespace blink {
 

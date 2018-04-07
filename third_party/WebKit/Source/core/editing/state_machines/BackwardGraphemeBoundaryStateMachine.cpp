@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/state_machines/BackwardGraphemeBoundaryStateMachine.h"
+#include "third_party/blink/renderer/core/editing/state_machines/backward_grapheme_boundary_state_machine.h"
 
 #include <ostream>  // NOLINT
-#include "core/editing/state_machines/StateMachineUtil.h"
-#include "core/editing/state_machines/TextSegmentationMachineState.h"
-#include "platform/text/Character.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/core/editing/state_machines/state_machine_util.h"
+#include "third_party/blink/renderer/core/editing/state_machines/text_segmentation_machine_state.h"
+#include "third_party/blink/renderer/platform/text/character.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
 

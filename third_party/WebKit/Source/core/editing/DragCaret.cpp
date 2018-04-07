@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/DragCaret.h"
+#include "third_party/blink/renderer/core/editing/drag_caret.h"
 
-#include "core/editing/CaretDisplayItemClient.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/frame/Settings.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/PaintLayer.h"
+#include "third_party/blink/renderer/core/editing/caret_display_item_client.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
 

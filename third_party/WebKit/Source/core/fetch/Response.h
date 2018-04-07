@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Response_h
-#define Response_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_RESPONSE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_RESPONSE_H_
 
-#include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/CoreExport.h"
-#include "core/fetch/Body.h"
-#include "core/fetch/BodyStreamBuffer.h"
-#include "core/fetch/FetchResponseData.h"
-#include "core/fetch/Headers.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/blob/BlobData.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/fetch/body.h"
+#include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
+#include "third_party/blink/renderer/core/fetch/fetch_response_data.h"
+#include "third_party/blink/renderer/core/fetch/headers.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -114,4 +114,4 @@ class CORE_EXPORT Response final : public Body {
 
 }  // namespace blink
 
-#endif  // Response_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_RESPONSE_H_

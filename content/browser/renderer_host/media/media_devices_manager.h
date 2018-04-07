@@ -22,7 +22,7 @@
 #include "media/audio/audio_device_description.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h"
 
 using blink::mojom::VideoInputDeviceCapabilitiesPtr;
 

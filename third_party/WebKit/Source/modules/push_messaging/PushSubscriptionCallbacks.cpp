@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/push_messaging/PushSubscriptionCallbacks.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription_callbacks.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "modules/push_messaging/PushError.h"
-#include "modules/push_messaging/PushSubscription.h"
-#include "modules/serviceworkers/ServiceWorkerRegistration.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/modules/push_messaging/WebPushSubscription.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_error.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

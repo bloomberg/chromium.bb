@@ -22,7 +22,7 @@
  *
  */
 
-#include "core/layout/line/BreakingContextInlineHeaders.h"
+#include "third_party/blink/renderer/core/layout/line/breaking_context_inline_headers.h"
 
 namespace blink {
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/gpu/SharedContextRateLimiter.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_context_rate_limiter.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "platform/graphics/gpu/Extensions3DUtil.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebGraphicsContext3DProvider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace blink {

@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BMPImageReader_h
-#define BMPImageReader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_BMP_BMP_IMAGE_READER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_BMP_BMP_IMAGE_READER_H_
 
 #include <stdint.h>
-#include "platform/image-decoders/FastSharedBufferReader.h"
-#include "platform/image-decoders/ImageDecoder.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/CPU.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/cpu.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 

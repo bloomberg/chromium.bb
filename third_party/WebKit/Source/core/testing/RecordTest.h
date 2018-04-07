@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RecordTest_h
-#define RecordTest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_RECORD_TEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_RECORD_TEST_H_
 
 #include <utility>
-#include "bindings/core/v8/boolean_or_byte_string_byte_string_record.h"
-#include "bindings/core/v8/float_or_string_element_record.h"
-#include "core/dom/Element.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/boolean_or_byte_string_byte_string_record.h"
+#include "third_party/blink/renderer/bindings/core/v8/float_or_string_element_record.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ class RecordTest final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // RecordTest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_RECORD_TEST_H_

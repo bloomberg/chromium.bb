@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ClipRect_h
-#define ClipRect_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_CLIP_RECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_CLIP_RECT_H_
 
-#include "core/CoreExport.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/paint/FloatClipRect.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -96,4 +96,4 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&, const ClipRect&);
 
 }  // namespace blink
 
-#endif  // ClipRect_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_CLIP_RECT_H_

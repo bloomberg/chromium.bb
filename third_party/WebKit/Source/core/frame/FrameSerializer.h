@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FrameSerializer_h
-#define FrameSerializer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_SERIALIZER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_SERIALIZER_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Attribute.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/KURLHash.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/attribute.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -172,4 +172,4 @@ class CORE_EXPORT FrameSerializer final {
 
 }  // namespace blink
 
-#endif  // FrameSerializer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_SERIALIZER_H_

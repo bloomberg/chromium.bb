@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PictureMatchers_h
-#define PictureMatchers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_PICTURE_MATCHERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_PICTURE_MATCHERS_H_
 
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/Color.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 
 class SkPicture;
 
@@ -37,4 +37,4 @@ testing::Matcher<const SkPicture&> DrawsRectangles(
 
 }  // namespace blink
 
-#endif  // PictureMatchers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_PICTURE_MATCHERS_H_

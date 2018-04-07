@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/media/PictureInPictureInterstitial.h"
+#include "third_party/blink/renderer/core/html/media/picture_in_picture_interstitial.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Document.h"
-#include "core/html/HTMLImageElement.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "platform/text/PlatformLocale.h"
-#include "public/platform/WebLocalizedString.h"
-#include "third_party/WebKit/public/platform/WebLayer.h"
+#include "third_party/blink/public/platform/web_layer.h"
+#include "third_party/blink/public/platform/web_localized_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace {
 

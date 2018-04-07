@@ -22,15 +22,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef WebThread_h
-#define WebThread_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THREAD_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THREAD_H_
 
-#include "WebCommon.h"
-#include "WebThreadType.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_thread_type.h"
 
 #include <stdint.h>
 

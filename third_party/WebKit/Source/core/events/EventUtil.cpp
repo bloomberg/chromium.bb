@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/events/EventUtil.h"
+#include "third_party/blink/renderer/core/events/event_util.h"
 
-#include "core/event_type_names.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
 
 namespace blink {
 

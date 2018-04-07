@@ -5,10 +5,10 @@
 #ifndef NGOutOfFlowPositionedDescendant_h
 #define NGOutOfFlowPositionedDescendant_h
 
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
-#include "core/layout/ng/geometry/ng_static_position.h"
-#include "core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_static_position.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 
 namespace blink {
 

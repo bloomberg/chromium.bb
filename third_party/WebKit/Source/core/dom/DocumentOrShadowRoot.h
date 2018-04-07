@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DocumentOrShadowRoot_h
-#define DocumentOrShadowRoot_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_OR_SHADOW_ROOT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_OR_SHADOW_ROOT_H_
 
-#include "core/dom/Document.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/frame/UseCounter.h"
-#include "core/fullscreen/Fullscreen.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 
 namespace blink {
 
@@ -93,4 +93,4 @@ class DocumentOrShadowRoot {
 
 }  // namespace blink
 
-#endif  // DocumentOrShadowRoot_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_OR_SHADOW_ROOT_H_

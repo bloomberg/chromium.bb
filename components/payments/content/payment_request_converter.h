@@ -6,7 +6,7 @@
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_CONVERTER_H_
 
 #include "components/autofill/core/browser/credit_card.h"
-#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
+#include "third_party/blink/public/platform/modules/payments/payment_request.mojom.h"
 
 // TODO(crbug.com/760945): Write unit tests for these functions.
 

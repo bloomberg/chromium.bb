@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/spellcheck/SpellChecker.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 
-#include "core/editing/Editor.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/markers/DocumentMarkerController.h"
-#include "core/editing/markers/SpellCheckMarker.h"
-#include "core/editing/spellcheck/SpellCheckRequester.h"
-#include "core/editing/spellcheck/SpellCheckTestBase.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/Settings.h"
-#include "core/html/forms/HTMLInputElement.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/markers/spell_check_marker.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_check_requester.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_check_test_base.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 
 namespace blink {
 

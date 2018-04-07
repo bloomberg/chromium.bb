@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/geometry/GeometryAsJSON.h"
+#include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 
-#include "platform/transforms/TransformationMatrix.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
 

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSProtoConverter.h"
+#include "third_party/blink/renderer/core/css/parser/css_proto_converter.h"
 
 #include <unordered_map>
 
 #include "third_party/libprotobuf-mutator/src/src/libfuzzer/libfuzzer_macro.h"
 
-#include "core/css/StyleSheetContents.h"
-#include "core/css/parser/CSSParser.h"
-#include "platform/testing/BlinkFuzzerTestSupport.h"
-#include "platform/wtf/text/WTFString.h"
-#include "third_party/WebKit/Source/core/css/parser/CSS.pb.h"
+#include "third_party/blink/renderer/core/css/parser/css.pb.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 protobuf_mutator::protobuf::LogSilencer log_silencer;
 

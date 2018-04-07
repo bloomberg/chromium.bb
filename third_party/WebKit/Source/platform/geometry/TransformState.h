@@ -23,18 +23,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TransformState_h
-#define TransformState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_TRANSFORM_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_TRANSFORM_STATE_H_
 
 #include <memory>
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatQuad.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/geometry/LayoutSize.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -154,4 +154,4 @@ class PLATFORM_EXPORT TransformState {
 
 }  // namespace blink
 
-#endif  // TransformState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_TRANSFORM_STATE_H_

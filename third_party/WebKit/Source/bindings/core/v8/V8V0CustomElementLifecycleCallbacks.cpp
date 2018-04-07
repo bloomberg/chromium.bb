@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8V0CustomElementLifecycleCallbacks.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_v0_custom_element_lifecycle_callbacks.h"
 
 #include <memory>
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8Element.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "platform/bindings/DOMDataStore.h"
-#include "platform/bindings/V0CustomElementBinding.h"
-#include "platform/bindings/V8PerContextData.h"
-#include "platform/bindings/V8PrivateProperty.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
+#include "third_party/blink/renderer/platform/bindings/v0_custom_element_binding.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
 namespace blink {
 

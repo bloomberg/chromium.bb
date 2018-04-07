@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/push_messaging/PushMessageData.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_message_data.h"
 
 #include <memory>
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/modules/v8/array_buffer_or_array_buffer_view_or_usv_string.h"
-#include "core/fileapi/Blob.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/blob/BlobData.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/modules/v8/array_buffer_or_array_buffer_view_or_usv_string.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "v8/include/v8.h"
 
 namespace blink {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CommonMacrosMSA_h
-#define CommonMacrosMSA_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_CPU_MIPS_COMMON_MACROS_MSA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CPU_MIPS_COMMON_MACROS_MSA_H_
 
 #include <msa.h>
 #include <stdint.h>
@@ -811,4 +811,4 @@ MSA_STORE_FUNC(uint32_t, usw, msa_usw);
     out3 = __msa_fmax_w(__msa_fmin_w(in3, max), min);                \
   }
 
-#endif  // CommonMacrosMSA_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_CPU_MIPS_COMMON_MACROS_MSA_H_

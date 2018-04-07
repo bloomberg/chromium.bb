@@ -20,15 +20,15 @@
  *
  */
 
-#include "core/html/HTMLOListElement.h"
+#include "third_party/blink/renderer/core/html/html_olist_element.h"
 
-#include "core/css_property_names.h"
-#include "core/css_value_keywords.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/ListItemOrdinal.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutListItem.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/list_item_ordinal.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_list_item.h"
 
 namespace blink {
 

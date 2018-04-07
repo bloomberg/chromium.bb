@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockWebPresentationClient_h
-#define MockWebPresentationClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_MOCK_WEB_PRESENTATION_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_MOCK_WEB_PRESENTATION_CLIENT_H_
 
-#include "public/platform/modules/presentation/WebPresentationClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/platform/modules/presentation/web_presentation_client.h"
 
 namespace blink {
 
@@ -17,4 +17,4 @@ class MockWebPresentationClient : public WebPresentationClient {
 
 }  // namespace blink
 
-#endif  // MockWebPresentationClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_MOCK_WEB_PRESENTATION_CLIENT_H_

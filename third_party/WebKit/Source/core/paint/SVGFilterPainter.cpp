@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/SVGFilterPainter.h"
+#include "third_party/blink/renderer/core/paint/svg_filter_painter.h"
 
 #include <utility>
 
-#include "core/layout/svg/LayoutSVGResourceFilter.h"
-#include "core/paint/FilterEffectBuilder.h"
-#include "core/svg/SVGFilterElement.h"
-#include "core/svg/graphics/filters/SVGFilterBuilder.h"
-#include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/PaintFilterBuilder.h"
-#include "platform/graphics/filters/SourceGraphic.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter.h"
+#include "third_party/blink/renderer/core/paint/filter_effect_builder.h"
+#include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_filter_element.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
+#include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
 

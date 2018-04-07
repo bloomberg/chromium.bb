@@ -5,8 +5,8 @@
 #include "headless/lib/renderer/headless_tab_socket_bindings.h"
 
 #include "headless/lib/renderer/headless_render_frame_controller_impl.h"
-#include "third_party/WebKit/public/web/WebKit.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "v8/include/v8-inspector.h"
 
 namespace headless {

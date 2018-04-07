@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/CSSMaskPainter.h"
+#include "third_party/blink/renderer/core/paint/css_mask_painter.h"
 
 #include <gtest/gtest.h>
-#include "core/testing/CoreUnitTestHelper.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
 namespace {

@@ -21,22 +21,22 @@
  *  USA
  */
 
-#include "modules/mediastream/NavigatorMediaStream.h"
+#include "third_party/blink/renderer/modules/mediastream/navigator_media_stream.h"
 
-#include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/modules/v8/v8_navigator_user_media_error_callback.h"
-#include "bindings/modules/v8/v8_navigator_user_media_success_callback.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Navigator.h"
-#include "core/frame/Settings.h"
-#include "core/page/Page.h"
-#include "modules/mediastream/MediaErrorState.h"
-#include "modules/mediastream/MediaStreamConstraints.h"
-#include "modules/mediastream/UserMediaController.h"
-#include "modules/mediastream/UserMediaRequest.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_error_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_success_callback.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 
 namespace blink {
 

@@ -27,17 +27,17 @@
  *
  */
 
-#include "core/dom/ViewportDescription.h"
+#include "third_party/blink/renderer/core/dom/viewport_description.h"
 
 #include "build/build_config.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/Settings.h"
-#include "core/frame/VisualViewport.h"
-#include "core/page/Page.h"
-#include "platform/Histogram.h"
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

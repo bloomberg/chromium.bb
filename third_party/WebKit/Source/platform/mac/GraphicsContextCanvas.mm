@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/mac/GraphicsContextCanvas.h"
+#include "third_party/blink/renderer/platform/mac/graphics_context_canvas.h"
 
 #import <AppKit/AppKit.h>
 #import <CoreGraphics/CoreGraphics.h>
 
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/RetainPtr.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 
 namespace blink {
 

@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/text/UTF8.h"
+#include "third_party/blink/renderer/platform/wtf/text/utf8.h"
 
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/StringHasher.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace WTF {
 namespace Unicode {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebLoadingBehaviorFlag_h
-#define WebLoadingBehaviorFlag_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LOADING_BEHAVIOR_FLAG_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LOADING_BEHAVIOR_FLAG_H_
 
 namespace blink {
 
@@ -39,4 +39,4 @@ enum WebLoadingBehaviorFlag {
 
 }  // namespace blink
 
-#endif  // WebLoadingBehaviorFlag_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LOADING_BEHAVIOR_FLAG_H_

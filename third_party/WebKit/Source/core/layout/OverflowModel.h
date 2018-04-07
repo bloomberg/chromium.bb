@@ -19,11 +19,11 @@
  *
  */
 
-#ifndef OverflowModel_h
-#define OverflowModel_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_OVERFLOW_MODEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_OVERFLOW_MODEL_H_
 
 #include "base/macros.h"
-#include "platform/geometry/LayoutRect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 namespace blink {
 
@@ -192,4 +192,4 @@ class BoxOverflowModel {
 
 }  // namespace blink
 
-#endif  // OverflowModel_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_OVERFLOW_MODEL_H_

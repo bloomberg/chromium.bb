@@ -19,12 +19,12 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "platform/geometry/FloatPoint3D.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 
 #include <math.h>
-#include "platform/text/TextStream.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

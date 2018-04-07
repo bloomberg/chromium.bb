@@ -27,16 +27,16 @@
  * SUCH DAMAGE.
  */
 
-#ifndef ShapeOutsideInfo_h
-#define ShapeOutsideInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_SHAPE_OUTSIDE_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_SHAPE_OUTSIDE_INFO_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/layout/shapes/Shape.h"
-#include "core/style/ShapeValue.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/LayoutSize.h"
+#include "third_party/blink/renderer/core/layout/shapes/shape.h"
+#include "third_party/blink/renderer/core/style/shape_value.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
 
 namespace blink {
 

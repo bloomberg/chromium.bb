@@ -19,17 +19,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/HTMLMapElement.h"
+#include "third_party/blink/renderer/core/html/html_map_element.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/NodeListsNodeData.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLAreaElement.h"
-#include "core/html/HTMLCollection.h"
-#include "core/html/HTMLImageElement.h"
-#include "core/html_names.h"
-#include "core/layout/HitTestResult.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_area_element.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
 
 namespace blink {
 

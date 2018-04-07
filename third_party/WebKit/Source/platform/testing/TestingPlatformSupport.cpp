@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/testing/TestingPlatformSupport.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 #include <memory>
 #include <string>
@@ -40,26 +40,26 @@
 #include "base/test/test_discardable_memory_allocator.h"
 #include "cc/blink/web_compositor_support_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "platform/Language.h"
-#include "platform/font_family_names.h"
-#include "platform/heap/Heap.h"
-#include "platform/instrumentation/resource_coordinator/BlinkResourceCoordinatorBase.h"
-#include "platform/instrumentation/resource_coordinator/RendererResourceCoordinator.h"
-#include "platform/loader/fetch/fetch_initiator_type_names.h"
-#include "platform/network/http_names.h"
-#include "platform/network/mime/MockMimeRegistry.h"
-#include "platform/scheduler/base/real_time_domain.h"
-#include "platform/scheduler/base/task_queue_manager.h"
-#include "platform/scheduler/main_thread/main_thread_scheduler.h"
-#include "platform/wtf/CryptographicallyRandomNumber.h"
-#include "platform/wtf/WTF.h"
-#include "platform/wtf/allocator/Partitions.h"
-#include "public/platform/InterfaceProvider.h"
-#include "public/platform/WebContentLayer.h"
-#include "public/platform/WebExternalTextureLayer.h"
-#include "public/platform/WebImageLayer.h"
-#include "public/platform/WebRuntimeFeatures.h"
-#include "public/platform/WebScrollbarLayer.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/web_content_layer.h"
+#include "third_party/blink/public/platform/web_external_texture_layer.h"
+#include "third_party/blink/public/platform/web_image_layer.h"
+#include "third_party/blink/public/platform/web_runtime_features.h"
+#include "third_party/blink/public/platform/web_scrollbar_layer.h"
+#include "third_party/blink/renderer/platform/font_family_names.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/blink_resource_coordinator_base.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
+#include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/network/mime/mock_mime_registry.h"
+#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/cryptographically_random_number.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 

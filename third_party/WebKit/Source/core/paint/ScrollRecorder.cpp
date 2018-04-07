@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ScrollRecorder.h"
+#include "third_party/blink/renderer/core/paint/scroll_recorder.h"
 
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/graphics/paint/ScrollDisplayItem.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_display_item.h"
 
 namespace blink {
 

@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebTimeRange_h
-#define WebTimeRange_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TIME_RANGE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TIME_RANGE_H_
 
-#include "WebVector.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 

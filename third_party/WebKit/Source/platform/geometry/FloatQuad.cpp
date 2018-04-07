@@ -28,13 +28,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/geometry/FloatQuad.h"
+#include "third_party/blink/renderer/platform/geometry/float_quad.h"
 
 #include <algorithm>
 #include <cmath>
 #include <limits>
-#include "platform/geometry/FloatShapeHelpers.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/geometry/float_shape_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
 namespace blink {

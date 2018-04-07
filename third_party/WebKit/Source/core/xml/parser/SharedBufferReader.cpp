@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/parser/SharedBufferReader.h"
+#include "third_party/blink/renderer/core/xml/parser/shared_buffer_reader.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/SharedBuffer.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 
 #include <algorithm>
 #include <cstring>

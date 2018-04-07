@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ng/ng_text_fragment_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_text_fragment_painter.h"
 
-#include "core/editing/FrameSelection.h"
-#include "core/frame/LocalFrame.h"
-#include "core/layout/ng/inline/ng_physical_text_fragment.h"
-#include "core/layout/ng/ng_physical_box_fragment.h"
-#include "core/layout/ng/ng_text_decoration_offset.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/SelectionPaintingUtils.h"
-#include "core/paint/TextPainterBase.h"
-#include "core/paint/ng/ng_paint_fragment.h"
-#include "core/paint/ng/ng_text_painter.h"
-#include "core/style/AppliedTextDecoration.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/fonts/CharacterRange.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_text_decoration_offset.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_text_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
+#include "third_party/blink/renderer/core/paint/text_painter_base.h"
+#include "third_party/blink/renderer/core/style/applied_text_decoration.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/fonts/character_range.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 
 namespace blink {
 

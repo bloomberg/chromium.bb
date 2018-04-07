@@ -17,7 +17,7 @@
 #include "extensions/renderer/script_context.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
-#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
+#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 
 namespace extensions {
 namespace messaging_util {

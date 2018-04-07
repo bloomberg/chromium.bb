@@ -18,11 +18,11 @@
  *
  */
 
-#ifndef LayoutProgress_h
-#define LayoutProgress_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_PROGRESS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_PROGRESS_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutBlockFlow.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutProgress, IsProgress());
 
 }  // namespace blink
 
-#endif  // LayoutProgress_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_PROGRESS_H_

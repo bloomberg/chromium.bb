@@ -42,25 +42,25 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef PaintLayer_h
-#define PaintLayer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/layout/LayoutBox.h"
-#include "core/paint/ClipRectsCache.h"
-#include "core/paint/PaintLayerClipper.h"
-#include "core/paint/PaintLayerFragment.h"
-#include "core/paint/PaintLayerResourceInfo.h"
-#include "core/paint/PaintLayerScrollableArea.h"
-#include "core/paint/PaintLayerStackingNode.h"
-#include "core/paint/PaintLayerStackingNodeIterator.h"
-#include "core/paint/PaintResult.h"
-#include "platform/graphics/CompositingReasons.h"
-#include "platform/graphics/SquashingDisallowedReasons.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/AutoReset.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/paint/clip_rects_cache.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_clipper.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_fragment.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_resource_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_stacking_node.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
+#include "third_party/blink/renderer/core/paint/paint_result.h"
+#include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
+#include "third_party/blink/renderer/platform/graphics/squashing_disallowed_reasons.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 

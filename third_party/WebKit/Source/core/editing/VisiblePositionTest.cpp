@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/VisiblePosition.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
 
-#include "core/css/CSSStyleDeclaration.h"
-#include "core/editing/VisibleUnits.h"
-#include "core/editing/testing/EditingTestBase.h"
+#include "third_party/blink/renderer/core/css/css_style_declaration.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
 
 namespace blink {
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PushMessagingBridge_h
-#define PushMessagingBridge_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_MESSAGING_BRIDGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_MESSAGING_BRIDGE_H_
 
-#include "modules/serviceworkers/ServiceWorkerRegistration.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/GarbageCollected.h"
-#include "public/platform/modules/permissions/permission.mojom-blink.h"
-#include "public/platform/modules/permissions/permission_status.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom-blink.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class PushMessagingBridge final
 
 }  // namespace blink
 
-#endif  // PushMessagingBridge_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_PUSH_MESSAGING_BRIDGE_H_

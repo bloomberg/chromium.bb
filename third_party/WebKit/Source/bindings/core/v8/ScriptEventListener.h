@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScriptEventListener_h
-#define ScriptEventListener_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_EVENT_LISTENER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_EVENT_LISTENER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8LazyEventListener.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_lazy_event_listener.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ std::unique_ptr<SourceLocation> GetFunctionLocation(ExecutionContext*,
 
 }  // namespace blink
 
-#endif  // ScriptEventListener_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_EVENT_LISTENER_H_

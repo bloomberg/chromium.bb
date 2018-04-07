@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/policy/DocumentPolicy.h"
-#include "core/policy/IFramePolicy.h"
+#include "third_party/blink/renderer/core/policy/document_policy.h"
+#include "third_party/blink/renderer/core/policy/iframe_policy.h"
 
-#include "core/dom/Document.h"
-#include "platform/feature_policy/FeaturePolicy.h"
-#include "platform/weborigin/SecurityOrigin.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

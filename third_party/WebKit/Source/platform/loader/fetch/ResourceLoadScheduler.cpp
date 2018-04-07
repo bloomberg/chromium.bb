@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/loader/fetch/ResourceLoadScheduler.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
 
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
-#include "platform/Histogram.h"
-#include "platform/loader/fetch/FetchContext.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/scheduler/renderer/frame_status.h"
-#include "platform/scheduler/util/aggregated_metric_reporter.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/frame_status.h"
+#include "third_party/blink/renderer/platform/scheduler/util/aggregated_metric_reporter.h"
 
 namespace blink {
 

@@ -19,9 +19,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/svg/LayoutSVGResourceRadialGradient.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_radial_gradient.h"
 
-#include "core/svg/SVGRadialGradientElement.h"
+#include "third_party/blink/renderer/core/svg/svg_radial_gradient_element.h"
 
 namespace blink {
 

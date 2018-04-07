@@ -20,15 +20,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/HTMLTitleElement.h"
+#include "third_party/blink/renderer/core/html/html_title_element.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ChildListMutationScope.h"
-#include "core/dom/Document.h"
-#include "core/dom/Text.h"
-#include "core/html_names.h"
-#include "platform/wtf/AutoReset.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/child_list_mutation_scope.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

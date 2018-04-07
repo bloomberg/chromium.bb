@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef VTTRegion_h
-#define VTTRegion_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VTT_VTT_REGION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VTT_VTT_REGION_H_
 
-#include "platform/Timer.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/geometry/DoublePoint.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/geometry/double_point.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -138,4 +138,4 @@ class VTTRegion final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // VTTRegion_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VTT_VTT_REGION_H_

@@ -28,28 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "controller/BlinkInitializer.h"
+#include "third_party/blink/renderer/controller/blink_initializer.h"
 
 #include <memory>
 
-#include "bindings/core/v8/V8Initializer.h"
-#include "bindings/modules/v8/V8ContextSnapshotExternalReferences.h"
 #include "build/build_config.h"
-#include "controller/DevToolsFrontendImpl.h"
-#include "controller/OomInterventionImpl.h"
-#include "core/animation/AnimationClock.h"
-#include "core/frame/LocalFrame.h"
-#include "platform/Histogram.h"
-#include "platform/bindings/Microtask.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/heap/Heap.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/WTF.h"
-#include "public/platform/InterfaceRegistry.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
-#include "public/web/WebKit.h"
+#include "third_party/blink/public/platform/interface_registry.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_context_snapshot_external_references.h"
+#include "third_party/blink/renderer/controller/dev_tools_frontend_impl.h"
+#include "third_party/blink/renderer/controller/oom_intervention_impl.h"
+#include "third_party/blink/renderer/core/animation/animation_clock.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 #include "v8/include/v8.h"
 
 namespace blink {

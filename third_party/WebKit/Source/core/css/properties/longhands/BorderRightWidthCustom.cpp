@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/border_right_width.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/border_right_width.h"
 
-#include "core/css/ZoomAdjustedPixelValue.h"
-#include "core/css/properties/CSSParsingUtils.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
+#include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
 
 namespace blink {
 namespace CSSLonghand {

@@ -27,9 +27,9 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/track/vtt/VTTScanner.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_scanner.h"
 
-#include "platform/wtf/text/StringToNumber.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 
 namespace blink {
 

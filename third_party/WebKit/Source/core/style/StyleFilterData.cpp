@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/style/StyleFilterData.h"
+#include "third_party/blink/renderer/core/style/style_filter_data.h"
 
 namespace blink {
 

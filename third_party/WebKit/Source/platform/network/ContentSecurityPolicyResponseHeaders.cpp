@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/network/HTTPHeaderMap.h"
-#include "platform/network/http_names.h"
-#include "platform/weborigin/SchemeRegistry.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 
 namespace blink {
 

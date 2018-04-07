@@ -23,7 +23,7 @@
 #include "media/base/video_frame.h"
 #include "media/capture/video_capturer_source.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {
 

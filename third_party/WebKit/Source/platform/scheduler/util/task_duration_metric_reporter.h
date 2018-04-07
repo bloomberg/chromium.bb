@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
-#include "platform/PlatformExport.h"
-#include "platform/scheduler/util/aggregated_metric_reporter.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/util/aggregated_metric_reporter.h"
 
 namespace base {
 class HistogramBase;

@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GridArea_h
-#define GridArea_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_AREA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_AREA_H_
 
-#include "core/style/GridPositionsResolver.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -182,4 +182,4 @@ typedef HashMap<String, GridArea> NamedGridAreaMap;
 
 }  // namespace blink
 
-#endif  // GridArea_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_AREA_H_

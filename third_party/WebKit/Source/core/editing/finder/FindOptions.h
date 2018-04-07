@@ -23,8 +23,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FindOptions_h
-#define FindOptions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FINDER_FIND_OPTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FINDER_FIND_OPTIONS_H_
 
 namespace blink {
 
@@ -48,4 +48,4 @@ typedef unsigned FindOptions;
 
 }  // namespace blink
 
-#endif  // FindOptions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FINDER_FIND_OPTIONS_H_

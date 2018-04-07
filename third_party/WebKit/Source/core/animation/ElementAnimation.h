@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ElementAnimation_h
-#define ElementAnimation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ELEMENT_ANIMATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ELEMENT_ANIMATION_H_
 
-#include "bindings/core/v8/unrestricted_double_or_keyframe_animation_options.h"
-#include "core/CoreExport.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/heap/Member.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_animation_options.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class CORE_EXPORT ElementAnimation {
 
 }  // namespace blink
 
-#endif  // ElementAnimation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ELEMENT_ANIMATION_H_

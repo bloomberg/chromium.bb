@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebURLRequest_h
-#define WebURLRequest_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_REQUEST_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_REQUEST_H_
 
 #include <memory>
-#include "WebCommon.h"
-#include "WebHTTPBody.h"
-#include "WebReferrerPolicy.h"
-#include "WebSecurityOrigin.h"
 #include "base/optional.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_http_body.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
 
 namespace blink {
 

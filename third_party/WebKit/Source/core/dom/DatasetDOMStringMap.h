@@ -23,10 +23,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DatasetDOMStringMap_h
-#define DatasetDOMStringMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DATASET_DOM_STRING_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DATASET_DOM_STRING_MAP_H_
 
-#include "core/dom/DOMStringMap.h"
+#include "third_party/blink/renderer/core/dom/dom_string_map.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class DatasetDOMStringMap final : public DOMStringMap {
 
 }  // namespace blink
 
-#endif  // DatasetDOMStringMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DATASET_DOM_STRING_MAP_H_

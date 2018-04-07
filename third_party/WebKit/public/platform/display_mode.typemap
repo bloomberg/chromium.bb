@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//third_party/WebKit/public/platform/display_mode.mojom"
-public_headers = [ "//third_party/WebKit/public/platform/WebDisplayMode.h" ]
+mojom = "//third_party/blink/public/platform/display_mode.mojom"
+public_headers = [ "//third_party/blink/public/platform/web_display_mode.h" ]
 traits_headers =
-    [ "//third_party/WebKit/public/platform/WebDisplayModeStructTraits.h" ]
+    [ "//third_party/blink/public/platform/web_display_mode_struct_traits.h" ]
 type_mappings = [ "blink.mojom.DisplayMode=::blink::WebDisplayMode" ]

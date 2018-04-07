@@ -23,8 +23,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebLayerPositionConstraint_h
-#define WebLayerPositionConstraint_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_POSITION_CONSTRAINT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_POSITION_CONSTRAINT_H_
 
 namespace blink {
 
@@ -50,4 +50,4 @@ struct WebLayerPositionConstraint {
 
 }  // namespace blink
 
-#endif  // WebLayerPositionConstraint_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_POSITION_CONSTRAINT_H_

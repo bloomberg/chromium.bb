@@ -23,19 +23,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSFontFace.h"
+#include "third_party/blink/renderer/core/css/css_font_face.h"
 
 #include <algorithm>
-#include "core/css/CSSFontFaceSource.h"
-#include "core/css/CSSFontSelector.h"
-#include "core/css/CSSSegmentedFontFace.h"
-#include "core/css/FontFaceSetDocument.h"
-#include "core/css/FontFaceSetWorker.h"
-#include "core/css/RemoteFontFaceSource.h"
-#include "core/frame/UseCounter.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/SimpleFontData.h"
+#include "third_party/blink/renderer/core/css/css_font_face_source.h"
+#include "third_party/blink/renderer/core/css/css_font_selector.h"
+#include "third_party/blink/renderer/core/css/css_segmented_font_face.h"
+#include "third_party/blink/renderer/core/css/font_face_set_document.h"
+#include "third_party/blink/renderer/core/css/font_face_set_worker.h"
+#include "third_party/blink/renderer/core/css/remote_font_face_source.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 
 namespace blink {
 

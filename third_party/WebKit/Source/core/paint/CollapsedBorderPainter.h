@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CollapsedBorderPainter_h
-#define CollapsedBorderPainter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COLLAPSED_BORDER_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COLLAPSED_BORDER_PAINTER_H_
 
-#include "core/layout/LayoutTable.h"
-#include "core/layout/LayoutTableCell.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/layout/layout_table.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class CollapsedBorderPainter {
 
 }  // namespace blink
 
-#endif  // CollapsedBorderPainter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COLLAPSED_BORDER_PAINTER_H_

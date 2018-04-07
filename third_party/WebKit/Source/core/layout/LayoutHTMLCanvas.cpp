@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutHTMLCanvas.h"
+#include "third_party/blink/renderer/core/layout/layout_html_canvas.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/canvas/HTMLCanvasElement.h"
-#include "core/layout/LayoutView.h"
-#include "core/page/Page.h"
-#include "core/paint/HTMLCanvasPaintInvalidator.h"
-#include "core/paint/HTMLCanvasPainter.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/html_canvas_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/html_canvas_painter.h"
 
 namespace blink {
 

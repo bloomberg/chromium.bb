@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/SlotAssignment.h"
+#include "third_party/blink/renderer/core/dom/slot_assignment.h"
 
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/Node.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/V0InsertionPoint.h"
-#include "core/dom/ng/slot_assignment_engine.h"
-#include "core/html/HTMLDetailsElement.h"
-#include "core/html/HTMLSlotElement.h"
-#include "core/html/forms/HTMLOptGroupElement.h"
-#include "core/html/forms/HTMLSelectElement.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/ng/slot_assignment_engine.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
+#include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html/html_details_element.h"
+#include "third_party/blink/renderer/core/html/html_slot_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

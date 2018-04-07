@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintFlags_h
-#define PaintFlags_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_FLAGS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_FLAGS_H_
 
 #include "cc/paint/paint_flags.h"
 
@@ -11,4 +11,4 @@ namespace blink {
 using cc::PaintFlags;
 }
 
-#endif  // PaintFlags_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_FLAGS_H_

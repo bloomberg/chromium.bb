@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/modules/presentation/WebPresentationReceiver.h"
+#include "third_party/blink/public/platform/modules/presentation/web_presentation_receiver.h"
 
 // This WebPresentationReceiver.cpp, which includes only
 // WebPresentationReceiver.h, should be in Source/platform/exported,

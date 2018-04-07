@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/HTMLImageFallbackHelper.h"
+#include "third_party/blink/renderer/core/html/html_image_fallback_helper.h"
 
-#include "core/dom/ElementRareData.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/Text.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLImageElement.h"
-#include "core/html/HTMLImageLoader.h"
-#include "core/html/HTMLSpanElement.h"
-#include "core/html/HTMLStyleElement.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html_names.h"
-#include "core/input_type_names.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/dom/element_rare_data.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/html_image_loader.h"
+#include "third_party/blink/renderer/core/html/html_span_element.h"
+#include "third_party/blink/renderer/core/html/html_style_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

@@ -23,33 +23,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLDocumentParser_h
-#define HTMLDocumentParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_DOCUMENT_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_DOCUMENT_PARSER_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "core/CoreExport.h"
-#include "core/dom/ParserContentPolicy.h"
-#include "core/dom/ScriptableDocumentParser.h"
-#include "core/html/parser/BackgroundHTMLInputStream.h"
-#include "core/html/parser/HTMLInputStream.h"
-#include "core/html/parser/HTMLParserOptions.h"
-#include "core/html/parser/HTMLParserReentryPermit.h"
-#include "core/html/parser/HTMLPreloadScanner.h"
-#include "core/html/parser/HTMLSourceTracker.h"
-#include "core/html/parser/HTMLToken.h"
-#include "core/html/parser/HTMLTokenizer.h"
-#include "core/html/parser/HTMLTreeBuilderSimulator.h"
-#include "core/html/parser/ParserSynchronizationPolicy.h"
-#include "core/html/parser/PreloadRequest.h"
-#include "core/html/parser/TextResourceDecoder.h"
-#include "core/html/parser/XSSAuditor.h"
-#include "core/html/parser/XSSAuditorDelegate.h"
-#include "core/script/HTMLParserScriptRunnerHost.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/text/TextPosition.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/parser_content_policy.h"
+#include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
+#include "third_party/blink/renderer/core/html/parser/background_html_input_stream.h"
+#include "third_party/blink/renderer/core/html/parser/html_input_stream.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_reentry_permit.h"
+#include "third_party/blink/renderer/core/html/parser/html_preload_scanner.h"
+#include "third_party/blink/renderer/core/html/parser/html_source_tracker.h"
+#include "third_party/blink/renderer/core/html/parser/html_token.h"
+#include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
+#include "third_party/blink/renderer/core/html/parser/html_tree_builder_simulator.h"
+#include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
+#include "third_party/blink/renderer/core/html/parser/preload_request.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/core/html/parser/xss_auditor.h"
+#include "third_party/blink/renderer/core/html/parser/xss_auditor_delegate.h"
+#include "third_party/blink/renderer/core/script/html_parser_script_runner_host.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
 namespace blink {
 
@@ -289,4 +289,4 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
 }  // namespace blink
 
-#endif  // HTMLDocumentParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_DOCUMENT_PARSER_H_

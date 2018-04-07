@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BufferedLineReader_h
-#define BufferedLineReader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VTT_BUFFERED_LINE_READER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VTT_BUFFERED_LINE_READER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/text/SegmentedString.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/text/segmented_string.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

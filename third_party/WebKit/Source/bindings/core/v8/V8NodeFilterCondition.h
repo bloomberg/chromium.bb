@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8NodeFilterCondition_h
-#define V8NodeFilterCondition_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_NODE_FILTER_CONDITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_NODE_FILTER_CONDITION_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -79,4 +79,4 @@ class V8NodeFilterCondition final
 
 }  // namespace blink
 
-#endif  // V8NodeFilterCondition_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_NODE_FILTER_CONDITION_H_

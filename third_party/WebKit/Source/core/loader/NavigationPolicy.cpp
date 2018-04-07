@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/loader/NavigationPolicy.h"
+#include "third_party/blink/renderer/core/loader/navigation_policy.h"
 
 #include "build/build_config.h"
-#include "platform/wtf/Assertions.h"
-#include "public/web/WebNavigationPolicy.h"
+#include "third_party/blink/public/web/web_navigation_policy.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

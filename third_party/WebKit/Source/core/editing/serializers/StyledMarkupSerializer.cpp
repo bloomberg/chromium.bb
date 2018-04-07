@@ -27,25 +27,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/serializers/StyledMarkupSerializer.h"
+#include "third_party/blink/renderer/core/editing/serializers/styled_markup_serializer.h"
 
 #include "base/macros.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/Text.h"
-#include "core/editing/EditingStyle.h"
-#include "core/editing/EditingStyleUtilities.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleSelection.h"
-#include "core/editing/VisibleUnits.h"
-#include "core/editing/serializers/Serialization.h"
-#include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLElement.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/editing_style.h"
+#include "third_party/blink/renderer/core/editing/editing_style_utilities.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/serializers/serialization.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

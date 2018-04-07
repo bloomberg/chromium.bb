@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "public/platform/WebDisplayItemList.h"
+#include "third_party/blink/public/platform/web_display_item_list.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"

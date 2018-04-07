@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InputEvent_h
-#define InputEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_INPUT_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_INPUT_EVENT_H_
 
-#include "core/clipboard/DataTransfer.h"
-#include "core/dom/Range.h"
-#include "core/dom/StaticRange.h"
-#include "core/events/InputEventInit.h"
-#include "core/events/UIEvent.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/dom/static_range.h"
+#include "third_party/blink/renderer/core/events/input_event_init.h"
+#include "third_party/blink/renderer/core/events/ui_event.h"
 
 namespace blink {
 
@@ -128,4 +128,4 @@ DEFINE_EVENT_TYPE_CASTS(InputEvent);
 
 }  // namespace blink
 
-#endif  // InputEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_INPUT_EVENT_H_

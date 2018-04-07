@@ -22,15 +22,15 @@
  *
  */
 
-#include "core/html/forms/ListedElement.h"
+#include "third_party/blink/renderer/core/html/forms/listed_element.h"
 
-#include "core/dom/IdTargetObserver.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/html/HTMLObjectElement.h"
-#include "core/html/forms/HTMLFormControlElement.h"
-#include "core/html/forms/HTMLFormElement.h"
-#include "core/html/forms/ValidityState.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/dom/id_target_observer.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/validity_state.h"
+#include "third_party/blink/renderer/core/html/html_object_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

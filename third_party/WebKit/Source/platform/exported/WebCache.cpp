@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebCache.h"
+#include "third_party/blink/public/platform/web_cache.h"
 
-#include "platform/loader/fetch/MemoryCache.h"
+#include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 
 namespace blink {
 

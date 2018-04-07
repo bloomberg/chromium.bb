@@ -10,8 +10,8 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "third_party/WebKit/public/mojom/blob/blob.mojom.h"
-#include "third_party/WebKit/public/platform/modules/fetch/fetch_api_response.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_response.mojom.h"
 
 namespace mojo {
 

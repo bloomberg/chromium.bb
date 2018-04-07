@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "content/renderer/device_sensors/device_sensor_event_pump.h"
 #include "services/device/public/cpp/generic_sensor/orientation_data.h"
-#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationListener.h"
+#include "third_party/blink/public/platform/modules/device_orientation/web_device_orientation_listener.h"
 
 namespace content {
 

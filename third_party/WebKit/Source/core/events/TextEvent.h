@@ -24,11 +24,11 @@
  *
  */
 
-#ifndef TextEvent_h
-#define TextEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TEXT_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TEXT_EVENT_H_
 
-#include "core/events/TextEventInputType.h"
-#include "core/events/UIEvent.h"
+#include "third_party/blink/renderer/core/events/text_event_input_type.h"
+#include "third_party/blink/renderer/core/events/ui_event.h"
 
 namespace blink {
 
@@ -112,4 +112,4 @@ DEFINE_TYPE_CASTS(TextEvent,
 
 }  // namespace blink
 
-#endif  // TextEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TEXT_EVENT_H_

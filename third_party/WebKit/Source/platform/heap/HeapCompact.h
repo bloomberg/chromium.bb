@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HeapCompact_h
-#define HeapCompact_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_COMPACT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_COMPACT_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "platform/PlatformExport.h"
-#include "platform/heap/BlinkGC.h"
-#include "platform/wtf/ThreadingPrimitives.h"
+#include "third_party/blink/renderer/platform/heap/blink_gc.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 #include <bitset>
 #include <utility>
@@ -196,4 +196,4 @@ class PLATFORM_EXPORT HeapCompact final {
 #define LOG_HEAP_FREELIST_VERBOSE() EAT_STREAM_PARAMETERS
 #endif
 
-#endif  // HeapCompact_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_COMPACT_H_

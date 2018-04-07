@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "build/build_config.h"
-#include "third_party/WebKit/public/public_buildflags.h"
+#include "third_party/blink/public/public_buildflags.h"
 
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
 #include "chrome/browser/android/contextualsearch/unhandled_tap_notifier_impl.h"

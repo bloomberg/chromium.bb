@@ -18,17 +18,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGImageElement_h
-#define SVGImageElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_IMAGE_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_IMAGE_ELEMENT_H_
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/html/canvas/ImageElementBase.h"
-#include "core/svg/SVGAnimatedLength.h"
-#include "core/svg/SVGAnimatedPreserveAspectRatio.h"
-#include "core/svg/SVGGraphicsElement.h"
-#include "core/svg/SVGImageLoader.h"
-#include "core/svg/SVGURIReference.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/html/canvas/image_element_base.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_preserve_aspect_ratio.h"
+#include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
+#include "third_party/blink/renderer/core/svg/svg_image_loader.h"
+#include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -104,4 +104,4 @@ class CORE_EXPORT SVGImageElement final
 
 }  // namespace blink
 
-#endif  // SVGImageElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_IMAGE_ELEMENT_H_

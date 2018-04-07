@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NotFound_h
-#define NotFound_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_NOT_FOUND_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_NOT_FOUND_H_
 
 #include <stddef.h>
 
@@ -34,4 +34,4 @@ const size_t kNotFound = static_cast<size_t>(-1);
 
 using WTF::kNotFound;
 
-#endif  // NotFound_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_NOT_FOUND_H_

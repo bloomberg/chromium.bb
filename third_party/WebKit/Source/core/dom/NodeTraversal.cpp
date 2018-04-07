@@ -24,10 +24,10 @@
  *
  */
 
-#include "core/dom/NodeTraversal.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
 
-#include "core/dom/ContainerNode.h"
-#include "core/dom/Range.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/range.h"
 
 namespace blink {
 

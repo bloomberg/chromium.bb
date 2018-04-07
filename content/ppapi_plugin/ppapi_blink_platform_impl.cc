@@ -15,15 +15,15 @@
 #include "content/child/child_thread_impl.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
-#include "third_party/WebKit/public/platform/WebStorageNamespace.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_storage_namespace.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 #if defined(OS_MACOSX)
-#include "third_party/WebKit/public/platform/mac/WebSandboxSupport.h"
+#include "third_party/blink/public/platform/mac/web_sandbox_support.h"
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
 #include "content/child/child_process_sandbox_support_impl_linux.h"
-#include "third_party/WebKit/public/platform/linux/WebFallbackFont.h"
-#include "third_party/WebKit/public/platform/linux/WebSandboxSupport.h"
+#include "third_party/blink/public/platform/linux/web_fallback_font.h"
+#include "third_party/blink/public/platform/linux/web_sandbox_support.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #endif
 

@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8AbstractEventListener_h
-#define V8AbstractEventListener_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ABSTRACT_EVENT_LISTENER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ABSTRACT_EVENT_LISTENER_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/events/EventListener.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/heap/SelfKeepAlive.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -156,4 +156,4 @@ class CORE_EXPORT V8AbstractEventListener : public EventListener {
 
 }  // namespace blink
 
-#endif  // V8AbstractEventListener_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ABSTRACT_EVENT_LISTENER_H_

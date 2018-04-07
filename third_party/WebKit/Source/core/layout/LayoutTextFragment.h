@@ -20,12 +20,12 @@
  *
  */
 
-#ifndef LayoutTextFragment_h
-#define LayoutTextFragment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TEXT_FRAGMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TEXT_FRAGMENT_H_
 
-#include "core/editing/EditingUtilities.h"
-#include "core/layout/LayoutText.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -120,4 +120,4 @@ DEFINE_TYPE_CASTS(LayoutTextFragment,
 
 }  // namespace blink
 
-#endif  // LayoutTextFragment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TEXT_FRAGMENT_H_

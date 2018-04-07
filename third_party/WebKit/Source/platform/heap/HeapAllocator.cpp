@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/heap/HeapAllocator.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
 

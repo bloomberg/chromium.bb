@@ -23,12 +23,12 @@
  *
  */
 
-#ifndef NamedNodeMap_h
-#define NamedNodeMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NAMED_NODE_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NAMED_NODE_MAP_H_
 
-#include "core/dom/Element.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -77,4 +77,4 @@ class NamedNodeMap final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // NamedNodeMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NAMED_NODE_MAP_H_

@@ -23,11 +23,11 @@
  * DAMAGE.
  */
 
-#ifndef LayoutFullScreen_h
-#define LayoutFullScreen_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FULL_SCREEN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FULL_SCREEN_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutFlexibleBox.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 
 namespace blink {
 

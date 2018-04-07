@@ -23,13 +23,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/network/FormDataEncoder.h"
+#include "third_party/blink/renderer/platform/network/form_data_encoder.h"
 
 #include <limits>
-#include "platform/wtf/CryptographicallyRandomNumber.h"
-#include "platform/wtf/HexNumber.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/platform/wtf/cryptographically_random_number.h"
+#include "third_party/blink/renderer/platform/wtf/hex_number.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 

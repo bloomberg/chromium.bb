@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/media/MediaCustomControlsFullscreenDetector.h"
+#include "third_party/blink/renderer/core/html/media/media_custom_controls_fullscreen_detector.h"
 
-#include "core/event_type_names.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 

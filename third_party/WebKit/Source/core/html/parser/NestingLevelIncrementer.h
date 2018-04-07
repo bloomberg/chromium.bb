@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NestingLevelIncrementer_h
-#define NestingLevelIncrementer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_NESTING_LEVEL_INCREMENTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_NESTING_LEVEL_INCREMENTER_H_
 
 #include "base/macros.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

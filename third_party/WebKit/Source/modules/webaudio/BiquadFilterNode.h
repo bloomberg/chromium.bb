@@ -23,14 +23,14 @@
  * DAMAGE.
  */
 
-#ifndef BiquadFilterNode_h
-#define BiquadFilterNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_BIQUAD_FILTER_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_BIQUAD_FILTER_NODE_H_
 
-#include "core/typed_arrays/ArrayBufferViewHelpers.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "modules/webaudio/AudioBasicProcessorHandler.h"
-#include "modules/webaudio/AudioNode.h"
-#include "modules/webaudio/BiquadProcessor.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_basic_processor_handler.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/modules/webaudio/biquad_processor.h"
 
 namespace blink {
 
@@ -109,4 +109,4 @@ class BiquadFilterNode final : public AudioNode {
 
 }  // namespace blink
 
-#endif  // BiquadFilterNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_BIQUAD_FILTER_NODE_H_

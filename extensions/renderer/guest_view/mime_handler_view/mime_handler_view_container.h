@@ -17,7 +17,7 @@
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "third_party/WebKit/public/web/WebAssociatedURLLoaderClient.h"
+#include "third_party/blink/public/web/web_associated_url_loader_client.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"

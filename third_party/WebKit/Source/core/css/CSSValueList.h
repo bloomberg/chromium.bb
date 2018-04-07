@@ -19,13 +19,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSValueList_h
-#define CSSValueList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_LIST_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css/CSSValue.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -82,4 +82,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSValueList, IsValueList());
 
 }  // namespace blink
 
-#endif  // CSSValueList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_LIST_H_

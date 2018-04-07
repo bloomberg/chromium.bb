@@ -24,10 +24,10 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  */
-#ifndef TreeScopeAdopter_h
-#define TreeScopeAdopter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TREE_SCOPE_ADOPTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TREE_SCOPE_ADOPTER_H_
 
-#include "core/dom/Node.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 
 namespace blink {
 

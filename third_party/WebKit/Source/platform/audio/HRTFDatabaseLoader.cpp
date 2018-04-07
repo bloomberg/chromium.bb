@@ -26,13 +26,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/HRTFDatabaseLoader.h"
+#include "third_party/blink/renderer/platform/audio/hrtf_database_loader.h"
 
 #include "base/location.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WaitableEvent.h"
-#include "platform/WebTaskRunner.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 

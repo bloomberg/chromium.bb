@@ -9,13 +9,13 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "platform/PlatformExport.h"
-#include "platform/scheduler/base/task_queue.h"
-#include "platform/scheduler/child/worker_scheduler_helper.h"
-#include "platform/scheduler/child/worker_task_queue.h"
-#include "public/platform/WebThreadType.h"
-#include "public/platform/scheduler/single_thread_idle_task_runner.h"
-#include "public/platform/scheduler/web_thread_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/single_thread_idle_task_runner.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
+#include "third_party/blink/public/platform/web_thread_type.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_task_queue.h"
 
 namespace blink {
 namespace scheduler {

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentRequest.h"
+#include "third_party/blink/renderer/modules/payments/payment_request.h"
 
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/payments/PaymentTestHelper.h"
-#include "platform/heap/HeapAllocator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/payments/payment_test_helper.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
 namespace {

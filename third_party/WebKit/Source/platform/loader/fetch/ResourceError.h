@@ -24,17 +24,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ResourceError_h
-#define ResourceError_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_ERROR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_ERROR_H_
 
 #include <iosfwd>
-#include "platform/PlatformExport.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebURLError.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
+#include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -117,4 +117,4 @@ PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const ResourceError&);
 
 }  // namespace blink
 
-#endif  // ResourceError_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_ERROR_H_

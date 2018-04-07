@@ -24,14 +24,14 @@
  *
  */
 
-#ifndef DOMRectList_h
-#define DOMRectList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_GEOMETRY_DOM_RECT_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_GEOMETRY_DOM_RECT_LIST_H_
 
-#include "core/CoreExport.h"
-#include "core/geometry/DOMRect.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/geometry/FloatQuad.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class CORE_EXPORT DOMRectList final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // DOMRectList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_GEOMETRY_DOM_RECT_LIST_H_

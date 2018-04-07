@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AudioWorkletGlobalScope_h
-#define AudioWorkletGlobalScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_GLOBAL_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_GLOBAL_SCOPE_H_
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/workers/ThreadedWorkletGlobalScope.h"
-#include "modules/ModulesExport.h"
-#include "modules/webaudio/AudioParamDescriptor.h"
-#include "platform/audio/AudioArray.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/workers/threaded_worklet_global_scope.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param_descriptor.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -138,4 +138,4 @@ DEFINE_TYPE_CASTS(AudioWorkletGlobalScope,
 
 }  // namespace blink
 
-#endif  // AudioWorkletGlobalScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_GLOBAL_SCOPE_H_

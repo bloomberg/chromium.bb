@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/request_peer.h"
-#include "third_party/WebKit/public/platform/WebDataConsumerHandle.h"
+#include "third_party/blink/public/platform/web_data_consumer_handle.h"
 
 namespace content {
 

@@ -12,7 +12,7 @@
 #include "content/child/scoped_web_callbacks.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/media_stream_video_sink.h"
-#include "third_party/WebKit/public/platform/WebImageCaptureFrameGrabber.h"
+#include "third_party/blink/public/platform/web_image_capture_frame_grabber.h"
 
 namespace blink {
 class WebMediaStreamTrack;

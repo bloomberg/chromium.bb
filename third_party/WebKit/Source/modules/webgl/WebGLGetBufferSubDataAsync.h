@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGLGetBufferSubDataAsync_h
-#define WebGLGetBufferSubDataAsync_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_GET_BUFFER_SUB_DATA_ASYNC_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_GET_BUFFER_SUB_DATA_ASYNC_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/typed_arrays/ArrayBufferViewHelpers.h"
-#include "modules/webgl/WebGLExtension.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_extension.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class WebGLGetBufferSubDataAsyncCallback
 
 }  // namespace blink
 
-#endif  // WebGLGetBufferSubDataAsync_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_GET_BUFFER_SUB_DATA_ASYNC_H_

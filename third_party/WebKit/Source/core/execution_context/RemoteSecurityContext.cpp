@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/execution_context/RemoteSecurityContext.h"
+#include "third_party/blink/renderer/core/execution_context/remote_security_context.h"
 
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

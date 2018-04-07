@@ -33,10 +33,10 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "bindings/core/v8/V8GCController.h"
 #include "content/public/test/blink_test_environment.h"
-#include "platform/heap/ThreadState.h"
-#include "platform/weborigin/SchemeRegistry.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "v8/include/v8.h"
 
 namespace {

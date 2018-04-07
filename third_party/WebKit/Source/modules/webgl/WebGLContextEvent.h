@@ -23,11 +23,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLContextEvent_h
-#define WebGLContextEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_CONTEXT_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_CONTEXT_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/webgl/WebGLContextEventInit.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_context_event_init.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class WebGLContextEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // WebGLContextEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_CONTEXT_EVENT_H_

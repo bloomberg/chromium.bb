@@ -42,15 +42,15 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#include "core/paint/PaintLayerClipper.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_clipper.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/Settings.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/ObjectPaintProperties.h"
-#include "core/paint/PaintLayer.h"
-#include "platform/graphics/paint/GeometryMapper.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/object_paint_properties.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
 namespace blink {
 

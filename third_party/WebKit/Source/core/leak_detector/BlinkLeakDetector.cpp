@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/leak_detector/BlinkLeakDetector.h"
+#include "third_party/blink/renderer/core/leak_detector/blink_leak_detector.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8GCController.h"
-#include "core/CoreInitializer.h"
-#include "core/css/CSSDefaultStyleSheets.h"
-#include "core/editing/spellcheck/SpellChecker.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/leak_detector/BlinkLeakDetectorClient.h"
-#include "core/page/Page.h"
-#include "core/workers/DedicatedWorkerMessagingProxy.h"
-#include "core/workers/WorkerThread.h"
-#include "platform/Timer.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/loader/fetch/MemoryCache.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/core/core_initializer.h"
+#include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/leak_detector/blink_leak_detector_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 

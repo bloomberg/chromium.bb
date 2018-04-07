@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ResourceFinishObserver_h
-#define ResourceFinishObserver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_FINISH_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_FINISH_OBSERVER_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -35,4 +35,4 @@ class PLATFORM_EXPORT ResourceFinishObserver : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // ResourceFinishObserver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_FINISH_OBSERVER_H_

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintChunker_h
-#define PaintChunker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CHUNKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CHUNKER_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/graphics/paint/PaintChunk.h"
-#include "platform/graphics/paint/PaintChunkProperties.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -77,4 +77,4 @@ class PLATFORM_EXPORT PaintChunker final {
 
 }  // namespace blink
 
-#endif  // PaintChunker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CHUNKER_H_

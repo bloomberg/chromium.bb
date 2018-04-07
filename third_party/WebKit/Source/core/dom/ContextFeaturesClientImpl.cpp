@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/ContextFeaturesClientImpl.h"
+#include "third_party/blink/renderer/core/dom/context_features_client_impl.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/ContentSettingsClient.h"
-#include "platform/weborigin/SecurityOrigin.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/content_settings_client.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebRemoteFrameClient_h
-#define WebRemoteFrameClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_REMOTE_FRAME_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_REMOTE_FRAME_CLIENT_H_
 
-#include "public/platform/WebCanvas.h"
-#include "public/platform/WebFocusType.h"
-#include "public/platform/WebSecurityOrigin.h"
-#include "public/web/WebDOMMessageEvent.h"
-#include "public/web/WebFrame.h"
+#include "third_party/blink/public/platform/web_canvas.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/web/web_dom_message_event.h"
+#include "third_party/blink/public/web/web_frame.h"
 
 namespace blink {
 enum class ClientRedirectPolicy;
@@ -88,4 +88,4 @@ class WebRemoteFrameClient {
 
 }  // namespace blink
 
-#endif  // WebRemoteFrameClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_REMOTE_FRAME_CLIENT_H_

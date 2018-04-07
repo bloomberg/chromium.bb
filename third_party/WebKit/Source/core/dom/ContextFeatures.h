@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ContextFeatures_h
-#define ContextFeatures_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTEXT_FEATURES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTEXT_FEATURES_H_
 
-#include "core/CoreExport.h"
-#include "core/page/Page.h"
-#include "platform/heap/Handle.h"
 #include <memory>
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -113,4 +113,4 @@ inline void ContextFeatures::UrlDidChange(Document* document) {
 
 }  // namespace blink
 
-#endif  // ContextFeatures_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTEXT_FEATURES_H_

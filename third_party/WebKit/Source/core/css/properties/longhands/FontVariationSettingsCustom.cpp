@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/font_variation_settings.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/font_variation_settings.h"
 
-#include "core/css/CSSFontVariationValue.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/css/css_font_variation_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 namespace {

@@ -5,9 +5,9 @@
 #ifndef NGLogicalRect_h
 #define NGLogicalRect_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_logical_offset.h"
-#include "core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 
 namespace blink {
 

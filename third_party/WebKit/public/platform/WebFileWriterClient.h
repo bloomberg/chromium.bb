@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFileWriterClient_h
-#define WebFileWriterClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FILE_WRITER_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FILE_WRITER_CLIENT_H_
 
-#include "WebCommon.h"
-#include "WebFileError.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_file_error.h"
 
 namespace blink {
 

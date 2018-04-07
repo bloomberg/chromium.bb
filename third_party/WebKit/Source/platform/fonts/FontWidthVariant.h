@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontWidthVariant_h
-#define FontWidthVariant_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_WIDTH_VARIANT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_WIDTH_VARIANT_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ PLATFORM_EXPORT String ToString(FontWidthVariant);
 
 }  // namespace blink
 
-#endif  // FontWidthVariant_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_WIDTH_VARIANT_H_

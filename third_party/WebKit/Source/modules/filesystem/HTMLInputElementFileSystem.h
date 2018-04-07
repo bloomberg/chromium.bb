@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLInputElementFileSystem_h
-#define HTMLInputElementFileSystem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_HTML_INPUT_ELEMENT_FILE_SYSTEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_HTML_INPUT_ELEMENT_FILE_SYSTEM_H_
 
-#include "modules/filesystem/EntryHeapVector.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/modules/filesystem/entry_heap_vector.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ class HTMLInputElementFileSystem {
 
 }  // namespace blink
 
-#endif  // HTMLInputElementFileSystem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_HTML_INPUT_ELEMENT_FILE_SYSTEM_H_

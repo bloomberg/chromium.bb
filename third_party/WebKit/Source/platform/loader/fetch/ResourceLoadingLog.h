@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ResourceLoadingLog_h
-#define ResourceLoadingLog_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_LOADING_LOG_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_LOADING_LOG_H_
 
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #if DCHECK_IS_ON()
 // We can see logs with |--v=N| or |--vmodule=ResourceLoadingLog=N| where N is a
@@ -18,4 +18,4 @@
 #define RESOURCE_LOADING_DVLOG(verbose_level) EAT_STREAM_PARAMETERS
 #endif
 
-#endif  // ResourceLoadingLog_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_LOADING_LOG_H_

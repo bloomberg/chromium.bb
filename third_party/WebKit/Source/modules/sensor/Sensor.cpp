@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/sensor/Sensor.h"
+#include "third_party/blink/renderer/modules/sensor/sensor.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/WindowPerformance.h"
-#include "modules/sensor/SensorErrorEvent.h"
-#include "modules/sensor/SensorProviderProxy.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/feature_policy/FeaturePolicy.h"
-#include "public/platform/TaskType.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 #include "services/device/public/mojom/sensor.mojom-blink.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/modules/sensor/sensor_error_event.h"
+#include "third_party/blink/renderer/modules/sensor/sensor_provider_proxy.h"
+#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
 
 namespace blink {
 

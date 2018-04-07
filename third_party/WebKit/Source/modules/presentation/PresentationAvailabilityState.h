@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PresentationAvailabilityState_h
-#define PresentationAvailabilityState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_AVAILABILITY_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_AVAILABILITY_STATE_H_
 
 #include <memory>
 #include <set>
 #include <vector>
 
 #include "base/macros.h"
-#include "modules/ModulesExport.h"
-#include "modules/presentation/PresentationAvailabilityCallbacks.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/modules/presentation/presentation.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/presentation/presentation.mojom-blink.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability_callbacks.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -124,4 +124,4 @@ class MODULES_EXPORT PresentationAvailabilityState {
 
 }  // namespace blink
 
-#endif  // PresentationAvailabilityState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_AVAILABILITY_STATE_H_

@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIMETypeRegistry_h
-#define MIMETypeRegistry_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_MIME_MIME_TYPE_REGISTRY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_MIME_MIME_TYPE_REGISTRY_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -103,4 +103,4 @@ class PLATFORM_EXPORT MIMETypeRegistry {
 
 }  // namespace blink
 
-#endif  // MIMETypeRegistry_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_MIME_MIME_TYPE_REGISTRY_H_

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8PrivateProperty_h
-#define V8PrivateProperty_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_PRIVATE_PROPERTY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_PRIVATE_PROPERTY_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "platform/PlatformExport.h"
-#include "platform/bindings/ScriptPromiseProperties.h"
-#include "platform/bindings/V8BindingMacros.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/bindings/script_promise_properties.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -229,4 +229,4 @@ class PLATFORM_EXPORT V8PrivateProperty {
 
 }  // namespace blink
 
-#endif  // V8PrivateProperty_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_PRIVATE_PROPERTY_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BlinkCloneableMessage_h
-#define BlinkCloneableMessage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_CLONEABLE_MESSAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_CLONEABLE_MESSAGE_H_
 
 #include "base/macros.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "v8/include/v8-inspector.h"
 
 namespace blink {
@@ -32,4 +32,4 @@ struct CORE_EXPORT BlinkCloneableMessage {
 
 }  // namespace blink
 
-#endif  // BlinkCloneableMessage_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_CLONEABLE_MESSAGE_H_

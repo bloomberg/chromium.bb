@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/shapedetection/FaceDetector.h"
+#include "third_party/blink/renderer/modules/shapedetection/face_detector.h"
 
-#include "core/dom/DOMException.h"
-#include "core/frame/LocalFrame.h"
-#include "core/geometry/DOMRect.h"
-#include "core/html/canvas/CanvasImageSource.h"
-#include "core/workers/WorkerThread.h"
-#include "modules/imagecapture/Point2D.h"
-#include "modules/shapedetection/DetectedFace.h"
-#include "modules/shapedetection/FaceDetectorOptions.h"
-#include "modules/shapedetection/Landmark.h"
-#include "public/platform/Platform.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/modules/imagecapture/point_2d.h"
+#include "third_party/blink/renderer/modules/shapedetection/detected_face.h"
+#include "third_party/blink/renderer/modules/shapedetection/face_detector_options.h"
+#include "third_party/blink/renderer/modules/shapedetection/landmark.h"
 
 namespace blink {
 

@@ -28,24 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebFrameSerializer.h"
+#include "third_party/blink/public/web/web_frame_serializer.h"
 
-#include "core/dom/ShadowRoot.h"
-#include "core/exported/WebViewImpl.h"
-#include "core/frame/FrameTestHelpers.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "platform/mhtml/MHTMLArchive.h"
-#include "platform/mhtml/MHTMLParser.h"
-#include "platform/testing/HistogramTester.h"
-#include "platform/testing/URLTestHelpers.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
+#include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

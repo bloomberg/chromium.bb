@@ -37,7 +37,7 @@
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/message_center/public/cpp/notification.h"

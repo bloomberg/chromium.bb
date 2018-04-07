@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSSyntaxDescriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
 
-#include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/CSSURIValue.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/CSSVariableReferenceValue.h"
-#include "core/css/parser/CSSParserIdioms.h"
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/parser/CSSVariableParser.h"
-#include "core/html/parser/HTMLParserIdioms.h"
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_uri_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 
 namespace blink {
 

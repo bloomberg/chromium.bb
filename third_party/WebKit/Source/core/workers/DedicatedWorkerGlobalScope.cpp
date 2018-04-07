@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/workers/DedicatedWorkerGlobalScope.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
 
 #include <memory>
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/inspector/ThreadDebugger.h"
-#include "core/origin_trials/OriginTrialContext.h"
-#include "core/workers/DedicatedWorkerObjectProxy.h"
-#include "core/workers/DedicatedWorkerThread.h"
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/WorkerClients.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/inspector/thread_debugger.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker_thread.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

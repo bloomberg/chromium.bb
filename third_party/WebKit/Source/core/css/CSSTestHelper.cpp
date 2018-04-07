@@ -27,16 +27,16 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSTestHelper.h"
+#include "third_party/blink/renderer/core/css/css_test_helper.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/css/CSSRuleList.h"
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/RuleSet.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/dom/Document.h"
-#include "platform/wtf/text/TextEncoding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/css/css_rule_list.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/rule_set.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 

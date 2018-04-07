@@ -19,13 +19,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LayoutSVGInlineText_h
-#define LayoutSVGInlineText_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_INLINE_TEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_INLINE_TEXT_H_
 
-#include "core/layout/LayoutText.h"
-#include "core/layout/svg/SVGCharacterData.h"
-#include "core/layout/svg/SVGTextMetrics.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_character_data.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_text_metrics.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -91,4 +91,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGInlineText, IsSVGInlineText());
 
 }  // namespace blink
 
-#endif  // LayoutSVGInlineText_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_INLINE_TEXT_H_

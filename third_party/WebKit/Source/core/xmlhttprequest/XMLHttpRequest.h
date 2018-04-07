@@ -20,31 +20,31 @@
  *  MA 02110-1301 USA
  */
 
-#ifndef XMLHttpRequest_h
-#define XMLHttpRequest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XMLHTTPREQUEST_XML_HTTP_REQUEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XMLHTTPREQUEST_XML_HTTP_REQUEST_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/DocumentParserClient.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/PausableObject.h"
-#include "core/loader/ThreadableLoaderClient.h"
-#include "core/xmlhttprequest/XMLHttpRequestEventTarget.h"
-#include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/bindings/TraceWrapperV8String.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/network/EncodedFormData.h"
-#include "platform/network/HTTPHeaderMap.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/WTFString.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/dom/document_parser_client.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
+#include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request_event_target.h"
+#include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request_progress_event_throttle.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_string.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -386,4 +386,4 @@ std::ostream& operator<<(std::ostream&, const XMLHttpRequest*);
 
 }  // namespace blink
 
-#endif  // XMLHttpRequest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XMLHTTPREQUEST_XML_HTTP_REQUEST_H_

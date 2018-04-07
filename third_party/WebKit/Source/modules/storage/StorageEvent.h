@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StorageEvent_h
-#define StorageEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_STORAGE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_STORAGE_EVENT_H_
 
-#include "core/dom/events/Event.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -93,4 +93,4 @@ class StorageEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // StorageEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_STORAGE_EVENT_H_

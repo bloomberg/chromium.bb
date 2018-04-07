@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/InteractiveDetector.h"
+#include "third_party/blink/renderer/core/loader/interactive_detector.h"
 
-#include "core/dom/Document.h"
-#include "core/paint/FirstMeaningfulPaintDetector.h"
-#include "core/testing/DummyPageHolder.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/scheduler/main_thread/main_thread_scheduler.h"
-#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 namespace blink {
 

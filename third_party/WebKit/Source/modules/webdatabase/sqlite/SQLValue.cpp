@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/sqlite/SQLValue.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sql_value.h"
 
 namespace blink {
 

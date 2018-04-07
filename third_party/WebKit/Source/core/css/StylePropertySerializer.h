@@ -21,12 +21,12 @@
  * Boston, MA 02110-1301, USA.
 */
 
-#ifndef StylePropertySerializer_h
-#define StylePropertySerializer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_PROPERTY_SERIALIZER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_PROPERTY_SERIALIZER_H_
 
 #include <bitset>
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/CSSValueList.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
 
 namespace blink {
 
@@ -146,4 +146,4 @@ class StylePropertySerializer {
 
 }  // namespace blink
 
-#endif  // StylePropertySerializer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_PROPERTY_SERIALIZER_H_

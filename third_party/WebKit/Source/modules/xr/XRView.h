@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef XRView_h
-#define XRView_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_VIEW_H_
 
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/geometry/FloatPoint3D.h"
-#include "platform/heap/Handle.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class XRView final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // XRView_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_VIEW_H_

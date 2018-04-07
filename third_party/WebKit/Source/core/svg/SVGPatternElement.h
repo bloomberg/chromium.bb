@@ -18,18 +18,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPatternElement_h
-#define SVGPatternElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATTERN_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATTERN_ELEMENT_H_
 
-#include "core/svg/SVGAnimatedEnumeration.h"
-#include "core/svg/SVGAnimatedLength.h"
-#include "core/svg/SVGAnimatedTransformList.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGFitToViewBox.h"
-#include "core/svg/SVGTests.h"
-#include "core/svg/SVGURIReference.h"
-#include "core/svg/SVGUnitTypes.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_enumeration.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_transform_list.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_fit_to_view_box.h"
+#include "third_party/blink/renderer/core/svg/svg_tests.h"
+#include "third_party/blink/renderer/core/svg/svg_unit_types.h"
+#include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -107,4 +107,4 @@ class SVGPatternElement final : public SVGElement,
 
 }  // namespace blink
 
-#endif  // SVGPatternElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATTERN_ELEMENT_H_

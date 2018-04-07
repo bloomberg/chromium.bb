@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CallbackPromiseAdapter_h
-#define CallbackPromiseAdapter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_CALLBACK_PROMISE_ADAPTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_CALLBACK_PROMISE_ADAPTER_H_
 
 #include <memory>
 #include <utility>
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "platform/wtf/TypeTraits.h"
-#include "public/platform/WebCallbacks.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 namespace blink {
 

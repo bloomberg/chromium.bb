@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/geometry/IntSize.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ng_paint_fragment_h
-#define ng_paint_fragment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_PAINT_FRAGMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_PAINT_FRAGMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/ng_physical_fragment.h"
-#include "core/loader/resource/ImageResourceObserver.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
-#include "platform/scroll/ScrollTypes.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
 
@@ -203,4 +203,4 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
 
 }  // namespace blink
 
-#endif  // ng_paint_fragment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_PAINT_FRAGMENT_H_

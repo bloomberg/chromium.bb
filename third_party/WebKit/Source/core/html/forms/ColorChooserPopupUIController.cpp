@@ -23,15 +23,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/ColorChooserPopupUIController.h"
+#include "third_party/blink/renderer/core/html/forms/color_chooser_popup_ui_controller.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/forms/ColorChooserClient.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/PagePopup.h"
-#include "platform/geometry/IntRect.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/forms/color_chooser_client.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page_popup.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 
 namespace blink {
 

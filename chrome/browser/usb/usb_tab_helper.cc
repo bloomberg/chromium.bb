@@ -14,7 +14,7 @@
 #include "content/public/common/content_features.h"
 #include "device/usb/mojo/device_manager_impl.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/usb/web_usb_chooser_service_android.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/webkit_box_direction.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/webkit_box_direction.h"
 
 namespace blink {
 namespace CSSLonghand {

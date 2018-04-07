@@ -22,11 +22,11 @@
  *
  */
 
-#ifndef CursorData_h
-#define CursorData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CURSOR_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CURSOR_DATA_H_
 
-#include "core/style/StyleImage.h"
-#include "platform/geometry/IntPoint.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class CursorData {
 
 WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::CursorData);
 
-#endif  // CursorData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CURSOR_DATA_H_

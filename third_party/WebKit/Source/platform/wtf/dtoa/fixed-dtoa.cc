@@ -25,11 +25,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "platform/wtf/dtoa/fixed-dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/fixed-dtoa.h"
 
 #include <math.h>
 
-#include "platform/wtf/dtoa/double.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/double.h"
 
 namespace WTF {
 

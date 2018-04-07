@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGFEFuncRElement.h"
+#include "third_party/blink/renderer/core/svg/svg_fe_func_r_element.h"
 
 namespace blink {
 

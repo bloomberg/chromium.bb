@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/device_orientation/DeviceRotationRate.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_rotation_rate.h"
 
 namespace blink {
 

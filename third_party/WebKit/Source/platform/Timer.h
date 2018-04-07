@@ -23,20 +23,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Timer_h
-#define Timer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TIMER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TIMER_H_
 
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/AddressSanitizer.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -185,4 +185,4 @@ inline bool TimerBase::IsActive() const {
 
 }  // namespace blink
 
-#endif  // Timer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TIMER_H_

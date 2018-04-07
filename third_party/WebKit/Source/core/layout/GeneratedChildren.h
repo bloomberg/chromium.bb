@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GeneratedChildren_h
-#define GeneratedChildren_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GENERATED_CHILDREN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GENERATED_CHILDREN_H_
 
-#include "core/html_element_type_helpers.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/html_element_type_helpers.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 
@@ -32,4 +32,4 @@ static bool CanHaveGeneratedChildren(const LayoutObject& layout_object) {
 
 }  // namespace blink
 
-#endif  // GeneratedChildren_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GENERATED_CHILDREN_H_

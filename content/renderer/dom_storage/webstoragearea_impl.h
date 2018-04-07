@@ -9,8 +9,8 @@
 #include <stdint.h>
 
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/public/platform/WebStorageArea.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_storage_area.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 class GURL;
 

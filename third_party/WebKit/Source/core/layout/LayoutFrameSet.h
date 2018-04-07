@@ -20,11 +20,11 @@
  *
  */
 
-#ifndef LayoutFrameSet_h
-#define LayoutFrameSet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FRAME_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FRAME_SET_H_
 
 #include "base/macros.h"
-#include "core/layout/LayoutBox.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 
 namespace blink {
 
@@ -164,4 +164,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFrameSet, IsFrameSet());
 
 }  // namespace blink
 
-#endif  // LayoutFrameSet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FRAME_SET_H_

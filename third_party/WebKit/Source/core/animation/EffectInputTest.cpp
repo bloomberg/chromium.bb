@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/EffectInput.h"
+#include "third_party/blink/renderer/core/animation/effect_input.h"
 
 #include <memory>
 
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/animation/AnimationTestHelper.h"
-#include "core/animation/KeyframeEffectModel.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/animation/animation_test_helper.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "v8/include/v8.h"
 
 namespace blink {

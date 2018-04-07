@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/quota/StorageManager.h"
+#include "third_party/blink/renderer/modules/quota/storage_manager.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/modules/v8/V8StorageEstimate.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/Frame.h"
-#include "core/frame/LocalFrame.h"
-#include "modules/permissions/PermissionUtils.h"
-#include "modules/quota/QuotaUtils.h"
-#include "modules/quota/StorageEstimate.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Functional.h"
-#include "public/platform/Platform.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_storage_estimate.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/permissions/permission_utils.h"
+#include "third_party/blink/renderer/modules/quota/quota_utils.h"
+#include "third_party/blink/renderer/modules/quota/storage_estimate.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

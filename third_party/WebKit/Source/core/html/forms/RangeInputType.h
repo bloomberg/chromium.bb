@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RangeInputType_h
-#define RangeInputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_RANGE_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_RANGE_INPUT_TYPE_H_
 
-#include "core/html/forms/InputType.h"
-#include "core/html/forms/InputTypeView.h"
+#include "third_party/blink/renderer/core/html/forms/input_type.h"
+#include "third_party/blink/renderer/core/html/forms/input_type_view.h"
 
 namespace blink {
 
@@ -91,4 +91,4 @@ class RangeInputType final : public InputType, public InputTypeView {
 
 }  // namespace blink
 
-#endif  // RangeInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_RANGE_INPUT_TYPE_H_

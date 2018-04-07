@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BluetoothDevice_h
-#define BluetoothDevice_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_DEVICE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_DEVICE_H_
 
 #include <memory>
-#include "core/dom/ContextLifecycleObserver.h"
-#include "modules/EventTargetModules.h"
-#include "modules/bluetooth/BluetoothRemoteGATTServer.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Heap.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_server.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -107,4 +107,4 @@ class BluetoothDevice final : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // BluetoothDevice_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_DEVICE_H_

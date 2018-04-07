@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebRuntimeFeatures.h"
+#include "third_party/blink/public/platform/web_runtime_features.h"
 
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/WorkerInspectorProxy.h"
+#include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 
 #include "base/location.h"
-#include "core/frame/FrameConsole.h"
-#include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/inspector/InspectorWorkerAgent.h"
-#include "core/inspector/WorkerInspectorController.h"
-#include "core/probe/CoreProbes.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerThread.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/inspector/InspectorWorkerAgent.h"
+#include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
+#include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

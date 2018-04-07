@@ -29,19 +29,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LocalFrameClientImpl_h
-#define LocalFrameClientImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_LOCAL_FRAME_CLIENT_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_LOCAL_FRAME_CLIENT_IMPL_H_
 
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
 
-#include "core/frame/LocalFrameClient.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "public/platform/WebInsecureRequestPolicy.h"
-#include "public/platform/WebScopedVirtualTimePauser.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

@@ -24,16 +24,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/XPathExpression.h"
+#include "third_party/blink/renderer/core/xml/xpath_expression.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/xml/XPathExpressionNode.h"
-#include "core/xml/XPathNSResolver.h"
-#include "core/xml/XPathParser.h"
-#include "core/xml/XPathResult.h"
-#include "core/xml/XPathUtil.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/xml/xpath_expression_node.h"
+#include "third_party/blink/renderer/core/xml/xpath_ns_resolver.h"
+#include "third_party/blink/renderer/core/xml/xpath_parser.h"
+#include "third_party/blink/renderer/core/xml/xpath_result.h"
+#include "third_party/blink/renderer/core/xml/xpath_util.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

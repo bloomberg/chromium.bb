@@ -26,15 +26,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ReverbConvolverStage_h
-#define ReverbConvolverStage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_REVERB_CONVOLVER_STAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_REVERB_CONVOLVER_STAGE_H_
 
 #include <memory>
 
-#include "platform/audio/AudioArray.h"
-#include "platform/audio/FFTFrame.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
+#include "third_party/blink/renderer/platform/audio/fft_frame.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -101,4 +101,4 @@ class PLATFORM_EXPORT ReverbConvolverStage {
 
 }  // namespace blink
 
-#endif  // ReverbConvolverStage_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_REVERB_CONVOLVER_STAGE_H_

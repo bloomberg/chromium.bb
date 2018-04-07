@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/shell/common/leak_detection_result.h"
-#include "third_party/WebKit/public/web/WebLeakDetector.h"
+#include "third_party/blink/public/web/web_leak_detector.h"
 
 namespace content {
 

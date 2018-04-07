@@ -23,14 +23,14 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/AudioDestinationNode.h"
-#include "modules/webaudio/AudioNodeInput.h"
-#include "modules/webaudio/AudioNodeOutput.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/audio/DenormalDisabler.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/Atomics.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_destination_node.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/audio/denormal_disabler.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/atomics.h"
 
 namespace blink {
 

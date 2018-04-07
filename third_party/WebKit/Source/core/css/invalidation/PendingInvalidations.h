@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PendingInvalidations_h
-#define PendingInvalidations_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_INVALIDATION_PENDING_INVALIDATIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_INVALIDATION_PENDING_INVALIDATIONS_H_
 
 #include "base/macros.h"
-#include "core/css/invalidation/InvalidationSet.h"
+#include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
 
 namespace blink {
 
@@ -29,4 +29,4 @@ class CORE_EXPORT PendingInvalidations final {
 
 }  // namespace blink
 
-#endif  // PendingInvalidations_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_INVALIDATION_PENDING_INVALIDATIONS_H_

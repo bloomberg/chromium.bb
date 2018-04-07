@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSParser.h"
-#include "core/css/parser/CSSParserContext.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/threaded/MultiThreadedTestUtil.h"
-#include "core/css_property_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/threaded/multi_threaded_test_util.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
 
 namespace blink {
 

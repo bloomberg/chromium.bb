@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HitRegion_h
-#define HitRegion_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_HIT_REGION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_HIT_REGION_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/Element.h"
-#include "modules/canvas/canvas2d/HitRegionOptions.h"
-#include "platform/graphics/Path.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/hit_region_options.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 

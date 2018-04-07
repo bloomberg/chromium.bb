@@ -2,19 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("permissions") {
   sources = [
-    "NavigatorPermissions.cpp",
-    "NavigatorPermissions.h",
-    "PermissionStatus.cpp",
-    "PermissionStatus.h",
-    "PermissionUtils.cpp",
-    "PermissionUtils.h",
-    "Permissions.cpp",
-    "Permissions.h",
-    "WorkerNavigatorPermissions.cpp",
-    "WorkerNavigatorPermissions.h",
+    "navigator_permissions.cc",
+    "navigator_permissions.h",
+    "permission_status.cc",
+    "permission_status.h",
+    "permission_utils.cc",
+    "permission_utils.h",
+    "permissions.cc",
+    "permissions.h",
+    "worker_navigator_permissions.cc",
+    "worker_navigator_permissions.h",
   ]
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/heap/BlinkGCMemoryDumpProvider.h"
+#include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 
 #include <unordered_map>
 
@@ -10,11 +10,11 @@
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
-#include "platform/heap/Handle.h"
-#include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Threading.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 namespace {

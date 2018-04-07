@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef HTMLOptionsCollection_h
-#define HTMLOptionsCollection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_OPTIONS_COLLECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_OPTIONS_COLLECTION_H_
 
-#include "core/html/HTMLCollection.h"
-#include "core/html/forms/HTMLOptionElement.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
 
 namespace blink {
 
@@ -82,4 +82,4 @@ inline bool HTMLOptionsCollection::ElementMatches(
 
 }  // namespace blink
 
-#endif  // HTMLOptionsCollection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_OPTIONS_COLLECTION_H_

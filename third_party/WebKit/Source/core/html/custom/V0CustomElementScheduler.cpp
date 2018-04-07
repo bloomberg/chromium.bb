@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/custom/V0CustomElementScheduler.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_scheduler.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/html/custom/V0CustomElementCallbackInvocation.h"
-#include "core/html/custom/V0CustomElementLifecycleCallbacks.h"
-#include "core/html/custom/V0CustomElementMicrotaskDispatcher.h"
-#include "core/html/custom/V0CustomElementMicrotaskImportStep.h"
-#include "core/html/custom/V0CustomElementMicrotaskResolutionStep.h"
-#include "core/html/custom/V0CustomElementMicrotaskRunQueue.h"
-#include "core/html/custom/V0CustomElementProcessingStack.h"
-#include "core/html/custom/V0CustomElementRegistrationContext.h"
-#include "core/html/custom/V0CustomElementSyncMicrotaskQueue.h"
-#include "core/html/imports/HTMLImportChild.h"
-#include "core/html/imports/HTMLImportsController.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_callback_invocation.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_lifecycle_callbacks.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_dispatcher.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_import_step.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_resolution_step.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_run_queue.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_sync_microtask_queue.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_child.h"
+#include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 
 namespace blink {
 

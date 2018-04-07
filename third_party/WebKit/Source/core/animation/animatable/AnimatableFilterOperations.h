@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimatableFilterOperations_h
-#define AnimatableFilterOperations_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_ANIMATABLE_FILTER_OPERATIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_ANIMATABLE_FILTER_OPERATIONS_H_
 
-#include "core/animation/animatable/AnimatableValue.h"
-#include "core/style/FilterOperations.h"
+#include "third_party/blink/renderer/core/animation/animatable/animatable_value.h"
+#include "third_party/blink/renderer/core/style/filter_operations.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableFilterOperations,
 
 }  // namespace blink
 
-#endif  // AnimatableFilterOperations_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_ANIMATABLE_FILTER_OPERATIONS_H_

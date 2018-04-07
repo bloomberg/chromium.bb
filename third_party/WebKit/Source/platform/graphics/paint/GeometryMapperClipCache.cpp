@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/GeometryMapperClipCache.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper_clip_cache.h"
 
-#include "platform/graphics/paint/FloatClipRect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
 
 namespace blink {
 

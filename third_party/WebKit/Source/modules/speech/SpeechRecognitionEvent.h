@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SpeechRecognitionEvent_h
-#define SpeechRecognitionEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/speech/SpeechRecognitionEventInit.h"
-#include "modules/speech/SpeechRecognitionResult.h"
-#include "modules/speech/SpeechRecognitionResultList.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_event_init.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_result.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_result_list.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class SpeechRecognitionEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // SpeechRecognitionEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_EVENT_H_

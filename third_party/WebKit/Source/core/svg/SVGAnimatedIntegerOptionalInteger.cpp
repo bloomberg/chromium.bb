@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/SVGAnimatedIntegerOptionalInteger.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_integer_optional_integer.h"
 
-#include "core/svg/SVGElement.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
 
 namespace blink {
 

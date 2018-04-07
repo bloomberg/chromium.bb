@@ -17,8 +17,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPropertyInfo_h
-#define SVGPropertyInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_PROPERTIES_SVG_PROPERTY_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_PROPERTIES_SVG_PROPERTY_INFO_H_
 
 namespace blink {
 
@@ -49,4 +49,4 @@ enum AnimatedPropertyType {
 
 }  // namespace blink
 
-#endif  // SVGPropertyInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_PROPERTIES_SVG_PROPERTY_INFO_H_

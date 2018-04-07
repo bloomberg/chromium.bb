@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/VideoFrameSubmitter.h"
+#include "third_party/blink/renderer/platform/graphics/video_frame_submitter.h"
 
 #include <memory>
 #include "base/memory/ptr_util.h"
@@ -18,11 +18,11 @@
 #include "components/viz/test/test_context_provider.h"
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "platform/graphics/VideoFrameResourceProvider.h"
-#include "platform/wtf/Functional.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/video_frame_resource_provider.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using testing::_;
 using testing::Return;

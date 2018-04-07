@@ -20,10 +20,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/CSSMediaRule.h"
+#include "third_party/blink/renderer/core/css/css_media_rule.h"
 
-#include "core/css/StyleRule.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

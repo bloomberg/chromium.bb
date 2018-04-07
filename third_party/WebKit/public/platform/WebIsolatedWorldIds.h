@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebIsolatedWorldIds_h
-#define WebIsolatedWorldIds_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_ISOLATED_WORLD_IDS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_ISOLATED_WORLD_IDS_H_
 
 namespace blink {
 
@@ -18,4 +18,4 @@ enum IsolatedWorldId {
 
 }  // namespace blink
 
-#endif  // WebIsolatedWorldIds_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_ISOLATED_WORLD_IDS_H_

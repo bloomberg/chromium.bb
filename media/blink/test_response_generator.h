@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebURLError.h"
-#include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/public/platform/web_url_response.h"
 #include "url/gurl.h"
 
 namespace media {

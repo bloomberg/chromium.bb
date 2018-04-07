@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ng_fragment_painter_h
-#define ng_fragment_painter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_FRAGMENT_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_FRAGMENT_PAINTER_H_
 
-#include "core/paint/ObjectPainterBase.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/paint/object_painter_base.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 

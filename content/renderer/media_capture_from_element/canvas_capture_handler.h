@@ -18,9 +18,9 @@
 #include "content/common/content_export.h"
 #include "media/base/video_frame_pool.h"
 #include "media/capture/video_capturer_source.h"
-#include "third_party/WebKit/public/platform/WebCanvasCaptureHandler.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "third_party/WebKit/public/platform/WebSize.h"
+#include "third_party/blink/public/platform/web_canvas_capture_handler.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 
 class SkImage;

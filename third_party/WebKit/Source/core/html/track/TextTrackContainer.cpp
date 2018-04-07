@@ -27,15 +27,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/track/TextTrackContainer.h"
+#include "third_party/blink/renderer/core/html/track/text_track_container.h"
 
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/html/track/CueTimeline.h"
-#include "core/html/track/TextTrack.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutVideo.h"
-#include "core/resize_observer/ResizeObserver.h"
-#include "core/resize_observer/ResizeObserverEntry.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/html/track/cue_timeline.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_video.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
 
 namespace blink {
 

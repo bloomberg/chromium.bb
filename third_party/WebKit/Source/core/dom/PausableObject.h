@@ -24,12 +24,12 @@
  *
  */
 
-#ifndef PausableObject_h
-#define PausableObject_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PAUSABLE_OBJECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PAUSABLE_OBJECT_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class CORE_EXPORT PausableObject : public ContextLifecycleObserver {
 
 }  // namespace blink
 
-#endif  // PausableObject_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PAUSABLE_OBJECT_H_

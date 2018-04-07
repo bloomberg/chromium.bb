@@ -28,23 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLSlotElement.h"
+#include "third_party/blink/renderer/core/html/html_slot_element.h"
 
 #include <array>
-#include "core/css/StyleChangeReason.h"
-#include "core/css/StyleEngine.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/SlotAssignment.h"
-#include "core/dom/WhitespaceAttacher.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/AssignedNodesOptions.h"
-#include "core/html_names.h"
-#include "core/probe/CoreProbes.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/bindings/Microtask.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/slot_assignment.h"
+#include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/assigned_nodes_options.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
 
 namespace blink {
 

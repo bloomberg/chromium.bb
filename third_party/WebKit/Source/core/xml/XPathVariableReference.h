@@ -23,10 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XPathVariableReference_h
-#define XPathVariableReference_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_VARIABLE_REFERENCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_VARIABLE_REFERENCE_H_
 
-#include "core/xml/XPathExpressionNode.h"
+#include "third_party/blink/renderer/core/xml/xpath_expression_node.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class VariableReference final : public Expression {
 }  // namespace XPath
 
 }  // namespace blink
-#endif  // XPathVariableReference_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_VARIABLE_REFERENCE_H_

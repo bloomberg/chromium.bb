@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InterfaceInvalidator_h
-#define InterfaceInvalidator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_INTERFACE_INVALIDATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_INTERFACE_INVALIDATOR_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ class PLATFORM_EXPORT InterfaceInvalidator {
 
 }  // namespace blink
 
-#endif  // InterfaceInvalidator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_INTERFACE_INVALIDATOR_H_

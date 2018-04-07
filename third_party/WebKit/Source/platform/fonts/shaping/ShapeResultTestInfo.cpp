@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/shaping/ShapeResultTestInfo.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_test_info.h"
 
-#include "platform/fonts/Font.h"
-#include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
 
 namespace blink {
 

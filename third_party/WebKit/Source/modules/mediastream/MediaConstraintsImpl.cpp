@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/MediaConstraintsImpl.h"
+#include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
 
-#include "bindings/core/v8/ArrayValue.h"
-#include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/UseCounter.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "modules/mediastream/MediaTrackConstraints.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/bindings/core/v8/array_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/mediastream/media_track_constraints.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/filesystem/DataTransferItemFileSystem.h"
+#include "third_party/blink/renderer/modules/filesystem/data_transfer_item_file_system.h"
 
-#include "core/clipboard/DataObject.h"
-#include "core/clipboard/DataTransfer.h"
-#include "core/clipboard/DataTransferItem.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fileapi/File.h"
-#include "modules/filesystem/DOMFilePath.h"
-#include "modules/filesystem/DOMFileSystem.h"
-#include "modules/filesystem/DirectoryEntry.h"
-#include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
-#include "modules/filesystem/Entry.h"
-#include "modules/filesystem/FileEntry.h"
-#include "platform/AsyncFileSystemCallbacks.h"
-#include "platform/FileMetadata.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/core/clipboard/data_object.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer_item.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/file.h"
+#include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_path.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/modules/filesystem/dragged_isolated_file_system_impl.h"
+#include "third_party/blink/renderer/modules/filesystem/entry.h"
+#include "third_party/blink/renderer/modules/filesystem/file_entry.h"
+#include "third_party/blink/renderer/platform/async_file_system_callbacks.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
 
 namespace blink {
 

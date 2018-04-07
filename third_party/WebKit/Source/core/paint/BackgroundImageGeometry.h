@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BackgroundImageGeometry_h
-#define BackgroundImageGeometry_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BACKGROUND_IMAGE_GEOMETRY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BACKGROUND_IMAGE_GEOMETRY_H_
 
-#include "core/paint/PaintPhase.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/geometry/LayoutSize.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/paint/paint_phase.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -138,4 +138,4 @@ class BackgroundImageGeometry {
 
 }  // namespace blink
 
-#endif  // BackgroundImageGeometry_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BACKGROUND_IMAGE_GEOMETRY_H_

@@ -23,16 +23,16 @@
  * DAMAGE.
  */
 
-#ifndef AudioResampler_h
-#define AudioResampler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_RESAMPLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_RESAMPLER_H_
 
 #include <memory>
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioResamplerKernel.h"
-#include "platform/audio/AudioSourceProvider.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_resampler_kernel.h"
+#include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -74,4 +74,4 @@ class PLATFORM_EXPORT AudioResampler {
 
 }  // namespace blink
 
-#endif  // AudioResampler_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_RESAMPLER_H_

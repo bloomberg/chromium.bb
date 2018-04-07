@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DragEvent_h
-#define DragEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_DRAG_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_DRAG_EVENT_H_
 
-#include "core/CoreExport.h"
-#include "core/events/DragEventInit.h"
-#include "core/events/MouseEvent.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/events/drag_event_init.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ DEFINE_EVENT_TYPE_CASTS(DragEvent);
 
 }  // namespace blink
 
-#endif  // DragEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_DRAG_EVENT_H_

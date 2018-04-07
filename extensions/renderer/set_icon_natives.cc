@@ -16,7 +16,7 @@
 #include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/script_context.h"
 #include "ipc/ipc_message_utils.h"
-#include "third_party/WebKit/public/web/WebArrayBufferConverter.h"
+#include "third_party/blink/public/web/web_array_buffer_converter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebFont_h
-#define WebFont_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FONT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FONT_H_
 
-#include "WebCanvas.h"
-#include "WebColor.h"
-#include "WebCommon.h"
 #include <memory>
+#include "third_party/blink/public/platform/web_canvas.h"
+#include "third_party/blink/public/platform/web_color.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef DrawText

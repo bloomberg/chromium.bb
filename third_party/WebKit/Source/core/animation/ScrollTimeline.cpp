@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/ScrollTimeline.h"
+#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 
-#include "core/dom/ExceptionCode.h"
-#include "core/layout/LayoutBox.h"
-#include "core/paint/PaintLayerScrollableArea.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 
 namespace blink {
 

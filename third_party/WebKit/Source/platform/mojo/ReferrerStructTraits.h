@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ReferrerStructTraits_h
-#define ReferrerStructTraits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_REFERRER_STRUCT_TRAITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_REFERRER_STRUCT_TRAITS_H_
 
-#include "platform/weborigin/Referrer.h"
-#include "platform/weborigin/ReferrerPolicy.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/ReferrerPolicyEnumTraits.h"
-#include "public/platform/WebReferrerPolicy.h"
+#include "third_party/blink/public/platform/referrer_policy_enum_traits.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace mojo {
 
@@ -44,4 +44,4 @@ struct StructTraits<blink::mojom::ReferrerDataView, blink::Referrer> {
 
 }  // namespace mojo
 
-#endif  // ReferrerStructTraits_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_REFERRER_STRUCT_TRAITS_H_

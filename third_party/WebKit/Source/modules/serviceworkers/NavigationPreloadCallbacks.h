@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigationPreloadCallbacks_h
-#define NavigationPreloadCallbacks_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_NAVIGATION_PRELOAD_CALLBACKS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_NAVIGATION_PRELOAD_CALLBACKS_H_
 
 #include "base/macros.h"
-#include "platform/heap/Persistent.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
@@ -64,4 +64,4 @@ class SetNavigationPreloadHeaderCallbacks final
 
 }  // namespace blink
 
-#endif  // NavigationPreloadCallbacks_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_NAVIGATION_PRELOAD_CALLBACKS_H_

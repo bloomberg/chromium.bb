@@ -23,18 +23,18 @@
  * DAMAGE.
  */
 
-#include "public/web/WebSurroundingText.h"
+#include "third_party/blink/public/web/web_surrounding_text.h"
 
-#include "core/dom/Element.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/VisibleSelection.h"
-#include "core/editing/iterators/BackwardsCharacterIterator.h"
-#include "core/editing/iterators/CharacterIterator.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/html/forms/HTMLFormControlElement.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/iterators/backwards_character_iterator.h"
+#include "third_party/blink/renderer/core/editing/iterators/character_iterator.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 
 namespace blink {
 

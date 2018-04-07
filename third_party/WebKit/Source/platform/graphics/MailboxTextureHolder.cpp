@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/MailboxTextureHolder.h"
+#include "third_party/blink/renderer/platform/graphics/mailbox_texture_holder.h"
 
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/graphics/SkiaTextureHolder.h"
-#include "platform/graphics/gpu/SharedGpuContext.h"
-#include "public/platform/Platform.h"
 #include "skia/ext/texture_handle.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/graphics/skia_texture_holder.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
 namespace blink {

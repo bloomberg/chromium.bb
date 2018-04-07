@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HashTableDeletedValueType_h
-#define HashTableDeletedValueType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TABLE_DELETED_VALUE_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TABLE_DELETED_VALUE_TYPE_H_
 
 namespace WTF {
 
@@ -37,4 +37,4 @@ enum HashTableDeletedValueType { kHashTableDeletedValue };
 
 }  // namespace WTF
 
-#endif  // HashTableDeletedValueType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TABLE_DELETED_VALUE_TYPE_H_

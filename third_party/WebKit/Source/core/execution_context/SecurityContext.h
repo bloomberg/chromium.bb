@@ -24,21 +24,21 @@
  *
  */
 
-#ifndef SecurityContext_h
-#define SecurityContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_SECURITY_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_SECURITY_CONTEXT_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/frame/SandboxFlags.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/mojom/net/ip_address_space.mojom-blink.h"
-#include "public/platform/WebInsecureRequestPolicy.h"
-#include "public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #include <memory>
 
@@ -133,4 +133,4 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // SecurityContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_SECURITY_CONTEXT_H_

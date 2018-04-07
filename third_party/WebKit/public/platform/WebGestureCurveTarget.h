@@ -22,11 +22,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGestureCurveTarget_h
-#define WebGestureCurveTarget_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GESTURE_CURVE_TARGET_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GESTURE_CURVE_TARGET_H_
 
-#include "WebFloatSize.h"
-#include "WebPoint.h"
+#include "third_party/blink/public/platform/web_float_size.h"
+#include "third_party/blink/public/platform/web_point.h"
 
 namespace blink {
 

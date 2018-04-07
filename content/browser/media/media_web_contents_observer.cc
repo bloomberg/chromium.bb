@@ -16,7 +16,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
-#include "third_party/WebKit/public/platform/WebFullscreenVideoStatus.h"
+#include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/xr/XRDevice.h"
+#include "third_party/blink/renderer/modules/xr/xr_device.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/frame/Frame.h"
-#include "core/frame/LocalFrame.h"
-#include "modules/EventTargetModules.h"
-#include "modules/xr/XR.h"
-#include "modules/xr/XRFrameProvider.h"
-#include "modules/xr/XRSession.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/xr/xr.h"
+#include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
+#include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {
 

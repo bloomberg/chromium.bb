@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/gpu/XRWebGLDrawingBuffer.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/xr_webgl_drawing_buffer.h"
 
-#include "platform/graphics/AcceleratedStaticBitmapImage.h"
-#include "platform/graphics/gpu/DrawingBuffer.h"
-#include "platform/graphics/gpu/Extensions3DUtil.h"
+#include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {

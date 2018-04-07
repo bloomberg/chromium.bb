@@ -23,14 +23,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 #include <memory>
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/WTFTestHelper.h"
-#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_test_helper.h"
 
 namespace WTF {
 

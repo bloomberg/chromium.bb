@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/shorthands/marker.h"
+#include "third_party/blink/renderer/core/css/properties/shorthands/marker.h"
 
-#include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 
 namespace blink {
 namespace CSSShorthand {

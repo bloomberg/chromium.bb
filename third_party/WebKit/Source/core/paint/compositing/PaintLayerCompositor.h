@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PaintLayerCompositor_h
-#define PaintLayerCompositor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_PAINT_LAYER_COMPOSITOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_PAINT_LAYER_COMPOSITOR_H_
 
 #include <memory>
 #include "base/gtest_prod_util.h"
-#include "core/CoreExport.h"
-#include "core/dom/DocumentLifecycle.h"
-#include "core/paint/compositing/CompositingReasonFinder.h"
-#include "platform/graphics/GraphicsLayerClient.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -314,4 +314,4 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
 
 }  // namespace blink
 
-#endif  // PaintLayerCompositor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_PAINT_LAYER_COMPOSITOR_H_

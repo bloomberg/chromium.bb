@@ -24,16 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/paint/compositing/CompositingRequirementsUpdater.h"
+#include "third_party/blink/renderer/core/paint/compositing/compositing_requirements_updater.h"
 
 #include "base/macros.h"
-#include "core/layout/LayoutEmbeddedContent.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/PaintLayerStackingNode.h"
-#include "core/paint/PaintLayerStackingNodeIterator.h"
-#include "core/paint/compositing/PaintLayerCompositor.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_stacking_node.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_stacking_node_iterator.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 

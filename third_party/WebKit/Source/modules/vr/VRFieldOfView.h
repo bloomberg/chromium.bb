@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VRFieldOfView_h
-#define VRFieldOfView_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_FIELD_OF_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_FIELD_OF_VIEW_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ class VRFieldOfView final : public GarbageCollected<VRFieldOfView> {
 
 }  // namespace blink
 
-#endif  // VRFieldOfView_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_FIELD_OF_VIEW_H_

@@ -26,14 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/accessibility/AXImageMapLink.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_image_map_link.h"
 
 #include "SkMatrix44.h"
-#include "core/dom/AccessibleNode.h"
-#include "core/dom/ElementTraversal.h"
-#include "modules/accessibility/AXLayoutObject.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
-#include "platform/graphics/Path.h"
+#include "third_party/blink/renderer/core/dom/accessible_node.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
 
 namespace blink {
 

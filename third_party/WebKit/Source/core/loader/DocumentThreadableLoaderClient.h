@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DocumentThreadableLoaderClient_h
-#define DocumentThreadableLoaderClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_DOCUMENT_THREADABLE_LOADER_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_DOCUMENT_THREADABLE_LOADER_CLIENT_H_
 
 #include "base/macros.h"
-#include "core/loader/ThreadableLoaderClient.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class DocumentThreadableLoaderClient : public ThreadableLoaderClient {
 
 }  // namespace blink
 
-#endif  // DocumentThreadableLoaderClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_DOCUMENT_THREADABLE_LOADER_CLIENT_H_

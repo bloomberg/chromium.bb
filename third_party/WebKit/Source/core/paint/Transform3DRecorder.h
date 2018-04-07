@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Transform3DRecorder_h
-#define Transform3DRecorder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TRANSFORM_3D_RECORDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TRANSFORM_3D_RECORDER_H_
 
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -34,4 +34,4 @@ class Transform3DRecorder {
 
 }  // namespace blink
 
-#endif  // Transform3DRecorder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TRANSFORM_3D_RECORDER_H_

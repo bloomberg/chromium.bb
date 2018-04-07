@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintRecordBuilder_h
-#define PaintRecordBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_RECORD_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_RECORD_BUILDER_H_
 
 #include <memory>
 
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/paint/PropertyTreeState.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkMetaData;
@@ -72,4 +72,4 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
 
 }  // namespace blink
 
-#endif  // PaintRecordBuilder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_RECORD_BUILDER_H_

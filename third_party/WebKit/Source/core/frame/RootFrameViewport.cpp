@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/RootFrameViewport.h"
+#include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/ScrollAnchor.h"
-#include "platform/geometry/DoubleRect.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/scroll/ScrollAlignment.h"
-#include "public/platform/WebScrollIntoViewParams.h"
+#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/scroll_anchor.h"
+#include "third_party/blink/renderer/platform/geometry/double_rect.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
 
 namespace blink {
 

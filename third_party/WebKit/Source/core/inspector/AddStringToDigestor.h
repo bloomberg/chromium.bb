@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AddStringToDigestor_h
-#define AddStringToDigestor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_ADD_STRING_TO_DIGESTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_ADD_STRING_TO_DIGESTOR_H_
 
 namespace WTF {
 class String;
@@ -14,4 +14,4 @@ class WebCryptoDigestor;
 void AddStringToDigestor(WebCryptoDigestor*, const WTF::String&);
 }  // namespace blink
 
-#endif  // AddStringToDigestor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_ADD_STRING_TO_DIGESTOR_H_

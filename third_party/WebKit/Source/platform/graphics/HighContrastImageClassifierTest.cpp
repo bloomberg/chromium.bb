@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/HighContrastImageClassifier.h"
+#include "third_party/blink/renderer/platform/graphics/high_contrast_image_classifier.h"
 
-#include "platform/SharedBuffer.h"
-#include "platform/graphics/BitmapImage.h"
-#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
-#include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace {
 const float kEpsilon = 0.00001;

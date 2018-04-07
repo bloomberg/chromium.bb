@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ServiceWorkerWindowClientCallback_h
-#define ServiceWorkerWindowClientCallback_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_WINDOW_CLIENT_CALLBACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_WINDOW_CLIENT_CALLBACK_H_
 
 #include "base/macros.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_clients_info.h"
 
 namespace blink {
 
@@ -27,4 +27,4 @@ class NavigateClientCallback : public WebServiceWorkerClientCallbacks {
 
 }  // namespace blink
 
-#endif  // ServiceWorkerWindowClientCallback_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_WINDOW_CLIENT_CALLBACK_H_

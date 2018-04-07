@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/loader/testing/FetchTestingPlatformSupport.h"
+#include "third_party/blink/renderer/platform/loader/testing/fetch_testing_platform_support.h"
 
 #include <memory>
-#include "platform/loader/fetch/ResourceError.h"
-#include "platform/loader/testing/MockFetchContext.h"
-#include "platform/loader/testing/WebURLLoaderFactoryWithMock.h"
-#include "platform/testing/weburl_loader_mock_factory_impl.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLLoader.h"
-#include "public/platform/WebURLLoaderMockFactory.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_loader.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
+#include "third_party/blink/renderer/platform/loader/testing/web_url_loader_factory_with_mock.h"
+#include "third_party/blink/renderer/platform/testing/weburl_loader_mock_factory_impl.h"
 
 namespace blink {
 

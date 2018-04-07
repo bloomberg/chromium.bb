@@ -21,7 +21,7 @@
 #include "media/blink/media_blink_export.h"
 #include "media/filters/context_3d.h"
 #include "media/mojo/interfaces/media_metrics_provider.mojom.h"
-#include "third_party/WebKit/public/platform/WebVideoFrameSubmitter.h"
+#include "third_party/blink/public/platform/web_video_frame_submitter.h"
 
 namespace base {
 class SingleThreadTaskRunner;

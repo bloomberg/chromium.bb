@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/ThreadedWorkletMessagingProxy.h"
+#include "third_party/blink/renderer/core/workers/threaded_worklet_messaging_proxy.h"
 
 #include "base/single_thread_task_runner.h"
-#include "bindings/core/v8/V8CacheOptions.h"
-#include "core/dom/Document.h"
-#include "core/execution_context/SecurityContext.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/inspector/ThreadDebugger.h"
-#include "core/origin_trials/OriginTrialContext.h"
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/ThreadedWorkletObjectProxy.h"
-#include "core/workers/WorkerClients.h"
-#include "core/workers/WorkerInspectorProxy.h"
-#include "core/workers/WorkletGlobalScope.h"
-#include "core/workers/WorkletModuleResponsesMap.h"
-#include "core/workers/WorkletPendingTasks.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/inspector/thread_debugger.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/threaded_worklet_object_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
+#include "third_party/blink/renderer/core/workers/worklet_pending_tasks.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 

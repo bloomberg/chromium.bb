@@ -23,18 +23,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FilterOperation_h
-#define FilterOperation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_FILTER_OPERATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_FILTER_OPERATION_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/style/ShadowData.h"
-#include "platform/Length.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/BoxReflection.h"
-#include "platform/graphics/Color.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/style/shadow_data.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/box_reflection.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -344,4 +344,4 @@ DEFINE_FILTER_OPERATION_TYPE_CASTS(BoxReflectFilterOperation, BOX_REFLECT);
 
 }  // namespace blink
 
-#endif  // FilterOperation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_FILTER_OPERATION_H_

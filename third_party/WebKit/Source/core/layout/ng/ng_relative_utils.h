@@ -5,9 +5,9 @@
 #ifndef NGRelativeUtils_h
 #define NGRelativeUtils_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_logical_size.h"
-#include "platform/text/TextDirection.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
 
 namespace blink {
 

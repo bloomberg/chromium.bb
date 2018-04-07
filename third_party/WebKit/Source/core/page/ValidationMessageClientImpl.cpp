@@ -23,22 +23,22 @@
  * SUCH DAMAGE.
  */
 
-#include "core/page/ValidationMessageClientImpl.h"
+#include "third_party/blink/renderer/core/page/validation_message_client_impl.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
-#include "core/dom/Element.h"
-#include "core/exported/WebViewImpl.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/ValidationMessageOverlayDelegate.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/PlatformChromeClient.h"
-#include "public/platform/TaskType.h"
-#include "public/web/WebTextDirection.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/web/web_text_direction.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/validation_message_overlay_delegate.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/platform_chrome_client.h"
 
 namespace blink {
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SubTaskAttribution_h
-#define SubTaskAttribution_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_SUB_TASK_ATTRIBUTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_SUB_TASK_ATTRIBUTION_H_
 
 #include <memory>
 
-#include "core/dom/DOMHighResTimeStamp.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class SubTaskAttribution {
 
 }  // namespace blink
 
-#endif  // SubTaskAttribution_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_SUB_TASK_ATTRIBUTION_H_

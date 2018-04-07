@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutPoint_h
-#define LayoutPoint_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_LAYOUT_POINT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_LAYOUT_POINT_H_
 
 #include <iosfwd>
-#include "platform/geometry/DoublePoint.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/LayoutSize.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/geometry/double_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -215,4 +215,4 @@ PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const LayoutPoint&);
 
 }  // namespace blink
 
-#endif  // LayoutPoint_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_LAYOUT_POINT_H_

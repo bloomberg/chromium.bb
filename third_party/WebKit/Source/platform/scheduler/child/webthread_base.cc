@@ -5,7 +5,7 @@
 // An implementation of WebThread in terms of base::MessageLoop and
 // base::Thread
 
-#include "public/platform/scheduler/child/webthread_base.h"
+#include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
 
 #include <memory>
 #include "base/bind.h"
@@ -14,10 +14,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
 #include "base/threading/platform_thread.h"
-#include "platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
-#include "platform/scheduler/utility/webthread_impl_for_utility_thread.h"
-#include "platform/scheduler/worker/compositor_thread_scheduler.h"
-#include "public/platform/scheduler/single_thread_idle_task_runner.h"
+#include "third_party/blink/public/platform/scheduler/single_thread_idle_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/utility/webthread_impl_for_utility_thread.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/compositor_thread_scheduler.h"
 
 namespace blink {
 namespace scheduler {

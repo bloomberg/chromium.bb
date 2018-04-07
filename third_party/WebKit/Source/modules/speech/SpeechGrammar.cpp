@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/speech/SpeechGrammar.h"
+#include "third_party/blink/renderer/modules/speech/speech_grammar.h"
 
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
 namespace blink {
 

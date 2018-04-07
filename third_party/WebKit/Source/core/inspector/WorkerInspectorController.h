@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerInspectorController_h
-#define WorkerInspectorController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_WORKER_INSPECTOR_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_WORKER_INSPECTOR_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/inspector/InspectorSession.h"
-#include "core/inspector/InspectorTaskRunner.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashMap.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/core/inspector/inspector_session.h"
+#include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -86,4 +86,4 @@ class WorkerInspectorController final
 
 }  // namespace blink
 
-#endif  // WorkerInspectorController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_WORKER_INSPECTOR_CONTROLLER_H_

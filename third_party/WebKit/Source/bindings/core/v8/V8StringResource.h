@@ -23,14 +23,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8StringResource_h
-#define V8StringResource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_STRING_RESOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_STRING_RESOURCE_H_
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "platform/bindings/StringResource.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/string_resource.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -184,4 +184,4 @@ V8StringResource<kTreatNullAndUndefinedAsNullString>::FallbackString() const {
 
 }  // namespace blink
 
-#endif  // V8StringResource_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_STRING_RESOURCE_H_

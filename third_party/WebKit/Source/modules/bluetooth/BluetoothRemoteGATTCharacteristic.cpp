@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_characteristic.h"
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/events/Event.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "modules/bluetooth/Bluetooth.h"
-#include "modules/bluetooth/BluetoothCharacteristicProperties.h"
-#include "modules/bluetooth/BluetoothDevice.h"
-#include "modules/bluetooth/BluetoothError.h"
-#include "modules/bluetooth/BluetoothRemoteGATTDescriptor.h"
-#include "modules/bluetooth/BluetoothRemoteGATTService.h"
-#include "modules/bluetooth/BluetoothRemoteGATTUtils.h"
-#include "modules/bluetooth/BluetoothUUID.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_characteristic_properties.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_device.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_error.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_descriptor.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_service.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_utils.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_uuid.h"
 
 #include <memory>
 #include <utility>

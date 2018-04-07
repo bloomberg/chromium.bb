@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FirstPaintInvalidationTracking_h
-#define FirstPaintInvalidationTracking_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FIRST_PAINT_INVALIDATION_TRACKING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FIRST_PAINT_INVALIDATION_TRACKING_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -32,4 +32,4 @@ class PLATFORM_EXPORT FirstPaintInvalidationTracking {
 
 }  // namespace blink
 
-#endif  // FirstPaintInvalidationTracking_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FIRST_PAINT_INVALIDATION_TRACKING_H_

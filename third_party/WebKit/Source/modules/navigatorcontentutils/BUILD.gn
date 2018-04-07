@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("navigatorcontentutils") {
   sources = [
-    "NavigatorContentUtils.cpp",
-    "NavigatorContentUtils.h",
-    "NavigatorContentUtilsClient.cpp",
-    "NavigatorContentUtilsClient.h",
+    "navigator_content_utils.cc",
+    "navigator_content_utils.h",
+    "navigator_content_utils_client.cc",
+    "navigator_content_utils_client.h",
   ]
 }

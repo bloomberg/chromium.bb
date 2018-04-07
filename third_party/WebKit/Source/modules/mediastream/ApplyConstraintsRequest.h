@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ApplyConstraintsRequest_h
-#define ApplyConstraintsRequest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_APPLY_CONSTRAINTS_REQUEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_APPLY_CONSTRAINTS_REQUEST_H_
 
-#include "modules/ModulesExport.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/heap/Visitor.h"
-#include "public/platform/WebMediaConstraints.h"
-#include "public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
 
 namespace blink {
 
@@ -44,4 +44,4 @@ class MODULES_EXPORT ApplyConstraintsRequest final
 
 }  // namespace blink
 
-#endif  // ApplyConstraintsRequest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_APPLY_CONSTRAINTS_REQUEST_H_

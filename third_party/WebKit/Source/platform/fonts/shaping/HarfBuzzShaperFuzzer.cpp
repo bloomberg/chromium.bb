@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/Font.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/shaping/HarfBuzzShaper.h"
-#include "platform/testing/BlinkFuzzerTestSupport.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_shaper.h"
+#include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
 
 #include <stddef.h>
 #include <stdint.h>

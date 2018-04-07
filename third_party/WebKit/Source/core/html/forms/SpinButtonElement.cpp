@@ -24,20 +24,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/SpinButtonElement.h"
+#include "third_party/blink/renderer/core/html/forms/spin_button_element.h"
 
 #include "build/build_config.h"
-#include "core/events/MouseEvent.h"
-#include "core/events/WheelEvent.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/shadow/ShadowElementNames.h"
-#include "core/html_names.h"
-#include "core/input/EventHandler.h"
-#include "core/layout/LayoutBox.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "platform/scroll/ScrollbarTheme.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/events/wheel_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
 namespace blink {
 

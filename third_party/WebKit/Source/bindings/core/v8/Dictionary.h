@@ -23,16 +23,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Dictionary_h
-#define Dictionary_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_DICTIONARY_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_DICTIONARY_H_
 
-#include "bindings/core/v8/DictionaryIterator.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/CoreExport.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringView.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary_iterator.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -164,4 +164,4 @@ struct DictionaryHelper {
 
 }  // namespace blink
 
-#endif  // Dictionary_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_DICTIONARY_H_

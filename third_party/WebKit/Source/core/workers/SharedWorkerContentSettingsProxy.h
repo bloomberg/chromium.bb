@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SharedWorkerContentSettingsProxy_h
-#define SharedWorkerContentSettingsProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_CONTENT_SETTINGS_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_CONTENT_SETTINGS_PROXY_H_
 
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebContentSettingsClient.h"
-#include "public/platform/WebSecurityOrigin.h"
-#include "public/web/worker_content_settings_proxy.mojom-blink.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/web/worker_content_settings_proxy.mojom-blink.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class SharedWorkerContentSettingsProxy : public WebContentSettingsClient {
 
 }  // namespace blink
 
-#endif  // SharedWorkerContentSettingsProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_CONTENT_SETTINGS_PROXY_H_

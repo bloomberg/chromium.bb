@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_DEFAULT_PARAMS_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_DEFAULT_PARAMS_H_
 
-#include "platform/scheduler/child/page_visibility_state.h"
+#include "third_party/blink/renderer/platform/scheduler/child/page_visibility_state.h"
 
 namespace blink {
 namespace scheduler {

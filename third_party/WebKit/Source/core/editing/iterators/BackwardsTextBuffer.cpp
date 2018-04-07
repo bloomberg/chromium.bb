@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/iterators/BackwardsTextBuffer.h"
+#include "third_party/blink/renderer/core/editing/iterators/backwards_text_buffer.h"
 
 namespace blink {
 

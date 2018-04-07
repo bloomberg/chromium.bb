@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_FACTORY_H_
 #define CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_FACTORY_H_
 
-#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
+#include "third_party/blink/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace content {
 class RenderFrameHost;

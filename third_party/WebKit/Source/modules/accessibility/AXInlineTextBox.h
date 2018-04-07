@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXInlineTextBox_h
-#define AXInlineTextBox_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_INLINE_TEXT_BOX_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_INLINE_TEXT_BOX_H_
 
 #include "base/macros.h"
-#include "core/layout/line/AbstractInlineTextBox.h"
-#include "modules/accessibility/AXObject.h"
+#include "third_party/blink/renderer/core/layout/line/abstract_inline_text_box.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class AXInlineTextBox final : public AXObject {
 
 }  // namespace blink
 
-#endif  // AXInlineTextBox_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_INLINE_TEXT_BOX_H_

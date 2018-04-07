@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/image-decoders/ico/ICOImageDecoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/ico/ico_image_decoder.h"
 
 #include <algorithm>
-#include "platform/image-decoders/png/PNGImageDecoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/png/png_image_decoder.h"
 
 namespace blink {
 

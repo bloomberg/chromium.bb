@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webaudio/IIRProcessor.h"
+#include "third_party/blink/renderer/modules/webaudio/iir_processor.h"
 
 #include <memory>
-#include "modules/webaudio/IIRDSPKernel.h"
+#include "third_party/blink/renderer/modules/webaudio/iirdsp_kernel.h"
 
 namespace blink {
 

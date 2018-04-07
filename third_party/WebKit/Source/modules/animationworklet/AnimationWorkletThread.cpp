@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/animationworklet/AnimationWorkletThread.h"
+#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_thread.h"
 
 #include "base/memory/ptr_util.h"
-#include "core/loader/ThreadableLoadingContext.h"
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/WorkerBackingThread.h"
-#include "core/workers/WorkletThreadHolder.h"
-#include "modules/animationworklet/AnimationWorkletGlobalScope.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebThreadSupportingGC.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
+#include "third_party/blink/renderer/core/workers/worklet_thread_holder.h"
+#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 
 namespace blink {
 

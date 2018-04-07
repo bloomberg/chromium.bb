@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/ScriptPromise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 
-#include "bindings/core/v8/IDLTypes.h"
-#include "bindings/core/v8/NativeValueTraitsImpl.h"
-#include "bindings/core/v8/ScriptFunction.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/testing/NullExecutionContext.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "v8/include/v8.h"
 
 namespace blink {

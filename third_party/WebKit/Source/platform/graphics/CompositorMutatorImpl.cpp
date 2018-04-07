@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/CompositorMutatorImpl.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
 
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WaitableEvent.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/graphics/CompositorAnimator.h"
-#include "platform/graphics/CompositorMutatorClient.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_animator.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 

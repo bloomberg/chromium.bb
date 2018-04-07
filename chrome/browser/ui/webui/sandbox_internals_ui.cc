@@ -17,7 +17,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/common/sandbox_status_extension_android.mojom.h"
-#include "third_party/WebKit/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #endif
 
 #if defined(OS_LINUX)

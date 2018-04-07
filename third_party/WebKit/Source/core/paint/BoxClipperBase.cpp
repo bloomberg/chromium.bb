@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/BoxClipperBase.h"
+#include "third_party/blink/renderer/core/paint/box_clipper_base.h"
 
-#include "core/paint/ObjectPaintProperties.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/PaintLayer.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/paint/ClipDisplayItem.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/paint/object_paint_properties.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

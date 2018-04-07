@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/testing/BlinkFuzzerTestSupport.h"
-#include "public/platform/WebIconSizesParser.h"
-#include "public/platform/WebSize.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_icon_sizes_parser.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
 
 namespace blink {
 

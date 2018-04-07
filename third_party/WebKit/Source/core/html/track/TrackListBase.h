@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TrackListBase_h
-#define TrackListBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TRACK_LIST_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TRACK_LIST_BASE_H_
 
-#include "core/dom/events/EventTarget.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/track/TrackEvent.h"
-#include "core/html/track/TrackEventInit.h"
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/track/track_event.h"
+#include "third_party/blink/renderer/core/html/track/track_event_init.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 

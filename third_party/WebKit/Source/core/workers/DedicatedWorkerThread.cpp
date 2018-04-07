@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/workers/DedicatedWorkerThread.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker_thread.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/LocalFrame.h"
-#include "core/workers/DedicatedWorkerGlobalScope.h"
-#include "core/workers/DedicatedWorkerObjectProxy.h"
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/WorkerBackingThread.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 
 namespace blink {
 

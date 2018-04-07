@@ -18,14 +18,14 @@
  *
  */
 
-#ifndef WTF_HashCountedSet_h
-#define WTF_HashCountedSet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_COUNTED_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_COUNTED_SET_H_
 
 #include "base/macros.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/allocator/PartitionAllocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace WTF {
 
@@ -187,4 +187,4 @@ inline Vector<T> HashCountedSet<T, U, V, W>::AsVector() const {
 
 using WTF::HashCountedSet;
 
-#endif  // WTF_HashCountedSet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_COUNTED_SET_H_

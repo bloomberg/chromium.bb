@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_NET_INFO_HELPER_H_
 
 #include "net/base/network_change_notifier.h"
-#include "third_party/WebKit/public/platform/WebConnectionType.h"
+#include "third_party/blink/public/platform/web_connection_type.h"
 
 namespace content {
 

@@ -2,31 +2,31 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("credentialmanager") {
   sources = [
-    "AuthenticatorAssertionResponse.cpp",
-    "AuthenticatorAssertionResponse.h",
-    "AuthenticatorAttestationResponse.cpp",
-    "AuthenticatorAttestationResponse.h",
-    "AuthenticatorResponse.cpp",
-    "AuthenticatorResponse.h",
-    "Credential.cpp",
-    "Credential.h",
-    "CredentialManagerProxy.cpp",
-    "CredentialManagerProxy.h",
-    "CredentialManagerTypeConverters.cpp",
-    "CredentialManagerTypeConverters.h",
-    "CredentialsContainer.cpp",
-    "CredentialsContainer.h",
-    "FederatedCredential.cpp",
-    "FederatedCredential.h",
-    "NavigatorCredentials.cpp",
-    "NavigatorCredentials.h",
-    "PasswordCredential.cpp",
-    "PasswordCredential.h",
-    "PublicKeyCredential.cpp",
-    "PublicKeyCredential.h",
+    "authenticator_assertion_response.cc",
+    "authenticator_assertion_response.h",
+    "authenticator_attestation_response.cc",
+    "authenticator_attestation_response.h",
+    "authenticator_response.cc",
+    "authenticator_response.h",
+    "credential.cc",
+    "credential.h",
+    "credential_manager_proxy.cc",
+    "credential_manager_proxy.h",
+    "credential_manager_type_converters.cc",
+    "credential_manager_type_converters.h",
+    "credentials_container.cc",
+    "credentials_container.h",
+    "federated_credential.cc",
+    "federated_credential.h",
+    "navigator_credentials.cc",
+    "navigator_credentials.h",
+    "password_credential.cc",
+    "password_credential.h",
+    "public_key_credential.cc",
+    "public_key_credential.h",
   ]
 }

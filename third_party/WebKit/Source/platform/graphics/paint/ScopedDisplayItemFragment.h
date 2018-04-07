@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScopedDisplayItemFragment_h
-#define ScopedDisplayItemFragment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCOPED_DISPLAY_ITEM_FRAGMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCOPED_DISPLAY_ITEM_FRAGMENT_H_
 
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -33,4 +33,4 @@ class ScopedDisplayItemFragment final {
 
 }  // namespace blink
 
-#endif  // ScopedDisplayItemFragment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCOPED_DISPLAY_ITEM_FRAGMENT_H_

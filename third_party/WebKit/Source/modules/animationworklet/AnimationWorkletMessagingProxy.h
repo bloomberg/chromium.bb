@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AnimationWorkletMessagingProxy_h
-#define AnimationWorkletMessagingProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_MESSAGING_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_MESSAGING_PROXY_H_
 
 #include <memory>
-#include "core/dom/AnimationWorkletProxyClient.h"
-#include "core/workers/ThreadedWorkletMessagingProxy.h"
+#include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
+#include "third_party/blink/renderer/core/workers/threaded_worklet_messaging_proxy.h"
 
 namespace blink {
 
@@ -34,4 +34,4 @@ class AnimationWorkletMessagingProxy final
 
 }  // namespace blink
 
-#endif  // AnimationWorkletMessagingProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_MESSAGING_PROXY_H_

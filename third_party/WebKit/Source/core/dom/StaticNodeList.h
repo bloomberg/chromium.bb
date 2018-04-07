@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StaticNodeList_h
-#define StaticNodeList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_STATIC_NODE_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_STATIC_NODE_LIST_H_
 
-#include "core/dom/NodeList.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/dom/node_list.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -93,4 +93,4 @@ void StaticNodeTypeList<NodeType>::Trace(Visitor* visitor) {
 
 }  // namespace blink
 
-#endif  // StaticNodeList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_STATIC_NODE_LIST_H_

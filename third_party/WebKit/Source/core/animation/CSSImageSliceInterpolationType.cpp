@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSImageSliceInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_image_slice_interpolation_type.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/animation/CSSLengthInterpolationType.h"
-#include "core/animation/ImageSlicePropertyFunctions.h"
-#include "core/animation/SideIndex.h"
-#include "core/css/CSSBorderImageSliceValue.h"
-#include "core/css/resolver/StyleResolverState.h"
+#include "third_party/blink/renderer/core/animation/css_length_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/image_slice_property_functions.h"
+#include "third_party/blink/renderer/core/animation/side_index.h"
+#include "third_party/blink/renderer/core/css/css_border_image_slice_value.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 
 namespace blink {
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GeometryMapper_h
-#define GeometryMapper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_GEOMETRY_MAPPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_GEOMETRY_MAPPER_H_
 
-#include "platform/graphics/paint/FloatClipRect.h"
-#include "platform/graphics/paint/PropertyTreeState.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -138,4 +138,4 @@ class PLATFORM_EXPORT GeometryMapper {
 
 }  // namespace blink
 
-#endif  // GeometryMapper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_GEOMETRY_MAPPER_H_

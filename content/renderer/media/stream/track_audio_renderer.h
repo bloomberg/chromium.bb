@@ -21,7 +21,7 @@
 #include "content/public/renderer/media_stream_audio_renderer.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "media/base/audio_renderer_sink.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace media {
 class AudioBus;

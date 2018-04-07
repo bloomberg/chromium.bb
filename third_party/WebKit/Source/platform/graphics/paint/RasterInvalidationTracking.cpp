@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/RasterInvalidationTracking.h"
+#include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 
 #include "SkImageFilter.h"
-#include "platform/geometry/GeometryAsJSON.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/Color.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/graphics/paint/PaintRecorder.h"
+#include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 
 namespace blink {
 

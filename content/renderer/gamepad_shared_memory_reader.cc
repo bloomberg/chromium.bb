@@ -11,8 +11,8 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/WebKit/public/platform/WebGamepadListener.h"
-#include "third_party/WebKit/public/platform/WebPlatformEventListener.h"
+#include "third_party/blink/public/platform/web_gamepad_listener.h"
+#include "third_party/blink/public/platform/web_platform_event_listener.h"
 
 namespace content {
 

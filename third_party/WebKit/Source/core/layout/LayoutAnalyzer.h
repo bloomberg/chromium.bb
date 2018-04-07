@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayoutAnalyzer_h
-#define LayoutAnalyzer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_ANALYZER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_ANALYZER_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "platform/LayoutUnit.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -96,4 +96,4 @@ class LayoutAnalyzer {
 
 }  // namespace blink
 
-#endif  // LayoutAnalyzer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_ANALYZER_H_

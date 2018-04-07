@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8WorkerOrWorkletEventListener.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_worker_or_worklet_event_listener.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8Event.h"
-#include "bindings/core/v8/V8EventTarget.h"
-#include "bindings/core/v8/V8GCController.h"
-#include "bindings/core/v8/V8ScriptRunner.h"
-#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/probe/CoreProbes.h"
-#include "core/workers/WorkerOrWorkletGlobalScope.h"
-#include "platform/bindings/V8DOMWrapper.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
+#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 
 namespace blink {
 

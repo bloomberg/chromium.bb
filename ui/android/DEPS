@@ -13,7 +13,7 @@ include_rules = [
   "+jni",
   "+services/viz/public/interfaces",
   "+skia/ext",
-  "+third_party/WebKit/public/platform/WebCursorInfo.h",
+  "+third_party/blink/public/platform/web_cursor_info.h",
   "+third_party/skia",
   "+ui/base",
   "+ui/compositor/compositor_lock.h",

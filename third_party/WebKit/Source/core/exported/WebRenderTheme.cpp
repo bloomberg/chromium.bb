@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebRenderTheme.h"
+#include "third_party/blink/public/web/web_render_theme.h"
 
-#include "core/layout/LayoutTheme.h"
-#include "core/layout/LayoutThemeDefault.h"
-#include "platform/graphics/Color.h"
-#include "public/platform/WebColor.h"
+#include "third_party/blink/public/platform/web_color.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/layout/layout_theme_default.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 
 namespace blink {
 

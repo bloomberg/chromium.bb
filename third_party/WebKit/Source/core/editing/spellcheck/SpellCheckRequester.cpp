@@ -23,22 +23,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/spellcheck/SpellCheckRequester.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_check_requester.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Node.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/markers/DocumentMarkerController.h"
-#include "core/editing/spellcheck/SpellChecker.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "core/html/forms/TextControlElement.h"
-#include "platform/Histogram.h"
-#include "public/platform/TaskType.h"
-#include "public/web/WebTextCheckClient.h"
-#include "public/web/WebTextCheckingCompletion.h"
-#include "public/web/WebTextCheckingResult.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/web/web_text_check_client.h"
+#include "third_party/blink/public/web/web_text_checking_completion.h"
+#include "third_party/blink/public/web/web_text_checking_result.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
 

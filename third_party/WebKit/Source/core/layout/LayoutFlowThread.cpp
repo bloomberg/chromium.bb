@@ -27,10 +27,10 @@
  * SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutFlowThread.h"
+#include "third_party/blink/renderer/core/layout/layout_flow_thread.h"
 
-#include "core/layout/FragmentainerIterator.h"
-#include "core/layout/LayoutMultiColumnSet.h"
+#include "third_party/blink/renderer/core/layout/fragmentainer_iterator.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
 
 namespace blink {
 

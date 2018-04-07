@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/transforms/InterpolatedTransformOperation.h"
+#include "third_party/blink/renderer/platform/transforms/interpolated_transform_operation.h"
 
-#include "platform/transforms/IdentityTransformOperation.h"
+#include "third_party/blink/renderer/platform/transforms/identity_transform_operation.h"
 
 namespace blink {
 

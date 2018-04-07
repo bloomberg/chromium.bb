@@ -10,7 +10,7 @@
 
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "third_party/WebKit/public/platform/modules/keyboard_lock/keyboard_lock.mojom.h"
+#include "third_party/blink/public/platform/modules/keyboard_lock/keyboard_lock.mojom.h"
 
 namespace content {
 

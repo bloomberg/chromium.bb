@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AppBannerController_h
-#define AppBannerController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_APP_BANNER_APP_BANNER_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_APP_BANNER_APP_BANNER_CONTROLLER_H_
 
-#include "modules/ModulesExport.h"
-#include "platform/heap/Persistent.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/modules/app_banner/app_banner.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/app_banner/app_banner.mojom-blink.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -34,4 +34,4 @@ class MODULES_EXPORT AppBannerController final
 
 }  // namespace blink
 
-#endif  // AppBannerController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_APP_BANNER_APP_BANNER_CONTROLLER_H_

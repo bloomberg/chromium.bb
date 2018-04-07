@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef USBDevice_h
-#define USBDevice_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_DEVICE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_DEVICE_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/array_buffer_or_array_buffer_view.h"
-#include "core/dom/ContextLifecycleObserver.h"
 #include "device/usb/public/mojom/device.mojom-blink.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/BitVector.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -182,4 +182,4 @@ class USBDevice : public ScriptWrappable, public ContextLifecycleObserver {
 
 }  // namespace blink
 
-#endif  // USBDevice_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_DEVICE_H_

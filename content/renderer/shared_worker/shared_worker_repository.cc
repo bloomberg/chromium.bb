@@ -7,7 +7,7 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_frame_impl.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/WebKit/public/web/WebSharedWorkerConnectListener.h"
+#include "third_party/blink/public/web/web_shared_worker_connect_listener.h"
 
 namespace content {
 

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/VideoPainter.h"
+#include "third_party/blink/renderer/core/paint/video_painter.h"
 
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/paint/PaintControllerPaintTest.h"
-#include "core/paint/StubChromeClientForSPv2.h"
-#include "platform/testing/EmptyWebMediaPlayer.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebLayer.h"
-#include "public/platform/WebSize.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_compositor_support.h"
+#include "third_party/blink/public/platform/web_layer.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
+#include "third_party/blink/renderer/core/paint/stub_chrome_client_for_spv2.h"
+#include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 // Integration tests of video painting code (in SPv2 mode).
 

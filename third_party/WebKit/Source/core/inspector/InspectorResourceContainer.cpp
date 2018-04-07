@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/InspectorResourceContainer.h"
+#include "third_party/blink/renderer/core/inspector/inspector_resource_container.h"
 
-#include "core/inspector/InspectedFrames.h"
+#include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 
 namespace blink {
 

@@ -24,15 +24,15 @@
  * DAMAGE.
  */
 
-#include "core/inspector/InspectorApplicationCacheAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorApplicationCacheAgent.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InspectedFrames.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/FrameLoader.h"
-#include "platform/network/NetworkStateNotifier.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
+#include "third_party/blink/renderer/core/inspector/inspected_frames.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

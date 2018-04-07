@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/MergeIdenticalElementsCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/merge_identical_elements_command.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Element.h"
-#include "core/editing/EditingUtilities.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 
 namespace blink {
 

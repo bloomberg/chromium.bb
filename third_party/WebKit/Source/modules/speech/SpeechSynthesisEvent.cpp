@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/speech/SpeechSynthesisEvent.h"
+#include "third_party/blink/renderer/modules/speech/speech_synthesis_event.h"
 
 namespace blink {
 

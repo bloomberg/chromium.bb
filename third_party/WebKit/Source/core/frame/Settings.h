@@ -25,32 +25,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Settings_h
-#define Settings_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SETTINGS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SETTINGS_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "bindings/core/v8/V8CacheOptions.h"
-#include "core/CoreExport.h"
-#include "core/dom/events/AddEventListenerOptionsDefaults.h"
-#include "core/editing/EditingBehaviorTypes.h"
-#include "core/editing/SelectionStrategy.h"
-#include "core/frame/SettingsDelegate.h"
-#include "core/html/media/AutoplayPolicy.h"
-#include "core/html/track/TextTrackKindUserPreference.h"
-#include "core/loader/FrameLoaderTypes.h"
-#include "core/settings_macros.h"
-#include "platform/Timer.h"
-#include "platform/fonts/GenericFontFamilySettings.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/HighContrastSettings.h"
-#include "platform/graphics/ImageAnimationPolicy.h"
-#include "platform/weborigin/KURL.h"
-#include "public/platform/PointerProperties.h"
-#include "public/platform/WebDisplayMode.h"
-#include "public/platform/WebEffectiveConnectionType.h"
-#include "public/platform/WebViewportStyle.h"
+#include "third_party/blink/public/platform/pointer_properties.h"
+#include "third_party/blink/public/platform/web_display_mode.h"
+#include "third_party/blink/public/platform/web_effective_connection_type.h"
+#include "third_party/blink/public/platform/web_viewport_style.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/add_event_listener_options_defaults.h"
+#include "third_party/blink/renderer/core/editing/editing_behavior_types.h"
+#include "third_party/blink/renderer/core/editing/selection_strategy.h"
+#include "third_party/blink/renderer/core/frame/settings_delegate.h"
+#include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
+#include "third_party/blink/renderer/core/html/track/text_track_kind_user_preference.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/settings_macros.h"
+#include "third_party/blink/renderer/platform/fonts/generic_font_family_settings.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/high_contrast_settings.h"
+#include "third_party/blink/renderer/platform/graphics/image_animation_policy.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -117,4 +117,4 @@ class CORE_EXPORT Settings {
 
 }  // namespace blink
 
-#endif  // Settings_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SETTINGS_H_

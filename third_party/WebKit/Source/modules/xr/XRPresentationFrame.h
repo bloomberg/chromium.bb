@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef XRPresentationFrame_h
-#define XRPresentationFrame_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_PRESENTATION_FRAME_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_PRESENTATION_FRAME_H_
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

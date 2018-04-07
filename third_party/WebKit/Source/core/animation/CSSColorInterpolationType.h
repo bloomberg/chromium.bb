@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSColorInterpolationType_h
-#define CSSColorInterpolationType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_COLOR_INTERPOLATION_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_COLOR_INTERPOLATION_TYPE_H_
 
 #include <memory>
-#include "core/animation/CSSInterpolationType.h"
-#include "core/css_value_keywords.h"
-#include "platform/graphics/Color.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_type.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class CSSColorInterpolationType : public CSSInterpolationType {
 
 }  // namespace blink
 
-#endif  // CSSColorInterpolationType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_COLOR_INTERPOLATION_TYPE_H_

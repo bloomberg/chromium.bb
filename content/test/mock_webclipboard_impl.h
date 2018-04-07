@@ -16,9 +16,9 @@
 
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
-#include "third_party/WebKit/public/platform/WebDragData.h"
-#include "third_party/WebKit/public/platform/WebImage.h"
-#include "third_party/WebKit/public/platform/WebMockClipboard.h"
+#include "third_party/blink/public/platform/web_drag_data.h"
+#include "third_party/blink/public/platform/web_image.h"
+#include "third_party/blink/public/platform/web_mock_clipboard.h"
 
 namespace content {
 

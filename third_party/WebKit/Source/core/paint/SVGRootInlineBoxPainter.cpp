@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/SVGRootInlineBoxPainter.h"
+#include "third_party/blink/renderer/core/paint/svg_root_inline_box_painter.h"
 
-#include "core/layout/api/LineLayoutAPIShim.h"
-#include "core/layout/api/SelectionState.h"
-#include "core/layout/svg/line/SVGInlineFlowBox.h"
-#include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "core/layout/svg/line/SVGRootInlineBox.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/SVGInlineFlowBoxPainter.h"
-#include "core/paint/SVGInlineTextBoxPainter.h"
-#include "core/paint/SVGPaintContext.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
+#include "third_party/blink/renderer/core/layout/api/selection_state.h"
+#include "third_party/blink/renderer/core/layout/svg/line/svg_inline_flow_box.h"
+#include "third_party/blink/renderer/core/layout/svg/line/svg_inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/svg/line/svg_root_inline_box.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/svg_inline_flow_box_painter.h"
+#include "third_party/blink/renderer/core/paint/svg_inline_text_box_painter.h"
+#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
 

@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMediaSource_h
-#define WebMediaSource_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_SOURCE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_SOURCE_H_
 
-#include "WebTimeRange.h"
-#include "WebURL.h"
+#include "third_party/blink/public/platform/web_time_range.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 namespace blink {
 

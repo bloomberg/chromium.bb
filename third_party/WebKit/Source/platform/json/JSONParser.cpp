@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/json/JSONParser.h"
+#include "third_party/blink/renderer/platform/json/json_parser.h"
 
-#include "platform/Decimal.h"
-#include "platform/json/JSONValues.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/StringToNumber.h"
+#include "third_party/blink/renderer/platform/decimal.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 
 namespace blink {
 

@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebExternalPopupMenu_h
-#define WebExternalPopupMenu_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EXTERNAL_POPUP_MENU_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EXTERNAL_POPUP_MENU_H_
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class WebExternalPopupMenu {
 
 }  // namespace blink
 
-#endif  // WebExternalPopupMenu_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EXTERNAL_POPUP_MENU_H_

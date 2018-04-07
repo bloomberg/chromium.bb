@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/child/worker_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_task_queue.h"
 
-#include "platform/scheduler/base/task_queue_impl.h"
-#include "platform/scheduler/public/non_main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/public/non_main_thread_scheduler.h"
 
 namespace blink {
 namespace scheduler {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/util/task_duration_metric_reporter.h"
+#include "third_party/blink/renderer/platform/scheduler/util/task_duration_metric_reporter.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_base.h"

@@ -5,7 +5,7 @@
 #ifndef STORAGE_COMMON_FILEAPI_FILE_SYSTEM_TYPES_H_
 #define STORAGE_COMMON_FILEAPI_FILE_SYSTEM_TYPES_H_
 
-#include "third_party/WebKit/public/platform/WebFileSystemType.h"
+#include "third_party/blink/public/platform/web_file_system_type.h"
 
 namespace storage {
 

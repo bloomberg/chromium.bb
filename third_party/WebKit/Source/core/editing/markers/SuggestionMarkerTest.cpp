@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/markers/SuggestionMarker.h"
+#include "third_party/blink/renderer/core/editing/markers/suggestion_marker.h"
 
-#include "core/editing/markers/SuggestionMarkerProperties.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/editing/markers/suggestion_marker_properties.h"
 
 namespace blink {
 

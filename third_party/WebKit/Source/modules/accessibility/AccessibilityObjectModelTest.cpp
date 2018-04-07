@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/AccessibleNode.h"
-#include "core/dom/AccessibleNodeList.h"
-#include "core/html/HTMLBodyElement.h"
-#include "core/testing/sim/SimRequest.h"
-#include "core/testing/sim/SimTest.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/accessibility/AXTable.h"
-#include "modules/accessibility/AXTableCell.h"
-#include "modules/accessibility/AXTableRow.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/accessible_node.h"
+#include "third_party/blink/renderer/core/dom/accessible_node_list.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_table.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_table_cell.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_table_row.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 

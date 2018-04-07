@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlTimelineElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_timeline_element.h"
 
-#include "core/events/PointerEvent.h"
-#include "core/events/PointerEventInit.h"
-#include "core/events/TouchEvent.h"
-#include "core/events/TouchEventInit.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/testing/PageTestBase.h"
-#include "modules/media_controls/MediaControlsImpl.h"
-#include "public/platform/WebPointerProperties.h"
+#include "third_party/blink/public/platform/web_pointer_properties.h"
+#include "third_party/blink/renderer/core/events/pointer_event.h"
+#include "third_party/blink/renderer/core/events/pointer_event_init.h"
+#include "third_party/blink/renderer/core/events/touch_event.h"
+#include "third_party/blink/renderer/core/events/touch_event_init.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 
 namespace blink {
 

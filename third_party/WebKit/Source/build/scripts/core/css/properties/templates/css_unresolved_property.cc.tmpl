@@ -6,9 +6,9 @@
 {{source_files_for_generated_file(template_file, input_files)}}
 // clang-format off
 
-#include "core/css/properties/css_unresolved_property.h"
+#include "third_party/blink/renderer/core/css/properties/css_unresolved_property.h"
 
-#include "core/css/properties/longhands/Variable.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/variable.h"
 {% for property_filename in longhand_property_filenames %}
   {% if property_filename != "longhand" %}
 #include "core/css/properties/longhands/{{property_filename}}.h"

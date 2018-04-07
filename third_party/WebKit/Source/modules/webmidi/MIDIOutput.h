@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIOutput_h
-#define MIDIOutput_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_OUTPUT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_OUTPUT_H_
 
 #include <utility>
 #include "base/time/time.h"
-#include "core/typed_arrays/ArrayBufferViewHelpers.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "modules/webmidi/MIDIPort.h"
-#include "platform/heap/HeapAllocator.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_port.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
 
@@ -83,4 +83,4 @@ class MIDIOutput final : public MIDIPort {
 
 }  // namespace blink
 
-#endif  // MIDIOutput_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_OUTPUT_H_

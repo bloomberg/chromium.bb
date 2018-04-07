@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/forms/HTMLInputElement.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/events/KeyboardEvent.h"
-#include "core/events/KeyboardEventInit.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/VisualViewport.h"
-#include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLHtmlElement.h"
-#include "core/html/forms/DateTimeChooser.h"
-#include "core/html/forms/HTMLFormElement.h"
-#include "core/html/forms/HTMLOptionElement.h"
-#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/events/keyboard_event_init.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

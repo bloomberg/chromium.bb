@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/ScriptableDocumentParser.h"
+#include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/Settings.h"
-#include "platform/loader/fetch/SourceKeyedCachedMetadataHandler.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/platform/loader/fetch/source_keyed_cached_metadata_handler.h"
 
 namespace blink {
 

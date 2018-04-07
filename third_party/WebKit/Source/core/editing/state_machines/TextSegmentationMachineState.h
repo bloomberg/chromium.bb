@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextSegmentationMachineState_h
-#define TextSegmentationMachineState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_STATE_MACHINES_TEXT_SEGMENTATION_MACHINE_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_STATE_MACHINES_TEXT_SEGMENTATION_MACHINE_STATE_H_
 
-#include "core/CoreExport.h"
 #include <ostream>  // NOLINT
+#include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 
@@ -27,4 +27,4 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&,
 
 }  // namespace blink
 
-#endif  // TextSegmentationMachineState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_STATE_MACHINES_TEXT_SEGMENTATION_MACHINE_STATE_H_

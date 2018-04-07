@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/KeyframeEffect.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 
 #include <memory>
 
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/core/v8/V8KeyframeEffectOptions.h"
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
-#include "core/animation/Animation.h"
-#include "core/animation/AnimationClock.h"
-#include "core/animation/AnimationTestHelper.h"
-#include "core/animation/DocumentTimeline.h"
-#include "core/animation/EffectTiming.h"
-#include "core/animation/KeyframeEffectModel.h"
-#include "core/animation/OptionalEffectTiming.h"
-#include "core/animation/Timing.h"
-#include "core/dom/Document.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_keyframe_effect_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/animation/animation_clock.h"
+#include "third_party/blink/renderer/core/animation/animation_test_helper.h"
+#include "third_party/blink/renderer/core/animation/document_timeline.h"
+#include "third_party/blink/renderer/core/animation/effect_timing.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/animation/optional_effect_timing.h"
+#include "third_party/blink/renderer/core/animation/timing.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "v8/include/v8.h"
 
 namespace blink {

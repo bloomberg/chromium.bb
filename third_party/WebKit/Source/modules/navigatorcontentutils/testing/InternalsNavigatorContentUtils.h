@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InternalsNavigatorContentUtils_h
-#define InternalsNavigatorContentUtils_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NAVIGATORCONTENTUTILS_TESTING_INTERNALS_NAVIGATOR_CONTENT_UTILS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_NAVIGATORCONTENTUTILS_TESTING_INTERNALS_NAVIGATOR_CONTENT_UTILS_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -21,4 +21,4 @@ class InternalsNavigatorContentUtils {
 
 }  // namespace blink
 
-#endif  // InternalsNavigatorContentUtils_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_NAVIGATORCONTENTUTILS_TESTING_INTERNALS_NAVIGATOR_CONTENT_UTILS_H_

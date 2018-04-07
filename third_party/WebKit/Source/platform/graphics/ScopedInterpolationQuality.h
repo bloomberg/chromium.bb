@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScopedInterpolationQuality_h
-#define ScopedInterpolationQuality_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SCOPED_INTERPOLATION_QUALITY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SCOPED_INTERPOLATION_QUALITY_H_
 
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsTypes.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 
 namespace blink {
 
@@ -37,4 +37,4 @@ class ScopedInterpolationQuality {
 
 }  // namespace blink
 
-#endif  // ScopedInterpolationQuality_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SCOPED_INTERPOLATION_QUALITY_H_

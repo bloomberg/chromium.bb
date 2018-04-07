@@ -26,13 +26,13 @@
  *
  */
 
-#ifndef LayoutThemeDefault_h
-#define LayoutThemeDefault_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_DEFAULT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_DEFAULT_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutTheme.h"
-#include "core/paint/ThemePainterDefault.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/paint/theme_painter_default.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -161,4 +161,4 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
 
 }  // namespace blink
 
-#endif  // LayoutThemeDefault_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_DEFAULT_H_

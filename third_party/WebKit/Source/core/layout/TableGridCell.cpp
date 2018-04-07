@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/TableGridCell.h"
+#include "third_party/blink/renderer/core/layout/table_grid_cell.h"
 
-#include "core/layout/LayoutTableCell.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 
 namespace blink {
 

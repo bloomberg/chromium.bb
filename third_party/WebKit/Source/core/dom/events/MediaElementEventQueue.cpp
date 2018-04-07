@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/events/MediaElementEventQueue.h"
+#include "third_party/blink/renderer/core/dom/events/media_element_event_queue.h"
 
-#include "core/dom/events/Event.h"
-#include "core/probe/CoreProbes.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 

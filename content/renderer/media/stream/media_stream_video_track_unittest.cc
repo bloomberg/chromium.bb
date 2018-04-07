@@ -18,7 +18,7 @@
 #include "content/renderer/media/stream/video_track_adapter.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebHeap.h"
+#include "third_party/blink/public/web/web_heap.h"
 
 namespace content {
 

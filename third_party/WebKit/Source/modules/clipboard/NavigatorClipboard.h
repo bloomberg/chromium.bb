@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigatorClipboard_h
-#define NavigatorClipboard_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CLIPBOARD_NAVIGATOR_CLIPBOARD_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CLIPBOARD_NAVIGATOR_CLIPBOARD_H_
 
-#include "core/CoreExport.h"
-#include "core/frame/Navigator.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 

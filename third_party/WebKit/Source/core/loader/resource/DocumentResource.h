@@ -20,15 +20,15 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef DocumentResource_h
-#define DocumentResource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_DOCUMENT_RESOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_DOCUMENT_RESOURCE_H_
 
 #include <memory>
-#include "core/loader/resource/TextResource.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/ResourceClient.h"
-#include "platform/loader/fetch/TextResourceDecoderOptions.h"
+#include "third_party/blink/renderer/core/loader/resource/text_resource.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 
 namespace blink {
 
@@ -82,4 +82,4 @@ DEFINE_TYPE_CASTS(DocumentResource,
 
 }  // namespace blink
 
-#endif  // DocumentResource_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_DOCUMENT_RESOURCE_H_

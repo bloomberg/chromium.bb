@@ -13,7 +13,7 @@
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
-#include "third_party/WebKit/public/web/WebTextCheckClient.h"
+#include "third_party/blink/public/web/web_text_check_client.h"
 
 class SpellCheck;
 struct SpellCheckResult;

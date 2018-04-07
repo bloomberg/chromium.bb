@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ObjectPaintInvalidator.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutEmbeddedContent.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h"
-#include "core/paint/PaintInvalidator.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/compositing/CompositedLayerMapping.h"
-#include "core/paint/ng/ng_paint_fragment.h"
-#include "platform/PlatformChromeClient.h"
-#include "platform/graphics/GraphicsLayer.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/find_paint_offset_and_visual_rect_needing_update.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/paint/paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/platform_chrome_client.h"
 
 namespace blink {
 

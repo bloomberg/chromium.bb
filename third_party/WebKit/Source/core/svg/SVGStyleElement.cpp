@@ -20,13 +20,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGStyleElement.h"
+#include "third_party/blink/renderer/core/svg/svg_style_element.h"
 
-#include "core/css/CSSStyleSheet.h"
-#include "core/dom/events/Event.h"
-#include "core/media_type_names.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/media_type_names.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

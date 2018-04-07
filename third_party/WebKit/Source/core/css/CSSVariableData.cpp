@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSVariableData.h"
+#include "third_party/blink/renderer/core/css/css_variable_data.h"
 
-#include "core/css/CSSSyntaxDescriptor.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/StringView.h"
+#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 

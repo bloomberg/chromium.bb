@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/AccessibleNodeList.h"
+#include "third_party/blink/renderer/core/dom/accessible_node_list.h"
 
-#include "core/dom/AccessibleNode.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/dom/accessible_node.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

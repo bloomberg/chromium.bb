@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LinkStyle_h
-#define LinkStyle_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LINK_STYLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LINK_STYLE_H_
 
-#include "core/css/StyleEngine.h"
-#include "core/dom/Node.h"
-#include "core/html/LinkResource.h"
-#include "core/loader/resource/CSSStyleSheetResource.h"
-#include "platform/loader/fetch/ResourceClient.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/html/link_resource.h"
+#include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

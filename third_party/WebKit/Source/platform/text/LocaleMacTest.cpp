@@ -23,16 +23,16 @@
  * DAMAGE.
  */
 
-#include "platform/text/LocaleMac.h"
+#include "third_party/blink/renderer/platform/text/locale_mac.h"
 
 #include <memory>
-#include "platform/DateComponents.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/wtf/DateMath.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/CString.h"
-#include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/date_components.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 namespace blink {
 

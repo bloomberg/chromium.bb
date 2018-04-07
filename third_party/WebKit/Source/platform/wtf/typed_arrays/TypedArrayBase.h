@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TypedArrayBase_h
-#define TypedArrayBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_TYPED_ARRAY_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_TYPED_ARRAY_BASE_H_
 
-#include "platform/wtf/typed_arrays/ArrayBuffer.h"
-#include "platform/wtf/typed_arrays/ArrayBufferView.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_view.h"
 
 namespace WTF {
 
@@ -123,4 +123,4 @@ class TypedArrayBase : public ArrayBufferView {
 
 using WTF::TypedArrayBase;
 
-#endif  // TypedArrayBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_TYPED_ARRAY_BASE_H_

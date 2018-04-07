@@ -1,9 +1,9 @@
 include_rules = [
-    "-modules",
-    "+modules/EventModules.h",
-    "+modules/EventTargetModules.h",
-    "+modules/ModulesExport.h",
-    "+modules/imagecapture",
-    "+modules/mediastream",
+    "-third_party/blink/renderer/modules",
+    "+third_party/blink/renderer/modules/event_modules.h",
+    "+third_party/blink/renderer/modules/event_target_modules.h",
+    "+third_party/blink/renderer/modules/modules_export.h",
+    "+third_party/blink/renderer/modules/imagecapture",
+    "+third_party/blink/renderer/modules/mediastream",
     "+mojo/public/cpp/bindings/binding.h",
 ]

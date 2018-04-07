@@ -32,11 +32,11 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef UnicodeRange_h
-#define UnicodeRange_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_UNICODE_RANGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_UNICODE_RANGE_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
 
@@ -117,4 +117,4 @@ PLATFORM_EXPORT unsigned FindCharUnicodeRange(UChar32);
 
 }  // namespace blink
 
-#endif  // UnicodeRange_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_UNICODE_RANGE_H_

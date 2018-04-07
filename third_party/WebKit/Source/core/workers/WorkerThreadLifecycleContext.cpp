@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/WorkerThreadLifecycleContext.h"
+#include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_context.h"
 
-#include "core/workers/WorkerThreadLifecycleObserver.h"
+#include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_observer.h"
 
 namespace blink {
 

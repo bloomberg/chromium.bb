@@ -8,9 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/blink/cc_blink_export.h"
-#include "third_party/WebKit/public/platform/WebCompositorSupport.h"
-#include "third_party/WebKit/public/platform/WebContentLayerClient.h"
-#include "third_party/WebKit/public/platform/WebLayer.h"
+#include "third_party/blink/public/platform/web_compositor_support.h"
+#include "third_party/blink/public/platform/web_content_layer_client.h"
+#include "third_party/blink/public/platform/web_layer.h"
 
 namespace cc_blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RTCVoidRequestPromiseImpl_h
-#define RTCVoidRequestPromiseImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_VOID_REQUEST_PROMISE_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_VOID_REQUEST_PROMISE_IMPL_H_
 
-#include "platform/peerconnection/RTCVoidRequest.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -36,4 +36,4 @@ class RTCVoidRequestPromiseImpl final : public RTCVoidRequest {
 
 }  // namespace blink
 
-#endif  // RTCVoidRequestPromiseImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_VOID_REQUEST_PROMISE_IMPL_H_

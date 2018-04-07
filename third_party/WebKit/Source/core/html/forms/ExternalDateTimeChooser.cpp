@@ -23,16 +23,16 @@
  * SUCH DAMAGE.
  */
 
-#include "core/html/forms/ExternalDateTimeChooser.h"
+#include "third_party/blink/renderer/core/html/forms/external_date_time_chooser.h"
 
-#include "core/html/forms/DateTimeChooserClient.h"
-#include "core/input_type_names.h"
-#include "core/page/ChromeClient.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "public/web/WebDateTimeChooserCompletion.h"
-#include "public/web/WebDateTimeChooserParams.h"
-#include "public/web/WebViewClient.h"
+#include "third_party/blink/public/web/web_date_time_chooser_completion.h"
+#include "third_party/blink/public/web/web_date_time_chooser_params.h"
+#include "third_party/blink/public/web/web_view_client.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

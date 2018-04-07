@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ContentSettingsClient_h
-#define ContentSettingsClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CONTENT_SETTINGS_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CONTENT_SETTINGS_CLIENT_H_
 
 #include <memory>
 
-#include "core/CoreExport.h"
-#include "platform/heap/Heap.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/WebClientHintsType.h"
+#include "third_party/blink/public/platform/web_client_hints_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -108,4 +108,4 @@ class CORE_EXPORT ContentSettingsClient {
 
 }  // namespace blink
 
-#endif  // ContentSettingsClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CONTENT_SETTINGS_CLIENT_H_

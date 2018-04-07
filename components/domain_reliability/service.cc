@@ -19,7 +19,7 @@
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
 namespace domain_reliability {

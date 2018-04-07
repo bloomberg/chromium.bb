@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/csp/CSPDirectiveList.h"
+#include "third_party/blink/renderer/core/frame/csp/csp_directive_list.h"
 
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/dom/Document.h"
-#include "core/dom/SpaceSplitString.h"
-#include "core/execution_context/SecurityContext.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLScriptElement.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "platform/Crypto.h"
-#include "platform/network/ContentSecurityPolicyParsers.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/Base64.h"
-#include "platform/wtf/text/ParsingUtilities.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/StringUTF8Adaptor.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/space_split_string.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_script_element.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/crypto.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

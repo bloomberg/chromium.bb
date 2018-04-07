@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebMediaKeySystemConfiguration_h
-#define WebMediaKeySystemConfiguration_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_KEY_SYSTEM_CONFIGURATION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_KEY_SYSTEM_CONFIGURATION_H_
 
-#include "public/platform/WebEncryptedMediaTypes.h"
-#include "public/platform/WebMediaKeySystemMediaCapability.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_encrypted_media_types.h"
+#include "third_party/blink/public/platform/web_media_key_system_media_capability.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -29,4 +29,4 @@ struct WebMediaKeySystemConfiguration {
 
 }  // namespace blink
 
-#endif  // WebMediaKeySystemConfiguration_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_KEY_SYSTEM_CONFIGURATION_H_

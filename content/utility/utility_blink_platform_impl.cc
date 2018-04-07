@@ -4,7 +4,7 @@
 
 #include "content/utility/utility_blink_platform_impl.h"
 
-#include "third_party/WebKit/public/platform/scheduler/child/webthread_base.h"
+#include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
 
 namespace content {
 

@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLTemplateElement.h"
+#include "third_party/blink/renderer/core/html/html_template_element.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/DocumentFragment.h"
-#include "core/dom/TemplateContentDocumentFragment.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/dom/template_content_document_fragment.h"
 
 namespace blink {
 

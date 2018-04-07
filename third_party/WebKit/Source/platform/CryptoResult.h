@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CryptoResult_h
-#define CryptoResult_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_CRYPTO_RESULT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CRYPTO_RESULT_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
-#include "public/platform/WebCrypto.h"
+#include "third_party/blink/public/platform/web_crypto.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ class PLATFORM_EXPORT CryptoResult
 
 }  // namespace blink
 
-#endif  // CryptoResult_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_CRYPTO_RESULT_H_

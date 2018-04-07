@@ -24,12 +24,12 @@
     sheets and html pages from the web. It has a memory cache for these objects.
 */
 
-#include "core/loader/resource/XSLStyleSheetResource.h"
+#include "third_party/blink/renderer/core/loader/resource/xsl_style_sheet_resource.h"
 
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/TextResourceDecoderOptions.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

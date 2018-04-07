@@ -38,14 +38,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef MultipartImageResourceParser_h
-#define MultipartImageResourceParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_MULTIPART_IMAGE_RESOURCE_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_MULTIPART_IMAGE_RESOURCE_PARSER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -100,4 +100,4 @@ class CORE_EXPORT MultipartImageResourceParser final
 
 }  // namespace blink
 
-#endif  // MultipartImageResourceParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_MULTIPART_IMAGE_RESOURCE_PARSER_H_

@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/PictureSnapshot.h"
+#include "third_party/blink/renderer/platform/graphics/picture_snapshot.h"
 
 #include <memory>
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/LoggingCanvas.h"
-#include "platform/graphics/ProfilingCanvas.h"
-#include "platform/graphics/ReplayingCanvas.h"
-#include "platform/graphics/skia/ImagePixelLocker.h"
-#include "platform/image-decoders/ImageDecoder.h"
-#include "platform/image-decoders/ImageFrame.h"
-#include "platform/image-decoders/SegmentReader.h"
-#include "platform/image-encoders/ImageEncoder.h"
-#include "platform/wtf/HexNumber.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/Base64.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/profiling_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/replaying_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/skia/image_pixel_locker.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_frame.h"
+#include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
+#include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
+#include "third_party/blink/renderer/platform/wtf/hex_number.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 

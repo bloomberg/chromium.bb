@@ -25,24 +25,24 @@
  *
  */
 
-#include "modules/filesystem/WorkerGlobalScopeFileSystem.h"
+#include "third_party/blink/renderer/modules/filesystem/worker_global_scope_file_system.h"
 
 #include <memory>
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/fileapi/FileError.h"
-#include "core/frame/UseCounter.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "modules/filesystem/DOMFileSystem.h"
-#include "modules/filesystem/DirectoryEntrySync.h"
-#include "modules/filesystem/Entry.h"
-#include "modules/filesystem/FileEntrySync.h"
-#include "modules/filesystem/FileSystemCallbacks.h"
-#include "modules/filesystem/LocalFileSystem.h"
-#include "modules/filesystem/SyncCallbackHelper.h"
-#include "platform/FileSystemType.h"
-#include "platform/weborigin/SecurityOrigin.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/modules/filesystem/directory_entry_sync.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/modules/filesystem/entry.h"
+#include "third_party/blink/renderer/modules/filesystem/file_entry_sync.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
+#include "third_party/blink/renderer/modules/filesystem/local_file_system.h"
+#include "third_party/blink/renderer/modules/filesystem/sync_callback_helper.h"
+#include "third_party/blink/renderer/platform/file_system_type.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

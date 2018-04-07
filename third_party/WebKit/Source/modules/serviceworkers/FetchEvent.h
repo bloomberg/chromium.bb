@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FetchEvent_h
-#define FetchEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_FETCH_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_FETCH_EVENT_H_
 
 #include <memory>
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseProperty.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/fetch/Request.h"
-#include "modules/EventModules.h"
-#include "modules/ModulesExport.h"
-#include "modules/serviceworkers/ExtendableEvent.h"
-#include "modules/serviceworkers/FetchEventInit.h"
-#include "modules/serviceworkers/WaitUntilObserver.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ResourceResponse.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/fetch/request.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/serviceworkers/extendable_event.h"
+#include "third_party/blink/renderer/modules/serviceworkers/fetch_event_init.h"
+#include "third_party/blink/renderer/modules/serviceworkers/wait_until_observer.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
 namespace blink {
 
@@ -102,4 +102,4 @@ class MODULES_EXPORT FetchEvent final
 
 }  // namespace blink
 
-#endif  // FetchEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_FETCH_EVENT_H_

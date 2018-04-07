@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/mojo/NotificationStructTraits.h"
+#include "third_party/blink/renderer/platform/mojo/notification_struct_traits.h"
 
 #include <algorithm>
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/notifications/WebNotificationData.h"
-#include "public/platform/modules/notifications/WebNotificationResources.h"
-#include "public/platform/modules/notifications/notification.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/notifications/notification.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_resources.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 

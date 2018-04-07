@@ -22,24 +22,24 @@
  *
  */
 
-#ifndef Font_h
-#define Font_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_H_
 
-#include "platform/LayoutUnit.h"
-#include "platform/PlatformExport.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontFallbackList.h"
-#include "platform/fonts/FontFallbackPriority.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/text/TabSize.h"
-#include "platform/text/TextDirection.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_list.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/text/tab_size.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef DrawText

@@ -24,12 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IntegralTypedArrayBase_h
-#define IntegralTypedArrayBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_INTEGRAL_TYPED_ARRAY_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_INTEGRAL_TYPED_ARRAY_BASE_H_
 
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/typed_arrays/TypedArrayBase.h"
 #include <limits>
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/typed_array_base.h"
 
 namespace WTF {
 
@@ -60,4 +60,4 @@ class IntegralTypedArrayBase : public TypedArrayBase<T> {
 
 using WTF::IntegralTypedArrayBase;
 
-#endif  // IntegralTypedArrayBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_INTEGRAL_TYPED_ARRAY_BASE_H_

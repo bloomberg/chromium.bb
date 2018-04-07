@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FontGlobalContext_h
-#define FontGlobalContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_GLOBAL_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_GLOBAL_CONTEXT_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/shaping/HarfBuzzFontCache.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 struct hb_font_funcs_t;
 

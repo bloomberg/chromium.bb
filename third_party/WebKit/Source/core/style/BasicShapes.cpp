@@ -27,12 +27,12 @@
  * SUCH DAMAGE.
  */
 
-#include "core/style/BasicShapes.h"
+#include "third_party/blink/renderer/core/style/basic_shapes.h"
 
-#include "core/css/BasicShapeFunctions.h"
-#include "platform/LengthFunctions.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/Path.h"
+#include "third_party/blink/renderer/core/css/basic_shape_functions.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
 
 namespace blink {
 

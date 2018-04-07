@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockWebCrypto_h
-#define MockWebCrypto_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_MOCK_WEB_CRYPTO_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_MOCK_WEB_CRYPTO_H_
 
 #include <memory>
-#include "platform/wtf/Allocator.h"
-#include "public/platform/WebCrypto.h"
-#include "public/platform/WebCryptoKeyAlgorithm.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/platform/web_crypto.h"
+#include "third_party/blink/public/platform/web_crypto_key_algorithm.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

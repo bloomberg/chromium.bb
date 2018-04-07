@@ -24,12 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/spellcheck/TextCheckingParagraph.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/text_checking_paragraph.h"
 
-#include "core/dom/Range.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleUnits.h"
-#include "core/editing/iterators/CharacterIterator.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/iterators/character_iterator.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
 
 namespace blink {
 

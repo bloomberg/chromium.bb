@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/mojo/test/MojoInterfaceRequestEvent.h"
+#include "third_party/blink/renderer/core/mojo/test/mojo_interface_request_event.h"
 
-#include "core/mojo/MojoHandle.h"
-#include "core/mojo/test/MojoInterfaceRequestEventInit.h"
+#include "third_party/blink/renderer/core/mojo/mojo_handle.h"
+#include "third_party/blink/renderer/core/mojo/test/mojo_interface_request_event_init.h"
 
 namespace blink {
 

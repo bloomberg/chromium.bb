@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webmidi/MIDIAccessor.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_accessor.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "modules/webmidi/MIDIAccessorClient.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/Platform.h"
-#include "public/platform/modules/webmidi/WebMIDIAccessor.h"
+#include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_accessor_client.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 using blink::WebString;
 using midi::mojom::PortState;

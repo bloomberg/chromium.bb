@@ -27,12 +27,12 @@
  *
  */
 
-#ifndef TreeOrderedList_h
-#define TreeOrderedList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TREE_ORDERED_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TREE_ORDERED_LIST_H_
 
 #include "base/macros.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/ListHashSet.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/list_hash_set.h"
 
 namespace blink {
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSNumberInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_number_interpolation_type.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/animation/NumberPropertyFunctions.h"
-#include "core/css/resolver/StyleBuilder.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/animation/number_property_functions.h"
+#include "third_party/blink/renderer/core/css/resolver/style_builder.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

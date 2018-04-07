@@ -8,9 +8,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCallbacks.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBFactory.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_factory.h"
 
 namespace blink {
 class WebSecurityOrigin;

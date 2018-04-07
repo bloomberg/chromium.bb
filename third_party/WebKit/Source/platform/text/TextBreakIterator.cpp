@@ -21,12 +21,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/text/TextBreakIterator.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 
-#include "platform/text/Character.h"
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/platform/text/character.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 #include <unicode/uchar.h>
 #include <unicode/uvernum.h>

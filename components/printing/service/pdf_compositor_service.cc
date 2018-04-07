@@ -22,10 +22,10 @@
 #if defined(OS_WIN)
 #include "content/public/child/dwrite_font_proxy_init_win.h"
 #elif defined(OS_MACOSX)
-#include "third_party/WebKit/public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
-#include "third_party/WebKit/public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
 #endif
 
 namespace {

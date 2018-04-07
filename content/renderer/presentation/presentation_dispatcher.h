@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationClient.h"
+#include "third_party/blink/public/platform/modules/presentation/web_presentation_client.h"
 
 namespace blink {
 class WebPresentationReceiver;

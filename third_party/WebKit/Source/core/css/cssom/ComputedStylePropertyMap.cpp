@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/ComputedStylePropertyMap.h"
+#include "third_party/blink/renderer/core/css/cssom/computed_style_property_map.h"
 
-#include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/CSSFunctionValue.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSVariableData.h"
-#include "core/css/ComputedStyleCSSValueMapping.h"
-#include "core/dom/Document.h"
-#include "core/dom/PseudoElement.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/transforms/Matrix3DTransformOperation.h"
-#include "platform/transforms/MatrixTransformOperation.h"
-#include "platform/transforms/PerspectiveTransformOperation.h"
-#include "platform/transforms/SkewTransformOperation.h"
+#include "third_party/blink/renderer/core/css/computed_style_css_value_mapping.h"
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_function_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/transforms/matrix_3d_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/matrix_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/perspective_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/skew_transform_operation.h"
 
 namespace blink {
 

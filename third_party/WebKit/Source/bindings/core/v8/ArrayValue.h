@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ArrayValue_h
-#define ArrayValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_ARRAY_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_ARRAY_VALUE_H_
 
-#include "core/CoreExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -59,4 +59,4 @@ class CORE_EXPORT ArrayValue final {
 
 }  // namespace blink
 
-#endif  // ArrayValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_ARRAY_VALUE_H_

@@ -19,30 +19,30 @@
  *
  */
 
-#ifndef ElementRareData_h
-#define ElementRareData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_RARE_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_RARE_DATA_H_
 
 #include <memory>
-#include "core/animation/ElementAnimations.h"
-#include "core/css/InlineCSSStyleDeclaration.h"
-#include "core/css/cssom/InlineStylePropertyMap.h"
-#include "core/dom/AccessibleNode.h"
-#include "core/dom/Attr.h"
-#include "core/dom/DOMTokenList.h"
-#include "core/dom/DatasetDOMStringMap.h"
-#include "core/dom/NamedNodeMap.h"
-#include "core/dom/NodeRareData.h"
-#include "core/dom/PseudoElement.h"
-#include "core/dom/PseudoElementData.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/SpaceSplitString.h"
-#include "core/html/custom/CustomElementDefinition.h"
-#include "core/html/custom/V0CustomElementDefinition.h"
-#include "core/intersection_observer/ElementIntersectionObserverData.h"
-#include "platform/bindings/ScriptWrappableVisitor.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/core/animation/element_animations.h"
+#include "third_party/blink/renderer/core/css/cssom/inline_style_property_map.h"
+#include "third_party/blink/renderer/core/css/inline_css_style_declaration.h"
+#include "third_party/blink/renderer/core/dom/accessible_node.h"
+#include "third_party/blink/renderer/core/dom/attr.h"
+#include "third_party/blink/renderer/core/dom/dataset_dom_string_map.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
+#include "third_party/blink/renderer/core/dom/named_node_map.h"
+#include "third_party/blink/renderer/core/dom/node_rare_data.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element_data.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/space_split_string.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_definition.h"
+#include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -245,4 +245,4 @@ inline PseudoElement* ElementRareData::GetPseudoElement(
 
 }  // namespace blink
 
-#endif  // ElementRareData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_RARE_DATA_H_

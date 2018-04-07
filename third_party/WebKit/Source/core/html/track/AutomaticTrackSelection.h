@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AutomaticTrackSelection_h
-#define AutomaticTrackSelection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_AUTOMATIC_TRACK_SELECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_AUTOMATIC_TRACK_SELECTION_H_
 
-#include "core/html/track/TextTrackKindUserPreference.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/html/track/text_track_kind_user_preference.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class AutomaticTrackSelection {
 
 }  // namespace blink
 
-#endif  // AutomaticTrackSelection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_AUTOMATIC_TRACK_SELECTION_H_

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediacapturefromelement/CanvasCaptureMediaStreamTrack.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/canvas_capture_media_stream_track.h"
 
 #include <memory>
-#include "core/html/canvas/HTMLCanvasElement.h"
-#include "modules/mediacapturefromelement/AutoCanvasDrawListener.h"
-#include "modules/mediacapturefromelement/OnRequestCanvasDrawListener.h"
-#include "modules/mediacapturefromelement/TimedCanvasDrawListener.h"
-#include "platform/mediastream/MediaStreamCenter.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/auto_canvas_draw_listener.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/on_request_canvas_draw_listener.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/timed_canvas_draw_listener.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 
 namespace blink {
 

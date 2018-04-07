@@ -29,20 +29,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/mediastream/MediaStreamCenter.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "platform/mediastream/MediaStreamDescriptor.h"
-#include "platform/mediastream/MediaStreamWebAudioSource.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebAudioSourceProvider.h"
-#include "public/platform/WebMediaStream.h"
-#include "public/platform/WebMediaStreamCenter.h"
-#include "public/platform/WebMediaStreamSource.h"
-#include "public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_audio_source_provider.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_media_stream_center.h"
+#include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_web_audio_source.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

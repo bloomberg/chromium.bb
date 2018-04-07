@@ -24,12 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef LifecycleNotifier_h
-#define LifecycleNotifier_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LIFECYCLE_NOTIFIER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LIFECYCLE_NOTIFIER_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/AutoReset.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -162,4 +162,4 @@ inline void LifecycleNotifier<T, Observer>::RemoveObserver(Observer* observer) {
 
 }  // namespace blink
 
-#endif  // LifecycleNotifier_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LIFECYCLE_NOTIFIER_H_

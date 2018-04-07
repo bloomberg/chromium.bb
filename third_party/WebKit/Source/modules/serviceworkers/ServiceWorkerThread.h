@@ -27,13 +27,13 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef ServiceWorkerThread_h
-#define ServiceWorkerThread_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_THREAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_THREAD_H_
 
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/workers/WorkerThread.h"
-#include "modules/ModulesExport.h"
 #include <memory>
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
 
 }  // namespace blink
 
-#endif  // ServiceWorkerThread_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_THREAD_H_

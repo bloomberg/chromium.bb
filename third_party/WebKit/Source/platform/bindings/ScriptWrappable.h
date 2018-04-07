@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScriptWrappable_h
-#define ScriptWrappable_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCRIPT_WRAPPABLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCRIPT_WRAPPABLE_H_
 
 #include "build/build_config.h"
-#include "platform/PlatformExport.h"
-#include "platform/bindings/TraceWrapperBase.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/bindings/WrapperTypeInfo.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/TypeTraits.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_base.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -206,4 +206,4 @@ class PLATFORM_EXPORT ScriptWrappable
 
 }  // namespace blink
 
-#endif  // ScriptWrappable_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCRIPT_WRAPPABLE_H_

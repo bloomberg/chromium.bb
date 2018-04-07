@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerReportingProxy_h
-#define WorkerReportingProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_REPORTING_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_REPORTING_PROXY_H_
 
 #include <memory>
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/CoreExport.h"
-#include "core/frame/WebFeatureForward.h"
-#include "core/inspector/ConsoleTypes.h"
-#include "platform/heap/Handle.h"
-#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/web_feature_forward.h"
+#include "third_party/blink/renderer/core/inspector/console_types.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -115,4 +115,4 @@ class CORE_EXPORT WorkerReportingProxy {
 
 }  // namespace blink
 
-#endif  // WorkerReportingProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_REPORTING_PROXY_H_

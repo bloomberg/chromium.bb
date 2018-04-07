@@ -20,15 +20,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/StyleRuleImport.h"
+#include "third_party/blink/renderer/core/css/style_rule_import.h"
 
-#include "core/css/StyleSheetContents.h"
-#include "core/dom/Document.h"
-#include "core/loader/resource/CSSStyleSheetResource.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 
 namespace blink {
 

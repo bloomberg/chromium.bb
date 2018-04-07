@@ -9,8 +9,8 @@
 #include "components/payments/content/web_app_manifest.h"
 #include "components/payments/core/payment_instrument.h"
 #include "content/public/browser/stored_payment_app.h"
-#include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
-#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
+#include "third_party/blink/public/platform/modules/payments/payment_app.mojom.h"
+#include "third_party/blink/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace content {
 class BrowserContext;

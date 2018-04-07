@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HarfBuzzShaper_h
-#define HarfBuzzShaper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARF_BUZZ_SHAPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARF_BUZZ_SHAPER_H_
 
-#include "platform/fonts/shaping/RunSegmenter.h"
-#include "platform/fonts/shaping/ShapeResult.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/run_segmenter.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -106,4 +106,4 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
 
 }  // namespace blink
 
-#endif  // HarfBuzzShaper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARF_BUZZ_SHAPER_H_

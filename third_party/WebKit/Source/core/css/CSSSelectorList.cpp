@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSSelectorList.h"
+#include "third_party/blink/renderer/core/css/css_selector_list.h"
 
 #include <memory>
 #include <vector>
-#include "core/css/parser/CSSParserSelector.h"
-#include "platform/wtf/allocator/Partitions.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_selector.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace {
 // CSSSelector is one of the top types that consume renderer memory,

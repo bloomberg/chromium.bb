@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebRTCDataChannelInit_h
-#define WebRTCDataChannelInit_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_DATA_CHANNEL_INIT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_DATA_CHANNEL_INIT_H_
 
-#include "WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ struct WebRTCDataChannelInit {
 
 }  // namespace blink
 
-#endif  // WebRTCDataChannelInit_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_DATA_CHANNEL_INIT_H_

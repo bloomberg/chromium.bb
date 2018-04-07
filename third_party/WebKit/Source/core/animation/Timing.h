@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Timing_h
-#define Timing_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_TIMING_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_TIMING_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/style/DataEquivalency.h"
-#include "platform/animation/CompositorKeyframeModel.h"
-#include "platform/animation/TimingFunction.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/core/style/data_equivalency.h"
+#include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
+#include "third_party/blink/renderer/platform/animation/timing_function.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

@@ -145,7 +145,7 @@ class Request(object):
   """Represents a single request.
 
   Generally speaking, fields here closely mirror those documented in
-  third_party/WebKit/Source/devtools/protocol.json.
+  third_party/blink/renderer/devtools/protocol.json.
 
   Fields:
     request_id: (str) unique request ID. Postfixed with _REDIRECT_SUFFIX for

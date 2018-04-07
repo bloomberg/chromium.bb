@@ -22,12 +22,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMediaStream_h
-#define WebMediaStream_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_H_
 
-#include "WebCommon.h"
-#include "WebPrivatePtr.h"
-#include "WebVector.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -105,4 +105,4 @@ class WebMediaStream {
 
 }  // namespace blink
 
-#endif  // WebMediaStream_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_H_

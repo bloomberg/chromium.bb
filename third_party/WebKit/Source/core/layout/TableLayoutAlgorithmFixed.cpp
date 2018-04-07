@@ -19,14 +19,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/TableLayoutAlgorithmFixed.h"
+#include "third_party/blink/renderer/core/layout/table_layout_algorithm_fixed.h"
 
-#include "core/frame/UseCounter.h"
-#include "core/layout/LayoutTable.h"
-#include "core/layout/LayoutTableCell.h"
-#include "core/layout/LayoutTableCol.h"
-#include "core/layout/LayoutTableSection.h"
-#include "platform/LayoutUnit.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/layout/layout_table.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/layout_table_col.h"
+#include "third_party/blink/renderer/core/layout/layout_table_section.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
 
 /*
   The text below is from the CSS 2.1 specs.

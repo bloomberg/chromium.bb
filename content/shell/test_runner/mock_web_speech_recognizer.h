@@ -10,7 +10,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/WebKit/public/web/WebSpeechRecognizer.h"
+#include "third_party/blink/public/web/web_speech_recognizer.h"
 
 namespace blink {
 class WebSpeechRecognitionHandle;

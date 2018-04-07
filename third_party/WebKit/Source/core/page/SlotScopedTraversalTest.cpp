@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/SlotScopedTraversal.h"
+#include "third_party/blink/renderer/core/page/slot_scoped_traversal.h"
 
 #include <memory>
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/Node.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLSlotElement.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_slot_element.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

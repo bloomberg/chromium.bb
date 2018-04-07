@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ScriptStreamer.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "bindings/core/v8/ScriptStreamerThread.h"
-#include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/frame/Settings.h"
-#include "core/html/parser/TextResourceDecoder.h"
-#include "core/script/ClassicPendingScript.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/Histogram.h"
-#include "platform/SharedBuffer.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/loader/fetch/CachedMetadata.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/text/TextEncodingRegistry.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_streamer_thread.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/core/script/classic_pending_script.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
 
 namespace blink {
 

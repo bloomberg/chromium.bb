@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebMediaStreamRegistry.h"
+#include "third_party/blink/public/web/web_media_stream_registry.h"
 
-#include "modules/mediastream/MediaStreamRegistry.h"
-#include "platform/mediastream/MediaStreamDescriptor.h"
-#include "platform/weborigin/KURL.h"
-#include "public/platform/WebMediaStream.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_registry.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

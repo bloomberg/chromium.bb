@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MojoWatcher_h
-#define MojoWatcher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_MOJO_MOJO_WATCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_MOJO_MOJO_WATCHER_H_
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/ContextLifecycleObserver.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/trap.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class MojoWatcher final : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // MojoWatcher_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_MOJO_MOJO_WATCHER_H_

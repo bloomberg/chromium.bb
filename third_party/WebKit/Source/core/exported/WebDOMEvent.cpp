@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebDOMEvent.h"
+#include "third_party/blink/public/web/web_dom_event.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/events/Event.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 
 namespace blink {
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/child/idle_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/child/idle_helper.h"
 
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "platform/scheduler/base/real_time_domain.h"
-#include "platform/scheduler/base/task_queue.h"
-#include "platform/scheduler/base/task_queue_manager.h"
-#include "platform/scheduler/child/scheduler_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/child/scheduler_helper.h"
 
 namespace blink {
 namespace scheduler {

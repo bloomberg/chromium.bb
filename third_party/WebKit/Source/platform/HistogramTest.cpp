@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/Histogram.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 #include "base/metrics/histogram_samples.h"
-#include "platform/testing/wtf/ScopedMockClock.h"
-#include "platform/wtf/Time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

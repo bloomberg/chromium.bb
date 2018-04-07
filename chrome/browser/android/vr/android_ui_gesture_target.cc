@@ -7,9 +7,9 @@
 #include <cmath>
 
 #include "jni/AndroidUiGestureTarget_jni.h"
-#include "third_party/WebKit/public/platform/WebGestureEvent.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "third_party/WebKit/public/platform/WebMouseEvent.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;

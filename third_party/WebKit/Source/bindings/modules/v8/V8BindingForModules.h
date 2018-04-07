@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8BindingForModules_h
-#define V8BindingForModules_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_V8_BINDING_FOR_MODULES_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_V8_BINDING_FOR_MODULES_H_
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "modules/ModulesExport.h"
-#include "modules/webdatabase/sqlite/SQLValue.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sql_value.h"
 
 namespace blink {
 
@@ -69,4 +69,4 @@ struct NativeValueTraits<IDBKeyRange*> {
 
 }  // namespace blink
 
-#endif  // V8BindingForModules_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_V8_BINDING_FOR_MODULES_H_

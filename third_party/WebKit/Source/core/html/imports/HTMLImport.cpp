@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/imports/HTMLImport.h"
+#include "third_party/blink/renderer/core/html/imports/html_import.h"
 
-#include "core/dom/Document.h"
-#include "core/html/imports/HTMLImportStateResolver.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_state_resolver.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

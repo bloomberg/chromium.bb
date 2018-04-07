@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebFormElement.h"
+#include "third_party/blink/public/web/web_form_element.h"
 
-#include "core/html/forms/HTMLFormControlElement.h"
-#include "core/html/forms/HTMLFormElement.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html_names.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/web/WebFormControlElement.h"
-#include "public/web/WebInputElement.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_form_control_element.h"
+#include "third_party/blink/public/web/web_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

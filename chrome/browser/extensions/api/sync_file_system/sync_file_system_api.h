@@ -15,7 +15,7 @@
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "chrome/common/extensions/api/sync_file_system.h"
 #include "storage/browser/fileapi/file_system_url.h"
-#include "third_party/WebKit/public/mojom/quota/quota_types.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 namespace storage {
 class FileSystemContext;

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/RelList.h"
+#include "third_party/blink/renderer/core/html/rel_list.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/html/HTMLElement.h"
-#include "core/html_names.h"
-#include "core/origin_trials/origin_trials.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 

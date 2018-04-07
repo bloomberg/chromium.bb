@@ -23,12 +23,12 @@
  * 02110-1301  USA
  */
 
-#include "core/css/ComputedStyleCSSValueMapping.h"
+#include "third_party/blink/renderer/core/css/computed_style_css_value_mapping.h"
 
-#include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/CSSValue.h"
-#include "core/css/PropertyRegistry.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/property_registry.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

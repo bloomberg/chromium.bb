@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaKeysGetStatusForPolicy_h
-#define MediaKeysGetStatusForPolicy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEYS_GET_STATUS_FOR_POLICY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEYS_GET_STATUS_FOR_POLICY_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 
 namespace blink {
 
@@ -22,4 +22,4 @@ class MediaKeysGetStatusForPolicy {
 
 }  // namespace blink
 
-#endif  // MediaKeysGetStatusForPolicy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEYS_GET_STATUS_FOR_POLICY_H_

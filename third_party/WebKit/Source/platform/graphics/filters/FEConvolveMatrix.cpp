@@ -22,13 +22,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/graphics/filters/FEConvolveMatrix.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_convolve_matrix.h"
 
 #include <memory>
 #include "SkMatrixConvolutionImageFilter.h"
-#include "platform/graphics/filters/PaintFilterBuilder.h"
-#include "platform/text/TextStream.h"
-#include "platform/wtf/CheckedNumeric.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 
 namespace blink {
 

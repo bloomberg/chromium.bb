@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/base/work_queue_sets.h"
+#include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
 
 #include <stddef.h>
 
 #include "base/memory/ptr_util.h"
-#include "platform/scheduler/base/work_queue.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 
 namespace blink {
 namespace scheduler {

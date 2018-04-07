@@ -26,9 +26,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/ReverbAccumulationBuffer.h"
 #include <algorithm>
-#include "platform/audio/VectorMath.h"
+#include "third_party/blink/renderer/platform/audio/reverb_accumulation_buffer.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
 
 namespace blink {
 

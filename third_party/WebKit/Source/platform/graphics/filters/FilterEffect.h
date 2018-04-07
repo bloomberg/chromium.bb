@@ -20,18 +20,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef FilterEffect_h
-#define FilterEffect_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FILTER_EFFECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FILTER_EFFECT_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/Color.h"
-#include "platform/graphics/InterpolationSpace.h"
-#include "platform/graphics/paint/PaintFilter.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/interpolation_space.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_filter.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -170,4 +170,4 @@ class PLATFORM_EXPORT FilterEffect
 
 }  // namespace blink
 
-#endif  // FilterEffect_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FILTER_EFFECT_H_

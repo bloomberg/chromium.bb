@@ -28,30 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediasource/MediaSource.h"
+#include "third_party/blink/renderer/modules/mediasource/media_source.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/events/Event.h"
-#include "core/dom/events/MediaElementEventQueue.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/track/AudioTrackList.h"
-#include "core/html/track/VideoTrackList.h"
-#include "modules/mediasource/MediaSourceRegistry.h"
-#include "modules/mediasource/SourceBufferTrackBaseSupplement.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/network/mime/ContentType.h"
-#include "platform/network/mime/MIMETypeRegistry.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/text/CString.h"
-#include "public/platform/WebMediaSource.h"
-#include "public/platform/WebSourceBuffer.h"
+#include "third_party/blink/public/platform/web_media_source.h"
+#include "third_party/blink/public/platform/web_source_buffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/media_element_event_queue.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/track/audio_track_list.h"
+#include "third_party/blink/renderer/core/html/track/video_track_list.h"
+#include "third_party/blink/renderer/modules/mediasource/media_source_registry.h"
+#include "third_party/blink/renderer/modules/mediasource/source_buffer_track_base_supplement.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/network/mime/content_type.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 #ifndef BLINK_MSLOG
 #define BLINK_MSLOG DVLOG(3)

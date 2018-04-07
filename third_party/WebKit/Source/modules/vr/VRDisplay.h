@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VRDisplay_h
-#define VRDisplay_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_DISPLAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_DISPLAY_H_
 
-#include "bindings/core/v8/v8_frame_request_callback.h"
-#include "core/dom/Document.h"
-#include "core/dom/PausableObject.h"
-#include "core/dom/events/EventTarget.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "modules/vr/VRDisplayCapabilities.h"
-#include "modules/vr/VRLayerInit.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/Timer.h"
-#include "platform/graphics/gpu/XRFrameTransport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebGraphicsContext3DProvider.h"
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_frame_request_callback.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/modules/vr/vr_display_capabilities.h"
+#include "third_party/blink/renderer/modules/vr/vr_layer_init.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/xr_frame_transport.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace gpu {
 namespace gles2 {
@@ -258,4 +258,4 @@ void ReportPresentationResult(PresentationResult);
 
 }  // namespace blink
 
-#endif  // VRDisplay_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_DISPLAY_H_

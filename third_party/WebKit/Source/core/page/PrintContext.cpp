@@ -18,14 +18,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/page/PrintContext.h"
+#include "third_party/blink/renderer/core/page/print_context.h"
 
 #include <utility>
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutView.h"
-#include "platform/graphics/GraphicsContext.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 namespace blink {
 

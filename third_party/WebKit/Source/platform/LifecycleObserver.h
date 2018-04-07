@@ -24,10 +24,10 @@
  *
  */
 
-#ifndef LifecycleObserver_h
-#define LifecycleObserver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LIFECYCLE_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LIFECYCLE_OBSERVER_H_
 
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ inline void LifecycleObserver<Context, Observer>::SetContext(Context* context) {
 
 }  // namespace blink
 
-#endif  // LifecycleObserver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LIFECYCLE_OBSERVER_H_

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/iterators/TextIteratorTextNodeHandler.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator_text_node_handler.h"
 
 #include <algorithm>
-#include "core/dom/FirstLetterPseudoElement.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/iterators/TextIteratorTextState.h"
-#include "core/layout/LayoutTextFragment.h"
-#include "core/layout/line/InlineTextBox.h"
-#include "core/layout/line/RootInlineBox.h"
-#include "core/layout/ng/inline/ng_offset_mapping.h"
+#include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator_text_state.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 
 namespace blink {
 

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/style/StylePath.h"
+#include "third_party/blink/renderer/core/style/style_path.h"
 
 #include <limits>
 #include <memory>
 #include <utility>
 
-#include "core/css/CSSPathValue.h"
-#include "core/svg/SVGPathByteStream.h"
-#include "core/svg/SVGPathUtilities.h"
-#include "platform/graphics/Path.h"
+#include "third_party/blink/renderer/core/css/css_path_value.h"
+#include "third_party/blink/renderer/core/svg/svg_path_byte_stream.h"
+#include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
 
 namespace blink {
 

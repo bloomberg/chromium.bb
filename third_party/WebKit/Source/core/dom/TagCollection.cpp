@@ -21,10 +21,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/TagCollection.h"
+#include "third_party/blink/renderer/core/dom/tag_collection.h"
 
-#include "core/dom/NodeRareData.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/dom/node_rare_data.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

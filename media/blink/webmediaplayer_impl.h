@@ -41,10 +41,10 @@
 #include "media/blink/webmediaplayer_util.h"
 #include "media/filters/pipeline_controller.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
-#include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
-#include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
-#include "third_party/WebKit/public/platform/WebMediaPlayer.h"
-#include "third_party/WebKit/public/platform/WebSurfaceLayerBridge.h"
+#include "third_party/blink/public/platform/web_audio_source_provider.h"
+#include "third_party/blink/public/platform/web_content_decryption_module_result.h"
+#include "third_party/blink/public/platform/web_media_player.h"
+#include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)  // WMPI_CAST

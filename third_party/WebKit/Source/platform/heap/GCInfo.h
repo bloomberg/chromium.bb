@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GCInfo_h
-#define GCInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_GC_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_GC_INFO_H_
 
-#include "platform/heap/Visitor.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Atomics.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/HashCountedSet.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/HashTable.h"
-#include "platform/wtf/LinkedHashSet.h"
-#include "platform/wtf/ListHashSet.h"
-#include "platform/wtf/TypeTraits.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/atomics.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/hash_table.h"
+#include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/list_hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

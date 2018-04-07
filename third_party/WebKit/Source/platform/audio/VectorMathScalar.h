@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VectorMathScalar_h
-#define VectorMathScalar_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_VECTOR_MATH_SCALAR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_VECTOR_MATH_SCALAR_H_
 
 #include <algorithm>
 #include <cmath>
 
-#include "platform/audio/AudioArray.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 namespace VectorMath {
@@ -430,4 +430,4 @@ static ALWAYS_INLINE void Zvmul(const float* real1p,
 }  // namespace VectorMath
 }  // namespace blink
 
-#endif  // VectorMathScalar_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_VECTOR_MATH_SCALAR_H_

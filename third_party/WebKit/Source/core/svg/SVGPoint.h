@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGPoint_h
-#define SVGPoint_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_POINT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_POINT_H_
 
-#include "core/svg/SVGParsingError.h"
-#include "core/svg/properties/SVGPropertyHelper.h"
-#include "platform/geometry/FloatPoint.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property_helper.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
 
 namespace blink {
 
@@ -92,4 +92,4 @@ DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGPoint);
 
 }  // namespace blink
 
-#endif  // SVGPoint_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_POINT_H_

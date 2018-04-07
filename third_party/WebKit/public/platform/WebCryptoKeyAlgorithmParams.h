@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebCryptoKeyAlgorithmParams_h
-#define WebCryptoKeyAlgorithmParams_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CRYPTO_KEY_ALGORITHM_PARAMS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CRYPTO_KEY_ALGORITHM_PARAMS_H_
 
-#include "WebCommon.h"
-#include "WebCryptoAlgorithm.h"
-#include "WebVector.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_crypto_algorithm.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 #if INSIDE_BLINK
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #endif
 
 namespace blink {

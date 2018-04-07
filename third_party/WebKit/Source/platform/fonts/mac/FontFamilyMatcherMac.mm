@@ -27,16 +27,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import "platform/fonts/mac/FontFamilyMatcherMac.h"
+#import "third_party/blink/renderer/platform/fonts/mac/font_family_matcher_mac.h"
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 #import <math.h>
-#include "platform/LayoutTestSupport.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/mac/VersionUtilMac.h"
-#import "platform/wtf/HashSet.h"
-#import "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/mac/version_util_mac.h"
+#import "third_party/blink/renderer/platform/wtf/hash_set.h"
+#import "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 @interface NSFont (YosemiteAdditions)
 + (NSFont*)systemFontOfSize:(CGFloat)size weight:(CGFloat)weight;

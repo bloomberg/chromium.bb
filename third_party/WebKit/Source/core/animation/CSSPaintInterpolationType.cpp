@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSPaintInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_paint_interpolation_type.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/animation/CSSColorInterpolationType.h"
-#include "core/css/StyleColor.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include "core/css_property_names.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/animation/css_color_interpolation_type.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/css/style_color.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/ime/InputMethodController.h"
+#include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/NodeList.h"
-#include "core/dom/Range.h"
-#include "core/editing/Editor.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/markers/DocumentMarkerController.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/events/MouseEvent.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/Settings.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/forms/HTMLTextAreaElement.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_list.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 
 using ui::mojom::ImeTextSpanThickness;
 

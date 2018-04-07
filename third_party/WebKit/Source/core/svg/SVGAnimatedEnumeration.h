@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedEnumeration_h
-#define SVGAnimatedEnumeration_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_ENUMERATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_ENUMERATION_H_
 
-#include "core/svg/SVGAnimatedEnumerationBase.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_enumeration_base.h"
 
 namespace blink {
 
@@ -85,4 +85,4 @@ class SVGAnimatedEnumeration : public SVGAnimatedEnumerationBase {
 
 }  // namespace blink
 
-#endif  // SVGAnimatedEnumeration_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_ENUMERATION_H_

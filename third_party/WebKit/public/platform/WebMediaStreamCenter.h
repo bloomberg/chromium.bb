@@ -28,9 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMediaStreamCenter_h
-#define WebMediaStreamCenter_h
-
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_CENTER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_CENTER_H_
 
 namespace blink {
 
@@ -63,4 +62,4 @@ class WebMediaStreamCenter {
 
 }  // namespace blink
 
-#endif  // WebMediaStreamCenter_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_CENTER_H_

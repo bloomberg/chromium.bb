@@ -22,13 +22,13 @@
  *
  */
 
-#ifndef TrailingObjects_h
-#define TrailingObjects_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_TRAILING_OBJECTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_TRAILING_OBJECTS_H_
 
-#include "core/layout/api/LineLayoutItem.h"
-#include "core/layout/api/LineLayoutText.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_text.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -101,4 +101,4 @@ class TrailingObjects {
 
 }  // namespace blink
 
-#endif  // TrailingObjects_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_TRAILING_OBJECTS_H_

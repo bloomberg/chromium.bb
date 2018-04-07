@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EffectStack_h
-#define EffectStack_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_EFFECT_STACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_EFFECT_STACK_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/animation/Animation.h"
-#include "core/animation/EffectModel.h"
-#include "core/animation/KeyframeEffect.h"
-#include "core/animation/PropertyHandle.h"
-#include "core/animation/SampledEffect.h"
-#include "platform/geometry/FloatBox.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/animation/effect_model.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
+#include "third_party/blink/renderer/core/animation/property_handle.h"
+#include "third_party/blink/renderer/core/animation/sampled_effect.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/geometry/float_box.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -83,4 +83,4 @@ class CORE_EXPORT EffectStack {
 
 }  // namespace blink
 
-#endif  // EffectStack_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_EFFECT_STACK_H_

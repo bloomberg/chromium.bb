@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSFontStyleRangeValue_h
-#define CSSFontStyleRangeValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_FONT_STYLE_RANGE_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_FONT_STYLE_RANGE_VALUE_H_
 
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSValueList.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
 
 namespace blink {
 namespace cssvalue {

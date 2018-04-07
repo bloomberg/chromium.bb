@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebUserGestureToken_h
-#define WebUserGestureToken_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_USER_GESTURE_TOKEN_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_USER_GESTURE_TOKEN_H_
 
-#include "public/platform/WebPrivatePtr.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class WebUserGestureToken {
 
 }  // namespace blink
 
-#endif  // WebUserGestureToken_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_USER_GESTURE_TOKEN_H_

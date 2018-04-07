@@ -8,7 +8,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/WebKit/public/platform/WebCache.h"
+#include "third_party/blink/public/platform/web_cache.h"
 #include "v8/include/v8.h"
 
 using blink::WebCache;

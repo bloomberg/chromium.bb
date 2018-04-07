@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SuggestionMarkerListImpl_h
-#define SuggestionMarkerListImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_SUGGESTION_MARKER_LIST_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_SUGGESTION_MARKER_LIST_IMPL_H_
 
-#include "core/editing/markers/DocumentMarkerList.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_list.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ DEFINE_TYPE_CASTS(SuggestionMarkerListImpl,
 
 }  // namespace blink
 
-#endif  // SuggestionMarkerListImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_SUGGESTION_MARKER_LIST_IMPL_H_

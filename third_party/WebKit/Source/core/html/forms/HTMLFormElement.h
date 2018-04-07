@@ -22,14 +22,14 @@
  *
  */
 
-#ifndef HTMLFormElement_h
-#define HTMLFormElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_FORM_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_FORM_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/forms/HTMLFormControlElement.h"
-#include "core/html/forms/RadioButtonGroupScope.h"
-#include "core/loader/FormSubmission.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/core/html/forms/radio_button_group_scope.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/loader/form_submission.h"
 
 namespace blink {
 
@@ -187,4 +187,4 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
 
 }  // namespace blink
 
-#endif  // HTMLFormElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_FORM_ELEMENT_H_

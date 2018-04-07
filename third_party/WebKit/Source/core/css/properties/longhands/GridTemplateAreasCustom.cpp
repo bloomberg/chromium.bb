@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/grid_template_areas.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/grid_template_areas.h"
 
-#include "core/css/CSSGridTemplateAreasValue.h"
-#include "core/css/parser/CSSParserToken.h"
-#include "core/css/parser/CSSParserTokenRange.h"
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSParsingUtils.h"
-#include "core/css/properties/ComputedStyleUtils.h"
-#include "core/css_value_keywords.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/GridArea.h"
+#include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/grid_area.h"
 
 namespace blink {
 namespace CSSLonghand {

@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebDeviceMotionListener_h
-#define WebDeviceMotionListener_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_DEVICE_ORIENTATION_WEB_DEVICE_MOTION_LISTENER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_DEVICE_ORIENTATION_WEB_DEVICE_MOTION_LISTENER_H_
 
-#include "public/platform/WebPlatformEventListener.h"
+#include "third_party/blink/public/platform/web_platform_event_listener.h"
 
 namespace device {
 class MotionData;
@@ -49,4 +49,4 @@ class WebDeviceMotionListener : public WebPlatformEventListener {
 
 }  // namespace blink
 
-#endif  // WebDeviceMotionListener_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_DEVICE_ORIENTATION_WEB_DEVICE_MOTION_LISTENER_H_

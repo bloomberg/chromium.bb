@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/accessibility/AXSelection.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_selection.h"
 
-#include "core/dom/Document.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/PositionWithAffinity.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/SetSelectionOptions.h"
-#include "core/editing/TextAffinity.h"
-#include "core/frame/LocalFrame.h"
-#include "modules/accessibility/AXObject.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/set_selection_options.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 
 namespace blink {
 

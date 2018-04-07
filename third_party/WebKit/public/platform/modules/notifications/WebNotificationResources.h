@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebNotificationResources_h
-#define WebNotificationResources_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_RESOURCES_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_RESOURCES_H_
 
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
@@ -31,4 +31,4 @@ struct WebNotificationResources {
 
 }  // namespace blink
 
-#endif  // WebNotificationResources_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_RESOURCES_H_

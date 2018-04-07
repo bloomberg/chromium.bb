@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BlobBytesConsumer_h
-#define BlobBytesConsumer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_BLOB_BYTES_CONSUMER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_BLOB_BYTES_CONSUMER_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/fetch/BytesConsumer.h"
-#include "core/loader/ThreadableLoaderClient.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -93,4 +93,4 @@ class CORE_EXPORT BlobBytesConsumer final : public BytesConsumer,
 
 }  // namespace blink
 
-#endif  // BlobBytesConsumer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_BLOB_BYTES_CONSUMER_H_

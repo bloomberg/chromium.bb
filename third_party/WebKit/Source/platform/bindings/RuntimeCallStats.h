@@ -5,18 +5,18 @@
 // This file contains the Blink version of RuntimeCallStats which is implemented
 // by V8 in //v8/src/counters.h
 
-#ifndef RuntimeCallStats_h
-#define RuntimeCallStats_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_RUNTIME_CALL_STATS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_RUNTIME_CALL_STATS_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/bindings/runtime_call_stats_count_everything_buildflags.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/instrumentation/tracing/TracedValue.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/bindings/runtime_call_stats_count_everything_buildflags.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "v8/include/v8.h"
 
 namespace base {
@@ -387,4 +387,4 @@ class PLATFORM_EXPORT RuntimeCallStatsScopedTracer {
 
 }  // namespace blink
 
-#endif  // RuntimeCallStats_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_RUNTIME_CALL_STATS_H_

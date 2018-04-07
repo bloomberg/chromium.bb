@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/AnimationInputHelpers.h"
+#include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
 
 #include <memory>
-#include "core/animation/PropertyHandle.h"
-#include "core/dom/Element.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/animation/TimingFunction.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/animation/property_handle.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/animation/timing_function.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScrollStateCallback_h
-#define ScrollStateCallback_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLL_STATE_CALLBACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLL_STATE_CALLBACK_H_
 
-#include "bindings/core/v8/v8_scroll_state_callback.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebNativeScrollBehavior.h"
+#include "third_party/blink/public/platform/web_native_scroll_behavior.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_scroll_state_callback.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class ScrollStateCallbackV8Impl : public ScrollStateCallback {
 
 }  // namespace blink
 
-#endif  // ScrollStateCallback_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLL_STATE_CALLBACK_H_

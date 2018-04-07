@@ -24,16 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSPreloadScanner_h
-#define CSSPreloadScanner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_CSS_PRELOAD_SCANNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_CSS_PRELOAD_SCANNER_H_
 
 #include "base/macros.h"
-#include "core/html/parser/HTMLToken.h"
-#include "core/html/parser/PreloadRequest.h"
-#include "core/loader/resource/CSSStyleSheetResource.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ResourceClient.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/html/parser/html_token.h"
+#include "third_party/blink/renderer/core/html/parser/preload_request.h"
+#include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

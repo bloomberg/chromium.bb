@@ -30,7 +30,7 @@
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/push_messaging_status.mojom.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 
 namespace content {
 

@@ -3,15 +3,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/Timer.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 #include "base/run_loop.h"
 #include "base/time/time.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/Platform.h"
-#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

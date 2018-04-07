@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebSerializedScriptValue.h"
+#include "third_party/blink/public/web/web_serialized_script_value.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 
 namespace blink {
 

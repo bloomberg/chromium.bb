@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerNetworkProvider_h
-#define WebServiceWorkerNetworkProvider_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_NETWORK_PROVIDER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_NETWORK_PROVIDER_H_
 
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "public/platform/WebURLLoader.h"
+#include "third_party/blink/public/platform/web_url_loader.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -83,4 +83,4 @@ class WebServiceWorkerNetworkProvider {
 
 }  // namespace blink
 
-#endif  // WebServiceWorkerNetworkProvider_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_NETWORK_PROVIDER_H_

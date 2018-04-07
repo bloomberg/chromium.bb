@@ -26,7 +26,7 @@
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppp_instance.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {
 namespace {

@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSPropertyParser.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
 
-#include "core/css/CSSInheritedValue.h"
-#include "core/css/CSSInitialValue.h"
-#include "core/css/CSSPendingSubstitutionValue.h"
-#include "core/css/CSSUnicodeRangeValue.h"
-#include "core/css/CSSUnsetValue.h"
-#include "core/css/CSSVariableReferenceValue.h"
-#include "core/css/HashTools.h"
-#include "core/css/parser/AtRuleDescriptorParser.h"
-#include "core/css/parser/CSSParserLocalContext.h"
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/parser/CSSVariableParser.h"
-#include "core/css/properties/CSSParsingUtils.h"
-#include "core/css/properties/Shorthand.h"
-#include "core/css/properties/css_property.h"
-#include "core/style_property_shorthand.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/css/css_inherited_value.h"
+#include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
+#include "third_party/blink/renderer/core/css/css_unicode_range_value.h"
+#include "third_party/blink/renderer/core/css/css_unset_value.h"
+#include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
+#include "third_party/blink/renderer/core/css/hash_tools.h"
+#include "third_party/blink/renderer/core/css/parser/at_rule_descriptor_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/properties/shorthand.h"
+#include "third_party/blink/renderer/core/style_property_shorthand.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

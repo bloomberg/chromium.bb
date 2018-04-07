@@ -27,7 +27,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/geometry/FloatPolygon.h"
+#include "third_party/blink/renderer/platform/geometry/float_polygon.h"
 
 #include <algorithm>
 #include <memory>

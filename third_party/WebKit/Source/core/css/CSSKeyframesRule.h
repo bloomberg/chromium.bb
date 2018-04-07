@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSKeyframesRule_h
-#define CSSKeyframesRule_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_KEYFRAMES_RULE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_KEYFRAMES_RULE_H_
 
-#include "core/css/CSSRule.h"
-#include "core/css/StyleRule.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/css/css_rule.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -130,4 +130,4 @@ DEFINE_CSS_RULE_TYPE_CASTS(CSSKeyframesRule, kKeyframesRule);
 
 }  // namespace blink
 
-#endif  // CSSKeyframesRule_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_KEYFRAMES_RULE_H_

@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StyleFilterData_h
-#define StyleFilterData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_FILTER_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_FILTER_DATA_H_
 
-#include "core/style/FilterOperations.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/style/filter_operations.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ class StyleFilterData final : public GarbageCollected<StyleFilterData> {
 
 }  // namespace blink
 
-#endif  // StyleFilterData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_FILTER_DATA_H_

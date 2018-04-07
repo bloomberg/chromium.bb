@@ -23,13 +23,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/indexeddb/IDBKeyPath.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
 
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "bindings/modules/v8/V8BindingForModules.h"
-#include "modules/indexeddb/IDBKey.h"
-#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 namespace {

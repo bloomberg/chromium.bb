@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediacapturefromelement/OnRequestCanvasDrawListener.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/on_request_canvas_draw_listener.h"
 
 #include "third_party/skia/include/core/SkImage.h"
 

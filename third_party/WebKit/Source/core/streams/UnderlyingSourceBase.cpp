@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/streams/UnderlyingSourceBase.h"
+#include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/streams/ReadableStreamDefaultControllerWrapper.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_wrapper.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "v8/include/v8.h"
 
 namespace blink {

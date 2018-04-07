@@ -20,15 +20,15 @@
  *
  */
 
-#include "core/layout/LayoutTextFragment.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 
-#include "core/css/StyleChangeReason.h"
-#include "core/dom/FirstLetterPseudoElement.h"
-#include "core/dom/PseudoElement.h"
-#include "core/dom/Text.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/ng/inline/ng_offset_mapping.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 
 namespace blink {
 

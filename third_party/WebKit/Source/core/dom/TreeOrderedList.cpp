@@ -27,9 +27,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/TreeOrderedList.h"
+#include "third_party/blink/renderer/core/dom/tree_ordered_list.h"
 
-#include "core/dom/Node.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 
 namespace blink {
 

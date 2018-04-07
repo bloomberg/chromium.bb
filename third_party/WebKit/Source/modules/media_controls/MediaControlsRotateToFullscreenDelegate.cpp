@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/MediaControlsRotateToFullscreenDelegate.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_rotate_to_fullscreen_delegate.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/ElementVisibilityObserver.h"
-#include "core/dom/UserGestureIndicator.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/fullscreen/Fullscreen.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/page/ChromeClient.h"
-#include "modules/device_orientation/DeviceOrientationData.h"
-#include "modules/device_orientation/DeviceOrientationEvent.h"
-#include "modules/media_controls/MediaControlsImpl.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebScreenInfo.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_event.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 
 namespace blink {
 

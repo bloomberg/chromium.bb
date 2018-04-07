@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/script/Modulator.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/script/DocumentModulatorImpl.h"
-#include "core/script/WorkerModulatorImpl.h"
-#include "core/script/WorkletModulatorImpl.h"
-#include "core/workers/WorkletGlobalScope.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8PerContextData.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/script/document_modulator_impl.h"
+#include "third_party/blink/renderer/core/script/worker_modulator_impl.h"
+#include "third_party/blink/renderer/core/script/worklet_modulator_impl.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 
 namespace blink {
 

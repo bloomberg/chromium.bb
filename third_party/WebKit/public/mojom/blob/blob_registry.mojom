@@ -4,10 +4,10 @@
 
 module blink.mojom;
 
-import "third_party/WebKit/public/mojom/blob/blob.mojom";
-import "third_party/WebKit/public/mojom/blob/blob_url_store.mojom";
-import "third_party/WebKit/public/mojom/blob/data_element.mojom";
-import "third_party/WebKit/public/mojom/blob/serialized_blob.mojom";
+import "third_party/blink/public/mojom/blob/blob.mojom";
+import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
+import "third_party/blink/public/mojom/blob/data_element.mojom";
+import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
 import "url/mojom/origin.mojom";
 
 // This interface is used to inform a client of progress, in particular when

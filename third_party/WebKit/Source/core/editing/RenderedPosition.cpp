@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/RenderedPosition.h"
+#include "third_party/blink/renderer/core/editing/rendered_position.h"
 
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/InlineBoxPosition.h"
-#include "core/editing/InlineBoxTraversal.h"
-#include "core/editing/LocalCaretRect.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/TextAffinity.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleSelection.h"
-#include "core/editing/VisibleUnits.h"
-#include "core/html/forms/TextControlElement.h"
-#include "core/layout/api/LineLayoutAPIShim.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/compositing/CompositedSelection.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/inline_box_position.h"
+#include "third_party/blink/renderer/core/editing/inline_box_traversal.h"
+#include "third_party/blink/renderer/core/editing/local_caret_rect.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_selection.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
 

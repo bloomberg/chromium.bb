@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ModuleBindingsInitializer_h
-#define ModuleBindingsInitializer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_MODULE_BINDINGS_INITIALIZER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_MODULE_BINDINGS_INITIALIZER_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

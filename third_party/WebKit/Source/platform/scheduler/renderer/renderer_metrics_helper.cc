@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/renderer/renderer_metrics_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/renderer_metrics_helper.h"
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "platform/instrumentation/resource_coordinator/RendererResourceCoordinator.h"
-#include "platform/scheduler/main_thread/main_thread_scheduler.h"
-#include "platform/scheduler/public/frame_scheduler.h"
-#include "public/platform/scheduler/renderer_process_type.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+#include "third_party/blink/public/platform/scheduler/renderer_process_type.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 
 namespace blink {
 namespace scheduler {

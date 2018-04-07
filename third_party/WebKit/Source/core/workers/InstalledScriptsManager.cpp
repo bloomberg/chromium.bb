@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/InstalledScriptsManager.h"
+#include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
 
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/origin_trials/OriginTrialContext.h"
-#include "platform/network/http_names.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
 
 namespace blink {
 

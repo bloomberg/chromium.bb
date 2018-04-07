@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/text/BidiTextRun.h"
+#include "third_party/blink/renderer/platform/text/bidi_text_run.h"
 
-#include "platform/text/BidiResolver.h"
-#include "platform/text/TextRunIterator.h"
+#include "third_party/blink/renderer/platform/text/bidi_resolver.h"
+#include "third_party/blink/renderer/platform/text/text_run_iterator.h"
 
 namespace blink {
 

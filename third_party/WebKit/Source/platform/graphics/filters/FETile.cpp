@@ -19,12 +19,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/graphics/filters/FETile.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_tile.h"
 
 #include "SkTileImageFilter.h"
-#include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/PaintFilterBuilder.h"
-#include "platform/text/TextStream.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
 
 namespace blink {
 

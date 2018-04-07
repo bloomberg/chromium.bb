@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/FontSelectionAlgorithm.h"
+#include "third_party/blink/renderer/platform/fonts/font_selection_algorithm.h"
 
 namespace blink {
 

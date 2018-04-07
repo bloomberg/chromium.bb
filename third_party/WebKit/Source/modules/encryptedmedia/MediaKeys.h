@@ -23,22 +23,22 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaKeys_h
-#define MediaKeys_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEYS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEYS_H_
 
 #include <memory>
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/typed_arrays/DOMArrayPiece.h"
-#include "platform/Timer.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebContentDecryptionModule.h"
-#include "public/platform/WebEncryptedMediaTypes.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_content_decryption_module.h"
+#include "third_party/blink/public/platform/web_encrypted_media_types.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -140,4 +140,4 @@ class MediaKeys : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // MediaKeys_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEYS_H_

@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLContentElement_h
-#define HTMLContentElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_CONTENT_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_CONTENT_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/css/CSSSelectorList.h"
-#include "core/dom/V0InsertionPoint.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_selector_list.h"
+#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -97,4 +97,4 @@ inline bool HTMLContentElement::CanSelectNode(
 
 }  // namespace blink
 
-#endif  // HTMLContentElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_CONTENT_ELEMENT_H_

@@ -20,10 +20,10 @@
  *
  */
 
-#ifndef Comment_h
-#define Comment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_COMMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_COMMENT_H_
 
-#include "core/dom/CharacterData.h"
+#include "third_party/blink/renderer/core/dom/character_data.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ DEFINE_NODE_TYPE_CASTS(Comment, getNodeType() == Node::kCommentNode);
 
 }  // namespace blink
 
-#endif  // Comment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_COMMENT_H_

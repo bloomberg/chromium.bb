@@ -20,7 +20,7 @@
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
-#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
 #include "ui/base/dragdrop/file_info.h"
 #include "url/gurl.h"
 

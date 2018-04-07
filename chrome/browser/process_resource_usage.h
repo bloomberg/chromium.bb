@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/common/resource_usage_reporter.mojom.h"
-#include "third_party/WebKit/public/platform/WebCache.h"
+#include "third_party/blink/public/platform/web_cache.h"
 
 // Provides resource usage information about a child process.
 //

@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webaudio/AudioListener.h"
-#include "modules/webaudio/PannerNode.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/audio/HRTFDatabaseLoader.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_listener.h"
+#include "third_party/blink/renderer/modules/webaudio/panner_node.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/audio/hrtf_database_loader.h"
 
 namespace blink {
 

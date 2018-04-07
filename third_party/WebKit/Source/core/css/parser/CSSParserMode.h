@@ -28,8 +28,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef CSSParserMode_h
-#define CSSParserMode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_MODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_MODE_H_
 
 namespace blink {
 
@@ -69,4 +69,4 @@ inline bool IsUseCounterEnabledForMode(CSSParserMode mode) {
 
 }  // namespace blink
 
-#endif  // CSSParserMode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_MODE_H_

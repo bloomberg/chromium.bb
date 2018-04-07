@@ -33,11 +33,11 @@
  * helper functions.
  */
 
-#ifndef CSSValueTestHelper_h
-#define CSSValueTestHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_TEST_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_TEST_HELPER_H_
 
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSValue.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
 
 #include <ostream>
 

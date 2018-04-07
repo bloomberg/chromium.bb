@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FontFallbackIterator_h
-#define FontFallbackIterator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_FALLBACK_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_FALLBACK_ITERATOR_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/fonts/FontDataForRangeSet.h"
-#include "platform/fonts/FontFallbackPriority.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/fonts/font_data_for_range_set.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

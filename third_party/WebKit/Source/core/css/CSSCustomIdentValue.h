@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSCustomIdentValue_h
-#define CSSCustomIdentValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CUSTOM_IDENT_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CUSTOM_IDENT_VALUE_H_
 
-#include "core/css/CSSValue.h"
-#include "core/css_property_names.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSCustomIdentValue, IsCustomIdentValue());
 
 }  // namespace blink
 
-#endif  // CSSCustomIdentValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CUSTOM_IDENT_VALUE_H_

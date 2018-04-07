@@ -28,7 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/WebKit/public/platform/modules/installation/installation.mojom.h"
+#include "third_party/blink/public/platform/modules/installation/installation.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if defined(OS_ANDROID)

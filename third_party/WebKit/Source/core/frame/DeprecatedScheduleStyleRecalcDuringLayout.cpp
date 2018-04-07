@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/DeprecatedScheduleStyleRecalcDuringLayout.h"
+#include "third_party/blink/renderer/core/frame/deprecated_schedule_style_recalc_during_layout.h"
 
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

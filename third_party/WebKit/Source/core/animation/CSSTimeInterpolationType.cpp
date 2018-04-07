@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSTimeInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_time_interpolation_type.h"
 
-#include "core/css/CSSPrimitiveValue.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
 
 namespace blink {
 

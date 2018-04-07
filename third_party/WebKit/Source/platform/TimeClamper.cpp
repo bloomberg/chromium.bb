@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/TimeClamper.h"
+#include "third_party/blink/renderer/platform/time_clamper.h"
 
 #include "base/bit_cast.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/CryptographicallyRandomNumber.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/cryptographically_random_number.h"
 
 #include <cmath>
 

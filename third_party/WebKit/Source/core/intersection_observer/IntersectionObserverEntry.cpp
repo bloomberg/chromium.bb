@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/intersection_observer/IntersectionObserverEntry.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 
-#include "core/dom/Element.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 
 namespace blink {
 

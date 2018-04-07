@@ -28,17 +28,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutListBox.h"
+#include "third_party/blink/renderer/core/layout/layout_list_box.h"
 
-#include "core/dom/ElementTraversal.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/html/forms/HTMLOptGroupElement.h"
-#include "core/html/forms/HTMLOptionElement.h"
-#include "core/html/forms/HTMLSelectElement.h"
-#include "core/paint/PaintLayer.h"
-#include "platform/scroll/ScrollAlignment.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "public/platform/WebScrollIntoViewParams.h"
+#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
 

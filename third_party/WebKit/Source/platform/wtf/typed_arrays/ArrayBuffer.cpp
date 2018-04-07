@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/typed_arrays/ArrayBuffer.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/typed_arrays/ArrayBufferView.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_view.h"
 
 namespace WTF {
 

@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerOrWorkletScriptController_h
-#define WorkerOrWorkletScriptController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WORKER_OR_WORKLET_SCRIPT_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WORKER_OR_WORKLET_SCRIPT_CONTROLLER_H_
 
-#include "bindings/core/v8/RejectedPromises.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8CacheOptions.h"
-#include "core/CoreExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/TextPosition.h"
+#include "third_party/blink/renderer/bindings/core/v8/rejected_promises.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -130,4 +130,4 @@ class CORE_EXPORT WorkerOrWorkletScriptController
 
 }  // namespace blink
 
-#endif  // WorkerOrWorkletScriptController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WORKER_OR_WORKLET_SCRIPT_CONTROLLER_H_

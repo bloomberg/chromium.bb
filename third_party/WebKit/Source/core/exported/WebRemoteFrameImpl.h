@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebRemoteFrameImpl_h
-#define WebRemoteFrameImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_REMOTE_FRAME_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_REMOTE_FRAME_IMPL_H_
 
-#include "core/CoreExport.h"
-#include "core/frame/RemoteFrame.h"
-#include "platform/heap/SelfKeepAlive.h"
-#include "platform/wtf/Compiler.h"
-#include "public/platform/WebInsecureRequestPolicy.h"
-#include "public/web/WebRemoteFrame.h"
-#include "public/web/WebRemoteFrameClient.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/web/web_remote_frame.h"
+#include "third_party/blink/public/web/web_remote_frame_client.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/remote_frame.h"
+#include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 
@@ -127,4 +127,4 @@ DEFINE_TYPE_CASTS(WebRemoteFrameImpl,
 
 }  // namespace blink
 
-#endif  // WebRemoteFrameImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_REMOTE_FRAME_IMPL_H_

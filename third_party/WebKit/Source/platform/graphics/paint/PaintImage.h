@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintImage_h
-#define PaintImage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_IMAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_IMAGE_H_
 
 #include "cc/paint/paint_image.h"
 #include "cc/paint/paint_image_builder.h"
@@ -16,4 +16,4 @@ using cc::PaintImageGenerator;
 using cc::SkiaPaintImageGenerator;
 }
 
-#endif  // PaintImage_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_IMAGE_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentAppServiceWorkerRegistration.h"
+#include "third_party/blink/renderer/modules/payments/payment_app_service_worker_registration.h"
 
-#include "core/dom/Document.h"
-#include "modules/payments/PaymentManager.h"
-#include "modules/serviceworkers/ServiceWorkerRegistration.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/modules/payments/payment_manager.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

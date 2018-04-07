@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebScrollIntoViewParams_h
-#define WebScrollIntoViewParams_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLL_INTO_VIEW_PARAMS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLL_INTO_VIEW_PARAMS_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebFloatRect.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_float_rect.h"
 
 #if INSIDE_BLINK
-#include "platform/geometry/FloatRect.h"
-#include "platform/scroll/ScrollAlignment.h"
-#include "platform/scroll/ScrollTypes.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #endif
 
 namespace blink {
@@ -105,4 +105,4 @@ struct WebScrollIntoViewParams {
 
 }  // namespace blink
 
-#endif  // WebScrollIntoViewParams_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLL_INTO_VIEW_PARAMS_H_

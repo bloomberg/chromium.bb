@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/wtf/ScopedLogger.h"
+#include "third_party/blink/renderer/platform/wtf/scoped_logger.h"
 
 #include "build/build_config.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/ThreadSpecific.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 
 #if DCHECK_IS_ON()
 

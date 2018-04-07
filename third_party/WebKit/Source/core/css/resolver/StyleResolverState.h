@@ -20,23 +20,23 @@
  *
  */
 
-#ifndef StyleResolverState_h
-#define StyleResolverState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_RESOLVER_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_RESOLVER_STATE_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/animation/css/CSSAnimationUpdate.h"
-#include "core/css/CSSPendingSubstitutionValue.h"
-#include "core/css/CSSToLengthConversionData.h"
-#include "core/css/resolver/CSSToStyleMap.h"
-#include "core/css/resolver/ElementResolveContext.h"
-#include "core/css/resolver/ElementStyleResources.h"
-#include "core/css/resolver/FontBuilder.h"
-#include "core/css_property_names.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/style/CachedUAStyle.h"
+#include "third_party/blink/renderer/core/animation/css/css_animation_update.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_pending_substitution_value.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/core/css/resolver/css_to_style_map.h"
+#include "third_party/blink/renderer/core/css/resolver/element_resolve_context.h"
+#include "third_party/blink/renderer/core/css/resolver/element_style_resources.h"
+#include "third_party/blink/renderer/core/css/resolver/font_builder.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/style/cached_ua_style.h"
 
 namespace blink {
 
@@ -240,4 +240,4 @@ class CORE_EXPORT StyleResolverState {
 
 }  // namespace blink
 
-#endif  // StyleResolverState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_RESOLVER_STATE_H_

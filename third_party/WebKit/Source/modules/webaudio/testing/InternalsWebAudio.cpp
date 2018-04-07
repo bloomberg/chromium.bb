@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webaudio/testing/InternalsWebAudio.h"
+#include "third_party/blink/renderer/modules/webaudio/testing/internals_web_audio.h"
 
-#include "modules/webaudio/AudioNode.h"
-#include "platform/InstanceCounters.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/platform/instance_counters.h"
 
 namespace blink {
 

@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebSpeechRecognitionHandle.h"
+#include "third_party/blink/public/web/web_speech_recognition_handle.h"
 
-#include "modules/speech/SpeechRecognition.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition.h"
 
 namespace blink {
 

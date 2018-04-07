@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebEmbeddedWorkerStartData_h
-#define WebEmbeddedWorkerStartData_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EMBEDDED_WORKER_START_DATA_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EMBEDDED_WORKER_START_DATA_H_
 
 #include "base/unguessable_token.h"
-#include "public/platform/WebContentSecurityPolicy.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/web/WebSettings.h"
-#include "third_party/WebKit/public/mojom/net/ip_address_space.mojom-shared.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-shared.h"
+#include "third_party/blink/public/platform/web_content_security_policy.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_settings.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ struct WebEmbeddedWorkerStartData {
 
 }  // namespace blink
 
-#endif  // WebEmbeddedWorkerStartData_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EMBEDDED_WORKER_START_DATA_H_

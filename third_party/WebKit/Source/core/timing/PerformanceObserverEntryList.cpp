@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/timing/PerformanceObserverEntryList.h"
+#include "third_party/blink/renderer/core/timing/performance_observer_entry_list.h"
 
 #include <algorithm>
-#include "core/timing/PerformanceEntry.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/core/timing/performance_entry.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

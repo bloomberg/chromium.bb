@@ -23,24 +23,24 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebLayer_h
-#define WebLayer_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_H_
 
 #include "cc/layers/layer.h"
 
-#include "WebBlendMode.h"
-#include "WebColor.h"
-#include "WebCommon.h"
-#include "WebFloatPoint.h"
-#include "WebFloatPoint3D.h"
-#include "WebFloatSize.h"
-#include "WebOverscrollBehavior.h"
-#include "WebPoint.h"
-#include "WebRect.h"
-#include "WebSize.h"
-#include "WebString.h"
-#include "WebTouchInfo.h"
-#include "WebVector.h"
+#include "third_party/blink/public/platform/web_blend_mode.h"
+#include "third_party/blink/public/platform/web_color.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_float_point_3d.h"
+#include "third_party/blink/public/platform/web_float_size.h"
+#include "third_party/blink/public/platform/web_overscroll_behavior.h"
+#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_touch_info.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 class SkMatrix44;
 
@@ -258,4 +258,4 @@ class WebLayer {
 
 }  // namespace blink
 
-#endif  // WebLayer_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_H_

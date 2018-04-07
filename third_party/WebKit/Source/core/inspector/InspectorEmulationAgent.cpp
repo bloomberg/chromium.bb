@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/InspectorEmulationAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorEmulationAgent.h"
 
-#include "core/exported/WebViewImpl.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/Settings.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/inspector/DevToolsEmulator.h"
-#include "core/inspector/protocol/DOM.h"
-#include "core/page/Page.h"
-#include "platform/geometry/DoubleRect.h"
-#include "platform/graphics/Color.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/scheduler/util/thread_cpu_throttler.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebFloatPoint.h"
-#include "public/platform/WebThread.h"
-#include "public/platform/WebTouchEvent.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/public/platform/web_touch_event.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/inspector/dev_tools_emulator.h"
+#include "third_party/blink/renderer/core/inspector/protocol/DOM.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/geometry/double_rect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/scheduler/util/thread_cpu_throttler.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

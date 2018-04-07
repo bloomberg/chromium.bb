@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/SVGMaskPainter.h"
+#include "third_party/blink/renderer/core/paint/svg_mask_painter.h"
 
-#include "core/layout/svg/LayoutSVGResourceMasker.h"
-#include "core/paint/ObjectPaintProperties.h"
-#include "core/paint/PaintInfo.h"
-#include "platform/graphics/paint/CompositingDisplayItem.h"
-#include "platform/graphics/paint/CompositingRecorder.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
+#include "third_party/blink/renderer/core/paint/object_paint_properties.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/graphics/paint/compositing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/compositing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 
 namespace blink {
 

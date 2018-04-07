@@ -23,11 +23,11 @@
  *
  */
 
-#include "core/layout/ListMarkerText.h"
+#include "third_party/blink/renderer/core/layout/list_marker_text.h"
 
-#include "core/layout/TextRunConstructor.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/layout/text_run_constructor.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

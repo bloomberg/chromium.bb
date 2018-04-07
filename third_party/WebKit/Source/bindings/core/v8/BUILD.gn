@@ -3,12 +3,12 @@
 # found in the LICENSE file.
 
 import("//testing/libfuzzer/fuzzer_test.gni")
-import("//third_party/WebKit/Source/bindings/bindings.gni")
-import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
-import("//third_party/WebKit/Source/core/core.gni")
-import("//third_party/WebKit/Source/core/core_idl_files.gni")
+import("//third_party/blink/renderer/bindings/bindings.gni")
+import("//third_party/blink/renderer/bindings/scripts/scripts.gni")
+import("//third_party/blink/renderer/core/core.gni")
+import("//third_party/blink/renderer/core/core_idl_files.gni")
 
-visibility = [ "//third_party/WebKit/Source/*" ]
+visibility = [ "//third_party/blink/renderer/*" ]
 
 bindings_core_generated_union_type_files = [
   "$bindings_core_v8_output_dir/add_event_listener_options_or_boolean.cc",
@@ -154,8 +154,8 @@ generate_origin_trial_features("bindings_core_origin_trial_features") {
   component = "core"
   output_dir = bindings_core_output_dir + "/v8"
   deps = [
-    "//third_party/WebKit/Source/bindings/core:core_global_constructors_idls",
-    "//third_party/WebKit/Source/bindings/core:interfaces_info_individual_core",
+    "//third_party/blink/renderer/bindings/core:core_global_constructors_idls",
+    "//third_party/blink/renderer/bindings/core:interfaces_info_individual_core",
   ]
 }
 
@@ -271,24 +271,24 @@ source_set("testing") {
             generated_core_testing_callback_function_files
 
   configs -= core_config_remove
-  configs += core_config_add + [ "//third_party/WebKit/Source:inside_blink" ] -
-             [ "//third_party/WebKit/Source/core:config" ]
+  configs += core_config_add + [ "//third_party/blink/renderer:inside_blink" ] -
+             [ "//third_party/blink/renderer/core:config" ]
 
   deps = [
     ":bindings_core_impl_generated",
     "//skia",
-    "//third_party/WebKit/Source/platform",
+    "//third_party/blink/renderer/platform",
     "//v8",
   ]
 }
 
 fuzzer_test("v8_serialized_script_value_fuzzer") {
   sources = [
-    "serialization/SerializedScriptValueFuzzer.cpp",
+    "serialization/serialized_script_value_fuzzer.cc",
   ]
   seed_corpus = "serialization/fuzz_corpus"
   deps = [
-    "//third_party/WebKit/Source/core",
-    "//third_party/WebKit/Source/platform:blink_fuzzer_test_support",
+    "//third_party/blink/renderer/core",
+    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
   ]
 }

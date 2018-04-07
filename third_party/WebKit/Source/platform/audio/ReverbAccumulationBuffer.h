@@ -26,13 +26,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ReverbAccumulationBuffer_h
-#define ReverbAccumulationBuffer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_REVERB_ACCUMULATION_BUFFER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_REVERB_ACCUMULATION_BUFFER_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/audio/AudioArray.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -77,4 +77,4 @@ class PLATFORM_EXPORT ReverbAccumulationBuffer {
 
 }  // namespace blink
 
-#endif  // ReverbAccumulationBuffer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_REVERB_ACCUMULATION_BUFFER_H_

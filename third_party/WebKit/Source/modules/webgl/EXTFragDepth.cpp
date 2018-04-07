@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webgl/EXTFragDepth.h"
+#include "third_party/blink/renderer/modules/webgl/ext_frag_depth.h"
 
 namespace blink {
 

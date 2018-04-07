@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8EmbedderGraphBuilder_h
-#define V8EmbedderGraphBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EMBEDDER_GRAPH_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EMBEDDER_GRAPH_BUILDER_H_
 
-#include "platform/bindings/ScriptWrappableVisitor.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "v8/include/v8-profiler.h"
 #include "v8/include/v8.h"
 
@@ -146,4 +146,4 @@ class V8EmbedderGraphBuilder : public ScriptWrappableVisitor,
 
 }  // namespace blink
 
-#endif  // V8EmbedderGraphBuilder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_EMBEDDER_GRAPH_BUILDER_H_

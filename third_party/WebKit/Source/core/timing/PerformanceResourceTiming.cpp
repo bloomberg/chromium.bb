@@ -29,14 +29,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/timing/PerformanceResourceTiming.h"
+#include "third_party/blink/renderer/core/timing/performance_resource_timing.h"
 
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/timing/Performance.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/loader/fetch/ResourceTimingInfo.h"
-#include "public/platform/WebResourceTimingInfo.h"
+#include "third_party/blink/public/platform/web_resource_timing_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/timing/performance.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 
 namespace blink {
 

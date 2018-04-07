@@ -28,17 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 #include "base/strings/string_util.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/ASCIIFastPath.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/StringUTF8Adaptor.h"
-#include "platform/wtf/text/StringView.h"
-#include "platform/wtf/text/WTFString.h"
-
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_fast_path.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 STATIC_ASSERT_ENUM(WTF::kLenientUTF8Conversion,
                    blink::WebString::UTF8ConversionMode::kLenient);

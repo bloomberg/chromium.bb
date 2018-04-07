@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/wtf/text/TextCodec.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec.h"
 
-#include "platform/testing/BlinkFuzzerTestSupport.h"
-#include "platform/testing/FuzzedDataProvider.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/TextEncoding.h"
-#include "platform/wtf/text/TextEncodingRegistry.h"
+#include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
+#include "third_party/blink/renderer/platform/testing/fuzzed_data_provider.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
 
 using namespace blink;
 

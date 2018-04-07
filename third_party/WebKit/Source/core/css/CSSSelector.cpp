@@ -24,19 +24,19 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/CSSSelector.h"
+#include "third_party/blink/renderer/core/css/css_selector.h"
 
 #include <algorithm>
 #include <memory>
-#include "core/css/CSSMarkup.h"
-#include "core/css/CSSSelectorList.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/html_names.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/css_markup.h"
+#include "third_party/blink/renderer/core/css/css_selector_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

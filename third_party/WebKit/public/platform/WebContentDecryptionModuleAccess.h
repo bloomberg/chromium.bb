@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebContentDecryptionModuleAccess_h
-#define WebContentDecryptionModuleAccess_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_DECRYPTION_MODULE_ACCESS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_DECRYPTION_MODULE_ACCESS_H_
 
-#include "WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 
@@ -22,4 +22,4 @@ class BLINK_PLATFORM_EXPORT WebContentDecryptionModuleAccess {
 
 }  // namespace blink
 
-#endif  // WebContentDecryptionModuleAccess_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_DECRYPTION_MODULE_ACCESS_H_

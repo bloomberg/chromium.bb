@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8ErrorEvent.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_error_event.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "platform/bindings/V8PrivateProperty.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
 namespace blink {
 

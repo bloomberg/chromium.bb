@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGDiscardElement_h
-#define SVGDiscardElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_DISCARD_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_DISCARD_ELEMENT_H_
 
-#include "core/svg/animation/SVGSMILElement.h"
+#include "third_party/blink/renderer/core/svg/animation/svg_smil_element.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ class SVGDiscardElement final : public SVGSMILElement {
 
 }  // namespace blink
 
-#endif  // SVGDiscardElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_DISCARD_ELEMENT_H_

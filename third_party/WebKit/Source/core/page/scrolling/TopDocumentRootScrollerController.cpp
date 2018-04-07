@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/scrolling/TopDocumentRootScrollerController.h"
+#include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/PageScaleConstraintsSet.h"
-#include "core/frame/VisualViewport.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/layout/LayoutView.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "core/page/scrolling/OverscrollController.h"
-#include "core/page/scrolling/RootScrollerUtil.h"
-#include "core/page/scrolling/ViewportScrollCallback.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/compositing/PaintLayerCompositor.h"
-#include "platform/scroll/ScrollableArea.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/overscroll_controller.h"
+#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
+#include "third_party/blink/renderer/core/page/scrolling/viewport_scroll_callback.h"
+#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 
 namespace blink {
 

@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/custom/CSSLayoutDefinition.h"
+#include "third_party/blink/renderer/core/layout/custom/css_layout_definition.h"
 
 #include <memory>
-#include "bindings/core/v8/DictionaryIterator.h"
-#include "bindings/core/v8/IDLTypes.h"
-#include "bindings/core/v8/NativeValueTraitsImpl.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8FragmentResultOptions.h"
-#include "bindings/core/v8/V8LayoutFragmentRequest.h"
-#include "core/css/cssom/PrepopulatedComputedStylePropertyMap.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/layout/custom/CustomLayoutConstraints.h"
-#include "core/layout/custom/CustomLayoutFragment.h"
-#include "core/layout/custom/FragmentResultOptions.h"
-#include "core/layout/custom/LayoutCustom.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8BindingMacros.h"
-#include "platform/bindings/V8ObjectConstructor.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary_iterator.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_fragment_result_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_layout_fragment_request.h"
+#include "third_party/blink/renderer/core/css/cssom/prepopulated_computed_style_property_map.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_constraints.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
+#include "third_party/blink/renderer/core/layout/custom/fragment_result_options.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
+#include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 
 namespace blink {
 

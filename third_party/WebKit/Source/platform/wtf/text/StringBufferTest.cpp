@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-#include "platform/wtf/text/StringBuffer.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

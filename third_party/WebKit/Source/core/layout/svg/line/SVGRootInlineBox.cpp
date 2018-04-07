@@ -21,16 +21,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/svg/line/SVGRootInlineBox.h"
+#include "third_party/blink/renderer/core/layout/svg/line/svg_root_inline_box.h"
 
-#include "core/layout/api/LineLayoutAPIShim.h"
-#include "core/layout/api/LineLayoutBlockFlow.h"
-#include "core/layout/api/LineLayoutSVGInlineText.h"
-#include "core/layout/svg/LayoutSVGText.h"
-#include "core/layout/svg/SVGTextLayoutEngine.h"
-#include "core/layout/svg/line/SVGInlineFlowBox.h"
-#include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "core/paint/SVGRootInlineBoxPainter.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_svg_inline_text.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
+#include "third_party/blink/renderer/core/layout/svg/line/svg_inline_flow_box.h"
+#include "third_party/blink/renderer/core/layout/svg/line/svg_inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_text_layout_engine.h"
+#include "third_party/blink/renderer/core/paint/svg_root_inline_box_painter.h"
 
 namespace blink {
 

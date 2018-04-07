@@ -23,14 +23,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebIDBCursor_h
-#define WebIDBCursor_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_CURSOR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_CURSOR_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebString.h"
-#include "public/platform/modules/indexeddb/WebIDBCallbacks.h"
-#include "public/platform/modules/indexeddb/WebIDBKey.h"
-#include "public/platform/modules/indexeddb/WebIDBTypes.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ class WebIDBCursor {
 
 }  // namespace blink
 
-#endif  // WebIDBCursor_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_CURSOR_H_

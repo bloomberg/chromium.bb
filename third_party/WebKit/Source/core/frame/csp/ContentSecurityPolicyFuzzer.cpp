@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/csp/ContentSecurityPolicy.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 
-#include "core/testing/DummyPageHolder.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/ThreadState.h"
-#include "platform/testing/BlinkFuzzerTestSupport.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

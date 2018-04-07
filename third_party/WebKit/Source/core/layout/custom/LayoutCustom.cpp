@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/custom/LayoutCustom.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/layout/LayoutState.h"
-#include "core/layout/TextAutosizer.h"
-#include "core/layout/custom/CustomLayoutFragment.h"
-#include "core/layout/custom/FragmentResultOptions.h"
-#include "core/layout/custom/LayoutWorklet.h"
-#include "core/layout/custom/LayoutWorkletGlobalScope.h"
-#include "core/layout/custom/LayoutWorkletGlobalScopeProxy.h"
-#include "core/paint/PaintLayer.h"
-#include "platform/bindings/ScriptForbiddenScope.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
+#include "third_party/blink/renderer/core/layout/custom/fragment_result_options.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_worklet.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope_proxy.h"
+#include "third_party/blink/renderer/core/layout/layout_state.h"
+#include "third_party/blink/renderer/core/layout/text_autosizer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 
 namespace blink {
 

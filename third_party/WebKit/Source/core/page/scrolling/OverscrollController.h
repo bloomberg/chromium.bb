@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef OverscrollController_h
-#define OverscrollController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_OVERSCROLL_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_OVERSCROLL_CONTROLLER_H_
 
-#include "platform/geometry/FloatSize.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebOverscrollBehavior.h"
+#include "third_party/blink/public/platform/web_overscroll_behavior.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -56,4 +56,4 @@ class OverscrollController : public GarbageCollected<OverscrollController> {
 
 }  // namespace blink
 
-#endif  // OverscrollController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_OVERSCROLL_CONTROLLER_H_

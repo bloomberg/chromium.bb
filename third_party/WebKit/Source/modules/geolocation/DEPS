@@ -1,8 +1,8 @@
 include_rules = [
     "+services/device/public/mojom",
-    "-modules",
-    "+modules/EventModules.h",
-    "+modules/ModulesExport.h",
-    "+modules/geolocation",
-    "+modules/permissions",
+    "-third_party/blink/renderer/modules",
+    "+third_party/blink/renderer/modules/event_modules.h",
+    "+third_party/blink/renderer/modules/modules_export.h",
+    "+third_party/blink/renderer/modules/geolocation",
+    "+third_party/blink/renderer/modules/permissions",
 ]

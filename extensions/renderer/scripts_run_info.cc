@@ -9,7 +9,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/script_context.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace extensions {
 

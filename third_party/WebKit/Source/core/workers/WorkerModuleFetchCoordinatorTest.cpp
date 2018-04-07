@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/modulescript/ModuleScriptCreationParams.h"
-#include "core/workers/WorkerFetchTestHelper.h"
-#include "core/workers/WorkerModuleFetchCoordinator.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/testing/FetchTestingPlatformSupport.h"
-#include "platform/loader/testing/MockFetchContext.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/testing/URLTestHelpers.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/Optional.h"
-#include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_fetch_test_helper.h"
+#include "third_party/blink/renderer/core/workers/worker_module_fetch_coordinator.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/testing/fetch_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IDBTracing_h
-#define IDBTracing_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_TRACING_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_TRACING_H_
 
-#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #define IDB_TRACE(a) TRACE_EVENT0("IndexedDB", (a));
 #define IDB_TRACE1(a, b, b_val) TRACE_EVENT1("IndexedDB", (a), (b), (b_val));
 
-#endif  // IDBTracing_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_TRACING_H_

@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InertEffect_h
-#define InertEffect_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INERT_EFFECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INERT_EFFECT_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/animation/AnimationEffect.h"
-#include "core/animation/KeyframeEffectModel.h"
+#include "third_party/blink/renderer/core/animation/animation_effect.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 

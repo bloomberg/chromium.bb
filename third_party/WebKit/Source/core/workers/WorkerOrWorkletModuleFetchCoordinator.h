@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerOrWorkletModuleFetchCoordinator_h
-#define WorkerOrWorkletModuleFetchCoordinator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_OR_WORKLET_MODULE_FETCH_COORDINATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_OR_WORKLET_MODULE_FETCH_COORDINATOR_H_
 
-#include "core/CoreExport.h"
-#include "core/loader/modulescript/ModuleScriptCreationParams.h"
-#include "platform/loader/fetch/FetchParameters.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 
 namespace blink {
 
@@ -34,4 +34,4 @@ class WorkerOrWorkletModuleFetchCoordinator : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // WorkerOrWorkletModuleFetchCoordinator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_OR_WORKLET_MODULE_FETCH_COORDINATOR_H_

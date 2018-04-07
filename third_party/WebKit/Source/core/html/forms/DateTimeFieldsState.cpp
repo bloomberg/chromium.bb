@@ -23,9 +23,9 @@
  * SUCH DAMAGE.
  */
 
-#include "core/html/forms/DateTimeFieldsState.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_fields_state.h"
 
-#include "core/html/forms/FormController.h"
+#include "third_party/blink/renderer/core/html/forms/form_controller.h"
 
 namespace blink {
 

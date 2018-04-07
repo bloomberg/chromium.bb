@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DragData_h
-#define DragData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_DRAG_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_DRAG_DATA_H_
 
-#include "core/CoreExport.h"
-#include "core/page/DragActions.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/page/drag_actions.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

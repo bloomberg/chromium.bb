@@ -19,20 +19,20 @@
  *
 */
 
-#ifndef HitTestResult_h
-#define HitTestResult_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_RESULT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_RESULT_H_
 
-#include "core/CoreExport.h"
-#include "core/editing/Forward.h"
-#include "core/layout/HitTestLocation.h"
-#include "core/layout/HitTestRequest.h"
-#include "platform/geometry/FloatQuad.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/heap/Handle.h"
-#include "platform/text/TextDirection.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/VectorTraits.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/layout/hit_test_location.h"
+#include "third_party/blink/renderer/core/layout/hit_test_request.h"
+#include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector_traits.h"
 
 namespace blink {
 
@@ -223,4 +223,4 @@ class CORE_EXPORT HitTestResult {
 
 WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::HitTestResult);
 
-#endif  // HitTestResult_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_RESULT_H_

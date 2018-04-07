@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/PlaceholderImage.h"
+#include "third_party/blink/renderer/platform/graphics/placeholder_image.h"
 
 #include <stdint.h>
 
-#include "platform/geometry/IntSize.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebLocalizedString.h"
-#include "public/platform/WebString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_localized_string.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 namespace {

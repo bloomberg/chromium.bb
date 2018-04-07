@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/main_thread/page_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/scheduler/base/virtual_time_domain.h"
-#include "platform/scheduler/child/default_params.h"
-#include "platform/scheduler/common/throttling/budget_pool.h"
-#include "platform/scheduler/main_thread/frame_scheduler_impl.h"
-#include "platform/scheduler/main_thread/main_thread_scheduler.h"
-#include "platform/scheduler/public/frame_scheduler.h"
-#include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/child/default_params.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 
 namespace blink {
 namespace scheduler {

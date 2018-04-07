@@ -7,7 +7,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/time/tick_clock.h"
-#include "platform/scheduler/base/task_queue_manager_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager_impl.h"
 
 namespace base {
 class MessageLoop;

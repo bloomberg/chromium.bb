@@ -22,13 +22,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCDataChannelEvent_h
-#define RTCDataChannelEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DATA_CHANNEL_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DATA_CHANNEL_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/peerconnection/RTCDataChannel.h"
-#include "modules/peerconnection/RTCDataChannelEventInit.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_data_channel.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_data_channel_event_init.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class RTCDataChannelEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // RTCDataChannelEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DATA_CHANNEL_EVENT_H_

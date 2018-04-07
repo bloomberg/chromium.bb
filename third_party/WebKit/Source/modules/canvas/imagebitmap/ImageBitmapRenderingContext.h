@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ImageBitmapRenderingContext_h
-#define ImageBitmapRenderingContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_IMAGEBITMAP_IMAGE_BITMAP_RENDERING_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_IMAGEBITMAP_IMAGE_BITMAP_RENDERING_CONTEXT_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/html/canvas/CanvasRenderingContextFactory.h"
-#include "modules/ModulesExport.h"
-#include "modules/canvas/imagebitmap/ImageBitmapRenderingContextBase.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
+#include "third_party/blink/renderer/modules/canvas/imagebitmap/image_bitmap_rendering_context_base.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 

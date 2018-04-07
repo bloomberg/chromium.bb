@@ -25,22 +25,22 @@
  *
  */
 
-#include "core/execution_context/ExecutionContext.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
-#include "bindings/core/v8/SourceLocation.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/PausableObject.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/events/ErrorEvent.h"
-#include "core/fileapi/PublicURLManager.h"
-#include "core/frame/UseCounter.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/probe/CoreProbes.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerThread.h"
-#include "platform/loader/fetch/MemoryCache.h"
-#include "platform/weborigin/SecurityPolicy.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/events/error_event.h"
+#include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
 

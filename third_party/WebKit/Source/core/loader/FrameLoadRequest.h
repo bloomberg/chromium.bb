@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FrameLoadRequest_h
-#define FrameLoadRequest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_
 
 #include "base/unguessable_token.h"
-#include "core/dom/Document.h"
-#include "core/dom/events/Event.h"
-#include "core/loader/FrameLoaderTypes.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/SubstituteData.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/substitute_data.h"
 
 namespace blink {
 
@@ -166,4 +166,4 @@ struct CORE_EXPORT FrameLoadRequest {
 
 }  // namespace blink
 
-#endif  // FrameLoadRequest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOAD_REQUEST_H_

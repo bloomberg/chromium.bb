@@ -25,14 +25,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/filters/FELighting.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_lighting.h"
 
 #include "SkLightingImageFilter.h"
 #include "SkPoint3.h"
-#include "platform/graphics/filters/DistantLightSource.h"
-#include "platform/graphics/filters/PaintFilterBuilder.h"
-#include "platform/graphics/filters/PointLightSource.h"
-#include "platform/graphics/filters/SpotLightSource.h"
+#include "third_party/blink/renderer/platform/graphics/filters/distant_light_source.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
+#include "third_party/blink/renderer/platform/graphics/filters/point_light_source.h"
+#include "third_party/blink/renderer/platform/graphics/filters/spot_light_source.h"
 
 namespace blink {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FontVerticalPositionType_h
-#define FontVerticalPositionType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_VERTICAL_POSITION_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_VERTICAL_POSITION_TYPE_H_
 
 namespace blink {
 
@@ -22,4 +22,4 @@ enum class FontVerticalPositionType {
 
 }  // namespace blink
 
-#endif  // FontVerticalPositionType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_VERTICAL_POSITION_TYPE_H_

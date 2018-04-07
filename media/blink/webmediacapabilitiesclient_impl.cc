@@ -16,11 +16,11 @@
 #include "media/filters/stream_parser_factory.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/WebKit/public/platform/Platform.h"
-#include "third_party/WebKit/public/platform/modules/media_capabilities/WebAudioConfiguration.h"
-#include "third_party/WebKit/public/platform/modules/media_capabilities/WebMediaCapabilitiesInfo.h"
-#include "third_party/WebKit/public/platform/modules/media_capabilities/WebMediaConfiguration.h"
-#include "third_party/WebKit/public/platform/modules/media_capabilities/WebVideoConfiguration.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_audio_configuration.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_video_configuration.h"
+#include "third_party/blink/public/platform/platform.h"
 
 namespace media {
 

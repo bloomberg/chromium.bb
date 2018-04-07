@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/plugins/PluginListBuilder.h"
+#include "third_party/blink/renderer/platform/plugins/plugin_list_builder.h"
 
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 

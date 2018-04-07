@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSPropertyParser.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
 
-#include "core/css/CSSColorValue.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css/parser/CSSTokenizer.h"
-#include "core/html/HTMLHtmlElement.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 

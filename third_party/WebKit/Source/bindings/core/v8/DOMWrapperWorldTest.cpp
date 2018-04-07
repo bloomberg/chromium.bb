@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/bindings/DOMWrapperWorld.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 
 #include "base/single_thread_task_runner.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/core/v8/V8Initializer.h"
-#include "core/workers/WorkerBackingThread.h"
-#include "core/workers/WorkerBackingThreadStartupData.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebThreadSupportingGC.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 
 namespace blink {
 namespace {

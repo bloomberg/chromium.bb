@@ -24,14 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/loader/fetch/ResourceError.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 
 #include "net/base/net_errors.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLError.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 
 namespace blink {
 

@@ -29,13 +29,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/HTMLDataListElement.h"
+#include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
 
-#include "core/dom/IdTargetObserverRegistry.h"
-#include "core/dom/NodeListsNodeData.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/forms/HTMLDataListOptionsCollection.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/dom/id_target_observer_registry.h"
+#include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/forms/html_data_list_options_collection.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

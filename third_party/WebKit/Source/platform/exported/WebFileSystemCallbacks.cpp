@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebFileSystemCallbacks.h"
+#include "third_party/blink/public/platform/web_file_system_callbacks.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/AsyncFileSystemCallbacks.h"
-#include "platform/FileMetadata.h"
-#include "platform/wtf/RefCounted.h"
-#include "public/platform/WebFileInfo.h"
-#include "public/platform/WebFileSystem.h"
-#include "public/platform/WebFileSystemEntry.h"
-#include "public/platform/WebFileWriter.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_file_info.h"
+#include "third_party/blink/public/platform/web_file_system.h"
+#include "third_party/blink/public/platform/web_file_system_entry.h"
+#include "third_party/blink/public/platform/web_file_writer.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/async_file_system_callbacks.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 

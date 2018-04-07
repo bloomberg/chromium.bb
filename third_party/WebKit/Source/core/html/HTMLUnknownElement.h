@@ -27,10 +27,10 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLUnknownElement_h
-#define HTMLUnknownElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_UNKNOWN_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_UNKNOWN_ELEMENT_H_
 
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLUnknownElement);
 
 }  // namespace blink
 
-#endif  // HTMLUnknownElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_UNKNOWN_ELEMENT_H_

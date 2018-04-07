@@ -30,8 +30,6 @@ group("headless_lib") {
 
 repack("pak") {
   sources = [
-    "$root_gen_dir/blink/public/resources/blink_resources.pak",
-    "$root_gen_dir/blink/public/resources/blink_scaled_resources_100_percent.pak",
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/components/strings/components_strings_en-US.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
@@ -42,6 +40,8 @@ repack("pak") {
     "$root_gen_dir/headless/headless_lib_resources.pak",
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
+    "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
+    "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
@@ -65,8 +65,8 @@ repack("pak") {
     "//content/browser/tracing:resources",
     "//mojo/public/js:resources",
     "//net:net_resources",
-    "//third_party/WebKit/public:resources",
-    "//third_party/WebKit/public:scaled_resources_100_percent",
+    "//third_party/blink/public:resources",
+    "//third_party/blink/public:scaled_resources_100_percent",
     "//ui/resources",
     "//ui/strings",
   ]
@@ -213,10 +213,10 @@ foreach(domain, devtools_domains) {
 action("gen_devtools_client_api") {
   script = "lib/browser/devtools_api/client_api_generator.py"
   deps = [
-    "//third_party/WebKit/Source/core/inspector:protocol_version",
+    "//third_party/blink/renderer/core/inspector:protocol_version",
   ]
   inputs = [
-    "$root_gen_dir/blink/core/inspector/protocol.json",
+    "$root_gen_dir/third_party/blink/renderer/core/inspector/protocol.json",
   ]
 
   outputs = generated_devtools_api + generated_devtools_api_js +
@@ -437,8 +437,8 @@ component("headless") {
       "//components/crash/core/common:crash_key",
       "//components/security_state/content",
       "//gin",
-      "//third_party/WebKit/public:blink",
-      "//third_party/WebKit/public:blink_headers",
+      "//third_party/blink/public:blink",
+      "//third_party/blink/public:blink_headers",
       "//ui/gl",
       "//v8",
     ]
@@ -520,7 +520,7 @@ if (!is_component_build) {
     deps = [
       ":headless",
       "//components/crash/core/common:crash_key",
-      "//third_party/WebKit/public:blink_headers",
+      "//third_party/blink/public:blink_headers",
       "//ui/base",
       "//v8",
     ]
@@ -635,7 +635,7 @@ test("headless_unittests") {
     deps += [
       "//components/printing/browser",
       "//components/printing/service/public/cpp:factory",
-      "//third_party/WebKit/public:blink",
+      "//third_party/blink/public:blink",
     ]
   }
 }
@@ -849,7 +849,7 @@ if (is_win) {
       ]
       deps += [
         "//components/crash/core/common:crash_key",
-        "//third_party/WebKit/public:blink_headers",
+        "//third_party/blink/public:blink_headers",
       ]
     }
 
@@ -889,7 +889,7 @@ if (is_win) {
       ]
       deps += [
         "//components/crash/core/common:crash_key",
-        "//third_party/WebKit/public:blink_headers",
+        "//third_party/blink/public:blink_headers",
       ]
     }
 

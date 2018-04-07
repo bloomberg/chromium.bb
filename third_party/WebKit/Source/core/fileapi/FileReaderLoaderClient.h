@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FileReaderLoaderClient_h
-#define FileReaderLoaderClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_READER_LOADER_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_READER_LOADER_CLIENT_H_
 
-#include "core/CoreExport.h"
-#include "core/fileapi/FileError.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -56,4 +56,4 @@ class CORE_EXPORT FileReaderLoaderClient {
 
 }  // namespace blink
 
-#endif  // FileReaderLoaderClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_READER_LOADER_CLIENT_H_

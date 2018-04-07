@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SVGInlineTextBoxPainter_h
-#define SVGInlineTextBoxPainter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_INLINE_TEXT_BOX_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_INLINE_TEXT_BOX_PAINTER_H_
 
-#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -89,4 +89,4 @@ class SVGInlineTextBoxPainter {
 
 }  // namespace blink
 
-#endif  // SVGInlineTextBoxPainter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_INLINE_TEXT_BOX_PAINTER_H_

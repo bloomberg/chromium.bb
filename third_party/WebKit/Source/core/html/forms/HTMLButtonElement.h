@@ -21,10 +21,10 @@
  *
  */
 
-#ifndef HTMLButtonElement_h
-#define HTMLButtonElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_BUTTON_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_BUTTON_ELEMENT_H_
 
-#include "core/html/forms/HTMLFormControlElement.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 
 namespace blink {
 
@@ -85,4 +85,4 @@ class HTMLButtonElement final : public HTMLFormControlElement {
 
 }  // namespace blink
 
-#endif  // HTMLButtonElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_BUTTON_ELEMENT_H_

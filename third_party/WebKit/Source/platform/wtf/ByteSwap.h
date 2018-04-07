@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_ByteSwap_h
-#define WTF_ByteSwap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_BYTE_SWAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_BYTE_SWAP_H_
 
 #include <stdint.h>
 #include "build/build_config.h"
-#include "platform/wtf/CPU.h"
-#include "platform/wtf/Compiler.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/cpu.h"
 
 #if defined(COMPILER_MSVC)
 #include <stdlib.h>
@@ -74,4 +74,4 @@ ALWAYS_INLINE uint16_t Bswap16(uint16_t x) {
 
 }  // namespace WTF
 
-#endif  // WTF_ByteSwap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_BYTE_SWAP_H_

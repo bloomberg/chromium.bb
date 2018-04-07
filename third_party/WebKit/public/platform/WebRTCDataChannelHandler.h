@@ -22,13 +22,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebRTCDataChannelHandler_h
-#define WebRTCDataChannelHandler_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_DATA_CHANNEL_HANDLER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_DATA_CHANNEL_HANDLER_H_
 
-#include "WebCommon.h"
-#include "WebPrivatePtr.h"
-#include "WebRTCDataChannelHandlerClient.h"
-#include "WebString.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_rtc_data_channel_handler_client.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ class WebRTCDataChannelHandler {
 
 }  // namespace blink
 
-#endif  // WebRTCDataChannelHandler_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_DATA_CHANNEL_HANDLER_H_

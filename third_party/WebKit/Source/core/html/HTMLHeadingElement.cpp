@@ -20,7 +20,7 @@
  *
  */
 
-#include "core/html/HTMLHeadingElement.h"
+#include "third_party/blink/renderer/core/html/html_heading_element.h"
 
 namespace blink {
 

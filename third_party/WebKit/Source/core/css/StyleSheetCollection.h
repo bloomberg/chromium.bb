@@ -27,17 +27,17 @@
  *
  */
 
-#ifndef StyleSheetCollection_h
-#define StyleSheetCollection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_SHEET_COLLECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_SHEET_COLLECTION_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css/ActiveStyleSheets.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/active_style_sheets.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -87,4 +87,4 @@ class CORE_EXPORT StyleSheetCollection
 
 }  // namespace blink
 
-#endif  // StyleSheetCollection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_SHEET_COLLECTION_H_

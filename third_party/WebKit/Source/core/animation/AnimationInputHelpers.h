@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AnimationInputHelpers_h
-#define AnimationInputHelpers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_INPUT_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_INPUT_HELPERS_H_
 
-#include "core/CoreExport.h"
-#include "core/css_property_names.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class CORE_EXPORT AnimationInputHelpers {
 
 }  // namespace blink
 
-#endif  // AnimationInputHelpers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_INPUT_HELPERS_H_

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EffectPaintPropertyNode_h
-#define EffectPaintPropertyNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_EFFECT_PAINT_PROPERTY_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_EFFECT_PAINT_PROPERTY_NODE_H_
 
 #include "cc/layers/layer.h"
-#include "platform/PlatformExport.h"
-#include "platform/graphics/CompositorElementId.h"
-#include "platform/graphics/CompositorFilterOperations.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/paint/ClipPaintPropertyNode.h"
-#include "platform/graphics/paint/PaintPropertyNode.h"
-#include "platform/graphics/paint/TransformPaintPropertyNode.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #include <iosfwd>
 
@@ -198,4 +198,4 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
 
 }  // namespace blink
 
-#endif  // EffectPaintPropertyNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_EFFECT_PAINT_PROPERTY_NODE_H_

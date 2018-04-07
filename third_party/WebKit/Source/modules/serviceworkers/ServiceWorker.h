@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ServiceWorker_h
-#define ServiceWorker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/workers/AbstractWorker.h"
-#include "modules/ModulesExport.h"
-#include "public/platform/modules/serviceworker/WebServiceWorker.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerProxy.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_proxy.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/workers/abstract_worker.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -100,4 +100,4 @@ class MODULES_EXPORT ServiceWorker final
 
 }  // namespace blink
 
-#endif  // ServiceWorker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_H_

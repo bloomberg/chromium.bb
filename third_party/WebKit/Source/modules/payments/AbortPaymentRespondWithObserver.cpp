@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/AbortPaymentRespondWithObserver.h"
+#include "third_party/blink/renderer/modules/payments/abort_payment_respond_with_observer.h"
 
 #include <v8.h>
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/payments/PaymentHandlerUtils.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
-#include "modules/serviceworkers/WaitUntilObserver.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/payments/payment_handler_utils.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_client.h"
+#include "third_party/blink/renderer/modules/serviceworkers/wait_until_observer.h"
 
 namespace blink {
 

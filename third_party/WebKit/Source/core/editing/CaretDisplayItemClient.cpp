@@ -23,23 +23,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/CaretDisplayItemClient.h"
+#include "third_party/blink/renderer/core/editing/caret_display_item_client.h"
 
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/LocalCaretRect.h"
-#include "core/editing/PositionWithAffinity.h"
-#include "core/editing/VisibleUnits.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/Settings.h"
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h"
-#include "core/paint/ObjectPaintInvalidator.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/PaintInvalidator.h"
-#include "core/paint/PaintLayer.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/local_caret_rect.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/find_paint_offset_and_visual_rect_needing_update.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
 

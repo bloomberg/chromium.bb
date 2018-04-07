@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HeapAllocator_h
-#define HeapAllocator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_ALLOCATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_ALLOCATOR_H_
 
 #include "build/build_config.h"
-#include "platform/heap/Heap.h"
-#include "platform/heap/MarkingVisitor.h"
-#include "platform/heap/Persistent.h"
-#include "platform/heap/TraceTraits.h"
-#include "platform/heap/heap_buildflags.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/ConstructTraits.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/DoublyLinkedList.h"
-#include "platform/wtf/HashCountedSet.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/HashTable.h"
-#include "platform/wtf/LinkedHashSet.h"
-#include "platform/wtf/ListHashSet.h"
-#include "platform/wtf/TypeTraits.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
+#include "third_party/blink/renderer/platform/heap/marking_visitor.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/heap/trace_traits.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/construct_traits.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/doubly_linked_list.h"
+#include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/hash_table.h"
+#include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/list_hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

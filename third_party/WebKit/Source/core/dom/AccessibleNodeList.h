@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AccessibleNodeList_h
-#define AccessibleNodeList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ACCESSIBLE_NODE_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ACCESSIBLE_NODE_LIST_H_
 
-#include "core/CoreExport.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ class CORE_EXPORT AccessibleNodeList : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // AccessibleNodeList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ACCESSIBLE_NODE_LIST_H_

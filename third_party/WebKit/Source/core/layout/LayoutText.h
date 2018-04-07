@@ -20,18 +20,18 @@
  *
  */
 
-#ifndef LayoutText_h
-#define LayoutText_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TEXT_H_
 
 #include <iterator>
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/dom/Text.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/TextRunConstructor.h"
-#include "core/layout/line/LineBoxList.h"
-#include "platform/LengthFunctions.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/line/line_box_list.h"
+#include "third_party/blink/renderer/core/layout/text_run_constructor.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -418,4 +418,4 @@ void ApplyTextTransform(const ComputedStyle*, String&, UChar);
 
 }  // namespace blink
 
-#endif  // LayoutText_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TEXT_H_

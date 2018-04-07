@@ -5,8 +5,8 @@
 #ifndef NGBaseline_h
 #define NGBaseline_h
 
-#include "platform/LayoutUnit.h"
-#include "platform/fonts/FontBaseline.h"
+#include "third_party/blink/renderer/platform/fonts/font_baseline.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
 
 namespace blink {
 

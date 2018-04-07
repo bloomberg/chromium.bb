@@ -5,8 +5,8 @@
 #ifndef NGLayoutOpportunity_h
 #define NGLayoutOpportunity_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_bfc_rect.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_rect.h"
 
 namespace blink {
 

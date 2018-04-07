@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ReportBody_h
-#define ReportBody_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REPORT_BODY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REPORT_BODY_H_
 
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -18,4 +18,4 @@ class CORE_EXPORT ReportBody : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // ReportBody_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REPORT_BODY_H_

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/AnimationTestHelper.h"
+#include "third_party/blink/renderer/core/animation/animation_test_helper.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/animation/CSSInterpolationEnvironment.h"
-#include "core/animation/CSSInterpolationTypesMap.h"
-#include "core/animation/InvalidatableInterpolation.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_environment.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
+#include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

@@ -19,11 +19,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSImportRule_h
-#define CSSImportRule_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IMPORT_RULE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IMPORT_RULE_H_
 
-#include "core/css/CSSRule.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/css/css_rule.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ DEFINE_CSS_RULE_TYPE_CASTS(CSSImportRule, kImportRule);
 
 }  // namespace blink
 
-#endif  // CSSImportRule_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IMPORT_RULE_H_

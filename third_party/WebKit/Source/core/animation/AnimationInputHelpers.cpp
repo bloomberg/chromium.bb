@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/AnimationInputHelpers.h"
+#include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/animation/PropertyHandle.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css/parser/CSSVariableParser.h"
-#include "core/css/resolver/CSSToStyleMap.h"
-#include "core/dom/Document.h"
-#include "core/frame/Deprecation.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/animation/SVGSMILElement.h"
-#include "core/svg_names.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/animation/property_handle.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
+#include "third_party/blink/renderer/core/css/resolver/css_to_style_map.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/svg/animation/svg_smil_element.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

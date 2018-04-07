@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/iterators/SearchBuffer.h"
+#include "third_party/blink/renderer/core/editing/iterators/search_buffer.h"
 
-#include "core/dom/Range.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/frame/LocalFrameView.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 
 namespace blink {
 

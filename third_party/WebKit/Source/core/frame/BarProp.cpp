@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/frame/BarProp.h"
+#include "third_party/blink/renderer/core/frame/bar_prop.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/page/Page.h"
-#include "public/web/WebWindowFeatures.h"
+#include "third_party/blink/public/web/web_window_features.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
 

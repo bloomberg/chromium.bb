@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AnimationEffectOwner_h
-#define AnimationEffectOwner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_EFFECT_OWNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_EFFECT_OWNER_H_
 
-#include "platform/heap/GarbageCollected.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ class AnimationEffectOwner : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // AnimationEffectOwner_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATION_EFFECT_OWNER_H_

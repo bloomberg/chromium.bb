@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "media/blink/media_blink_export.h"
 #include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
-#include "third_party/WebKit/public/platform/modules/media_capabilities/WebMediaCapabilitiesClient.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_client.h"
 
 namespace media {
 

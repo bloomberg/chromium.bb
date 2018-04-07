@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DistributedNodes_h
-#define DistributedNodes_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DISTRIBUTED_NODES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DISTRIBUTED_NODES_H_
 
-#include "core/dom/Node.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

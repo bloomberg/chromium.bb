@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/shorthands/webkit_mask.h"
+#include "third_party/blink/renderer/core/css/properties/shorthands/webkit_mask.h"
 
-#include "core/css/properties/CSSParsingUtils.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 
 namespace blink {
 namespace CSSShorthand {

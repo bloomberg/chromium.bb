@@ -5,9 +5,9 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "third_party/WebKit/public/platform/WebMediaStream.h"
-#include "third_party/WebKit/public/platform/WebRTCRtpReceiver.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 using testing::_;
 

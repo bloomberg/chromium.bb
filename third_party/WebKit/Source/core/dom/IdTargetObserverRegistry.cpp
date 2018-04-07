@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/IdTargetObserverRegistry.h"
+#include "third_party/blink/renderer/core/dom/id_target_observer_registry.h"
 
-#include "core/dom/IdTargetObserver.h"
+#include "third_party/blink/renderer/core/dom/id_target_observer.h"
 
 namespace blink {
 

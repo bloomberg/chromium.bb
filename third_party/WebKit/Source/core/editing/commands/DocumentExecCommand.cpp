@@ -27,19 +27,19 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/Document.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
-#include "core/dom/events/ScopedEventQueue.h"
-#include "core/editing/EditingTriState.h"
-#include "core/editing/Editor.h"
-#include "core/editing/commands/EditingCommandsUtilities.h"
-#include "core/editing/commands/EditorCommand.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/forms/TextControlElement.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "platform/Histogram.h"
-#include "platform/wtf/AutoReset.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
+#include "third_party/blink/renderer/core/editing/commands/editing_commands_utilities.h"
+#include "third_party/blink/renderer/core/editing/commands/editor_command.h"
+#include "third_party/blink/renderer/core/editing/editing_tri_state.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

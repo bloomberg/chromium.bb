@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RoundedInnerRectClipper_h
-#define RoundedInnerRectClipper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_ROUNDED_INNER_RECT_CLIPPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_ROUNDED_INNER_RECT_CLIPPER_H_
 
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -37,4 +37,4 @@ class RoundedInnerRectClipper {
 
 }  // namespace blink
 
-#endif  // RoundedInnerRectClipper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_ROUNDED_INNER_RECT_CLIPPER_H_

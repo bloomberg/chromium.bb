@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/workers/SharedWorkerGlobalScope.h"
+#include "third_party/blink/renderer/core/workers/shared_worker_global_scope.h"
 
 #include <memory>
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/events/MessageEvent.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/WorkerThreadDebugger.h"
-#include "core/workers/SharedWorkerThread.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/events/message_event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
+#include "third_party/blink/renderer/core/workers/shared_worker_thread.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

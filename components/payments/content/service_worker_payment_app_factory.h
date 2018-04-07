@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "components/payments/content/web_app_manifest.h"
 #include "content/public/browser/payment_app_provider.h"
-#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
+#include "third_party/blink/public/platform/modules/payments/payment_request.mojom.h"
 
 class GURL;
 

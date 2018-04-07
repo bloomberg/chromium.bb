@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/FormDataBytesConsumer.h"
+#include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 
-#include "core/fetch/BlobBytesConsumer.h"
-#include "core/fetch/BytesConsumerForDataConsumerHandle.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "core/typed_arrays/DOMArrayBufferView.h"
-#include "platform/blob/BlobData.h"
-#include "platform/network/EncodedFormData.h"
-#include "platform/network/FormDataEncoder.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/TextCodec.h"
-#include "platform/wtf/text/TextEncoding.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer_for_data_consumer_handle.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/network/form_data_encoder.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

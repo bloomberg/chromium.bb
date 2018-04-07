@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/VisibleUnits.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
 
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/dom/Text.h"
-#include "core/editing/PositionWithAffinity.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/html/forms/TextControlElement.h"
-#include "core/layout/LayoutTextFragment.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 
 namespace blink {
 namespace visible_units_test {

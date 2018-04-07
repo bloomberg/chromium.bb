@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/child/idle_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/child/idle_helper.h"
 
 #include <utility>
 
@@ -14,14 +14,14 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
-#include "platform/scheduler/base/real_time_domain.h"
-#include "platform/scheduler/base/task_queue.h"
-#include "platform/scheduler/base/task_queue_manager.h"
-#include "platform/scheduler/child/scheduler_helper.h"
-#include "platform/scheduler/child/worker_scheduler_helper.h"
-#include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/child/scheduler_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
 
 using testing::_;
 using testing::AnyNumber;

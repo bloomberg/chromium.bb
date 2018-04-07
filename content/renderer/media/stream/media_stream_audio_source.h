@@ -14,8 +14,8 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/stream/media_stream_audio_deliverer.h"
 #include "content/renderer/media/stream/media_stream_source.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace base {
 class SingleThreadTaskRunner;

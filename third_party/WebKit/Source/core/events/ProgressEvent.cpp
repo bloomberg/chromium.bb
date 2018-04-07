@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/events/ProgressEvent.h"
+#include "third_party/blink/renderer/core/events/progress_event.h"
 
 namespace blink {
 

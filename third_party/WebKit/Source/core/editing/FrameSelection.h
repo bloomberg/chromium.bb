@@ -24,21 +24,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FrameSelection_h
-#define FrameSelection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FRAME_SELECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FRAME_SELECTION_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/SynchronousMutationObserver.h"
-#include "core/editing/Forward.h"
-#include "core/editing/SetSelectionOptions.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollAlignment.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/set_selection_options.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -287,4 +287,4 @@ void showTree(const blink::FrameSelection&);
 void showTree(const blink::FrameSelection*);
 #endif
 
-#endif  // FrameSelection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FRAME_SELECTION_H_

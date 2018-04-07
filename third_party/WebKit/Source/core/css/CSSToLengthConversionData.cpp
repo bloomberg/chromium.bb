@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSToLengthConversionData.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 
-#include "core/css/CSSResolutionUnits.h"
-#include "core/layout/LayoutView.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/css/css_resolution_units.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

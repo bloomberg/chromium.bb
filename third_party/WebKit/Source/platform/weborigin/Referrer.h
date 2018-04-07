@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Referrer_h
-#define Referrer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_REFERRER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_REFERRER_H_
 
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/ReferrerPolicy.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ struct Referrer {
 
 }  // namespace blink
 
-#endif  // Referrer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_REFERRER_H_

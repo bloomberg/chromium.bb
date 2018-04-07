@@ -24,22 +24,22 @@
     sheets and html pages from the web. It has a memory cache for these objects.
 */
 
-#include "core/loader/resource/ScriptResource.h"
+#include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 
-#include "core/dom/Document.h"
-#include "core/loader/SubresourceIntegrityHelper.h"
-#include "platform/SharedBuffer.h"
-#include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
-#include "platform/instrumentation/tracing/web_process_memory_dump.h"
-#include "platform/loader/SubresourceIntegrity.h"
-#include "platform/loader/fetch/CachedMetadata.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/IntegrityMetadata.h"
-#include "platform/loader/fetch/ResourceClientWalker.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/TextResourceDecoderOptions.h"
-#include "platform/network/mime/MIMETypeRegistry.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client_walker.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
+#include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 
 namespace blink {
 

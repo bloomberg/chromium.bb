@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8ThrowDOMException_h
-#define V8ThrowDOMException_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_THROW_DOM_EXCEPTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_THROW_DOM_EXCEPTION_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/ExceptionCode.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -38,4 +38,4 @@ class CORE_EXPORT V8ThrowDOMException {
 
 }  // namespace blink
 
-#endif  // V8ThrowDOMException_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_THROW_DOM_EXCEPTION_H_

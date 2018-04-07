@@ -24,17 +24,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ArrayBufferContents_h
-#define ArrayBufferContents_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_CONTENTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_CONTENTS_H_
 
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/WTF.h"
-#include "platform/wtf/WTFExport.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -271,4 +271,4 @@ class WTF_EXPORT ArrayBufferContents {
 
 }  // namespace WTF
 
-#endif  // ArrayBufferContents_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_CONTENTS_H_

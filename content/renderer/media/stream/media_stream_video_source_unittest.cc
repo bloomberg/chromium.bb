@@ -21,7 +21,7 @@
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebHeap.h"
+#include "third_party/blink/public/web/web_heap.h"
 
 using ::testing::_;
 using ::testing::DoAll;

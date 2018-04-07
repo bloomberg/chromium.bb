@@ -23,18 +23,18 @@
  * DAMAGE.
  */
 
-#include "modules/filesystem/DOMWindowFileSystem.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_window_file_system.h"
 
-#include "core/dom/Document.h"
-#include "core/fileapi/FileError.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/UseCounter.h"
-#include "modules/filesystem/DOMFileSystem.h"
-#include "modules/filesystem/FileSystemCallbacks.h"
-#include "modules/filesystem/LocalFileSystem.h"
-#include "platform/FileSystemType.h"
-#include "platform/weborigin/SchemeRegistry.h"
-#include "platform/weborigin/SecurityOrigin.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
+#include "third_party/blink/renderer/modules/filesystem/local_file_system.h"
+#include "third_party/blink/renderer/platform/file_system_type.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

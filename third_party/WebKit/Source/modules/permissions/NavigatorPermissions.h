@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigatorPermissions_h
-#define NavigatorPermissions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PERMISSIONS_NAVIGATOR_PERMISSIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PERMISSIONS_NAVIGATOR_PERMISSIONS_H_
 
-#include "core/frame/Navigator.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -35,4 +35,4 @@ class NavigatorPermissions final
 
 }  // namespace blink
 
-#endif  // NavigatorPermissions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PERMISSIONS_NAVIGATOR_PERMISSIONS_H_

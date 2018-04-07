@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebDOMMediaStreamTrack_h
-#define WebDOMMediaStreamTrack_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOM_MEDIA_STREAM_TRACK_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOM_MEDIA_STREAM_TRACK_H_
 
-#include "public/platform/WebMediaStreamTrack.h"
-#include "public/platform/WebPrivatePtr.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
 
 namespace v8 {
 class Value;

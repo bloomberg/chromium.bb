@@ -5,8 +5,8 @@
 mojom = "//content/common/native_types.mojom"
 os_whitelist = [ "mac" ]
 public_headers = [
-  "//third_party/WebKit/public/platform/WebScrollbarButtonsPlacement.h",
-  "//third_party/WebKit/public/platform/mac/WebScrollbarTheme.h",
+  "//third_party/blink/public/platform/web_scrollbar_buttons_placement.h",
+  "//third_party/blink/public/platform/mac/web_scrollbar_theme.h",
 ]
 traits_headers = [ "//content/common/view_messages.h" ]
 deps = [
@@ -20,7 +20,7 @@ deps = [
   "//media",
   "//media/base/ipc",
   "//net",
-  "//third_party/WebKit/public:blink_headers",
+  "//third_party/blink/public:blink_headers",
   "//ui/accessibility",
   "//ui/base/ime:text_input_types",
   "//ui/gfx/ipc",

@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebRect_h
-#define WebRect_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RECT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RECT_H_
 
-#include "WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 #if INSIDE_BLINK
-#include "platform/geometry/IntRect.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #else
 #include <algorithm>
 #include <cmath>

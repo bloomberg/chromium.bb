@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/PaintInvalidationCapableScrollableArea.h"
+#include "third_party/blink/renderer/core/paint/paint_invalidation_capable_scrollable_area.h"
 
-#include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutScrollbar.h"
-#include "core/layout/LayoutScrollbarPart.h"
-#include "core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h"
-#include "core/paint/ObjectPaintInvalidator.h"
-#include "core/paint/PaintInvalidator.h"
-#include "core/paint/PaintLayer.h"
-#include "platform/graphics/GraphicsLayer.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_scrollbar.h"
+#include "third_party/blink/renderer/core/layout/layout_scrollbar_part.h"
+#include "third_party/blink/renderer/core/paint/find_paint_offset_and_visual_rect_needing_update.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 
 namespace blink {
 

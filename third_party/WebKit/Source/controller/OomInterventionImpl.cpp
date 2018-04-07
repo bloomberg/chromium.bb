@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "controller/OomInterventionImpl.h"
+#include "third_party/blink/renderer/controller/oom_intervention_impl.h"
 
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/allocator/Partitions.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 namespace blink {
 

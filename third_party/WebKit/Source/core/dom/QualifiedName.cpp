@@ -17,17 +17,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/QualifiedName.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
 
-#include "core/html_names.h"
-#include "core/mathml_names.h"
-#include "core/svg_names.h"
-#include "core/xlink_names.h"
-#include "core/xml_names.h"
-#include "core/xmlns_names.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/StaticConstructors.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/mathml_names.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/core/xlink_names.h"
+#include "third_party/blink/renderer/core/xml_names.h"
+#include "third_party/blink/renderer/core/xmlns_names.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/static_constructors.h"
 
 namespace blink {
 

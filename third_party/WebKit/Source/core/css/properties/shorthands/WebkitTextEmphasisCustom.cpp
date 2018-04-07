@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/shorthands/webkit_text_emphasis.h"
+#include "third_party/blink/renderer/core/css/properties/shorthands/webkit_text_emphasis.h"
 
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/style_property_shorthand.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
 namespace CSSShorthand {

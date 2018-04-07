@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/LinkRelAttribute.h"
+#include "third_party/blink/renderer/core/html/link_rel_attribute.h"
 
-#include "platform/wtf/text/CString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 namespace blink {
 

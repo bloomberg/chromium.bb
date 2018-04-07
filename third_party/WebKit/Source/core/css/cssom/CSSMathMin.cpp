@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/CSSMathMin.h"
+#include "third_party/blink/renderer/core/css/cssom/css_math_min.h"
 
-#include "core/css/cssom/CSSNumericSumValue.h"
+#include "third_party/blink/renderer/core/css/cssom/css_numeric_sum_value.h"
 
 namespace blink {
 

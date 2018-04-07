@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScriptableDocumentParser_h
-#define ScriptableDocumentParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SCRIPTABLE_DOCUMENT_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SCRIPTABLE_DOCUMENT_PARSER_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/DecodedDataDocumentParser.h"
-#include "core/dom/ParserContentPolicy.h"
-#include "platform/wtf/text/TextPosition.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/decoded_data_document_parser.h"
+#include "third_party/blink/renderer/core/dom/parser_content_policy.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
 namespace blink {
 
@@ -90,4 +90,4 @@ class CORE_EXPORT ScriptableDocumentParser : public DecodedDataDocumentParser {
 
 }  // namespace blink
 
-#endif  // ScriptableDocumentParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SCRIPTABLE_DOCUMENT_PARSER_H_

@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontBaseline_h
-#define FontBaseline_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_BASELINE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_BASELINE_H_
 
 namespace blink {
 
@@ -32,4 +32,4 @@ enum FontBaseline { kAlphabeticBaseline, kIdeographicBaseline };
 
 }  // namespace blink
 
-#endif  // FontBaseline_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_BASELINE_H_

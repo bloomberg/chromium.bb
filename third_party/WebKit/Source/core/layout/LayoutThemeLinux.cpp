@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/LayoutThemeLinux.h"
+#include "third_party/blink/renderer/core/layout/layout_theme_linux.h"
 
-#include "platform/DataResourceHelper.h"
+#include "third_party/blink/renderer/platform/data_resource_helper.h"
 
 namespace blink {
 

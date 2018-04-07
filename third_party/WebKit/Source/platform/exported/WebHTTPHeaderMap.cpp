@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebHTTPHeaderMap.h"
+#include "third_party/blink/public/platform/web_http_header_map.h"
 
 #include <memory>
 #include <string>
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
-#include "platform/network/HTTPHeaderMap.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

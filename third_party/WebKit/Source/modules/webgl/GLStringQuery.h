@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GLStringQuery_h
-#define GLStringQuery_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_GL_STRING_QUERY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_GL_STRING_QUERY_H_
 
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -86,4 +86,4 @@ class GLStringQuery {
 };
 
 }  // namespace blink
-#endif  // GLStringQuery_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_GL_STRING_QUERY_H_

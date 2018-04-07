@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/UnlinkCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/unlink_command.h"
 
-#include "core/html/HTMLAnchorElement.h"
+#include "third_party/blink/renderer/core/html/html_anchor_element.h"
 
 namespace blink {
 

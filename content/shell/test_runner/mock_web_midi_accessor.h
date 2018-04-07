@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/midi/midi_service.mojom.h"
-#include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessor.h"
+#include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
 
 namespace blink {
 class WebMIDIAccessorClient;

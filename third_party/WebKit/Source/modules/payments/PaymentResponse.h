@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaymentResponse_h
-#define PaymentResponse_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_RESPONSE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_RESPONSE_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "modules/ModulesExport.h"
-#include "modules/payments/PaymentCurrencyAmount.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/payments/payment_request.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/payments/payment_request.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/payments/payment_currency_amount.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class MODULES_EXPORT PaymentResponse final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // PaymentResponse_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_RESPONSE_H_

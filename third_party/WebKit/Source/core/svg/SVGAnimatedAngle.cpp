@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/SVGAnimatedAngle.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_angle.h"
 
-#include "core/svg_names.h"
+#include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 

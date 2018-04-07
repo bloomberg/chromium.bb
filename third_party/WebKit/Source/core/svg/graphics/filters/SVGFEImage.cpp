@@ -21,21 +21,21 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/graphics/filters/SVGFEImage.h"
+#include "third_party/blink/renderer/core/svg/graphics/filters/svg_fe_image.h"
 
-#include "core/layout/LayoutObject.h"
-#include "core/paint/SVGPaintContext.h"
-#include "core/paint/TransformRecorder.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGLengthContext.h"
-#include "core/svg/SVGURIReference.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/PaintFilterBuilder.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/paint/PaintRecordBuilder.h"
-#include "platform/text/TextStream.h"
-#include "platform/transforms/AffineTransform.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
+#include "third_party/blink/renderer/core/paint/transform_recorder.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_length_context.h"
+#include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
 namespace blink {
 

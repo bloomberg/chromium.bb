@@ -20,16 +20,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/svg/LayoutSVGResourceClipper.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_clipper.h"
 
-#include "core/dom/ElementTraversal.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/paint/PaintInfo.h"
-#include "core/svg/SVGGeometryElement.h"
-#include "core/svg/SVGUseElement.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/paint/PaintRecordBuilder.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/svg/svg_geometry_element.h"
+#include "third_party/blink/renderer/core/svg/svg_use_element.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 
 namespace blink {

@@ -2,15 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//third_party/WebKit/public/mojom/message_port/message_port.mojom"
-public_headers =
-    [ "//third_party/WebKit/Source/core/messaging/BlinkTransferableMessage.h" ]
-traits_headers = [ "//third_party/WebKit/Source/core/messaging/BlinkTransferableMessageStructTraits.h" ]
+mojom = "//third_party/blink/public/mojom/message_port/message_port.mojom"
+public_headers = [
+  "//third_party/blink/renderer/core/messaging/blink_transferable_message.h",
+]
+traits_headers = [ "//third_party/blink/renderer/core/messaging/blink_transferable_message_struct_traits.h" ]
 
 deps = [
   "//mojo/public/cpp/bindings",
-  "//third_party/WebKit/Source/platform/wtf",
-  "//third_party/WebKit/public/common",
+  "//third_party/blink/public/common",
+  "//third_party/blink/renderer/platform/wtf",
 ]
 type_mappings = [
   "blink.mojom.TransferableMessage=::blink::BlinkTransferableMessage[move_only]",

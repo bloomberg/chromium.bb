@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaError_h
-#define MediaError_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_MEDIA_ERROR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_MEDIA_ERROR_H_
 
-#include "core/CoreExport.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class CORE_EXPORT MediaError final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // MediaError_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_MEDIA_ERROR_H_

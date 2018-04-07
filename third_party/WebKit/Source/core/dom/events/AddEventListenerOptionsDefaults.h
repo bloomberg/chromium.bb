@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AddEventListenerOptionsDefaults_h
-#define AddEventListenerOptionsDefaults_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_ADD_EVENT_LISTENER_OPTIONS_DEFAULTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_ADD_EVENT_LISTENER_OPTIONS_DEFAULTS_H_
 
 namespace blink {
 
@@ -21,4 +21,4 @@ enum class PassiveListenerDefault {
 
 }  // namespace blink
 
-#endif  // AddEventListenerOptionsDefaults_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_ADD_EVENT_LISTENER_OPTIONS_DEFAULTS_H_

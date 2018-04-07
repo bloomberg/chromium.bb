@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/RenderedPosition.h"
+#include "third_party/blink/renderer/core/editing/rendered_position.h"
 
 #include "build/build_config.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/frame/Settings.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/forms/TextControlElement.h"
-#include "core/layout/LayoutBox.h"
-#include "core/paint/PaintLayerScrollableArea.h"
-#include "core/paint/compositing/CompositedSelection.h"
-#include "platform/testing/UseMockScrollbarSettings.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_selection.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/use_mock_scrollbar_settings.h"
 
 namespace blink {
 

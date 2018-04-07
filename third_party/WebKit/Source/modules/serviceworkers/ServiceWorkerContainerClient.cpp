@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/serviceworkers/ServiceWorkerContainerClient.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_container_client.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 
 namespace blink {
 

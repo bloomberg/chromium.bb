@@ -22,20 +22,20 @@
  *
  */
 
-#include "core/paint/ThemePainterDefault.h"
+#include "third_party/blink/renderer/core/paint/theme_painter_default.h"
 
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutProgress.h"
-#include "core/layout/LayoutThemeDefault.h"
-#include "core/paint/PaintInfo.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/graphics/Color.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebThemeEngine.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_progress.h"
+#include "third_party/blink/renderer/core/layout/layout_theme_default.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
 
 namespace blink {
 

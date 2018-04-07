@@ -18,13 +18,13 @@
  *
  */
 
-#ifndef WTF_dtoa_h
-#define WTF_dtoa_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_H_
 
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/dtoa/double-conversion.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/double-conversion.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -83,4 +83,4 @@ using WTF::NumberToFixedPrecisionString;
 using WTF::NumberToFixedWidthString;
 using WTF::ParseDouble;
 
-#endif  // WTF_dtoa_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DTOA_H_

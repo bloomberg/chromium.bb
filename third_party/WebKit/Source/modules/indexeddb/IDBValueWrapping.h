@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IDBValueWrapping_h
-#define IDBValueWrapping_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_VALUE_WRAPPING_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_VALUE_WRAPPING_H_
 
 #include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "modules/ModulesExport.h"
-#include "platform/SharedBuffer.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringView.h"
-#include "public/platform/WebBlobInfo.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -275,4 +275,4 @@ class MODULES_EXPORT IDBValueUnwrapper {
 
 }  // namespace blink
 
-#endif  // IDBValueWrapping_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_VALUE_WRAPPING_H_

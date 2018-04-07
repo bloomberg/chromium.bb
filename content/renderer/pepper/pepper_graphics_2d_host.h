@@ -18,7 +18,7 @@
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
-#include "third_party/WebKit/public/platform/WebCanvas.h"
+#include "third_party/blink/public/platform/web_canvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"

@@ -28,28 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FetchContext_h
-#define FetchContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_FETCH_CONTEXT_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/FetchInitiatorInfo.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/ResourceLoadPriority.h"
-#include "platform/loader/fetch/ResourceLoadScheduler.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/network/ContentSecurityPolicyParsers.h"
-#include "platform/scheduler/public/frame_scheduler.h"
-#include "platform/weborigin/SecurityViolationReportingPolicy.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebApplicationCacheHost.h"
-#include "public/platform/WebURLLoader.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_application_cache_host.h"
+#include "third_party/blink/public/platform/web_url_loader.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 

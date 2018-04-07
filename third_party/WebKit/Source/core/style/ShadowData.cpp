@@ -20,10 +20,10 @@
  *
  */
 
-#include "core/style/ShadowData.h"
+#include "third_party/blink/renderer/core/style/shadow_data.h"
 
-#include "platform/animation/AnimationUtilities.h"
-#include "platform/graphics/ColorBlend.h"
+#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
+#include "third_party/blink/renderer/platform/graphics/color_blend.h"
 
 namespace blink {
 

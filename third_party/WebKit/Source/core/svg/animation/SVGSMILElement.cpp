@@ -23,24 +23,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/animation/SVGSMILElement.h"
+#include "third_party/blink/renderer/core/svg/animation/svg_smil_element.h"
 
 #include <algorithm>
-#include "bindings/core/v8/ScriptEventListener.h"
-#include "core/dom/Document.h"
-#include "core/dom/IdTargetObserver.h"
-#include "core/dom/events/Event.h"
-#include "core/dom/events/EventListener.h"
-#include "core/frame/UseCounter.h"
-#include "core/svg/SVGSVGElement.h"
-#include "core/svg/SVGURIReference.h"
-#include "core/svg/animation/SMILTimeContainer.h"
-#include "core/xlink_names.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/id_target_observer.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/svg/animation/smil_time_container.h"
+#include "third_party/blink/renderer/core/svg/svg_svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
+#include "third_party/blink/renderer/core/xlink_names.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

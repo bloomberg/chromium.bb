@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/animation/CompositorKeyframeModel.h"
+#include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
 
 #include <memory>
 #include "base/memory/ptr_util.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframed_animation_curve.h"
-#include "platform/animation/CompositorAnimationCurve.h"
-#include "platform/animation/CompositorFilterAnimationCurve.h"
-#include "platform/animation/CompositorFloatAnimationCurve.h"
-#include "platform/animation/CompositorScrollOffsetAnimationCurve.h"
-#include "platform/animation/CompositorTransformAnimationCurve.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_curve.h"
+#include "third_party/blink/renderer/platform/animation/compositor_filter_animation_curve.h"
+#include "third_party/blink/renderer/platform/animation/compositor_float_animation_curve.h"
+#include "third_party/blink/renderer/platform/animation/compositor_scroll_offset_animation_curve.h"
+#include "third_party/blink/renderer/platform/animation/compositor_transform_animation_curve.h"
 
 using cc::KeyframeModel;
 using cc::AnimationIdProvider;

@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXARIAGridCell_h
-#define AXARIAGridCell_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_ARIA_GRID_CELL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_ARIA_GRID_CELL_H_
 
 #include "base/macros.h"
-#include "modules/accessibility/AXTableCell.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_table_cell.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class AXARIAGridCell final : public AXTableCell {
 
 }  // namespace blink
 
-#endif  // AXARIAGridCell_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_ARIA_GRID_CELL_H_

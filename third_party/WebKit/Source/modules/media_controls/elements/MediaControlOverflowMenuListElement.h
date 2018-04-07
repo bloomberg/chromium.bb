@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlOverflowMenuListElement_h
-#define MediaControlOverflowMenuListElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_OVERFLOW_MENU_LIST_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_OVERFLOW_MENU_LIST_ELEMENT_H_
 
-#include "modules/media_controls/elements/MediaControlDivElement.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_div_element.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class MediaControlOverflowMenuListElement final
 
 }  // namespace blink
 
-#endif  // MediaControlOverflowMenuListElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_OVERFLOW_MENU_LIST_ELEMENT_H_

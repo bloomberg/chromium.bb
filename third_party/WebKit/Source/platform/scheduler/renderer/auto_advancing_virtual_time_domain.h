@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time_override.h"
-#include "platform/scheduler/base/virtual_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
 
 namespace blink {
 namespace scheduler {

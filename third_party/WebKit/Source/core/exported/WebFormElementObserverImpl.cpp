@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/exported/WebFormElementObserverImpl.h"
+#include "third_party/blink/renderer/core/exported/web_form_element_observer_impl.h"
 
-#include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/dom/MutationObserver.h"
-#include "core/dom/MutationObserverInit.h"
-#include "core/dom/MutationRecord.h"
-#include "core/dom/StaticNodeList.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/forms/HTMLFormElement.h"
-#include "public/web/WebFormControlElement.h"
-#include "public/web/WebFormElement.h"
-#include "public/web/modules/autofill/WebFormElementObserverCallback.h"
+#include "third_party/blink/public/web/modules/autofill/web_form_element_observer_callback.h"
+#include "third_party/blink/public/web/web_form_control_element.h"
+#include "third_party/blink/public/web/web_form_element.h"
+#include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer_init.h"
+#include "third_party/blink/renderer/core/dom/mutation_record.h"
+#include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 

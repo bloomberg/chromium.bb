@@ -4,20 +4,20 @@
 
 import("//build/config/jumbo.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//third_party/WebKit/Source/core/core.gni")
+import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("mojo") {
   sources = [
-    "Mojo.cpp",
-    "Mojo.h",
-    "MojoHandle.cpp",
-    "MojoHandle.h",
-    "MojoWatcher.cpp",
-    "MojoWatcher.h",
-    "test/MojoInterfaceInterceptor.cpp",
-    "test/MojoInterfaceInterceptor.h",
-    "test/MojoInterfaceRequestEvent.cpp",
-    "test/MojoInterfaceRequestEvent.h",
+    "mojo.cc",
+    "mojo.h",
+    "mojo_handle.cc",
+    "mojo_handle.h",
+    "mojo_watcher.cc",
+    "mojo_watcher.h",
+    "test/mojo_interface_interceptor.cc",
+    "test/mojo_interface_interceptor.h",
+    "test/mojo_interface_request_event.cc",
+    "test/mojo_interface_request_event.h",
   ]
 
   deps = [
@@ -29,7 +29,7 @@ blink_core_sources("mojo") {
 jumbo_source_set("unit_tests") {
   testonly = true
   sources = [
-    "tests/JsToCppTest.cpp",
+    "tests/js_to_cpp_test.cc",
   ]
 
   data = [
@@ -37,17 +37,17 @@ jumbo_source_set("unit_tests") {
   ]
 
   configs += [
-    "//third_party/WebKit/Source/core:blink_core_pch",
-    "//third_party/WebKit/Source:config",
-    "//third_party/WebKit/Source:inside_blink",
+    "//third_party/blink/renderer/core:blink_core_pch",
+    "//third_party/blink/renderer:config",
+    "//third_party/blink/renderer:inside_blink",
   ]
 
   deps = [
     ":test_bindings_blink",
     "//mojo/public/cpp/bindings",
     "//testing/gtest",
-    "//third_party/WebKit/Source/core:core",
-    "//third_party/WebKit/Source/core:testing",
+    "//third_party/blink/renderer/core:core",
+    "//third_party/blink/renderer/core:testing",
   ]
 
   data_deps = [

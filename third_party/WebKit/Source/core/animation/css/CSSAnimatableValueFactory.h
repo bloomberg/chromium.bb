@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSAnimatableValueFactory_h
-#define CSSAnimatableValueFactory_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_CSS_ANIMATABLE_VALUE_FACTORY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_CSS_ANIMATABLE_VALUE_FACTORY_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/animation/animatable/AnimatableValue.h"
-#include "core/css/properties/css_property.h"
-#include "core/css_property_names.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/animation/animatable/animatable_value.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ class CSSAnimatableValueFactory {
 
 }  // namespace blink
 
-#endif  // CSSAnimatableValueFactory_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_CSS_ANIMATABLE_VALUE_FACTORY_H_

@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_ANDROID_TEXT_SUGGESTION_HOST_MOJO_IMPL_ANDROID_H_
 #define CONTENT_BROWSER_ANDROID_TEXT_SUGGESTION_HOST_MOJO_IMPL_ANDROID_H_
 
-#include "third_party/WebKit/public/platform/input_host.mojom.h"
+#include "third_party/blink/public/platform/input_host.mojom.h"
 
 namespace content {
 

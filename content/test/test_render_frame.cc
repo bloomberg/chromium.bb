@@ -18,8 +18,8 @@
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "services/network/public/cpp/resource_response.h"
-#include "third_party/WebKit/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {
 

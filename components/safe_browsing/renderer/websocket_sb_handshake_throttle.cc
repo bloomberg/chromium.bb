@@ -16,8 +16,8 @@
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/http/http_request_headers.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 namespace safe_browsing {
 

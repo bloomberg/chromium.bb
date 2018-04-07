@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MIDIAccessInitializer_h
-#define MIDIAccessInitializer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_ACCESS_INITIALIZER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_ACCESS_INITIALIZER_H_
 
 #include <memory>
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "media/midi/midi_service.mojom-blink.h"
-#include "modules/ModulesExport.h"
-#include "modules/webmidi/MIDIAccessor.h"
-#include "modules/webmidi/MIDIAccessorClient.h"
-#include "modules/webmidi/MIDIOptions.h"
-#include "modules/webmidi/MIDIPort.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/modules/permissions/permission.mojom-blink.h"
-#include "public/platform/modules/permissions/permission_status.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_accessor.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_accessor_client.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_options.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_port.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -104,4 +104,4 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
 
 }  // namespace blink
 
-#endif  // MIDIAccessInitializer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_ACCESS_INITIALIZER_H_

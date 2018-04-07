@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextIteratorBehavior_h
-#define TextIteratorBehavior_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_ITERATOR_BEHAVIOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_ITERATOR_BEHAVIOR_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 
@@ -137,4 +137,4 @@ class CORE_EXPORT TextIteratorBehavior::Builder final {
 
 }  // namespace blink
 
-#endif  // TextIteratorBehavior_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_ITERATOR_BEHAVIOR_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/opentype/FontFormatCheck.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/font_format_check.h"
 
 #include "SkTypeface.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 // Include HarfBuzz to have a cross-platform way to retrieve table tags without
 // having to rely on the platform being able to instantiate this font format.

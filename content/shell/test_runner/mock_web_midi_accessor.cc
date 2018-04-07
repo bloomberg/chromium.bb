@@ -12,8 +12,8 @@
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_test_runner.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessorClient.h"
+#include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor_client.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 using midi::mojom::PortState;
 using midi::mojom::Result;

@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FormatBlockCommand_h
-#define FormatBlockCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_FORMAT_BLOCK_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_FORMAT_BLOCK_COMMAND_H_
 
-#include "core/dom/QualifiedName.h"
-#include "core/editing/Forward.h"
-#include "core/editing/commands/ApplyBlockElementCommand.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/editing/commands/apply_block_element_command.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
 
 namespace blink {
 
@@ -64,4 +64,4 @@ class CORE_EXPORT FormatBlockCommand final : public ApplyBlockElementCommand {
 
 }  // namespace blink
 
-#endif  // FormatBlockCommand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_FORMAT_BLOCK_COMMAND_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NFCError_h
-#define NFCError_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_ERROR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_ERROR_H_
 
-#include "platform/wtf/Allocator.h"
 #include "services/device/public/mojom/nfc.mojom-blink.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -25,4 +25,4 @@ class NFCError {
 
 }  // namespace blink
 
-#endif  // NFCError_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_ERROR_H_

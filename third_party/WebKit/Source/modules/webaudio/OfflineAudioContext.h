@@ -23,12 +23,12 @@
  * DAMAGE.
  */
 
-#ifndef OfflineAudioContext_h
-#define OfflineAudioContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_OFFLINE_AUDIO_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_OFFLINE_AUDIO_CONTEXT_H_
 
-#include "modules/ModulesExport.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -136,4 +136,4 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
 
 }  // namespace blink
 
-#endif  // OfflineAudioContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_OFFLINE_AUDIO_CONTEXT_H_

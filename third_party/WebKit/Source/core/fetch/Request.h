@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Request_h
-#define Request_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_REQUEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_REQUEST_H_
 
-#include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/request_or_usv_string.h"
-#include "core/CoreExport.h"
-#include "core/fetch/Body.h"
-#include "core/fetch/FetchRequestData.h"
-#include "core/fetch/Headers.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebURLRequest.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/fetch/body.h"
+#include "third_party/blink/renderer/core/fetch/fetch_request_data.h"
+#include "third_party/blink/renderer/core/fetch/headers.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -109,4 +109,4 @@ class CORE_EXPORT Request final : public Body {
 
 }  // namespace blink
 
-#endif  // Request_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_REQUEST_H_

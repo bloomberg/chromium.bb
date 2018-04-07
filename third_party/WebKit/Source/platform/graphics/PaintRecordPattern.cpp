@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/PaintRecordPattern.h"
+#include "third_party/blink/renderer/platform/graphics/paint_record_pattern.h"
 
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/paint/PaintShader.h"
-#include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_shader.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 
 namespace blink {
 

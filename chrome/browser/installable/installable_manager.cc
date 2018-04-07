@@ -19,7 +19,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/url_util.h"
-#include "third_party/WebKit/public/platform/WebDisplayMode.h"
+#include "third_party/blink/public/platform/web_display_mode.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/shortcut_helper.h"

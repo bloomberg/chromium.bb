@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSMathNegate_h
-#define CSSMathNegate_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_NEGATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_NEGATE_H_
 
 #include "base/macros.h"
-#include "core/css/cssom/CSSMathValue.h"
+#include "third_party/blink/renderer/core/css/cssom/css_math_value.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
 
 }  // namespace blink
 
-#endif  // CSSMathNegate_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_NEGATE_H_

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/StylePropertyMapReadOnly.h"
+#include "third_party/blink/renderer/core/css/cssom/style_property_map_read_only.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/CSSVariableReferenceValue.h"
-#include "core/css/cssom/CSSStyleValue.h"
-#include "core/css/cssom/CSSUnparsedValue.h"
-#include "core/css/cssom/CSSUnsupportedStyleValue.h"
-#include "core/css/cssom/StyleValueFactory.h"
-#include "core/css/properties/css_property.h"
-#include "core/css_property_names.h"
-#include "core/style_property_shorthand.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unparsed_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unsupported_style_value.h"
+#include "third_party/blink/renderer/core/css/cssom/style_value_factory.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
 

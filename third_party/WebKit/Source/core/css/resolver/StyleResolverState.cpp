@@ -20,13 +20,13 @@
  *
  */
 
-#include "core/css/resolver/StyleResolverState.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 
-#include "core/animation/css/CSSAnimations.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/dom/Node.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/animation/css/css_animations.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

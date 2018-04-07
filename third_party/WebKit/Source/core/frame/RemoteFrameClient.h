@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RemoteFrameClient_h
-#define RemoteFrameClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_CLIENT_H_
 
-#include "core/frame/FrameClient.h"
-#include "core/frame/FrameTypes.h"
-#include "core/loader/FrameLoaderTypes.h"
-#include "public/platform/WebCanvas.h"
-#include "public/platform/WebFocusType.h"
+#include "third_party/blink/public/platform/web_canvas.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/renderer/core/frame/frame_client.h"
+#include "third_party/blink/renderer/core/frame/frame_types.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ class RemoteFrameClient : public FrameClient {
 
 }  // namespace blink
 
-#endif  // RemoteFrameClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_CLIENT_H_

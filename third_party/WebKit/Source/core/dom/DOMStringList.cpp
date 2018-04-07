@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/DOMStringList.h"
+#include "third_party/blink/renderer/core/dom/dom_string_list.h"
 
 #include <algorithm>
 

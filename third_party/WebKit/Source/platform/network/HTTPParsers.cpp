@@ -30,24 +30,24 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/network/HTTPParsers.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
 
 #include <memory>
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/network/HeaderFieldTokenizer.h"
-#include "platform/network/http_names.h"
-#include "platform/wtf/DateMath.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/ParsingUtilities.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/StringUTF8Adaptor.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/network/header_field_tokenizer.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

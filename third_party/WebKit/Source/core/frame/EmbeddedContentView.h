@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EmbeddedContentView_h
-#define EmbeddedContentView_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_EMBEDDED_CONTENT_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_EMBEDDED_CONTENT_VIEW_H_
 
-#include "core/CoreExport.h"
-#include "core/paint/PaintPhase.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/paint/paint_phase.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ class CORE_EXPORT EmbeddedContentView : public GarbageCollectedMixin {
 };
 
 }  // namespace blink
-#endif  // EmbeddedContentView_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_EMBEDDED_CONTENT_VIEW_H_

@@ -7,9 +7,9 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "platform/scheduler/base/task_queue.h"
-#include "platform/scheduler/util/task_duration_metric_reporter.h"
-#include "public/platform/WebThreadType.h"
+#include "third_party/blink/public/platform/web_thread_type.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/util/task_duration_metric_reporter.h"
 
 namespace blink {
 namespace scheduler {

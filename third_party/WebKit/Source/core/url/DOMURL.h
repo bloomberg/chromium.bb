@@ -24,15 +24,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMURL_h
-#define DOMURL_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_URL_DOM_URL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_URL_DOM_URL_H_
 
-#include "core/CoreExport.h"
-#include "core/url/DOMURLUtils.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/url/dom_url_utils.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -84,4 +84,4 @@ class DOMURL final : public ScriptWrappable, public DOMURLUtils {
 
 }  // namespace blink
 
-#endif  // DOMURL_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_URL_DOM_URL_H_

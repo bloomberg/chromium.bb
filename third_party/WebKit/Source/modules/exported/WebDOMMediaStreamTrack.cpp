@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebDOMMediaStreamTrack.h"
+#include "third_party/blink/public/web/web_dom_media_stream_track.h"
 
-#include "bindings/modules/v8/V8MediaStreamTrack.h"
-#include "modules/mediastream/MediaStreamTrack.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_stream_track.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 
 namespace blink {
 

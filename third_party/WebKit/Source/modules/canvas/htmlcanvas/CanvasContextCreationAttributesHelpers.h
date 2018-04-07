@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CanvasContextCreationAttributesHelpers_h
-#define CanvasContextCreationAttributesHelpers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_HTMLCANVAS_CANVAS_CONTEXT_CREATION_ATTRIBUTES_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_HTMLCANVAS_CANVAS_CONTEXT_CREATION_ATTRIBUTES_HELPERS_H_
 
 namespace blink {
 
@@ -15,4 +15,4 @@ CanvasContextCreationAttributesCore ToCanvasContextCreationAttributes(
 
 }  // namespace blink
 
-#endif  // CanvasContextCreationAttributesHelpers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_HTMLCANVAS_CANVAS_CONTEXT_CREATION_ATTRIBUTES_HELPERS_H_

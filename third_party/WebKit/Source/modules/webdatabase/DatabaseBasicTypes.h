@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DatabaseBasicTypes_h
-#define DatabaseBasicTypes_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_BASIC_TYPES_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_BASIC_TYPES_H_
 
 namespace blink {
 
@@ -32,4 +32,4 @@ typedef int DatabaseGuid;
 
 }  // namespace blink
 
-#endif  // DatabaseBasicTypes_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_BASIC_TYPES_H_

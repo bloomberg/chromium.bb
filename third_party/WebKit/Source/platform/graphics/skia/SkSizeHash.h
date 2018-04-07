@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SkSizeHash_h
-#define SkSizeHash_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SKIA_SK_SIZE_HASH_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SKIA_SK_SIZE_HASH_H_
 
 #include "SkScalar.h"
 #include "SkSize.h"
 
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace WTF {
 
@@ -87,4 +87,4 @@ struct HashTraits<SkISize> : GenericHashTraits<SkISize> {
 
 }  // namespace WTF
 
-#endif  // SkSizeHash_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SKIA_SK_SIZE_HASH_H_

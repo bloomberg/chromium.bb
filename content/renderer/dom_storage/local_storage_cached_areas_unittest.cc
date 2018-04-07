@@ -8,7 +8,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/renderer/dom_storage/local_storage_cached_area.h"
 #include "content/renderer/dom_storage/mock_leveldb_wrapper.h"
-#include "third_party/WebKit/public/platform/scheduler/test/fake_renderer_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
 
 namespace content {
 

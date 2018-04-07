@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintPropertyTreeBuilder_h
-#define PaintPropertyTreeBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_PROPERTY_TREE_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_PROPERTY_TREE_BUILDER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/graphics/paint/ClipPaintPropertyNode.h"
-#include "platform/graphics/paint/EffectPaintPropertyNode.h"
-#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
-#include "platform/graphics/paint/TransformPaintPropertyNode.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -215,4 +215,4 @@ class ObjectPaintPropertyTreeBuilder {
 
 }  // namespace blink
 
-#endif  // PaintPropertyTreeBuilder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_PROPERTY_TREE_BUILDER_H_

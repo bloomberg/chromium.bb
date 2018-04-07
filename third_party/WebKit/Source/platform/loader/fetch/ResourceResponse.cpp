@@ -24,19 +24,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/loader/fetch/ResourceResponse.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
 #include <algorithm>
 #include <limits>
 #include <memory>
 #include <string>
 
-#include "platform/network/HTTPParsers.h"
-#include "platform/network/http_names.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/WebURLResponse.h"
+#include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

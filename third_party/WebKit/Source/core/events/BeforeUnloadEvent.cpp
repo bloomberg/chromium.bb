@@ -21,7 +21,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/events/BeforeUnloadEvent.h"
+#include "third_party/blink/renderer/core/events/before_unload_event.h"
 
 namespace blink {
 

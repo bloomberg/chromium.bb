@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/xr/XRPresentationContext.h"
+#include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
 
-#include "bindings/modules/v8/rendering_context.h"
-#include "core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 
 namespace blink {
 

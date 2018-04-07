@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/ExceptionMessages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 
-#include "platform/Decimal.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/decimal.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

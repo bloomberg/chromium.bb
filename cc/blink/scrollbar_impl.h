@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "cc/input/scrollbar.h"
 #include "cc/paint/paint_canvas.h"
-#include "third_party/WebKit/public/platform/WebScrollbarThemePainter.h"
+#include "third_party/blink/public/platform/web_scrollbar_theme_painter.h"
 
 namespace blink {
 class WebScrollbar;

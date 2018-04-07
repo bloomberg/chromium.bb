@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/shaping/ShapingLineBreaker.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shaping_line_breaker.h"
 
-#include "platform/fonts/Font.h"
-#include "platform/fonts/shaping/HarfBuzzShaper.h"
-#include "platform/fonts/shaping/ShapeResult.h"
-#include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
-#include "platform/fonts/shaping/ShapeResultSpacing.h"
-#include "platform/text/TextBreakIterator.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_shaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 
 namespace blink {
 

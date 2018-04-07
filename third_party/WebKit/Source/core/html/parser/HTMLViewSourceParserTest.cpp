@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/parser/HTMLViewSourceParser.h"
+#include "third_party/blink/renderer/core/html/parser/html_view_source_parser.h"
 
-#include "core/dom/DocumentInit.h"
-#include "core/dom/DocumentParser.h"
-#include "core/html/HTMLViewSourceDocument.h"
-#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document_init.h"
+#include "third_party/blink/renderer/core/dom/document_parser.h"
+#include "third_party/blink/renderer/core/html/html_view_source_document.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

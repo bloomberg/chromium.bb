@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/style/FilterOperations.h"
+#include "third_party/blink/renderer/core/style/filter_operations.h"
 
 #include <numeric>
 

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BluetoothRemoteGATTCharacteristic_h
-#define BluetoothRemoteGATTCharacteristic_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_H_
 
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/typed_arrays/DOMArrayPiece.h"
-#include "core/typed_arrays/DOMDataView.h"
-#include "modules/EventTargetModules.h"
-#include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_service.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -138,4 +138,4 @@ class BluetoothRemoteGATTCharacteristic final
 
 }  // namespace blink
 
-#endif  // BluetoothRemoteGATTCharacteristic_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_H_

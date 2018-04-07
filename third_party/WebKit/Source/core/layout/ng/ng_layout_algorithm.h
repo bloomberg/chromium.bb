@@ -5,11 +5,11 @@
 #ifndef NGLayoutAlgorithm_h
 #define NGLayoutAlgorithm_h
 
-#include "core/CoreExport.h"
-#include "core/layout/MinMaxSize.h"
-#include "core/layout/ng/ng_constraint_space.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

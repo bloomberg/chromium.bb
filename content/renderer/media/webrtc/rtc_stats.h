@@ -8,7 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebRTCStats.h"
+#include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtcstats.h"
 #include "third_party/webrtc/api/stats/rtcstatscollectorcallback.h"
 #include "third_party/webrtc/api/stats/rtcstatsreport.h"

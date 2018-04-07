@@ -17,11 +17,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef RadialGradientAttributes_h
-#define RadialGradientAttributes_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_RADIAL_GRADIENT_ATTRIBUTES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_RADIAL_GRADIENT_ATTRIBUTES_H_
 
-#include "core/svg/GradientAttributes.h"
-#include "core/svg/SVGLength.h"
+#include "third_party/blink/renderer/core/svg/gradient_attributes.h"
+#include "third_party/blink/renderer/core/svg/svg_length.h"
 
 namespace blink {
 struct RadialGradientAttributes final : GradientAttributes {

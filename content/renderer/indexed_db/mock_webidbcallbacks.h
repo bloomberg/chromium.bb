@@ -7,12 +7,12 @@
 
 #include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/WebKit/public/platform/WebBlobInfo.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCallbacks.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseError.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBMetadata.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBValue.h"
-#include "third_party/WebKit/public/web/WebHeap.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/public/web/web_heap.h"
 
 namespace content {
 

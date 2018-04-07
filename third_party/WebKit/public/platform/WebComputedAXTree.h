@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebComputedAXTree_h
-#define WebComputedAXTree_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_COMPUTED_AX_TREE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_COMPUTED_AX_TREE_H_
 
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -95,4 +95,4 @@ class WebComputedAXTree {
 
 }  // namespace blink
 
-#endif  // WebComputedAXTree_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_COMPUTED_AX_TREE_H_

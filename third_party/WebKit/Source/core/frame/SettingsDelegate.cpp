@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/frame/SettingsDelegate.h"
+#include "third_party/blink/renderer/core/frame/settings_delegate.h"
 
-#include "core/frame/Settings.h"
 #include <memory>
+#include "third_party/blink/renderer/core/frame/settings.h"
 
 namespace blink {
 

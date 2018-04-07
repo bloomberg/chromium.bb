@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/LocalFrameView.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 
 #include <memory>
 
-#include "core/html/HTMLElement.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/PaintLayer.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/paint/PaintArtifact.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
-#include "core/paint/PaintPropertyTreePrinter.h"
+#include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
 
 using testing::_;
 using testing::AnyNumber;

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerOrWorkletModuleFetchCoordinatorProxy_h
-#define WorkerOrWorkletModuleFetchCoordinatorProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_OR_WORKLET_MODULE_FETCH_COORDINATOR_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_OR_WORKLET_MODULE_FETCH_COORDINATOR_PROXY_H_
 
 #include "base/single_thread_task_runner.h"
-#include "core/CoreExport.h"
-#include "core/workers/WorkerOrWorkletModuleFetchCoordinator.h"
-#include "platform/heap/Heap.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ class CORE_EXPORT WorkerOrWorkletModuleFetchCoordinatorProxy
 
 }  // namespace blink
 
-#endif  // WorkerOrWorkletModuleFetchCoordinatorProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_OR_WORKLET_MODULE_FETCH_COORDINATOR_PROXY_H_

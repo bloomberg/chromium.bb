@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerProvider_h
-#define WebServiceWorkerProvider_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_PROVIDER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_PROVIDER_H_
 
-#include "public/platform/WebCallbacks.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_registration.mojom-shared.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 #include <memory>
 

@@ -18,13 +18,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGClipPathElement_h
-#define SVGClipPathElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_CLIP_PATH_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_CLIP_PATH_ELEMENT_H_
 
-#include "core/svg/SVGAnimatedEnumeration.h"
-#include "core/svg/SVGGraphicsElement.h"
-#include "core/svg/SVGUnitTypes.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_enumeration.h"
+#include "third_party/blink/renderer/core/svg/svg_graphics_element.h"
+#include "third_party/blink/renderer/core/svg/svg_unit_types.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -56,4 +56,4 @@ class SVGClipPathElement final : public SVGGraphicsElement {
 
 }  // namespace blink
 
-#endif  // SVGClipPathElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_CLIP_PATH_ELEMENT_H_

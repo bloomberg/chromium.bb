@@ -20,10 +20,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/HTMLQuoteElement.h"
+#include "third_party/blink/renderer/core/html/html_quote_element.h"
 
-#include "core/css/StyleEngine.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DocumentParserTiming_h
-#define DocumentParserTiming_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_PARSER_TIMING_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_PARSER_TIMING_H_
 
 #include "base/macros.h"
-#include "core/dom/Document.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 

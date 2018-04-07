@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InputDeviceCapabilities_h
-#define InputDeviceCapabilities_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_INPUT_DEVICE_CAPABILITIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_INPUT_DEVICE_CAPABILITIES_H_
 
-#include "core/CoreExport.h"
-#include "core/input/InputDeviceCapabilitiesInit.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/input/input_device_capabilities_init.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class InputDeviceCapabilitiesConstants final
 
 }  // namespace blink
 
-#endif  // InputDeviceCapabilities_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_INPUT_DEVICE_CAPABILITIES_H_

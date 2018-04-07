@@ -9,7 +9,7 @@
 
 #include "base/files/file.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebFileWriter.h"
+#include "third_party/blink/public/platform/web_file_writer.h"
 #include "url/gurl.h"
 
 namespace blink {

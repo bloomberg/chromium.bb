@@ -26,23 +26,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/indexeddb/WebIDBCallbacksImpl.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks_impl.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/dom/DOMException.h"
-#include "core/probe/CoreProbes.h"
-#include "modules/indexed_db_names.h"
-#include "modules/indexeddb/IDBMetadata.h"
-#include "modules/indexeddb/IDBRequest.h"
-#include "modules/indexeddb/IDBValue.h"
-#include "platform/SharedBuffer.h"
-#include "public/platform/modules/indexeddb/WebIDBCursor.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabase.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabaseError.h"
-#include "public/platform/modules/indexeddb/WebIDBKey.h"
-#include "public/platform/modules/indexeddb/WebIDBValue.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/modules/indexed_db_names.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 
 using blink::WebIDBCursor;
 using blink::WebIDBDatabase;

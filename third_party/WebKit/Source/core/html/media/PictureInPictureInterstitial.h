@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PictureInPictureInterstitial_h
-#define PictureInPictureInterstitial_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_PICTURE_IN_PICTURE_INTERSTITIAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_PICTURE_IN_PICTURE_INTERSTITIAL_H_
 
-#include "core/html/HTMLDivElement.h"
-#include "platform/Timer.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class PictureInPictureInterstitial final : public HTMLDivElement {
 
 }  // namespace blink
 
-#endif  // PictureInPictureInterstitial_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_PICTURE_IN_PICTURE_INTERSTITIAL_H_

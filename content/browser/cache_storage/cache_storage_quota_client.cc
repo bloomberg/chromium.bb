@@ -6,7 +6,7 @@
 
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/WebKit/public/mojom/quota/quota_types.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/origin.h"
 
 namespace content {

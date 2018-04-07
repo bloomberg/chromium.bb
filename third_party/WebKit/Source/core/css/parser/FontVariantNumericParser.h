@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FontVariantNumericParser_h
-#define FontVariantNumericParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_FONT_VARIANT_NUMERIC_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_FONT_VARIANT_NUMERIC_PARSER_H_
 
-#include "core/css/CSSValueList.h"
-#include "core/css/parser/CSSParserTokenRange.h"
-#include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ class FontVariantNumericParser {
 
 }  // namespace blink
 
-#endif  // FontVariantNumericParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_FONT_VARIANT_NUMERIC_PARSER_H_

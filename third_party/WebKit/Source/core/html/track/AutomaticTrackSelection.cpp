@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/track/AutomaticTrackSelection.h"
+#include "third_party/blink/renderer/core/html/track/automatic_track_selection.h"
 
-#include "core/html/track/TextTrack.h"
-#include "core/html/track/TextTrackList.h"
-#include "platform/Language.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
+#include "third_party/blink/renderer/core/html/track/text_track_list.h"
+#include "third_party/blink/renderer/platform/language.h"
 
 namespace blink {
 

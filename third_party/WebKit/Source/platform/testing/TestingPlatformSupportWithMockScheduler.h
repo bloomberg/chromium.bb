@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TestingPlatformSupportWithMockScheduler_h
-#define TestingPlatformSupportWithMockScheduler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_WITH_MOCK_SCHEDULER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_WITH_MOCK_SCHEDULER_H_
 
 #include <memory>
 #include "base/test/simple_test_tick_clock.h"
-#include "platform/scheduler/test/task_queue_manager_for_test.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/wtf/Noncopyable.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace cc {
 class OrderedSimpleTaskRunner;
@@ -76,4 +76,4 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
 
 }  // namespace blink
 
-#endif  // TestingPlatformSupportWithMockScheduler_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_WITH_MOCK_SCHEDULER_H_

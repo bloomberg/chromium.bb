@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/audio/VectorMath.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
 
 #include <algorithm>
 #include <array>
@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "platform/wtf/MathExtras.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 namespace VectorMath {

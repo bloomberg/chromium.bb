@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/BoxModelObjectPainter.h"
+#include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
 
-#include "core/layout/LayoutBoxModelObject.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/line/RootInlineBox.h"
-#include "core/paint/BackgroundImageGeometry.h"
-#include "core/paint/ObjectPainter.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/PaintLayer.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/geometry/LayoutRectOutsets.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/paint/background_image_geometry.h"
+#include "third_party/blink/renderer/core/paint/object_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 
 namespace blink {
 

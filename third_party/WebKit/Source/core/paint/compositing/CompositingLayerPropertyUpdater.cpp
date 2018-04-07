@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/compositing/CompositingLayerPropertyUpdater.h"
+#include "third_party/blink/renderer/core/paint/compositing/compositing_layer_property_updater.h"
 
-#include "core/layout/LayoutBoxModelObject.h"
-#include "core/paint/FragmentData.h"
-#include "core/paint/compositing/CompositedLayerMapping.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/fragment_data.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

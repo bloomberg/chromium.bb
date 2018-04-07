@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NavigatorWebMIDI_h
-#define NavigatorWebMIDI_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_NAVIGATOR_WEB_MIDI_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_NAVIGATOR_WEB_MIDI_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/frame/Navigator.h"
-#include "modules/webmidi/MIDIOptions.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_options.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class NavigatorWebMIDI final : public GarbageCollected<NavigatorWebMIDI>,
 
 }  // namespace blink
 
-#endif  // NavigatorWebMIDI_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_NAVIGATOR_WEB_MIDI_H_

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/push_messaging/PushSubscriptionOptions.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "modules/push_messaging/PushSubscriptionOptionsInit.h"
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebString.h"
-#include "public/platform/modules/push_messaging/WebPushSubscriptionOptions.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription_options_init.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 namespace {

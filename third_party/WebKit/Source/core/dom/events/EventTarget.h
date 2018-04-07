@@ -29,23 +29,23 @@
  *
  */
 
-#ifndef EventTarget_h
-#define EventTarget_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_TARGET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_TARGET_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/events/AddEventListenerOptionsResolved.h"
-#include "core/dom/events/EventDispatchResult.h"
-#include "core/dom/events/EventListenerMap.h"
-#include "core/event_names.h"
-#include "core/event_target_names.h"
-#include "core/event_type_names.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
+#include "third_party/blink/renderer/core/dom/events/event_dispatch_result.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener_map.h"
+#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/event_target_names.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -336,4 +336,4 @@ inline bool EventTarget::HasCapturingEventListeners(
 
 }  // namespace blink
 
-#endif  // EventTarget_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_TARGET_H_

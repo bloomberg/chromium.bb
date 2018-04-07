@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/Editor.h"
-#include "core/editing/commands/EditorCommand.h"
-#include "core/editing/commands/EditorCommandNames.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/frame/LocalFrame.h"
-#include "platform/wtf/StringExtras.h"
-#include "public/platform/WebEditingCommandType.h"
+#include "third_party/blink/public/platform/web_editing_command_type.h"
+#include "third_party/blink/renderer/core/editing/commands/editor_command.h"
+#include "third_party/blink/renderer/core/editing/commands/editor_command_names.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/wtf/string_extras.h"
 
 namespace blink {
 

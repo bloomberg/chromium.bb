@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/Node.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/dom/Element.h"
-#include "core/dom/FlatTreeTraversal.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/ShadowRootInit.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/html/HTMLDivElement.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/shadow_root_init.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
 
 namespace blink {
 

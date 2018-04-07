@@ -30,15 +30,15 @@
  *
  */
 
-#include "core/dom/events/EventListenerMap.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener_map.h"
 
-#include "core/dom/events/EventTarget.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 #if DCHECK_IS_ON()
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/ThreadingPrimitives.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #endif
 
 namespace blink {

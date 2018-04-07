@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/content_decryption_module_result_promise.h"
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/V8ThrowDOMException.h"
-#include "core/dom/DOMException.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InspectorOverlayHost_h
-#define InspectorOverlayHost_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_OVERLAY_HOST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_OVERLAY_HOST_H_
 
-#include "core/CoreExport.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class CORE_EXPORT InspectorOverlayHost final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // InspectorOverlayHost_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_OVERLAY_HOST_H_

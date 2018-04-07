@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLShaderPrecisionFormat_h
-#define WebGLShaderPrecisionFormat_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_SHADER_PRECISION_FORMAT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_SHADER_PRECISION_FORMAT_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace blink {
@@ -55,4 +55,4 @@ class WebGLShaderPrecisionFormat final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // WebGLShaderPrecisionFormat_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_SHADER_PRECISION_FORMAT_H_

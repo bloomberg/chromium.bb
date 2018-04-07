@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPlatformEventType_h
-#define WebPlatformEventType_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PLATFORM_EVENT_TYPE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PLATFORM_EVENT_TYPE_H_
 
 namespace blink {
 
@@ -16,4 +16,4 @@ enum WebPlatformEventType {
 
 }  // namespace blink
 
-#endif  // WebPlatformEventType_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PLATFORM_EVENT_TYPE_H_

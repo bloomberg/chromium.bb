@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RasterInvalidationTracking_h
-#define RasterInvalidationTracking_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_RASTER_INVALIDATION_TRACKING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_RASTER_INVALIDATION_TRACKING_H_
 
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/Region.h"
-#include "platform/graphics/PaintInvalidationReason.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/json/JSONValues.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/region.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
@@ -92,4 +92,4 @@ class PLATFORM_EXPORT RasterInvalidationTracking {
 
 }  // namespace blink
 
-#endif  // RasterInvalidationTracking_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_RASTER_INVALIDATION_TRACKING_H_

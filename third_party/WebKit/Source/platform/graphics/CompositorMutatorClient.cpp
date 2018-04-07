@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/CompositorMutatorClient.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 
 #include <memory>
 #include "base/trace_event/trace_event.h"
-#include "platform/graphics/CompositorMutatorImpl.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
 
 namespace blink {
 

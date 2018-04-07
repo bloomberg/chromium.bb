@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scroll/ScrollableArea.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 
-#include "platform/graphics/Color.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/scroll/ScrollbarTestSuite.h"
-#include "platform/scroll/ScrollbarTheme.h"
-#include "platform/scroll/ScrollbarThemeMock.h"
-#include "platform/scroll/ScrollbarThemeOverlayMock.h"
-#include "platform/testing/FakeGraphicsLayer.h"
-#include "platform/testing/FakeGraphicsLayerClient.h"
-#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "public/platform/Platform.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_test_suite.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_mock.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_overlay_mock.h"
+#include "third_party/blink/renderer/platform/testing/fake_graphics_layer.h"
+#include "third_party/blink/renderer/platform/testing/fake_graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 namespace blink {
 

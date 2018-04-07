@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockMimeRegistry_h
-#define MockMimeRegistry_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_MIME_MOCK_MIME_REGISTRY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_MIME_MOCK_MIME_REGISTRY_H_
 
 #include "net/base/mime_util.h"
-#include "public/platform/FilePathConversion.h"
-#include "public/platform/mime_registry.mojom-blink.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/mime_registry.mojom-blink.h"
 
 namespace blink {
 
@@ -29,4 +29,4 @@ class MockMimeRegistry : public mojom::blink::MimeRegistry {
 
 }  // namespace blink
 
-#endif  // MockMimeRegistry_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_MIME_MOCK_MIME_REGISTRY_H_

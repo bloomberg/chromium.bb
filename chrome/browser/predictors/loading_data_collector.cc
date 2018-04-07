@@ -18,7 +18,7 @@
 #include "content/public/common/resource_type.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
-#include "third_party/WebKit/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 
 using content::BrowserThread;
 

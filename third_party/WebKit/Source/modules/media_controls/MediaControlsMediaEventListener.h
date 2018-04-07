@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlsMediaEventListener_h
-#define MediaControlsMediaEventListener_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_MEDIA_EVENT_LISTENER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_MEDIA_EVENT_LISTENER_H_
 
-#include "core/dom/events/EventListener.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class MediaControlsMediaEventListener final : public EventListener {
 
 }  // namespace blink
 
-#endif  // MediaControlsMediaEventListener_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_MEDIA_EVENT_LISTENER_H_

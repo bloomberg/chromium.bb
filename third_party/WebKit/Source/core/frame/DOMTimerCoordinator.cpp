@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/DOMTimerCoordinator.h"
+#include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
 
 #include <algorithm>
 #include <memory>
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/DOMTimer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/dom_timer.h"
 
 namespace blink {
 

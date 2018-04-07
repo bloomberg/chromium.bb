@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fileapi/PublicURLManager.h"
+#include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 
-#include "core/fileapi/URLRegistry.h"
-#include "core/testing/NullExecutionContext.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "platform/blob/testing/FakeBlob.h"
-#include "platform/blob/testing/FakeBlobURLStore.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "platform/weborigin/SecurityOrigin.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/fileapi/url_registry.h"
+#include "third_party/blink/renderer/core/testing/null_execution_context.h"
+#include "third_party/blink/renderer/platform/blob/testing/fake_blob.h"
+#include "third_party/blink/renderer/platform/blob/testing/fake_blob_url_store.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 namespace {

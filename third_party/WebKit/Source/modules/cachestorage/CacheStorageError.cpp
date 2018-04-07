@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/cachestorage/CacheStorageError.h"
+#include "third_party/blink/renderer/modules/cachestorage/cache_storage_error.h"
 
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/cachestorage/Cache.h"
-#include "public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/cachestorage/cache.h"
 
 namespace blink {
 

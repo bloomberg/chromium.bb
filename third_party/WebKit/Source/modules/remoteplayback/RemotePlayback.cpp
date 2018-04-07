@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/remoteplayback/RemotePlayback.h"
+#include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/modules/v8/v8_remote_playback_availability_callback.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/events/Event.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/html_names.h"
-#include "core/probe/CoreProbes.h"
-#include "modules/EventTargetModules.h"
-#include "modules/presentation/PresentationAvailabilityState.h"
-#include "modules/presentation/PresentationController.h"
-#include "modules/remoteplayback/AvailabilityCallbackWrapper.h"
-#include "platform/MemoryCoordinator.h"
-#include "platform/wtf/text/Base64.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_remote_playback_availability_callback.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability_state.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
+#include "third_party/blink/renderer/modules/remoteplayback/availability_callback_wrapper.h"
+#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
 namespace blink {
 

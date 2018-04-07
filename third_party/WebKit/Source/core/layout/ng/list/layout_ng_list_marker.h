@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef layout_ng_list_marker_h
-#define layout_ng_list_marker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LIST_LAYOUT_NG_LIST_MARKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LIST_LAYOUT_NG_LIST_MARKER_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/ng/layout_ng_mixin.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGListMarker, IsLayoutNGListMarker());
 
 }  // namespace blink
 
-#endif  // layout_ng_list_marker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LIST_LAYOUT_NG_LIST_MARKER_H_

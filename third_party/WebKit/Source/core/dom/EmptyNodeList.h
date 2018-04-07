@@ -29,10 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EmptyNodeList_h
-#define EmptyNodeList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EMPTY_NODE_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EMPTY_NODE_LIST_H_
 
-#include "core/dom/NodeList.h"
+#include "third_party/blink/renderer/core/dom/node_list.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ DEFINE_TYPE_CASTS(EmptyNodeList,
 
 }  // namespace blink
 
-#endif  // EmptyNodeList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EMPTY_NODE_LIST_H_

@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/EditCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/edit_command.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/commands/CompositeEditCommand.h"
-#include "core/frame/LocalFrame.h"
-#include "core/layout/LayoutText.h"
-#include "core/layout/line/InlineTextBox.h"
-#include "core/layout/ng/inline/ng_offset_mapping.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/editing/commands/composite_edit_command.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PartitionAllocMemoryDumpProvider_h
-#define PartitionAllocMemoryDumpProvider_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PARTITION_ALLOC_MEMORY_DUMP_PROVIDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PARTITION_ALLOC_MEMORY_DUMP_PROVIDER_H_
 
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/sharded_allocation_register.h"
-#include "platform/wtf/Noncopyable.h"
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -39,4 +39,4 @@ class BLINK_PLATFORM_EXPORT PartitionAllocMemoryDumpProvider final
 
 }  // namespace blink
 
-#endif  // PartitionAllocMemoryDumpProvider_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PARTITION_ALLOC_MEMORY_DUMP_PROVIDER_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SetSinkIdCallbacks_h
-#define SetSinkIdCallbacks_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_AUDIO_OUTPUT_DEVICES_SET_SINK_ID_CALLBACKS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_AUDIO_OUTPUT_DEVICES_SET_SINK_ID_CALLBACKS_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/Timer.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebSetSinkIdCallbacks.h"
+#include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -41,4 +41,4 @@ class SetSinkIdCallbacks final : public WebSetSinkIdCallbacks {
 
 }  // namespace blink
 
-#endif  // SetSinkIdCallbacks_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_AUDIO_OUTPUT_DEVICES_SET_SINK_ID_CALLBACKS_H_

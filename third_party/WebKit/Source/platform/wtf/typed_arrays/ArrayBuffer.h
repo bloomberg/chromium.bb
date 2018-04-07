@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ArrayBuffer_h
-#define ArrayBuffer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_H_
 
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -275,4 +275,4 @@ unsigned ArrayBuffer::ClampIndex(int index) const {
 
 using WTF::ArrayBuffer;
 
-#endif  // ArrayBuffer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_H_

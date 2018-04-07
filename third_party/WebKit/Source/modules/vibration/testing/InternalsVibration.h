@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InternalsVibration_h
-#define InternalsVibration_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VIBRATION_TESTING_INTERNALS_VIBRATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_VIBRATION_TESTING_INTERNALS_VIBRATION_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class InternalsVibration {
 
 }  // namespace blink
 
-#endif  // InternalsVibration_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_VIBRATION_TESTING_INTERNALS_VIBRATION_H_

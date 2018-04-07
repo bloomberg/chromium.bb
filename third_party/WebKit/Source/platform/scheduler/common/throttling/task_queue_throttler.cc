@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/common/throttling/task_queue_throttler.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 
 #include <cstdint>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
-#include "platform/scheduler/base/real_time_domain.h"
-#include "platform/scheduler/common/throttling/budget_pool.h"
-#include "platform/scheduler/common/throttling/throttled_time_domain.h"
-#include "platform/scheduler/main_thread/frame_scheduler_impl.h"
-#include "platform/scheduler/main_thread/main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/throttled_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler.h"
 
 namespace blink {
 namespace scheduler {

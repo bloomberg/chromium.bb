@@ -24,10 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/network/NetworkHints.h"
+#include "third_party/blink/renderer/platform/network/network_hints.h"
 
-#include "public/platform/Platform.h"
-#include "public/platform/WebPrescientNetworking.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_prescient_networking.h"
 
 namespace blink {
 

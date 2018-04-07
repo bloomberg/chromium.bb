@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebSuddenTerminationDisablerType_h
-#define WebSuddenTerminationDisablerType_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SUDDEN_TERMINATION_DISABLER_TYPE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SUDDEN_TERMINATION_DISABLER_TYPE_H_
 
 namespace blink {
 
@@ -15,4 +15,4 @@ const WebSuddenTerminationDisablerType kUnloadHandler = 1 << 1;
 
 }  // namespace blink
 
-#endif  // WebSuddenTerminationDisablerType_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SUDDEN_TERMINATION_DISABLER_TYPE_H_

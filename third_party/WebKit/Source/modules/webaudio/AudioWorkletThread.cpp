@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webaudio/AudioWorkletThread.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_thread.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/WorkerBackingThread.h"
-#include "modules/webaudio/AudioWorklet.h"
-#include "modules/webaudio/AudioWorkletGlobalScope.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WaitableEvent.h"
-#include "platform/WebThreadSupportingGC.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
+#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

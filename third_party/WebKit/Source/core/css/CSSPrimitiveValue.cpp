@@ -19,17 +19,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/CSSPrimitiveValue.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
 
 #include "build/build_config.h"
-#include "core/css/CSSCalculationValue.h"
-#include "core/css/CSSMarkup.h"
-#include "core/css/CSSResolutionUnits.h"
-#include "core/css/CSSToLengthConversionData.h"
-#include "core/css/CSSValuePool.h"
-#include "platform/LayoutUnit.h"
-#include "platform/wtf/SizeAssertions.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_markup.h"
+#include "third_party/blink/renderer/core/css/css_resolution_units.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/core/css/css_value_pool.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

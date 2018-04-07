@@ -30,7 +30,7 @@
 #include "device/bluetooth/test/fake_bluetooth.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/WebKit/public/mojom/web_package/web_package_internals.mojom.h"
+#include "third_party/blink/public/mojom/web_package/web_package_internals.mojom.h"
 
 namespace content {
 namespace {

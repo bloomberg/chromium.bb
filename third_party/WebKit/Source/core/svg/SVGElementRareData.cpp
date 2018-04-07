@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/svg/SVGElementRareData.h"
+#include "third_party/blink/renderer/core/svg/svg_element_rare_data.h"
 
-#include "core/css/resolver/StyleResolver.h"
-#include "core/dom/Document.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
 

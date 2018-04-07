@@ -20,14 +20,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/StyleAttributeMutationScope.h"
+#include "third_party/blink/renderer/core/css/style_attribute_mutation_scope.h"
 
-#include "core/css/AbstractPropertySetCSSStyleDeclaration.h"
-#include "core/dom/MutationObserverInterestGroup.h"
-#include "core/dom/MutationRecord.h"
-#include "core/html/custom/CustomElement.h"
-#include "core/html/custom/CustomElementDefinition.h"
-#include "core/probe/CoreProbes.h"
+#include "third_party/blink/renderer/core/css/abstract_property_set_css_style_declaration.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer_interest_group.h"
+#include "third_party/blink/renderer/core/dom/mutation_record.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 
 namespace blink {
 

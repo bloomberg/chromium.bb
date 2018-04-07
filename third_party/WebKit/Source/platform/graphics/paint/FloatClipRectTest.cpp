@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/FloatClipRect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
 
-#include "platform/geometry/FloatRect.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 
 namespace blink {
 

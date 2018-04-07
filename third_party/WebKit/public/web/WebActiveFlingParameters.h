@@ -23,14 +23,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebActiveFlingParameters_h
-#define WebActiveFlingParameters_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ACTIVE_FLING_PARAMETERS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ACTIVE_FLING_PARAMETERS_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebFloatPoint.h"
-#include "public/platform/WebGestureDevice.h"
-#include "public/platform/WebPoint.h"
-#include "public/platform/WebSize.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_gesture_device.h"
+#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_size.h"
 
 namespace blink {
 

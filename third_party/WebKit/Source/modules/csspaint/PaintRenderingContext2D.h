@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintRenderingContext2D_h
-#define PaintRenderingContext2D_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_RENDERING_CONTEXT_2D_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_RENDERING_CONTEXT_2D_H_
 
 #include <memory>
-#include "modules/ModulesExport.h"
-#include "modules/canvas/canvas2d/BaseRenderingContext2D.h"
-#include "modules/csspaint/PaintRenderingContext2DSettings.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/paint/PaintRecorder.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_rendering_context_2d_settings.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 
 namespace blink {
 
@@ -102,4 +102,4 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // PaintRenderingContext2D_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_RENDERING_CONTEXT_2D_H_

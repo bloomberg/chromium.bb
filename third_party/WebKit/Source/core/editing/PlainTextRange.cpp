@@ -25,15 +25,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/PlainTextRange.h"
+#include "third_party/blink/renderer/core/editing/plain_text_range.h"
 
-#include "core/dom/ContainerNode.h"
-#include "core/dom/Document.h"
-#include "core/dom/Range.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/VisibleUnits.h"
-#include "core/editing/iterators/TextIterator.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
 
 namespace blink {
 

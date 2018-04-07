@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSSyntaxDescriptor_h
-#define CSSSyntaxDescriptor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SYNTAX_DESCRIPTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SYNTAX_DESCRIPTOR_H_
 
-#include "core/css/parser/CSSParserTokenRange.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 
 namespace blink {
 
@@ -72,4 +72,4 @@ class CORE_EXPORT CSSSyntaxDescriptor {
 
 }  // namespace blink
 
-#endif  // CSSSyntaxDescriptor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SYNTAX_DESCRIPTOR_H_

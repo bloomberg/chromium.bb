@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSpeechRecognitionParams_h
-#define WebSpeechRecognitionParams_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNITION_PARAMS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNITION_PARAMS_H_
 
-#include "WebSpeechGrammar.h"
-#include "public/platform/WebSecurityOrigin.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_speech_grammar.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ class WebSpeechRecognitionParams {
 
 }  // namespace blink
 
-#endif  // WebSpeechRecognitionParams_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNITION_PARAMS_H_

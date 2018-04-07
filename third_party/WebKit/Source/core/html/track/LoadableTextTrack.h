@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LoadableTextTrack_h
-#define LoadableTextTrack_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_LOADABLE_TEXT_TRACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_LOADABLE_TEXT_TRACK_H_
 
-#include "core/html/track/TextTrack.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ DEFINE_TYPE_CASTS(LoadableTextTrack,
 
 }  // namespace blink
 
-#endif  // LoadableTextTrack_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_LOADABLE_TEXT_TRACK_H_

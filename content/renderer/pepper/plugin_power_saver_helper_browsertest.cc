@@ -16,9 +16,9 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/test/test_render_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebPluginParams.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_plugin_params.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 

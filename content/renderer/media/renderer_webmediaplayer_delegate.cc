@@ -15,8 +15,8 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "third_party/WebKit/public/platform/WebFullscreenVideoStatus.h"
-#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
+#include "third_party/blink/public/platform/web_fullscreen_video_status.h"
+#include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "ui/gfx/geometry/size.h"
 
 #if defined(OS_ANDROID)

@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BitVector_h
-#define BitVector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_BIT_VECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_BIT_VECTOR_H_
 
 #include "base/bit_cast.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/WTFExport.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -220,4 +220,4 @@ class WTF_EXPORT BitVector {
 
 using WTF::BitVector;
 
-#endif  // BitVector_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_BIT_VECTOR_H_

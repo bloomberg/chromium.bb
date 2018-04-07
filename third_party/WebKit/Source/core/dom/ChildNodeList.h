@@ -22,12 +22,12 @@
  *
  */
 
-#ifndef ChildNodeList_h
-#define ChildNodeList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHILD_NODE_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHILD_NODE_LIST_H_
 
-#include "core/dom/CollectionIndexCache.h"
-#include "core/dom/ContainerNode.h"
-#include "core/dom/NodeList.h"
+#include "third_party/blink/renderer/core/dom/collection_index_cache.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/node_list.h"
 
 namespace blink {
 
@@ -85,4 +85,4 @@ DEFINE_TYPE_CASTS(ChildNodeList,
 
 }  // namespace blink
 
-#endif  // ChildNodeList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHILD_NODE_LIST_H_

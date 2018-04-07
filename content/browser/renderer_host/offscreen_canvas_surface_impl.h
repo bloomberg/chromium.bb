@@ -12,7 +12,7 @@
 #include "components/viz/host/host_frame_sink_client.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/WebKit/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h"
+#include "third_party/blink/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h"
 
 namespace viz {
 class HostFrameSinkManager;

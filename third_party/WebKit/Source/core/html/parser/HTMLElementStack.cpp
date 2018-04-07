@@ -24,15 +24,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/HTMLElementStack.h"
+#include "third_party/blink/renderer/core/html/parser/html_element_stack.h"
 
-#include "core/dom/Element.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/forms/HTMLFormControlElement.h"
-#include "core/html/forms/HTMLSelectElement.h"
-#include "core/html_names.h"
-#include "core/mathml_names.h"
-#include "core/svg_names.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/mathml_names.h"
+#include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 

@@ -22,9 +22,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/MediaStreamTrackEvent.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track_event.h"
 
-#include "modules/mediastream/MediaStreamTrack.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 
 namespace blink {
 

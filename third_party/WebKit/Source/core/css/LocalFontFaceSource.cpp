@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/LocalFontFaceSource.h"
+#include "third_party/blink/renderer/core/css/local_font_face_source.h"
 
-#include "platform/Histogram.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/SimpleFontData.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
 

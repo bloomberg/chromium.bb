@@ -32,7 +32,7 @@
 // we need to place this directive before any data or functions are defined.
 #pragma GCC diagnostic ignored "-Wmissing-format-attribute"
 
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #include "build/build_config.h"
 

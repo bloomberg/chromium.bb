@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/push_messaging/PushSubscription.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
 
 #include <memory>
-#include "bindings/core/v8/CallbackPromiseAdapter.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "modules/push_messaging/PushError.h"
-#include "modules/push_messaging/PushSubscriptionOptions.h"
-#include "modules/serviceworkers/ServiceWorkerRegistration.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/Base64.h"
-#include "public/platform/Platform.h"
-#include "public/platform/modules/push_messaging/WebPushProvider.h"
-#include "public/platform/modules/push_messaging/WebPushSubscription.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_provider.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_error.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
 namespace blink {
 

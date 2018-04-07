@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/shorthands/font_variant.h"
+#include "third_party/blink/renderer/core/css/properties/shorthands/font_variant.h"
 
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/parser/FontVariantEastAsianParser.h"
-#include "core/css/parser/FontVariantLigaturesParser.h"
-#include "core/css/parser/FontVariantNumericParser.h"
-#include "core/css/properties/ComputedStyleUtils.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/parser/font_variant_east_asian_parser.h"
+#include "third_party/blink/renderer/core/css/parser/font_variant_ligatures_parser.h"
+#include "third_party/blink/renderer/core/css/parser/font_variant_numeric_parser.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 namespace CSSShorthand {

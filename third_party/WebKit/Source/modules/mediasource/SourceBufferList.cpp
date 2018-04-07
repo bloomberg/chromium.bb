@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediasource/SourceBufferList.h"
+#include "third_party/blink/renderer/modules/mediasource/source_buffer_list.h"
 
-#include "core/dom/events/MediaElementEventQueue.h"
-#include "modules/EventModules.h"
-#include "modules/mediasource/SourceBuffer.h"
+#include "third_party/blink/renderer/core/dom/events/media_element_event_queue.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/mediasource/source_buffer.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TransformOrigin_h
-#define TransformOrigin_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_TRANSFORM_ORIGIN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_TRANSFORM_ORIGIN_H_
 
-#include "platform/Length.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -32,4 +32,4 @@ class TransformOrigin {
 
 }  // namespace blink
 
-#endif  // TransformOrigin_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_TRANSFORM_ORIGIN_H_

@@ -47,9 +47,9 @@
 #include "extensions/renderer/resource_bundle_source_map.h"
 #include "extensions/renderer/script_context.h"
 #include "media/media_buildflags.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebSecurityPolicy.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_security_policy.h"
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 #include "chrome/renderer/extensions/cast_streaming_native_handler.h"

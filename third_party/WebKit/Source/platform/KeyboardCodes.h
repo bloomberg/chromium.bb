@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef KeyboardCodes_h
-#define KeyboardCodes_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_KEYBOARD_CODES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_KEYBOARD_CODES_H_
 
 #include "build/build_config.h"
 
@@ -37,7 +37,7 @@
 #include <windows.h>
 #endif
 
-#include "platform/WindowsKeyboardCodes.h"
+#include "third_party/blink/renderer/platform/windows_keyboard_codes.h"
 
 namespace blink {
 

@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("nfc") {
   sources = [
-    "NFC.cpp",
-    "NFC.h",
-    "NFCError.cpp",
-    "NFCError.h",
-    "NavigatorNFC.cpp",
-    "NavigatorNFC.h",
+    "navigator_nfc.cc",
+    "navigator_nfc.h",
+    "nfc.cc",
+    "nfc.h",
+    "nfc_error.cc",
+    "nfc_error.h",
   ]
 }

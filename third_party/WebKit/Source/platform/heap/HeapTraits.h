@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HeapTraits_h
-#define HeapTraits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_TRAITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_TRAITS_H_
 
 #include <type_traits>
-#include "platform/heap/HeapAllocator.h"
-#include "platform/heap/Member.h"
-#include "platform/wtf/TypeTraits.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 namespace blink {
 
@@ -37,4 +37,4 @@ using VectorOfPairs = std::conditional_t<
 
 }  // namespace blink
 
-#endif  // HeapTraits_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_TRAITS_H_

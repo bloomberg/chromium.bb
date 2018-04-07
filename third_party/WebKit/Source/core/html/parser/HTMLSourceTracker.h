@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLSourceTracker_h
-#define HTMLSourceTracker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_SOURCE_TRACKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_SOURCE_TRACKER_H_
 
 #include "base/macros.h"
-#include "core/html/parser/HTMLToken.h"
-#include "platform/text/SegmentedString.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/html/parser/html_token.h"
+#include "third_party/blink/renderer/platform/text/segmented_string.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

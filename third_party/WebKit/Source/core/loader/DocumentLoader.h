@@ -27,33 +27,33 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DocumentLoader_h
-#define DocumentLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_DOCUMENT_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_DOCUMENT_LOADER_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/CoreExport.h"
-#include "core/dom/ViewportDescription.h"
-#include "core/dom/WeakIdentifierMap.h"
-#include "core/frame/FrameTypes.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/html/parser/ParserSynchronizationPolicy.h"
-#include "core/loader/DocumentLoadTiming.h"
-#include "core/loader/FrameLoaderTypes.h"
-#include "core/loader/LinkLoader.h"
-#include "core/loader/NavigationPolicy.h"
-#include "platform/SharedBuffer.h"
-#include "platform/loader/fetch/ClientHintsPreferences.h"
-#include "platform/loader/fetch/RawResource.h"
-#include "platform/loader/fetch/ResourceError.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/loader/fetch/SubstituteData.h"
-#include "platform/wtf/HashSet.h"
-#include "public/platform/WebLoadingBehaviorFlag.h"
-#include "public/web/WebGlobalObjectReusePolicy.h"
+#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
+#include "third_party/blink/public/web/web_global_object_reuse_policy.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/viewport_description.h"
+#include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/frame_types.h"
+#include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
+#include "third_party/blink/renderer/core/loader/document_load_timing.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/loader/link_loader.h"
+#include "third_party/blink/renderer/core/loader/navigation_policy.h"
+#include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
+#include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/loader/fetch/substitute_data.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 #include <memory>
 
@@ -406,4 +406,4 @@ DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);
 
 }  // namespace blink
 
-#endif  // DocumentLoader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_DOCUMENT_LOADER_H_

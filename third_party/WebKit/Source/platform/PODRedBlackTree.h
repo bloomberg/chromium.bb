@@ -69,18 +69,18 @@
 // The design of this red-black tree comes from Cormen, Leiserson,
 // and Rivest, _Introduction to Algorithms_, MIT Press, 1990.
 
-#ifndef PODRedBlackTree_h
-#define PODRedBlackTree_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_RED_BLACK_TREE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_RED_BLACK_TREE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/PODFreeListArena.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/pod_free_list_arena.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #ifndef NDEBUG
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #endif
 
 namespace blink {
@@ -796,4 +796,4 @@ class PODRedBlackTree {
 
 }  // namespace blink
 
-#endif  // PODRedBlackTree_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_RED_BLACK_TREE_H_

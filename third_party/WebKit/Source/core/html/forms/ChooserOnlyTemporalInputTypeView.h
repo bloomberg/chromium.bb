@@ -23,14 +23,14 @@
  * SUCH DAMAGE.
  */
 
-#ifndef ChooserOnlyTemporalInputTypeView_h
-#define ChooserOnlyTemporalInputTypeView_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_CHOOSER_ONLY_TEMPORAL_INPUT_TYPE_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_CHOOSER_ONLY_TEMPORAL_INPUT_TYPE_VIEW_H_
 
-#include "core/html/forms/BaseTemporalInputType.h"
-#include "core/html/forms/DateTimeChooser.h"
-#include "core/html/forms/DateTimeChooserClient.h"
-#include "core/html/forms/KeyboardClickableInputTypeView.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/html/forms/base_temporal_input_type.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
+#include "third_party/blink/renderer/core/html/forms/keyboard_clickable_input_type_view.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class ChooserOnlyTemporalInputTypeView final
 
 }  // namespace blink
 
-#endif  // ChooserOnlyTemporalInputTypeView_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_CHOOSER_ONLY_TEMPORAL_INPUT_TYPE_VIEW_H_

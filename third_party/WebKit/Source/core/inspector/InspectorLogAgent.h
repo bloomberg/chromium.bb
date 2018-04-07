@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InspectorLogAgent_h
-#define InspectorLogAgent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORLOGAGENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORLOGAGENT_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/frame/PerformanceMonitor.h"
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/protocol/Log.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/PerformanceMonitor.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Log.h"
 
 namespace v8_inspector {
 class V8InspectorSession;

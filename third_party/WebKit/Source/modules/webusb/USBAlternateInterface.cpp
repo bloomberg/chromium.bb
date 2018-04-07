@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webusb/USBAlternateInterface.h"
+#include "third_party/blink/renderer/modules/webusb/usb_alternate_interface.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "modules/webusb/USBEndpoint.h"
-#include "modules/webusb/USBInterface.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/modules/webusb/usb_endpoint.h"
+#include "third_party/blink/renderer/modules/webusb/usb_interface.h"
 
 namespace blink {
 

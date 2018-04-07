@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_FRAME_OWNER_PROPERTIES_H_
 
 #include "content/common/frame_owner_properties.h"
-#include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
+#include "third_party/blink/public/web/web_frame_owner_properties.h"
 
 namespace content {
 

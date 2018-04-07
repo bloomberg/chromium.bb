@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentResponse.h"
+#include "third_party/blink/renderer/modules/payments/payment_response.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "modules/payments/PaymentAddress.h"
-#include "modules/payments/PaymentCompleter.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/modules/payments/payment_address.h"
+#include "third_party/blink/renderer/modules/payments/payment_completer.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

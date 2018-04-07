@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/scrolling/SnapCoordinator.h"
+#include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 
-#include "core/dom/Element.h"
-#include "core/dom/Node.h"
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/PaintLayerScrollableArea.h"
-#include "platform/LengthFunctions.h"
-#include "platform/scroll/ScrollSnapData.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_snap_data.h"
 
 namespace blink {
 namespace {

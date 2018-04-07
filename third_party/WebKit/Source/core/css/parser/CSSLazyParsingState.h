@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSLazyParsingState_h
-#define CSSLazyParsingState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_LAZY_PARSING_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_LAZY_PARSING_STATE_H_
 
-#include "core/css/CSSSelectorList.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/css/parser/CSSParserMode.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/css/css_selector_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -90,4 +90,4 @@ class CSSLazyParsingState
 
 }  // namespace blink
 
-#endif  // CSSLazyParsingState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_LAZY_PARSING_STATE_H_

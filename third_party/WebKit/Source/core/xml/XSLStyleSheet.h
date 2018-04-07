@@ -20,15 +20,15 @@
  *
  */
 
-#ifndef XSLStyleSheet_h
-#define XSLStyleSheet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_XSL_STYLE_SHEET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_XSL_STYLE_SHEET_H_
 
 #include <libxml/tree.h>
 #include <libxslt/transform.h>
 #include "base/memory/scoped_refptr.h"
-#include "core/css/StyleSheet.h"
-#include "core/dom/ProcessingInstruction.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/css/style_sheet.h"
+#include "third_party/blink/renderer/core/dom/processing_instruction.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -136,4 +136,4 @@ DEFINE_TYPE_CASTS(XSLStyleSheet,
 
 }  // namespace blink
 
-#endif  // XSLStyleSheet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XSL_STYLE_SHEET_H_

@@ -11,9 +11,9 @@
 #include "content/renderer/media/stream/media_stream_audio_source.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_push_fifo.h"
-#include "third_party/WebKit/public/platform/WebAudioDestinationConsumer.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_audio_destination_consumer.h"
+#include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace content {
 

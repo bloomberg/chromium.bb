@@ -21,8 +21,8 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef FloatBoxTestHelpers_h
-#define FloatBoxTestHelpers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_FLOAT_BOX_TEST_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_FLOAT_BOX_TEST_HELPERS_H_
 
 #include <gtest/gtest.h>
 namespace blink {
@@ -44,4 +44,4 @@ testing::AssertionResult AssertContains(const char*,
 }  // namespace FloatBoxTest
 }  // namespace blink
 
-#endif  // FloatBoxTestHelpers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_FLOAT_BOX_TEST_HELPERS_H_

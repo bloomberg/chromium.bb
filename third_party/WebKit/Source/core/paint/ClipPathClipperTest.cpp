@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ClipPathClipper.h"
+#include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
 
 #include <gtest/gtest.h>
-#include "core/testing/CoreUnitTestHelper.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
 namespace {

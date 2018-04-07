@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MessageLoopForMojo_h
-#define MessageLoopForMojo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_MESSAGE_LOOP_FOR_MOJO_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_MESSAGE_LOOP_FOR_MOJO_H_
 
 #include "base/message_loop/message_loop.h"
 
@@ -11,4 +11,4 @@
 // "base/message_loop/message_loop.h" indirectly without adding a line of
 // "+base/message_loop" in their DEPS file.
 
-#endif  // MessageLoopForMojo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_MESSAGE_LOOP_FOR_MOJO_H_

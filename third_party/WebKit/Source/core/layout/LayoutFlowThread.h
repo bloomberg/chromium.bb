@@ -27,12 +27,12 @@
  * SUCH DAMAGE.
  */
 
-#ifndef LayoutFlowThread_h
-#define LayoutFlowThread_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FLOW_THREAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FLOW_THREAD_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "platform/wtf/LinkedHashSet.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 
 namespace blink {
 
@@ -231,4 +231,4 @@ struct ValueToString<LayoutMultiColumnSet*> {
 
 }  // namespace blink
 
-#endif  // LayoutFlowThread_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FLOW_THREAD_H_

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/BytesConsumerForDataConsumerHandle.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer_for_data_consumer_handle.h"
 
 #include <memory>
 
-#include "core/fetch/BytesConsumer.h"
-#include "core/fetch/DataConsumerHandleTestUtil.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/data_consumer_handle_test_util.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 

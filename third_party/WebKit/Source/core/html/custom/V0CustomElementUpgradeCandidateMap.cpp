@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/custom/V0CustomElementUpgradeCandidateMap.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_upgrade_candidate_map.h"
 
-#include "core/dom/Element.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 
 namespace blink {
 

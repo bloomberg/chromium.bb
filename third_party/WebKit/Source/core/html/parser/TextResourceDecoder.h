@@ -20,17 +20,17 @@
 
 */
 
-#ifndef TextResourceDecoder_h
-#define TextResourceDecoder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_TEXT_RESOURCE_DECODER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_TEXT_RESOURCE_DECODER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "core/CoreExport.h"
-#include "platform/loader/fetch/TextResourceDecoderOptions.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 

@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 
-#include "bindings/core/v8/V8BindingForCore.h"
 #include "build/build_config.h"
-#include "core/frame/Settings.h"
-#include "core/messaging/MessagePort.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/testing/BlinkFuzzerTestSupport.h"
-#include "platform/wtf/StringHasher.h"
-#include "public/platform/WebBlobInfo.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
+#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
 #include "v8/include/v8.h"
 
 namespace blink {

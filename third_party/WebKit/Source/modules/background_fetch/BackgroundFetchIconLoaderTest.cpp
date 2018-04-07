@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LiICENSE file.
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/testing/PageTestBase.h"
-#include "modules/background_fetch/BackgroundFetchIconLoader.h"
-#include "modules/background_fetch/IconDefinition.h"
-#include "platform/heap/Persistent.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/testing/URLTestHelpers.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/weborigin/KURL.h"
-#include "public/platform/WebSize.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_icon_loader.h"
+#include "third_party/blink/renderer/modules/background_fetch/icon_definition.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 namespace {

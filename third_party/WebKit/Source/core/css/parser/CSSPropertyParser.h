@@ -22,14 +22,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSPropertyParser_h
-#define CSSPropertyParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PROPERTY_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PROPERTY_PARSER_H_
 
 #include "base/macros.h"
-#include "core/css/StyleRule.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/parser/CSSParserTokenRange.h"
-#include "platform/wtf/text/StringView.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ CSSValueID CssValueKeywordID(StringView);
 
 }  // namespace blink
 
-#endif  // CSSPropertyParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PROPERTY_PARSER_H_

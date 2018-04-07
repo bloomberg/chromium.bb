@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NotificationResourcesLoader_h
-#define NotificationResourcesLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_RESOURCES_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_RESOURCES_LOADER_H_
 
 #include <memory>
-#include "modules/ModulesExport.h"
-#include "modules/notifications/NotificationImageLoader.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/heap/ThreadState.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/notifications/notification_image_loader.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
@@ -81,4 +81,4 @@ class MODULES_EXPORT NotificationResourcesLoader final
 
 }  // namespace blink
 
-#endif  // NotificationResourcesLoader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_RESOURCES_LOADER_H_

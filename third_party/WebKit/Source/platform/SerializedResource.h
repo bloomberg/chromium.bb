@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SerializedResource_h
-#define SerializedResource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SERIALIZED_RESOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SERIALIZED_RESOURCE_H_
 
-#include "platform/SharedBuffer.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ struct SerializedResource {
 
 }  // namespace blink
 
-#endif  // SerializedResource_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SERIALIZED_RESOURCE_H_

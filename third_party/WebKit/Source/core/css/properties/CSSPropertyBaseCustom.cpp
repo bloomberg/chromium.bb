@@ -4,11 +4,11 @@
 
 // This file contains methods of CSSProperty that are not generated.
 
-#include "core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
 
-#include "core/style/ComputedStyle.h"
-#include "core/style/SVGComputedStyle.h"
-#include "core/style_property_shorthand.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/svg_computed_style.h"
+#include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
 

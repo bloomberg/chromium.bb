@@ -28,28 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/DatabaseTracker.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_tracker.h"
 
 #include <memory>
 
 #include "base/location.h"
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/DatabaseClient.h"
-#include "modules/webdatabase/DatabaseContext.h"
-#include "modules/webdatabase/QuotaTracker.h"
-#include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/weborigin/SecurityOriginHash.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebDatabaseObserver.h"
-#include "public/platform/WebSecurityOrigin.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_database_observer.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/webdatabase/database.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_client.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_context.h"
+#include "third_party/blink/renderer/modules/webdatabase/quota_tracker.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_file_system.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin_hash.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

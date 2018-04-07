@@ -19,8 +19,8 @@
 #include "chrome/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/WebKit/public/platform/WebDisplayMode.h"
-#include "third_party/WebKit/public/platform/modules/app_banner/app_banner.mojom.h"
+#include "third_party/blink/public/platform/modules/app_banner/app_banner.mojom.h"
+#include "third_party/blink/public/platform/web_display_mode.h"
 
 class InstallableManager;
 class SkBitmap;

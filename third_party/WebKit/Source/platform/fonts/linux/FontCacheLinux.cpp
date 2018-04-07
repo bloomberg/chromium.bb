@@ -22,15 +22,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/FontCache.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
 
 #include "build/build_config.h"
-#include "platform/fonts/FontPlatformData.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/wtf/text/CString.h"
-#include "public/platform/Platform.h"
-#include "public/platform/linux/WebFallbackFont.h"
-#include "public/platform/linux/WebSandboxSupport.h"
+#include "third_party/blink/public/platform/linux/web_fallback_font.h"
+#include "third_party/blink/public/platform/linux/web_sandbox_support.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "ui/gfx/font_fallback_linux.h"
 
 namespace blink {

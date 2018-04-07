@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/common/appcache_info.mojom.h"
-#include "third_party/WebKit/public/platform/WebApplicationCacheHost.h"
+#include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "url/gurl.h"
 
 namespace content {

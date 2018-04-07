@@ -26,12 +26,12 @@
 
 #if defined(OS_ANDROID) && defined(WTF_USE_WEBAUDIO_OPENMAX_DL_FFT)
 
-#include "platform/audio/FFTFrame.h"
+#include "third_party/blink/renderer/platform/audio/fft_frame.h"
 
 #include <dl/sp/api/armSP.h>
 #include <dl/sp/api/omxSP.h>
-#include "platform/audio/AudioArray.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

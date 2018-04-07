@@ -22,12 +22,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8ThrowException_h
-#define V8ThrowException_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_THROW_EXCEPTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_THROW_EXCEPTION_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -62,4 +62,4 @@ class PLATFORM_EXPORT V8ThrowException {
 
 }  // namespace blink
 
-#endif  // V8ThrowException_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_THROW_EXCEPTION_H_

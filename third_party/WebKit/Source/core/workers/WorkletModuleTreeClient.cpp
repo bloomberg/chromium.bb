@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/WorkletModuleTreeClient.h"
+#include "third_party/blink/renderer/core/workers/worklet_module_tree_client.h"
 
-#include "core/script/ModuleScript.h"
-#include "core/workers/WorkerReportingProxy.h"
-#include "core/workers/WorkletGlobalScope.h"
-#include "platform/CrossThreadFunctional.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 
 namespace blink {
 

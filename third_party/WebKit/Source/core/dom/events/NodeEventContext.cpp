@@ -24,14 +24,14 @@
  *
  */
 
-#include "core/dom/events/NodeEventContext.h"
+#include "third_party/blink/renderer/core/dom/events/node_event_context.h"
 
-#include "core/dom/events/Event.h"
-#include "core/events/FocusEvent.h"
-#include "core/events/MouseEvent.h"
-#include "core/events/PointerEvent.h"
-#include "core/events/TouchEventContext.h"
-#include "core/input/TouchList.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/focus_event.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/events/pointer_event.h"
+#include "third_party/blink/renderer/core/events/touch_event_context.h"
+#include "third_party/blink/renderer/core/input/touch_list.h"
 
 namespace blink {
 

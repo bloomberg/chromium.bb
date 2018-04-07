@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XMLHttpRequestProgressEventThrottle_h
-#define XMLHttpRequestProgressEventThrottle_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XMLHTTPREQUEST_XML_HTTP_REQUEST_PROGRESS_EVENT_THROTTLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XMLHTTPREQUEST_XML_HTTP_REQUEST_PROGRESS_EVENT_THROTTLE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/Timer.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -132,4 +132,4 @@ class XMLHttpRequestProgressEventThrottle final
 
 }  // namespace blink
 
-#endif  // XMLHttpRequestProgressEventThrottle_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XMLHTTPREQUEST_XML_HTTP_REQUEST_PROGRESS_EVENT_THROTTLE_H_

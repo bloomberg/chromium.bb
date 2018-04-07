@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebCryptoSubTags_h
-#define WebCryptoSubTags_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_SERIALIZATION_WEB_CRYPTO_SUB_TAGS_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_SERIALIZATION_WEB_CRYPTO_SUB_TAGS_H_
 
 #include <cstdint>
 
@@ -71,4 +71,4 @@ enum AsymmetricCryptoKeyType : uint32_t {
 
 }  // namespace blink
 
-#endif  // WebCryptoSubTags_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_SERIALIZATION_WEB_CRYPTO_SUB_TAGS_H_

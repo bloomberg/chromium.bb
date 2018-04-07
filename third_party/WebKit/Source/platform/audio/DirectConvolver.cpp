@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/DirectConvolver.h"
+#include "third_party/blink/renderer/platform/audio/direct_convolver.h"
 
 #include <utility>
 
 #include "build/build_config.h"
-#include "platform/audio/VectorMath.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
 
 #if defined(OS_MACOSX)
 #include <Accelerate/Accelerate.h>

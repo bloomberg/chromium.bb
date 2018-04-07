@@ -24,15 +24,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLContentElement.h"
+#include "third_party/blink/renderer/core/html/html_content_element.h"
 
-#include "core/css/SelectorChecker.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/dom/QualifiedName.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/ShadowRootV0.h"
-#include "core/frame/UseCounter.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/selector_checker.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/shadow_root_v0.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

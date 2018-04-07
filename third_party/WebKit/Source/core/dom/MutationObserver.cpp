@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/MutationObserver.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer.h"
 
 #include <algorithm>
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/v8_mutation_callback.h"
-#include "core/dom/MutationObserverInit.h"
-#include "core/dom/MutationObserverRegistration.h"
-#include "core/dom/MutationRecord.h"
-#include "core/dom/Node.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/html/HTMLSlotElement.h"
-#include "core/probe/CoreProbes.h"
-#include "platform/bindings/Microtask.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_mutation_callback.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer_init.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
+#include "third_party/blink/renderer/core/dom/mutation_record.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/html/html_slot_element.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
 
 namespace blink {
 

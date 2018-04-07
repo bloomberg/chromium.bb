@@ -2,9 +2,9 @@
 
 {% include 'copyright_block.txt' %}
 
-#include "bindings/modules/v8/origin_trial_features_for_modules.h"
+#include "third_party/blink/renderer/bindings/modules/v8/origin_trial_features_for_modules.h"
 
-#include "bindings/core/v8/origin_trial_features_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/origin_trial_features_for_core.h"
 {% for include in includes %}
 #include "{{include}}"
 {% endfor %}

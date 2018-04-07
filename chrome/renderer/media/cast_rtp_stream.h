@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/constants.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace base {
 class DictionaryValue;

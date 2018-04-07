@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebNotificationData_h
-#define WebNotificationData_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_DATA_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_DATA_H_
 
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/notifications/WebNotificationAction.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_action.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -39,4 +39,4 @@ struct WebNotificationData {
 
 }  // namespace blink
 
-#endif  // WebNotificationData_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_DATA_H_

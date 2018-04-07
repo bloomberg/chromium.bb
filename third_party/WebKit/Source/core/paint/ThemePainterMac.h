@@ -21,10 +21,10 @@
  *
  */
 
-#ifndef ThemePainterMac_h
-#define ThemePainterMac_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_THEME_PAINTER_MAC_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_THEME_PAINTER_MAC_H_
 
-#import "core/paint/ThemePainter.h"
+#import "third_party/blink/renderer/core/paint/theme_painter.h"
 
 namespace blink {
 
@@ -98,4 +98,4 @@ class ThemePainterMac final : public ThemePainter {
 
 }  // namespace blink
 
-#endif  // ThemePainterMac_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_THEME_PAINTER_MAC_H_

@@ -7,7 +7,7 @@
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "content/public/common/page_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
 #include "ui/base/page_transition_types.h"
 
 class ChromeSerializedNavigationDriverTest : public ::testing::Test {

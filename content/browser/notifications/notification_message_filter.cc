@@ -24,7 +24,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
 
 namespace content {
 

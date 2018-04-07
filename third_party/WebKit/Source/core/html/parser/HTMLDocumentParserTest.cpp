@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/parser/HTMLDocumentParser.h"
+#include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
 
 #include <memory>
-#include "core/html/HTMLDocument.h"
-#include "core/html/parser/TextResourceDecoder.h"
-#include "core/loader/PrerendererClient.h"
-#include "core/loader/TextResourceDecoderBuilder.h"
-#include "core/testing/PageTestBase.h"
-#include "public/platform/WebPrerenderingSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_prerendering_support.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/core/loader/prerenderer_client.h"
+#include "third_party/blink/renderer/core/loader/text_resource_decoder_builder.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

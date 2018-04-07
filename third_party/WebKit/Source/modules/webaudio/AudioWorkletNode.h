@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AudioWorkletNode_h
-#define AudioWorkletNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_NODE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/webaudio/AudioNode.h"
-#include "modules/webaudio/AudioParamMap.h"
-#include "modules/webaudio/AudioWorkletNodeOptions.h"
-#include "modules/webaudio/AudioWorkletProcessorErrorState.h"
-#include "platform/wtf/Threading.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param_map.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_node_options.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_processor_error_state.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 
@@ -127,4 +127,4 @@ class AudioWorkletNode final : public AudioNode,
 
 }  // namespace blink
 
-#endif  // AudioWorkletNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_NODE_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/peerconnection/RTCStatsReport.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_stats_report.h"
 
 namespace blink {
 

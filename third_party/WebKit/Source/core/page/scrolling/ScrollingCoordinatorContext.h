@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScrollingCoordinatorContext_h
-#define ScrollingCoordinatorContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLLING_COORDINATOR_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLLING_COORDINATOR_CONTEXT_H_
 
-#include "core/CoreExport.h"
-#include "platform/animation/CompositorAnimationHost.h"
-#include "platform/animation/CompositorAnimationTimeline.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class CORE_EXPORT ScrollingCoordinatorContext final {
 
 }  // namespace blink
 
-#endif  // ScrollingCoordinatorContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLLING_COORDINATOR_CONTEXT_H_

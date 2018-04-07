@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UnacceleratedStaticBitmapImage_h
-#define UnacceleratedStaticBitmapImage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_UNACCELERATED_STATIC_BITMAP_IMAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_UNACCELERATED_STATIC_BITMAP_IMAGE_H_
 
 #include "base/memory/weak_ptr.h"
-#include "platform/graphics/StaticBitmapImage.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 
 namespace blink {
 

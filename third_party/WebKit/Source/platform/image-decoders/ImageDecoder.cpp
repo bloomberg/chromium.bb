@@ -18,18 +18,18 @@
  *
  */
 
-#include "platform/image-decoders/ImageDecoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 
 #include <memory>
-#include "platform/graphics/BitmapImageMetrics.h"
-#include "platform/image-decoders/FastSharedBufferReader.h"
-#include "platform/image-decoders/bmp/BMPImageDecoder.h"
-#include "platform/image-decoders/gif/GIFImageDecoder.h"
-#include "platform/image-decoders/ico/ICOImageDecoder.h"
-#include "platform/image-decoders/jpeg/JPEGImageDecoder.h"
-#include "platform/image-decoders/png/PNGImageDecoder.h"
-#include "platform/image-decoders/webp/WEBPImageDecoder.h"
-#include "platform/instrumentation/PlatformInstrumentation.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
+#include "third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_decoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
+#include "third_party/blink/renderer/platform/image-decoders/gif/gif_image_decoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/ico/ico_image_decoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/jpeg/jpeg_image_decoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/png/png_image_decoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/webp/webp_image_decoder.h"
+#include "third_party/blink/renderer/platform/instrumentation/platform_instrumentation.h"
 
 namespace blink {
 

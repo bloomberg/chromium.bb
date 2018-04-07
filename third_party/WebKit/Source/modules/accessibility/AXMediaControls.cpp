@@ -26,14 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/accessibility/AXMediaControls.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_media_controls.h"
 
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/layout/LayoutObject.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/media_controls/elements/MediaControlElementsHelper.h"
-#include "modules/media_controls/elements/MediaControlTimeDisplayElement.h"
-#include "platform/text/PlatformLocale.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_time_display_element.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 

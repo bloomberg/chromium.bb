@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CursorList_h
-#define CursorList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CURSOR_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CURSOR_LIST_H_
 
-#include "core/style/CursorData.h"
-#include "platform/heap/HeapAllocator.h"
+#include "third_party/blink/renderer/core/style/cursor_data.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
 
@@ -14,4 +14,4 @@ typedef HeapVector<CursorData> CursorList;
 
 }  // namespace blink
 
-#endif  // CursorList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CURSOR_LIST_H_

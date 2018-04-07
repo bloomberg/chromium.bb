@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/SVGInterpolationTypesMap.h"
+#include "third_party/blink/renderer/core/animation/svg_interpolation_types_map.h"
 
 #include <memory>
 #include <utility>
 
-#include "core/animation/SVGAngleInterpolationType.h"
-#include "core/animation/SVGIntegerInterpolationType.h"
-#include "core/animation/SVGIntegerOptionalIntegerInterpolationType.h"
-#include "core/animation/SVGLengthInterpolationType.h"
-#include "core/animation/SVGLengthListInterpolationType.h"
-#include "core/animation/SVGNumberInterpolationType.h"
-#include "core/animation/SVGNumberListInterpolationType.h"
-#include "core/animation/SVGNumberOptionalNumberInterpolationType.h"
-#include "core/animation/SVGPathInterpolationType.h"
-#include "core/animation/SVGPointListInterpolationType.h"
-#include "core/animation/SVGRectInterpolationType.h"
-#include "core/animation/SVGTransformListInterpolationType.h"
-#include "core/animation/SVGValueInterpolationType.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/animation/svg_angle_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/svg_integer_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/svg_integer_optional_integer_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/svg_length_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/svg_length_list_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/svg_number_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/svg_number_list_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/svg_number_optional_number_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/svg_path_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/svg_point_list_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/svg_rect_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/svg_transform_list_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/svg_value_interpolation_type.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

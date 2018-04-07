@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ArrayBufferView_h
-#define ArrayBufferView_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_VIEW_H_
 
 #include <limits.h>
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/typed_arrays/ArrayBuffer.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -126,4 +126,4 @@ bool ArrayBufferView::SetImpl(ArrayBufferView* array, unsigned byte_offset) {
 
 using WTF::ArrayBufferView;
 
-#endif  // ArrayBufferView_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_VIEW_H_

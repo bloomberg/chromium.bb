@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintImages_h
-#define PaintImages_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_PAINT_IMAGES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_PAINT_IMAGES_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/style/StyleImage.h"
-#include "platform/heap/Persistent.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -24,4 +24,4 @@ class PaintImages : public Vector<Persistent<StyleImage>> {
 
 }  // namespace blink
 
-#endif  // PaintImages_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_PAINT_IMAGES_H_

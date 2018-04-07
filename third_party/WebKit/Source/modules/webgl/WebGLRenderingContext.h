@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLRenderingContext_h
-#define WebGLRenderingContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_RENDERING_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_RENDERING_CONTEXT_H_
 
-#include "core/html/canvas/CanvasRenderingContextFactory.h"
-#include "modules/webgl/WebGLRenderingContextBase.h"
 #include <memory>
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 
 namespace blink {
 
@@ -133,4 +133,4 @@ DEFINE_TYPE_CASTS(WebGLRenderingContext,
 
 }  // namespace blink
 
-#endif  // WebGLRenderingContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_RENDERING_CONTEXT_H_

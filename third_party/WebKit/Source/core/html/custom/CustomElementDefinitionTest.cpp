@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/custom/CustomElementDefinition.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 
 #include "base/macros.h"
-#include "core/dom/Node.h"  // CustomElementState
-#include "core/html/custom/CEReactionsScope.h"
-#include "core/html/custom/CustomElementDescriptor.h"
-#include "core/html/custom/CustomElementReactionTestHelpers.h"
-#include "core/html/custom/CustomElementTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/node.h"  // CustomElementState
+#include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_descriptor.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction_test_helpers.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_test_helpers.h"
 
 namespace blink {
 

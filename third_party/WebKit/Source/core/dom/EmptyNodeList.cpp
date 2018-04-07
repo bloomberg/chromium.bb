@@ -29,10 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/EmptyNodeList.h"
+#include "third_party/blink/renderer/core/dom/empty_node_list.h"
 
-#include "core/dom/Node.h"
-#include "core/dom/NodeRareData.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_rare_data.h"
 
 namespace blink {
 

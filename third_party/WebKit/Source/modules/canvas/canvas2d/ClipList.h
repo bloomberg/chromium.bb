@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ClipList_h
-#define ClipList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CLIP_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CLIP_LIST_H_
 
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 class SkPath;
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IIRFilter_h
-#define IIRFilter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_IIR_FILTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_IIR_FILTER_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/audio/AudioArray.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ class PLATFORM_EXPORT IIRFilter final {
 
 }  // namespace blink
 
-#endif  // IIRFilter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_IIR_FILTER_H_

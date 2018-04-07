@@ -7,7 +7,7 @@ module blink.mojom;
 import "url/mojom/url.mojom";
 
 // Maps to blink::WebReferrerPolicy in
-// src/third_party/WebKit/public/platform/WebReferrerPolicy.h.
+// src/third_party/blink/public/platform/WebReferrerPolicy.h.
 //
 // TODO(rockot): Update all WebReferrerPolicy consumers to use this type
 // instead, and remove the typemap.

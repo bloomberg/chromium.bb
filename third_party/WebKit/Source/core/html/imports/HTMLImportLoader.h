@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLImportLoader_h
-#define HTMLImportLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_HTML_IMPORT_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_HTML_IMPORT_LOADER_H_
 
 #include <memory>
-#include "core/dom/DocumentParserClient.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/RawResource.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/dom/document_parser_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -129,4 +129,4 @@ class HTMLImportLoader final
 
 }  // namespace blink
 
-#endif  // HTMLImportLoader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_HTML_IMPORT_LOADER_H_

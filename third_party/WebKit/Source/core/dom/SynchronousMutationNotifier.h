@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SynchronousMutationNotifier_h
-#define SynchronousMutationNotifier_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SYNCHRONOUS_MUTATION_NOTIFIER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SYNCHRONOUS_MUTATION_NOTIFIER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/LifecycleNotifier.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/lifecycle_notifier.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class CORE_EXPORT SynchronousMutationNotifier
 
 }  // namespace dom
 
-#endif  // SynchronousMutationNotifier_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SYNCHRONOUS_MUTATION_NOTIFIER_H_

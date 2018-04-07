@@ -30,11 +30,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMWindowTimers_h
-#define DOMWindowTimers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_TIMERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_TIMERS_H_
 
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -69,4 +69,4 @@ void clearInterval(EventTarget&, int timeout_id);
 
 }  // namespace blink
 
-#endif  // DOMWindowTimers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_TIMERS_H_

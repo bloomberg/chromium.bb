@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/testing/TreeTestHelpers.h"
+#include "third_party/blink/renderer/platform/testing/tree_test_helpers.h"
 
 #include <cstdlib>
 

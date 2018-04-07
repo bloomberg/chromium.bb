@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediasession/MediaSession.h"
+#include "third_party/blink/renderer/modules/mediasession/media_session.h"
 
 #include <memory>
-#include "bindings/modules/v8/v8_media_session_action_handler.h"
-#include "core/dom/Document.h"
-#include "core/dom/UserGestureIndicator.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/LocalFrame.h"
-#include "modules/mediasession/MediaMetadata.h"
-#include "modules/mediasession/MediaMetadataSanitizer.h"
-#include "platform/wtf/Optional.h"
-#include "public/platform/Platform.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_action_handler.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/mediasession/media_metadata.h"
+#include "third_party/blink/renderer/modules/mediasession/media_metadata_sanitizer.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webgl/EXTDisjointTimerQueryWebGL2.h"
+#include "third_party/blink/renderer/modules/webgl/ext_disjoint_timer_query_webgl2.h"
 
-#include "bindings/modules/v8/WebGLAny.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "modules/webgl/WebGLRenderingContextBase.h"
+#include "third_party/blink/renderer/bindings/modules/v8/webgl_any.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 
 namespace blink {
 

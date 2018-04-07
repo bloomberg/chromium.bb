@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InlineCSSStyleDeclaration_h
-#define InlineCSSStyleDeclaration_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_INLINE_CSS_STYLE_DECLARATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_INLINE_CSS_STYLE_DECLARATION_H_
 
-#include "core/css/AbstractPropertySetCSSStyleDeclaration.h"
+#include "third_party/blink/renderer/core/css/abstract_property_set_css_style_declaration.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class InlineCSSStyleDeclaration final
 
 }  // namespace blink
 
-#endif  // InlineCSSStyleDeclaration_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_INLINE_CSS_STYLE_DECLARATION_H_

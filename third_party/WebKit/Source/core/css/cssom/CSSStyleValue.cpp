@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/CSSStyleValue.h"
+#include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "core/css/cssom/StyleValueFactory.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/properties/css_property.h"
-#include "core/style_property_shorthand.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/core/css/cssom/style_value_factory.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
 

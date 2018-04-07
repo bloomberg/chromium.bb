@@ -13,13 +13,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
-#include "platform/PlatformExport.h"
-#include "platform/scheduler/base/time_domain.h"
-#include "platform/scheduler/child/cancelable_closure_holder.h"
-#include "platform/scheduler/common/throttling/budget_pool.h"
-#include "platform/scheduler/common/throttling/cpu_time_budget_pool.h"
-#include "platform/scheduler/common/throttling/wake_up_budget_pool.h"
-#include "platform/scheduler/util/tracing_helper.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/child/cancelable_closure_holder.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/cpu_time_budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/wake_up_budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 
 namespace base {
 namespace trace_event {

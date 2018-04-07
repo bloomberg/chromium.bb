@@ -23,14 +23,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/DatasetDOMStringMap.h"
+#include "third_party/blink/renderer/core/dom/dataset_dom_string_map.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Attribute.h"
-#include "core/dom/Element.h"
-#include "core/dom/ExceptionCode.h"
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/attribute.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UserMetricsAction_h
-#define UserMetricsAction_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_USER_METRICS_ACTION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_USER_METRICS_ACTION_H_
 
 namespace blink {
 

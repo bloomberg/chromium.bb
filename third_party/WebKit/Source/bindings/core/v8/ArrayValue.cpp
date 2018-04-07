@@ -23,10 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/ArrayValue.h"
+#include "third_party/blink/renderer/bindings/core/v8/array_value.h"
 
-#include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/V8BindingForCore.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 
 namespace blink {
 

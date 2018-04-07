@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutGeometryMap.h"
+#include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/paint/PaintLayer.h"
-#include "platform/geometry/TransformState.h"
-#include "platform/wtf/AutoReset.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/geometry/transform_state.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 #define LAYOUT_GEOMETRY_MAP_LOGGING 0
 

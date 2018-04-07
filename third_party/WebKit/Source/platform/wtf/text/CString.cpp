@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/text/CString.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/allocator/Partitions.h"
 #include <string.h>
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 
 namespace WTF {
 

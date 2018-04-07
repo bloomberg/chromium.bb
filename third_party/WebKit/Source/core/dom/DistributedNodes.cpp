@@ -24,9 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/DistributedNodes.h"
+#include "third_party/blink/renderer/core/dom/distributed_nodes.h"
 
-#include "core/dom/V0InsertionPoint.h"
+#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 
 namespace blink {
 

@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebEmbeddedWorkerImpl_h
-#define WebEmbeddedWorkerImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_EXPORTED_WEB_EMBEDDED_WORKER_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_EXPORTED_WEB_EMBEDDED_WORKER_IMPL_H_
 
 #include <memory>
-#include "core/exported/WorkerShadowPage.h"
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/WorkerClients.h"
-#include "modules/ModulesExport.h"
-#include "modules/serviceworkers/ServiceWorkerContentSettingsProxy.h"
-#include "platform/heap/Handle.h"
-#include "public/web/WebEmbeddedWorker.h"
-#include "public/web/WebEmbeddedWorkerStartData.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "third_party/blink/public/web/web_embedded_worker.h"
+#include "third_party/blink/public/web/web_embedded_worker_start_data.h"
+#include "third_party/blink/renderer/core/exported/worker_shadow_page.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_content_settings_proxy.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -135,4 +135,4 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
 
 }  // namespace blink
 
-#endif  // WebEmbeddedWorkerImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_EXPORTED_WEB_EMBEDDED_WORKER_IMPL_H_

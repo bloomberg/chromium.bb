@@ -23,27 +23,27 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/encryptedmedia/MediaKeys.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_keys.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
-#include "modules/encryptedmedia/EncryptedMediaUtils.h"
-#include "modules/encryptedmedia/MediaKeySession.h"
-#include "modules/encryptedmedia/MediaKeysPolicy.h"
-#include "platform/InstanceCounters.h"
-#include "platform/Timer.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8ThrowException.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebContentDecryptionModule.h"
-#include "public/platform/WebEncryptedMediaKeyInformation.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_content_decryption_module.h"
+#include "third_party/blink/public/platform/web_encrypted_media_key_information.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/content_decryption_module_result_promise.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_key_session.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_keys_policy.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 #define MEDIA_KEYS_LOG_LEVEL 3
 

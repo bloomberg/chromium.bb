@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/compositing/PaintArtifactCompositor.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 
 #include <memory>
 #include <utility>
@@ -11,23 +11,23 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/trees/layer_tree_host.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/compositing/ContentLayerClientImpl.h"
-#include "platform/graphics/paint/ClipPaintPropertyNode.h"
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/graphics/paint/ForeignLayerDisplayItem.h"
-#include "platform/graphics/paint/GeometryMapper.h"
-#include "platform/graphics/paint/PaintArtifact.h"
-#include "platform/graphics/paint/PropertyTreeState.h"
-#include "platform/graphics/paint/RasterInvalidationTracking.h"
-#include "platform/graphics/paint/ScrollHitTestDisplayItem.h"
-#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
-#include "platform/graphics/paint/TransformPaintPropertyNode.h"
-#include "platform/runtime_enabled_features.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebLayer.h"
-#include "public/platform/WebLayerScrollClient.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_compositor_support.h"
+#include "third_party/blink/public/platform/web_layer.h"
+#include "third_party/blink/public/platform/web_layer_scroll_client.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/content_layer_client_impl.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
+#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
+#include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {

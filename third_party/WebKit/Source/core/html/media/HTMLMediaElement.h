@@ -24,27 +24,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLMediaElement_h
-#define HTMLMediaElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_HTML_MEDIA_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_HTML_MEDIA_ELEMENT_H_
 
 #include <memory>
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/CoreExport.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/PausableObject.h"
-#include "core/dom/events/MediaElementEventQueue.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/media/MediaControls.h"
-#include "platform/Supplementable.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/audio/AudioSourceProvider.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/network/mime/MIMETypeRegistry.h"
-#include "platform/wtf/Optional.h"
-#include "public/platform/WebAudioSourceProviderClient.h"
-#include "public/platform/WebMediaPlayerClient.h"
+#include "third_party/blink/public/platform/web_audio_source_provider_client.h"
+#include "third_party/blink/public/platform/web_media_player_client.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/media_element_event_queue.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/media/media_controls.h"
+#include "third_party/blink/renderer/platform/audio/audio_source_provider.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -751,4 +751,4 @@ DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLMediaElement);
 
 }  // namespace blink
 
-#endif  // HTMLMediaElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_HTML_MEDIA_ELEMENT_H_

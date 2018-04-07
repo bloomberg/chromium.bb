@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/loader/testing/WebURLLoaderFactoryWithMock.h"
+#include "third_party/blink/renderer/platform/loader/testing/web_url_loader_factory_with_mock.h"
 
-#include "public/platform/WebURLLoader.h"
-#include "public/platform/WebURLLoaderMockFactory.h"
+#include "third_party/blink/public/platform/web_url_loader.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 
 namespace blink {
 

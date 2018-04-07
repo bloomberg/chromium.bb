@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/web/WebEmbeddedWorker.h"
+#include "third_party/blink/public/web/web_embedded_worker.h"
 
 #include <memory>
-#include "platform/WaitableEvent.h"
-#include "platform/loader/fetch/ResourceError.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/testing/URLTestHelpers.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebContentSettingsClient.h"
-#include "public/platform/WebURLLoaderMockFactory.h"
-#include "public/platform/WebURLResponse.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerInstalledScriptsManager.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
-#include "public/web/WebEmbeddedWorkerStartData.h"
-#include "public/web/WebSettings.h"
-#include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_installed_scripts_manager.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_network_provider.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/web/modules/serviceworker/web_service_worker_context_client.h"
+#include "third_party/blink/public/web/web_embedded_worker_start_data.h"
+#include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
 
 namespace blink {
 namespace {

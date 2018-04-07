@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BackgroundFetchFailEvent_h
-#define BackgroundFetchFailEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_FAIL_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_FAIL_EVENT_H_
 
-#include "modules/ModulesExport.h"
-#include "modules/background_fetch/BackgroundFetchEvent.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_event.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -64,4 +64,4 @@ class MODULES_EXPORT BackgroundFetchFailEvent final
 
 }  // namespace blink
 
-#endif  // BackgroundFetchFailEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_FAIL_EVENT_H_

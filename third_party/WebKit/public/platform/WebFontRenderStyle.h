@@ -27,12 +27,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFontRenderStyle_h
-#define WebFontRenderStyle_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FONT_RENDER_STYLE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FONT_RENDER_STYLE_H_
 
 #include "SkFontStyle.h"
 #include "SkPaint.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkFontMgr;
@@ -94,4 +94,4 @@ struct WebFontRenderStyle {
 
 }  // namespace blink
 
-#endif  // WebFontRenderStyle_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FONT_RENDER_STYLE_H_

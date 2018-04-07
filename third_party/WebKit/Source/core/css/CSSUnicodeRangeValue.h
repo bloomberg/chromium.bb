@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSUnicodeRangeValue_h
-#define CSSUnicodeRangeValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_UNICODE_RANGE_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_UNICODE_RANGE_VALUE_H_
 
-#include "core/css/CSSValue.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSUnicodeRangeValue, IsUnicodeRangeValue());
 
 }  // namespace blink
 
-#endif  // CSSUnicodeRangeValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_UNICODE_RANGE_VALUE_H_

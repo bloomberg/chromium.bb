@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/page/PagePopupClient.h"
+#include "third_party/blink/renderer/core/page/page_popup_client.h"
 
-#include "core/dom/NodeComputedStyle.h"
-#include "core/frame/LocalFrame.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

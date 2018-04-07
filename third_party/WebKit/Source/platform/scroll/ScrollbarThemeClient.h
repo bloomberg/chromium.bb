@@ -23,15 +23,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollbarThemeClient_h
-#define ScrollbarThemeClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLLBAR_THEME_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLLBAR_THEME_CLIENT_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/geometry/IntPoint.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

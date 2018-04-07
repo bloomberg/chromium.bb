@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/text/TextBoundaries.h"
+#include "third_party/blink/renderer/platform/text/text_boundaries.h"
 
-#include "platform/text/TextBreakIterator.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/StringImpl.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 namespace blink {
 

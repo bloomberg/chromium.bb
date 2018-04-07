@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebIconURL_h
-#define WebIconURL_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ICON_URL_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ICON_URL_H_
 
 #if INSIDE_BLINK
-#include "core/dom/IconURL.h"
+#include "third_party/blink/renderer/core/dom/icon_url.h"
 #endif
-#include "public/platform/WebSize.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class WebIconURL {
 };
 }
 
-#endif  // WebIconURL_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ICON_URL_H_

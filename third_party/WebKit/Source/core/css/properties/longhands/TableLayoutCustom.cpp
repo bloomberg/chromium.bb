@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/table_layout.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/table_layout.h"
 
 namespace blink {
 namespace CSSLonghand {

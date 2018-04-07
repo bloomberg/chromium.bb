@@ -30,29 +30,29 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FrameLoader_h
-#define FrameLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOADER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/IconURL.h"
-#include "core/execution_context/SecurityContext.h"
-#include "core/frame/FrameTypes.h"
-#include "core/frame/SandboxFlags.h"
-#include "core/loader/FrameLoaderStateMachine.h"
-#include "core/loader/FrameLoaderTypes.h"
-#include "core/loader/HistoryItem.h"
-#include "core/loader/NavigationPolicy.h"
-#include "platform/heap/Handle.h"
-#include "platform/instrumentation/tracing/TracedValue.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashSet.h"
-#include "public/platform/WebInsecureRequestPolicy.h"
-#include "public/web/WebTriggeringEventInfo.h"
-#include "public/web/commit_result.mojom-shared.h"
-#include "third_party/WebKit/public/mojom/blob/blob_url_store.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/web/commit_result.mojom-shared.h"
+#include "third_party/blink/public/web/web_triggering_event_info.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/icon_url.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/core/frame/frame_types.h"
+#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_state_machine.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/loader/history_item.h"
+#include "third_party/blink/renderer/core/loader/navigation_policy.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 #include <memory>
 
@@ -319,4 +319,4 @@ class CORE_EXPORT FrameLoader final {
 
 }  // namespace blink
 
-#endif  // FrameLoader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FRAME_LOADER_H_

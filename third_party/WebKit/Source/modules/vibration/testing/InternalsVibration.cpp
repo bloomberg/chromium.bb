@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/vibration/testing/InternalsVibration.h"
+#include "third_party/blink/renderer/modules/vibration/testing/internals_vibration.h"
 
-#include "core/frame/Navigator.h"
-#include "core/testing/Internals.h"
-#include "modules/vibration/NavigatorVibration.h"
-#include "modules/vibration/VibrationController.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/testing/internals.h"
+#include "third_party/blink/renderer/modules/vibration/navigator_vibration.h"
+#include "third_party/blink/renderer/modules/vibration/vibration_controller.h"
 
 namespace blink {
 

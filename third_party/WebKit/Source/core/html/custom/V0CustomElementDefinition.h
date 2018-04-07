@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V0CustomElementDefinition_h
-#define V0CustomElementDefinition_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_DEFINITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_DEFINITION_H_
 
-#include "core/html/custom/V0CustomElementDescriptor.h"
-#include "core/html/custom/V0CustomElementLifecycleCallbacks.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_descriptor.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_lifecycle_callbacks.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ class V0CustomElementDefinition final
 
 }  // namespace blink
 
-#endif  // V0CustomElementDefinition_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_DEFINITION_H_

@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UserMediaRequest_h
-#define UserMediaRequest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_REQUEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_REQUEST_H_
 
-#include "bindings/modules/v8/v8_navigator_user_media_error_callback.h"
-#include "bindings/modules/v8/v8_navigator_user_media_success_callback.h"
-#include "core/dom/PausableObject.h"
-#include "modules/ModulesExport.h"
-#include "platform/mediastream/MediaStreamSource.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/WebMediaConstraints.h"
-#include "public/web/WebUserMediaRequest.h"
+#include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/public/web/web_user_media_request.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_error_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_navigator_user_media_success_callback.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -133,4 +133,4 @@ class MODULES_EXPORT UserMediaRequest final
 
 }  // namespace blink
 
-#endif  // UserMediaRequest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_REQUEST_H_

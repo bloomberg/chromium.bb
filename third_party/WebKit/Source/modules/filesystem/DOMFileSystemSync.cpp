@@ -28,23 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/filesystem/DOMFileSystemSync.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system_sync.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/fileapi/File.h"
-#include "core/fileapi/FileError.h"
-#include "modules/filesystem/DOMFilePath.h"
-#include "modules/filesystem/DirectoryEntrySync.h"
-#include "modules/filesystem/FileEntrySync.h"
-#include "modules/filesystem/FileSystemCallbacks.h"
-#include "modules/filesystem/FileWriterSync.h"
-#include "modules/filesystem/SyncCallbackHelper.h"
-#include "platform/FileMetadata.h"
-#include "public/platform/WebFileSystem.h"
-#include "public/platform/WebFileSystemCallbacks.h"
+#include "third_party/blink/public/platform/web_file_system.h"
+#include "third_party/blink/public/platform/web_file_system_callbacks.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/fileapi/file.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/modules/filesystem/directory_entry_sync.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_path.h"
+#include "third_party/blink/renderer/modules/filesystem/file_entry_sync.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
+#include "third_party/blink/renderer/modules/filesystem/file_writer_sync.h"
+#include "third_party/blink/renderer/modules/filesystem/sync_callback_helper.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
 
 namespace blink {
 

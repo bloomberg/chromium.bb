@@ -2,17 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("budget") {
   sources = [
-    "BudgetService.cpp",
-    "BudgetService.h",
-    "BudgetState.cpp",
-    "BudgetState.h",
-    "NavigatorBudget.cpp",
-    "NavigatorBudget.h",
-    "WorkerNavigatorBudget.cpp",
-    "WorkerNavigatorBudget.h",
+    "budget_service.cc",
+    "budget_service.h",
+    "budget_state.cc",
+    "budget_state.h",
+    "navigator_budget.cc",
+    "navigator_budget.h",
+    "worker_navigator_budget.cc",
+    "worker_navigator_budget.h",
   ]
 }

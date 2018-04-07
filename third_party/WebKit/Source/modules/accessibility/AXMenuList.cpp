@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/accessibility/AXMenuList.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_menu_list.h"
 
-#include "core/html/forms/HTMLSelectElement.h"
-#include "core/layout/LayoutMenuList.h"
-#include "modules/accessibility/AXMenuListPopup.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/layout/layout_menu_list.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_menu_list_popup.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/input/TouchActionUtil.h"
+#include "third_party/blink/renderer/core/input/touch_action_util.h"
 
-#include "core/dom/Node.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 namespace TouchActionUtil {

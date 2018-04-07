@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SourceBuffer_h
-#define SourceBuffer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_SOURCE_BUFFER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_SOURCE_BUFFER_H_
 
 #include <memory>
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/PausableObject.h"
-#include "core/typed_arrays/ArrayBufferViewHelpers.h"
-#include "modules/EventTargetModules.h"
-#include "modules/mediasource/TrackDefaultList.h"
-#include "platform/AsyncMethodRunner.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebSourceBufferClient.h"
+#include "third_party/blink/public/platform/web_source_buffer_client.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/mediasource/track_default_list.h"
+#include "third_party/blink/renderer/platform/async_method_runner.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -182,4 +182,4 @@ class SourceBuffer final : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // SourceBuffer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_SOURCE_BUFFER_H_

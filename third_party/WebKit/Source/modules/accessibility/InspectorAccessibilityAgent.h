@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InspectorAccessibilityAgent_h
-#define InspectorAccessibilityAgent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_INSPECTORACCESSIBILITYAGENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_INSPECTORACCESSIBILITYAGENT_H_
 
 #include "base/macros.h"
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/protocol/Accessibility.h"
-#include "modules/ModulesExport.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Accessibility.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -94,4 +94,4 @@ class MODULES_EXPORT InspectorAccessibilityAgent
 
 }  // namespace blink
 
-#endif  // InspectorAccessibilityAgent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_INSPECTORACCESSIBILITYAGENT_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BluetoothCharacteristicProperties_h
-#define BluetoothCharacteristicProperties_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_CHARACTERISTIC_PROPERTIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_CHARACTERISTIC_PROPERTIES_H_
 
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 

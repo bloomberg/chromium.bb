@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ReplaceSelectionCommand_h
-#define ReplaceSelectionCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_REPLACE_SELECTION_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_REPLACE_SELECTION_COMMAND_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/editing/commands/CompositeEditCommand.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/editing/commands/composite_edit_command.h"
 
 namespace blink {
 
@@ -167,4 +167,4 @@ DEFINE_TYPE_CASTS(ReplaceSelectionCommand,
 
 }  // namespace blink
 
-#endif  // ReplaceSelectionCommand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_REPLACE_SELECTION_COMMAND_H_

@@ -13,8 +13,8 @@
 #include "services/data_decoder/image_decoder_impl.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/scheduler/child/webthread_base.h"
-#include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
+#include "third_party/blink/public/web/blink.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 

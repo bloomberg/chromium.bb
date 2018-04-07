@@ -20,15 +20,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGAnimateElement_h
-#define SVGAnimateElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATE_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATE_ELEMENT_H_
 
 #include <base/gtest_prod_util.h>
-#include "core/CoreExport.h"
-#include "core/css_property_names.h"
-#include "core/svg/SVGAnimationElement.h"
-#include "core/svg_names.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/svg/svg_animation_element.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -142,4 +142,4 @@ DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGAnimateElement);
 
 }  // namespace blink
 
-#endif  // SVGAnimateElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATE_ELEMENT_H_

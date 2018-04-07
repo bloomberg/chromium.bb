@@ -18,11 +18,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef TextCheckingParagraph_h
-#define TextCheckingParagraph_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_TEXT_CHECKING_PARAGRAPH_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_TEXT_CHECKING_PARAGRAPH_H_
 
-#include "core/editing/EphemeralRange.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -83,4 +83,4 @@ class TextCheckingParagraph {
 
 }  // namespace blink
 
-#endif  // TextCheckingParagraph_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_TEXT_CHECKING_PARAGRAPH_H_

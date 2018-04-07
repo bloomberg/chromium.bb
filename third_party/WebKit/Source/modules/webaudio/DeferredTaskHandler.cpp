@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/DeferredTaskHandler.h"
-#include "modules/webaudio/AudioNode.h"
-#include "modules/webaudio/AudioNodeOutput.h"
-#include "modules/webaudio/OfflineAudioContext.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
+#include "third_party/blink/renderer/modules/webaudio/deferred_task_handler.h"
+#include "third_party/blink/renderer/modules/webaudio/offline_audio_context.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 

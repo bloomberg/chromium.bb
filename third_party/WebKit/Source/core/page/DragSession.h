@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DragSession_h
-#define DragSession_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_DRAG_SESSION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_DRAG_SESSION_H_
 
-#include "core/page/DragActions.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/page/drag_actions.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

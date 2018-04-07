@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextTrackList_h
-#define TextTrackList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_LIST_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/events/EventListener.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "platform/Timer.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -98,4 +98,4 @@ class CORE_EXPORT TextTrackList final : public EventTargetWithInlineData {
 
 }  // namespace blink
 
-#endif  // TextTrackList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_LIST_H_

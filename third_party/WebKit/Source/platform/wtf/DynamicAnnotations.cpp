@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/DynamicAnnotations.h"
+#include "third_party/blink/renderer/platform/wtf/dynamic_annotations.h"
 
 #if defined(WTF_USE_DYNAMIC_ANNOTATIONS) && \
     !defined(WTF_USE_DYNAMIC_ANNOTATIONS_NOIMPL)

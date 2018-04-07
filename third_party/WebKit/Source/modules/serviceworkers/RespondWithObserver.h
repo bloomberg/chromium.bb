@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RespondWithObserver_h
-#define RespondWithObserver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_RESPOND_WITH_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_RESPOND_WITH_OBSERVER_H_
 
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/events/EventTarget.h"
-#include "modules/ModulesExport.h"
-#include "platform/heap/Handle.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_error_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-shared.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class MODULES_EXPORT RespondWithObserver
 
 }  // namespace blink
 
-#endif  // RespondWithObserver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_RESPOND_WITH_OBSERVER_H_

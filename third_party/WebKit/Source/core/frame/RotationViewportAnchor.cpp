@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/RotationViewportAnchor.h"
+#include "third_party/blink/renderer/core/frame/rotation_viewport_anchor.h"
 
-#include "core/dom/ContainerNode.h"
-#include "core/dom/Node.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/PageScaleConstraintsSet.h"
-#include "core/frame/RootFrameViewport.h"
-#include "core/frame/VisualViewport.h"
-#include "core/input/EventHandler.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutObject.h"
-#include "platform/geometry/DoubleRect.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
+#include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/geometry/double_rect.h"
 
 namespace blink {
 

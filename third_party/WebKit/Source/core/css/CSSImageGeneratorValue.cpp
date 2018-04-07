@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSImageGeneratorValue.h"
+#include "third_party/blink/renderer/core/css/css_image_generator_value.h"
 
-#include "core/css/CSSCrossfadeValue.h"
-#include "core/css/CSSGradientValue.h"
-#include "core/css/CSSPaintValue.h"
-#include "platform/graphics/Image.h"
+#include "third_party/blink/renderer/core/css/css_crossfade_value.h"
+#include "third_party/blink/renderer/core/css/css_gradient_value.h"
+#include "third_party/blink/renderer/core/css/css_paint_value.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
 
 namespace blink {
 

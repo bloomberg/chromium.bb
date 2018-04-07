@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #include "content/test/image_decoder_test.h"
-#include "third_party/WebKit/public/web/WebImageDecoder.h"
+#include "third_party/blink/public/web/web_image_decoder.h"
 
 class BMPImageDecoderTest : public ImageDecoderTest {
  public:

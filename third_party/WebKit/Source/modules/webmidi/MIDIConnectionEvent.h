@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIConnectionEvent_h
-#define MIDIConnectionEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_CONNECTION_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_CONNECTION_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/webmidi/MIDIPort.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_port.h"
 
 namespace blink {
 
@@ -72,4 +72,4 @@ class MIDIConnectionEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // MIDIConnectionEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_CONNECTION_EVENT_H_

@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebScopedWindowFocusAllowedIndicator_h
-#define WebScopedWindowFocusAllowedIndicator_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SCOPED_WINDOW_FOCUS_ALLOWED_INDICATOR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SCOPED_WINDOW_FOCUS_ALLOWED_INDICATOR_H_
 
-#include "public/platform/WebCommon.h"
 #include <memory>
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class WebScopedWindowFocusAllowedIndicator {
 };
 }
 
-#endif  // WebScopedWindowFocusAllowedIndicator_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SCOPED_WINDOW_FOCUS_ALLOWED_INDICATOR_H_

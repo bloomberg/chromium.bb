@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/renderer/dom_storage/local_storage_cached_area.h"
-#include "third_party/WebKit/public/platform/WebStorageArea.h"
+#include "third_party/blink/public/platform/web_storage_area.h"
 
 namespace content {
 

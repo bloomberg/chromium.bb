@@ -23,24 +23,24 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8PerIsolateData_h
-#define V8PerIsolateData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_PER_ISOLATE_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_PER_ISOLATE_DATA_H_
 
 #include <memory>
 
 #include "base/time/default_tick_clock.h"
 #include "gin/public/isolate_holder.h"
 #include "gin/public/v8_idle_task_runner.h"
-#include "platform/PlatformExport.h"
-#include "platform/bindings/RuntimeCallStats.h"
-#include "platform/bindings/ScopedPersistent.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/ScriptWrappableMarkingVisitor.h"
-#include "platform/bindings/WrapperTypeInfo.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
+#include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -308,4 +308,4 @@ class PLATFORM_EXPORT V8PerIsolateData {
 
 }  // namespace blink
 
-#endif  // V8PerIsolateData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_PER_ISOLATE_DATA_H_

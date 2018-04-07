@@ -4,7 +4,7 @@
 
 #include "extensions/renderer/script_injection_callback.h"
 
-#include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace extensions {
 

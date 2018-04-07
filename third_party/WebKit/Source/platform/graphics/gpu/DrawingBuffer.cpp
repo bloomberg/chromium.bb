@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/gpu/DrawingBuffer.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 
 #include <algorithm>
 #include <memory>
@@ -46,19 +46,19 @@
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
-#include "platform/graphics/AcceleratedStaticBitmapImage.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/UnacceleratedStaticBitmapImage.h"
-#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
-#include "platform/graphics/gpu/Extensions3DUtil.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/CheckedNumeric.h"
-#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebExternalTextureLayer.h"
 #include "skia/ext/texture_handle.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_compositor_support.h"
+#include "third_party/blink/public/platform/web_external_texture_layer.h"
+#include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"

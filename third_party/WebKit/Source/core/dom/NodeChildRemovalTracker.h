@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NodeChildRemovalTracker_h
-#define NodeChildRemovalTracker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_CHILD_REMOVAL_TRACKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_CHILD_REMOVAL_TRACKER_H_
 
-#include "core/dom/Node.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

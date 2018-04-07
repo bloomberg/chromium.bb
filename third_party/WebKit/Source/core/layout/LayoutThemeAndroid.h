@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayoutThemeAndroid_h
-#define LayoutThemeAndroid_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_ANDROID_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_ANDROID_H_
 
-#include "core/layout/LayoutThemeMobile.h"
+#include "third_party/blink/renderer/core/layout/layout_theme_mobile.h"
 
 namespace blink {
 
@@ -20,4 +20,4 @@ class LayoutThemeAndroid final : public LayoutThemeMobile {
 
 }  // namespace blink
 
-#endif  // LayoutThemeAndroid_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_ANDROID_H_

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/geometry/ng_physical_offset.h"
-#include "core/layout/ng/geometry/ng_logical_offset.h"
-#include "core/layout/ng/geometry/ng_physical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

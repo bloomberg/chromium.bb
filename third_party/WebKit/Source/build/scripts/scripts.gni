@@ -3,11 +3,11 @@
 # found in the LICENSE file.
 
 import("//build/toolchain/toolchain.gni")
-import("//third_party/WebKit/Source/config.gni")
+import("//third_party/blink/renderer/config.gni")
 
 # All paths in this file should be absolute so targets in any directory can use
 # them without worrying about the current directory.
-_scripts_dir = "//third_party/WebKit/Source/build/scripts"
+_scripts_dir = "//third_party/blink/renderer/build/scripts"
 
 scripts_for_json5_files = [
   # jinja2/__init__.py contains version string, so sufficient as
@@ -74,11 +74,11 @@ if (host_os == "win") {
 
 # Templates --------------------------------------------------------------------
 
-_blink_gen_dir = "$root_gen_dir/blink"
+_blink_gen_dir = "$root_gen_dir/third_party/blink/renderer"
 
 make_core_generated_deps = [
-  "//third_party/WebKit/Source/core:generated_testing_idls",
-  "//third_party/WebKit/Source/core:core_event_interfaces",
+  "//third_party/blink/renderer/core:generated_testing_idls",
+  "//third_party/blink/renderer/core:core_event_interfaces",
 ]
 
 # TODO(crbug.com/732657): Remove this once everything that uses this switches over to
@@ -221,7 +221,7 @@ template("make_names") {
                                     "$output_dir/{{source_name_part}}.h",
                                   ])
   process_json5_files(target_name) {
-    script = "//third_party/WebKit/Source/build/scripts/make_names.py"
+    script = "//third_party/blink/renderer/build/scripts/make_names.py"
     other_inputs = make_names_files
     forward_variables_from(invoker,
                            [
@@ -239,7 +239,8 @@ template("make_names") {
 #   outputs: list of output files
 template("make_qualified_names") {
   process_json5_files(target_name) {
-    script = "//third_party/WebKit/Source/build/scripts/make_qualified_names.py"
+    script =
+        "//third_party/blink/renderer/build/scripts/make_qualified_names.py"
     in_files = invoker.in_files
     other_inputs = make_qualified_names_files
     outputs = invoker.outputs
@@ -254,7 +255,7 @@ template("make_qualified_names") {
 #     Dependencies. See process_json5_files for definition.
 template("make_event_factory") {
   process_json5_files(target_name) {
-    script = "//third_party/WebKit/Source/build/scripts/make_event_factory.py"
+    script = "//third_party/blink/renderer/build/scripts/make_event_factory.py"
     other_inputs = make_event_factory_files
     forward_variables_from(invoker,
                            [

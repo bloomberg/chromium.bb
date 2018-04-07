@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/wtf/StackUtil.h"
+#include "third_party/blink/renderer/platform/wtf/stack_util.h"
 
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/WTFThreadData.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_thread_data.h"
 
 #if defined(OS_WIN)
 #include <stddef.h>

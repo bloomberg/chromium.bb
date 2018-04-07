@@ -12,12 +12,12 @@
 #define SOURCE_PLATFORM_CRYPTO_H_
 
 #include <memory>
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/StringHasher.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebCrypto.h"
+#include "third_party/blink/public/platform/web_crypto.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

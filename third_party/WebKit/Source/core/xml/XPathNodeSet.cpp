@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/XPathNodeSet.h"
+#include "third_party/blink/renderer/core/xml/xpath_node_set.h"
 
-#include "core/dom/Attr.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/NodeTraversal.h"
+#include "third_party/blink/renderer/core/dom/attr.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
 
 namespace blink {
 namespace XPath {

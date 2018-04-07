@@ -38,7 +38,7 @@ static_library("content") {
     "//components/strings:components_strings_grit",
     "//components/url_formatter",
     "//content/public/browser",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
     "//url",
   ]
 }
@@ -83,7 +83,7 @@ static_library("utils") {
     "//content/public/browser",
     "//net",
     "//sql",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
     "//ui/base",
   ]
 
@@ -121,7 +121,7 @@ source_set("unit_tests") {
     "//content/test:test_support",
     "//sql",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
     "//third_party/icu",
     "//third_party/libaddressinput:test_support",
   ]

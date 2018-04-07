@@ -27,7 +27,7 @@
  *
  */
 
-#include "platform/graphics/filters/LightSource.h"
+#include "third_party/blink/renderer/platform/graphics/filters/light_source.h"
 
 namespace blink {
 

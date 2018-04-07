@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DOMQuad_h
-#define DOMQuad_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_GEOMETRY_DOM_QUAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_GEOMETRY_DOM_QUAD_H_
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/CoreExport.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 

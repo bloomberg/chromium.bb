@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/custom/V0CustomElementMicrotaskImportStep.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_import_step.h"
 
 #include <stdio.h>
-#include "core/html/custom/V0CustomElementMicrotaskDispatcher.h"
-#include "core/html/custom/V0CustomElementSyncMicrotaskQueue.h"
-#include "core/html/imports/HTMLImportChild.h"
-#include "core/html/imports/HTMLImportLoader.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_dispatcher.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_sync_microtask_queue.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_child.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
 
 namespace blink {
 

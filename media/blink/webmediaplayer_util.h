@@ -12,11 +12,11 @@
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
 #include "media/blink/media_blink_export.h"
-#include "third_party/WebKit/public/platform/WebEncryptedMediaTypes.h"
-#include "third_party/WebKit/public/platform/WebMediaPlayer.h"
-#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
-#include "third_party/WebKit/public/platform/WebSetSinkIdCallbacks.h"
-#include "third_party/WebKit/public/platform/WebTimeRange.h"
+#include "third_party/blink/public/platform/web_encrypted_media_types.h"
+#include "third_party/blink/public/platform/web_media_player.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
+#include "third_party/blink/public/platform/web_time_range.h"
 #include "url/gurl.h"
 
 namespace media {

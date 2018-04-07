@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/AnimationClock.h"
+#include "third_party/blink/renderer/core/animation/animation_clock.h"
 
 #include <math.h>
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace {
 

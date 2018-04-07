@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BudgetService_h
-#define BudgetService_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BUDGET_BUDGET_SERVICE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BUDGET_BUDGET_SERVICE_H_
 
-#include "modules/ModulesExport.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "public/platform/modules/budget_service/budget_service.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/budget_service/budget_service.mojom-blink.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace service_manager {
 class InterfaceProvider;
@@ -60,4 +60,4 @@ class BudgetService final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // BudgetService_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BUDGET_BUDGET_SERVICE_H_

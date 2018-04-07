@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ServiceWorkerGlobalScopeProxy_h
-#define ServiceWorkerGlobalScopeProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_GLOBAL_SCOPE_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_GLOBAL_SCOPE_PROXY_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/workers/WorkerReportingProxy.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/WebString.h"
-#include "public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/modules/serviceworker/web_service_worker_context_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -205,4 +205,4 @@ class ServiceWorkerGlobalScopeProxy final
 
 }  // namespace blink
 
-#endif  // ServiceWorkerGlobalScopeProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_GLOBAL_SCOPE_PROXY_H_

@@ -24,17 +24,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SelectionController_h
-#define SelectionController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/DocumentShutdownObserver.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/PositionWithAffinity.h"
-#include "core/editing/TextGranularity.h"
-#include "core/page/EventWithHitTestResults.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/editing/text_granularity.h"
+#include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -151,4 +151,4 @@ CORE_EXPORT SelectionInFlatTree
 AdjustSelectionWithTrailingWhitespace(const SelectionInFlatTree&);
 }  // namespace blink
 
-#endif  // SelectionController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_CONTROLLER_H_

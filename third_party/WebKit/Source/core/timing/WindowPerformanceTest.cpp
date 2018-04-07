@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/timing/WindowPerformance.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
 
-#include "core/frame/PerformanceMonitor.h"
-#include "core/loader/DocumentLoadTiming.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/testing/DummyPageHolder.h"
-#include "core/timing/DOMWindowPerformance.h"
-#include "platform/testing/HistogramTester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/frame/PerformanceMonitor.h"
+#include "third_party/blink/renderer/core/loader/document_load_timing.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 
 namespace blink {
 

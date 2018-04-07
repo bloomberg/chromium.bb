@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/peerconnection/RTCDTMFToneChangeEvent.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_dtmf_tone_change_event.h"
 
 namespace blink {
 

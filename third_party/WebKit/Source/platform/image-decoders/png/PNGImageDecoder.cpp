@@ -36,7 +36,7 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#include "platform/image-decoders/png/PNGImageDecoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/png/png_image_decoder.h"
 
 #include <memory>
 

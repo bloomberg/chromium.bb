@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/storage/StorageNamespace.h"
+#include "third_party/blink/renderer/modules/storage/storage_namespace.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "modules/storage/StorageArea.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebSecurityOrigin.h"
-#include "public/platform/WebStorageArea.h"
-#include "public/platform/WebStorageNamespace.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_storage_area.h"
+#include "third_party/blink/public/platform/web_storage_namespace.h"
+#include "third_party/blink/renderer/modules/storage/storage_area.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

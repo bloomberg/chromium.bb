@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Iterator_h
-#define Iterator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ITERATOR_H_
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/CoreExport.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -30,4 +30,4 @@ class CORE_EXPORT Iterator : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // Iterator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ITERATOR_H_

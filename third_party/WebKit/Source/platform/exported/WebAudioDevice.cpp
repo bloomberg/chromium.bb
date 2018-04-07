@@ -22,7 +22,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebAudioDevice.h"
+#include "third_party/blink/public/platform/web_audio_device.h"
 
 namespace blink {
 

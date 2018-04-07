@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebClipboardImpl_h
-#define WebClipboardImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WEB_CLIPBOARD_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WEB_CLIPBOARD_IMPL_H_
 
 #include <stdint.h>
 
 #include <string>
 
-#include "third_party/WebKit/public/mojom/clipboard/clipboard.mojom-blink.h"
-#include "third_party/WebKit/public/platform/WebClipboard.h"
+#include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
+#include "third_party/blink/public/platform/web_clipboard.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class WebClipboardImpl : public blink::WebClipboard {
 
 }  // namespace blink
 
-#endif  // WebClipboardImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WEB_CLIPBOARD_IMPL_H_

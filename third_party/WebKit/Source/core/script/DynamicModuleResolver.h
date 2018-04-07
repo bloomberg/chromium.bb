@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DynamicModuleResolver_h
-#define DynamicModuleResolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_DYNAMIC_MODULE_RESOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_DYNAMIC_MODULE_RESOLVER_H_
 
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/Visitor.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class CORE_EXPORT DynamicModuleResolver final
 
 }  // namespace blink
 
-#endif  // DynamicModuleResolver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_DYNAMIC_MODULE_RESOLVER_H_

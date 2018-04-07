@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webmidi/MIDIAccess.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_access.h"
 
-#include "core/dom/Document.h"
-#include "core/loader/DocumentLoadTiming.h"
-#include "core/loader/DocumentLoader.h"
-#include "modules/webmidi/MIDIAccessInitializer.h"
-#include "modules/webmidi/MIDIConnectionEvent.h"
-#include "modules/webmidi/MIDIInput.h"
-#include "modules/webmidi/MIDIInputMap.h"
-#include "modules/webmidi/MIDIOutput.h"
-#include "modules/webmidi/MIDIOutputMap.h"
-#include "modules/webmidi/MIDIPort.h"
-#include "platform/AsyncMethodRunner.h"
 #include <memory>
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/loader/document_load_timing.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_access_initializer.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_connection_event.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_input.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_input_map.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_output.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_output_map.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_port.h"
+#include "third_party/blink/renderer/platform/async_method_runner.h"
 
 namespace blink {
 

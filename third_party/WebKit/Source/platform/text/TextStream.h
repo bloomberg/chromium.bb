@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextStream_h
-#define TextStream_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_STREAM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_STREAM_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

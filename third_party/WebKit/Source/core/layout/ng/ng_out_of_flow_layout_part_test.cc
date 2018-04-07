@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_out_of_flow_layout_part.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
 
-#include "core/layout/ng/layout_ng_block_flow.h"
-#include "core/layout/ng/ng_layout_result.h"
-#include "core/layout/ng/ng_layout_test.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 
 namespace blink {
 namespace {

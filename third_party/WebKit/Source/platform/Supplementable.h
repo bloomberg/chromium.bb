@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Supplementable_h
-#define Supplementable_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SUPPLEMENTABLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SUPPLEMENTABLE_H_
 
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 #if DCHECK_IS_ON()
-#include "platform/wtf/Threading.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 #endif
 
 namespace blink {
@@ -243,4 +243,4 @@ struct ThreadingTrait<Supplementable<T>> {
 
 }  // namespace blink
 
-#endif  // Supplementable_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SUPPLEMENTABLE_H_

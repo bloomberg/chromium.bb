@@ -11,9 +11,9 @@
 #include "content/renderer/indexed_db/indexed_db_callbacks_impl.h"
 #include "content/renderer/indexed_db/indexed_db_dispatcher.h"
 #include "content/renderer/indexed_db/indexed_db_key_builders.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseError.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBObservation.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_observation.h"
 
 using blink::WebVector;
 using blink::WebIDBDatabaseCallbacks;

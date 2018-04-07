@@ -29,14 +29,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/FontPlatformData.h"
+#include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 
-#include "SkTypeface.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/skia/SkiaUtils.h"
 #include <windows.h>
+#include "SkTypeface.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
 
 namespace blink {
 

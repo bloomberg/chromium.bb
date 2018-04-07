@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSInterpolationType_h
-#define CSSInterpolationType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_INTERPOLATION_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_INTERPOLATION_TYPE_H_
 
-#include "core/CoreExport.h"
-#include "core/animation/CSSInterpolationEnvironment.h"
-#include "core/animation/InterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_environment.h"
+#include "third_party/blink/renderer/core/animation/interpolation_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 
@@ -104,4 +104,4 @@ class CORE_EXPORT CSSInterpolationType : public InterpolationType {
 
 }  // namespace blink
 
-#endif  // CSSInterpolationType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_INTERPOLATION_TYPE_H_

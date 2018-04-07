@@ -25,23 +25,23 @@
  *
  */
 
-#include "core/dom/LayoutTreeBuilder.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder.h"
 
-#include "core/css/resolver/StyleResolver.h"
-#include "core/dom/FirstLetterPseudoElement.h"
-#include "core/dom/Node.h"
-#include "core/dom/PseudoElement.h"
-#include "core/dom/Text.h"
-#include "core/dom/V0InsertionPoint.h"
-#include "core/fullscreen/Fullscreen.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutFullScreen.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutText.h"
-#include "core/layout/LayoutView.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg_names.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_full_screen.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 

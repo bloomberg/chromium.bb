@@ -2,17 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/core/core.gni")
+import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("resize_observer") {
   sources = [
-    "ResizeObservation.cpp",
-    "ResizeObservation.h",
-    "ResizeObserver.cpp",
-    "ResizeObserver.h",
-    "ResizeObserverController.cpp",
-    "ResizeObserverController.h",
-    "ResizeObserverEntry.cpp",
-    "ResizeObserverEntry.h",
+    "resize_observation.cc",
+    "resize_observation.h",
+    "resize_observer.cc",
+    "resize_observer.h",
+    "resize_observer_controller.cc",
+    "resize_observer_controller.h",
+    "resize_observer_entry.cc",
+    "resize_observer_entry.h",
   ]
 }

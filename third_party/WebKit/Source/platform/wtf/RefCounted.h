@@ -18,11 +18,11 @@
  *
  */
 
-#ifndef RefCounted_h
-#define RefCounted_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_REF_COUNTED_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_REF_COUNTED_H_
 
 #include "base/memory/ref_counted.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace WTF {
 
@@ -68,4 +68,4 @@ class RefCountedCopyable : public RefCounted<T> {
 using WTF::RefCounted;
 using WTF::RefCountedCopyable;
 
-#endif  // RefCounted_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_REF_COUNTED_H_

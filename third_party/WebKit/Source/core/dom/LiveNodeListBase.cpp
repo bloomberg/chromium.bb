@@ -21,10 +21,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/LiveNodeListBase.h"
+#include "third_party/blink/renderer/core/dom/live_node_list_base.h"
 
-#include "core/dom/LiveNodeList.h"
-#include "core/html/HTMLCollection.h"
+#include "third_party/blink/renderer/core/dom/live_node_list.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
 
 namespace blink {
 

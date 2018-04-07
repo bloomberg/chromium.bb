@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/PrePaintTreeWalk.h"
+#include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
 
-#include "core/dom/DocumentLifecycle.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutEmbeddedContent.h"
-#include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/PaintPropertyTreePrinter.h"
-#include "core/paint/compositing/CompositedLayerMapping.h"
-#include "core/paint/compositing/CompositingLayerPropertyUpdater.h"
-#include "core/paint/ng/ng_paint_fragment.h"
-#include "platform/graphics/paint/GeometryMapper.h"
-#include "platform/wtf/AutoReset.h"
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/compositing/compositing_layer_property_updater.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 

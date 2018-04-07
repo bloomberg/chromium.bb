@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/cookie_store/CookieStore.h"
+#include "third_party/blink/renderer/modules/cookie_store/cookie_store.h"
 
 #include <utility>
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/EventModules.h"
-#include "modules/EventTargetModules.h"
-#include "modules/cookie_store/CookieChangeEvent.h"
-#include "modules/cookie_store/CookieListItem.h"
-#include "modules/cookie_store/CookieStoreGetOptions.h"
-#include "modules/cookie_store/CookieStoreSetOptions.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/WTFString.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/cookie_store/cookie_change_event.h"
+#include "third_party/blink/renderer/modules/cookie_store/cookie_list_item.h"
+#include "third_party/blink/renderer/modules/cookie_store/cookie_store_get_options.h"
+#include "third_party/blink/renderer/modules/cookie_store/cookie_store_set_options.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

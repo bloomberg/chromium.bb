@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/scroll_into_view_options_or_boolean.h"
-#include "core/dom/Element.h"
-#include "core/frame/ScrollIntoViewOptions.h"
-#include "core/frame/ScrollToOptions.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/html/HTMLElement.h"
-#include "core/testing/sim/SimCompositor.h"
-#include "core/testing/sim/SimRequest.h"
-#include "core/testing/sim/SimTest.h"
-#include "public/web/WebFindOptions.h"
-#include "public/web/WebScriptSource.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/web/web_find_options.h"
+#include "third_party/blink/public/web/web_script_source.h"
+#include "third_party/blink/renderer/bindings/core/v8/scroll_into_view_options_or_boolean.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/scroll_into_view_options.h"
+#include "third_party/blink/renderer/core/frame/scroll_to_options.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 
 namespace blink {
 

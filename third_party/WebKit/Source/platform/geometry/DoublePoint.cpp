@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/geometry/DoublePoint.h"
+#include "third_party/blink/renderer/platform/geometry/double_point.h"
 
 #include <algorithm>
-#include "platform/geometry/FloatSize.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

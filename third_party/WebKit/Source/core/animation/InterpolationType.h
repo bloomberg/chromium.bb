@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InterpolationType_h
-#define InterpolationType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATION_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATION_TYPE_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/animation/InterpolationValue.h"
-#include "core/animation/Keyframe.h"
-#include "core/animation/PairwiseInterpolationValue.h"
-#include "core/animation/PrimitiveInterpolation.h"
-#include "core/animation/PropertyHandle.h"
-#include "core/animation/UnderlyingValueOwner.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/animation/interpolation_value.h"
+#include "third_party/blink/renderer/core/animation/keyframe.h"
+#include "third_party/blink/renderer/core/animation/pairwise_interpolation_value.h"
+#include "third_party/blink/renderer/core/animation/primitive_interpolation.h"
+#include "third_party/blink/renderer/core/animation/property_handle.h"
+#include "third_party/blink/renderer/core/animation/underlying_value_owner.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -125,4 +125,4 @@ class InterpolationType {
 
 }  // namespace blink
 
-#endif  // InterpolationType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATION_TYPE_H_

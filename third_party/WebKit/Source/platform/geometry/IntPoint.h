@@ -24,16 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IntPoint_h
-#define IntPoint_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_POINT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_POINT_H_
 
 #include "build/build_config.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/SaturatedArithmetic.h"
-#include "platform/wtf/VectorTraits.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
+#include "third_party/blink/renderer/platform/wtf/vector_traits.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGPoint CGPoint;
@@ -158,4 +158,4 @@ PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const IntPoint&);
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::IntPoint);
 
-#endif  // IntPoint_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_POINT_H_

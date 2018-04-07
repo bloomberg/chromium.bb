@@ -2,25 +2,25 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("notifications") {
   sources = [
-    "Notification.cpp",
-    "Notification.h",
-    "NotificationData.cpp",
-    "NotificationData.h",
-    "NotificationEvent.cpp",
-    "NotificationEvent.h",
-    "NotificationImageLoader.cpp",
-    "NotificationImageLoader.h",
-    "NotificationManager.cpp",
-    "NotificationManager.h",
-    "NotificationResourcesLoader.cpp",
-    "NotificationResourcesLoader.h",
-    "ServiceWorkerGlobalScopeNotifications.h",
-    "ServiceWorkerRegistrationNotifications.cpp",
-    "ServiceWorkerRegistrationNotifications.h",
+    "notification.cc",
+    "notification.h",
+    "notification_data.cc",
+    "notification_data.h",
+    "notification_event.cc",
+    "notification_event.h",
+    "notification_image_loader.cc",
+    "notification_image_loader.h",
+    "notification_manager.cc",
+    "notification_manager.h",
+    "notification_resources_loader.cc",
+    "notification_resources_loader.h",
+    "service_worker_global_scope_notifications.h",
+    "service_worker_registration_notifications.cc",
+    "service_worker_registration_notifications.h",
   ]
   deps = [
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",

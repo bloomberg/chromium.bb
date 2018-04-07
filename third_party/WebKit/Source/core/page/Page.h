@@ -20,33 +20,33 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef Page_h
-#define Page_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/ViewportDescription.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/HostsUsingFeatures.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/SettingsDelegate.h"
-#include "core/frame/UseCounter.h"
-#include "core/page/PageAnimator.h"
-#include "core/page/PageLifecycleState.h"
-#include "core/page/PageVisibilityNotifier.h"
-#include "core/page/PageVisibilityObserver.h"
-#include "core/page/PageVisibilityState.h"
-#include "platform/Supplementable.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/geometry/Region.h"
-#include "platform/heap/Handle.h"
-#include "platform/scheduler/public/page_scheduler.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/web/WebWindowFeatures.h"
+#include "third_party/blink/public/web/web_window_features.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/viewport_description.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings_delegate.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
+#include "third_party/blink/renderer/core/page/page_lifecycle_state.h"
+#include "third_party/blink/renderer/core/page/page_visibility_notifier.h"
+#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
+#include "third_party/blink/renderer/core/page/page_visibility_state.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/geometry/region.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -423,4 +423,4 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Page>;
 
 }  // namespace blink
 
-#endif  // Page_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_H_

@@ -19,15 +19,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LayoutSVGResourceGradient_h
-#define LayoutSVGResourceGradient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_GRADIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_GRADIENT_H_
 
 #include <memory>
-#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
-#include "core/svg/SVGGradientElement.h"
-#include "platform/graphics/Gradient.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
+#include "third_party/blink/renderer/core/svg/svg_gradient_element.h"
+#include "third_party/blink/renderer/platform/graphics/gradient.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 

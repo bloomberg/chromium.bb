@@ -18,16 +18,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGFEComponentTransferElement.h"
+#include "third_party/blink/renderer/core/svg/svg_fe_component_transfer_element.h"
 
-#include "core/dom/ElementTraversal.h"
-#include "core/svg/SVGFEFuncAElement.h"
-#include "core/svg/SVGFEFuncBElement.h"
-#include "core/svg/SVGFEFuncGElement.h"
-#include "core/svg/SVGFEFuncRElement.h"
-#include "core/svg/graphics/filters/SVGFilterBuilder.h"
-#include "core/svg_names.h"
-#include "platform/graphics/filters/FEComponentTransfer.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_fe_func_a_element.h"
+#include "third_party/blink/renderer/core/svg/svg_fe_func_b_element.h"
+#include "third_party/blink/renderer/core/svg/svg_fe_func_g_element.h"
+#include "third_party/blink/renderer/core/svg/svg_fe_func_r_element.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_component_transfer.h"
 
 namespace blink {
 

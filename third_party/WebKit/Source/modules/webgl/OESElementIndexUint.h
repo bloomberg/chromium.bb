@@ -23,10 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OESElementIndexUint_h
-#define OESElementIndexUint_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_OES_ELEMENT_INDEX_UINT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_OES_ELEMENT_INDEX_UINT_H_
 
-#include "modules/webgl/WebGLExtension.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_extension.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class OESElementIndexUint final : public WebGLExtension {
 
 }  // namespace blink
 
-#endif  // OESElementIndexUint_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_OES_ELEMENT_INDEX_UINT_H_

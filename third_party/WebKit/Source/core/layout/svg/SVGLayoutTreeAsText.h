@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGLayoutTreeAsText_h
-#define SVGLayoutTreeAsText_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_LAYOUT_TREE_AS_TEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_LAYOUT_TREE_AS_TEXT_H_
 
-#include "platform/text/TextStream.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ void WriteResources(TextStream&, const LayoutObject&, int indent);
 
 }  // namespace blink
 
-#endif  // SVGLayoutTreeAsText_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_LAYOUT_TREE_AS_TEXT_H_

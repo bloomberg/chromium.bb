@@ -22,7 +22,7 @@
    package by Ronald Tschalaer Copyright (C) 1996-1999.
 */
 
-#include "platform/wtf/text/Base64.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
 #include <limits.h>
 

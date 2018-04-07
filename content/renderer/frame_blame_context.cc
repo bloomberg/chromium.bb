@@ -7,8 +7,8 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/top_level_blame_context.h"
-#include "third_party/WebKit/public/platform/Platform.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {
 namespace {

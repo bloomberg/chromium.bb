@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_RENDERER_WEB_SCHEDULER_IMPL_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_RENDERER_WEB_SCHEDULER_IMPL_H_
 
-#include "platform/scheduler/child/web_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler_impl.h"
 
 namespace blink {
 namespace scheduler {

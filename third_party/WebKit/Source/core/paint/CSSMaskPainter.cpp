@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/CSSMaskPainter.h"
+#include "third_party/blink/renderer/core/paint/css_mask_painter.h"
 
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/svg/LayoutSVGResourceMasker.h"
-#include "core/layout/svg/SVGResources.h"
-#include "core/layout/svg/SVGResourcesCache.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 
 namespace blink {
 

@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/budget_service/budget_database.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
+#include "third_party/blink/public/platform/modules/budget_service/budget_service.mojom.h"
 
 class Profile;
 

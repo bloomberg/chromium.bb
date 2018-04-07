@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef KeyboardLock_h
-#define KeyboardLock_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_KEYBOARD_KEYBOARD_LOCK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_KEYBOARD_KEYBOARD_LOCK_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "platform/heap/Member.h"
-#include "public/platform/modules/keyboard_lock/keyboard_lock.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/keyboard_lock/keyboard_lock.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class KeyboardLock final : public GarbageCollectedFinalized<KeyboardLock>,
 
 }  // namespace blink
 
-#endif  // KeyboardLock_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_KEYBOARD_KEYBOARD_LOCK_H_

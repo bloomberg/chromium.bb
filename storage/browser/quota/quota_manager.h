@@ -32,7 +32,7 @@
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/browser/quota/storage_observer.h"
 #include "storage/browser/storage_browser_export.h"
-#include "third_party/WebKit/public/mojom/quota/quota_types.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 namespace base {
 class FilePath;

@@ -22,11 +22,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef HTMLTagCollection_h
-#define HTMLTagCollection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TAG_COLLECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TAG_COLLECTION_H_
 
-#include "core/dom/Element.h"
-#include "core/dom/TagCollection.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/tag_collection.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ inline bool HTMLTagCollection::ElementMatches(
 
 }  // namespace blink
 
-#endif  // HTMLTagCollection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TAG_COLLECTION_H_

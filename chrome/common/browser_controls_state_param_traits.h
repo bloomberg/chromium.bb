@@ -4,7 +4,7 @@
 
 #include "content/public/common/browser_controls_state.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/public/web/WebConsoleMessage.h"
+#include "third_party/blink/public/web/web_console_message.h"
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebConsoleMessage::Level,
                           blink::WebConsoleMessage::kLevelLast)

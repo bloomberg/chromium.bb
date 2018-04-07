@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/SVGNumberOptionalNumber.h"
+#include "third_party/blink/renderer/core/svg/svg_number_optional_number.h"
 
-#include "core/svg/SVGAnimationElement.h"
-#include "core/svg/SVGParserUtilities.h"
+#include "third_party/blink/renderer/core/svg/svg_animation_element.h"
+#include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 
 namespace blink {
 

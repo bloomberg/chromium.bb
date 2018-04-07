@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGLVertexArrayObjectBase_h
-#define WebGLVertexArrayObjectBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_VERTEX_ARRAY_OBJECT_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_VERTEX_ARRAY_OBJECT_BASE_H_
 
-#include "modules/webgl/WebGLBuffer.h"
-#include "modules/webgl/WebGLContextObject.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_buffer.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_context_object.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class WebGLVertexArrayObjectBase : public WebGLContextObject {
 
 }  // namespace blink
 
-#endif  // WebGLVertexArrayObjectBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_VERTEX_ARRAY_OBJECT_BASE_H_

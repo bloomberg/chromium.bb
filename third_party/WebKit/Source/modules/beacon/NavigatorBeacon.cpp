@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/beacon/NavigatorBeacon.h"
+#include "third_party/blink/renderer/modules/beacon/navigator_beacon.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/modules/v8/array_buffer_view_or_blob_or_string_or_form_data.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fileapi/Blob.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/forms/FormData.h"
-#include "core/loader/PingLoader.h"
-#include "core/typed_arrays/DOMArrayBufferView.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/loader/cors/CORS.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/modules/v8/array_buffer_view_or_blob_or_string_or_form_data.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/forms/form_data.h"
+#include "third_party/blink/renderer/core/loader/ping_loader.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors.h"
 
 namespace blink {
 

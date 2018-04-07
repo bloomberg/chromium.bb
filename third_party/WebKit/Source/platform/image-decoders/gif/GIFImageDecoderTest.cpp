@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/image-decoders/gif/GIFImageDecoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/gif/gif_image_decoder.h"
 
 #include <memory>
-#include "platform/SharedBuffer.h"
-#include "platform/image-decoders/ImageDecoderTestHelpers.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebData.h"
-#include "public/platform/WebSize.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

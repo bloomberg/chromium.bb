@@ -40,9 +40,9 @@
 #include "ppapi/proxy/serialized_structs.h"
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
 #include "services/service_manager/sandbox/switches.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_plugin_container.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

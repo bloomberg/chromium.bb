@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef QuotaUtils_h
-#define QuotaUtils_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_QUOTA_UTILS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_QUOTA_UTILS_H_
 
-#include "third_party/WebKit/public/mojom/quota/quota_dispatcher_host.mojom-blink.h"
+#include "third_party/blink/public/mojom/quota/quota_dispatcher_host.mojom-blink.h"
 
 namespace blink {
 
@@ -16,4 +16,4 @@ void ConnectToQuotaDispatcherHost(ExecutionContext*,
 
 }  // namespace blink
 
-#endif  // QuotaUtils_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_QUOTA_UTILS_H_

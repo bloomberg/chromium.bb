@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
+#include "third_party/blink/renderer/modules/csspaint/css_paint_image_generator_impl.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "modules/csspaint/CSSPaintDefinition.h"
-#include "modules/csspaint/DocumentPaintDefinition.h"
-#include "modules/csspaint/PaintWorklet.h"
-#include "platform/graphics/Image.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
+#include "third_party/blink/renderer/modules/csspaint/document_paint_definition.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_worklet.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
 
 namespace blink {
 

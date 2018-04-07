@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
 
-#include "platform/blob/BlobData.h"
-#include "platform/network/HTTPHeaderMap.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/WebHTTPHeaderVisitor.h"
+#include "third_party/blink/public/platform/web_http_header_visitor.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

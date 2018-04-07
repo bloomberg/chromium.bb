@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/Deprecation.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
 
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/DeprecationReport.h"
-#include "core/frame/FrameConsole.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/frame/Report.h"
-#include "core/frame/ReportingContext.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/page/Page.h"
-#include "core/workers/WorkerOrWorkletGlobalScope.h"
-#include "platform/runtime_enabled_features.h"
-#include "public/platform/Platform.h"
-#include "public/platform/reporting.mojom-blink.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/reporting.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/deprecation_report.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/report.h"
+#include "third_party/blink/renderer/core/frame/reporting_context.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 using blink::WebFeature;
 

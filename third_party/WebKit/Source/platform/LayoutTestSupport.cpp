@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/LayoutTestSupport.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
 
-#include "platform/wtf/Assertions.h"
-#include "public/web/WebKit.h"
+#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

@@ -22,5 +22,5 @@
 // and LayoutObject.h we only have to compile those parts once rather
 // than 1500 times. It can make a large difference in compilation
 // times (3-4 times faster).
-#include "core/dom/Document.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"

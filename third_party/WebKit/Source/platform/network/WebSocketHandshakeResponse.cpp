@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/network/WebSocketHandshakeResponse.h"
+#include "third_party/blink/renderer/platform/network/web_socket_handshake_response.h"
 
-#include "platform/network/WebSocketHandshakeRequest.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/network/web_socket_handshake_request.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

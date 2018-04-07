@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScrollbarPainter_h
-#define ScrollbarPainter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCROLLBAR_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCROLLBAR_PAINTER_H_
 
 #include "base/macros.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/Scrollbar.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar.h"
 
 namespace blink {
 
@@ -39,4 +39,4 @@ class ScrollbarPainter {
 
 }  // namespace blink
 
-#endif  // ScrollbarPainter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SCROLLBAR_PAINTER_H_

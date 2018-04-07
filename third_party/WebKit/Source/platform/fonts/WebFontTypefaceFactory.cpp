@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/WebFontTypefaceFactory.h"
+#include "third_party/blink/renderer/platform/fonts/web_font_typeface_factory.h"
 
-#include "platform/Histogram.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/opentype/FontFormatCheck.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/font_format_check.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #include "third_party/skia/include/ports/SkFontMgr_empty.h"
 #endif
 #if defined(OS_MACOSX)
-#include "platform/fonts/mac/CoreTextVariationsSupport.h"
+#include "third_party/blink/renderer/platform/fonts/mac/core_text_variations_support.h"
 #endif
 
 namespace blink {

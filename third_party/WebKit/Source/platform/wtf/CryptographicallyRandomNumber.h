@@ -24,12 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_CryptographicallyRandomNumber_h
-#define WTF_CryptographicallyRandomNumber_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CRYPTOGRAPHICALLY_RANDOM_NUMBER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CRYPTOGRAPHICALLY_RANDOM_NUMBER_H_
 
 #include <stdint.h>
 #include <cstddef>
-#include "platform/wtf/WTFExport.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 

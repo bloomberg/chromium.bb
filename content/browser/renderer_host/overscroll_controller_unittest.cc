@@ -11,7 +11,7 @@
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/test/test_overscroll_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 
 namespace content {
 

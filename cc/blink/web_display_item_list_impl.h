@@ -9,8 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "cc/blink/cc_blink_export.h"
 #include "cc/paint/display_item_list.h"
-#include "third_party/WebKit/public/platform/WebDisplayItemList.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_display_item_list.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/geometry/point_f.h"
 

@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/scrolling/SnapCoordinator.h"
+#include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 
 #include <gtest/gtest.h>
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLElement.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/PaintLayerScrollableArea.h"
-#include "core/style/ComputedStyle.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 

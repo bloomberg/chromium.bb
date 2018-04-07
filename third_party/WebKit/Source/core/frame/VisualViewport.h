@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef VisualViewport_h
-#define VisualViewport_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_VISUAL_VIEWPORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_VISUAL_VIEWPORT_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/dom/events/Event.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/CompositorElementId.h"
-#include "platform/graphics/GraphicsLayerClient.h"
-#include "platform/scroll/ScrollableArea.h"
-#include "public/platform/WebScrollbar.h"
-#include "public/platform/WebSize.h"
+#include "third_party/blink/public/platform/web_scrollbar.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 
 namespace blink {
 class WebScrollbarLayer;
@@ -303,4 +303,4 @@ class CORE_EXPORT VisualViewport final
 
 }  // namespace blink
 
-#endif  // VisualViewport_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_VISUAL_VIEWPORT_H_

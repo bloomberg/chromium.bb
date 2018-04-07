@@ -26,24 +26,24 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/accessibility/AXTable.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_table.h"
 
-#include "core/dom/AccessibleNode.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/html/HTMLCollection.h"
-#include "core/html/HTMLTableCaptionElement.h"
-#include "core/html/HTMLTableCellElement.h"
-#include "core/html/HTMLTableColElement.h"
-#include "core/html/HTMLTableElement.h"
-#include "core/html/HTMLTableRowElement.h"
-#include "core/html/HTMLTableRowsCollection.h"
-#include "core/html/HTMLTableSectionElement.h"
-#include "core/layout/LayoutTableCell.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/accessibility/AXTableCell.h"
-#include "modules/accessibility/AXTableColumn.h"
-#include "modules/accessibility/AXTableRow.h"
+#include "third_party/blink/renderer/core/dom/accessible_node.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
+#include "third_party/blink/renderer/core/html/html_table_caption_element.h"
+#include "third_party/blink/renderer/core/html/html_table_cell_element.h"
+#include "third_party/blink/renderer/core/html/html_table_col_element.h"
+#include "third_party/blink/renderer/core/html/html_table_element.h"
+#include "third_party/blink/renderer/core/html/html_table_row_element.h"
+#include "third_party/blink/renderer/core/html/html_table_rows_collection.h"
+#include "third_party/blink/renderer/core/html/html_table_section_element.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_table_cell.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_table_column.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_table_row.h"
 
 namespace blink {
 

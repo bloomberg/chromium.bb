@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/BodyStreamBuffer.h"
+#include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 
 #include <memory>
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fetch/Body.h"
-#include "core/fetch/ReadableStreamBytesConsumer.h"
-#include "core/streams/ReadableStreamDefaultControllerWrapper.h"
-#include "core/streams/ReadableStreamOperations.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8PrivateProperty.h"
-#include "platform/bindings/V8ThrowException.h"
-#include "platform/blob/BlobData.h"
-#include "platform/network/EncodedFormData.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/AutoReset.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fetch/body.h"
+#include "third_party/blink/renderer/core/fetch/readable_stream_bytes_consumer.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_wrapper.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 

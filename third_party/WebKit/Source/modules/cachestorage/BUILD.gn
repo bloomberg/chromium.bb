@@ -2,23 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("cachestorage") {
   sources = [
-    "Cache.cpp",
-    "Cache.h",
-    "CacheStorage.cpp",
-    "CacheStorage.h",
-    "CacheStorageError.cpp",
-    "CacheStorageError.h",
-    "GlobalCacheStorage.cpp",
-    "GlobalCacheStorage.h",
     "InspectorCacheStorageAgent.cpp",
     "InspectorCacheStorageAgent.h",
+    "cache.cc",
+    "cache.h",
+    "cache_storage.cc",
+    "cache_storage.h",
+    "cache_storage_error.cc",
+    "cache_storage_error.h",
+    "global_cache_storage.cc",
+    "global_cache_storage.h",
   ]
 
   public_deps = [
-    "//third_party/WebKit/Source/platform",
+    "//third_party/blink/renderer/platform",
   ]
 }

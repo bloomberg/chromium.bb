@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/text/Hyphenation.h"
+#include "third_party/blink/renderer/platform/text/hyphenation.h"
 
 #include "build/build_config.h"
-#include "platform/LayoutLocale.h"
-#include "platform/fonts/FontGlobalContext.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/fonts/font_global_context.h"
+#include "third_party/blink/renderer/platform/layout_locale.h"
 
 using testing::ElementsAre;
 using testing::ElementsAreArray;
@@ -18,7 +18,7 @@ using testing::ElementsAreArray;
 #endif
 #if defined(USE_MINIKIN_HYPHENATION)
 #include "base/files/file_path.h"
-#include "platform/text/hyphenation/HyphenationMinikin.h"
+#include "third_party/blink/renderer/platform/text/hyphenation/hyphenation_minikin.h"
 #endif
 
 namespace blink {

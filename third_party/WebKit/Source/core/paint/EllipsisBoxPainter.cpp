@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/EllipsisBoxPainter.h"
+#include "third_party/blink/renderer/core/paint/ellipsis_box_painter.h"
 
-#include "core/layout/TextRunConstructor.h"
-#include "core/layout/api/LineLayoutItem.h"
-#include "core/layout/api/SelectionState.h"
-#include "core/layout/line/EllipsisBox.h"
-#include "core/layout/line/RootInlineBox.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/TextPainter.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/core/layout/api/selection_state.h"
+#include "third_party/blink/renderer/core/layout/line/ellipsis_box.h"
+#include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/layout/text_run_constructor.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/text_painter.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
 

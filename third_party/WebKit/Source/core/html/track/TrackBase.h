@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TrackBase_h
-#define TrackBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TRACK_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TRACK_BASE_H_
 
-#include "core/CoreExport.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "public/platform/WebMediaPlayer.h"
+#include "third_party/blink/public/platform/web_media_player.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -76,4 +76,4 @@ class CORE_EXPORT TrackBase : public Supplementable<TrackBase> {
 
 }  // namespace blink
 
-#endif  // TrackBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TRACK_BASE_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BluetoothRemoteGATTUtils_h
-#define BluetoothRemoteGATTUtils_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_REMOTE_GATT_UTILS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_REMOTE_GATT_UTILS_H_
 
-#include "core/typed_arrays/DOMDataView.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -17,4 +17,4 @@ class BluetoothRemoteGATTUtils final {
 
 }  // namespace blink
 
-#endif  // BluetoothRemoteGATTUtils_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_REMOTE_GATT_UTILS_H_

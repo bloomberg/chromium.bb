@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextureHolder_h
-#define TextureHolder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEXTURE_HOLDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEXTURE_HOLDER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "platform/PlatformExport.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/Image.h"
-#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -80,4 +80,4 @@ class PLATFORM_EXPORT TextureHolder {
 
 }  // namespace blink
 
-#endif  // TextureHolder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEXTURE_HOLDER_H_

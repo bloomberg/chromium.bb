@@ -5,9 +5,9 @@
 #ifndef LayoutNGBlockFlow_h
 #define LayoutNGBlockFlow_h
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/ng/layout_ng_mixin.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
 
 namespace blink {
 

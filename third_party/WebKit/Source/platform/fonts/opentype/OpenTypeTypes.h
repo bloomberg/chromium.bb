@@ -22,11 +22,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OpenTypeTypes_h
-#define OpenTypeTypes_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_OPENTYPE_OPEN_TYPE_TYPES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_OPENTYPE_OPEN_TYPE_TYPES_H_
 
-#include "platform/wtf/ByteOrder.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/wtf/byte_order.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 namespace OpenType {
@@ -99,4 +99,4 @@ struct TableBase {
 
 }  // namespace OpenType
 }  // namespace blink
-#endif  // OpenTypeTypes_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_OPENTYPE_OPEN_TYPE_TYPES_H_

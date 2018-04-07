@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IDBTestHelper_h
-#define IDBTestHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_TEST_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_TEST_HELPER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/indexeddb/IDBValue.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -20,4 +20,4 @@ std::unique_ptr<IDBValue> CreateIDBValueForTesting(v8::Isolate*,
 
 }  // namespace blink
 
-#endif  // IDBTestHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_TEST_HELPER_H_

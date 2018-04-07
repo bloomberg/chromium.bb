@@ -23,22 +23,22 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8ScriptRunner_h
-#define V8ScriptRunner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_SCRIPT_RUNNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_SCRIPT_RUNNER_H_
 
 #include <stdint.h>
 
-#include "bindings/core/v8/ReferrerScriptInfo.h"
-#include "bindings/core/v8/ScriptSourceLocationType.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8CacheOptions.h"
-#include "core/CoreExport.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8BindingMacros.h"
-#include "platform/loader/fetch/AccessControlStatus.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/TextPosition.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
+#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
 namespace WTF {
@@ -177,4 +177,4 @@ class CORE_EXPORT V8ScriptRunner final {
 
 }  // namespace blink
 
-#endif  // V8ScriptRunner_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_SCRIPT_RUNNER_H_

@@ -23,20 +23,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CanvasRenderingContext_h
-#define CanvasRenderingContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_CANVAS_RENDERING_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_CANVAS_RENDERING_CONTEXT_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/html/canvas/CanvasContextCreationAttributesCore.h"
-#include "core/html/canvas/HTMLCanvasElement.h"
-#include "core/layout/HitTestCanvasResult.h"
-#include "core/offscreencanvas/OffscreenCanvas.h"
-#include "platform/graphics/CanvasColorParams.h"
-#include "platform/graphics/ColorBehavior.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/StringHash.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
+#include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
+#include "third_party/blink/renderer/platform/graphics/color_behavior.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 

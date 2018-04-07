@@ -1,13 +1,13 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "core/animation/SVGRectInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/svg_rect_interpolation_type.h"
 
 #include <memory>
-#include "core/animation/InterpolationEnvironment.h"
-#include "core/animation/StringKeyframe.h"
-#include "core/svg/SVGRect.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/core/animation/interpolation_environment.h"
+#include "third_party/blink/renderer/core/animation/string_keyframe.h"
+#include "third_party/blink/renderer/core/svg/svg_rect.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

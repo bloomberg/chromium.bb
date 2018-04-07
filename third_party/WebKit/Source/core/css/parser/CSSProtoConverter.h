@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSProtoConverter_h
-#define CSSProtoConverter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PROTO_CONVERTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PROTO_CONVERTER_H_
 
 #include <string>
 
-#include "third_party/WebKit/Source/core/css/parser/CSS.pb.h"
+#include "third_party/blink/renderer/core/css/parser/css.pb.h"
 
 namespace css_proto_converter {
 
@@ -111,4 +111,4 @@ class Converter {
 };
 };  // namespace css_proto_converter
 
-#endif  // CSSProtoConverter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PROTO_CONVERTER_H_

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FindPaintOffsetAndVisualRectNeedingUpdate_h
-#define FindPaintOffsetAndVisualRectNeedingUpdate_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FIND_PAINT_OFFSET_AND_VISUAL_RECT_NEEDING_UPDATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FIND_PAINT_OFFSET_AND_VISUAL_RECT_NEEDING_UPDATE_H_
 
 #if DCHECK_IS_ON()
 
-#include "core/layout/LayoutObject.h"
-#include "core/paint/FindPropertiesNeedingUpdate.h"
-#include "core/paint/ObjectPaintInvalidator.h"
-#include "core/paint/PaintInvalidator.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/PaintPropertyTreeBuilder.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/paint/find_properties_needing_update.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
 
 namespace blink {
 
@@ -186,4 +186,4 @@ class FindObjectVisualRectNeedingUpdateScope
 
 #endif  // DCHECK_IS_ON()
 
-#endif  // FindPaintOffsetAndVisualRectNeedingUpdate_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FIND_PAINT_OFFSET_AND_VISUAL_RECT_NEEDING_UPDATE_H_

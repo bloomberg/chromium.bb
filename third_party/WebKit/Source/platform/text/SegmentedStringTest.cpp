@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/text/SegmentedString.h"
+#include "third_party/blink/renderer/platform/text/segmented_string.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

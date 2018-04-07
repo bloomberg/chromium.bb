@@ -27,16 +27,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EditingCommandsUtilities_h
-#define EditingCommandsUtilities_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_EDITING_COMMANDS_UTILITIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_EDITING_COMMANDS_UTILITIES_H_
 
-#include "core/CoreExport.h"
-#include "core/editing/Forward.h"
-#include "core/editing/TextGranularity.h"
-#include "core/editing/VisibleUnits.h"
-#include "core/events/InputEvent.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/text_granularity.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/events/input_event.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

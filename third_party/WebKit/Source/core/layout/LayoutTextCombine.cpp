@@ -18,9 +18,9 @@
  *
  */
 
-#include "core/layout/LayoutTextCombine.h"
+#include "third_party/blink/renderer/core/layout/layout_text_combine.h"
 
-#include "platform/graphics/GraphicsContext.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 namespace blink {
 

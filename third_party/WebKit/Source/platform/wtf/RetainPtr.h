@@ -18,16 +18,16 @@
  *
  */
 
-#ifndef RetainPtr_h
-#define RetainPtr_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_RETAIN_PTR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_RETAIN_PTR_H_
 
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/HashTableDeletedValueType.h"
-#include "platform/wtf/HashTraits.h"
-#include "platform/wtf/TypeTraits.h"
 #include <algorithm>
 #include <type_traits>
 #include <utility>
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
+#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 #ifdef __OBJC__
 #import <Foundation/Foundation.h>
@@ -325,4 +325,4 @@ using WTF::AdoptCF;
 using WTF::AdoptNS;
 using WTF::RetainPtr;
 
-#endif  // WTF_RetainPtr_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_RETAIN_PTR_H_

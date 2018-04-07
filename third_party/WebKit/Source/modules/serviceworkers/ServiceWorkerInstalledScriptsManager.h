@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ServiceWorkerInstalledScriptsManager_h
-#define ServiceWorkerInstalledScriptsManager_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_INSTALLED_SCRIPTS_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_SERVICE_WORKER_INSTALLED_SCRIPTS_MANAGER_H_
 
-#include "core/workers/InstalledScriptsManager.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerInstalledScriptsManager.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_installed_scripts_manager.h"
+#include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
 
 namespace blink {
 

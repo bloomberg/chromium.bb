@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef NodeList_h
-#define NodeList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_LIST_H_
 
-#include "core/CoreExport.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class CORE_EXPORT NodeList : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // NodeList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_LIST_H_

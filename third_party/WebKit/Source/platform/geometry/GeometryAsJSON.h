@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GeometryAsJSON_h
-#define GeometryAsJSON_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_GEOMETRY_AS_JSON_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_GEOMETRY_AS_JSON_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/json/JSONValues.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -43,4 +43,4 @@ PLATFORM_EXPORT std::unique_ptr<JSONArray> TransformAsJSONArray(
 
 }  // namespace blink
 
-#endif  // GeometryAsJSON_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_GEOMETRY_AS_JSON_H_

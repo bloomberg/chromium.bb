@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/SVGAnimatedLength.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 
-#include "core/svg/SVGLength.h"
+#include "third_party/blink/renderer/core/svg/svg_length.h"
 
 namespace blink {
 

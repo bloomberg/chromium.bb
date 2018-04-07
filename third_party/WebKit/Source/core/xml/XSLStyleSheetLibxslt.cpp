@@ -19,21 +19,21 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/xml/XSLStyleSheet.h"
+#include "third_party/blink/renderer/core/xml/xsl_style_sheet.h"
 
 #include <libxml/uri.h>
 #include <libxslt/xsltutils.h>
-#include "core/dom/Document.h"
-#include "core/dom/Node.h"
-#include "core/dom/TransformSource.h"
-#include "core/frame/LocalFrame.h"
-#include "core/loader/resource/XSLStyleSheetResource.h"
-#include "core/xml/XSLTProcessor.h"
-#include "core/xml/parser/XMLDocumentParserScope.h"
-#include "core/xml/parser/XMLParserInput.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/fetch_initiator_type_names.h"
-#include "platform/wtf/text/CString.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/transform_source.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/loader/resource/xsl_style_sheet_resource.h"
+#include "third_party/blink/renderer/core/xml/parser/xml_document_parser_scope.h"
+#include "third_party/blink/renderer/core/xml/parser/xml_parser_input.h"
+#include "third_party/blink/renderer/core/xml/xslt_processor.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 namespace blink {
 

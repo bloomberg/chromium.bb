@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGLAny_h
-#define WebGLAny_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_WEBGL_ANY_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_WEBGL_ANY_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "modules/webgl/WebGLObject.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_object.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -32,4 +32,4 @@ ScriptValue WebGLAny(ScriptState*, DOMUint32Array* value);
 
 }  // namespace blink
 
-#endif  // WebGLAny_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_WEBGL_ANY_H_

@@ -22,12 +22,12 @@
  *
  */
 
-#include "core/layout/LayoutSearchField.h"
+#include "third_party/blink/renderer/core/layout/layout_search_field.h"
 
-#include "core/dom/ShadowRoot.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/shadow/ShadowElementNames.h"
-#include "core/input_type_names.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
 
 namespace blink {
 

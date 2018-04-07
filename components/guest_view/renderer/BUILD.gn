@@ -27,7 +27,7 @@ static_library("renderer") {
     "//components/guest_view/common",
     "//content/public/common",
     "//content/public/renderer",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//v8",
   ]
 

@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/exported/WebSpeechSynthesizerClientImpl.h"
+#include "third_party/blink/renderer/platform/exported/web_speech_synthesizer_client_impl.h"
 
-#include "platform/speech/PlatformSpeechSynthesisUtterance.h"
+#include "third_party/blink/renderer/platform/speech/platform_speech_synthesis_utterance.h"
 
 namespace blink {
 

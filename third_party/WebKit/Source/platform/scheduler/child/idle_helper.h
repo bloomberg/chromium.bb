@@ -8,11 +8,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "platform/PlatformExport.h"
-#include "platform/scheduler/base/task_queue_selector.h"
-#include "platform/scheduler/child/cancelable_closure_holder.h"
-#include "platform/scheduler/child/scheduler_helper.h"
-#include "public/platform/scheduler/single_thread_idle_task_runner.h"
+#include "third_party/blink/public/platform/scheduler/single_thread_idle_task_runner.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
+#include "third_party/blink/renderer/platform/scheduler/child/cancelable_closure_holder.h"
+#include "third_party/blink/renderer/platform/scheduler/child/scheduler_helper.h"
 
 namespace blink {
 namespace scheduler {

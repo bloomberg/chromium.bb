@@ -70,7 +70,7 @@ source_set("app_shell_lib") {
     "//extensions/shell/common/api:api_registration",
     "//extensions/shell/common/api:extensions_features",
     "//google_apis",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//ui/base",
     "//ui/base/ime",
   ]

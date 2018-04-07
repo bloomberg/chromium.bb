@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RTCErrorUtil_h
-#define RTCErrorUtil_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_ERROR_UTIL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_ERROR_UTIL_H_
 
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebRTCError.h"
+#include "third_party/blink/public/platform/web_rtc_error.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -16,4 +16,4 @@ DOMException* CreateDOMExceptionFromWebRTCError(const WebRTCError&);
 
 }  // namespace blink
 
-#endif  // RTCErrorUtil_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_ERROR_UTIL_H_

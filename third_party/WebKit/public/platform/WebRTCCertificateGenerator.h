@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebRTCCertificateGenerator_h
-#define WebRTCCertificateGenerator_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_CERTIFICATE_GENERATOR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_CERTIFICATE_GENERATOR_H_
 
-#include "public/platform/WebCallbacks.h"
-#include "public/platform/WebRTCCertificate.h"
-#include "public/platform/WebRTCKeyParams.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/public/platform/web_rtc_certificate.h"
+#include "third_party/blink/public/platform/web_rtc_key_params.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 #include <memory>
 
@@ -80,4 +80,4 @@ class WebRTCCertificateGenerator {
 
 }  // namespace blink
 
-#endif  // WebRTCCertificateGenerator_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_CERTIFICATE_GENERATOR_H_

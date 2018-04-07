@@ -2,22 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("geolocation") {
   sources = [
-    "Coordinates.cpp",
-    "Coordinates.h",
-    "GeoNotifier.cpp",
-    "GeoNotifier.h",
-    "Geolocation.cpp",
-    "Geolocation.h",
-    "GeolocationError.h",
-    "GeolocationWatchers.cpp",
-    "GeolocationWatchers.h",
-    "Geoposition.h",
-    "NavigatorGeolocation.cpp",
-    "NavigatorGeolocation.h",
-    "PositionError.h",
+    "coordinates.cc",
+    "coordinates.h",
+    "geo_notifier.cc",
+    "geo_notifier.h",
+    "geolocation.cc",
+    "geolocation.h",
+    "geolocation_error.h",
+    "geolocation_watchers.cc",
+    "geolocation_watchers.h",
+    "geoposition.h",
+    "navigator_geolocation.cc",
+    "navigator_geolocation.h",
+    "position_error.h",
   ]
 }

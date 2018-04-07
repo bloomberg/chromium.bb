@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MIDIInputMap_h
-#define MIDIInputMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_INPUT_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_INPUT_MAP_H_
 
-#include "modules/webmidi/MIDIInput.h"
-#include "modules/webmidi/MIDIPortMap.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_input.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_port_map.h"
 
 namespace blink {
 

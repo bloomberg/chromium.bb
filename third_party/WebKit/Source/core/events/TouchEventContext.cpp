@@ -24,11 +24,11 @@
  *
  */
 
-#include "core/events/TouchEventContext.h"
+#include "third_party/blink/renderer/core/events/touch_event_context.h"
 
-#include "core/dom/events/Event.h"
-#include "core/events/TouchEvent.h"
-#include "core/input/TouchList.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/touch_event.h"
+#include "third_party/blink/renderer/core/input/touch_list.h"
 
 namespace blink {
 

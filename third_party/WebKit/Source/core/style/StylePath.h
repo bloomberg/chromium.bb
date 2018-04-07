@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StylePath_h
-#define StylePath_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_PATH_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_PATH_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "core/style/BasicShapes.h"
+#include "third_party/blink/renderer/core/style/basic_shapes.h"
 
 namespace blink {
 
@@ -47,4 +47,4 @@ DEFINE_BASICSHAPE_TYPE_CASTS(StylePath);
 
 }  // namespace blink
 
-#endif  // StylePath_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_PATH_H_

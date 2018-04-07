@@ -18,14 +18,14 @@
  *
  */
 
-#ifndef InlineFlowBox_h
-#define InlineFlowBox_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_FLOW_BOX_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_FLOW_BOX_H_
 
-#include "core/layout/OverflowModel.h"
-#include "core/layout/api/SelectionState.h"
-#include "core/layout/line/InlineBox.h"
-#include "core/style/ShadowData.h"
 #include <memory>
+#include "third_party/blink/renderer/core/layout/api/selection_state.h"
+#include "third_party/blink/renderer/core/layout/line/inline_box.h"
+#include "third_party/blink/renderer/core/layout/overflow_model.h"
+#include "third_party/blink/renderer/core/style/shadow_data.h"
 
 namespace blink {
 
@@ -504,4 +504,4 @@ inline void InlineFlowBox::SetHasBadChildList() {
 
 }  // namespace blink
 
-#endif  // InlineFlowBox_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_FLOW_BOX_H_

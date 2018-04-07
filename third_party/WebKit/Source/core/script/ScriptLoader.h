@@ -18,24 +18,24 @@
  *
  */
 
-#ifndef ScriptLoader_h
-#define ScriptLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_LOADER_H_
 
-#include "bindings/core/v8/ScriptSourceLocationType.h"
-#include "core/CoreExport.h"
-#include "core/html/CrossOriginAttribute.h"
-#include "core/script/PendingScript.h"
-#include "core/script/Script.h"
-#include "core/script/ScriptRunner.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/loader/fetch/IntegrityMetadata.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/ScriptFetchOptions.h"
-#include "platform/wtf/text/TextEncoding.h"
-#include "platform/wtf/text/TextPosition.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
+#include "third_party/blink/renderer/core/script/pending_script.h"
+#include "third_party/blink/renderer/core/script/script.h"
+#include "third_party/blink/renderer/core/script/script_runner.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/script_fetch_options.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -236,4 +236,4 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
 }  // namespace blink
 
-#endif  // ScriptLoader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_LOADER_H_

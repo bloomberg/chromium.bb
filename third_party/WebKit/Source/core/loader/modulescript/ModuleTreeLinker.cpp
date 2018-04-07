@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/modulescript/ModuleTreeLinker.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker.h"
 
-#include "bindings/core/v8/ScriptModule.h"
-#include "core/loader/modulescript/ModuleScriptFetchRequest.h"
-#include "core/loader/modulescript/ModuleTreeLinkerRegistry.h"
-#include "core/script/ModuleScript.h"
-#include "platform/bindings/V8ThrowException.h"
-#include "platform/loader/fetch/ResourceLoadingLog.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
+#include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
 namespace blink {

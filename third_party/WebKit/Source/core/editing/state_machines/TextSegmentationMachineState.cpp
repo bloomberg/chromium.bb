@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/state_machines/TextSegmentationMachineState.h"
+#include "third_party/blink/renderer/core/editing/state_machines/text_segmentation_machine_state.h"
 
 #include <ostream>  // NOLINT
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

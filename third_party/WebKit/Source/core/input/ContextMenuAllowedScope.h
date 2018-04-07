@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ContextMenuAllowedScope_h
-#define ContextMenuAllowedScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_CONTEXT_MENU_ALLOWED_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_CONTEXT_MENU_ALLOWED_SCOPE_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -24,4 +24,4 @@ class CORE_EXPORT ContextMenuAllowedScope {
 
 }  // namespace blink
 
-#endif  // ContextMenuAllowedScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_CONTEXT_MENU_ALLOWED_SCOPE_H_

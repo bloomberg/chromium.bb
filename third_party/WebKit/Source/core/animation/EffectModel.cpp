@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/EffectModel.h"
+#include "third_party/blink/renderer/core/animation/effect_model.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/animation/KeyframeEffectOptions.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_options.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 EffectModel::CompositeOperation EffectModel::StringToCompositeOperation(

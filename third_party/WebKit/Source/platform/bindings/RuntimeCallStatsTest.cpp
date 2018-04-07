@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/bindings/RuntimeCallStats.h"
+#include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 
 #include "base/test/simple_test_tick_clock.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "platform/wtf/Time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

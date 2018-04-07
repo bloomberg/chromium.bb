@@ -24,12 +24,12 @@
  *
  */
 
-#ifndef NodeEventContext_h
-#define NodeEventContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_NODE_EVENT_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_NODE_EVENT_CONTEXT_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/dom/events/TreeScopeEventContext.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/tree_scope_event_context.h"
 
 namespace blink {
 
@@ -79,4 +79,4 @@ class CORE_EXPORT NodeEventContext {
 
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::NodeEventContext);
 
-#endif  // NodeEventContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_NODE_EVENT_CONTEXT_H_

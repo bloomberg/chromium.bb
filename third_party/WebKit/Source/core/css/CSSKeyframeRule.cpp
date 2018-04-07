@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSKeyframeRule.h"
+#include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/css/CSSKeyframesRule.h"
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/KeyframeStyleRuleCSSStyleDeclaration.h"
-#include "core/dom/ExceptionCode.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/keyframe_style_rule_css_style_declaration.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 

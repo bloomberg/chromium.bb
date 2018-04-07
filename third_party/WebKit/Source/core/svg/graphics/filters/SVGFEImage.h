@@ -21,12 +21,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGFEImage_h
-#define SVGFEImage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_FILTERS_SVG_FE_IMAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_FILTERS_SVG_FE_IMAGE_H_
 
-#include "core/dom/TreeScope.h"
-#include "core/svg/SVGPreserveAspectRatio.h"
-#include "platform/graphics/filters/FilterEffect.h"
+#include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/core/svg/svg_preserve_aspect_ratio.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
 
 namespace blink {
 
@@ -77,4 +77,4 @@ class FEImage final : public FilterEffect {
 
 }  // namespace blink
 
-#endif  // SVGFEImage_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_FILTERS_SVG_FE_IMAGE_H_

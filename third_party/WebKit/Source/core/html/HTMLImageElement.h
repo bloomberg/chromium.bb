@@ -21,20 +21,20 @@
  *
  */
 
-#ifndef HTMLImageElement_h
-#define HTMLImageElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_IMAGE_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_IMAGE_ELEMENT_H_
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/CoreExport.h"
-#include "core/dom/CreateElementFlags.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLImageLoader.h"
-#include "core/html/canvas/ImageElementBase.h"
-#include "core/html/forms/FormAssociated.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/ResourceResponse.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/create_element_flags.h"
+#include "third_party/blink/renderer/core/html/canvas/image_element_base.h"
+#include "third_party/blink/renderer/core/html/forms/form_associated.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_image_loader.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
 namespace blink {
 
@@ -214,4 +214,4 @@ class CORE_EXPORT HTMLImageElement final
 
 }  // namespace blink
 
-#endif  // HTMLImageElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_IMAGE_ELEMENT_H_

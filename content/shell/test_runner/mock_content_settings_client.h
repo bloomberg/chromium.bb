@@ -6,7 +6,7 @@
 #define CONTENT_SHELL_TEST_RUNNER_MOCK_CONTENT_SETTINGS_CLIENT_H_
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 
 namespace test_runner {
 

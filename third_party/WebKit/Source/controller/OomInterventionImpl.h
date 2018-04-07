@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef OomInterventionImpl_h
-#define OomInterventionImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CONTROLLER_OOM_INTERVENTION_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CONTROLLER_OOM_INTERVENTION_IMPL_H_
 
-#include "controller/ControllerExport.h"
-#include "core/page/ScopedPagePauser.h"
-#include "platform/Timer.h"
-#include "public/platform/oom_intervention.mojom-blink.h"
+#include "third_party/blink/public/platform/oom_intervention.mojom-blink.h"
+#include "third_party/blink/renderer/controller/controller_export.h"
+#include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -47,4 +47,4 @@ class CONTROLLER_EXPORT OomInterventionImpl
 
 }  // namespace blink
 
-#endif  // OomInterventionImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CONTROLLER_OOM_INTERVENTION_IMPL_H_

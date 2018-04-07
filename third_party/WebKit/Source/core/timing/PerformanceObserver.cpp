@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/timing/PerformanceObserver.h"
+#include "third_party/blink/renderer/core/timing/performance_observer.h"
 
 #include <algorithm>
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/v8_performance_observer_callback.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/UseCounter.h"
-#include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/PerformanceEntry.h"
-#include "core/timing/PerformanceObserverEntryList.h"
-#include "core/timing/PerformanceObserverInit.h"
-#include "core/timing/WindowPerformance.h"
-#include "core/timing/WorkerGlobalScopePerformance.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/Timer.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_performance_observer_callback.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/performance_entry.h"
+#include "third_party/blink/renderer/core/timing/performance_observer_entry_list.h"
+#include "third_party/blink/renderer/core/timing/performance_observer_init.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 

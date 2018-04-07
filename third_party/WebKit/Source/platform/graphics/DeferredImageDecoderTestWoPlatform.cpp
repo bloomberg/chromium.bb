@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/DeferredImageDecoder.h"
+#include "third_party/blink/renderer/platform/graphics/deferred_image_decoder.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "platform/SharedBuffer.h"
-#include "platform/image-decoders/ImageDecoderTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"

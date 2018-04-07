@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SQLTransactionState_h
-#define SQLTransactionState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_TRANSACTION_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_TRANSACTION_STATE_H_
 
 namespace blink {
 
@@ -47,4 +47,4 @@ enum class SQLTransactionState {
 
 }  // namespace blink
 
-#endif  // SQLTransactionState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_TRANSACTION_STATE_H_

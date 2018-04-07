@@ -17,7 +17,7 @@
 #include "content/renderer/webfileutilities_impl.h"
 #include "content/test/mock_webblob_registry_impl.h"
 #include "content/test/mock_webclipboard_impl.h"
-#include "third_party/WebKit/public/platform/WebURLLoaderMockFactory.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 
 namespace blink {
 namespace scheduler {

@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIMessageEvent_h
-#define MIDIMessageEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_MESSAGE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_MESSAGE_EVENT_H_
 
 #include "base/time/time.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "modules/EventModules.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ class MIDIMessageEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // MIDIMessageEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_MESSAGE_EVENT_H_

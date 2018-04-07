@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/PaintLayer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 
-#include "core/html/HTMLIFrameElement.h"
-#include "core/layout/LayoutBoxModelObject.h"
-#include "core/layout/LayoutView.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/testing/PaintTestConfigurations.h"
-#include "platform/testing/UnitTestHelpers.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 

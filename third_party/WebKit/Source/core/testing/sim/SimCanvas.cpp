@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/testing/sim/SimCanvas.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_canvas.h"
 
-#include "platform/graphics/Color.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"

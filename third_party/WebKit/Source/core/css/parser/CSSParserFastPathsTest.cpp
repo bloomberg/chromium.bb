@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSParserFastPaths.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_fast_paths.h"
 
-#include "core/css/CSSColorValue.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSValueList.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
 
 namespace blink {
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentAddress.h"
+#include "third_party/blink/renderer/modules/payments/payment_address.h"
 
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

@@ -17,14 +17,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGPathUtilities.h"
+#include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
 
-#include "core/svg/SVGPathBuilder.h"
-#include "core/svg/SVGPathByteStreamBuilder.h"
-#include "core/svg/SVGPathByteStreamSource.h"
-#include "core/svg/SVGPathParser.h"
-#include "core/svg/SVGPathStringBuilder.h"
-#include "core/svg/SVGPathStringSource.h"
+#include "third_party/blink/renderer/core/svg/svg_path_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_path_byte_stream_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_path_byte_stream_source.h"
+#include "third_party/blink/renderer/core/svg/svg_path_parser.h"
+#include "third_party/blink/renderer/core/svg/svg_path_string_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_path_string_source.h"
 
 namespace blink {
 

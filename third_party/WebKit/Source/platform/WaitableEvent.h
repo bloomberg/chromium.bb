@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WaitableEvent_h
-#define WaitableEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WAITABLE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WAITABLE_EVENT_H_
 
 #include <memory>
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace base {
 class WaitableEvent;
@@ -87,4 +87,4 @@ class PLATFORM_EXPORT WaitableEvent {
 
 }  // namespace blink
 
-#endif  // WaitableEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WAITABLE_EVENT_H_

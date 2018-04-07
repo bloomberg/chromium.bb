@@ -26,13 +26,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AudioListener_h
-#define AudioListener_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_LISTENER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_LISTENER_H_
 
-#include "modules/webaudio/AudioParam.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/geometry/FloatPoint3D.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -194,4 +194,4 @@ class AudioListener : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // AudioListener_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_LISTENER_H_

@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFallbackThemeEngine_h
-#define WebFallbackThemeEngine_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FALLBACK_THEME_ENGINE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FALLBACK_THEME_ENGINE_H_
 
-#include "WebCanvas.h"
-#include "WebColor.h"
-#include "WebSize.h"
+#include "third_party/blink/public/platform/web_canvas.h"
+#include "third_party/blink/public/platform/web_color.h"
+#include "third_party/blink/public/platform/web_size.h"
 
 namespace blink {
 

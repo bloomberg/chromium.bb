@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSStyleVariableReferenceValue_h
-#define CSSStyleVariableReferenceValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_STYLE_VARIABLE_REFERENCE_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_STYLE_VARIABLE_REFERENCE_VALUE_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css/cssom/CSSUnparsedValue.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unparsed_value.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/inline/ng_inline_box_state.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
 
-#include "core/layout/ng/geometry/ng_logical_offset.h"
-#include "core/layout/ng/geometry/ng_logical_size.h"
-#include "core/layout/ng/inline/ng_inline_item_result.h"
-#include "core/layout/ng/inline/ng_line_box_fragment_builder.h"
-#include "core/layout/ng/inline/ng_text_fragment_builder.h"
-#include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_layout_result.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

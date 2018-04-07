@@ -23,25 +23,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/frame/UseCounter.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameConsole.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/frame/Settings.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/page/Page.h"
-#include "core/workers/WorkerOrWorkletGlobalScope.h"
-#include "platform/Histogram.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/weborigin/SchemeRegistry.h"
-#include "third_party/WebKit/public/mojom/use_counter/css_property_id.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-blink.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 
 namespace blink {
 

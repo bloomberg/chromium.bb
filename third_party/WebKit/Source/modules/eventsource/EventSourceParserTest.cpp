@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/eventsource/EventSourceParser.h"
+#include "third_party/blink/renderer/modules/eventsource/event_source_parser.h"
 
-#include "modules/eventsource/EventSource.h"
-#include "platform/wtf/text/CharacterNames.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/modules/eventsource/event_source.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 #include <string.h>
 

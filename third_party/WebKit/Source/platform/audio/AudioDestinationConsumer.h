@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AudioDestinationConsumer_h
-#define AudioDestinationConsumer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DESTINATION_CONSUMER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DESTINATION_CONSUMER_H_
 
 #include <memory>
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class PLATFORM_EXPORT AudioDestinationConsumer {
 
 }  // namespace blink
 
-#endif  // AudioDestinationConsumer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DESTINATION_CONSUMER_H_

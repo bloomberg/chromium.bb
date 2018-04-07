@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaValuesDynamic_h
-#define MediaValuesDynamic_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_DYNAMIC_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_DYNAMIC_H_
 
-#include "core/css/MediaValues.h"
+#include "third_party/blink/renderer/core/css/media_values.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
 
 }  // namespace blink
 
-#endif  // MediaValuesDynamic_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_DYNAMIC_H_

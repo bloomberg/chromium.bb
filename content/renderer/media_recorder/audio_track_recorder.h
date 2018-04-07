@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/renderer/media_recorder/audio_track_encoder.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace media {
 class AudioBus;

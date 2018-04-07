@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ModuleScriptLoader_h
-#define ModuleScriptLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_MODULE_SCRIPT_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_MODULE_SCRIPT_LOADER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/loader/modulescript/ModuleScriptCreationParams.h"
-#include "core/loader/modulescript/ModuleScriptFetchRequest.h"
-#include "core/loader/modulescript/ModuleScriptFetcher.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

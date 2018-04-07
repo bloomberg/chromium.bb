@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebIDBKeyRange_h
-#define WebIDBKeyRange_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_KEY_RANGE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_KEY_RANGE_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebPrivatePtr.h"
-#include "public/platform/modules/indexeddb/WebIDBKey.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ class WebIDBKeyRange {
 
 }  // namespace blink
 
-#endif  // WebIDBKeyRange_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_KEY_RANGE_H_

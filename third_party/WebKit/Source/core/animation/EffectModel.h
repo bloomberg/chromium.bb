@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EffectModel_h
-#define EffectModel_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_EFFECT_MODEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_EFFECT_MODEL_H_
 
-#include "core/CoreExport.h"
-#include "core/animation/PropertyHandle.h"
-#include "core/css_property_names.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/animation/property_handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class CORE_EXPORT EffectModel : public GarbageCollectedFinalized<EffectModel> {
 
 }  // namespace blink
 
-#endif  // EffectModel_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_EFFECT_MODEL_H_

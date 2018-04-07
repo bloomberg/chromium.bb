@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AbstractPropertySetCSSStyleDeclaration_h
-#define AbstractPropertySetCSSStyleDeclaration_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_ABSTRACT_PROPERTY_SET_CSS_STYLE_DECLARATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_ABSTRACT_PROPERTY_SET_CSS_STYLE_DECLARATION_H_
 
-#include "core/css/CSSStyleDeclaration.h"
+#include "third_party/blink/renderer/core/css/css_style_declaration.h"
 
 namespace blink {
 
@@ -90,4 +90,4 @@ class AbstractPropertySetCSSStyleDeclaration : public CSSStyleDeclaration {
 
 }  // namespace blink
 
-#endif  // AbstractPropertySetCSSStyleDeclaration_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_ABSTRACT_PROPERTY_SET_CSS_STYLE_DECLARATION_H_

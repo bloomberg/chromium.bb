@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webusb/NavigatorUSB.h"
+#include "third_party/blink/renderer/modules/webusb/navigator_usb.h"
 
-#include "core/frame/Navigator.h"
-#include "modules/webusb/USB.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/webusb/usb.h"
 
 namespace blink {
 

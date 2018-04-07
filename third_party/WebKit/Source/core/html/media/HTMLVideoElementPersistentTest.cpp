@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/media/HTMLVideoElement.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 
 #include <memory>
 
-#include "core/dom/UserGestureIndicator.h"
-#include "core/fullscreen/Fullscreen.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/layout/LayoutFullScreen.h"
-#include "core/loader/EmptyClients.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/layout/layout_full_screen.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 

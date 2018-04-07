@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/AudioProcessor.h"
+#include "third_party/blink/renderer/platform/audio/audio_processor.h"
 
 namespace blink {
 

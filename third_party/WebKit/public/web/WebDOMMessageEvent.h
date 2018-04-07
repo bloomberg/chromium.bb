@@ -27,18 +27,18 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef WebDOMMessageEvent_h
-#define WebDOMMessageEvent_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOM_MESSAGE_EVENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOM_MESSAGE_EVENT_H_
 
-#include "public/platform/WebString.h"
-#include "public/web/WebDOMEvent.h"
-#include "public/web/WebDocument.h"
-#include "public/web/WebSerializedScriptValue.h"
-#include "third_party/WebKit/public/common/message_port/message_port_channel.h"
-#include "third_party/WebKit/public/common/message_port/transferable_message.h"
+#include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/message_port/transferable_message.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_dom_event.h"
+#include "third_party/blink/public/web/web_serialized_script_value.h"
 
 #if INSIDE_BLINK
-#include "core/events/MessageEvent.h"
+#include "third_party/blink/renderer/core/events/message_event.h"
 #endif
 
 namespace blink {

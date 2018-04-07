@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/SelectionTemplate.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
 
 #include <ostream>  // NOLINT
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/PositionWithAffinity.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

@@ -18,11 +18,11 @@
  *  MA 02110-1301 USA
  */
 
-#ifndef XMLSerializer_h
-#define XMLSerializer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_XML_SERIALIZER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_XML_SERIALIZER_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class XMLSerializer final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // XMLSerializer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XML_SERIALIZER_H_

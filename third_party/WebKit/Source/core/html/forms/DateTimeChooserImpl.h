@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DateTimeChooserImpl_h
-#define DateTimeChooserImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_DATE_TIME_CHOOSER_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_DATE_TIME_CHOOSER_IMPL_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/html/forms/DateTimeChooser.h"
-#include "core/page/PagePopupClient.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
+#include "third_party/blink/renderer/core/page/page_popup_client.h"
 
 namespace blink {
 
@@ -79,4 +79,4 @@ class CORE_EXPORT DateTimeChooserImpl final : public DateTimeChooser,
 
 }  // namespace blink
 
-#endif  // DateTimeChooserImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_DATE_TIME_CHOOSER_IMPL_H_

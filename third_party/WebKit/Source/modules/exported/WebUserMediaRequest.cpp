@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebUserMediaRequest.h"
+#include "third_party/blink/public/web/web_user_media_request.h"
 
-#include "modules/mediastream/UserMediaRequest.h"
-#include "platform/mediastream/MediaStreamDescriptor.h"
-#include "platform/mediastream/MediaStreamSource.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebMediaConstraints.h"
-#include "public/platform/WebMediaStream.h"
-#include "public/platform/WebMediaStreamSource.h"
-#include "public/platform/WebSecurityOrigin.h"
-#include "public/platform/WebString.h"
-#include "public/web/WebDocument.h"
+#include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

@@ -22,18 +22,18 @@
  *
  */
 
-#include "core/layout/LayoutThemeDefault.h"
+#include "third_party/blink/renderer/core/layout/layout_theme_default.h"
 
-#include "core/css_value_keywords.h"
-#include "core/layout/LayoutThemeFontProvider.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/DataResourceHelper.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/PlatformChromeClient.h"
-#include "platform/graphics/Color.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThemeEngine.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/layout/layout_theme_font_provider.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/data_resource_helper.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/platform_chrome_client.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

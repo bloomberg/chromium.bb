@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/LayerClipRecorder.h"
+#include "third_party/blink/renderer/core/paint/layer_clip_recorder.h"
 
-#include "core/layout/LayoutView.h"
-#include "core/paint/PaintControllerPaintTest.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/compositing/PaintLayerCompositor.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/PaintController.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
+#include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 
 namespace blink {
 namespace {

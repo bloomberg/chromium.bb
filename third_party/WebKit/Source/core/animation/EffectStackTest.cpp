@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/EffectStack.h"
+#include "third_party/blink/renderer/core/animation/effect_stack.h"
 
 #include <memory>
-#include "core/animation/AnimationClock.h"
-#include "core/animation/AnimationTestHelper.h"
-#include "core/animation/DocumentTimeline.h"
-#include "core/animation/ElementAnimations.h"
-#include "core/animation/InvalidatableInterpolation.h"
-#include "core/animation/KeyframeEffectModel.h"
-#include "core/animation/PendingAnimations.h"
-#include "core/animation/StringKeyframe.h"
-#include "core/animation/animatable/AnimatableDouble.h"
-#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/animation/animatable/animatable_double.h"
+#include "third_party/blink/renderer/core/animation/animation_clock.h"
+#include "third_party/blink/renderer/core/animation/animation_test_helper.h"
+#include "third_party/blink/renderer/core/animation/document_timeline.h"
+#include "third_party/blink/renderer/core/animation/element_animations.h"
+#include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/animation/pending_animations.h"
+#include "third_party/blink/renderer/core/animation/string_keyframe.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

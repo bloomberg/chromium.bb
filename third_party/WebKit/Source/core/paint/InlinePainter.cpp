@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/InlinePainter.h"
+#include "third_party/blink/renderer/core/paint/inline_painter.h"
 
-#include "core/layout/LayoutInline.h"
-#include "core/paint/LineBoxListPainter.h"
-#include "core/paint/ObjectPainter.h"
-#include "core/paint/PaintInfo.h"
-#include "platform/geometry/LayoutPoint.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/paint/line_box_list_painter.h"
+#include "third_party/blink/renderer/core/paint/object_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
 
 namespace blink {
 

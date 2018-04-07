@@ -25,13 +25,13 @@
 
 // Tests for the interval tree class.
 
-#include "platform/PODIntervalTree.h"
+#include "third_party/blink/renderer/platform/pod_interval_tree.h"
 
-#include "platform/geometry/FloatPolygon.h"
-#include "platform/testing/TreeTestHelpers.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/geometry/float_polygon.h"
+#include "third_party/blink/renderer/platform/testing/tree_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

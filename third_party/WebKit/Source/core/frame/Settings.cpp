@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/frame/Settings.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "platform/scroll/ScrollbarTheme.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
 namespace blink {
 

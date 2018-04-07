@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PositionIterator_h
-#define PositionIterator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_POSITION_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_POSITION_ITERATOR_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Node.h"
-#include "core/editing/EditingStrategy.h"
-#include "core/editing/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/editing/editing_strategy.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
 
 namespace blink {
 
@@ -101,4 +101,4 @@ using PositionIteratorInFlatTree =
 
 }  // namespace blink
 
-#endif  // PositionIterator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_POSITION_ITERATOR_H_

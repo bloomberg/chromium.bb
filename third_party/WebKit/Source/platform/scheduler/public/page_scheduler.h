@@ -6,11 +6,11 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_PUBLIC_PAGE_SCHEDULER_H_
 
 #include <memory>
-#include "platform/PlatformExport.h"
-#include "platform/scheduler/public/frame_scheduler.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/BlameContext.h"
+#include "third_party/blink/public/platform/blame_context.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

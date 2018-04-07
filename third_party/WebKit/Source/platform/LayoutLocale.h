@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayoutLocale_h
-#define LayoutLocale_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LAYOUT_LOCALE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LAYOUT_LOCALE_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/text/Hyphenation.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/text/hyphenation.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 #include <unicode/uscript.h>
 
@@ -85,4 +85,4 @@ class PLATFORM_EXPORT LayoutLocale : public RefCounted<LayoutLocale> {
 
 }  // namespace blink
 
-#endif  // LayoutLocale_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LAYOUT_LOCALE_H_

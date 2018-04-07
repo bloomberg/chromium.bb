@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Microtask_h
-#define Microtask_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_MICROTASK_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_MICROTASK_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Functional.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -74,4 +74,4 @@ class PLATFORM_EXPORT Microtask {
 
 }  // namespace blink
 
-#endif  // Microtask_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_MICROTASK_H_

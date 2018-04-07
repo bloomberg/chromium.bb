@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/NodeRareData.h"
+#include "third_party/blink/renderer/core/dom/node_rare_data.h"
 
-#include "core/dom/ContainerNode.h"
-#include "core/dom/Element.h"
-#include "core/dom/ElementRareData.h"
-#include "core/dom/NodeListsNodeData.h"
-#include "core/page/Page.h"
-#include "platform/bindings/ScriptWrappableVisitor.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/element_rare_data.h"
+#include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

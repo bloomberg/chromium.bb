@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MouseWheelEventManager_h
-#define MouseWheelEventManager_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_MOUSE_WHEEL_EVENT_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_MOUSE_WHEEL_EVENT_MANAGER_H_
 
 #include "base/macros.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/Visitor.h"
-#include "public/platform/WebInputEventResult.h"
+#include "third_party/blink/public/platform/web_input_event_result.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
 
 namespace blink {
 
@@ -43,4 +43,4 @@ class MouseWheelEventManager final
 
 }  // namespace blink
 
-#endif  // MouseWheelEventManager_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_MOUSE_WHEEL_EVENT_MANAGER_H_

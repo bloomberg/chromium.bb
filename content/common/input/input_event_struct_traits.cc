@@ -6,7 +6,7 @@
 
 #include "base/i18n/char_iterator.h"
 #include "content/common/input_messages.h"
-#include "third_party/WebKit/public/platform/WebKeyboardEvent.h"
+#include "third_party/blink/public/platform/web_keyboard_event.h"
 #include "ui/latency/mojo/latency_info_struct_traits.h"
 
 namespace mojo {

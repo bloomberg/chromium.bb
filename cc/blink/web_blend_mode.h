@@ -5,7 +5,7 @@
 #ifndef CC_BLINK_WEB_BLEND_MODE_H_
 #define CC_BLINK_WEB_BLEND_MODE_H_
 
-#include "third_party/WebKit/public/platform/WebBlendMode.h"
+#include "third_party/blink/public/platform/web_blend_mode.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace cc_blink {

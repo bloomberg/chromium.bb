@@ -13,8 +13,8 @@
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
-#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_mixed_content_context_type.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 
 namespace blink {
 class WebHTTPBody;

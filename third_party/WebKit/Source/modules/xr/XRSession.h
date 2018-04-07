@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef XRSession_h
-#define XRSession_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SESSION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SESSION_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/events/EventTarget.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "modules/xr/XRFrameRequestCallbackCollection.h"
-#include "modules/xr/XRInputSource.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/geometry/DoubleSize.h"
-#include "platform/heap/Handle.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/modules/xr/xr_frame_request_callback_collection.h"
+#include "third_party/blink/renderer/modules/xr/xr_input_source.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/geometry/double_size.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

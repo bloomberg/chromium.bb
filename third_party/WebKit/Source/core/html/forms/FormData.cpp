@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/FormData.h"
+#include "third_party/blink/renderer/core/html/forms/form_data.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fileapi/Blob.h"
-#include "core/fileapi/File.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/forms/HTMLFormElement.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/network/FormDataEncoder.h"
-#include "platform/text/LineEnding.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/fileapi/file.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/network/form_data_encoder.h"
+#include "third_party/blink/renderer/platform/text/line_ending.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

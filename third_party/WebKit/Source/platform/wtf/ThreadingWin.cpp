@@ -96,7 +96,7 @@
  *      59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include "platform/wtf/Threading.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 #include "build/build_config.h"
 
@@ -105,14 +105,14 @@
 #include <errno.h>
 #include <process.h>
 #include <windows.h>
-#include "platform/wtf/DateMath.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/ThreadSpecific.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/WTFThreadData.h"
-#include "platform/wtf/dtoa/double-conversion.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/double-conversion.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_thread_data.h"
 
 namespace WTF {
 

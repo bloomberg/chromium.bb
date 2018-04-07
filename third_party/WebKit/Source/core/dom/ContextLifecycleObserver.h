@@ -24,12 +24,12 @@
  *
  */
 
-#ifndef ContextLifecycleObserver_h
-#define ContextLifecycleObserver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTEXT_LIFECYCLE_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTEXT_LIFECYCLE_OBSERVER_H_
 
-#include "core/CoreExport.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "platform/LifecycleObserver.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/lifecycle_observer.h"
 
 namespace blink {
 
@@ -126,4 +126,4 @@ class CORE_EXPORT DOMWindowClient : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // ContextLifecycleObserver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTEXT_LIFECYCLE_OBSERVER_H_

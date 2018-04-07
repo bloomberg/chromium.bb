@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebWidgetClient_h
-#define WebWidgetClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_CLIENT_H_
 
-#include "WebNavigationPolicy.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebDragOperation.h"
-#include "public/platform/WebIntrinsicSizingInfo.h"
-#include "public/platform/WebLayerTreeView.h"
-#include "public/platform/WebPoint.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebReferrerPolicy.h"
-#include "public/platform/WebScreenInfo.h"
-#include "public/platform/WebTouchAction.h"
-#include "public/web/WebMeaningfulLayout.h"
-#include "public/web/WebTextDirection.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_drag_operation.h"
+#include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
+#include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/public/platform/web_touch_action.h"
+#include "third_party/blink/public/web/web_meaningful_layout.h"
+#include "third_party/blink/public/web/web_navigation_policy.h"
+#include "third_party/blink/public/web/web_text_direction.h"
 
 namespace blink {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/SurfaceLayerBridge.h"
+#include "third_party/blink/renderer/platform/graphics/surface_layer_bridge.h"
 
 #include "base/feature_list.h"
 #include "cc/layers/layer.h"
@@ -11,14 +11,14 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "media/base/media_switches.h"
-#include "platform/mojo/MojoHelper.h"
-#include "platform/wtf/Functional.h"
-#include "public/platform/InterfaceProvider.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebLayer.h"
-#include "public/platform/WebLayerTreeView.h"
-#include "public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_compositor_support.h"
+#include "third_party/blink/public/platform/web_layer.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace blink {

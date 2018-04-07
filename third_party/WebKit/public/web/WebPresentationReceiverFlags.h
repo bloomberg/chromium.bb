@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebPresentationReceiverFlags_h
-#define WebPresentationReceiverFlags_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PRESENTATION_RECEIVER_FLAGS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PRESENTATION_RECEIVER_FLAGS_H_
 
-#include "third_party/WebKit/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
 
 namespace blink {
 
@@ -44,4 +44,4 @@ static constexpr WebSandboxFlags kPresentationReceiverSandboxFlags =
 
 }  // namespace blink
 
-#endif  // WebPresentationReceiverFlags_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PRESENTATION_RECEIVER_FLAGS_H_

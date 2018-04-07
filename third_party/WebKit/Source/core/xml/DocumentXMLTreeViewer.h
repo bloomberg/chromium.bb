@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DocumentXMLTreeViewer_h
-#define DocumentXMLTreeViewer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_DOCUMENT_XML_TREE_VIEWER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_DOCUMENT_XML_TREE_VIEWER_H_
 
 namespace blink {
 

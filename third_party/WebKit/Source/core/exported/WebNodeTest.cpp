@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/web/WebNode.h"
+#include "third_party/blink/public/web/web_node.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/testing/PageTestBase.h"
-#include "public/web/WebElement.h"
-#include "public/web/WebElementCollection.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/web/web_element.h"
+#include "third_party/blink/public/web/web_element_collection.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

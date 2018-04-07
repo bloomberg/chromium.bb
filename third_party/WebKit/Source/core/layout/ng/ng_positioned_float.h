@@ -5,9 +5,9 @@
 #ifndef NGPositionedFloat_h
 #define NGPositionedFloat_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_bfc_offset.h"
-#include "core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 
 namespace blink {
 

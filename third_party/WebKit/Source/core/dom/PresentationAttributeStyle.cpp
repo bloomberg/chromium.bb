@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/PresentationAttributeStyle.h"
+#include "third_party/blink/renderer/core/dom/presentation_attribute_style.h"
 
 #include <algorithm>
 
 #include "base/macros.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/dom/Attribute.h"
-#include "core/dom/Element.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/HashFunctions.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/CString.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/dom/attribute.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 namespace blink {
 

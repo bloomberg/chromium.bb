@@ -25,14 +25,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IntSize_h
-#define IntSize_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_SIZE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_SIZE_H_
 
 #include "build/build_config.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 #if defined(OS_MACOSX)
 typedef struct CGSize CGSize;
@@ -157,4 +157,4 @@ PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const IntSize&);
 
 }  // namespace blink
 
-#endif  // IntSize_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_SIZE_H_

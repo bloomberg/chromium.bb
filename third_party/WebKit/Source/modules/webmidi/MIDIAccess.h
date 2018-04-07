@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIAccess_h
-#define MIDIAccess_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_ACCESS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_ACCESS_H_
 
 #include <memory>
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/ContextLifecycleObserver.h"
 #include "media/midi/midi_service.mojom-blink.h"
-#include "modules/EventTargetModules.h"
-#include "modules/webmidi/MIDIAccessInitializer.h"
-#include "modules/webmidi/MIDIAccessor.h"
-#include "modules/webmidi/MIDIAccessorClient.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_access_initializer.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_accessor.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_accessor_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -145,4 +145,4 @@ class MIDIAccess final : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // MIDIAccess_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_ACCESS_H_

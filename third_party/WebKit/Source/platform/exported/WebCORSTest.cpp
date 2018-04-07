@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebCORS.h"
+#include "third_party/blink/public/platform/web_cors.h"
 
-#include "platform/exported/WrappedResourceResponse.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "public/platform/WebCORS.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_cors.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
 namespace blink {
 

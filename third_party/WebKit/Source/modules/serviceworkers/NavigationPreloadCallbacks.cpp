@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/serviceworkers/NavigationPreloadCallbacks.h"
+#include "third_party/blink/renderer/modules/serviceworkers/navigation_preload_callbacks.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "modules/serviceworkers/NavigationPreloadState.h"
-#include "modules/serviceworkers/ServiceWorkerError.h"
-#include "public/platform/modules/serviceworker/WebNavigationPreloadState.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_navigation_preload_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/serviceworkers/navigation_preload_state.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_error.h"
 
 namespace blink {
 

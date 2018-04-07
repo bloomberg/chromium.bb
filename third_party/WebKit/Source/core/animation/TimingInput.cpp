@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/TimingInput.h"
+#include "third_party/blink/renderer/core/animation/timing_input.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/unrestricted_double_or_keyframe_animation_options.h"
-#include "bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
-#include "core/animation/AnimationEffect.h"
-#include "core/animation/AnimationInputHelpers.h"
-#include "core/animation/EffectTiming.h"
-#include "core/animation/KeyframeEffectOptions.h"
-#include "core/animation/OptionalEffectTiming.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_animation_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
+#include "third_party/blink/renderer/core/animation/animation_effect.h"
+#include "third_party/blink/renderer/core/animation/animation_input_helpers.h"
+#include "third_party/blink/renderer/core/animation/effect_timing.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_options.h"
+#include "third_party/blink/renderer/core/animation/optional_effect_timing.h"
 
 namespace blink {
 namespace {

@@ -20,10 +20,10 @@
  *
  */
 
-#ifndef CDATASection_h
-#define CDATASection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CDATA_SECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CDATA_SECTION_H_
 
-#include "core/dom/Text.h"
+#include "third_party/blink/renderer/core/dom/text.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ DEFINE_NODE_TYPE_CASTS(CDATASection, getNodeType() == Node::kCdataSectionNode);
 
 }  // namespace blink
 
-#endif  // CDATASection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CDATA_SECTION_H_

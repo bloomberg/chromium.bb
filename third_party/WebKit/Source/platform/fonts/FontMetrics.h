@@ -17,13 +17,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef FontMetrics_h
-#define FontMetrics_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_METRICS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_METRICS_H_
 
-#include "platform/LayoutUnit.h"
-#include "platform/fonts/FontBaseline.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/fonts/font_baseline.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 #include <SkPaint.h>
 
@@ -205,4 +205,4 @@ class FontMetrics {
 
 }  // namespace blink
 
-#endif  // FontMetrics_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_METRICS_H_

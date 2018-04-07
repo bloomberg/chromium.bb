@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DocumentLayoutDefinition_h
-#define DocumentLayoutDefinition_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_DOCUMENT_LAYOUT_DEFINITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_DOCUMENT_LAYOUT_DEFINITION_H_
 
-#include "core/layout/custom/CSSLayoutDefinition.h"
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/core/layout/custom/css_layout_definition.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class DocumentLayoutDefinition final
 
 }  // namespace blink
 
-#endif  // DocumentLayoutDefinition_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_DOCUMENT_LAYOUT_DEFINITION_H_

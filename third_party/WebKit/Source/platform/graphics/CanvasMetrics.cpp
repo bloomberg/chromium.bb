@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/CanvasMetrics.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_metrics.h"
 
-#include "platform/Histogram.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Threading.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 

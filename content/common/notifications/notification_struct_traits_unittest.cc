@@ -13,7 +13,7 @@
 #include "content/public/common/platform_notification_data.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/modules/notifications/notification.mojom.h"
+#include "third_party/blink/public/platform/modules/notifications/notification.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 

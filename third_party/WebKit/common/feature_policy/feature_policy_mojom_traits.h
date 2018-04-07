@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "mojo/public/cpp/bindings/enum_traits.h"
-#include "third_party/WebKit/common/common_export.h"
-#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
-#include "third_party/WebKit/public/common/frame/sandbox_flags.h"
-#include "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom-shared.h"
+#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-shared.h"
 
 namespace mojo {
 

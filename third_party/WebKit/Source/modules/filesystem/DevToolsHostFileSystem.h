@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DevToolsHostFileSystem_h
-#define DevToolsHostFileSystem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DEV_TOOLS_HOST_FILE_SYSTEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DEV_TOOLS_HOST_FILE_SYSTEM_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

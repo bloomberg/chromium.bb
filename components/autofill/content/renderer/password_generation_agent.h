@@ -20,7 +20,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/blink/public/web/web_input_element.h"
 #include "url/gurl.h"
 
 namespace autofill {

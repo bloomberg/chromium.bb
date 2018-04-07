@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/renderer/frame_status.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/frame_status.h"
 
-#include "platform/scheduler/public/frame_scheduler.h"
-#include "platform/scheduler/public/page_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 
 namespace blink {
 namespace scheduler {

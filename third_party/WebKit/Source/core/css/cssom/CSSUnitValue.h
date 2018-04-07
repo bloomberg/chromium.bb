@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSUnitValue_h
-#define CSSUnitValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_UNIT_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_UNIT_VALUE_H_
 
 #include "base/macros.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/cssom/CSSNumericValue.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_numeric_value.h"
 
 namespace blink {
 
@@ -77,4 +77,4 @@ DEFINE_TYPE_CASTS(CSSUnitValue,
 
 }  // namespace blink
 
-#endif  // CSSUnitValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_UNIT_VALUE_H_

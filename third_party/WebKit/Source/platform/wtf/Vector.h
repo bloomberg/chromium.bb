@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef WTF_Vector_h
-#define WTF_Vector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_VECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_VECTOR_H_
 
 #include <string.h>
 #include <algorithm>
@@ -30,16 +30,16 @@
 #include "base/macros.h"
 #include "base/template_util.h"
 #include "build/build_config.h"
-#include "platform/wtf/Alignment.h"
-#include "platform/wtf/ConditionalDestructor.h"
-#include "platform/wtf/ConstructTraits.h"
-#include "platform/wtf/ContainerAnnotations.h"
-#include "platform/wtf/Forward.h"  // For default Vector template parameters.
-#include "platform/wtf/HashTableDeletedValueType.h"
-#include "platform/wtf/NotFound.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/VectorTraits.h"
-#include "platform/wtf/allocator/PartitionAllocator.h"
+#include "third_party/blink/renderer/platform/wtf/alignment.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/conditional_destructor.h"
+#include "third_party/blink/renderer/platform/wtf/construct_traits.h"
+#include "third_party/blink/renderer/platform/wtf/container_annotations.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"  // For default Vector template parameters.
+#include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
+#include "third_party/blink/renderer/platform/wtf/not_found.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/vector_traits.h"
 
 // For ASAN builds, disable inline buffers completely as they cause various
 // issues.
@@ -1996,4 +1996,4 @@ struct is_trivially_copy_constructible<WTF::Vector<T>> : std::false_type {};
 
 using WTF::Vector;
 
-#endif  // WTF_Vector_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_VECTOR_H_

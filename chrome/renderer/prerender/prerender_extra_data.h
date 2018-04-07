@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebPrerender.h"
+#include "third_party/blink/public/platform/web_prerender.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace prerender {

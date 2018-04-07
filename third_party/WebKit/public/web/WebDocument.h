@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebDocument_h
-#define WebDocument_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOCUMENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOCUMENT_H_
 
-#include "WebDraggableRegion.h"
-#include "WebFrame.h"
-#include "WebNode.h"
-#include "public/platform/WebColor.h"
-#include "public/platform/WebReferrerPolicy.h"
-#include "public/platform/WebSecurityOrigin.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_color.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_draggable_region.h"
+#include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/public/web/web_node.h"
 
 namespace v8 {
 class Value;

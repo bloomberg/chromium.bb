@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RemoteWindowProxy_h
-#define RemoteWindowProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_REMOTE_WINDOW_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_REMOTE_WINDOW_PROXY_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/WindowProxy.h"
-#include "core/frame/RemoteFrame.h"
-#include "platform/bindings/DOMWrapperWorld.h"
+#include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
+#include "third_party/blink/renderer/core/frame/remote_frame.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -70,4 +70,4 @@ class RemoteWindowProxy final : public WindowProxy {
 
 }  // namespace blink
 
-#endif  // RemoteWindowProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_REMOTE_WINDOW_PROXY_H_

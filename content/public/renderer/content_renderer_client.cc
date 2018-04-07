@@ -6,12 +6,12 @@
 
 #include "content/public/renderer/media_stream_renderer_factory.h"
 #include "media/base/renderer_factory.h"
-#include "third_party/WebKit/public/platform/WebAudioDevice.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
-#include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
-#include "third_party/WebKit/public/platform/WebSocketHandshakeThrottle.h"
-#include "third_party/WebKit/public/platform/WebSpeechSynthesizer.h"
-#include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessor.h"
+#include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
+#include "third_party/blink/public/platform/web_audio_device.h"
+#include "third_party/blink/public/platform/web_media_stream_center.h"
+#include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
+#include "third_party/blink/public/platform/web_socket_handshake_throttle.h"
+#include "third_party/blink/public/platform/web_speech_synthesizer.h"
 #include "ui/gfx/icc_profile.h"
 #include "url/gurl.h"
 

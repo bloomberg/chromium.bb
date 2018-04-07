@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IgnoreDestructiveWriteCountIncrementer_h
-#define IgnoreDestructiveWriteCountIncrementer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_IGNORE_DESTRUCTIVE_WRITE_COUNT_INCREMENTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_IGNORE_DESTRUCTIVE_WRITE_COUNT_INCREMENTER_H_
 
 #include "base/macros.h"
-#include "core/dom/Document.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

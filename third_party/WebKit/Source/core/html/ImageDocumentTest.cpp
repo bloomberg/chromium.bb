@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/ImageDocument.h"
+#include "third_party/blink/renderer/core/html/image_document.h"
 
 #include "build/build_config.h"
-#include "core/dom/Document.h"
-#include "core/dom/DocumentParser.h"
-#include "core/frame/Settings.h"
-#include "core/frame/VisualViewport.h"
-#include "core/geometry/DOMRect.h"
-#include "core/loader/EmptyClients.h"
-#include "core/testing/DummyPageHolder.h"
-#include "core/testing/sim/SimRequest.h"
-#include "core/testing/sim/SimTest.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_parser.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 
 namespace blink {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/state_machines/BackwardCodePointStateMachine.h"
+#include "third_party/blink/renderer/core/editing/state_machines/backward_code_point_state_machine.h"
 
 namespace blink {
 

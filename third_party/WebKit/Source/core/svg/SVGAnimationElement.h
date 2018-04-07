@@ -22,12 +22,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGAnimationElement_h
-#define SVGAnimationElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATION_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATION_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/svg/animation/SVGSMILElement.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/svg/animation/svg_smil_element.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
 
 namespace blink {
@@ -190,4 +190,4 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
 
 }  // namespace blink
 
-#endif  // SVGAnimationElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATION_ELEMENT_H_

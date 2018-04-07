@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkletModuleResponsesMap_h
-#define WorkletModuleResponsesMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_MODULE_RESPONSES_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_MODULE_RESPONSES_MAP_H_
 
-#include "core/CoreExport.h"
-#include "core/loader/modulescript/ModuleScriptCreationParams.h"
-#include "core/workers/WorkerOrWorkletModuleFetchCoordinator.h"
-#include "platform/heap/Heap.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/KURLHash.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class CORE_EXPORT WorkletModuleResponsesMap
 
 }  // namespace blink
 
-#endif  // WorkletModuleResponsesMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_MODULE_RESPONSES_MAP_H_

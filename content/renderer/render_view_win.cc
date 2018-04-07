@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/renderer_preferences.h"
 #include "content/child/webthemeengine_impl_default.h"
+#include "content/public/common/renderer_preferences.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/public/web/win/WebFontRendering.h"
+#include "third_party/blink/public/web/win/web_font_rendering.h"
 #include "third_party/skia/include/core/SkFontLCDConfig.h"
 #include "ui/gfx/font_render_params.h"
 

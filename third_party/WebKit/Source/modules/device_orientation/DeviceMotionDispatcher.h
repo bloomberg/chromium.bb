@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DeviceMotionDispatcher_h
-#define DeviceMotionDispatcher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_DISPATCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_DISPATCHER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/frame/PlatformEventDispatcher.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/modules/device_orientation/WebDeviceMotionListener.h"
+#include "third_party/blink/public/platform/modules/device_orientation/web_device_motion_listener.h"
+#include "third_party/blink/renderer/core/frame/platform_event_dispatcher.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace device {
 class MotionData;
@@ -76,4 +76,4 @@ class DeviceMotionDispatcher final
 
 }  // namespace blink
 
-#endif  // DeviceMotionDispatcher_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_DEVICE_ORIENTATION_DEVICE_MOTION_DISPATCHER_H_

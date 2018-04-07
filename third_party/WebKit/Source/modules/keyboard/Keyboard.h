@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Keyboard_h
-#define Keyboard_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_KEYBOARD_KEYBOARD_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_KEYBOARD_KEYBOARD_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -35,4 +35,4 @@ class Keyboard final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // Keyboard_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_KEYBOARD_KEYBOARD_H_

@@ -10,11 +10,11 @@
 #include "content/renderer/indexed_db/indexed_db_key_builders.h"
 #include "content/renderer/indexed_db/webidbcursor_impl.h"
 #include "content/renderer/indexed_db/webidbdatabase_impl.h"
-#include "third_party/WebKit/public/platform/FilePathConversion.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCallbacks.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseError.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBMetadata.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBValue.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 
 using blink::WebBlobInfo;
 using blink::WebData;

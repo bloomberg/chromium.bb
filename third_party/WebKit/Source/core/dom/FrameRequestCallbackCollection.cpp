@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/FrameRequestCallbackCollection.h"
+#include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/probe/CoreProbes.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 
 namespace blink {
 

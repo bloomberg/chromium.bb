@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DocumentModuleScriptFetcher_h
-#define DocumentModuleScriptFetcher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_DOCUMENT_MODULE_SCRIPT_FETCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_DOCUMENT_MODULE_SCRIPT_FETCHER_H_
 
-#include "core/loader/modulescript/ModuleScriptCreationParams.h"
-#include "core/loader/modulescript/ModuleScriptFetcher.h"
-#include "core/loader/resource/ScriptResource.h"
-#include "core/script/Modulator.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
+#include "third_party/blink/renderer/core/loader/resource/script_resource.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class CORE_EXPORT DocumentModuleScriptFetcher : public ModuleScriptFetcher,
 
 }  // namespace blink
 
-#endif  // DocumentModuleScriptFetcher_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_DOCUMENT_MODULE_SCRIPT_FETCHER_H_

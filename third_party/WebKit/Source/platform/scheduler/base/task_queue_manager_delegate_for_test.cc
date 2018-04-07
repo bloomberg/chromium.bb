@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/base/task_queue_manager_delegate_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager_delegate_for_test.h"
 
 #include <utility>
 

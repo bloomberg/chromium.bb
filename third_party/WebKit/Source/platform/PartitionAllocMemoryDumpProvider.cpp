@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/PartitionAllocMemoryDumpProvider.h"
+#include "third_party/blink/renderer/platform/partition_alloc_memory_dump_provider.h"
 
 #include <unordered_map>
 
@@ -11,8 +11,8 @@
 #include "base/trace_event/heap_profiler_allocation_register.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
-#include "platform/wtf/allocator/Partitions.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

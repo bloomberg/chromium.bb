@@ -8,11 +8,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/cdm_config.h"
-#include "third_party/WebKit/public/platform/WebContentDecryptionModuleAccess.h"
-#include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
-#include "third_party/WebKit/public/platform/WebMediaKeySystemConfiguration.h"
-#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_content_decryption_module_access.h"
+#include "third_party/blink/public/platform/web_content_decryption_module_result.h"
+#include "third_party/blink/public/platform/web_media_key_system_configuration.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace media {
 

@@ -24,12 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/canvas/canvas2d/CanvasGradient.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_gradient.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/canvas/canvas2d/CanvasPattern.h"
-#include "modules/canvas/canvas2d/CanvasStyle.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_pattern.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.h"
 
 namespace blink {
 

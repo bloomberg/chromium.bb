@@ -20,20 +20,20 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/xml/XSLTProcessor.h"
+#include "third_party/blink/renderer/core/xml/xslt_processor.h"
 
-#include "core/dom/DOMImplementation.h"
-#include "core/dom/DocumentEncodingData.h"
-#include "core/dom/DocumentFragment.h"
-#include "core/editing/serializers/Serialization.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/xml/DocumentXSLT.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/dom/document_encoding_data.h"
+#include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/dom/dom_implementation.h"
+#include "third_party/blink/renderer/core/editing/serializers/serialization.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/xml/document_xslt.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

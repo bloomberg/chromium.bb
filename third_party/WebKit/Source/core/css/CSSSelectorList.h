@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSSelectorList_h
-#define CSSSelectorList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SELECTOR_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SELECTOR_LIST_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/css/CSSSelector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_selector.h"
 
 namespace blink {
 
@@ -160,4 +160,4 @@ inline const CSSSelector* CSSSelectorList::NextInFullList(
 
 }  // namespace blink
 
-#endif  // CSSSelectorList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SELECTOR_LIST_H_

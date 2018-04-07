@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TrackDefaultList_h
-#define TrackDefaultList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_TRACK_DEFAULT_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_TRACK_DEFAULT_LIST_H_
 
-#include "modules/mediasource/TrackDefault.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/mediasource/track_default.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class TrackDefaultList final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // TrackDefaultList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_TRACK_DEFAULT_LIST_H_

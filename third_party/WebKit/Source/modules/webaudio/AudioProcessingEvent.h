@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#ifndef AudioProcessingEvent_h
-#define AudioProcessingEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_PROCESSING_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_PROCESSING_EVENT_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/EventModules.h"
-#include "modules/webaudio/AudioBuffer.h"
-#include "modules/webaudio/AudioProcessingEventInit.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_processing_event_init.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class AudioProcessingEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // AudioProcessingEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_PROCESSING_EVENT_H_

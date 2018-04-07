@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSUnsupportedStyleValue_h
-#define CSSUnsupportedStyleValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_UNSUPPORTED_STYLE_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_UNSUPPORTED_STYLE_VALUE_H_
 
 #include "base/macros.h"
-#include "core/css/cssom/CSSStyleValue.h"
+#include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 
 namespace blink {
 
@@ -56,4 +56,4 @@ DEFINE_TYPE_CASTS(CSSUnsupportedStyleValue,
 
 }  // namespace blink
 
-#endif  // CSSUnsupportedStyleValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_UNSUPPORTED_STYLE_VALUE_H_

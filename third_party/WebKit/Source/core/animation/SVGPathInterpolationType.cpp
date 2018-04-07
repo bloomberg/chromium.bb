@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/SVGPathInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/svg_path_interpolation_type.h"
 
-#include "core/animation/PathInterpolationFunctions.h"
+#include "third_party/blink/renderer/core/animation/path_interpolation_functions.h"
 
-#include "core/svg/SVGPath.h"
+#include "third_party/blink/renderer/core/svg/svg_path.h"
 
 namespace blink {
 

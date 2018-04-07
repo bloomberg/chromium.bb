@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/ReadableStreamBytesConsumer.h"
+#include "third_party/blink/renderer/core/fetch/readable_stream_bytes_consumer.h"
 
 #include <memory>
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8GCController.h"
-#include "core/fetch/BytesConsumerTestUtil.h"
-#include "core/streams/ReadableStreamOperations.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8BindingMacros.h"
-#include "platform/heap/Handle.h"
-#include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "v8/include/v8.h"
 
 namespace blink {

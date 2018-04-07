@@ -19,20 +19,20 @@
  *
  */
 
-#ifndef WTF_HashTraits_h
-#define WTF_HashTraits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TRAITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TRAITS_H_
 
 #include <string.h>  // For memset.
 #include <limits>
 #include <memory>
 #include <type_traits>
 #include <utility>
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashFunctions.h"
-#include "platform/wtf/HashTableDeletedValueType.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/TypeTraits.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 namespace WTF {
 
@@ -467,4 +467,4 @@ using WTF::PairHashTraits;
 using WTF::NullableHashTraits;
 using WTF::SimpleClassHashTraits;
 
-#endif  // WTF_HashTraits_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TRAITS_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/DocumentAllNameCollection.h"
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/html/document_all_name_collection.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 

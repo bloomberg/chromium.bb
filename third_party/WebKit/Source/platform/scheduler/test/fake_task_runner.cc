@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/test/fake_task_runner.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 
 #include <algorithm>
 #include <deque>
@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 namespace scheduler {

@@ -27,16 +27,16 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "modules/filesystem/Entry.h"
+#include "third_party/blink/renderer/modules/filesystem/entry.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fileapi/FileError.h"
-#include "core/frame/UseCounter.h"
-#include "modules/filesystem/DirectoryEntry.h"
-#include "modules/filesystem/FileSystemCallbacks.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

@@ -5,9 +5,9 @@
 // TODO: This is a dummy header file required by the generated binding code.
 // This file should be removed after fixing the code generator.
 
-#ifndef DOMWindowSpeech_h
-#define DOMWindowSpeech_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_DOM_WINDOW_SPEECH_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_DOM_WINDOW_SPEECH_H_
 
 // This space intentionally left blank
 
-#endif  // DOMWindowSpeech_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_DOM_WINDOW_SPEECH_H_

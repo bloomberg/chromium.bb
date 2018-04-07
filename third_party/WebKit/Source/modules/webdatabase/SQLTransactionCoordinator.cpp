@@ -29,10 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/SQLTransactionCoordinator.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction_coordinator.h"
 
-#include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/SQLTransactionBackend.h"
+#include "third_party/blink/renderer/modules/webdatabase/database.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction_backend.h"
 
 namespace blink {
 

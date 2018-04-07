@@ -17,13 +17,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef ScopedPagePauser_h
-#define ScopedPagePauser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCOPED_PAGE_PAUSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCOPED_PAGE_PAUSER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ class CORE_EXPORT ScopedPagePauser final {
 
 }  // namespace blink
 
-#endif  // ScopedPagePauser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCOPED_PAGE_PAUSER_H_

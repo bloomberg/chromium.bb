@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/mac/WebScrollbarTheme.h"
+#include "third_party/blink/public/platform/mac/web_scrollbar_theme.h"
 
 #import <AppKit/AppKit.h>
 
-#include "platform/mac/NSScrollerImpDetails.h"
-#include "platform/scroll/ScrollbarThemeMac.h"
+#include "third_party/blink/renderer/platform/mac/ns_scroller_imp_details.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_mac.h"
 
 namespace blink {
 

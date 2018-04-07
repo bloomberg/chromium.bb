@@ -15,7 +15,7 @@ include_rules = [
     "+base/threading/thread.h",
     "+base/time",
     "+base/trace_event",
-    "-bindings",
+    "-third_party/blink/renderer/bindings",
     "+cc",
     "-cc/blink",
     "+components/viz/common",
@@ -23,8 +23,8 @@ include_rules = [
     "+mojo/public",
     "+net/cert",
     "+net/http",
-    "+public/platform",
-    "-public/web",
+    "+third_party/blink/public/platform",
+    "-third_party/blink/public/web",
     "+services/network/public/cpp/cors/cors_error_status.h",
     "+services/network/public/cpp/cors/preflight_result.h",
 
@@ -41,5 +41,5 @@ include_rules = [
     "-web",
 
     # Allowed only inside INSIDE_BLINK
-    "+platform",
+    "+third_party/blink/renderer/platform",
 ]

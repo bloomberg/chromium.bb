@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebSpeechRecognitionResult.h"
+#include "third_party/blink/public/web/web_speech_recognition_result.h"
 
-#include "modules/speech/SpeechRecognitionAlternative.h"
-#include "modules/speech/SpeechRecognitionResult.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_alternative.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_result.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/CanMakePaymentEvent.h"
+#include "third_party/blink/renderer/modules/payments/can_make_payment_event.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerLocation.h"
-#include "modules/serviceworkers/RespondWithObserver.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
-#include "modules/serviceworkers/ServiceWorkerWindowClientCallback.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_location.h"
+#include "third_party/blink/renderer/modules/serviceworkers/respond_with_observer.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_client.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_window_client_callback.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

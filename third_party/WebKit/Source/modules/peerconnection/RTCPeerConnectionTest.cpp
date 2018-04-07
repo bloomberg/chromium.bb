@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/peerconnection/RTCPeerConnection.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
 
 #include <string>
 
-#include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "modules/mediastream/MediaStream.h"
-#include "modules/mediastream/MediaStreamTrack.h"
-#include "modules/peerconnection/RTCConfiguration.h"
-#include "modules/peerconnection/RTCIceServer.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/testing/TestingPlatformSupportWithWebRTC.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebRTCError.h"
-#include "public/platform/WebRTCPeerConnectionHandler.h"
-#include "public/platform/WebRTCRtpReceiver.h"
-#include "public/platform/WebRTCRtpSender.h"
-#include "public/platform/WebRTCSessionDescription.h"
-#include "public/web/WebHeap.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_rtc_error.h"
+#include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
+#include "third_party/blink/public/platform/web_rtc_session_description.h"
+#include "third_party/blink/public/web/web_heap.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_configuration.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_ice_server.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_web_rtc.h"
 
 namespace blink {
 

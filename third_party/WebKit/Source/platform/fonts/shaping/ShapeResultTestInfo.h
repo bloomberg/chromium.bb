@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ShapeResultTestInfo_h
-#define ShapeResultTestInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_RESULT_TEST_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_RESULT_TEST_INFO_H_
 
-#include "platform/fonts/shaping/HarfBuzzShaper.h"
-#include "platform/fonts/shaping/ShapeResultBloberizer.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_shaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_bloberizer.h"
 
 #include <hb.h>
 
@@ -68,4 +68,4 @@ class PLATFORM_EXPORT ShapeResultBloberizerTestInfo {
 
 }  // namespace blink
 
-#endif  // ShapeResultTestInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_RESULT_TEST_INFO_H_

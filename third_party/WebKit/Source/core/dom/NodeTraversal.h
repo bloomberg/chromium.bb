@@ -25,13 +25,13 @@
  *
  */
 
-#ifndef NodeTraversal_h
-#define NodeTraversal_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_TRAVERSAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_TRAVERSAL_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/ContainerNode.h"
-#include "core/dom/Node.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

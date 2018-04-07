@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/IdlenessDetector.h"
+#include "third_party/blink/renderer/core/loader/idleness_detector.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/probe/CoreProbes.h"
-#include "platform/instrumentation/resource_coordinator/FrameResourceCoordinator.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 namespace blink {
 

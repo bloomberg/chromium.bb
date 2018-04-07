@@ -23,10 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OESTextureFloatLinear_h
-#define OESTextureFloatLinear_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_OES_TEXTURE_FLOAT_LINEAR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_OES_TEXTURE_FLOAT_LINEAR_H_
 
-#include "modules/webgl/WebGLExtension.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_extension.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class OESTextureFloatLinear final : public WebGLExtension {
 
 }  // namespace blink
 
-#endif  // OESTextureFloatLinear_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_OES_TEXTURE_FLOAT_LINEAR_H_

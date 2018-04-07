@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PlatformSpeechSynthesizerMock_h
-#define PlatformSpeechSynthesizerMock_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_TESTING_PLATFORM_SPEECH_SYNTHESIZER_MOCK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_TESTING_PLATFORM_SPEECH_SYNTHESIZER_MOCK_H_
 
-#include "platform/Timer.h"
-#include "platform/heap/Handle.h"
-#include "platform/speech/PlatformSpeechSynthesizer.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/speech/platform_speech_synthesizer.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 class ExecutionContext;

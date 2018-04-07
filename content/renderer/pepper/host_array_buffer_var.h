@@ -12,7 +12,7 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/var.h"
-#include "third_party/WebKit/public/web/WebArrayBuffer.h"
+#include "third_party/blink/public/web/web_array_buffer.h"
 
 namespace content {
 

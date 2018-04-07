@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentInstruments.h"
+#include "third_party/blink/renderer/modules/payments/payment_instruments.h"
 
 #include <utility>
 
 #include "base/location.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/frame/Frame.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/UseCounter.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "modules/payments/BasicCardHelper.h"
-#include "modules/payments/PaymentInstrument.h"
-#include "modules/payments/PaymentManager.h"
-#include "modules/permissions/PermissionUtils.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebIconSizesParser.h"
-#include "public/platform/modules/manifest/manifest.mojom-blink.h"
-#include "public/platform/web_feature.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/manifest/manifest.mojom-blink.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_feature.mojom-blink.h"
+#include "third_party/blink/public/platform/web_icon_sizes_parser.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/payments/basic_card_helper.h"
+#include "third_party/blink/renderer/modules/payments/payment_instrument.h"
+#include "third_party/blink/renderer/modules/payments/payment_manager.h"
+#include "third_party/blink/renderer/modules/permissions/permission_utils.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 namespace {

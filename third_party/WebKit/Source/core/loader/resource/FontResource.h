@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontResource_h
-#define FontResource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_FONT_RESOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_FONT_RESOURCE_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "core/CoreExport.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/ResourceClient.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 

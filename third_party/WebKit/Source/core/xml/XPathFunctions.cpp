@@ -25,17 +25,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/XPathFunctions.h"
+#include "third_party/blink/renderer/core/xml/xpath_functions.h"
 
-#include "core/dom/Attr.h"
-#include "core/dom/Element.h"
-#include "core/dom/ProcessingInstruction.h"
-#include "core/dom/TreeScope.h"
-#include "core/xml/XPathUtil.h"
-#include "core/xml/XPathValue.h"
-#include "core/xml_names.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/dom/attr.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/processing_instruction.h"
+#include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/core/xml/xpath_util.h"
+#include "third_party/blink/renderer/core/xml/xpath_value.h"
+#include "third_party/blink/renderer/core/xml_names.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 #include <algorithm>
 #include <limits>

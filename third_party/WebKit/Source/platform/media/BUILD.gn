@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/platform/platform.gni")
+import("//third_party/blink/renderer/platform/platform.gni")
 
 blink_platform_sources("media") {
   sources = [
-    "ResourceBundleHelper.cpp",
-    "ResourceBundleHelper.h",
+    "resource_bundle_helper.cc",
+    "resource_bundle_helper.h",
   ]
 
   deps = [

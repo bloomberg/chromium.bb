@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "storage/browser/storage_browser_export.h"
-#include "third_party/WebKit/public/mojom/blob/blob.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 namespace storage {
 

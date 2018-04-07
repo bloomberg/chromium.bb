@@ -22,12 +22,12 @@
  *
  */
 
-#ifndef RotateTransformOperation_h
-#define RotateTransformOperation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_ROTATE_TRANSFORM_OPERATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_ROTATE_TRANSFORM_OPERATION_H_
 
-#include "platform/geometry/FloatPoint3D.h"
-#include "platform/transforms/Rotation.h"
-#include "platform/transforms/TransformOperation.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
+#include "third_party/blink/renderer/platform/transforms/rotation.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operation.h"
 
 namespace blink {
 
@@ -139,4 +139,4 @@ DEFINE_TRANSFORM_TYPE_CASTS(RotateAroundOriginTransformOperation);
 
 }  // namespace blink
 
-#endif  // RotateTransformOperation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_ROTATE_TRANSFORM_OPERATION_H_

@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BarProp_h
-#define BarProp_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_BAR_PROP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_BAR_PROP_H_
 
-#include "core/dom/ContextLifecycleObserver.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class BarProp final : public ScriptWrappable, public DOMWindowClient {
 
 }  // namespace blink
 
-#endif  // BarProp_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_BAR_PROP_H_

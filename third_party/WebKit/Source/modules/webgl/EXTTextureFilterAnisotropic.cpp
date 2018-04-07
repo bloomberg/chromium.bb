@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webgl/EXTTextureFilterAnisotropic.h"
+#include "third_party/blink/renderer/modules/webgl/ext_texture_filter_anisotropic.h"
 
 namespace blink {
 

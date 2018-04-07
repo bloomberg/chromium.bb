@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/MediaDeviceInfo.h"
+#include "third_party/blink/renderer/modules/mediastream/media_device_info.h"
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

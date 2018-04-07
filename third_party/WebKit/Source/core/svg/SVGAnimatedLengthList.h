@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedLengthList_h
-#define SVGAnimatedLengthList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_LENGTH_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_LENGTH_LIST_H_
 
-#include "core/svg/SVGLengthListTearOff.h"
-#include "core/svg/properties/SVGAnimatedProperty.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
+#include "third_party/blink/renderer/core/svg/svg_length_list_tear_off.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 

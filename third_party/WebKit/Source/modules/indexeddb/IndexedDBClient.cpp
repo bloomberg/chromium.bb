@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/indexeddb/IndexedDBClient.h"
+#include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
 
-#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/ContentSettingsClient.h"
-#include "core/frame/LocalFrame.h"
-#include "core/workers/WorkerClients.h"
-#include "core/workers/WorkerContentSettingsClient.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebSecurityOrigin.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/content_settings_client.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

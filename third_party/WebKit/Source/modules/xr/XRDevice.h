@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef XRDevice_h
-#define XRDevice_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_DEVICE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_DEVICE_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/events/EventTarget.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "modules/xr/XRSessionCreationOptions.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/modules/xr/xr_session_creation_options.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -86,4 +86,4 @@ class XRDevice final : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // XRDevice_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_DEVICE_H_

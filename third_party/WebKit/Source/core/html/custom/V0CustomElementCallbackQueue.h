@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V0CustomElementCallbackQueue_h
-#define V0CustomElementCallbackQueue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_CALLBACK_QUEUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_CALLBACK_QUEUE_H_
 
 #include "base/macros.h"
-#include "core/dom/Element.h"
-#include "core/html/custom/V0CustomElementProcessingStep.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_step.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -79,4 +79,4 @@ class V0CustomElementCallbackQueue
 
 }  // namespace blink
 
-#endif  // V0CustomElementCallbackQueue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_CALLBACK_QUEUE_H_

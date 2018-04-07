@@ -18,24 +18,24 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/StyleElement.h"
+#include "third_party/blink/renderer/core/css/style_element.h"
 
-#include "bindings/core/v8/ScriptController.h"
-#include "core/css/MediaList.h"
-#include "core/css/MediaQueryEvaluator.h"
-#include "core/css/StyleEngine.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/ScriptableDocumentParser.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/html/HTMLStyleElement.h"
-#include "core/probe/CoreProbes.h"
-#include "core/svg/SVGStyleElement.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/core/css/media_list.h"
+#include "third_party/blink/renderer/core/css/media_query_evaluator.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/html_style_element.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/svg/svg_style_element.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/events/EventPath.h"
+#include "third_party/blink/renderer/core/dom/events/event_path.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/dom/PseudoElement.h"
-#include "core/html_names.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

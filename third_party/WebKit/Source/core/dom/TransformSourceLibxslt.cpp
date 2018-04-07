@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/TransformSource.h"
+#include "third_party/blink/renderer/core/dom/transform_source.h"
 
 #include <libxml/tree.h>
 

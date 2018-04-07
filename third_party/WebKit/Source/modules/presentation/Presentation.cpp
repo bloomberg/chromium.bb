@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/presentation/Presentation.h"
+#include "third_party/blink/renderer/modules/presentation/presentation.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "modules/presentation/PresentationController.h"
-#include "modules/presentation/PresentationReceiver.h"
-#include "modules/presentation/PresentationRequest.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_receiver.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_request.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

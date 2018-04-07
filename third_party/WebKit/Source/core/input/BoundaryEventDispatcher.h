@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BoundaryEventDispatcher_h
-#define BoundaryEventDispatcher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_BOUNDARY_EVENT_DISPATCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_BOUNDARY_EVENT_DISPATCHER_H_
 
-#include "core/dom/events/EventTarget.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
 
 namespace blink {
 
@@ -37,4 +37,4 @@ class BoundaryEventDispatcher {
 
 }  // namespace blink
 
-#endif  // BoundaryEventDispatcher_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_BOUNDARY_EVENT_DISPATCHER_H_

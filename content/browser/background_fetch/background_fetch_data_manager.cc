@@ -29,7 +29,7 @@
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "third_party/WebKit/public/mojom/blob/blob.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 namespace content {
 

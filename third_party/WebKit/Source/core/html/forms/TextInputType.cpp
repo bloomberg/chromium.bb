@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/TextInputType.h"
+#include "third_party/blink/renderer/core/html/forms/text_input_type.h"
 
-#include "core/frame/WebFeature.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/input_type_names.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
 
 namespace blink {
 

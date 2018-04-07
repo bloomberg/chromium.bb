@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebContentSettingsClient_h
-#define WebContentSettingsClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_SETTINGS_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_SETTINGS_CLIENT_H_
 
 #include "base/time/time.h"
-#include "public/platform/WebClientHintsType.h"
-#include "public/platform/WebContentSettingCallbacks.h"
+#include "third_party/blink/public/platform/web_client_hints_type.h"
+#include "third_party/blink/public/platform/web_content_setting_callbacks.h"
 
 namespace blink {
 
@@ -120,4 +120,4 @@ class WebContentSettingsClient {
 
 }  // namespace blink
 
-#endif  // WebContentSettingsClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_SETTINGS_CLIENT_H_

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/BoxPaintInvalidator.h"
+#include "third_party/blink/renderer/core/paint/box_paint_invalidator.h"
 
-#include "core/frame/Settings.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/ObjectPaintInvalidator.h"
-#include "core/paint/PaintInvalidator.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/PaintLayerScrollableArea.h"
-#include "core/paint/compositing/CompositedLayerMapping.h"
-#include "platform/geometry/LayoutRect.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 namespace blink {
 

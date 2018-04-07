@@ -8,8 +8,8 @@
 #include "content/browser/android/render_widget_host_connector.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/WebKit/public/platform/input_host.mojom.h"
-#include "third_party/WebKit/public/platform/input_messages.mojom.h"
+#include "third_party/blink/public/platform/input_host.mojom.h"
+#include "third_party/blink/public/platform/input_messages.mojom.h"
 
 namespace content {
 

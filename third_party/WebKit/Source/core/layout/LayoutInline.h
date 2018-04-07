@@ -21,15 +21,15 @@
  *
  */
 
-#ifndef LayoutInline_h
-#define LayoutInline_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_INLINE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_INLINE_H_
 
-#include "core/CoreExport.h"
-#include "core/editing/Forward.h"
-#include "core/layout/LayoutBoxModelObject.h"
-#include "core/layout/api/LineLayoutItem.h"
-#include "core/layout/line/InlineFlowBox.h"
-#include "core/layout/line/LineBoxList.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/layout/line/inline_flow_box.h"
+#include "third_party/blink/renderer/core/layout/line/line_box_list.h"
 
 namespace blink {
 
@@ -350,4 +350,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutInline, IsLayoutInline());
 
 }  // namespace blink
 
-#endif  // LayoutInline_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_INLINE_H_

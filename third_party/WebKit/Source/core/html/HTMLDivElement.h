@@ -20,11 +20,11 @@
  *
  */
 
-#ifndef HTMLDivElement_h
-#define HTMLDivElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_DIV_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_DIV_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class CORE_EXPORT HTMLDivElement : public HTMLElement {
 
 }  // namespace blink
 
-#endif  // HTMLDivElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_DIV_ELEMENT_H_

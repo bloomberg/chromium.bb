@@ -2,17 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("mediasession") {
   sources = [
-    "MediaMetadata.cpp",
-    "MediaMetadata.h",
-    "MediaMetadataSanitizer.cpp",
-    "MediaMetadataSanitizer.h",
-    "MediaSession.cpp",
-    "MediaSession.h",
-    "NavigatorMediaSession.cpp",
-    "NavigatorMediaSession.h",
+    "media_metadata.cc",
+    "media_metadata.h",
+    "media_metadata_sanitizer.cc",
+    "media_metadata_sanitizer.h",
+    "media_session.cc",
+    "media_session.h",
+    "navigator_media_session.cc",
+    "navigator_media_session.h",
   ]
 }

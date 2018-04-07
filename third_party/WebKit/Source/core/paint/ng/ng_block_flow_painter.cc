@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ng/ng_block_flow_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_block_flow_painter.h"
 
-#include "core/layout/ng/layout_ng_block_flow.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/ng/ng_box_fragment_painter.h"
-#include "core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
 
 namespace blink {
 

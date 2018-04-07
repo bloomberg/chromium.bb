@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/InspectedFrames.h"
+#include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
 

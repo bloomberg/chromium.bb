@@ -18,18 +18,18 @@
  *
  */
 
-#ifndef FontFallbackList_h
-#define FontFallbackList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_FALLBACK_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_FALLBACK_LIST_H_
 
 #include "base/memory/weak_ptr.h"
-#include "platform/fonts/FallbackListCompositeKey.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/FontSelector.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/shaping/ShapeCache.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/platform/fonts/fallback_list_composite_key.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_selector.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_cache.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 

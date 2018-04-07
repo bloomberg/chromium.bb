@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebExternalPopupMenuClient_h
-#define WebExternalPopupMenuClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EXTERNAL_POPUP_MENU_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EXTERNAL_POPUP_MENU_CLIENT_H_
 
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class WebExternalPopupMenuClient {
 
 }  // namespace blink
 
-#endif  // WebExternalPopupMenuClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_EXTERNAL_POPUP_MENU_CLIENT_H_

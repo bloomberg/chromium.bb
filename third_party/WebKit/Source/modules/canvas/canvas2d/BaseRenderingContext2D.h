@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BaseRenderingContext2D_h
-#define BaseRenderingContext2D_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_BASE_RENDERING_CONTEXT_2D_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_BASE_RENDERING_CONTEXT_2D_H_
 
-#include "bindings/modules/v8/canvas_image_source.h"
-#include "bindings/modules/v8/string_or_canvas_gradient_or_canvas_pattern.h"
-#include "core/html/canvas/ImageData.h"
-#include "modules/ModulesExport.h"
-#include "modules/canvas/canvas2d/CanvasGradient.h"
-#include "modules/canvas/canvas2d/CanvasPath.h"
-#include "modules/canvas/canvas2d/CanvasRenderingContext2DState.h"
-#include "modules/canvas/canvas2d/CanvasStyle.h"
-#include "platform/graphics/CanvasHeuristicParameters.h"
-#include "platform/graphics/ColorBehavior.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/paint/PaintCanvas.h"
+#include "third_party/blink/renderer/bindings/modules/v8/canvas_image_source.h"
+#include "third_party/blink/renderer/bindings/modules/v8/string_or_canvas_gradient_or_canvas_pattern.h"
+#include "third_party/blink/renderer/core/html/canvas/image_data.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_gradient.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_path.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d_state.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
+#include "third_party/blink/renderer/platform/graphics/color_behavior.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/skia/include/effects/SkComposeImageFilter.h"
 
 namespace blink {
@@ -534,4 +534,4 @@ void BaseRenderingContext2D::CompositedDraw(
 
 }  // namespace blink
 
-#endif  // BaseRenderingContext2D_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_BASE_RENDERING_CONTEXT_2D_H_

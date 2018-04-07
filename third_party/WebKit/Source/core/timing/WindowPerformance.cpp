@@ -29,22 +29,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/timing/WindowPerformance.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/dom/Document.h"
-#include "core/dom/QualifiedName.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/origin_trials/origin_trials.h"
-#include "core/timing/PerformanceTiming.h"
-#include "platform/loader/fetch/ResourceTimingInfo.h"
-#include "platform/runtime_enabled_features.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/core/timing/performance_timing.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 static const double kLongTaskObserverThreshold = 0.05;
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MojoHelper_h
-#define MojoHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_MOJO_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_MOJO_HELPER_H_
 
 #include "base/message_loop/message_loop.h"
 
@@ -19,4 +19,4 @@ inline bool CanInitializeMojo() {
 
 }  // namespace blink
 
-#endif  // MojoHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_MOJO_HELPER_H_

@@ -23,17 +23,17 @@
  * SUCH DAMAGE.
  */
 
-#include "core/html/forms/DateTimeFieldElement.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_field_element.h"
 
-#include "core/css/StyleChangeReason.h"
-#include "core/dom/Document.h"
-#include "core/dom/Text.h"
-#include "core/events/KeyboardEvent.h"
-#include "core/html_names.h"
-#include "core/layout/TextRunConstructor.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/text/PlatformLocale.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/text_run_constructor.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V0CustomElementScheduler_h
-#define V0CustomElementScheduler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_SCHEDULER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_SCHEDULER_H_
 
-#include "core/html/custom/V0CustomElementCallbackQueue.h"
-#include "core/html/custom/V0CustomElementLifecycleCallbacks.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_callback_queue.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_lifecycle_callbacks.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -76,4 +76,4 @@ class V0CustomElementScheduler final
 
 }  // namespace blink
 
-#endif  // V0CustomElementScheduler_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_SCHEDULER_H_

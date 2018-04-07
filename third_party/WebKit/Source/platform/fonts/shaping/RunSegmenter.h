@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RunSegmenter_h
-#define RunSegmenter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_RUN_SEGMENTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_RUN_SEGMENTER_H_
 
 #include <unicode/uscript.h>
 #include <memory>
-#include "platform/fonts/FontOrientation.h"
-#include "platform/fonts/OrientationIterator.h"
-#include "platform/fonts/ScriptRunIterator.h"
-#include "platform/fonts/SmallCapsIterator.h"
-#include "platform/fonts/SymbolsIterator.h"
-#include "platform/fonts/UTF16TextIterator.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/fonts/font_orientation.h"
+#include "third_party/blink/renderer/platform/fonts/orientation_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/script_run_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/small_caps_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/symbols_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/utf16_text_iterator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 

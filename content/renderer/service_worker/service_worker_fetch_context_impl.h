@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/WebKit/public/platform/WebWorkerFetchContext.h"
+#include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "url/gurl.h"
 
 namespace content {

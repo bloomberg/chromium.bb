@@ -26,8 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/FFTConvolver.h"
-#include "platform/audio/VectorMath.h"
+#include "third_party/blink/renderer/platform/audio/fft_convolver.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/mhtml/MHTMLParser.h"
+#include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
 
-#include "platform/SharedBuffer.h"
-#include "platform/mhtml/ArchiveResource.h"
-#include "platform/wtf/Time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

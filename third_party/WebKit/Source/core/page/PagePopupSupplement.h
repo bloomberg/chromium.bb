@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PagePopupSupplement_h
-#define PagePopupSupplement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_POPUP_SUPPLEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_POPUP_SUPPLEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/frame/LocalFrame.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 

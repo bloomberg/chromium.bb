@@ -29,18 +29,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/scroll/ScrollableArea.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 
 #include "build/build_config.h"
-#include "platform/PlatformChromeClient.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/scroll/MainThreadScrollingReason.h"
-#include "platform/scroll/ProgrammaticScrollAnimator.h"
-#include "platform/scroll/ScrollbarTheme.h"
-#include "platform/scroll/SmoothScrollSequencer.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/platform_chrome_client.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
+#include "third_party/blink/renderer/platform/scroll/programmatic_scroll_animator.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
+#include "third_party/blink/renderer/platform/scroll/smooth_scroll_sequencer.h"
 
 static const int kPixelsPerLineStep = 40;
 static const float kMinFractionToStepWhenPaging = 0.875f;

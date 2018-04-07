@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedNumberOptionalNumber_h
-#define SVGAnimatedNumberOptionalNumber_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_NUMBER_OPTIONAL_NUMBER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_NUMBER_OPTIONAL_NUMBER_H_
 
-#include "core/svg/SVGAnimatedNumber.h"
-#include "core/svg/SVGNumberOptionalNumber.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_number.h"
+#include "third_party/blink/renderer/core/svg/svg_number_optional_number.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ class SVGAnimatedNumberOptionalNumber
 
 }  // namespace blink
 
-#endif  // SVGAnimatedNumberOptionalNumber_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_NUMBER_OPTIONAL_NUMBER_H_

@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerThreadableLoader_h
-#define WorkerThreadableLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_WORKER_THREADABLE_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_WORKER_THREADABLE_LOADER_H_
 
 #include <memory>
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/loader/ThreadableLoader.h"
-#include "core/loader/ThreadableLoaderClient.h"
-#include "core/workers/WorkerThread.h"
-#include "core/workers/WorkerThreadLifecycleObserver.h"
-#include "platform/WaitableEvent.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -208,4 +208,4 @@ class WorkerThreadableLoader final : public ThreadableLoader {
 
 }  // namespace blink
 
-#endif  // WorkerThreadableLoader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_WORKER_THREADABLE_LOADER_H_

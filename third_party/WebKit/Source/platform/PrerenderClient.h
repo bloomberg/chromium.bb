@@ -29,11 +29,11 @@
  *
  */
 
-#ifndef PrerenderClient_h
-#define PrerenderClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PRERENDER_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PRERENDER_CLIENT_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 

@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutRectOutsets_h
-#define LayoutRectOutsets_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_LAYOUT_RECT_OUTSETS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_LAYOUT_RECT_OUTSETS_H_
 
-#include "platform/LayoutUnit.h"
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatRectOutsets.h"
-#include "platform/geometry/IntRectOutsets.h"
-#include "platform/text/WritingMode.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect_outsets.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect_outsets.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -157,4 +157,4 @@ inline LayoutRectOutsets EnclosingLayoutRectOutsets(
 
 }  // namespace blink
 
-#endif  // LayoutRectOutsets_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_LAYOUT_RECT_OUTSETS_H_

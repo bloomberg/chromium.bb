@@ -22,16 +22,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCStatsRequestImpl_h
-#define RTCStatsRequestImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_STATS_REQUEST_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_STATS_REQUEST_IMPL_H_
 
-#include "bindings/modules/v8/v8_rtc_stats_callback.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "modules/peerconnection/RTCStatsResponse.h"
-#include "platform/heap/Handle.h"
-#include "platform/peerconnection/RTCStatsRequest.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_stats_callback.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_stats_response.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats_request.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ class RTCStatsRequestImpl final : public RTCStatsRequest,
 
 }  // namespace blink
 
-#endif  // RTCStatsRequestImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_STATS_REQUEST_IMPL_H_

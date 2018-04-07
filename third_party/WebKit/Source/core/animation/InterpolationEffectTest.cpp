@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include <memory>
-#include "core/animation/AnimationTestHelper.h"
-#include "core/animation/CSSNumberInterpolationType.h"
-#include "core/animation/InterpolationEffect.h"
-#include "core/animation/TransitionInterpolation.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/animation/animation_test_helper.h"
+#include "third_party/blink/renderer/core/animation/css_number_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/interpolation_effect.h"
+#include "third_party/blink/renderer/core/animation/transition_interpolation.h"
 
 namespace blink {
 

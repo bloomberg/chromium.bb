@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/SlotScopedTraversal.h"
+#include "third_party/blink/renderer/core/page/slot_scoped_traversal.h"
 
-#include "core/dom/Element.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/html/HTMLSlotElement.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/html/html_slot_element.h"
 
 namespace blink {
 

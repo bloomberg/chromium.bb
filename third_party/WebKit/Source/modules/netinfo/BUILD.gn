@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("netinfo") {
   sources = [
-    "NavigatorNetworkInformation.cpp",
-    "NavigatorNetworkInformation.h",
-    "NetworkInformation.cpp",
-    "NetworkInformation.h",
-    "WorkerNavigatorNetworkInformation.cpp",
-    "WorkerNavigatorNetworkInformation.h",
+    "navigator_network_information.cc",
+    "navigator_network_information.h",
+    "network_information.cc",
+    "network_information.h",
+    "worker_navigator_network_information.cc",
+    "worker_navigator_network_information.h",
   ]
 }

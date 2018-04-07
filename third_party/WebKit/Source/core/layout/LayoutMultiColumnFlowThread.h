@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutMultiColumnFlowThread_h
-#define LayoutMultiColumnFlowThread_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_MULTI_COLUMN_FLOW_THREAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_MULTI_COLUMN_FLOW_THREAD_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/FragmentationContext.h"
-#include "core/layout/LayoutFlowThread.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/fragmentation_context.h"
+#include "third_party/blink/renderer/core/layout/layout_flow_thread.h"
 
 namespace blink {
 
@@ -387,4 +387,4 @@ DEFINE_TYPE_CASTS(LayoutMultiColumnFlowThread,
 
 }  // namespace blink
 
-#endif  // LayoutMultiColumnFlowThread_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_MULTI_COLUMN_FLOW_THREAD_H_

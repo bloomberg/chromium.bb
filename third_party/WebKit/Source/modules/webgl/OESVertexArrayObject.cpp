@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webgl/OESVertexArrayObject.h"
+#include "third_party/blink/renderer/modules/webgl/oes_vertex_array_object.h"
 
-#include "bindings/core/v8/ExceptionState.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "modules/webgl/WebGLRenderingContextBase.h"
-#include "modules/webgl/WebGLVertexArrayObjectOES.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object_oes.h"
 
 namespace blink {
 

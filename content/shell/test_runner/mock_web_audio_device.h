@@ -6,7 +6,7 @@
 #define CONTENT_SHELL_TEST_RUNNER_MOCK_WEB_AUDIO_DEVICE_H_
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebAudioDevice.h"
+#include "third_party/blink/public/platform/web_audio_device.h"
 
 namespace test_runner {
 

@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/clipboard/DataTransferItemList.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer_item_list.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/clipboard/DataObject.h"
-#include "core/clipboard/DataTransfer.h"
-#include "core/clipboard/DataTransferItem.h"
-#include "core/dom/ExceptionCode.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/clipboard/data_object.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer_item.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 

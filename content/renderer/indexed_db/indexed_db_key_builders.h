@@ -10,7 +10,7 @@
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBKey.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
 
 namespace blink {
 

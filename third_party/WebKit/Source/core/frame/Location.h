@@ -26,15 +26,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Location_h
-#define Location_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCATION_H_
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/CoreExport.h"
-#include "core/dom/DOMStringList.h"
-#include "core/frame/DOMWindow.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/dom_string_list.h"
+#include "third_party/blink/renderer/core/frame/dom_window.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -148,4 +148,4 @@ class CORE_EXPORT Location final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // Location_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCATION_H_

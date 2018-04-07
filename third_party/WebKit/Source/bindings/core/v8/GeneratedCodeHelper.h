@@ -8,13 +8,13 @@
 // If you want to use them from hand-written code, please find appropriate
 // location and move them to that location.
 
-#ifndef GeneratedCodeHelper_h
-#define GeneratedCodeHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_GENERATED_CODE_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_GENERATED_CODE_HELPER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -78,4 +78,4 @@ using InstallRuntimeEnabledFeaturesOnTemplateFunction = InstallTemplateFunction;
 
 }  // namespace blink
 
-#endif  // GeneratedCodeHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_GENERATED_CODE_HELPER_H_

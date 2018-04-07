@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockFetchContext_h
-#define MockFetchContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_TESTING_MOCK_FETCH_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_TESTING_MOCK_FETCH_CONTEXT_H_
 
-#include "platform/exported/WrappedResourceRequest.h"
-#include "platform/loader/fetch/FetchContext.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/ResourceTimingInfo.h"
-#include "platform/scheduler/public/frame_scheduler.h"
-#include "platform/scheduler/test/fake_frame_scheduler.h"
-#include "platform/scheduler/test/fake_task_runner.h"
-#include "platform/wtf/Optional.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebURLLoaderFactory.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_url_loader_factory.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 #include <memory>
 

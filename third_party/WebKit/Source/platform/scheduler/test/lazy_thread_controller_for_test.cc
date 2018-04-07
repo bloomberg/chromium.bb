@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/test/lazy_thread_controller_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/test/lazy_thread_controller_for_test.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"

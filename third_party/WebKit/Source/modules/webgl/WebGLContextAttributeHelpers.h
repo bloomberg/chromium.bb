@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGLContextAttributeHelpers_h
-#define WebGLContextAttributeHelpers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_CONTEXT_ATTRIBUTE_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_CONTEXT_ATTRIBUTE_HELPERS_H_
 
-#include "core/html/canvas/CanvasContextCreationAttributesCore.h"
-#include "modules/webgl/WebGLContextAttributes.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_context_attributes.h"
 
 namespace blink {
 
@@ -23,4 +23,4 @@ Platform::ContextAttributes ToPlatformContextAttributes(
 
 }  // namespace blink
 
-#endif  // WebGLContextAttributeHelpers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_CONTEXT_ATTRIBUTE_HELPERS_H_

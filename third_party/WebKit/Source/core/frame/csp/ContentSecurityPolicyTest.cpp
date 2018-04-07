@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/csp/ContentSecurityPolicy.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/csp/CSPDirectiveList.h"
-#include "core/html/HTMLScriptElement.h"
-#include "core/testing/NullExecutionContext.h"
-#include "platform/Crypto.h"
-#include "platform/loader/fetch/IntegrityMetadata.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/network/ContentSecurityPolicyParsers.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SchemeRegistry.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/mojom/net/ip_address_space.mojom-blink.h"
-#include "public/platform/WebInsecureRequestPolicy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/csp/csp_directive_list.h"
+#include "third_party/blink/renderer/core/html/html_script_element.h"
+#include "third_party/blink/renderer/core/testing/null_execution_context.h"
+#include "third_party/blink/renderer/platform/crypto.h"
+#include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

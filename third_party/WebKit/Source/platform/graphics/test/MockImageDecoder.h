@@ -23,14 +23,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MockImageDecoder_h
-#define MockImageDecoder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_MOCK_IMAGE_DECODER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_MOCK_IMAGE_DECODER_H_
 
 #include <memory>
 #include <utility>
 
-#include "platform/graphics/ImageFrameGenerator.h"
-#include "platform/image-decoders/ImageDecoder.h"
+#include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 
 namespace blink {
 
@@ -163,4 +163,4 @@ class MockImageDecoderFactory : public ImageDecoderFactory {
 
 }  // namespace blink
 
-#endif  // MockImageDecoder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_MOCK_IMAGE_DECODER_H_

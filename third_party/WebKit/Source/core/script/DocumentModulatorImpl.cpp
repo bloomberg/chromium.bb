@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/script/DocumentModulatorImpl.h"
+#include "third_party/blink/renderer/core/script/document_modulator_impl.h"
 
-#include "core/loader/modulescript/DocumentModuleScriptFetcher.h"
+#include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
 
 namespace blink {
 

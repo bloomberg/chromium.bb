@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
 
 #include <map>
 #include <memory>
 
-#include "core/testing/PageTestBase.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_lock_orientation_callback.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

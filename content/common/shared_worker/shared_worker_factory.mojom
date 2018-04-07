@@ -11,7 +11,7 @@ import "content/common/shared_worker/shared_worker_info.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
-import "third_party/WebKit/public/web/worker_content_settings_proxy.mojom";
+import "third_party/blink/public/web/worker_content_settings_proxy.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the
 // frame tree to expose shared-worker-specific interfaces between renderer and

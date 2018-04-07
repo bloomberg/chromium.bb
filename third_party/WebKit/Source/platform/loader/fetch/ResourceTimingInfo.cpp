@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/loader/fetch/ResourceTimingInfo.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 
 #include <memory>
-#include "platform/CrossThreadCopier.h"
+#include "third_party/blink/renderer/platform/cross_thread_copier.h"
 
 namespace blink {
 

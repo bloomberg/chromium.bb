@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/PausableTask.h"
+#include "third_party/blink/renderer/core/frame/pausable_task.h"
 
 #include "base/location.h"
-#include "core/dom/Document.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
 

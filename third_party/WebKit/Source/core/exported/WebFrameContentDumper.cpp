@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/web/WebFrameContentDumper.h"
+#include "third_party/blink/public/web/web_frame_content_dumper.h"
 
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/iterators/TextIterator.h"
-#include "core/editing/serializers/Serialization.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/html_element_type_helpers.h"
-#include "core/layout/LayoutEmbeddedContent.h"
-#include "core/layout/LayoutTableCell.h"
-#include "core/layout/LayoutTableRow.h"
-#include "core/layout/LayoutTextFragment.h"
-#include "core/layout/LayoutTreeAsText.h"
-#include "core/layout/LayoutView.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/web/WebDocument.h"
-#include "public/web/WebLocalFrame.h"
-#include "public/web/WebView.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
+#include "third_party/blink/renderer/core/editing/serializers/serialization.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/html_element_type_helpers.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/layout_table_row.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

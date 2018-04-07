@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/XMLDocument.h"
+#include "third_party/blink/renderer/core/dom/xml_document.h"
 
 namespace blink {
 

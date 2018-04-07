@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutMultiColumnFlowThread.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 
-#include "core/layout/LayoutMultiColumnSet.h"
-#include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
-#include "core/layout/LayoutView.h"
-#include "core/layout/MultiColumnFragmentainerGroup.h"
-#include "core/layout/ViewFragmentationContext.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/multi_column_fragmentainer_group.h"
+#include "third_party/blink/renderer/core/layout/view_fragmentation_context.h"
 
 namespace blink {
 

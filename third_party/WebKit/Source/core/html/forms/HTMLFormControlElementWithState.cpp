@@ -22,13 +22,13 @@
  *
  */
 
-#include "core/html/forms/HTMLFormControlElementWithState.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element_with_state.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/html/forms/FormController.h"
-#include "core/html/forms/HTMLFormElement.h"
-#include "core/page/ChromeClient.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/html/forms/form_controller.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 
 namespace blink {
 

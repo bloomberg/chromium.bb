@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFontDescription_h
-#define WebFontDescription_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FONT_DESCRIPTION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FONT_DESCRIPTION_H_
 
-#include "WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 

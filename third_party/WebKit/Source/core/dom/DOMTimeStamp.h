@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMTimeStamp_h
-#define DOMTimeStamp_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_TIME_STAMP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_TIME_STAMP_H_
 
 namespace blink {
 
@@ -45,4 +45,4 @@ inline double ConvertDOMTimeStampToSeconds(DOMTimeStamp milliseconds) {
 
 }  // namespace blink
 
-#endif  // DOMTimeStamp_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_TIME_STAMP_H_

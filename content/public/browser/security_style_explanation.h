@@ -9,7 +9,7 @@
 
 #include "content/common/content_export.h"
 #include "net/cert/x509_certificate.h"
-#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
+#include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 
 namespace content {
 

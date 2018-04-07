@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "cc/blink/cc_blink_export.h"
-#include "third_party/WebKit/public/platform/WebExternalTextureLayer.h"
+#include "third_party/blink/public/platform/web_external_texture_layer.h"
 
 namespace cc {
 class TextureLayerClient;

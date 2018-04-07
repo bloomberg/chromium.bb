@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebIDBValue_h
-#define WebIDBValue_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_VALUE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_VALUE_H_
 
 #include <memory>
 #include <utility>
 
-#include "public/platform/WebBlobInfo.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/indexeddb/WebIDBKey.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class WebIDBValue {
 
 }  // namespace blink
 
-#endif  // WebIDBValue_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_VALUE_H_

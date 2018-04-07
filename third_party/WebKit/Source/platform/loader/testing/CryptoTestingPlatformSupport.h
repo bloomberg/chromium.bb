@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CryptoTestingPlatformSupport_h
-#define CryptoTestingPlatformSupport_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_TESTING_CRYPTO_TESTING_PLATFORM_SUPPORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_TESTING_CRYPTO_TESTING_PLATFORM_SUPPORT_H_
 
 #include <memory>
-#include "platform/loader/testing/FetchTestingPlatformSupport.h"
-#include "platform/testing/MockWebCrypto.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/loader/testing/fetch_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/mock_web_crypto.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

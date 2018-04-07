@@ -20,7 +20,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "url/gurl.h"
 
 namespace blink {

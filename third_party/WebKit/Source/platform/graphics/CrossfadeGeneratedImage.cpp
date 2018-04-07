@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/CrossfadeGeneratedImage.h"
+#include "third_party/blink/renderer/platform/graphics/crossfade_generated_image.h"
 
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/GraphicsContext.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 namespace blink {
 

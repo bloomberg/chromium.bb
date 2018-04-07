@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("donottrack") {
   sources = [
-    "NavigatorDoNotTrack.cpp",
-    "NavigatorDoNotTrack.h",
+    "navigator_do_not_track.cc",
+    "navigator_do_not_track.h",
   ]
 }

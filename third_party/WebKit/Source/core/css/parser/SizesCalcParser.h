@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SizesCalcParser_h
-#define SizesCalcParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_SIZES_CALC_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_SIZES_CALC_PARSER_H_
 
-#include "core/CoreExport.h"
-#include "core/css/MediaValues.h"
-#include "core/css/parser/CSSParserToken.h"
-#include "core/css/parser/CSSParserTokenRange.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/media_values.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class CORE_EXPORT SizesCalcParser {
 
 }  // namespace blink
 
-#endif  // SizesCalcParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_SIZES_CALC_PARSER_H_

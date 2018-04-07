@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediasession/MediaMetadata.h"
+#include "third_party/blink/renderer/modules/mediasession/media_metadata.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/mediasession/MediaImage.h"
-#include "modules/mediasession/MediaMetadataInit.h"
-#include "modules/mediasession/MediaSession.h"
-#include "platform/bindings/ScriptState.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/mediasession/media_image.h"
+#include "third_party/blink/renderer/modules/mediasession/media_metadata_init.h"
+#include "third_party/blink/renderer/modules/mediasession/media_session.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

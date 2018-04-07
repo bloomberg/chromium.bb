@@ -2,31 +2,31 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("gamepad") {
   sources = [
-    "Gamepad.cpp",
-    "Gamepad.h",
-    "GamepadButton.cpp",
-    "GamepadButton.h",
-    "GamepadDispatcher.cpp",
-    "GamepadDispatcher.h",
-    "GamepadEvent.cpp",
-    "GamepadEvent.h",
-    "GamepadHapticActuator.cpp",
-    "GamepadHapticActuator.h",
-    "GamepadList.cpp",
-    "GamepadList.h",
-    "GamepadPose.cpp",
-    "GamepadPose.h",
-    "NavigatorGamepad.cpp",
-    "NavigatorGamepad.h",
+    "gamepad.cc",
+    "gamepad.h",
+    "gamepad_button.cc",
+    "gamepad_button.h",
+    "gamepad_dispatcher.cc",
+    "gamepad_dispatcher.h",
+    "gamepad_event.cc",
+    "gamepad_event.h",
+    "gamepad_haptic_actuator.cc",
+    "gamepad_haptic_actuator.h",
+    "gamepad_list.cc",
+    "gamepad_list.h",
+    "gamepad_pose.cc",
+    "gamepad_pose.h",
+    "navigator_gamepad.cc",
+    "navigator_gamepad.h",
   ]
 
   deps = [
     "//device/gamepad/public/cpp:shared_with_blink",
     "//device/gamepad/public/mojom:mojom_blink",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
   ]
 }

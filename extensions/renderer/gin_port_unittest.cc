@@ -16,7 +16,7 @@
 #include "gin/data_object_builder.h"
 #include "gin/handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
+#include "third_party/blink/public/web/web_scoped_user_gesture.h"
 
 namespace extensions {
 

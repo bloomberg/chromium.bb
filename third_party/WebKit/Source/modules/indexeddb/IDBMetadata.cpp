@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/indexeddb/IDBMetadata.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
 
-#include "platform/wtf/Assertions.h"
-#include "public/platform/modules/indexeddb/WebIDBMetadata.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

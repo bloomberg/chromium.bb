@@ -25,18 +25,18 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef SVGComputedStyleDefs_h
-#define SVGComputedStyleDefs_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_SVG_COMPUTED_STYLE_DEFS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_SVG_COMPUTED_STYLE_DEFS_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/style/StylePath.h"
-#include "platform/Length.h"
-#include "platform/graphics/Color.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/RefVector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/style/style_path.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/ref_vector.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -351,4 +351,4 @@ class StyleGeometryData : public RefCounted<StyleGeometryData> {
 
 }  // namespace blink
 
-#endif  // SVGComputedStyleDefs_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_SVG_COMPUTED_STYLE_DEFS_H_

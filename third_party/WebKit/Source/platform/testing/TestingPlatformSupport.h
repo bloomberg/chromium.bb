@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TestingPlatformSupport_h
-#define TestingPlatformSupport_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_H_
 
 #include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCompositorSupport.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_compositor_support.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace base {
 class TestDiscardableMemoryAllocator;
@@ -119,7 +119,8 @@ class TestingPlatformSupport : public Platform {
 // ScopedTestingPlatformSupport<MyTestingPlatformSupport> can be used to
 // override Platform::current() with MyTestingPlatformSupport, like this:
 //
-// #include "platform/testing/TestingPlatformSupport.h"
+// #include
+// "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 //
 // TEST_F(SampleTest, sampleTest) {
 //   ScopedTestingPlatformSupport<MyTestingPlatformSupport> platform;
@@ -188,4 +189,4 @@ class ScopedUnittestsEnvironmentSetup final {
 
 }  // namespace blink
 
-#endif  // TestingPlatformSupport_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TESTING_PLATFORM_SUPPORT_H_

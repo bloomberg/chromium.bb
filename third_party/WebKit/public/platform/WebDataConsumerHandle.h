@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebDataConsumerHandle_h
-#define WebDataConsumerHandle_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DATA_CONSUMER_HANDLE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DATA_CONSUMER_HANDLE_H_
 
 #include <stddef.h>
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -119,4 +119,4 @@ class BLINK_PLATFORM_EXPORT WebDataConsumerHandle {
 
 }  // namespace blink
 
-#endif  // WebDataConsumerHandle_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DATA_CONSUMER_HANDLE_H_

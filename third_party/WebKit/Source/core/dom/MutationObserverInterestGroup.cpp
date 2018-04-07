@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/MutationObserverInterestGroup.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer_interest_group.h"
 
-#include "core/dom/MutationRecord.h"
+#include "third_party/blink/renderer/core/dom/mutation_record.h"
 
 namespace blink {
 

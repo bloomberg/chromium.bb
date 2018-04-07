@@ -19,14 +19,14 @@
  *
  */
 
-#ifndef NodeRareData_h
-#define NodeRareData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_RARE_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_RARE_DATA_H_
 
 #include "base/macros.h"
-#include "core/dom/MutationObserverRegistration.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -242,4 +242,4 @@ DEFINE_TRAIT_FOR_TRACE_WRAPPERS(NodeRareData);
 
 }  // namespace blink
 
-#endif  // NodeRareData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NODE_RARE_DATA_H_

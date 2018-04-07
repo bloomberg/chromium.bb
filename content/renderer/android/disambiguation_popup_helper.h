@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_ANDROID_DISAMBIGUATION_POPUP_HELPER_H_
 
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace gfx {
 class Rect;

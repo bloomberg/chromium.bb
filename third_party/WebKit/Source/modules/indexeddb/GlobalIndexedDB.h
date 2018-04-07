@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GlobalIndexedDB_h
-#define GlobalIndexedDB_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_GLOBAL_INDEXED_DB_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_GLOBAL_INDEXED_DB_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -23,4 +23,4 @@ class GlobalIndexedDB {
 
 }  // namespace blink
 
-#endif  // GlobalIndexedDB_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_GLOBAL_INDEXED_DB_H_

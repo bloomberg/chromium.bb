@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_PROVIDER_STRUCT_TRAITS_H_
 
 #include "content/common/service_worker/service_worker_provider.mojom.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_provider_type.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 
 namespace mojo {
 

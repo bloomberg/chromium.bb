@@ -6,9 +6,9 @@
 
 #include "base/callback.h"
 #include "base/trace_event/trace_event.h"
-#include "third_party/WebKit/public/platform/WebLayoutAndPaintAsyncCallback.h"
-#include "third_party/WebKit/public/web/WebPagePopup.h"
-#include "third_party/WebKit/public/web/WebWidget.h"
+#include "third_party/blink/public/platform/web_layout_and_paint_async_callback.h"
+#include "third_party/blink/public/web/web_page_popup.h"
+#include "third_party/blink/public/web/web_widget.h"
 
 namespace test_runner {
 

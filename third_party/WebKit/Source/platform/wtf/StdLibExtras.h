@@ -23,20 +23,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_StdLibExtras_h
-#define WTF_StdLibExtras_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_STD_LIB_EXTRAS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_STD_LIB_EXTRAS_H_
 
 #include <cstddef>
 
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/LeakAnnotations.h"
-#include "platform/wtf/TypeTraits.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 #if DCHECK_IS_ON()
-#include "platform/wtf/Threading.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 #endif
 
 #define DEFINE_STATIC_LOCAL_IMPL(Type, Name, Arguments, allow_cross_thread)    \
@@ -304,4 +304,4 @@ char (&ArrayLengthHelperFunction(T (&)[0]))[0];
 
 using WTF::SafeCast;
 
-#endif  // WTF_StdLibExtras_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_STD_LIB_EXTRAS_H_

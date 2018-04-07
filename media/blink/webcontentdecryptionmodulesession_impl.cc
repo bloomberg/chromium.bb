@@ -25,11 +25,11 @@
 #include "media/blink/webmediaplayer_util.h"
 #include "media/cdm/json_web_key.h"
 #include "media/media_buildflags.h"
-#include "third_party/WebKit/public/platform/WebData.h"
-#include "third_party/WebKit/public/platform/WebEncryptedMediaKeyInformation.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_encrypted_media_key_information.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #include "media/cdm/cenc_utils.h"

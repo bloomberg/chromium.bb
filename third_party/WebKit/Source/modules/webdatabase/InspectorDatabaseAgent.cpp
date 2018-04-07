@@ -26,23 +26,23 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/InspectorDatabaseAgent.h"
+#include "third_party/blink/renderer/modules/webdatabase/InspectorDatabaseAgent.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/frame/LocalFrame.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/page/Page.h"
-#include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/DatabaseClient.h"
-#include "modules/webdatabase/DatabaseTracker.h"
-#include "modules/webdatabase/InspectorDatabaseResource.h"
-#include "modules/webdatabase/SQLError.h"
-#include "modules/webdatabase/SQLResultSet.h"
-#include "modules/webdatabase/SQLResultSetRowList.h"
-#include "modules/webdatabase/SQLTransaction.h"
-#include "modules/webdatabase/sqlite/SQLValue.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/modules/webdatabase/database.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_client.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_tracker.h"
+#include "third_party/blink/renderer/modules/webdatabase/inspector_database_resource.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_error.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_result_set.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_result_set_row_list.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sql_value.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 typedef blink::protocol::Database::Backend::ExecuteSQLCallback
     ExecuteSQLCallback;

@@ -7,7 +7,7 @@
 
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "third_party/WebKit/public/platform/WebRTCError.h"
+#include "third_party/blink/public/platform/web_rtc_error.h"
 
 namespace webrtc {
 class RTCError;

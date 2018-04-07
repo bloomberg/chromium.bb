@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/DecodingImageGenerator.h"
+#include "third_party/blink/renderer/platform/graphics/decoding_image_generator.h"
 
-#include "platform/image-decoders/ImageDecoderTestHelpers.h"
-#include "platform/image-decoders/SegmentReader.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
+#include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 
 namespace blink {
 

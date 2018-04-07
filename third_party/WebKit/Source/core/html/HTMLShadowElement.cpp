@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLShadowElement.h"
+#include "third_party/blink/renderer/core/html/html_shadow_element.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/frame/UseCounter.h"
-#include "core/html_names.h"
-#include "core/inspector/ConsoleMessage.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 
 namespace blink {
 

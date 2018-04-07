@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLActiveInfo_h
-#define WebGLActiveInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_ACTIVE_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_ACTIVE_INFO_H_
 
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace blink {
@@ -56,4 +56,4 @@ class WebGLActiveInfo final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // WebGLActiveInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_ACTIVE_INFO_H_

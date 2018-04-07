@@ -23,9 +23,9 @@
  * DAMAGE.
  */
 
-#include "core/fullscreen/DocumentFullscreen.h"
+#include "third_party/blink/renderer/core/fullscreen/document_fullscreen.h"
 
-#include "core/fullscreen/Fullscreen.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 
 namespace blink {
 

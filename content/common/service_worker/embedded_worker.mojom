@@ -12,12 +12,12 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
-import "third_party/WebKit/public/mojom/service_worker/service_worker.mojom";
-import "third_party/WebKit/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom";
-import "third_party/WebKit/public/platform/web_feature.mojom";
-import "third_party/WebKit/public/web/console_message.mojom";
-import "third_party/WebKit/public/web/devtools_agent.mojom";
-import "third_party/WebKit/public/web/worker_content_settings_proxy.mojom";
+import "third_party/blink/public/mojom/service_worker/service_worker.mojom";
+import "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom";
+import "third_party/blink/public/platform/web_feature.mojom";
+import "third_party/blink/public/web/console_message.mojom";
+import "third_party/blink/public/web/devtools_agent.mojom";
+import "third_party/blink/public/web/worker_content_settings_proxy.mojom";
 import "url/mojom/url.mojom";
 
 // Parameters to launch a service worker. This is passed from the browser to the

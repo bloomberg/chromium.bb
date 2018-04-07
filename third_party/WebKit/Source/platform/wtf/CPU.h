@@ -26,8 +26,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_CPU_h
-#define WTF_CPU_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CPU_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CPU_H_
 
 #if defined(arm) || defined(__arm__) || defined(ARM) || defined(_ARM_)
 

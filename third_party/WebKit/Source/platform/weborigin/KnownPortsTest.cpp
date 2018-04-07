@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/KnownPorts.h"
+#include "third_party/blink/renderer/platform/weborigin/known_ports.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

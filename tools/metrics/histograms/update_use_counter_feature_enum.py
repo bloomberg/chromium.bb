@@ -32,7 +32,7 @@ if __name__ == '__main__':
                     'https://github.com/GoogleChrome/chromium-dashboard')
   options, args = parser.parse_args()
 
-  source_path = 'third_party/WebKit/public/platform/web_feature.mojom'
+  source_path = 'third_party/blink/public/platform/web_feature.mojom'
 
   START_MARKER = '^enum WebFeature {'
   END_MARKER = '^kNumberOfFeatures'

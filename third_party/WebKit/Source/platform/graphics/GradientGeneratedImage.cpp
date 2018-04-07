@@ -23,11 +23,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/GradientGeneratedImage.h"
+#include "third_party/blink/renderer/platform/graphics/gradient_generated_image.h"
 
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/GraphicsContext.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 namespace blink {
 

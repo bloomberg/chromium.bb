@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/MultipartParser.h"
+#include "third_party/blink/renderer/core/fetch/multipart_parser.h"
 
-#include "platform/network/HTTPParsers.h"
-#include "platform/network/http_names.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
 
 #include <algorithm>
 #include <utility>

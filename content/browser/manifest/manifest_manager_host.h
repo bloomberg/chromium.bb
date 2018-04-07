@@ -11,7 +11,7 @@
 #include "content/common/manifest_observer.mojom.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "third_party/WebKit/public/platform/modules/manifest/manifest_manager.mojom.h"
+#include "third_party/blink/public/platform/modules/manifest/manifest_manager.mojom.h"
 
 namespace content {
 

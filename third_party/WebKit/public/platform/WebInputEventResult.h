@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebInputEventResult_h
-#define WebInputEventResult_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_INPUT_EVENT_RESULT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_INPUT_EVENT_RESULT_H_
 
 namespace blink {
 
@@ -21,4 +21,4 @@ enum class WebInputEventResult {
 
 }  // namespace blink
 
-#endif  // WebInputEventResult_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_INPUT_EVENT_RESULT_H_

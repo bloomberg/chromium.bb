@@ -18,12 +18,12 @@
  *
  */
 
-#ifndef WTF_HashSet_h
-#define WTF_HashSet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_SET_H_
 
-#include "platform/wtf/HashTable.h"
-#include "platform/wtf/allocator/PartitionAllocator.h"
 #include <initializer_list>
+#include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_table.h"
 
 namespace WTF {
 
@@ -328,4 +328,4 @@ inline void CopyToVector(const C& collection, W& vector) {
 
 using WTF::HashSet;
 
-#endif  // WTF_HashSet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_SET_H_

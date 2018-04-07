@@ -26,14 +26,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/MediaQuery.h"
+#include "third_party/blink/renderer/core/css/media_query.h"
 
 #include <algorithm>
 #include <memory>
-#include "core/css/MediaQueryExp.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/media_type_names.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/media_query_exp.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/media_type_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

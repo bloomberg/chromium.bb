@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/MediaValuesCached.h"
-#include "core/html/HTMLDocument.h"
-#include "core/html/parser/HTMLDocumentParser.h"
-#include "core/html/parser/ResourcePreloader.h"
-#include "core/html/parser/TextResourceDecoderForFuzzing.h"
-#include "core/media_type_names.h"
-#include "platform/loader/SubresourceIntegrity.h"
-#include "platform/testing/BlinkFuzzerTestSupport.h"
-#include "platform/testing/FuzzedDataProvider.h"
+#include "third_party/blink/renderer/core/css/media_values_cached.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
+#include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
+#include "third_party/blink/renderer/core/html/parser/resource_preloader.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder_for_fuzzing.h"
+#include "third_party/blink/renderer/core/media_type_names.h"
+#include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
+#include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
+#include "third_party/blink/renderer/platform/testing/fuzzed_data_provider.h"
 
 namespace blink {
 

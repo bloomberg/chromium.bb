@@ -22,14 +22,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/graphics/filters/FEComposite.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_composite.h"
 
 #include "SkArithmeticImageFilter.h"
 #include "SkXfermodeImageFilter.h"
 
-#include "platform/graphics/filters/PaintFilterBuilder.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/text/TextStream.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
 
 namespace blink {
 

@@ -24,21 +24,21 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/LayoutTableSection.h"
+#include "third_party/blink/renderer/core/layout/layout_table_section.h"
 
 #include <algorithm>
 #include <limits>
-#include "core/frame/UseCounter.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutAnalyzer.h"
-#include "core/layout/LayoutTableCell.h"
-#include "core/layout/LayoutTableCol.h"
-#include "core/layout/LayoutTableRow.h"
-#include "core/layout/LayoutView.h"
-#include "core/layout/SubtreeLayoutScope.h"
-#include "core/paint/TableSectionPainter.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/layout_table_col.h"
+#include "third_party/blink/renderer/core/layout/layout_table_row.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
+#include "third_party/blink/renderer/core/paint/table_section_painter.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 

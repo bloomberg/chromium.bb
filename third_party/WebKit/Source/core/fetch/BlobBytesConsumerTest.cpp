@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/BlobBytesConsumer.h"
+#include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
 
-#include "core/fetch/BytesConsumerTestUtil.h"
-#include "core/fetch/DataConsumerHandleTestUtil.h"
-#include "core/loader/ThreadableLoader.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/blob/BlobData.h"
-#include "platform/loader/fetch/ResourceError.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/network/EncodedFormData.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
+#include "third_party/blink/renderer/core/fetch/data_consumer_handle_test_util.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

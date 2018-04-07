@@ -23,10 +23,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/text/TextRun.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
 
-#include "platform/runtime_enabled_features.h"
-#include "platform/text/Character.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/text/character.h"
 
 namespace blink {
 

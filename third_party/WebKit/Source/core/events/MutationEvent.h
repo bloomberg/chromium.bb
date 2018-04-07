@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef MutationEvent_h
-#define MutationEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_MUTATION_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_MUTATION_EVENT_H_
 
-#include "core/dom/Node.h"
-#include "core/dom/events/Event.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 
 namespace blink {
 
@@ -89,4 +89,4 @@ class MutationEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // MutationEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_MUTATION_EVENT_H_

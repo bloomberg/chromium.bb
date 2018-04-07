@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ServiceWorkerGlobalScopeSync_h
-#define ServiceWorkerGlobalScopeSync_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_SYNC_SERVICE_WORKER_GLOBAL_SCOPE_SYNC_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_SYNC_SERVICE_WORKER_GLOBAL_SCOPE_SYNC_H_
 
-#include "core/dom/events/EventTarget.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
 
 namespace blink {
 
@@ -16,4 +16,4 @@ class ServiceWorkerGlobalScopeSync {
 
 }  // namespace blink
 
-#endif  // ServiceWorkerGlobalScopeSync_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_SYNC_SERVICE_WORKER_GLOBAL_SCOPE_SYNC_H_

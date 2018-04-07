@@ -17,9 +17,9 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "core/layout/PointerEventsHitRules.h"
+#include "third_party/blink/renderer/core/layout/pointer_events_hit_rules.h"
 
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

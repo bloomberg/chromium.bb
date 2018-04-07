@@ -11,8 +11,8 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebSize.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/web/web_view.h"
 
 // Tests for the external select popup menu (Mac specific).
 

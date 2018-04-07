@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VectorMathNEON_h
-#define VectorMathNEON_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CPU_ARM_VECTOR_MATH_NEON_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CPU_ARM_VECTOR_MATH_NEON_H_
 
 #include <arm_neon.h>
 
 #include <algorithm>
 
-#include "platform/audio/VectorMathScalar.h"
+#include "third_party/blink/renderer/platform/audio/vector_math_scalar.h"
 
 namespace blink {
 namespace VectorMath {
@@ -250,4 +250,4 @@ static ALWAYS_INLINE void Zvmul(const float* real1p,
 }  // namespace VectorMath
 }  // namespace blink
 
-#endif  // VectorMathNEON_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CPU_ARM_VECTOR_MATH_NEON_H_

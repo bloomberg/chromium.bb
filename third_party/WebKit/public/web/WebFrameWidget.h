@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFrameWidget_h
-#define WebFrameWidget_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_WIDGET_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_WIDGET_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebDragOperation.h"
-#include "public/web/WebWidget.h"
-#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-shared.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_drag_operation.h"
+#include "third_party/blink/public/web/web_widget.h"
 
 namespace blink {
 

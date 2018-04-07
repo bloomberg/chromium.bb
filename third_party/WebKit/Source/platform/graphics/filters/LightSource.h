@@ -21,14 +21,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LightSource_h
-#define LightSource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_LIGHT_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_LIGHT_SOURCE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatPoint3D.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class PLATFORM_EXPORT LightSource : public RefCounted<LightSource> {
 
 }  // namespace blink
 
-#endif  // LightSource_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_LIGHT_SOURCE_H_

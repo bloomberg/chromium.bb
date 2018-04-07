@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/FrameLoadRequest.h"
+#include "third_party/blink/renderer/core/loader/frame_load_request.h"
 
-#include "core/fileapi/PublicURLManager.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

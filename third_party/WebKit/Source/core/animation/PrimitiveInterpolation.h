@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PrimitiveInterpolation_h
-#define PrimitiveInterpolation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_PRIMITIVE_INTERPOLATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_PRIMITIVE_INTERPOLATION_H_
 
 #include <cmath>
 #include <limits>
@@ -12,9 +12,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "core/animation/TypedInterpolationValue.h"
-#include "platform/animation/AnimationUtilities.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/animation/typed_interpolation_value.h"
+#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -146,4 +146,4 @@ class FlipPrimitiveInterpolation : public PrimitiveInterpolation {
 
 }  // namespace blink
 
-#endif  // PrimitiveInterpolation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_PRIMITIVE_INTERPOLATION_H_

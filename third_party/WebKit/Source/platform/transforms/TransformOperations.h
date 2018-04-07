@@ -22,14 +22,14 @@
  *
  */
 
-#ifndef TransformOperations_h
-#define TransformOperations_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORM_OPERATIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORM_OPERATIONS_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/geometry/LayoutSize.h"
-#include "platform/transforms/TransformOperation.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operation.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 class FloatBox;
@@ -117,4 +117,4 @@ class PLATFORM_EXPORT TransformOperations {
 
 }  // namespace blink
 
-#endif  // TransformOperations_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORM_OPERATIONS_H_

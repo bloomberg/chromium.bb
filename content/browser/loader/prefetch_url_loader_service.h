@@ -12,7 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/WebKit/public/mojom/loader/prefetch_url_loader_service.mojom.h"
+#include "third_party/blink/public/mojom/loader/prefetch_url_loader_service.mojom.h"
 
 namespace net {
 class URLRequestContextGetter;

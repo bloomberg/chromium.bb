@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TokenizedChunkQueue_h
-#define TokenizedChunkQueue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_TOKENIZED_CHUNK_QUEUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_TOKENIZED_CHUNK_QUEUE_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "core/html/parser/HTMLDocumentParser.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

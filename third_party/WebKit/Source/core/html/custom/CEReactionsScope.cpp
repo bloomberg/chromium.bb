@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/custom/CEReactionsScope.h"
+#include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/html/custom/CustomElementReactionStack.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction_stack.h"
 
 namespace blink {
 

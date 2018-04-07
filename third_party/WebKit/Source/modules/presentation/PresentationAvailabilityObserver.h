@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PresentationAvailabilityObserver_h
-#define PresentationAvailabilityObserver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_AVAILABILITY_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_AVAILABILITY_OBSERVER_H_
 
-#include "platform/wtf/Vector.h"
-#include "public/platform/modules/presentation/presentation.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/presentation/presentation.mojom-blink.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -26,4 +26,4 @@ class PresentationAvailabilityObserver {
 
 }  // namespace blink
 
-#endif  // PresentationAvailabilityObserver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_AVAILABILITY_OBSERVER_H_

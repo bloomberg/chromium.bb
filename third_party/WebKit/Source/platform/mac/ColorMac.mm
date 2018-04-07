@@ -24,12 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import "platform/mac/ColorMac.h"
+#import "third_party/blink/renderer/platform/mac/color_mac.h"
 
 #import <AppKit/AppKit.h>
 
-#import "platform/wtf/RetainPtr.h"
-#import "platform/wtf/StdLibExtras.h"
+#import "third_party/blink/renderer/platform/wtf/retain_ptr.h"
+#import "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSLengthInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_length_interpolation_type.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/animation/LengthInterpolationFunctions.h"
-#include "core/animation/LengthPropertyFunctions.h"
-#include "core/animation/css/CSSAnimatableValueFactory.h"
-#include "core/css/CSSCalculationValue.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/resolver/StyleBuilder.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/LengthFunctions.h"
+#include "third_party/blink/renderer/core/animation/css/css_animatable_value_factory.h"
+#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/length_property_functions.h"
+#include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/resolver/style_builder.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
 
 namespace blink {
 

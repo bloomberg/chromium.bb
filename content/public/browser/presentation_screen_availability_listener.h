@@ -8,7 +8,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h"
+#include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

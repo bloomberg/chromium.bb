@@ -11,7 +11,7 @@
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "content/test/test_blink_web_unit_test_support.h"
-#include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/blink/public/web/blink.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/test/aura_test_suite_setup.h"

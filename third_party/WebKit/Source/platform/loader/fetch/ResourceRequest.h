@@ -25,26 +25,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ResourceRequest_h
-#define ResourceRequest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_REQUEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_REQUEST_H_
 
 #include <memory>
-#include "platform/loader/fetch/ResourceLoadPriority.h"
-#include "platform/network/EncodedFormData.h"
-#include "platform/network/HTTPHeaderMap.h"
-#include "platform/network/HTTPParsers.h"
-#include "platform/network/http_names.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/Referrer.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/RefCounted.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "services/network/public/mojom/cors.mojom-blink.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
-#include "third_party/WebKit/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -495,4 +495,4 @@ struct CrossThreadResourceRequestData {
 
 }  // namespace blink
 
-#endif  // ResourceRequest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_REQUEST_H_

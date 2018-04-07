@@ -23,17 +23,17 @@
  * DAMAGE.
  */
 
-#ifndef PlatformLocale_h
-#define PlatformLocale_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_PLATFORM_LOCALE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_PLATFORM_LOCALE_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "platform/DateComponents.h"
-#include "platform/Language.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebLocalizedString.h"
+#include "third_party/blink/public/platform/web_localized_string.h"
+#include "third_party/blink/renderer/platform/date_components.h"
+#include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

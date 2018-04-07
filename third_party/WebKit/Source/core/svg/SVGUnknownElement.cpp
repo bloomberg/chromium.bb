@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/SVGUnknownElement.h"
+#include "third_party/blink/renderer/core/svg/svg_unknown_element.h"
 
 namespace blink {
 

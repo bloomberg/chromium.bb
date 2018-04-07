@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/animation/CompositorAnimationTimeline.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/animation_host.h"
-#include "platform/animation/CompositorAnimation.h"
-#include "platform/animation/CompositorAnimationHost.h"
-#include "platform/testing/CompositorTest.h"
-#include "platform/testing/WebLayerTreeViewImplForTesting.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
+#include "third_party/blink/renderer/platform/testing/compositor_test.h"
+#include "third_party/blink/renderer/platform/testing/web_layer_tree_view_impl_for_testing.h"
 
 namespace blink {
 

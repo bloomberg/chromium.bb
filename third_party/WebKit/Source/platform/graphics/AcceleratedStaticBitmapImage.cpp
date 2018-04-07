@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/AcceleratedStaticBitmapImage.h"
+#include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/graphics/MailboxTextureHolder.h"
-#include "platform/graphics/SkiaTextureHolder.h"
-#include "platform/graphics/gpu/SharedGpuContext.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebGraphicsContext3DProvider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/graphics/mailbox_texture_holder.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/graphics/skia_texture_holder.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/gpu/GrTexture.h"
 

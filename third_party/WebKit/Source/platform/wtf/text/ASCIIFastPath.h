@@ -19,15 +19,15 @@
  *
  */
 
-#ifndef ASCIIFastPath_h
-#define ASCIIFastPath_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_ASCII_FAST_PATH_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_ASCII_FAST_PATH_H_
 
 #include <stdint.h>
 #include "build/build_config.h"
-#include "platform/wtf/Alignment.h"
-#include "platform/wtf/CPU.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/wtf/alignment.h"
+#include "third_party/blink/renderer/platform/wtf/cpu.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 #if defined(OS_MACOSX) && defined(ARCH_CPU_X86_FAMILY)
 #include <emmintrin.h>
@@ -182,4 +182,4 @@ inline void CopyLCharsFromUCharSource(LChar* destination,
 
 }  // namespace WTF
 
-#endif  // ASCIIFastPath_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_ASCII_FAST_PATH_H_

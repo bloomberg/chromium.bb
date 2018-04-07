@@ -22,14 +22,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/opentype/OpenTypeVerticalData.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/open_type_vertical_data.h"
 
 #include "SkTypeface.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/opentype/OpenTypeTypes.h"
-#include "platform/fonts/skia/SkiaTextMetrics.h"
-#include "platform/geometry/FloatRect.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/open_type_types.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/fonts/skia/skia_text_metrics.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 
 namespace blink {
 namespace OpenType {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file./*
 
-#include "core/editing/PositionWithAffinity.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 
 namespace blink {
 

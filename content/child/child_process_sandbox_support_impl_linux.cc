@@ -17,10 +17,10 @@
 #include "base/trace_event/trace_event.h"
 #include "content/public/common/common_sandbox_support_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
-#include "third_party/WebKit/public/platform/WebFontRenderStyle.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/platform/linux/WebFallbackFont.h"
+#include "third_party/blink/public/platform/linux/web_fallback_font.h"
+#include "third_party/blink/public/platform/web_font_render_style.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace content {
 

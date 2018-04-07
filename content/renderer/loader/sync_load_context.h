@@ -13,7 +13,7 @@
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 
 namespace base {
 class WaitableEvent;
