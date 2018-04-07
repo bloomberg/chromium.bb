@@ -334,6 +334,19 @@ CA_NAME="req_ca_dn" \
     -in out/61_months_after_2012_07.req \
     -out ../certificates/61_months_after_2012_07.pem \
     -config ca.cnf
+# 39 months, based on a CA calculating one month as 'last day of Month 0' to
+# last day of 'Month 1'.
+openssl req -config ../scripts/ee.cnf \
+  -newkey rsa:2048 -text -out out/39_months_based_on_last_day.req
+CA_NAME="req_ca_dn" \
+  openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 170228000000Z \
+    -enddate   200530000000Z \
+    -in out/39_months_based_on_last_day.req \
+    -out ../certificates/39_months_based_on_last_day.pem \
+    -config ca.cnf
 # start date after expiry date
 openssl req -config ../scripts/ee.cnf \
   -newkey rsa:2048 -text -out out/start_after_expiry.req
