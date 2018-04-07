@@ -18,12 +18,6 @@ VideoEncodeAccelerator::SupportedProfile::SupportedProfile()
 
 VideoEncodeAccelerator::SupportedProfile::~SupportedProfile() = default;
 
-bool VideoEncodeAccelerator::TryToSetupEncodeOnSeparateThread(
-    const base::WeakPtr<Client>& encode_client,
-    const scoped_refptr<base::SingleThreadTaskRunner>& encode_task_runner) {
-  return false;
-}
-
 void VideoEncodeAccelerator::Flush(FlushCallback flush_callback) {
   // TODO(owenlin): implements this https://crbug.com/755889.
   NOTIMPLEMENTED();
