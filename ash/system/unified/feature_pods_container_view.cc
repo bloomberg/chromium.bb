@@ -45,16 +45,13 @@ void FeaturePodsContainerView::SetExpandedAmount(double expanded_amount) {
 
   PreferredSizeChanged();
 
-  if (expanded_amount == 0.0 || expanded_amount == 1.0) {
-    expanded_ = expanded_amount == 1.0;
-    for (int i = 0; i < child_count(); ++i) {
-      auto* child = static_cast<FeaturePodButton*>(child_at(i));
-      child->SetExpanded(expanded_);
-    }
-    UpdateChildVisibility();
-    // We have to call Layout() explicitly here.
-    Layout();
+  for (int i = 0; i < child_count(); ++i) {
+    auto* child = static_cast<FeaturePodButton*>(child_at(i));
+    child->SetExpanded(expanded_amount_ > 0.0);
   }
+  UpdateChildVisibility();
+  // We have to call Layout() explicitly here.
+  Layout();
 }
 
 void FeaturePodsContainerView::ChildVisibilityChanged(View* child) {
@@ -69,77 +66,20 @@ void FeaturePodsContainerView::ChildVisibilityChanged(View* child) {
 }
 
 void FeaturePodsContainerView::Layout() {
-  if (expanded_)
-    LayoutExpanded();
-  else
-    LayoutCollapsed();
-}
+  UpdateCollapsedSidePadding();
 
-void FeaturePodsContainerView::LayoutExpanded() {
-  DCHECK(expanded_);
-  int x = kUnifiedFeaturePodHorizontalSidePadding;
-  int y = kUnifiedFeaturePodVerticalPadding;
   int visible_count = 0;
   for (int i = 0; i < child_count(); ++i) {
     views::View* child = child_at(i);
     if (!child->visible())
       continue;
-    ++visible_count;
 
-    child->SetBounds(x, y, kUnifiedFeaturePodSize.width(),
-                     kUnifiedFeaturePodSize.height());
+    child->SetBoundsRect(gfx::Rect(GetButtonPosition(visible_count++),
+                                   expanded_amount_ > 0.0
+                                       ? kUnifiedFeaturePodSize
+                                       : kUnifiedFeaturePodCollapsedSize));
     child->Layout();
-
-    x += kUnifiedFeaturePodSize.width() +
-         kUnifiedFeaturePodHorizontalMiddlePadding;
-    // Go to the next line if the number of items exceeds
-    // kUnifiedFeaturePodItemsInRow.
-    if (visible_count % kUnifiedFeaturePodItemsInRow == 0) {
-      // Check if the total width fits into the menu width.
-      DCHECK(x - kUnifiedFeaturePodHorizontalMiddlePadding +
-                 kUnifiedFeaturePodHorizontalSidePadding ==
-             kTrayMenuWidth);
-      x = kUnifiedFeaturePodHorizontalSidePadding;
-      y += kUnifiedFeaturePodSize.height() + kUnifiedFeaturePodVerticalPadding;
-    }
   }
-}
-
-void FeaturePodsContainerView::LayoutCollapsed() {
-  DCHECK(!expanded_);
-
-  int visible_count = 0;
-  for (int i = 0; i < child_count(); ++i) {
-    if (child_at(i)->visible())
-      ++visible_count;
-  }
-
-  DCHECK(visible_count > 0 &&
-         visible_count <= kUnifiedFeaturePodMaxItemsInCollapsed);
-
-  int contents_width =
-      visible_count * kUnifiedFeaturePodCollapsedSize.width() +
-      (visible_count - 1) * kUnifiedFeaturePodCollapsedHorizontalPadding;
-
-  int side_padding = (width() - contents_width) / 2;
-  DCHECK(side_padding > 0);
-
-  int x = side_padding;
-  for (int i = 0; i < child_count(); ++i) {
-    views::View* child = child_at(i);
-    if (!child->visible())
-      continue;
-
-    child->SetBounds(x, kUnifiedFeaturePodCollapsedVerticalPadding,
-                     kUnifiedFeaturePodCollapsedSize.width(),
-                     kUnifiedFeaturePodCollapsedSize.height());
-
-    x += kUnifiedFeaturePodCollapsedSize.width() +
-         kUnifiedFeaturePodCollapsedHorizontalPadding;
-  }
-
-  DCHECK(x - kUnifiedFeaturePodCollapsedHorizontalPadding + side_padding ==
-         kTrayMenuWidth);
 }
 
 void FeaturePodsContainerView::UpdateChildVisibility() {
@@ -149,14 +89,72 @@ void FeaturePodsContainerView::UpdateChildVisibility() {
   int visible_count = 0;
   for (int i = 0; i < child_count(); ++i) {
     auto* child = static_cast<FeaturePodButton*>(child_at(i));
-    child->SetVisibleByContainer(
-        child->visible_preferred() &&
-        (expanded_ || visible_count < kUnifiedFeaturePodMaxItemsInCollapsed));
-    if (child->visible())
+    bool visible = child->visible_preferred() &&
+                   (expanded_amount_ > 0.0 ||
+                    visible_count < kUnifiedFeaturePodMaxItemsInCollapsed);
+    child->SetVisibleByContainer(visible);
+    if (visible)
       ++visible_count;
   }
 
   changing_visibility_ = false;
+}
+
+gfx::Point FeaturePodsContainerView::GetButtonPosition(
+    int visible_index) const {
+  int row = visible_index / kUnifiedFeaturePodItemsInRow;
+  int column = visible_index % kUnifiedFeaturePodItemsInRow;
+  int x = kUnifiedFeaturePodHorizontalSidePadding +
+          (kUnifiedFeaturePodSize.width() +
+           kUnifiedFeaturePodHorizontalMiddlePadding) *
+              column;
+  int y =
+      kUnifiedFeaturePodVerticalPadding +
+      (kUnifiedFeaturePodSize.height() + kUnifiedFeaturePodVerticalPadding) *
+          row;
+
+  // When fully expanded, or below the second row, always return the same
+  // position.
+  if (expanded_amount_ == 1.0 || row > 2)
+    return gfx::Point(x, y);
+
+  int collapsed_x =
+      collapsed_side_padding_ + (kUnifiedFeaturePodCollapsedSize.width() +
+                                 kUnifiedFeaturePodCollapsedHorizontalPadding) *
+                                    visible_index;
+  int collapsed_y = kUnifiedFeaturePodCollapsedVerticalPadding;
+
+  // When fully collapsed, just return the collapsed position.
+  if (expanded_amount_ == 0.0)
+    return gfx::Point(collapsed_x, collapsed_y);
+
+  // Button width is different between expanded and collapsed states.
+  // During the transition, expanded width is used, so it should be adjusted.
+  collapsed_x -= (kUnifiedFeaturePodSize.width() -
+                  kUnifiedFeaturePodCollapsedSize.width()) /
+                 2;
+
+  return gfx::Point(
+      x * expanded_amount_ + collapsed_x * (1.0 - expanded_amount_),
+      y * expanded_amount_ + collapsed_y * (1.0 - expanded_amount_));
+}
+
+void FeaturePodsContainerView::UpdateCollapsedSidePadding() {
+  int visible_count = 0;
+  for (int i = 0; i < child_count(); ++i) {
+    if (static_cast<const FeaturePodButton*>(child_at(i))->visible_preferred())
+      ++visible_count;
+  }
+
+  visible_count =
+      std::min(visible_count, kUnifiedFeaturePodMaxItemsInCollapsed);
+
+  int contents_width =
+      visible_count * kUnifiedFeaturePodCollapsedSize.width() +
+      (visible_count - 1) * kUnifiedFeaturePodCollapsedHorizontalPadding;
+
+  collapsed_side_padding_ = (kTrayMenuWidth - contents_width) / 2;
+  DCHECK(collapsed_side_padding_ > 0);
 }
 
 }  // namespace ash
