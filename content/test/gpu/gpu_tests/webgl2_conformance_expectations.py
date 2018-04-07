@@ -265,6 +265,45 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
         ['win', 'amd', 'd3d11'], bug=483282) # owner:jmadill
 
+    self.Flaky('deqp/functional/gles3/draw/draw_arrays_instanced.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('deqp/functional/gles3/draw/draw_elements.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('deqp/functional/gles3/draw/draw_range_elements.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('deqp/functional/gles3/draw/random.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('deqp/functional/gles3/textureshadow/' +
+        '2d_array_nearest_mipmap_linear_less.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('conformance/glsl/bugs/logic-inside-block-without-braces.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('conformance/renderbuffers/renderbuffer-initialization.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('conformance2/glsl3/vector-dynamic-indexing.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-rgb9_e5-rgb-half_float.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-rgb9_e5-rgb-float.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-rgb32f-rgb-float.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('conformance2/textures/misc/' +
+        'copy-texture-image-webgl-specific.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('conformance2/textures/webgl_canvas/' +
+        'tex-3d-rgb5_a1-rgba-unsigned_short_5_5_5_1.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('conformance2/textures/webgl_canvas/' +
+        'tex-3d-rg16f-rg-half_float.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('conformance2/textures/webgl_canvas/' +
+        'tex-3d-rgba8ui-rgba_integer-unsigned_byte.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+
     # Recent AMD drivers seem to have a regression with 3D textures.
     self.Fail('conformance2/textures/canvas_sub_rectangle/tex-3d-*',
         ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
