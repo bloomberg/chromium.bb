@@ -780,14 +780,16 @@ passDoTest(const TranslationTableHeader *table, int pos, InString input, int tra
 }
 
 static int
-copyCharacters(int from, int to, const TranslationTableHeader *table, int pos,
-		InString input, OutString *output, int *posMapping, int transOpcode,
-		int *cursorPosition, int *cursorStatus) {
+copyCharacters(int from, int to, const TranslationTableHeader *table, InString input,
+		OutString *output, int *posMapping, int transOpcode, int *cursorPosition,
+		int *cursorStatus) {
 	if (transOpcode == CTO_Context) {
-		while (from < to)
-			if (!putCharacter(input.chars[from++], table, pos, input, output, posMapping,
+		while (from < to) {
+			if (!putCharacter(input.chars[from], table, from, input, output, posMapping,
 						cursorPosition, cursorStatus))
 				return 0;
+			from++;
+		}
 	} else {
 		if (to > from) {
 			if ((output->length + to - from) > output->maxlength) return 0;
@@ -816,8 +818,8 @@ passDoAction(const TranslationTableHeader *table, InString *input, OutString *ou
 	int destStartReplace;
 	int origEndReplace = *endReplace;
 
-	if (!copyCharacters(startMatch, startReplace, table, startMatch, *input, output,
-				posMapping, transOpcode, cursorPosition, cursorStatus))
+	if (!copyCharacters(startMatch, startReplace, table, *input, output, posMapping,
+				transOpcode, cursorPosition, cursorStatus))
 		return 0;
 	destStartReplace = output->length;
 
@@ -879,8 +881,8 @@ passDoAction(const TranslationTableHeader *table, InString *input, OutString *ou
 			}
 		}
 
-			if (!copyCharacters(startReplace, origEndReplace, table, startMatch, *input,
-						output, posMapping, transOpcode, cursorPosition, cursorStatus))
+			if (!copyCharacters(startReplace, origEndReplace, table, *input, output,
+						posMapping, transOpcode, cursorPosition, cursorStatus))
 				return 0;
 			*endReplace = endMatch;
 			(*passIC)++;
