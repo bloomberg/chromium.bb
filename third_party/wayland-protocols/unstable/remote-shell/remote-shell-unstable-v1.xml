@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="12">
+  <interface name="zcr_remote_shell_v1" version="13">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -183,7 +183,7 @@
     </event>
   </interface>
 
-  <interface name="zcr_remote_surface_v1" version="12">
+  <interface name="zcr_remote_surface_v1" version="13">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -798,6 +798,67 @@
       <arg name="y" type="int"/>
     </request>
 
+    <!-- Version 13 additions -->
+
+    <enum name="frame_type">
+      <description summary="frame types">
+	Frame type that can be used to decorate a surface.
+      </description>
+      <entry name="none" value="0" summary="no frame"/>
+      <entry name="normal" value="1" summary="caption with shadow" />
+      <entry name="shadow" value="2" summary="shadow only"/>
+      <entry name="autohide" value="3" summary="autohide frame with shadow"/>
+      <entry name="overlay" value="4" summary="overlay frame with shadow" />
+    </enum>
+
+    <request name="set_frame" since="13">
+      <description summary="request a frame for surface">
+	Enables compositor side frame decoration. |type|
+	specifies the type of frame to use for the surface.
+      </description>
+      <arg name="type" type="uint" summary="the frame type"/>
+    </request>
+
+    <enum name="frame_button_type">
+      <description summary="frame button types">
+        The mask that represents buttons on frame.
+      </description>
+      <entry name="back" value="1" summary="a button to naviate backwards"/>
+      <entry name="minimize" value="2" summary="a button to minimize the window"/>
+      <entry name="maximize_restore" value="4"
+	     summary="a button to maximize or restore"/>
+      <entry name="menu" value="8"
+	     summary="a button to activate application's menu"/>
+      <entry name="close" value="16" summary="a button to close the window"/>
+      <entry name="zoom" value="32"
+	     summary="a mask to turn the maximize_restore button to zoom button"/>
+    </enum>
+
+    <request name="set_frame_buttons" since="13">
+      <description summary="updates buttons' state on frame">
+	Updates the frame's button state. |visible_buttons| and |enabled_buttons|
+	are the union of button mask defined in |frame_button_type| enum.
+
+	The mask present in |enabled_buttons| but not in |visible_buttons| will
+	be ignored.
+      </description>
+      <arg name="visible_buttons" type="uint"/>
+      <arg name="enabled_buttons" type="uint"/>
+    </request>
+
+    <request name="set_extra_title" since="13">
+      <description summary="set extra title string">
+	The extra informational string about the surface. This can be
+	used to show the debug information in the title bar, or log
+	messages.
+
+	This is different from "set_title" which is used to identify
+	the surface.
+
+	The string must be encoded in UTF-8.
+      </description>
+      <arg name="extra_title" type="string"/>
+    </request>
   </interface>
 
   <interface name="zcr_notification_surface_v1" version="1">
