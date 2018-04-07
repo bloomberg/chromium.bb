@@ -142,7 +142,7 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
         if property_['alias_for']:
             yield "core/css/properties/css_unresolved_property.h"
         else:
-            yield "core/css/properties/" + property_['namespace_group'] + ".h"
+            yield "core/css/properties/" + property_['namespace_group'].lower() + ".h"
             if property_['direction_aware_options']:
                 yield "core/style_property_shorthand.h"
             if property_['runtime_flag']:
