@@ -98,7 +98,10 @@ NGPhysicalOffsetRect NGPhysicalBoxFragment::SelfVisualRect() const {
 
   // TODO(kojii): Implement for inline boxes.
   DCHECK(layout_object->IsLayoutInline());
-  return {{}, Size()};
+  LayoutRect visual_rect({}, Size().ToLayoutSize());
+  visual_rect.Expand(style.BoxDecorationOutsets());
+
+  return NGPhysicalOffsetRect(visual_rect);
 }
 
 void NGPhysicalBoxFragment::AddSelfOutlineRects(

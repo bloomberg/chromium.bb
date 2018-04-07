@@ -39,6 +39,26 @@ bool AppendFragmentOffsetAndSize(const NGPhysicalFragment* fragment,
     builder->Append(fragment->Size().ToString());
     has_content = true;
   }
+  if (flags & NGPhysicalFragment::DumpOverflow) {
+    if (has_content)
+      builder->Append(" ");
+    NGPhysicalOffsetRect overflow = fragment->VisualRectWithContents();
+    if (overflow.size.width != fragment->Size().width ||
+        overflow.size.height != fragment->Size().height) {
+      builder->Append(" visualRectWithContents: ");
+      builder->Append(overflow.ToString());
+      has_content = true;
+    }
+    if (has_content)
+      builder->Append(" ");
+    overflow = fragment->SelfVisualRect();
+    if (overflow.size.width != fragment->Size().width ||
+        overflow.size.height != fragment->Size().height) {
+      builder->Append(" visualRect: ");
+      builder->Append(overflow.ToString());
+      has_content = true;
+    }
+  }
   return has_content;
 }
 
@@ -371,7 +391,8 @@ String NGPhysicalFragment::DumpFragmentTree(DumpFlags flags,
 
 #ifndef NDEBUG
 void NGPhysicalFragment::ShowFragmentTree() const {
-  LOG(INFO) << "\n" << DumpFragmentTree(DumpAll).Utf8().data();
+  DumpFlags dump_flags = DumpAll & ~DumpOverflow;
+  LOG(INFO) << "\n" << DumpFragmentTree(dump_flags).Utf8().data();
 }
 #endif  // !NDEBUG
 

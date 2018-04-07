@@ -213,7 +213,8 @@ LayoutRect PaintInvalidator::ComputeVisualRectInBacking(
     const LayoutObject& object,
     const PaintInvalidatorContext& context) {
   const NGPhysicalFragment& physical_fragment = fragment.PhysicalFragment();
-  LayoutRect local_rect = physical_fragment.SelfVisualRect().ToLayoutRect();
+  LayoutRect local_rect =
+      physical_fragment.VisualRectWithContents().ToLayoutRect();
   bool disable_flip = true;
   LayoutRect backing_rect =
       MapLocalRectToVisualRectInBacking<LayoutRect, LayoutPoint>(
