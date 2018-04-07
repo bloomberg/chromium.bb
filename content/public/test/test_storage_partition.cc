@@ -82,6 +82,10 @@ TestStoragePartition::GetPlatformNotificationContext() {
   return nullptr;
 }
 
+WebPackageContext* TestStoragePartition::GetWebPackageContext() {
+  return web_package_context_;
+}
+
 #if !defined(OS_ANDROID)
 HostZoomMap* TestStoragePartition::GetHostZoomMap() {
   return host_zoom_map_;

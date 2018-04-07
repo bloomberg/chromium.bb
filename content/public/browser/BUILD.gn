@@ -288,6 +288,7 @@ jumbo_source_set("browser_sources") {
     "web_contents_view_delegate.cc",
     "web_contents_view_delegate.h",
     "web_drag_dest_delegate.h",
+    "web_package_context.h",
     "web_ui.h",
     "web_ui_controller.cc",
     "web_ui_controller.h",

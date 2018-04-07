@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/barrier_closure.h"
 #include "base/base64.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -48,6 +49,7 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_package_context.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -827,25 +829,36 @@ void BlinkTestController::OnTestFinished() {
 
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
+
+  base::RepeatingClosure barrier_closure = base::BarrierClosure(
+      3, base::BindOnce(&BlinkTestController::OnCleanupFinished,
+                        weak_factory_.GetWeakPtr()));
+
   StoragePartition* storage_partition =
       BrowserContext::GetStoragePartition(browser_context, nullptr);
   storage_partition->GetServiceWorkerContext()->ClearAllServiceWorkersForTest(
-      base::BindOnce(&BlinkTestController::OnAllServiceWorkersCleared,
-                     weak_factory_.GetWeakPtr()));
+      barrier_closure);
   storage_partition->ClearBluetoothAllowedDevicesMapForTesting();
-}
 
-void BlinkTestController::OnAllServiceWorkersCleared() {
   // TODO(nhiroki): Add a comment about the reason why we terminate all shared
   // workers here.
   TerminateAllSharedWorkersForTesting(
       BrowserContext::GetStoragePartition(
           ShellContentBrowserClient::Get()->browser_context(), nullptr),
-      base::BindOnce(&BlinkTestController::OnAllSharedWorkersDestroyed,
-                     weak_factory_.GetWeakPtr()));
+      barrier_closure);
+
+  // Resets the SignedHTTPExchange verification time overriding. The time for
+  // the verification may be changed in the LayoutTest using Mojo JS API.
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          &WebPackageContext::SetSignedExchangeVerificationTimeForTesting,
+          base::Unretained(storage_partition->GetWebPackageContext()),
+          base::nullopt),
+      barrier_closure);
 }
 
-void BlinkTestController::OnAllSharedWorkersDestroyed() {
+void BlinkTestController::OnCleanupFinished() {
   if (main_window_) {
     RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
     rvh->Send(new ShellViewMsg_Reset(rvh->GetRoutingID()));

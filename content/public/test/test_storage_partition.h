@@ -118,6 +118,11 @@ class TestStoragePartition : public StoragePartition {
   }
   PlatformNotificationContext* GetPlatformNotificationContext() override;
 
+  void set_web_package_context(WebPackageContext* context) {
+    web_package_context_ = context;
+  }
+  WebPackageContext* GetWebPackageContext() override;
+
 #if !defined(OS_ANDROID)
   void set_host_zoom_map(HostZoomMap* map) { host_zoom_map_ = map; }
   HostZoomMap* GetHostZoomMap() override;
@@ -181,6 +186,7 @@ class TestStoragePartition : public StoragePartition {
   SharedWorkerService* shared_worker_service_ = nullptr;
   CacheStorageContext* cache_storage_context_ = nullptr;
   PlatformNotificationContext* platform_notification_context_ = nullptr;
+  WebPackageContext* web_package_context_ = nullptr;
 #if !defined(OS_ANDROID)
   HostZoomMap* host_zoom_map_ = nullptr;
   HostZoomLevelContext* host_zoom_level_context_ = nullptr;

@@ -10,9 +10,11 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/login_delegate.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_package_context.h"
 #include "content/shell/browser/layout_test/blink_test_controller.h"
 #include "content/shell/browser/layout_test/fake_bluetooth_chooser.h"
 #include "content/shell/browser/layout_test/layout_test_bluetooth_fake_adapter_setter_impl.h"
@@ -26,7 +28,9 @@
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 #include "device/bluetooth/test/fake_bluetooth.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/WebKit/public/mojom/web_package/web_package_internals.mojom.h"
 
 namespace content {
 namespace {
@@ -37,6 +41,34 @@ void BindLayoutTestHelper(mojom::MojoLayoutTestHelperRequest request,
                           RenderFrameHost* render_frame_host) {
   MojoLayoutTestHelper::Create(std::move(request));
 }
+
+class WebPackageInternalsImpl : public blink::test::mojom::WebPackageInternals {
+ public:
+  explicit WebPackageInternalsImpl(WebPackageContext* web_package_context)
+      : web_package_context_(web_package_context) {}
+  ~WebPackageInternalsImpl() override = default;
+
+  static void Create(WebPackageContext* web_package_context,
+                     blink::test::mojom::WebPackageInternalsRequest request) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    mojo::MakeStrongBinding(
+        std::make_unique<WebPackageInternalsImpl>(web_package_context),
+        std::move(request));
+  }
+
+ private:
+  void SetSignedExchangeVerificationTime(
+      base::Time time,
+      SetSignedExchangeVerificationTimeCallback callback) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    web_package_context_->SetSignedExchangeVerificationTimeForTesting(time);
+    std::move(callback).Run();
+  }
+
+  WebPackageContext* web_package_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebPackageInternalsImpl);
+};
 
 }  // namespace
 
@@ -113,6 +145,10 @@ void LayoutTestContentBrowserClient::ExposeInterfacesToRenderer(
           &LayoutTestContentBrowserClient::CreateFakeBluetoothChooser,
           base::Unretained(this)),
       ui_task_runner);
+  registry->AddInterface(base::BindRepeating(
+      &WebPackageInternalsImpl::Create,
+      base::Unretained(
+          render_process_host->GetStoragePartition()->GetWebPackageContext())));
   registry->AddInterface(base::BindRepeating(&MojoLayoutTestHelper::Create));
 }
 

@@ -229,8 +229,7 @@ class BlinkTestController : public WebContentsObserver,
   mojom::LayoutTestControl* GetLayoutTestControlPtr(RenderFrameHost* frame);
   void HandleLayoutTestControlError(RenderFrameHost* frame);
 
-  void OnAllServiceWorkersCleared();
-  void OnAllSharedWorkersDestroyed();
+  void OnCleanupFinished();
   void OnCaptureDumpCompleted(mojom::LayoutTestDumpPtr dump);
 
   std::unique_ptr<BlinkTestResultPrinter> printer_;
