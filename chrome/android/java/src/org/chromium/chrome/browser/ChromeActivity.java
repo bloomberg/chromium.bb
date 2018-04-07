@@ -1300,7 +1300,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mFadingBackgroundView = (FadingBackgroundView) findViewById(R.id.fading_focus_target);
             mBottomSheetController = new BottomSheetController(this, getTabModelSelector(),
                     getCompositorViewHolder().getLayoutManager(), mFadingBackgroundView,
-                    mBottomSheet);
+                    getContextualSearchManager(), mBottomSheet);
 
             mContextualSuggestionsCoordinator = new ContextualSuggestionsCoordinator(
                     this, mBottomSheetController, getTabModelSelector());
