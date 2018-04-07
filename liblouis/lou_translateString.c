@@ -71,11 +71,57 @@
 #define TRANSNOTE_MASK 0x0000000f
 
 typedef struct {
+	const int size;
+	widechar **buffers;
+	int *inUse;
+	widechar *(*alloc)(int index, int length);
+	void (*free)(widechar *);
+} StringBufferPool;
+
+static widechar *
+allocStringBuffer(int index, int length) {
+	return _lou_allocMem(alloc_passbuf, index, 0, length);
+}
+
+static widechar *stringBuffers[MAXPASSBUF] = { NULL };
+static int stringBuffersInUse[MAXPASSBUF] = { 0 };
+static StringBufferPool stringBufferPool = (StringBufferPool){ MAXPASSBUF, stringBuffers,
+	stringBuffersInUse, &allocStringBuffer, NULL };
+
+static int
+getStringBuffer(int length) {
+	int i;
+	for (i = 0; i < stringBufferPool.size; i++) {
+		if (!stringBufferPool.inUse[i]) {
+			stringBufferPool.buffers[i] = stringBufferPool.alloc(i, length);
+			stringBufferPool.inUse[i] = 1;
+			return i;
+		}
+	}
+	_lou_outOfMemory();
+	return -1;
+}
+
+static int
+releaseStringBuffer(int idx) {
+	if (idx >= 0 && idx < stringBufferPool.size) {
+		int inUse = stringBufferPool.inUse[idx];
+		if (inUse && stringBufferPool.free)
+			stringBufferPool.free(stringBufferPool.buffers[idx]);
+		stringBufferPool.inUse[idx] = 0;
+		return inUse;
+	}
+	return 0;
+}
+
+typedef struct {
+	int bufferIndex;
 	const widechar *chars;
 	int length;
 } InString;
 
 typedef struct {
+	int bufferIndex;
 	widechar *chars;
 	int maxlength;
 	int length;
@@ -204,6 +250,7 @@ makeCorrections(const TranslationTableHeader *table, const InString *input,
 	int endMatch;
 	TranslationTableRule *groupingRule;
 	widechar groupingOp;
+	const InString *origInput = input;
 	if (!table->corrections) return 1;
 	pos = 0;
 	output->length = 0;
@@ -270,7 +317,8 @@ makeCorrections(const TranslationTableHeader *table, const InString *input,
 			posMapping[output->length] = pos;
 			output->chars[output->length++] = input->chars[pos++];
 			break;
-		case CTO_Correct:
+		case CTO_Correct: {
+			const InString *inputBefore = input;
 			if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
 				appliedRules[appliedRulesCount++] = transRule;
 			if (!passDoAction(table, &input, output, posMapping, transOpcode, &transRule,
@@ -278,9 +326,13 @@ makeCorrections(const TranslationTableHeader *table, const InString *input,
 						&endReplace, endMatch, cursorPosition, cursorStatus, groupingRule,
 						groupingOp))
 				goto failure;
+			if (input->bufferIndex != inputBefore->bufferIndex &&
+					inputBefore->bufferIndex != origInput->bufferIndex)
+				releaseStringBuffer(inputBefore->bufferIndex);
 			if (endReplace == pos) *posIncremented = 0;
 			pos = endReplace;
 			break;
+		}
 		default:
 			break;
 		}
@@ -305,6 +357,8 @@ makeCorrections(const TranslationTableHeader *table, const InString *input,
 
 failure:
 	*realInlen = pos;
+	if (input->bufferIndex != origInput->bufferIndex)
+		releaseStringBuffer(input->bufferIndex);
 	return 1;
 }
 
@@ -427,7 +481,6 @@ replaceGrouping(const TranslationTableHeader *table, const InString **input,
 		TranslationTableRule *groupingRule, widechar groupingOp) {
 	widechar startCharDots = groupingRule->charsdots[2 * passCharDots];
 	widechar endCharDots = groupingRule->charsdots[2 * passCharDots + 1];
-	widechar *curin = (widechar *)(*input)->chars;
 	int p;
 	int level = 0;
 	TranslationTableOffset replaceOffset =
@@ -437,14 +490,26 @@ replaceGrouping(const TranslationTableHeader *table, const InString **input,
 	widechar replaceStart = replaceRule->charsdots[2 * passCharDots];
 	widechar replaceEnd = replaceRule->charsdots[2 * passCharDots + 1];
 	if (groupingOp == pass_groupstart) {
-		curin[startReplace] = replaceStart;
 		for (p = startReplace + 1; p < (*input)->length; p++) {
 			if ((*input)->chars[p] == startCharDots) level--;
 			if ((*input)->chars[p] == endCharDots) level++;
 			if (level == 1) break;
 		}
-		if (p == (*input)->length) return 0;
-		curin[p] = replaceEnd;
+		if (p == (*input)->length)
+			return 0;
+		else {
+			// Create a new string instead of modifying it. This is slightly less
+			// efficient, but makes the code more readable. Grouping is not a much used
+			// feature anyway.
+			int idx = getStringBuffer((*input)->length);
+			widechar *chars = stringBufferPool.buffers[idx];
+			memcpy(chars, (*input)->chars, (*input)->length * sizeof(widechar));
+			chars[startReplace] = replaceStart;
+			chars[p] = replaceEnd;
+			*input = &(InString){
+				.chars = chars, .length = (*input)->length, .bufferIndex = idx
+			};
+		}
 	} else {
 		if (transOpcode == CTO_Context) {
 			startCharDots = groupingRule->charsdots[2];
@@ -470,7 +535,6 @@ removeGrouping(const InString **input, OutString *output, int passCharDots,
 		int startReplace, TranslationTableRule *groupingRule, widechar groupingOp) {
 	widechar startCharDots = groupingRule->charsdots[2 * passCharDots];
 	widechar endCharDots = groupingRule->charsdots[2 * passCharDots + 1];
-	widechar *curin = (widechar *)(*input)->chars;
 	int p;
 	int level = 0;
 	if (groupingOp == pass_groupstart) {
@@ -479,10 +543,22 @@ removeGrouping(const InString **input, OutString *output, int passCharDots,
 			if ((*input)->chars[p] == endCharDots) level++;
 			if (level == 1) break;
 		}
-		if (p == (*input)->length) return 0;
-		p++;
-		for (; p < (*input)->length; p++) curin[p - 1] = curin[p];
-		*input = &(InString){ curin, (*input)->length - 1 };
+		if (p == (*input)->length)
+			return 0;
+		else {
+			// Create a new string instead of modifying it. This is slightly less
+			// efficient, but makes the code more readable. Grouping is not a much used
+			// feature anyway.
+			int idx = getStringBuffer((*input)->length);
+			widechar *chars = stringBufferPool.buffers[idx];
+			int len = 0;
+			int k;
+			for (k = 0; k < (*input)->length; k++) {
+				if (k == p) continue;
+				chars[len++] = (*input)->chars[k];
+			}
+			*input = &(InString){.chars = chars, .length = len, .bufferIndex = idx };
+		}
 	} else {
 		for (p = output->length - 1; p >= 0; p--) {
 			if (output->chars[p] == endCharDots) level--;
@@ -932,6 +1008,7 @@ translatePass(const TranslationTableHeader *table, int currentPass, const InStri
 	int endMatch;
 	TranslationTableRule *groupingRule;
 	widechar groupingOp;
+	const InString *origInput = input;
 	pos = output->length = 0;
 	*posIncremented = 1;
 	_lou_resetPassVariables();
@@ -944,7 +1021,8 @@ translatePass(const TranslationTableHeader *table, int currentPass, const InStri
 		case CTO_Context:
 		case CTO_Pass2:
 		case CTO_Pass3:
-		case CTO_Pass4:
+		case CTO_Pass4: {
+			const InString *inputBefore = input;
 			if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
 				appliedRules[appliedRulesCount++] = transRule;
 			if (!passDoAction(table, &input, output, posMapping, transOpcode, &transRule,
@@ -952,9 +1030,13 @@ translatePass(const TranslationTableHeader *table, int currentPass, const InStri
 						&endReplace, endMatch, cursorPosition, cursorStatus, groupingRule,
 						groupingOp))
 				goto failure;
+			if (input->bufferIndex != inputBefore->bufferIndex &&
+					inputBefore->bufferIndex != origInput->bufferIndex)
+				releaseStringBuffer(inputBefore->bufferIndex);
 			if (endReplace == pos) *posIncremented = 0;
 			pos = endReplace;
 			break;
+		}
 		case CTO_Always:
 			if ((output->length + 1) > output->maxlength) goto failure;
 			posMapping[output->length] = pos;
@@ -970,6 +1052,8 @@ failure:
 		while (checkAttr(input->chars[pos], CTC_Space, 1, table))
 			if (++pos == input->length) break;
 	}
+	if (input->bufferIndex != origInput->bufferIndex)
+		releaseStringBuffer(input->bufferIndex);
 	return 1;
 }
 
@@ -1018,8 +1102,6 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 	const TranslationTableHeader *table;
 	const InString *input;
 	OutString output;
-	widechar *passbuf1;
-	widechar *passbuf2;
 	// posMapping contains position mapping info between the initial input and the output
 	// of the current pass. It is 1 longer than the output. The values are monotonically
 	// increasing and can range between -1 and the output length. At the end the position
@@ -1060,9 +1142,9 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 	if (table == NULL || *inlen < 0 || *outlen < 0) return 0;
 	k = 0;
 	while (k < *inlen && inbufx[k]) k++;
-	input = &(InString){ inbufx, k };
+	input = &(InString){.chars = inbufx, .length = k, .bufferIndex = -1 };
 	haveEmphasis = 0;
-	if (!(typebuf = _lou_allocMem(alloc_typebuf, input->length, *outlen))) return 0;
+	if (!(typebuf = _lou_allocMem(alloc_typebuf, 0, input->length, *outlen))) return 0;
 	if (typeform != NULL) {
 		for (k = 0; k < input->length; k++) {
 			typebuf[k] = typeform[k];
@@ -1071,15 +1153,16 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 	} else
 		memset(typebuf, 0, input->length * sizeof(formtype));
 
-	if ((wordBuffer = _lou_allocMem(alloc_wordBuffer, input->length, *outlen)))
+	if ((wordBuffer = _lou_allocMem(alloc_wordBuffer, 0, input->length, *outlen)))
 		memset(wordBuffer, 0, (input->length + 4) * sizeof(unsigned int));
 	else
 		return 0;
-	if ((emphasisBuffer = _lou_allocMem(alloc_emphasisBuffer, input->length, *outlen)))
+	if ((emphasisBuffer = _lou_allocMem(alloc_emphasisBuffer, 0, input->length, *outlen)))
 		memset(emphasisBuffer, 0, (input->length + 4) * sizeof(unsigned int));
 	else
 		return 0;
-	if ((transNoteBuffer = _lou_allocMem(alloc_transNoteBuffer, input->length, *outlen)))
+	if ((transNoteBuffer =
+						_lou_allocMem(alloc_transNoteBuffer, 0, input->length, *outlen)))
 		memset(transNoteBuffer, 0, (input->length + 4) * sizeof(unsigned int));
 	else
 		return 0;
@@ -1113,20 +1196,16 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 		cursorPosition = -1;
 		cursorStatus = 1; /* so it won't check cursor position */
 	}
-	// FIXME: reallocate passbuf and posMapping buffers in between passes because the
-	// intermediary strings may be longer than the in- and outputs.
-	if (!(passbuf1 = _lou_allocMem(alloc_passbuf1, input->length, *outlen))) return 0;
-	if (!(posMapping1 = _lou_allocMem(alloc_posMapping1, input->length, *outlen)))
+	if (!(posMapping1 = _lou_allocMem(alloc_posMapping1, 0, input->length, *outlen)))
 		return 0;
 	if (table->numPasses > 1 || table->corrections) {
-		if (!(passbuf2 = _lou_allocMem(alloc_passbuf2, input->length, *outlen))) return 0;
-		if (!(posMapping2 = _lou_allocMem(alloc_posMapping2, input->length, *outlen)))
+		if (!(posMapping2 = _lou_allocMem(alloc_posMapping2, 0, input->length, *outlen)))
 			return 0;
-		if (!(posMapping3 = _lou_allocMem(alloc_posMapping3, input->length, *outlen)))
+		if (!(posMapping3 = _lou_allocMem(alloc_posMapping3, 0, input->length, *outlen)))
 			return 0;
 	}
 	if (srcSpacing != NULL) {
-		if (!(destSpacing = _lou_allocMem(alloc_destSpacing, input->length, *outlen)))
+		if (!(destSpacing = _lou_allocMem(alloc_destSpacing, 0, input->length, *outlen)))
 			goodTrans = 0;
 		else
 			memset(destSpacing, '*', *outlen);
@@ -1140,7 +1219,15 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 		appliedRules = NULL;
 		maxAppliedRules = 0;
 	}
-	output = (OutString){ passbuf1, *outlen };
+	{
+		int idx;
+		for (idx = 0; idx < stringBufferPool.size; idx++) releaseStringBuffer(idx);
+		idx = getStringBuffer(*outlen);
+		output = (OutString){.chars = stringBufferPool.buffers[idx],
+			.maxlength = *outlen,
+			.length = 0,
+			.bufferIndex = idx };
+	}
 	posMapping = posMapping1;
 
 	int currentPass = table->corrections ? 0 : 1;
@@ -1181,11 +1268,16 @@ _lou_translateWithTracing(const char *tableList, const widechar *inbufx, int *in
 		}
 		currentPass++;
 		if (currentPass <= table->numPasses && goodTrans) {
-			widechar *tmp = passbuf1;
-			passbuf1 = passbuf2;
-			passbuf2 = tmp;
-			input = &(InString){ output.chars, output.length };
-			output = (OutString){ passbuf1, *outlen };
+			int idx;
+			releaseStringBuffer(input->bufferIndex);
+			input = &(InString){.chars = output.chars,
+				.length = output.length,
+				.bufferIndex = output.bufferIndex };
+			idx = getStringBuffer(*outlen);
+			output = (OutString){.chars = stringBufferPool.buffers[idx],
+				.maxlength = *outlen,
+				.length = 0,
+				.bufferIndex = idx };
 			continue;
 		}
 		break;
@@ -3276,6 +3368,7 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 	int prevType;
 	int prevTypeform;
 	int prevPos;
+	const InString *origInput = input;
 	/* Main translation routine */
 	int k;
 	translation_direction = 1;
@@ -3377,7 +3470,8 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 						&startMatch, &startReplace, &endReplace, &endMatch, &groupingRule,
 						&groupingOp))
 			switch (transOpcode) {
-			case CTO_Context:
+			case CTO_Context: {
+				const InString *inputBefore = input;
 				if (appliedRules != NULL && appliedRulesCount < maxAppliedRules)
 					appliedRules[appliedRulesCount++] = transRule;
 				if (!passDoAction(table, &input, output, posMapping, transOpcode,
@@ -3385,9 +3479,13 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 							startMatch, startReplace, &endReplace, endMatch,
 							cursorPosition, cursorStatus, groupingRule, groupingOp))
 					goto failure;
+				if (input->bufferIndex != inputBefore->bufferIndex &&
+						inputBefore->bufferIndex != origInput->bufferIndex)
+					releaseStringBuffer(inputBefore->bufferIndex);
 				if (endReplace == pos) *posIncremented = 0;
 				pos = endReplace;
 				continue;
+			}
 			default:
 				break;
 			}
@@ -3590,6 +3688,8 @@ failure:
 			if (++pos == input->length) break;
 	}
 	if (realInlen) *realInlen = pos;
+	if (input->bufferIndex != origInput->bufferIndex)
+		releaseStringBuffer(input->bufferIndex);
 	return 1;
 } /* first pass translation completed */
 

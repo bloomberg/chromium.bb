@@ -551,12 +551,13 @@ typedef enum {
 	alloc_emphasisBuffer,
 	alloc_transNoteBuffer,
 	alloc_destSpacing,
-	alloc_passbuf1,
-	alloc_passbuf2,
+	alloc_passbuf,
 	alloc_posMapping1,
 	alloc_posMapping2,
 	alloc_posMapping3
 } AllocBuf;
+
+#define MAXPASSBUF 3
 
 typedef enum {
 	capsRule = 0,
@@ -645,7 +646,7 @@ _lou_getCharFromDots(widechar d);
  * TODO: move to utils.c
  */
 void *EXPORT_CALL
-_lou_allocMem(AllocBuf buffer, int srcmax, int destmax);
+_lou_allocMem(AllocBuf buffer, int index, int srcmax, int destmax);
 
 /**
  * Hash function for character strings
