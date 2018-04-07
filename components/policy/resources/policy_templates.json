@@ -145,7 +145,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 436
+#   For your editing convenience: highest ID currently used: 437
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -9883,6 +9883,27 @@
           If this policy is set to false or is not set, users will be able to pin or remove the icon via its contextual menu.
 
           If the policy "EnableMediaRouter" is set to false, then this policy's value would have no effect, and the toolbar icon would not be shown.'''
+    },
+    {
+      'name': 'MediaRouterCastAllowAllIPs',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:67-', 'chrome_os:67-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 437,
+      'caption': '''Allows <ph name="PRODUCT_NAME">Google Cast</ph> to connect to Cast devices on all IP addresses.''',
+      'tags': [],
+      'desc': '''If this policy is set to true, <ph name="PRODUCT_NAME">Google Cast</ph> will connect to Cast devices on all IP addresses, not just RFC1918/RFC4913 private addresses.
+
+          If this policy is set to false, <ph name="PRODUCT_NAME">Google Cast</ph> will connect to Cast devices on RFC1918/RFC4913 private addresses only.
+
+          If this policy is not set, <ph name="PRODUCT_NAME">Google Cast</ph> will connect to Cast devices on RFC1918/RFC4913 private addresses only, unless the CastAllowAllIPs feature is enabled.
+
+          If the policy "EnableMediaRouter" is set to false, then this policy's value would have no effect.'''
     },
     {
       'name': 'ArcBackupRestoreEnabled',

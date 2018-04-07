@@ -73,7 +73,8 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
         media_sink_service_impl_(mock_sink_discovered_cb_.Get(),
                                  &observer_,
                                  mock_cast_socket_service_.get(),
-                                 discovery_network_monitor_.get()) {
+                                 discovery_network_monitor_.get(),
+                                 /* allow_all_ips */ false) {
     mock_cast_socket_service_->SetTaskRunnerForTest(mock_time_task_runner_);
   }
 

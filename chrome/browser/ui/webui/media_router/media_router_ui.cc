@@ -818,14 +818,14 @@ void MediaRouterUI::SearchSinksAndCreateRoute(
 bool MediaRouterUI::UserSelectedTabMirroringForCurrentOrigin() const {
   const base::ListValue* origins =
       Profile::FromWebUI(web_ui())->GetPrefs()->GetList(
-          prefs::kMediaRouterTabMirroringSources);
+          ::prefs::kMediaRouterTabMirroringSources);
   return origins->Find(base::Value(GetSerializedInitiatorOrigin())) !=
          origins->end();
 }
 
 void MediaRouterUI::RecordCastModeSelection(MediaCastMode cast_mode) {
   ListPrefUpdate update(Profile::FromWebUI(web_ui())->GetPrefs(),
-                        prefs::kMediaRouterTabMirroringSources);
+                        ::prefs::kMediaRouterTabMirroringSources);
 
   switch (cast_mode) {
     case MediaCastMode::PRESENTATION:

@@ -15,6 +15,7 @@
 #include "components/cast_channel/cast_socket_service.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/ip_address.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,7 +65,8 @@ class MockCastMediaSinkServiceImpl : public CastMediaSinkServiceImpl {
       : CastMediaSinkServiceImpl(callback,
                                  observer,
                                  cast_socket_service,
-                                 network_monitor),
+                                 network_monitor,
+                                 /* allow_all_ips */ false),
         sinks_discovered_cb_(callback) {}
   ~MockCastMediaSinkServiceImpl() override {}
 

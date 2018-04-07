@@ -12,7 +12,6 @@
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "components/cast_channel/cast_channel_enum.h"
-#include "components/cast_channel/cast_channel_util.h"
 #include "components/cast_channel/cast_socket_service.h"
 #include "components/cast_channel/logger.h"
 #include "components/net_log/chrome_net_log.h"
@@ -180,11 +179,13 @@ CastMediaSinkServiceImpl::CastMediaSinkServiceImpl(
     const OnSinksDiscoveredCallback& callback,
     Observer* observer,
     cast_channel::CastSocketService* cast_socket_service,
-    DiscoveryNetworkMonitor* network_monitor)
+    DiscoveryNetworkMonitor* network_monitor,
+    bool allow_all_ips)
     : MediaSinkServiceBase(callback),
       observer_(observer),
       cast_socket_service_(cast_socket_service),
       network_monitor_(network_monitor),
+      allow_all_ips_(allow_all_ips),
       task_runner_(cast_socket_service_->task_runner()),
       clock_(base::DefaultClock::GetInstance()),
       weak_ptr_factory_(this) {
@@ -446,8 +447,10 @@ void CastMediaSinkServiceImpl::OpenChannel(
     SinkSource sink_source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!cast_channel::IsValidCastIPAddress(ip_endpoint.address()))
+  if (!allow_all_ips_ && !ip_endpoint.address().IsReserved()) {
+    DVLOG(2) << "Invalid Cast IP address: " << ip_endpoint.address().ToString();
     return;
+  }
 
   // Erase the entry from |dial_sink_failure_count_| since the device is now
   // known to be a Cast device.
@@ -665,6 +668,11 @@ void CastMediaSinkServiceImpl::AttemptConnection(
 OnDialSinkAddedCallback CastMediaSinkServiceImpl::GetDialSinkAddedCallback() {
   return base::BindRepeating(&CastMediaSinkServiceImpl::OnDialSinkAdded,
                              base::Unretained(this));
+}
+
+void CastMediaSinkServiceImpl::SetCastAllowAllIPs(bool allow_all_ips) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  allow_all_ips_ = allow_all_ips;
 }
 
 CastMediaSinkServiceImpl::RetryParams::RetryParams()

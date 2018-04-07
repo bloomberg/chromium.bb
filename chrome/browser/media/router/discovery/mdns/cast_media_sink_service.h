@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_registry.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/discovery/media_sink_service_util.h"
+#include "components/prefs/pref_change_registrar.h"
 
 namespace media_router {
 
@@ -85,12 +87,18 @@ class CastMediaSinkService : public DnsSdRegistry::DnsSdObserver {
   void OnDnsSdEvent(const std::string& service_type,
                     const DnsSdRegistry::DnsSdServiceList& services) override;
 
+  // Sets the current value of |CastAllowAllIPs()| on |impl_|.
+  void SetCastAllowAllIPs();
+
   // Raw pointer to DnsSdRegistry instance, which is a global leaky singleton
   // and lives as long as the browser process.
   DnsSdRegistry* dns_sd_registry_ = nullptr;
 
   // Created on the UI thread, used and destroyed on its SequencedTaskRunner.
   std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter> impl_;
+
+  // Listens for local state pref changes for kMediaRouterCastAllowAllIPs.
+  PrefChangeRegistrar local_state_change_registrar_;
 
   // List of cast sinks found in current round of mDNS discovery.
   std::vector<MediaSinkInternal> cast_sinks_;

@@ -2322,6 +2322,16 @@
     ]
   },
 
+  "MediaRouterCastAllowAllIPs": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "MediaRouterCastAllowAllIPs": false },
+    "pref_mappings": [
+      { "pref": "media_router.cast_allow_all_ips",
+        "local_state": true
+      }
+    ]
+  },
+
   "NTPContentSuggestionsEnabled": {
     "os": ["android"],
     "test_policy": { "NTPContentSuggestionsEnabled": false },

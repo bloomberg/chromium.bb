@@ -10,8 +10,6 @@ static_library("cast_channel") {
     "cast_auth_util.h",
     "cast_channel_enum.cc",
     "cast_channel_enum.h",
-    "cast_channel_util.cc",
-    "cast_channel_util.h",
     "cast_framer.cc",
     "cast_framer.h",
     "cast_message_handler.cc",
@@ -35,6 +33,7 @@ static_library("cast_channel") {
     "//components/cast_channel/proto:cast_channel_proto",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
+    "//components/prefs",
     "//components/version_info",
     "//content/public/browser",
     "//content/public/common",
@@ -64,7 +63,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "cast_auth_util_unittest.cc",
-    "cast_channel_util_unittest.cc",
     "cast_framer_unittest.cc",
     "cast_message_handler_unittest.cc",
     "cast_socket_service_unittest.cc",
@@ -81,6 +79,8 @@ source_set("unit_tests") {
     "//components/cast_certificate:test_support",
     "//components/cast_certificate/proto:unittest_proto",
     "//components/cast_channel/proto:cast_channel_proto",
+    "//components/prefs",
+    "//components/prefs:test_support",
     "//content/test:test_support",
     "//net:test_support",
     "//testing/gmock",
