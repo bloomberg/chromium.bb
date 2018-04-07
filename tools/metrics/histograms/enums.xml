@@ -26545,6 +26545,7 @@ from previous Chrome versions.
   <int value="-528927088" label="AutofillCreditCardPopupLayout:disabled"/>
   <int value="-528149352" label="WebRtcUseEchoCanceller3:enabled"/>
   <int value="-523030434" label="EnableBackgroundBlur:enabled"/>
+  <int value="-520004021" label="WebXRHitTest:disabled"/>
   <int value="-519960638" label="enable-site-engagement-service"/>
   <int value="-518104091" label="NewAudioRenderingMixingStrategy:enabled"/>
   <int value="-516845951" label="enable-embedded-extension-options"/>
@@ -27295,6 +27296,7 @@ from previous Chrome versions.
   <int value="1283956865" label="force-tablet-mode"/>
   <int value="1283960113" label="disable-fixed-position-compositing"/>
   <int value="1284910808" label="disable-checker-imaging"/>
+  <int value="1285905715" label="WebXRHitTest:enabled"/>
   <int value="1291257442" label="TabsInCBD:disabled"/>
   <int value="1291966558" label="ScrollAnchoring:disabled"/>
   <int value="1292763218" label="SystemTrayUnified:disabled"/>
