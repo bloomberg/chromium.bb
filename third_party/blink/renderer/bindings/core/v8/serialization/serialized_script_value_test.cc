@@ -124,7 +124,8 @@ TEST(SerializedScriptValueTest, UserSelectedFile) {
   V8TestingScope scope;
   String file_path = test::BlinkRootDir();
   file_path.append(
-      "/Source/bindings/core/v8/serialization/SerializedScriptValueTest.cpp");
+      "/renderer/bindings/core/v8/serialization/"
+      "serialized_script_value_test.cc");
   File* original_file = File::Create(file_path);
   ASSERT_TRUE(original_file->HasBackingFile());
   ASSERT_EQ(File::kIsUserVisible, original_file->GetUserVisibility());

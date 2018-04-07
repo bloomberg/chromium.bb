@@ -264,25 +264,25 @@ void TestProgressiveDecodingContinuesAfterFullData(
 
 TEST(AnimatedPNGTests, sizeTest) {
   TestSize(
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png",
       IntSize(5, 5));
   TestSize(
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-not-part-of-animation.png",
       IntSize(227, 35));
 }
 
 TEST(AnimatedPNGTests, repetitionCountTest) {
   TestRepetitionCount(
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png",
       6u);
   // This is an "animated" image with only one frame, that is, the IDAT is
   // ignored and there is one fdAT frame. so it should be considered
   // non-animated.
   TestRepetitionCount(
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-not-part-of-animation.png",
       kAnimationNone);
 }
@@ -290,7 +290,7 @@ TEST(AnimatedPNGTests, repetitionCountTest) {
 // Test if the decoded metdata corresponds to the defined expectations
 TEST(AnimatedPNGTests, MetaDataTest) {
   const char* png_file =
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png";
   constexpr size_t kExpectedFrameCount = 4;
 
@@ -302,7 +302,7 @@ TEST(AnimatedPNGTests, MetaDataTest) {
 }
 
 TEST(AnimatedPNGTests, EmptyFrame) {
-  const char* png_file = "/LayoutTests/images/resources/empty-frame.png";
+  const char* png_file = "/images/resources/empty-frame.png";
   auto decoder = CreatePNGDecoderWithPngData(png_file);
   // Frame 0 is empty. Ensure that decoding frame 1 (which depends on frame 0)
   // fails (rather than crashing).
@@ -317,18 +317,18 @@ TEST(AnimatedPNGTests, EmptyFrame) {
 
 TEST(AnimatedPNGTests, ByteByByteSizeAvailable) {
   TestSizeByteByByte(
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png",
       141u, IntSize(5, 5));
   TestSizeByteByByte(
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-not-part-of-animation.png",
       79u, IntSize(227, 35));
 }
 
 TEST(AnimatedPNGTests, ByteByByteMetaData) {
   const char* png_file =
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png";
   constexpr size_t kExpectedFrameCount = 4;
 
@@ -365,27 +365,27 @@ TEST(AnimatedPNGTests, ByteByByteMetaData) {
 
 TEST(AnimatedPNGTests, TestRandomFrameDecode) {
   TestRandomFrameDecode(&CreatePNGDecoder,
-                        "/LayoutTests/images/resources/"
+                        "/images/resources/"
                         "png-animated-idat-part-of-animation.png",
                         2u);
 }
 
 TEST(AnimatedPNGTests, TestDecodeAfterReallocation) {
   TestDecodeAfterReallocatingData(&CreatePNGDecoder,
-                                  "/LayoutTests/images/resources/"
+                                  "/images/resources/"
                                   "png-animated-idat-part-of-animation.png");
 }
 
 TEST(AnimatedPNGTests, ProgressiveDecode) {
   TestProgressiveDecoding(&CreatePNGDecoder,
-                          "/LayoutTests/images/resources/"
+                          "/images/resources/"
                           "png-animated-idat-part-of-animation.png",
                           13u);
 }
 
 TEST(AnimatedPNGTests, ParseAndDecodeByteByByte) {
   TestByteByByteDecode(&CreatePNGDecoder,
-                       "/LayoutTests/images/resources/"
+                       "/images/resources/"
                        "png-animated-idat-part-of-animation.png",
                        4u, 6u);
 }
@@ -396,21 +396,21 @@ TEST(AnimatedPNGTests, FailureDuringParsing) {
   // first fcTL chunk, at which the first frame is detected. This is before the
   // IDAT, so it should be treated as a static image.
   TestInvalidFctlSize(
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png",
       95u, 0u, false);
 
   // Test for the third fcTL in the stream. This should see 1 frame before the
   // fcTL, and then fail when parsing it.
   TestInvalidFctlSize(
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png",
       241u, 1u, true);
 }
 
 TEST(AnimatedPNGTests, ActlErrors) {
   const char* png_file =
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png";
   scoped_refptr<SharedBuffer> data = ReadFile(png_file);
   ASSERT_FALSE(data->IsEmpty());
@@ -460,7 +460,7 @@ TEST(AnimatedPNGTests, ActlErrors) {
 
   // An acTL after IDAT is ignored.
   png_file =
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "cHRM_color_spin.png";
   {
     scoped_refptr<SharedBuffer> data2 = ReadFile(png_file);
@@ -487,7 +487,7 @@ TEST(AnimatedPNGTests, ActlErrors) {
 
 TEST(AnimatedPNGTests, fdatBeforeIdat) {
   const char* png_file =
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-not-part-of-animation.png";
   scoped_refptr<SharedBuffer> data = ReadFile(png_file);
   ASSERT_FALSE(data->IsEmpty());
@@ -542,7 +542,7 @@ TEST(AnimatedPNGTests, fdatBeforeIdat) {
 TEST(AnimatedPNGTests, IdatSizeMismatch) {
   // The default image must fill the image
   const char* png_file =
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png";
   scoped_refptr<SharedBuffer> data = ReadFile(png_file);
   ASSERT_FALSE(data->IsEmpty());
@@ -571,7 +571,7 @@ TEST(AnimatedPNGTests, IdatSizeMismatch) {
 // size of 5x5. This results in a failure.
 TEST(AnimatedPNGTests, VerifyFrameOutsideImageSizeFails) {
   const char* png_file =
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png";
   scoped_refptr<SharedBuffer> data = ReadFile(png_file);
   auto decoder = CreatePNGDecoder();
@@ -607,7 +607,7 @@ TEST(AnimatedPNGTests, VerifyFrameOutsideImageSizeFails) {
 TEST(AnimatedPNGTests, ProgressiveDecodingContinuesAfterFullData) {
   // 160u is a randomly chosen offset in the IDAT chunk of the first frame.
   TestProgressiveDecodingContinuesAfterFullData(
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png",
       160u);
 }
@@ -615,14 +615,14 @@ TEST(AnimatedPNGTests, ProgressiveDecodingContinuesAfterFullData) {
 TEST(AnimatedPNGTests, RandomDecodeAfterClearFrameBufferCache) {
   TestRandomDecodeAfterClearFrameBufferCache(
       &CreatePNGDecoder,
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png",
       2u);
 }
 
 TEST(AnimatedPNGTests, VerifyAlphaBlending) {
   TestAlphaBlending(&CreatePNGDecoder,
-                    "/LayoutTests/images/resources/"
+                    "/images/resources/"
                     "png-animated-idat-part-of-animation.png");
 }
 
@@ -642,7 +642,7 @@ TEST(AnimatedPNGTests, VerifyAlphaBlending) {
 // truncated.
 TEST(AnimatedPNGTests, FailureMissingIendChunk) {
   scoped_refptr<SharedBuffer> full_data = ReadFile(
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png");
   ASSERT_FALSE(full_data->IsEmpty());
   auto decoder = CreatePNGDecoder();
@@ -673,7 +673,7 @@ TEST(AnimatedPNGTests, FailureMissingIendChunk) {
 // (IDAT), invalidates the decoder.
 TEST(AnimatedPNGTests, VerifyIENDBeforeIDATInvalidatesDecoder) {
   scoped_refptr<SharedBuffer> full_data = ReadFile(
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png");
   ASSERT_FALSE(full_data->IsEmpty());
   auto decoder = CreatePNGDecoder();
@@ -694,7 +694,7 @@ TEST(AnimatedPNGTests, VerifyIENDBeforeIDATInvalidatesDecoder) {
 // All IDAT chunks must be before all fdAT chunks
 TEST(AnimatedPNGTests, MixedDataChunks) {
   const char* png_file =
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png";
   scoped_refptr<SharedBuffer> full_data = ReadFile(png_file);
   ASSERT_FALSE(full_data->IsEmpty());
@@ -735,7 +735,7 @@ TEST(AnimatedPNGTests, MixedDataChunks) {
 // cause the decoder to fail.
 TEST(AnimatedPNGTests, VerifyInvalidDisposalAndBlending) {
   const char* png_file =
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png";
   scoped_refptr<SharedBuffer> full_data = ReadFile(png_file);
   ASSERT_FALSE(full_data->IsEmpty());
@@ -776,7 +776,7 @@ TEST(AnimatedPNGTests, VerifyInvalidDisposalAndBlending) {
 // though it already started in the first call.
 TEST(AnimatedPNGTests, VerifySuccessfulFirstFrameDecodeAfterLaterFrame) {
   const char* png_file =
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-three-independent-frames.png";
   auto decoder = CreatePNGDecoder();
   scoped_refptr<SharedBuffer> full_data = ReadFile(png_file);
@@ -812,7 +812,7 @@ TEST(AnimatedPNGTests, VerifySuccessfulFirstFrameDecodeAfterLaterFrame) {
 // of frame 1 without decoding frame 0.
 TEST(AnimatedPNGTests, DecodeFromIndependentFrame) {
   const char* png_file =
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-part-of-animation.png";
   scoped_refptr<SharedBuffer> original_data = ReadFile(png_file);
   ASSERT_FALSE(original_data->IsEmpty());
@@ -866,7 +866,7 @@ TEST(AnimatedPNGTests, DecodeFromIndependentFrame) {
 // for parsing so it can use a modified IHDR.
 TEST(AnimatedPNGTests, SubsetFromIHDR) {
   const char* png_file =
-      "/LayoutTests/images/resources/"
+      "/images/resources/"
       "png-animated-idat-not-part-of-animation.png";
   scoped_refptr<SharedBuffer> original_data = ReadFile(png_file);
   ASSERT_FALSE(original_data->IsEmpty());
@@ -895,7 +895,7 @@ TEST(AnimatedPNGTests, SubsetFromIHDR) {
 }
 
 TEST(AnimatedPNGTests, Offset) {
-  const char* png_file = "/LayoutTests/images/resources/apng18.png";
+  const char* png_file = "/images/resources/apng18.png";
   scoped_refptr<SharedBuffer> original_data = ReadFile(png_file);
   ASSERT_FALSE(original_data->IsEmpty());
 
@@ -926,7 +926,7 @@ TEST(AnimatedPNGTests, Offset) {
 }
 
 TEST(AnimatedPNGTests, ExtraChunksBeforeIHDR) {
-  const char* png_file = "/LayoutTests/images/resources/apng18.png";
+  const char* png_file = "/images/resources/apng18.png";
   scoped_refptr<SharedBuffer> original_data = ReadFile(png_file);
   ASSERT_FALSE(original_data->IsEmpty());
 
@@ -963,36 +963,34 @@ TEST(AnimatedPNGTests, ExtraChunksBeforeIHDR) {
 // Static PNG tests
 
 TEST(StaticPNGTests, repetitionCountTest) {
-  TestRepetitionCount("/LayoutTests/images/resources/png-simple.png",
-                      kAnimationNone);
+  TestRepetitionCount("/images/resources/png-simple.png", kAnimationNone);
 }
 
 TEST(StaticPNGTests, sizeTest) {
-  TestSize("/LayoutTests/images/resources/png-simple.png", IntSize(111, 29));
+  TestSize("/images/resources/png-simple.png", IntSize(111, 29));
 }
 
 TEST(StaticPNGTests, MetaDataTest) {
   const size_t kExpectedFrameCount = 1;
   const TimeDelta kExpectedDuration;
-  auto decoder = CreatePNGDecoderWithPngData(
-      "/LayoutTests/images/resources/png-simple.png");
+  auto decoder =
+      CreatePNGDecoderWithPngData("/images/resources/png-simple.png");
   EXPECT_EQ(kExpectedFrameCount, decoder->FrameCount());
   EXPECT_EQ(kExpectedDuration, decoder->FrameDurationAtIndex(0));
 }
 
 TEST(StaticPNGTests, InvalidIHDRChunk) {
-  TestMissingDataBreaksDecoding("/LayoutTests/images/resources/png-simple.png",
-                                20u, 2u);
+  TestMissingDataBreaksDecoding("/images/resources/png-simple.png", 20u, 2u);
 }
 
 TEST(StaticPNGTests, ProgressiveDecoding) {
-  TestProgressiveDecoding(&CreatePNGDecoder,
-                          "/LayoutTests/images/resources/png-simple.png", 11u);
+  TestProgressiveDecoding(&CreatePNGDecoder, "/images/resources/png-simple.png",
+                          11u);
 }
 
 TEST(StaticPNGTests, ProgressiveDecodingContinuesAfterFullData) {
   TestProgressiveDecodingContinuesAfterFullData(
-      "/LayoutTests/images/resources/png-simple.png", 1000u);
+      "/images/resources/png-simple.png", 1000u);
 }
 
 TEST(PNGTests, VerifyFrameCompleteBehavior) {
@@ -1001,15 +999,15 @@ TEST(PNGTests, VerifyFrameCompleteBehavior) {
     size_t expected_frame_count;
     size_t offset_in_first_frame;
   } g_recs[] = {
-      {"/LayoutTests/images/resources/"
+      {"/images/resources/"
        "png-animated-three-independent-frames.png",
        3u, 150u},
-      {"/LayoutTests/images/resources/"
+      {"/images/resources/"
        "png-animated-idat-part-of-animation.png",
        4u, 160u},
 
-      {"/LayoutTests/images/resources/png-simple.png", 1u, 700u},
-      {"/LayoutTests/images/resources/lenna.png", 1u, 40000u},
+      {"/images/resources/png-simple.png", 1u, 700u},
+      {"/images/resources/lenna.png", 1u, 40000u},
   };
   for (const auto& rec : g_recs) {
     scoped_refptr<SharedBuffer> full_data = ReadFile(rec.name);
@@ -1062,15 +1060,15 @@ TEST(PNGTests, VerifyFrameCompleteBehavior) {
 }
 
 TEST(PNGTests, sizeMayOverflow) {
-  auto decoder = CreatePNGDecoderWithPngData(
-      "/LayoutTests/images/resources/crbug702934.png");
+  auto decoder =
+      CreatePNGDecoderWithPngData("/images/resources/crbug702934.png");
   EXPECT_FALSE(decoder->IsSizeAvailable());
   EXPECT_TRUE(decoder->Failed());
 }
 
 TEST(PNGTests, truncated) {
-  auto decoder = CreatePNGDecoderWithPngData(
-      "/LayoutTests/images/resources/crbug807324.png");
+  auto decoder =
+      CreatePNGDecoderWithPngData("/images/resources/crbug807324.png");
 
   // An update to libpng (without using the libpng-provided workaround) resulted
   // in truncating this image. It has no transparency, so no pixel should be

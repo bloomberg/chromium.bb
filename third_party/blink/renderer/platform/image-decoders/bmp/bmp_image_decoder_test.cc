@@ -22,8 +22,7 @@ std::unique_ptr<ImageDecoder> CreateBMPDecoder() {
 }  // anonymous namespace
 
 TEST(BMPImageDecoderTest, isSizeAvailable) {
-  static constexpr char kBmpFile[] =
-      "/LayoutTests/images/resources/lenna.bmp";  // 256x256
+  static constexpr char kBmpFile[] = "/images/resources/lenna.bmp";  // 256x256
   scoped_refptr<SharedBuffer> data = ReadFile(kBmpFile);
   ASSERT_TRUE(data.get());
 
@@ -35,8 +34,7 @@ TEST(BMPImageDecoderTest, isSizeAvailable) {
 }
 
 TEST(BMPImageDecoderTest, parseAndDecode) {
-  static constexpr char kBmpFile[] =
-      "/LayoutTests/images/resources/lenna.bmp";  // 256x256
+  static constexpr char kBmpFile[] = "/images/resources/lenna.bmp";  // 256x256
   scoped_refptr<SharedBuffer> data = ReadFile(kBmpFile);
   ASSERT_TRUE(data.get());
 
@@ -53,8 +51,7 @@ TEST(BMPImageDecoderTest, parseAndDecode) {
 
 // Test if a BMP decoder returns a proper error while decoding an empty image.
 TEST(BMPImageDecoderTest, emptyImage) {
-  static constexpr char kBmpFile[] =
-      "/LayoutTests/images/resources/0x0.bmp";  // 0x0
+  static constexpr char kBmpFile[] = "/images/resources/0x0.bmp";  // 0x0
   scoped_refptr<SharedBuffer> data = ReadFile(kBmpFile);
   ASSERT_TRUE(data.get());
 
@@ -69,7 +66,7 @@ TEST(BMPImageDecoderTest, emptyImage) {
 
 TEST(BMPImageDecoderTest, int32MinHeight) {
   static constexpr char kBmpFile[] =
-      "/LayoutTests/images/resources/1xint32_min.bmp";  // 0xINT32_MIN
+      "/images/resources/1xint32_min.bmp";  // 0xINT32_MIN
   scoped_refptr<SharedBuffer> data = ReadFile(kBmpFile);
   std::unique_ptr<ImageDecoder> decoder = CreateBMPDecoder();
   // Test when not all data is received.
@@ -83,14 +80,13 @@ TEST(BMPImageDecoderTest, int32MinHeight) {
 // size (when BMPImageDecoder stops while it may still have input data to
 // read) and a call to do a full decode.
 TEST(BMPImageDecoderTest, mergeBuffer) {
-  static constexpr char kBmpFile[] = "/LayoutTests/images/resources/lenna.bmp";
+  static constexpr char kBmpFile[] = "/images/resources/lenna.bmp";
   TestMergeBuffer(&CreateBMPDecoder, kBmpFile);
 }
 
 // Verify that decoding this image does not crash.
 TEST(BMPImageDecoderTest, crbug752898) {
-  static constexpr char kBmpFile[] =
-      "/LayoutTests/images/resources/crbug752898.bmp";
+  static constexpr char kBmpFile[] = "/images/resources/crbug752898.bmp";
   scoped_refptr<SharedBuffer> data = ReadFile(kBmpFile);
   ASSERT_TRUE(data.get());
 

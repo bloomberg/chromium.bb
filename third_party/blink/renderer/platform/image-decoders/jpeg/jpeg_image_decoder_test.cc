@@ -146,7 +146,7 @@ TEST(JPEGImageDecoderTest, tooBig) {
 // multiples of 8, to ensure we compute the correct DecodedSize and pass correct
 // parameters to libjpeg to output the image with the expected size.
 TEST(JPEGImageDecoderTest, downsampleImageSizeMultipleOf8) {
-  const char* jpeg_file = "/LayoutTests/images/resources/lenna.jpg";  // 256x256
+  const char* jpeg_file = "/images/resources/lenna.jpg";  // 256x256
   unsigned output_width, output_height;
 
   // 1/8 downsample.
@@ -188,8 +188,7 @@ TEST(JPEGImageDecoderTest, downsampleImageSizeMultipleOf8) {
 // Tests that JPEG decoder can downsample image whose width and height are not
 // multiple of 8. Ensures that we round using the same algorithm as libjpeg.
 TEST(JPEGImageDecoderTest, downsampleImageSizeNotMultipleOf8) {
-  const char* jpeg_file =
-      "/LayoutTests/images/resources/icc-v2-gbr.jpg";  // 275x207
+  const char* jpeg_file = "/images/resources/icc-v2-gbr.jpg";  // 275x207
   unsigned output_width, output_height;
 
   // 1/8 downsample.
@@ -230,7 +229,7 @@ TEST(JPEGImageDecoderTest, downsampleImageSizeNotMultipleOf8) {
 
 // Tests that upsampling is not allowed.
 TEST(JPEGImageDecoderTest, upsample) {
-  const char* jpeg_file = "/LayoutTests/images/resources/lenna.jpg";  // 256x256
+  const char* jpeg_file = "/images/resources/lenna.jpg";  // 256x256
   unsigned output_width, output_height;
   Downsample(kLargeEnoughSize, &output_width, &output_height, jpeg_file);
   EXPECT_EQ(256u, output_width);
@@ -238,8 +237,7 @@ TEST(JPEGImageDecoderTest, upsample) {
 }
 
 TEST(JPEGImageDecoderTest, yuv) {
-  const char* jpeg_file =
-      "/LayoutTests/images/resources/lenna.jpg";  // 256x256, YUV 4:2:0
+  const char* jpeg_file = "/images/resources/lenna.jpg";  // 256x256, YUV 4:2:0
   unsigned output_y_width, output_y_height, output_uv_width, output_uv_height;
   ReadYUV(kLargeEnoughSize, &output_y_width, &output_y_height, &output_uv_width,
           &output_uv_height, jpeg_file);
@@ -249,7 +247,7 @@ TEST(JPEGImageDecoderTest, yuv) {
   EXPECT_EQ(128u, output_uv_height);
 
   const char* jpeg_file_image_size_not_multiple_of8 =
-      "/LayoutTests/images/resources/cropped_mandrill.jpg";  // 439x154
+      "/images/resources/cropped_mandrill.jpg";  // 439x154
   ReadYUV(kLargeEnoughSize, &output_y_width, &output_y_height, &output_uv_width,
           &output_uv_height, jpeg_file_image_size_not_multiple_of8);
   EXPECT_EQ(439u, output_y_width);
@@ -274,22 +272,20 @@ TEST(JPEGImageDecoderTest, yuv) {
 TEST(JPEGImageDecoderTest,
      byteByByteBaselineJPEGWithColorProfileAndRestartMarkers) {
   TestByteByByteDecode(&CreateJPEGDecoder,
-                       "/LayoutTests/images/resources/"
+                       "/images/resources/"
                        "small-square-with-colorspin-profile.jpg",
                        1u, kAnimationNone);
 }
 
 TEST(JPEGImageDecoderTest, byteByByteProgressiveJPEG) {
-  TestByteByByteDecode(&CreateJPEGDecoder,
-                       "/LayoutTests/images/resources/bug106024.jpg", 1u,
-                       kAnimationNone);
+  TestByteByByteDecode(&CreateJPEGDecoder, "/images/resources/bug106024.jpg",
+                       1u, kAnimationNone);
 }
 
 TEST(JPEGImageDecoderTest, byteByByteRGBJPEGWithAdobeMarkers) {
-  TestByteByByteDecode(
-      &CreateJPEGDecoder,
-      "/LayoutTests/images/resources/rgb-jpeg-with-adobe-marker-only.jpg", 1u,
-      kAnimationNone);
+  TestByteByByteDecode(&CreateJPEGDecoder,
+                       "/images/resources/rgb-jpeg-with-adobe-marker-only.jpg",
+                       1u, kAnimationNone);
 }
 
 // This test verifies that calling SharedBuffer::MergeSegmentsIntoBuffer() does
@@ -297,7 +293,7 @@ TEST(JPEGImageDecoderTest, byteByByteRGBJPEGWithAdobeMarkers) {
 // size (when JPEGImageDecoder stops while it may still have input data to
 // read) and a call to do a full decode.
 TEST(JPEGImageDecoderTest, mergeBuffer) {
-  const char* jpeg_file = "/LayoutTests/images/resources/lenna.jpg";
+  const char* jpeg_file = "/images/resources/lenna.jpg";
   TestMergeBuffer(&CreateJPEGDecoder, jpeg_file);
 }
 
@@ -316,7 +312,7 @@ TEST(JPEGImageDecoderTest, manyProgressiveScans) {
 }
 
 TEST(JPEGImageDecoderTest, SupportedSizesSquare) {
-  const char* jpeg_file = "/LayoutTests/images/resources/lenna.jpg";  // 256x256
+  const char* jpeg_file = "/images/resources/lenna.jpg";  // 256x256
   scoped_refptr<SharedBuffer> data = ReadFile(jpeg_file);
   ASSERT_TRUE(data);
 
@@ -340,8 +336,7 @@ TEST(JPEGImageDecoderTest, SupportedSizesSquare) {
 }
 
 TEST(JPEGImageDecoderTest, SupportedSizesRectangle) {
-  const char* jpeg_file =
-      "/LayoutTests/images/resources/icc-v2-gbr.jpg";  // 275x207
+  const char* jpeg_file = "/images/resources/icc-v2-gbr.jpg";  // 275x207
 
   scoped_refptr<SharedBuffer> data = ReadFile(jpeg_file);
   ASSERT_TRUE(data);
@@ -367,7 +362,7 @@ TEST(JPEGImageDecoderTest, SupportedSizesRectangle) {
 }
 
 TEST(JPEGImageDecoderTest, SupportedSizesTruncatedIfMemoryBound) {
-  const char* jpeg_file = "/LayoutTests/images/resources/lenna.jpg";  // 256x256
+  const char* jpeg_file = "/images/resources/lenna.jpg";  // 256x256
   scoped_refptr<SharedBuffer> data = ReadFile(jpeg_file);
   ASSERT_TRUE(data);
 

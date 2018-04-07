@@ -58,13 +58,13 @@ String MojoBindingsScriptPath() {
 String TestBindingsScriptPath() {
   String filepath = test::ExecutableDir();
   filepath.append(
-      "/gen/third_party/WebKit/Source/core/mojo/tests/JsToCpp.mojom.js");
+      "/gen/third_party/blink/renderer/core/mojo/tests/JsToCpp.mojom.js");
   return filepath;
 }
 
 String TestScriptPath() {
   String filepath = test::BlinkRootDir();
-  filepath.append("/Source/core/mojo/tests/JsToCppTest.js");
+  filepath.append("/renderer/core/mojo/tests/JsToCppTest.js");
   return filepath;
 }
 

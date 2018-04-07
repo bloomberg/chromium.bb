@@ -15,7 +15,7 @@ class SkBitmap;
 namespace blink {
 class ImageDecoder;
 
-const char kDecodersTestingDir[] = "Source/platform/image-decoders/testing";
+const char kDecodersTestingDir[] = "renderer/platform/image-decoders/testing";
 const unsigned kDefaultTestSize = 4 * SharedBuffer::kSegmentSize;
 
 using DecoderCreator = std::unique_ptr<ImageDecoder> (*)();
