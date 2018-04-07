@@ -36,7 +36,7 @@ class FakeRemoteDeviceProviderFactory
     : public cryptauth::RemoteDeviceProviderImpl::Factory {
  public:
   FakeRemoteDeviceProviderFactory() = default;
-  virtual ~FakeRemoteDeviceProviderFactory() = default;
+  ~FakeRemoteDeviceProviderFactory() override = default;
 
   // cryptauth::RemoteDeviceProviderImpl::Factory:
   std::unique_ptr<cryptauth::RemoteDeviceProvider> BuildInstance(

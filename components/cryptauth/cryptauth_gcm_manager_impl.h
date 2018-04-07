@@ -34,6 +34,7 @@ class CryptAuthGCMManagerImpl : public CryptAuthGCMManager,
     static void SetInstanceForTesting(Factory* factory);
 
    protected:
+    virtual ~Factory();
     virtual std::unique_ptr<CryptAuthGCMManager> BuildInstance(
         gcm::GCMDriver* gcm_driver,
         PrefService* pref_service);

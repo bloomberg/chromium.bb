@@ -50,6 +50,8 @@ void CryptAuthGCMManagerImpl::Factory::SetInstanceForTesting(Factory* factory) {
   factory_instance_ = factory;
 }
 
+CryptAuthGCMManagerImpl::Factory::~Factory() = default;
+
 std::unique_ptr<CryptAuthGCMManager>
 CryptAuthGCMManagerImpl::Factory::BuildInstance(gcm::GCMDriver* gcm_driver,
                                                 PrefService* pref_service) {

@@ -80,6 +80,8 @@ void CryptAuthEnrollmentManagerImpl::Factory::SetInstanceForTesting(
   factory_instance_ = factory;
 }
 
+CryptAuthEnrollmentManagerImpl::Factory::~Factory() = default;
+
 std::unique_ptr<CryptAuthEnrollmentManager>
 CryptAuthEnrollmentManagerImpl::Factory::BuildInstance(
     base::Clock* clock,

@@ -46,6 +46,7 @@ class CryptAuthEnrollmentManagerImpl : public CryptAuthEnrollmentManager,
     static void SetInstanceForTesting(Factory* factory);
 
    protected:
+    virtual ~Factory();
     virtual std::unique_ptr<CryptAuthEnrollmentManager> BuildInstance(
         base::Clock* clock,
         std::unique_ptr<CryptAuthEnrollerFactory> enroller_factory,
