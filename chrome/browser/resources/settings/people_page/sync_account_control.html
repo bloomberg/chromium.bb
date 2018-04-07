@@ -156,12 +156,19 @@
         </div>
         <div class="middle two-line no-min-width">
           <div class="flex text-elide" id="user-info">
-            <span>
-              [[getNameDisplay_('$i18nPolymer{syncedToName}',
-                  shownAccount_.fullName, '$i18nPolymer{syncNotWorking}',
-                  '$i18nPolymer{syncPaused}', syncStatus)]]
+            <span hidden="[[syncStatus.hasError]]">
+              [[shownAccount_.fullName]]
             </span>
-            <div class="secondary">[[shownAccount_.email]]</div>
+            <span hidden="[[!syncStatus.hasError]]">
+              [[getErrorLabel_('$i18nPolymer{syncNotWorking}',
+                  '$i18nPolymer{syncPaused}', syncStatus.hasError,
+                  syncStatus.statusAction)]]
+            </span>
+            <div class="secondary">
+              [[getAccountLabel_(
+                  '$i18nPolymer{syncingTo}', shownAccount_.email,
+                  syncStatus.hasError, syncStatus.signedIn)]]
+            </div>
           </div>
         </div>
         <paper-icon-button-light class="icon-arrow-dropdown"

@@ -101,7 +101,12 @@ cr.define('settings_sync_account_control', function() {
     });
 
     test('not signed in but has stored accounts', function() {
-      testElement.syncStatus = {signedIn: false, signedInUsername: ''};
+      testElement.syncStatus = {
+        signedIn: false,
+        signedInUsername: '',
+        statusAction: settings.StatusAction.NO_ACTION,
+        hasError: false,
+      };
       sync_test_util.simulateStoredAccounts([
         {
           fullName: 'fooName',
@@ -185,7 +190,9 @@ cr.define('settings_sync_account_control', function() {
     test('signed in', function() {
       testElement.syncStatus = {
         signedIn: true,
-        signedInUsername: 'bar@bar.com'
+        signedInUsername: 'bar@bar.com',
+        statusAction: settings.StatusAction.NO_ACTION,
+        hasError: false,
       };
       sync_test_util.simulateStoredAccounts([
         {
@@ -230,9 +237,11 @@ cr.define('settings_sync_account_control', function() {
       assertTrue(testElement.$$('#sync-icon-container')
                      .classList.contains('sync-problem'));
       assertTrue(!!testElement.$$('[icon=\'settings:sync-problem\']'));
-      assertFalse(userInfo.textContent.includes('barName'));
-      assertFalse(userInfo.textContent.includes('fooName'));
-      assertTrue(userInfo.textContent.includes('Sync isn\'t working'));
+      let displayedText =
+          userInfo.querySelector('span:not([hidden])').textContent;
+      assertFalse(displayedText.includes('barName'));
+      assertFalse(displayedText.includes('fooName'));
+      assertTrue(displayedText.includes('Sync isn\'t working'));
 
       testElement.syncStatus = {
         signedIn: true,
@@ -243,9 +252,10 @@ cr.define('settings_sync_account_control', function() {
       assertTrue(testElement.$$('#sync-icon-container')
                      .classList.contains('sync-disabled'));
       assertTrue(!!testElement.$$('[icon=\'settings:sync-disabled\']'));
-      assertFalse(userInfo.textContent.includes('barName'));
-      assertFalse(userInfo.textContent.includes('fooName'));
-      assertTrue(userInfo.textContent.includes('Sync is paused'));
+      displayedText = userInfo.querySelector('span:not([hidden])').textContent;
+      assertFalse(displayedText.includes('barName'));
+      assertFalse(displayedText.includes('fooName'));
+      assertTrue(displayedText.includes('Sync is paused'));
     });
   });
 });
