@@ -1566,16 +1566,8 @@ void ExtensionPrefs::InitPrefStore() {
     SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitPrefGetExtensionsTime");
     GetExtensions(&extension_ids);
   }
-  // Create empty preferences dictionary for each extension (these dictionaries
-  // are pruned when persisting the preferences to disk).
-  for (ExtensionIdList::iterator ext_id = extension_ids.begin();
-       ext_id != extension_ids.end(); ++ext_id) {
-    ScopedExtensionPrefUpdate update(prefs_, *ext_id);
-    // This creates an empty dictionary if none is stored.
-    update.Get();
-  }
 
-  InitExtensionControlledPrefs();
+  InitExtensionControlledPrefs(extension_ids);
 
   extension_pref_value_map_->NotifyInitializationCompleted();
 }
@@ -1839,37 +1831,32 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     extension_dict->Remove(kPrefDoNotSync, NULL);
 }
 
-void ExtensionPrefs::InitExtensionControlledPrefs() {
+void ExtensionPrefs::InitExtensionControlledPrefs(
+    const ExtensionIdList& extension_ids) {
   TRACE_EVENT0("browser,startup",
                "ExtensionPrefs::InitExtensionControlledPrefs")
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitExtensionControlledPrefsTime");
 
-  ExtensionIdList extension_ids;
-  GetExtensions(&extension_ids);
-
-  for (ExtensionIdList::iterator extension_id = extension_ids.begin();
-       extension_id != extension_ids.end();
-       ++extension_id) {
-    base::Time install_time = GetInstallTime(*extension_id);
-    bool is_enabled = !IsExtensionDisabled(*extension_id);
-    bool is_incognito_enabled = IsIncognitoEnabled(*extension_id);
+  for (const ExtensionId& extension_id : extension_ids) {
+    base::Time install_time = GetInstallTime(extension_id);
+    bool is_enabled = !IsExtensionDisabled(extension_id);
+    bool is_incognito_enabled = IsIncognitoEnabled(extension_id);
     extension_pref_value_map_->RegisterExtension(
-        *extension_id, install_time, is_enabled, is_incognito_enabled);
+        extension_id, install_time, is_enabled, is_incognito_enabled);
 
     for (auto& observer : observer_list_)
-      observer.OnExtensionRegistered(*extension_id, install_time, is_enabled);
+      observer.OnExtensionRegistered(extension_id, install_time, is_enabled);
 
     // Set regular extension controlled prefs.
-    LoadExtensionControlledPrefs(*extension_id, kExtensionPrefsScopeRegular);
+    LoadExtensionControlledPrefs(extension_id, kExtensionPrefsScopeRegular);
     // Set incognito extension controlled prefs.
-    LoadExtensionControlledPrefs(*extension_id,
+    LoadExtensionControlledPrefs(extension_id,
                                  kExtensionPrefsScopeIncognitoPersistent);
     // Set regular-only extension controlled prefs.
-    LoadExtensionControlledPrefs(*extension_id,
-                                 kExtensionPrefsScopeRegularOnly);
+    LoadExtensionControlledPrefs(extension_id, kExtensionPrefsScopeRegularOnly);
 
     for (auto& observer : observer_list_)
-      observer.OnExtensionPrefsLoaded(*extension_id, this);
+      observer.OnExtensionPrefsLoaded(extension_id, this);
   }
 }
 
