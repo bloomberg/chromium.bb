@@ -8,13 +8,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/usb/usb_blocklist.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
-#include "chrome/browser/usb/usb_util.h"
 #include "chrome/browser/usb/web_usb_histograms.h"
 #include "chrome/browser/usb/web_usb_permission_provider.h"
 #include "chrome/common/url_constants.h"
@@ -29,9 +29,42 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+#if !defined(OS_ANDROID)
+#include "device/usb/usb_ids.h"
+#endif  // !defined(OS_ANDROID)
+
 using content::RenderFrameHost;
 using content::WebContents;
 using device::UsbDevice;
+
+namespace {
+
+base::string16 FormatUsbDeviceName(scoped_refptr<device::UsbDevice> device) {
+  base::string16 device_name = device->product_string();
+  if (device_name.empty()) {
+    uint16_t vendor_id = device->vendor_id();
+    uint16_t product_id = device->product_id();
+#if !defined(OS_ANDROID)
+    if (const char* product_name =
+            device::UsbIds::GetProductName(vendor_id, product_id)) {
+      return base::UTF8ToUTF16(product_name);
+    } else if (const char* vendor_name =
+                   device::UsbIds::GetVendorName(vendor_id)) {
+      return l10n_util::GetStringFUTF16(
+          IDS_DEVICE_CHOOSER_DEVICE_NAME_UNKNOWN_DEVICE_WITH_VENDOR_NAME,
+          base::UTF8ToUTF16(vendor_name));
+    }
+#endif  // !defined(OS_ANDROID)
+    device_name = l10n_util::GetStringFUTF16(
+        IDS_DEVICE_CHOOSER_DEVICE_NAME_UNKNOWN_DEVICE_WITH_VENDOR_ID_AND_PRODUCT_ID,
+        base::ASCIIToUTF16(base::StringPrintf("%04x", vendor_id)),
+        base::ASCIIToUTF16(base::StringPrintf("%04x", product_id)));
+  }
+
+  return device_name;
+}
+
+}  // namespace
 
 UsbChooserController::UsbChooserController(
     RenderFrameHost* render_frame_host,
@@ -42,6 +75,7 @@ UsbChooserController::UsbChooserController(
                         IDS_USB_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME),
       filters_(std::move(device_filters)),
       callback_(std::move(callback)),
+      web_contents_(WebContents::FromRenderFrameHost(render_frame_host)),
       usb_service_observer_(this),
       weak_factory_(this) {
   device::UsbService* usb_service =
@@ -52,13 +86,11 @@ UsbChooserController::UsbChooserController(
                                        weak_factory_.GetWeakPtr()));
   }
 
-  WebContents* web_contents =
-      WebContents::FromRenderFrameHost(render_frame_host);
-  RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  RenderFrameHost* main_frame = web_contents_->GetMainFrame();
   requesting_origin_ = render_frame_host->GetLastCommittedURL().GetOrigin();
   embedding_origin_ = main_frame->GetLastCommittedURL().GetOrigin();
   Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   chooser_context_ =
       UsbChooserContextFactory::GetForProfile(profile)->AsWeakPtr();
 }
@@ -130,7 +162,7 @@ void UsbChooserController::Cancel() {
 void UsbChooserController::Close() {}
 
 void UsbChooserController::OpenHelpCenterUrl() const {
-  GetBrowser()->OpenURL(content::OpenURLParams(
+  web_contents_->OpenURL(content::OpenURLParams(
       GURL(chrome::kChooserUsbOverviewURL), content::Referrer(),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false /* is_renderer_initialized */));
