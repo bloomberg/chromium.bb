@@ -2846,7 +2846,7 @@
         "type": "android"
       },
       "gl_vendor": "Imagination.*",
-      "gl_renderer": "PowerVR SGX54.",
+      "gl_renderer": "PowerVR SGX 54.*",
       "features": [
         "init_gl_position_in_vertex_shader"
       ]
@@ -2859,7 +2859,7 @@
         "type": "android"
       },
       "gl_vendor": "Imagination.*",
-      "gl_renderer": "PowerVR G6200",
+      "gl_renderer": "PowerVR.*G6200.*",
       "features": [
         "init_gl_position_in_vertex_shader"
       ]
