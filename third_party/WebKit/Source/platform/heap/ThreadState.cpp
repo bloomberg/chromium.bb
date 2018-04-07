@@ -1313,23 +1313,29 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   double start_total_collect_garbage_time =
       WTF::CurrentTimeTicksInMilliseconds();
 
-  if (IsMarkingInProgress()) {
+  RUNTIME_CALL_TIMER_SCOPE_IF_ISOLATE_EXISTS(
+      GetIsolate(), RuntimeCallStats::CounterId::kCollectGarbage);
+
+  const bool was_incremental_marking = IsMarkingInProgress();
+
+  if (was_incremental_marking) {
     // Set stack state in case we are starting a Conservative GC while
     // incremental marking is in progress.
     current_gc_data_.stack_state = stack_state;
     IncrementalMarkingFinalize();
   }
 
-  CompleteSweep();
-
-  RUNTIME_CALL_TIMER_SCOPE_IF_ISOLATE_EXISTS(
-      GetIsolate(), RuntimeCallStats::CounterId::kCollectGarbage);
-
-  SetGCState(kNoGCScheduled);
-
-  {
+  const bool should_do_full_gc = !was_incremental_marking ||
+                                 reason == BlinkGC::kForcedGC ||
+                                 reason == BlinkGC::kMemoryPressureGC;
+  if (should_do_full_gc) {
+    CompleteSweep();
+    SetGCState(kNoGCScheduled);
     AtomicPauseScope atomic_pause_scope(this);
     {
+      TRACE_EVENT2("blink_gc,devtools.timeline", "BlinkGCMarking",
+                   "lazySweeping", sweeping_type == BlinkGC::kLazySweeping,
+                   "gcReason", GcReasonString(reason));
       // Access to the CrossThreadPersistentRegion has to be prevented
       // while in the marking phase because otherwise other threads may
       // allocate or free PersistentNodes and we can't handle
@@ -1338,17 +1344,11 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
       RecursiveMutexLocker persistent_lock(
           ProcessHeap::CrossThreadPersistentMutex());
 
-      {
-        TRACE_EVENT2("blink_gc,devtools.timeline", "BlinkGCMarking",
-                     "lazySweeping", sweeping_type == BlinkGC::kLazySweeping,
-                     "gcReason", GcReasonString(reason));
-        MarkPhasePrologue(stack_state, marking_type, reason);
-        MarkPhaseVisitRoots();
-        CHECK(MarkPhaseAdvanceMarking(std::numeric_limits<double>::infinity()));
-        MarkPhaseEpilogue(marking_type);
-      }
+      MarkPhasePrologue(stack_state, marking_type, reason);
+      MarkPhaseVisitRoots();
+      CHECK(MarkPhaseAdvanceMarking(std::numeric_limits<double>::infinity()));
+      MarkPhaseEpilogue(marking_type);
     }
-
     PreSweep(marking_type, sweeping_type);
   }
 
