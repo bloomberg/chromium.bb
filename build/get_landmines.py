@@ -71,6 +71,7 @@ def print_landmines():
   if host_os() == 'win':
     print 'Clobber Windows to fix strange PCH-not-rebuilt errors.'
   print 'CLobber all to fix GN breakage (crbug.com/736215)'
+  print 'The Great Blink mv for source files (crbug.com/768828)'
 
 def main():
   print_landmines()
