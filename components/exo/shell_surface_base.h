@@ -309,6 +309,12 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // TODO(oshima): Remove this once the transition to new drag/resize
   // complete. https://crbug.com/801666.
   bool client_controlled_move_resize_ = true;
+  SurfaceFrameType frame_type_ = SurfaceFrameType::NONE;
+
+  bool frame_enabled() const {
+    return frame_type_ != SurfaceFrameType::NONE &&
+           frame_type_ != SurfaceFrameType::SHADOW;
+  }
 
  private:
   struct Config;
@@ -341,7 +347,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   bool activatable_ = true;
   bool can_minimize_ = true;
-  bool frame_enabled_ = false;
   bool has_frame_colors_ = false;
   SkColor active_frame_color_ = SK_ColorBLACK;
   SkColor inactive_frame_color_ = SK_ColorBLACK;
