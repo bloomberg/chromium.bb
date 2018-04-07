@@ -35,6 +35,7 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 const CGFloat kMaxCardWidth = 416;
 const CGFloat kStandardSpacing = 8;
 const CGFloat kMostVisitedBottomMargin = 13;
+const CGFloat kCardBorderRadius = 11;
 
 // Returns whether the cells should be displayed using the full width.
 BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
@@ -232,6 +233,8 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
     self.styler.cellStyle = MDCCollectionViewCellStyleGrouped;
   } else {
     self.styler.cellStyle = MDCCollectionViewCellStyleCard;
+    if (IsUIRefreshPhase1Enabled())
+      self.styler.cardBorderRadius = kCardBorderRadius;
   }
   self.automaticallyAdjustsScrollViewInsets = NO;
   self.collectionView.translatesAutoresizingMaskIntoConstraints = NO;
