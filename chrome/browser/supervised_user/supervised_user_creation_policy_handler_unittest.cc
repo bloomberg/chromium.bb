@@ -4,7 +4,6 @@
 
 #include "chrome/browser/supervised_user/supervised_user_creation_policy_handler.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"

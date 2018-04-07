@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "components/prefs/pref_service.h"

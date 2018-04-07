@@ -9,7 +9,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/callback_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/vr/vr_shell_delegate.h"
 
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"

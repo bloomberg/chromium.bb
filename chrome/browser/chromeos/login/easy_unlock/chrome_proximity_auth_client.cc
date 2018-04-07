@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/version.h"
 #include "build/build_config.h"

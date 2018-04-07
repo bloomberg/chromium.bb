@@ -5,7 +5,6 @@
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "extensions/common/extension.h"

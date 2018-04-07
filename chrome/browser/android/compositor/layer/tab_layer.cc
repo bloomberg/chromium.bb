@@ -5,7 +5,6 @@
 #include "chrome/browser/android/compositor/layer/tab_layer.h"
 
 #include "base/i18n/rtl.h"
-#include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/nine_patch_layer.h"

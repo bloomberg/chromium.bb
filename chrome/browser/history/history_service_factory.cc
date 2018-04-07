@@ -4,7 +4,6 @@
 
 #include "chrome/browser/history/history_service_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/profiles/incognito_helpers.h"

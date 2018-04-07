@@ -5,7 +5,6 @@
 #include <set>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "chrome/browser/net/safe_search_util.h"

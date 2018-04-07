@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
 #include "net/url_request/url_request_context.h"

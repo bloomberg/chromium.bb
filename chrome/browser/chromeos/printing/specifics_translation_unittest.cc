@@ -5,7 +5,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/printing/specifics_translation.h"
 #include "chromeos/printing/printer_configuration.h"

@@ -9,7 +9,6 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"

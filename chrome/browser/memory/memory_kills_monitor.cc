@@ -22,7 +22,6 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/posix/safe_strerror.h"
 #include "base/sequenced_task_runner.h"

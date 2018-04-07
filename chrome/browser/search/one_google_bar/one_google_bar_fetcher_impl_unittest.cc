@@ -5,7 +5,6 @@
 #include "chrome/browser/search/one_google_bar/one_google_bar_fetcher_impl.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/run_loop.h"

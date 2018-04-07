@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/test/scoped_task_environment.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"

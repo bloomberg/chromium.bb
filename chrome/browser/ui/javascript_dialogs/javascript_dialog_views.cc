@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_views.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/views/controls/message_box_view.h"

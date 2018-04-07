@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 #include "components/component_updater/component_updater_switches.h"

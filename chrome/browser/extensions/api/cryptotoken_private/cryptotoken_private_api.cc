@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_tab_util.h"

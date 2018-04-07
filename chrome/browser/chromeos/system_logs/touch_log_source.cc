@@ -16,7 +16,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/process/launch.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"

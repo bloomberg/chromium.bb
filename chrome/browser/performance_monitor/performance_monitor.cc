@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/process/process_iterator.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"

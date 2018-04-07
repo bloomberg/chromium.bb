@@ -4,7 +4,6 @@
 
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/test/gtest_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"

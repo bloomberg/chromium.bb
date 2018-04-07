@@ -4,7 +4,6 @@
 
 #include "chrome/browser/media/router/discovery/dial/dial_app_discovery_service.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"

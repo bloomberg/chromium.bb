@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/clock.h"
 #include "chrome/browser/chromeos/power/ml/fake_boot_clock.h"

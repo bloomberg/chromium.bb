@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "extensions/common/constants.h"

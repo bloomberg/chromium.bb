@@ -5,7 +5,6 @@
 #include "chrome/browser/status_icons/status_tray.h"
 
 #include "base/compiler_specific.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image_skia.h"

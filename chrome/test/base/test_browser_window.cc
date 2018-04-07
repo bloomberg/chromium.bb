@@ -4,7 +4,6 @@
 
 #include "chrome/test/base/test_browser_window.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/keyboard_event_processing_result.h"

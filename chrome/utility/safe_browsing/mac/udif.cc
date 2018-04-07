@@ -16,7 +16,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/utility/safe_browsing/mac/convert_big_endian.h"

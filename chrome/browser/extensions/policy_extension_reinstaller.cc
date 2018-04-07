@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/policy_extension_reinstaller.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "content/public/browser/browser_context.h"

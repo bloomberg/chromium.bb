@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/prefs/session_startup_pref.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"

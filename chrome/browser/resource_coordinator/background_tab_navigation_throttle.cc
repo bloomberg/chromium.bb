@@ -5,7 +5,6 @@
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"

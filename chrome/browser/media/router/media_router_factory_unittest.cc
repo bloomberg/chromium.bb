@@ -4,7 +4,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/test/base/testing_profile.h"

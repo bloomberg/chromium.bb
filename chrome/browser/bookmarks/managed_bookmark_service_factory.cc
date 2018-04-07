@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"

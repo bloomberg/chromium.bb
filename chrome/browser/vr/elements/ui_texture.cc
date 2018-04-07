@@ -10,7 +10,6 @@
 
 #include "base/i18n/char_iterator.h"
 #include "base/i18n/rtl.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/vr/font_fallback.h"

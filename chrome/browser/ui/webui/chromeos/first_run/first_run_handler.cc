@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_handler.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/web_ui.h"

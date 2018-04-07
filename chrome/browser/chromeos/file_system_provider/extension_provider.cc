@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/throttled_file_system.h"
 #include "chrome/browser/profiles/profile.h"

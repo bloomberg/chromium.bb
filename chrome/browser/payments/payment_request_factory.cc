@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/payments/chrome_payment_request_delegate.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
 

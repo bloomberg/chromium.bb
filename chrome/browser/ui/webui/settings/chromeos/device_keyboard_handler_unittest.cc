@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/test/test_web_ui.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/search/search_engine_base_url_tracker.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/search/instant_unittest_base.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"

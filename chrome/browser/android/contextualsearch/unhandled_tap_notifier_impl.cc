@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

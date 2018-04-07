@@ -4,7 +4,6 @@
 
 #include "chrome/browser/cache_stats_recorder.h"
 
-#include "base/memory/ptr_util.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"

@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"

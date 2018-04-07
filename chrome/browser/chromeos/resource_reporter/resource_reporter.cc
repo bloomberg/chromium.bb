@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/memory_pressure_monitor.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"

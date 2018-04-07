@@ -9,7 +9,6 @@
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
-#include "base/memory/ptr_util.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/search/search_engine_base_url_tracker.h"
 
-#include "base/memory/ptr_util.h"
 
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"

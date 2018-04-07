@@ -4,7 +4,6 @@
 
 #include "chrome/browser/feedback/system_logs/about_system_logs_fetcher.h"
 
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/feedback/system_logs/log_sources/chrome_internal_log_source.h"
 #include "chrome/browser/feedback/system_logs/log_sources/memory_details_log_source.h"

@@ -13,7 +13,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "chrome/browser/plugins/flash_temporary_permission_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"

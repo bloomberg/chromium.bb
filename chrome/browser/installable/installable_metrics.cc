@@ -4,7 +4,6 @@
 
 #include "chrome/browser/installable/installable_metrics.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"

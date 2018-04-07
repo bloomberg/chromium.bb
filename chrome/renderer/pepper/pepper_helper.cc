@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/renderer/pepper/chrome_renderer_pepper_host_factory.h"
 #include "chrome/renderer/pepper/pepper_shared_memory_message_filter.h"
 #include "content/public/renderer/renderer_ppapi_host.h"

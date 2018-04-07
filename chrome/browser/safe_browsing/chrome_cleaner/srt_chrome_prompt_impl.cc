@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace safe_browsing {
