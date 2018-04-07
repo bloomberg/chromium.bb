@@ -3522,7 +3522,6 @@
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
       # chromium.mac
-      'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
       # chromium.win
       'Win 7 Tests x64 (1)',
@@ -3608,6 +3607,23 @@
         },
       },
       'Mac10.12 Tests': {
+        # TODO(kbr): if the Swarming dimensions were explicitly specified for
+        # all jobs then this wouldn't be needed. However, note that this bot
+        # implicitly specifies gpu:none rather than gpu:8086:0a2e.
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '8086:0a2e',
+              'hidpi': '0',
+              'os': 'Mac-10.12.6',
+            },
+          ],
+          'shards': 12,
+        },
+      },
+      'Mac10.13 Tests': {
+        # TODO(jbudorick,dpranke): Switch this to 10.13.
+
         # TODO(kbr): if the Swarming dimensions were explicitly specified for
         # all jobs then this wouldn't be needed. However, note that this bot
         # implicitly specifies gpu:none rather than gpu:8086:0a2e.
