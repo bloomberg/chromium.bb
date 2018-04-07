@@ -691,7 +691,7 @@ class ExtensionPrefs : public KeyedService {
       const base::Optional<int>& dnr_ruleset_checksum,
       prefs::DictionaryValueUpdate* extension_dict) const;
 
-  void InitExtensionControlledPrefs();
+  void InitExtensionControlledPrefs(const ExtensionIdList& extension_ids);
 
   // Loads preferences for the given |extension_id| into the pref value map.
   void LoadExtensionControlledPrefs(const ExtensionId& extension_id,
