@@ -117,36 +117,36 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
   ARGS_CONFIG = ['config']
   CMD = ['/cbuildbot_buildroot/chromite/bin/cbuildbot']
 
-  def verifyRunCbuildbot(self, args, expected_cmd, version):
+  def verifyCbuildbot(self, args, expected_cmd, version):
     """Ensure we invoke cbuildbot correctly."""
     self.PatchObject(
         cros_build_lib, 'GetTargetChromiteApiVersion', autospec=True,
         return_value=version)
 
-    cbuildbot_launch.RunCbuildbot('/cbuildbot_buildroot', '/depot_tools', args)
+    cbuildbot_launch.Cbuildbot('/cbuildbot_buildroot', '/depot_tools', args)
 
     self.assertCommandCalled(
         expected_cmd, extra_env={'PATH': mock.ANY},
         cwd='/cbuildbot_buildroot', error_code_ok=True)
 
-  def testRunCbuildbotSimple(self):
+  def testCbuildbotSimple(self):
     """Ensure we invoke cbuildbot correctly."""
-    self.verifyRunCbuildbot(
+    self.verifyCbuildbot(
         self.ARGS_BASE + self.ARGS_CONFIG,
         self.CMD + self.ARGS_CONFIG + self.EXPECTED_ARGS_BASE,
         (0, 4))
 
-  def testRunCbuildbotNotFiltered(self):
+  def testCbuildbotNotFiltered(self):
     """Ensure we invoke cbuildbot correctly."""
-    self.verifyRunCbuildbot(
+    self.verifyCbuildbot(
         self.ARGS_BASE + self.ARGS_CONFIG + self.ARGS_GIT_CACHE,
         (self.CMD + self.ARGS_CONFIG + self.EXPECTED_ARGS_BASE +
          self.ARGS_GIT_CACHE),
         (0, 4))
 
-  def testRunCbuildbotFiltered(self):
+  def testCbuildbotFiltered(self):
     """Ensure we invoke cbuildbot correctly."""
-    self.verifyRunCbuildbot(
+    self.verifyCbuildbot(
         self.ARGS_BASE + self.ARGS_CONFIG + self.ARGS_GIT_CACHE,
         self.CMD + self.ARGS_CONFIG + self.EXPECTED_ARGS_BASE,
         (0, 2))

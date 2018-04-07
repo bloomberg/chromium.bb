@@ -298,7 +298,7 @@ def DepotToolsEnsureBootstrap(depot_tools_path):
 
 
 @StageDecorator
-def RunCbuildbot(buildroot, depot_tools_path, argv):
+def Cbuildbot(buildroot, depot_tools_path, argv):
   """Start cbuildbot in specified directory with all arguments.
 
   Args:
@@ -421,7 +421,7 @@ def _main(argv):
 
     # Run cbuildbot inside the full ChromeOS checkout, on the specified branch.
     with metrics.SecondsTimer(METRIC_CBUILDBOT, fields=metrics_fields):
-      result = RunCbuildbot(buildroot, depot_tools_path, argv)
+      result = Cbuildbot(buildroot, depot_tools_path, argv)
       s_fields['success'] = (result == 0)
       CleanupChroot(buildroot)
       return result
