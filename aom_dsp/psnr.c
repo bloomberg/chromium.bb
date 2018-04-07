@@ -51,22 +51,23 @@ static void encoder_variance(const uint8_t *a, int a_stride, const uint8_t *b,
 static void encoder_highbd_variance64(const uint8_t *a8, int a_stride,
                                       const uint8_t *b8, int b_stride, int w,
                                       int h, uint64_t *sse, int64_t *sum) {
-  int i, j;
-
-  uint16_t *a = CONVERT_TO_SHORTPTR(a8);
-  uint16_t *b = CONVERT_TO_SHORTPTR(b8);
-  *sum = 0;
-  *sse = 0;
-
-  for (i = 0; i < h; i++) {
-    for (j = 0; j < w; j++) {
+  const uint16_t *a = CONVERT_TO_SHORTPTR(a8);
+  const uint16_t *b = CONVERT_TO_SHORTPTR(b8);
+  int64_t tsum = 0;
+  uint64_t tsse = 0;
+  for (int i = 0; i < h; ++i) {
+    int32_t lsum = 0;
+    for (int j = 0; j < w; ++j) {
       const int diff = a[j] - b[j];
-      *sum += diff;
-      *sse += diff * diff;
+      lsum += diff;
+      tsse += (uint32_t)(diff * diff);
     }
+    tsum += lsum;
     a += a_stride;
     b += b_stride;
   }
+  *sum = tsum;
+  *sse = tsse;
 }
 
 static void encoder_highbd_8_variance(const uint8_t *a8, int a_stride,
