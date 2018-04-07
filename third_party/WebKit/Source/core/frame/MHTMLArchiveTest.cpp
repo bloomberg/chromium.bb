@@ -31,18 +31,18 @@
 #include <map>
 
 #include "build/build_config.h"
-#include "platform/DateComponents.h"
-#include "platform/SerializedResource.h"
-#include "platform/SharedBuffer.h"
-#include "platform/mhtml/MHTMLArchive.h"
-#include "platform/mhtml/MHTMLParser.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/testing/URLTestHelpers.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SchemeRegistry.h"
-#include "platform/wtf/Time.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/date_components.h"
+#include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
+#include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
+#include "third_party/blink/renderer/platform/serialized_resource.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 using blink::URLTestHelpers::ToKURL;
 

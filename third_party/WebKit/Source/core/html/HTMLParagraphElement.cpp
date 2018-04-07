@@ -20,11 +20,11 @@
  *
  */
 
-#include "core/html/HTMLParagraphElement.h"
+#include "third_party/blink/renderer/core/html/html_paragraph_element.h"
 
-#include "core/css_property_names.h"
-#include "core/css_value_keywords.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

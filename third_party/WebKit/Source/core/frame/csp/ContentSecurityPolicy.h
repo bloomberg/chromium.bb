@@ -23,31 +23,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ContentSecurityPolicy_h
-#define ContentSecurityPolicy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CSP_CONTENT_SECURITY_POLICY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_CSP_CONTENT_SECURITY_POLICY_H_
 
 #include <memory>
 #include <utility>
 
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/CoreExport.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/execution_context/SecurityContext.h"
-#include "core/inspector/ConsoleTypes.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/network/ContentSecurityPolicyParsers.h"
-#include "platform/network/HTTPParsers.h"
-#include "platform/weborigin/SchemeRegistry.h"
-#include "platform/weborigin/SecurityViolationReportingPolicy.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/TextPosition.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebInsecureRequestPolicy.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/core/inspector/console_types.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace WTF {
 class OrdinalNumber;

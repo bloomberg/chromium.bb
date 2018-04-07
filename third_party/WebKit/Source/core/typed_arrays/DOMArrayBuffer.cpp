@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/typed_arrays/DOMArrayBuffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/SharedBuffer.h"
-#include "platform/bindings/DOMDataStore.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

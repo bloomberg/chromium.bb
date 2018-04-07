@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/accessibility/AXSelection.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_selection.h"
 
-#include "core/dom/Node.h"
-#include "core/editing/Position.h"
-#include "core/editing/SelectionTemplate.h"
-#include "modules/accessibility/AXObject.h"
-#include "modules/accessibility/AXPosition.h"
-#include "modules/accessibility/testing/AccessibilityTest.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_position.h"
+#include "third_party/blink/renderer/modules/accessibility/testing/accessibility_test.h"
 
 namespace blink {
 

@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BlockExceptions_h
-#define BlockExceptions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_BLOCK_EXCEPTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_BLOCK_EXCEPTIONS_H_
 
 #import <Foundation/NSException.h>
-#import "platform/PlatformExport.h"
-#import "platform/wtf/Assertions.h"
+#import "third_party/blink/renderer/platform/platform_export.h"
+#import "third_party/blink/renderer/platform/wtf/assertions.h"
 
 PLATFORM_EXPORT void ReportBlockedObjCException(NSException*);
 
@@ -39,4 +39,4 @@ PLATFORM_EXPORT void ReportBlockedObjCException(NSException*);
     ReportBlockedObjCException(localException); \
   }
 
-#endif  // BlockExceptions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_BLOCK_EXCEPTIONS_H_

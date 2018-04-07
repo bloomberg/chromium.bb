@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/PageAnimator.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 
-#include "core/animation/DocumentAnimations.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "core/svg/SVGDocumentExtensions.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/AutoReset.h"
+#include "third_party/blink/renderer/core/animation/document_animations.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 

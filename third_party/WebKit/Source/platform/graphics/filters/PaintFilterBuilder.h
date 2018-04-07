@@ -23,13 +23,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PaintFilterBuilder_h
-#define PaintFilterBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_PAINT_FILTER_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_PAINT_FILTER_BUILDER_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/graphics/InterpolationSpace.h"
-#include "platform/graphics/paint/PaintFilter.h"
-#include "platform/graphics/paint/PaintRecord.h"
+#include "third_party/blink/renderer/platform/graphics/interpolation_space.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_filter.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 

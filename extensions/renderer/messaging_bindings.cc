@@ -29,7 +29,7 @@
 #include "extensions/renderer/script_context_set.h"
 #include "extensions/renderer/v8_helpers.h"
 #include "gin/converter.h"
-#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
+#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "v8/include/v8.h"
 
 // Message passing API example (in a content script):

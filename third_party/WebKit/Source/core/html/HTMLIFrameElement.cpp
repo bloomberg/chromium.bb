@@ -22,18 +22,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/HTMLIFrameElement.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element.h"
 
-#include "core/css_property_names.h"
-#include "core/frame/UseCounter.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/html/HTMLDocument.h"
-#include "core/html_names.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/layout/LayoutIFrame.h"
-#include "core/page/Page.h"
-#include "core/policy/IFramePolicy.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/layout/layout_iframe.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/policy/iframe_policy.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/xr/XRPresentationFrame.h"
+#include "third_party/blink/renderer/modules/xr/xr_presentation_frame.h"
 
-#include "modules/xr/XRCoordinateSystem.h"
-#include "modules/xr/XRDevicePose.h"
-#include "modules/xr/XRInputPose.h"
-#include "modules/xr/XRInputSource.h"
-#include "modules/xr/XRSession.h"
-#include "modules/xr/XRView.h"
+#include "third_party/blink/renderer/modules/xr/xr_coordinate_system.h"
+#include "third_party/blink/renderer/modules/xr/xr_device_pose.h"
+#include "third_party/blink/renderer/modules/xr/xr_input_pose.h"
+#include "third_party/blink/renderer/modules/xr/xr_input_source.h"
+#include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_view.h"
 
 namespace blink {
 

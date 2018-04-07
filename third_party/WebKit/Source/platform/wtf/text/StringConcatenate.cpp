@@ -4,9 +4,9 @@
  * found in the LICENSE file.
  */
 
-#include "platform/wtf/text/StringConcatenate.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
 
-#include "platform/wtf/text/StringImpl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 void WTF::StringTypeAdapter<char*>::WriteTo(LChar* destination) const {
   for (unsigned i = 0; i < length_; ++i)

@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/eme_constants.h"
 #include "media/blink/media_blink_export.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 

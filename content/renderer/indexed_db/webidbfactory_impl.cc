@@ -10,8 +10,8 @@
 #include "content/renderer/storage_util.h"
 #include "ipc/ipc_sync_channel.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 using blink::WebIDBCallbacks;
 using blink::WebIDBDatabase;

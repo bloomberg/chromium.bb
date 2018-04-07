@@ -5,8 +5,8 @@
 #include "content/renderer/webscrollbarbehavior_impl_aura.h"
 
 #include "build/build_config.h"
-#include "third_party/WebKit/public/platform/WebPoint.h"
-#include "third_party/WebKit/public/platform/WebRect.h"
+#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_rect.h"
 
 namespace content {
 

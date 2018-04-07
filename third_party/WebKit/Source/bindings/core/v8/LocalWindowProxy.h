@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LocalWindowProxy_h
-#define LocalWindowProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_LOCAL_WINDOW_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_LOCAL_WINDOW_PROXY_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/WindowProxy.h"
-#include "core/frame/LocalFrame.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -118,4 +118,4 @@ DEFINE_TYPE_CASTS(LocalWindowProxy,
 
 }  // namespace blink
 
-#endif  // LocalWindowProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_LOCAL_WINDOW_PROXY_H_

@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/testing/sim/SimCompositor.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 
-#include "core/exported/WebViewImpl.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/compositing/CompositedLayerMapping.h"
-#include "core/paint/compositing/PaintLayerCompositor.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/CullRect.h"
-#include "platform/graphics/paint/PaintRecordBuilder.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/WebRect.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

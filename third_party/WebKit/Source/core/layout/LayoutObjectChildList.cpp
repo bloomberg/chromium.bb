@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutObjectChildList.h"
+#include "third_party/blink/renderer/core/layout/layout_object_child_list.h"
 
-#include "core/dom/AXObjectCache.h"
-#include "core/layout/LayoutCounter.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/ObjectPaintInvalidator.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/layout/layout_counter.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 
 namespace blink {
 

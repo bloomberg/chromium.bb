@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InteractiveDetector_h
-#define InteractiveDetector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_INTERACTIVE_DETECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_INTERACTIVE_DETECTOR_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/paint/FirstMeaningfulPaintDetector.h"
-#include "platform/LongTaskDetector.h"
-#include "platform/PODInterval.h"
-#include "platform/Supplementable.h"
-#include "platform/Timer.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/long_task_detector.h"
+#include "third_party/blink/renderer/platform/pod_interval.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

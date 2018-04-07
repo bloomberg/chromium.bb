@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/TelephoneInputType.h"
+#include "third_party/blink/renderer/core/html/forms/telephone_input_type.h"
 
-#include "core/frame/UseCounter.h"
-#include "core/input_type_names.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
 
 namespace blink {
 

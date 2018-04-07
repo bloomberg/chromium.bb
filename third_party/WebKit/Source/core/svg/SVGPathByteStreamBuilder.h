@@ -17,10 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPathByteStreamBuilder_h
-#define SVGPathByteStreamBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_BYTE_STREAM_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_BYTE_STREAM_BUILDER_H_
 
-#include "core/svg/SVGPathConsumer.h"
+#include "third_party/blink/renderer/core/svg/svg_path_consumer.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class SVGPathByteStreamBuilder final : public SVGPathConsumer {
 
 }  // namespace blink
 
-#endif  // SVGPathByteStreamBuilder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_BYTE_STREAM_BUILDER_H_

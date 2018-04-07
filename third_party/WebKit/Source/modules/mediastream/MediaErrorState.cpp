@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/MediaErrorState.h"
+#include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
 
-#include "core/dom/ExceptionCode.h"
-#include "modules/mediastream/OverconstrainedError.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/timing/DOMWindowPerformance.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/timing/WindowPerformance.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
 
 namespace blink {
 

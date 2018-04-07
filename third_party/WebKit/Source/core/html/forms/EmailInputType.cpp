@@ -21,20 +21,20 @@
  *
  */
 
-#include "core/html/forms/EmailInputType.h"
+#include "third_party/blink/renderer/core/html/forms/email_input_type.h"
 
 #include <unicode/idna.h>
 #include <unicode/unistr.h>
 #include <unicode/uvernum.h>
-#include "bindings/core/v8/ScriptRegexp.h"
-#include "core/frame/WebFeature.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/input_type_names.h"
-#include "core/page/ChromeClient.h"
-#include "platform/text/PlatformLocale.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 #if U_ICU_VERSION_MAJOR_NUM >= 59
 #include <unicode/char16ptr.h>

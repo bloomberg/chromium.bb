@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ShapeProperties_h
-#define ShapeProperties_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SHAPE_PROPERTIES_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SHAPE_PROPERTIES_H_
 
 namespace blink {
 

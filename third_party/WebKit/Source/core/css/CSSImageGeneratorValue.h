@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSImageGeneratorValue_h
-#define CSSImageGeneratorValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IMAGE_GENERATOR_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IMAGE_GENERATOR_VALUE_H_
 
 #include <map>
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/css/CSSValue.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/heap/SelfKeepAlive.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -142,4 +142,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageGeneratorValue, IsImageGeneratorValue());
 
 }  // namespace blink
 
-#endif  // CSSImageGeneratorValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IMAGE_GENERATOR_VALUE_H_

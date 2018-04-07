@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlTextTrackListElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_text_track_list_element.h"
 
-#include "core/dom/events/Event.h"
-#include "core/html/HTMLSpanElement.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/forms/HTMLLabelElement.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/track/TextTrack.h"
-#include "core/html/track/TextTrackList.h"
-#include "core/input_type_names.h"
-#include "modules/media_controls/MediaControlsImpl.h"
-#include "platform/EventDispatchForbiddenScope.h"
-#include "platform/text/PlatformLocale.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_label_element.h"
+#include "third_party/blink/renderer/core/html/html_span_element.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
+#include "third_party/blink/renderer/core/html/track/text_track_list.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/event_dispatch_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 

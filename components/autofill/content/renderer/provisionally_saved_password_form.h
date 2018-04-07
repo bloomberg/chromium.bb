@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "components/autofill/core/common/password_form.h"
-#include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/blink/public/web/web_input_element.h"
 
 namespace autofill {
 

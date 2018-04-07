@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StringConcatenate_h
-#define StringConcatenate_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_STRING_CONCATENATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_STRING_CONCATENATE_H_
 
-#include "platform/wtf/Allocator.h"
 #include <string.h>
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 #ifndef WTFString_h
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #endif
 
 namespace WTF {
@@ -219,5 +219,5 @@ class StringTypeAdapter<AtomicString> : public StringTypeAdapter<StringView> {
 
 }  // namespace WTF
 
-#include "platform/wtf/text/StringOperators.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_operators.h"
 #endif

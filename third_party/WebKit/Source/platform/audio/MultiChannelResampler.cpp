@@ -26,10 +26,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/MultiChannelResampler.h"
+#include "third_party/blink/renderer/platform/audio/multi_channel_resampler.h"
 
 #include <memory>
-#include "platform/audio/AudioBus.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
 
 namespace blink {
 

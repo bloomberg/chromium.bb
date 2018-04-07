@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/media/AutoplayUmaHelper.h"
+#include "third_party/blink/renderer/core/html/media/autoplay_uma_helper.h"
 
-#include "core/dom/Document.h"
-#include "core/html/media/AutoplayPolicy.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/testing/PageTestBase.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

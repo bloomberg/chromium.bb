@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XMLHttpRequestEventTarget_h
-#define XMLHttpRequestEventTarget_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XMLHTTPREQUEST_XML_HTTP_REQUEST_EVENT_TARGET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XMLHTTPREQUEST_XML_HTTP_REQUEST_EVENT_TARGET_H_
 
-#include "core/dom/events/EventTarget.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ class XMLHttpRequestEventTarget : public EventTargetWithInlineData {
 
 }  // namespace blink
 
-#endif  // XMLHttpRequestEventTarget_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XMLHTTPREQUEST_XML_HTTP_REQUEST_EVENT_TARGET_H_

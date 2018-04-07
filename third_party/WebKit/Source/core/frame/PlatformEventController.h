@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PlatformEventController_h
-#define PlatformEventController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PLATFORM_EVENT_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PLATFORM_EVENT_CONTROLLER_H_
 
-#include "core/CoreExport.h"
-#include "core/page/PageVisibilityObserver.h"
-#include "platform/Timer.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class CORE_EXPORT PlatformEventController : public PageVisibilityObserver {
 
 }  // namespace blink
 
-#endif  // PlatformEventController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PLATFORM_EVENT_CONTROLLER_H_

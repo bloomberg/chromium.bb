@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSVariableReferenceValue_h
-#define CSSVariableReferenceValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VARIABLE_REFERENCE_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VARIABLE_REFERENCE_VALUE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/css/CSSValue.h"
-#include "core/css/CSSVariableData.h"
-#include "core/css/parser/CSSParserContext.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSVariableReferenceValue,
 
 }  // namespace blink
 
-#endif  // CSSVariableReferenceValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VARIABLE_REFERENCE_VALUE_H_

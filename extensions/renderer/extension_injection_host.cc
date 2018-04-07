@@ -8,8 +8,8 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
 #include "extensions/renderer/renderer_extension_registry.h"
-#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace extensions {
 

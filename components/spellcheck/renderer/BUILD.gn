@@ -50,7 +50,7 @@ source_set("renderer") {
     "//content/public/renderer",
     "//ipc",
     "//services/service_manager/public/cpp",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//third_party/icu",
   ]
 
@@ -98,7 +98,7 @@ source_set("unit_tests") {
     "//components/spellcheck/common",
     "//ipc:ipc",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//third_party/icu",
   ]
 

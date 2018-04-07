@@ -19,13 +19,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/svg/LayoutSVGForeignObject.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
 
-#include "core/layout/HitTestResult.h"
-#include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/layout/svg/SVGResourcesCache.h"
-#include "core/paint/SVGForeignObjectPainter.h"
-#include "core/svg/SVGForeignObjectElement.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
+#include "third_party/blink/renderer/core/svg/svg_foreign_object_element.h"
 
 namespace blink {
 

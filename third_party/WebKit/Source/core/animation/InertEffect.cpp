@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/InertEffect.h"
+#include "third_party/blink/renderer/core/animation/inert_effect.h"
 
-#include "core/animation/Interpolation.h"
+#include "third_party/blink/renderer/core/animation/interpolation.h"
 
 namespace blink {
 

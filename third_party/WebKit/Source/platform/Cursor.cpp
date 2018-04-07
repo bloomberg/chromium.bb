@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/Cursor.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/WebCursorInfo.h"
+#include "third_party/blink/public/platform/web_cursor_info.h"
+#include "third_party/blink/renderer/platform/cursor.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

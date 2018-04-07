@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "platform/scheduler/base/time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
 
 namespace blink {
 namespace scheduler {

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorMutatorImpl_h
-#define CompositorMutatorImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_MUTATOR_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_MUTATOR_IMPL_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "platform/graphics/CompositorAnimator.h"
-#include "platform/graphics/CompositorMutator.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/Persistent.h"
-#include "platform/heap/Visitor.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_animator.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_mutator.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -98,4 +98,4 @@ class PLATFORM_EXPORT CompositorMutatorImpl final : public CompositorMutator {
 
 }  // namespace blink
 
-#endif  // CompositorMutatorImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_MUTATOR_IMPL_H_

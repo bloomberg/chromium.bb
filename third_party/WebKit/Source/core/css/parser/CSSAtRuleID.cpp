@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSAtRuleID.h"
+#include "third_party/blink/renderer/core/css/parser/css_at_rule_id.h"
 
-#include "core/css/parser/CSSParserContext.h"
-#include "core/frame/UseCounter.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 
 namespace blink {
 

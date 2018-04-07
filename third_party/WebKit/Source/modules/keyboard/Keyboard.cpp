@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/keyboard/Keyboard.h"
+#include "third_party/blink/renderer/modules/keyboard/keyboard.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/keyboard/KeyboardLock.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/keyboard/keyboard_lock.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

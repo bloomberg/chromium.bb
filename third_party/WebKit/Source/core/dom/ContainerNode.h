@@ -22,15 +22,15 @@
  *
  */
 
-#ifndef ContainerNode_h
-#define ContainerNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTAINER_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTAINER_NODE_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Node.h"
-#include "core/html/CollectionType.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebFocusType.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/html/collection_type.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -531,4 +531,4 @@ inline void GetChildNodes(ContainerNode& node, NodeVector& nodes) {
 
 }  // namespace blink
 
-#endif  // ContainerNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CONTAINER_NODE_H_

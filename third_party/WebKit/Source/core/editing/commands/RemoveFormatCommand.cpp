@@ -24,18 +24,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/RemoveFormatCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/remove_format_command.h"
 
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css_value_keywords.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/editing/EditingStyle.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/VisibleSelection.h"
-#include "core/editing/commands/ApplyStyleCommand.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/editing/commands/apply_style_command.h"
+#include "third_party/blink/renderer/core/editing/editing_style.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

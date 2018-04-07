@@ -22,10 +22,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebAudioBus.h"
+#include "third_party/blink/public/platform/web_audio_bus.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/audio/AudioBus.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
 
 namespace blink {
 

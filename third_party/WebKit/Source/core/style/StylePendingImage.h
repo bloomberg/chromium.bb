@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StylePendingImage_h
-#define StylePendingImage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_PENDING_IMAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_PENDING_IMAGE_H_
 
-#include "core/css/CSSImageGeneratorValue.h"
-#include "core/css/CSSImageSetValue.h"
-#include "core/css/CSSImageValue.h"
-#include "core/css/CSSPaintValue.h"
-#include "core/style/StyleImage.h"
-#include "platform/graphics/Image.h"
+#include "third_party/blink/renderer/core/css/css_image_generator_value.h"
+#include "third_party/blink/renderer/core/css/css_image_set_value.h"
+#include "third_party/blink/renderer/core/css/css_image_value.h"
+#include "third_party/blink/renderer/core/css/css_paint_value.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
 
 namespace blink {
 

@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/mojo/MojoHandle.h"
+#include "third_party/blink/renderer/core/mojo/mojo_handle.h"
 
-#include "bindings/core/v8/array_buffer_or_array_buffer_view.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/mojo/MojoCreateSharedBufferResult.h"
-#include "core/mojo/MojoDiscardDataOptions.h"
-#include "core/mojo/MojoDuplicateBufferHandleOptions.h"
-#include "core/mojo/MojoMapBufferResult.h"
-#include "core/mojo/MojoReadDataOptions.h"
-#include "core/mojo/MojoReadDataResult.h"
-#include "core/mojo/MojoReadMessageFlags.h"
-#include "core/mojo/MojoReadMessageResult.h"
-#include "core/mojo/MojoWatcher.h"
-#include "core/mojo/MojoWriteDataOptions.h"
-#include "core/mojo/MojoWriteDataResult.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "core/typed_arrays/DOMArrayBufferView.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/mojo/mojo_create_shared_buffer_result.h"
+#include "third_party/blink/renderer/core/mojo/mojo_discard_data_options.h"
+#include "third_party/blink/renderer/core/mojo/mojo_duplicate_buffer_handle_options.h"
+#include "third_party/blink/renderer/core/mojo/mojo_map_buffer_result.h"
+#include "third_party/blink/renderer/core/mojo/mojo_read_data_options.h"
+#include "third_party/blink/renderer/core/mojo/mojo_read_data_result.h"
+#include "third_party/blink/renderer/core/mojo/mojo_read_message_flags.h"
+#include "third_party/blink/renderer/core/mojo/mojo_read_message_result.h"
+#include "third_party/blink/renderer/core/mojo/mojo_watcher.h"
+#include "third_party/blink/renderer/core/mojo/mojo_write_data_options.h"
+#include "third_party/blink/renderer/core/mojo/mojo_write_data_result.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 // Mojo messages typically do not contain many handles. In fact most
 // messages do not contain any handle. An inline capacity of 4 should avoid

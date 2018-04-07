@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TransformBuilder_h
-#define TransformBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_TRANSFORM_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_TRANSFORM_BUILDER_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/transforms/TransformOperations.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operations.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class TransformBuilder {
 
 }  // namespace blink
 
-#endif  // TransformBuilder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_TRANSFORM_BUILDER_H_

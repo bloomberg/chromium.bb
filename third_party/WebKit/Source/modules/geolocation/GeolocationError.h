@@ -23,10 +23,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GeolocationError_h
-#define GeolocationError_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_ERROR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_ERROR_H_
 
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class GeolocationError : public GarbageCollectedFinalized<GeolocationError> {
 
 }  // namespace blink
 
-#endif  // GeolocationError_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_ERROR_H_

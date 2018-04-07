@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/csspaint/PaintWorklet.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_worklet.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "modules/csspaint/CSSPaintDefinition.h"
-#include "modules/csspaint/PaintWorkletGlobalScope.h"
-#include "platform/graphics/Image.h"
-#include "platform/wtf/CryptographicallyRandomNumber.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/wtf/cryptographically_random_number.h"
 
 namespace blink {
 

@@ -19,18 +19,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGAnimateMotionElement.h"
+#include "third_party/blink/renderer/core/svg/svg_animate_motion_element.h"
 
-#include "core/dom/ElementTraversal.h"
-#include "core/layout/LayoutObject.h"
-#include "core/svg/SVGMPathElement.h"
-#include "core/svg/SVGParserUtilities.h"
-#include "core/svg/SVGPathElement.h"
-#include "core/svg/SVGPathUtilities.h"
-#include "core/svg_names.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/svg/svg_mpath_element.h"
+#include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
+#include "third_party/blink/renderer/core/svg/svg_path_element.h"
+#include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

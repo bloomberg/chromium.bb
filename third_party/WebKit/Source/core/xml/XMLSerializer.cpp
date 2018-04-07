@@ -19,10 +19,10 @@
  *  MA 02110-1301 USA
  */
 
-#include "core/xml/XMLSerializer.h"
+#include "third_party/blink/renderer/core/xml/xml_serializer.h"
 
-#include "core/editing/serializers/MarkupAccumulator.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/editing/serializers/markup_accumulator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

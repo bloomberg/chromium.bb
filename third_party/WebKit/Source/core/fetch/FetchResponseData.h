@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FetchResponseData_h
-#define FetchResponseData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FETCH_RESPONSE_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FETCH_RESPONSE_DATA_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "public/platform/WebCORS.h"
-#include "public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
+#include "third_party/blink/public/platform/web_cors.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -125,4 +125,4 @@ class CORE_EXPORT FetchResponseData final
 
 }  // namespace blink
 
-#endif  // FetchResponseData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FETCH_RESPONSE_DATA_H_

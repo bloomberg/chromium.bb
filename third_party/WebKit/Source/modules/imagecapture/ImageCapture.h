@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ImageCapture_h
-#define ImageCapture_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGECAPTURE_IMAGE_CAPTURE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGECAPTURE_IMAGE_CAPTURE_H_
 
 #include <memory>
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/events/EventTarget.h"
 #include "media/capture/mojom/image_capture.mojom-blink.h"
-#include "modules/EventTargetModules.h"
-#include "modules/ModulesExport.h"
-#include "modules/imagecapture/PhotoSettings.h"
-#include "modules/mediastream/MediaTrackCapabilities.h"
-#include "modules/mediastream/MediaTrackConstraintSet.h"
-#include "modules/mediastream/MediaTrackSettings.h"
-#include "platform/AsyncMethodRunner.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/imagecapture/photo_settings.h"
+#include "third_party/blink/renderer/modules/mediastream/media_track_capabilities.h"
+#include "third_party/blink/renderer/modules/mediastream/media_track_constraint_set.h"
+#include "third_party/blink/renderer/modules/mediastream/media_track_settings.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/async_method_runner.h"
 
 namespace blink {
 
@@ -113,4 +113,4 @@ class MODULES_EXPORT ImageCapture final
 
 }  // namespace blink
 
-#endif  // ImageCapture_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGECAPTURE_IMAGE_CAPTURE_H_

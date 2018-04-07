@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/SourceLocation.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/Document.h"
-#include "core/dom/ScriptableDocumentParser.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/inspector/ThreadDebugger.h"
-#include "core/inspector/V8InspectorString.h"
-#include "platform/bindings/ScriptForbiddenScope.h"
-#include "platform/bindings/V8BindingMacros.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/instrumentation/tracing/TracedValue.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/inspector/thread_debugger.h"
+#include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebCoalescedInputEvent.h"
+#include "third_party/blink/public/platform/web_coalesced_input_event.h"
 
-#include "public/platform/WebGestureEvent.h"
-#include "public/platform/WebKeyboardEvent.h"
-#include "public/platform/WebMouseWheelEvent.h"
-#include "public/platform/WebPointerEvent.h"
-#include "public/platform/WebTouchEvent.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/public/platform/web_keyboard_event.h"
+#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
+#include "third_party/blink/public/platform/web_pointer_event.h"
+#include "third_party/blink/public/platform/web_touch_event.h"
 
 namespace blink {
 

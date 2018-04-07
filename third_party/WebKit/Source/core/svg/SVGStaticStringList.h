@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGStaticStringList_h
-#define SVGStaticStringList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_STATIC_STRING_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_STATIC_STRING_LIST_H_
 
-#include "core/svg/SVGStringListTearOff.h"
-#include "core/svg/properties/SVGAnimatedProperty.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
+#include "third_party/blink/renderer/core/svg/svg_string_list_tear_off.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

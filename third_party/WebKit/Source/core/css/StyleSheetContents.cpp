@@ -18,24 +18,24 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/StyleSheetContents.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/CSSTiming.h"
-#include "core/css/StyleEngine.h"
-#include "core/css/StyleRule.h"
-#include "core/css/StyleRuleImport.h"
-#include "core/css/StyleRuleNamespace.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/dom/Document.h"
-#include "core/dom/Node.h"
-#include "core/frame/UseCounter.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/loader/resource/CSSStyleSheetResource.h"
-#include "platform/Histogram.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/weborigin/SecurityOrigin.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/css_timing.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/core/css/style_rule_import.h"
+#include "third_party/blink/renderer/core/css/style_rule_namespace.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

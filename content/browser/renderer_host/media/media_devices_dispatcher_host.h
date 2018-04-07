@@ -15,7 +15,7 @@
 #include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/common/content_export.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
-#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h"
 #include "url/origin.h"
 
 namespace content {

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/FieldsetPainter.h"
+#include "third_party/blink/renderer/core/paint/fieldset_painter.h"
 
-#include "core/layout/LayoutFieldset.h"
-#include "core/paint/BackgroundImageGeometry.h"
-#include "core/paint/BoxDecorationData.h"
-#include "core/paint/BoxModelObjectPainter.h"
-#include "core/paint/BoxPainter.h"
-#include "core/paint/PaintInfo.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
+#include "third_party/blink/renderer/core/layout/layout_fieldset.h"
+#include "third_party/blink/renderer/core/paint/background_image_geometry.h"
+#include "third_party/blink/renderer/core/paint/box_decoration_data.h"
+#include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
 

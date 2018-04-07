@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/filesystem/FileWriterSync.h"
+#include "third_party/blink/renderer/modules/filesystem/file_writer_sync.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/fileapi/Blob.h"
-#include "public/platform/WebFileWriter.h"
-#include "public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_file_writer.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
 
 namespace blink {
 

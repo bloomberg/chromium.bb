@@ -17,10 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGFEPointLightElement_h
-#define SVGFEPointLightElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_FE_POINT_LIGHT_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_FE_POINT_LIGHT_ELEMENT_H_
 
-#include "core/svg/SVGFELightElement.h"
+#include "third_party/blink/renderer/core/svg/svg_fe_light_element.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class SVGFEPointLightElement final : public SVGFELightElement {
 
 }  // namespace blink
 
-#endif  // SVGFEPointLightElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_FE_POINT_LIGHT_ELEMENT_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AuthenticatorAssertionResponse_h
-#define AuthenticatorAssertionResponse_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_AUTHENTICATOR_ASSERTION_RESPONSE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_AUTHENTICATOR_ASSERTION_RESPONSE_H_
 
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "modules/ModulesExport.h"
-#include "modules/credentialmanager/AuthenticatorResponse.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/credentialmanager/authenticator_response.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -47,4 +47,4 @@ class MODULES_EXPORT AuthenticatorAssertionResponse final
 
 }  // namespace blink
 
-#endif  // AuthenticatorAssertionResponse_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_AUTHENTICATOR_ASSERTION_RESPONSE_H_

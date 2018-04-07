@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/IDLDictionaryBase.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_dictionary_base.h"
 
 namespace blink {
 

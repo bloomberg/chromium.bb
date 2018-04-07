@@ -20,20 +20,20 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/events/Event.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 
-#include "core/dom/StaticNodeList.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/events/FocusEvent.h"
-#include "core/events/MouseEvent.h"
-#include "core/events/PointerEvent.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/HostsUsingFeatures.h"
-#include "core/frame/UseCounter.h"
-#include "core/svg/SVGElement.h"
-#include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/WindowPerformance.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/core/events/focus_event.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/events/pointer_event.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

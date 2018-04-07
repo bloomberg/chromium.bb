@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentEventDataConversion.h"
+#include "third_party/blink/renderer/modules/payments/payment_event_data_conversion.h"
 
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "modules/payments/PaymentCurrencyAmount.h"
-#include "modules/payments/PaymentDetailsModifier.h"
-#include "modules/payments/PaymentItem.h"
-#include "modules/payments/PaymentMethodData.h"
-#include "modules/payments/PaymentRequestEventInit.h"
-#include "platform/bindings/ScriptState.h"
-#include "public/platform/modules/payments/WebPaymentMethodData.h"
-#include "public/platform/modules/payments/WebPaymentRequestEventData.h"
+#include "third_party/blink/public/platform/modules/payments/web_payment_method_data.h"
+#include "third_party/blink/public/platform/modules/payments/web_payment_request_event_data.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/modules/payments/payment_currency_amount.h"
+#include "third_party/blink/renderer/modules/payments/payment_details_modifier.h"
+#include "third_party/blink/renderer/modules/payments/payment_item.h"
+#include "third_party/blink/renderer/modules/payments/payment_method_data.h"
+#include "third_party/blink/renderer/modules/payments/payment_request_event_init.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 namespace {

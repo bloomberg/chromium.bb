@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/crypto/CryptoKey.h"
+#include "third_party/blink/renderer/modules/crypto/crypto_key.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "bindings/core/v8/V8Uint8Array.h"
-#include "platform/CryptoResult.h"
-#include "platform/bindings/ToV8.h"
-#include "public/platform/WebCryptoAlgorithmParams.h"
-#include "public/platform/WebCryptoKeyAlgorithm.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
+#include "third_party/blink/public/platform/web_crypto_key_algorithm.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_uint8_array.h"
+#include "third_party/blink/renderer/platform/bindings/to_v8.h"
+#include "third_party/blink/renderer/platform/crypto_result.h"
 
 namespace blink {
 

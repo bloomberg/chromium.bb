@@ -7,7 +7,7 @@
 #include "build/build_config.h"
 #include "components/printing/service/pdf_compositor_service.h"
 #include "content/public/utility/utility_thread.h"
-#include "third_party/WebKit/public/platform/WebImageGenerator.h"
+#include "third_party/blink/public/platform/web_image_generator.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 
 namespace printing {

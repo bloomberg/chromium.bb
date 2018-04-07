@@ -28,12 +28,12 @@
  * SUCH DAMAGE.
  */
 
-#include "core/css/CSSViewportRule.h"
+#include "third_party/blink/renderer/core/css/css_viewport_rule.h"
 
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/StyleRule.h"
-#include "core/css/StyleRuleCSSStyleDeclaration.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/core/css/style_rule_css_style_declaration.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

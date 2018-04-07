@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WritingMode_h
-#define WritingMode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_WRITING_MODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_WRITING_MODE_H_
 
 namespace blink {
 
@@ -70,4 +70,4 @@ inline bool IsParallelWritingMode(WritingMode a, WritingMode b) {
 
 }  // namespace blink
 
-#endif  // WritingMode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_WRITING_MODE_H_

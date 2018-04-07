@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXMediaControls_h
-#define AXMediaControls_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_MEDIA_CONTROLS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_MEDIA_CONTROLS_H_
 
 #include "base/macros.h"
-#include "modules/accessibility/AXSlider.h"
-#include "modules/media_controls/elements/MediaControlElementType.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_slider.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_element_type.h"
 
 namespace blink {
 
@@ -126,4 +126,4 @@ class AccessibilityMediaTimeDisplay final : public AccessibilityMediaControl {
 
 }  // namespace blink
 
-#endif  // AXMediaControls_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_MEDIA_CONTROLS_H_

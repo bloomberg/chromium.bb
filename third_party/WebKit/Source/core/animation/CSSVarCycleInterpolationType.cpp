@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSVarCycleInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_var_cycle_interpolation_type.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/animation/CSSInterpolationEnvironment.h"
-#include "core/animation/StringKeyframe.h"
-#include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/PropertyRegistration.h"
-#include "core/css/resolver/CSSVariableResolver.h"
-#include "core/css/resolver/StyleBuilder.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_environment.h"
+#include "third_party/blink/renderer/core/animation/string_keyframe.h"
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/property_registration.h"
+#include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
+#include "third_party/blink/renderer/core/css/resolver/style_builder.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

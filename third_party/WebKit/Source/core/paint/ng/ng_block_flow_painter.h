@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ng_block_flow_painter_h
-#define ng_block_flow_painter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_BLOCK_FLOW_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_BLOCK_FLOW_PAINTER_H_
 
-#include "core/layout/api/HitTestAction.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/layout/api/hit_test_action.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class NGBlockFlowPainter {
 
 }  // namespace blink
 
-#endif  // ng_block_flow_painter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_BLOCK_FLOW_PAINTER_H_

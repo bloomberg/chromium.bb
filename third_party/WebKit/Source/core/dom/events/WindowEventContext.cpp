@@ -24,13 +24,13 @@
  *
  */
 
-#include "core/dom/events/WindowEventContext.h"
+#include "third_party/blink/renderer/core/dom/events/window_event_context.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Node.h"
-#include "core/dom/events/Event.h"
-#include "core/dom/events/NodeEventContext.h"
-#include "core/frame/LocalDOMWindow.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/node_event_context.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 
 namespace blink {
 

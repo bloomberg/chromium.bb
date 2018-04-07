@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebContextMenuData_h
-#define WebContextMenuData_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_CONTEXT_MENU_DATA_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_CONTEXT_MENU_DATA_H_
 
-#include "WebMenuItemInfo.h"
-#include "public/platform/WebMenuSourceType.h"
-#include "public/platform/WebPoint.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebReferrerPolicy.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLResponse.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_menu_source_type.h"
+#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_menu_item_info.h"
 
 #define WEBCONTEXT_MEDIATYPEFILE_DEFINED
 

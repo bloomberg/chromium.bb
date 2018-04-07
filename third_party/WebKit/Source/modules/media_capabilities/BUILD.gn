@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("media_capabilities") {
   sources = [
-    "MediaCapabilities.cpp",
-    "MediaCapabilities.h",
-    "MediaCapabilitiesInfo.cpp",
-    "MediaCapabilitiesInfo.h",
-    "NavigatorMediaCapabilities.cpp",
-    "NavigatorMediaCapabilities.h",
+    "media_capabilities.cc",
+    "media_capabilities.h",
+    "media_capabilities_info.cc",
+    "media_capabilities_info.h",
+    "navigator_media_capabilities.cc",
+    "navigator_media_capabilities.h",
   ]
 }

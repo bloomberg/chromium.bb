@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/tick_clock.h"
-#include "platform/scheduler/base/task_queue_manager_delegate.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager_delegate.h"
 
 namespace blink {
 namespace scheduler {

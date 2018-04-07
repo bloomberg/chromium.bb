@@ -28,35 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/fileapi/FileReaderLoader.h"
+#include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 
 #include <limits>
 #include <memory>
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fileapi/Blob.h"
-#include "core/fileapi/FileReaderLoaderClient.h"
-#include "core/html/parser/TextResourceDecoder.h"
-#include "core/loader/ThreadableLoader.h"
-#include "core/loader/ThreadableLoaderClient.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
 #include "mojo/public/cpp/system/wait.h"
-#include "platform/Histogram.h"
-#include "platform/blob/BlobRegistry.h"
-#include "platform/blob/BlobURL.h"
-#include "platform/loader/fetch/ResourceError.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/loader/fetch/TextResourceDecoderOptions.h"
-#include "platform/loader/fetch/fetch_initiator_type_names.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/Base64.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/platform/blob/blob_registry.h"
+#include "third_party/blink/renderer/platform/blob/blob_url.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
 namespace blink {

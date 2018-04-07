@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#ifndef AudioBasicProcessorHandler_h
-#define AudioBasicProcessorHandler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_BASIC_PROCESSOR_HANDLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_BASIC_PROCESSOR_HANDLER_H_
 
 #include <memory>
-#include "modules/ModulesExport.h"
-#include "modules/webaudio/AudioNode.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -72,4 +72,4 @@ class MODULES_EXPORT AudioBasicProcessorHandler : public AudioHandler {
 
 }  // namespace blink
 
-#endif  // AudioBasicProcessorHandler_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_BASIC_PROCESSOR_HANDLER_H_

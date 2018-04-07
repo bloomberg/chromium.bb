@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SaturatedArithmeticARM_h
-#define SaturatedArithmeticARM_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SATURATED_ARITHMETIC_ARM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SATURATED_ARITHMETIC_ARM_H_
 
 #include <limits>
 
@@ -75,4 +75,4 @@ inline int SaturatedSet(unsigned value) {
 
 }  // namespace WTF
 
-#endif  // SaturatedArithmeticARM_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SATURATED_ARITHMETIC_ARM_H_

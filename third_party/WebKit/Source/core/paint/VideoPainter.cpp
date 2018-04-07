@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/VideoPainter.h"
+#include "third_party/blink/renderer/core/paint/video_painter.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/layout/LayoutVideo.h"
-#include "core/paint/ImagePainter.h"
-#include "core/paint/PaintInfo.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/ForeignLayerDisplayItem.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/layout/layout_video.h"
+#include "third_party/blink/renderer/core/paint/image_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 
 namespace blink {
 

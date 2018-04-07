@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/style/StyleImage.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
 
-#include "core/svg/graphics/SVGImage.h"
-#include "core/svg/graphics/SVGImageForContainer.h"
-#include "platform/geometry/LayoutSize.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
 
 namespace blink {
 

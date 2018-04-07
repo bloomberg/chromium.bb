@@ -23,40 +23,40 @@
  *
  */
 
-#ifndef ComputedStyle_h
-#define ComputedStyle_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COMPUTED_STYLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COMPUTED_STYLE_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/computed_style_base.h"
-#include "core/css/StyleAutoColor.h"
-#include "core/css/StyleColor.h"
-#include "core/css/properties/css_property.h"
-#include "core/css_property_names.h"
-#include "core/style/BorderValue.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "core/style/CursorList.h"
-#include "core/style/DataRef.h"
-#include "core/style/SVGComputedStyle.h"
-#include "core/style/TransformOrigin.h"
-#include "core/style/computed_style_initial_values.h"
-#include "platform/Length.h"
-#include "platform/LengthBox.h"
-#include "platform/LengthPoint.h"
-#include "platform/LengthSize.h"
-#include "platform/geometry/LayoutRectOutsets.h"
-#include "platform/graphics/Color.h"
-#include "platform/graphics/TouchAction.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/text/TextDirection.h"
-#include "platform/text/WritingModeUtils.h"
-#include "platform/transforms/TransformOperations.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/LeakAnnotations.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/computed_style_base.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/style_auto_color.h"
+#include "third_party/blink/renderer/core/css/style_color.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/style/border_value.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/core/style/computed_style_initial_values.h"
+#include "third_party/blink/renderer/core/style/cursor_list.h"
+#include "third_party/blink/renderer/core/style/data_ref.h"
+#include "third_party/blink/renderer/core/style/svg_computed_style.h"
+#include "third_party/blink/renderer/core/style/transform_origin.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/touch_action.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/length_box.h"
+#include "third_party/blink/renderer/platform/length_point.h"
+#include "third_party/blink/renderer/platform/length_size.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/text/writing_mode_utils.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operations.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -2571,4 +2571,4 @@ inline bool ComputedStyle::HasPseudoElementStyle() const {
 
 }  // namespace blink
 
-#endif  // ComputedStyle_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COMPUTED_STYLE_H_

@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontFaceCreationParams_h
-#define FontFaceCreationParams_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_FACE_CREATION_PARAMS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_FACE_CREATION_PARAMS_H_
 
 #include "build/build_config.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/StringHasher.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 
@@ -136,4 +136,4 @@ class FontFaceCreationParams {
 
 }  // namespace blink
 
-#endif  // FontFaceCreationParams_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_FACE_CREATION_PARAMS_H_

@@ -26,21 +26,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/page/SpatialNavigation.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation.h"
 
-#include "core/dom/NodeTraversal.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/Settings.h"
-#include "core/html/HTMLAreaElement.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/HTMLImageElement.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutView.h"
-#include "core/page/FrameTree.h"
-#include "core/page/Page.h"
-#include "platform/geometry/IntRect.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/html_area_element.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/frame_tree.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 
 namespace blink {
 

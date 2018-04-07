@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSerializedScriptValueVersion_h
-#define WebSerializedScriptValueVersion_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SERIALIZED_SCRIPT_VALUE_VERSION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SERIALIZED_SCRIPT_VALUE_VERSION_H_
 
 namespace blink {
 
@@ -42,4 +42,4 @@ const unsigned kSerializedScriptValueVersion = 18;
 
 }  // namespace blink
 
-#endif  // WebSerializedScriptValueVersion_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SERIALIZED_SCRIPT_VALUE_VERSION_H_

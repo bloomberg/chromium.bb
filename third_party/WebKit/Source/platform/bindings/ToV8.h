@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ToV8_h
-#define ToV8_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TO_V8_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TO_V8_H_
 
 // ToV8() provides C++ -> V8 conversion. Note that ToV8() can return an empty
 // handle. Call sites must check IsEmpty() before using return value.
 
 #include <utility>
 
-#include "platform/bindings/DOMDataStore.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/V8Binding.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "v8/include/v8.h"
 
 namespace blink {

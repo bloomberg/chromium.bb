@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BlinkInitializer_h
-#define BlinkInitializer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CONTROLLER_BLINK_INITIALIZER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CONTROLLER_BLINK_INITIALIZER_H_
 
-#include "modules/ModulesInitializer.h"
+#include "third_party/blink/renderer/modules/modules_initializer.h"
 
 namespace blink {
 
@@ -19,4 +19,4 @@ class BlinkInitializer : public ModulesInitializer {
 
 }  // namespace blink
 
-#endif  // BlinkInitializer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CONTROLLER_BLINK_INITIALIZER_H_

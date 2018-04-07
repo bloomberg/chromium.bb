@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/events/SecurityPolicyViolationEvent.h"
+#include "third_party/blink/renderer/core/events/security_policy_violation_event.h"
 
 namespace blink {
 

@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/xr/XRWebGLLayer.h"
+#include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/imagebitmap/ImageBitmap.h"
-#include "modules/webgl/WebGL2RenderingContext.h"
-#include "modules/webgl/WebGLFramebuffer.h"
-#include "modules/webgl/WebGLRenderingContext.h"
-#include "modules/xr/XRDevice.h"
-#include "modules/xr/XRFrameProvider.h"
-#include "modules/xr/XRPresentationContext.h"
-#include "modules/xr/XRSession.h"
-#include "modules/xr/XRView.h"
-#include "modules/xr/XRViewport.h"
-#include "platform/geometry/DoubleSize.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/IntSize.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_framebuffer.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
+#include "third_party/blink/renderer/modules/xr/xr_device.h"
+#include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
+#include "third_party/blink/renderer/modules/xr/xr_presentation_context.h"
+#include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_view.h"
+#include "third_party/blink/renderer/modules/xr/xr_viewport.h"
+#include "third_party/blink/renderer/platform/geometry/double_size.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef XRSessionEvent_h
-#define XRSessionEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SESSION_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_SESSION_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/xr/XRSession.h"
-#include "modules/xr/XRSessionEventInit.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_session_event_init.h"
 
 namespace blink {
 

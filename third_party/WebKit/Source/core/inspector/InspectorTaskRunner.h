@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InspectorTaskRunner_h
-#define InspectorTaskRunner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_TASK_RUNNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_TASK_RUNNER_H_
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
-#include "core/CoreExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/ThreadingPrimitives.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "v8/include/v8.h"
 
 namespace blink {

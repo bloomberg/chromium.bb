@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CanvasDrawListener_h
-#define CanvasDrawListener_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_CANVAS_DRAW_LISTENER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_CANVAS_DRAW_LISTENER_H_
 
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebCanvasCaptureHandler.h"
+#include "third_party/blink/public/platform/web_canvas_capture_handler.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkImage;

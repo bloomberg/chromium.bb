@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ImageBitmap_h
-#define ImageBitmap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_IMAGEBITMAP_IMAGE_BITMAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_IMAGEBITMAP_IMAGE_BITMAP_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/html/canvas/CanvasImageSource.h"
-#include "core/html/canvas/ImageElementBase.h"
-#include "core/imagebitmap/ImageBitmapOptions.h"
-#include "core/imagebitmap/ImageBitmapSource.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/Image.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
+#include "third_party/blink/renderer/core/html/canvas/image_element_base.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
@@ -173,4 +173,4 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // ImageBitmap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_IMAGEBITMAP_IMAGE_BITMAP_H_

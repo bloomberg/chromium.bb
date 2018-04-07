@@ -28,24 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SerializedScriptValue_h
-#define SerializedScriptValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_SERIALIZED_SCRIPT_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_SERIALIZED_SCRIPT_VALUE_H_
 
 #include <memory>
 
 #include "base/containers/span.h"
-#include "bindings/core/v8/NativeValueTraits.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/serialization/Transferables.h"
-#include "core/CoreExport.h"
-#include "core/imagebitmap/ImageBitmap.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/allocator/Partitions.h"
-#include "platform/wtf/text/StringView.h"
-#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/transferables.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -309,4 +309,4 @@ struct NativeValueTraits<SerializedScriptValue>
 
 }  // namespace blink
 
-#endif  // SerializedScriptValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_SERIALIZED_SCRIPT_VALUE_H_

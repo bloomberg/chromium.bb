@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;

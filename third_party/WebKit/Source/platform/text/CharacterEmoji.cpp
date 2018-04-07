@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/text/Character.h"
+#include "third_party/blink/renderer/platform/text/character.h"
 
-#include "platform/text/ICUError.h"
 #include <unicode/uvernum.h>
+#include "third_party/blink/renderer/platform/text/icu_error.h"
 
 #if defined(USING_SYSTEM_ICU) || (U_ICU_VERSION_MAJOR_NUM <= 57)
 #include <unicode/uniset.h>

@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebStorageNamespace_h
-#define WebStorageNamespace_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_STORAGE_NAMESPACE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_STORAGE_NAMESPACE_H_
 
-#include "WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class WebStorageNamespace {
 
 }  // namespace blink
 
-#endif  // WebStorageNamespace_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_STORAGE_NAMESPACE_H_

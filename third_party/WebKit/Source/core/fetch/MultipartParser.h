@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MultipartParser_h
-#define MultipartParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_MULTIPART_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_MULTIPART_PARSER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/network/HTTPHeaderMap.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -111,4 +111,4 @@ class CORE_EXPORT MultipartParser final
 
 }  // namespace blink
 
-#endif  // MultipartParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_MULTIPART_PARSER_H_

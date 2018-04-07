@@ -26,13 +26,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXImageMapLink_h
-#define AXImageMapLink_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_IMAGE_MAP_LINK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_IMAGE_MAP_LINK_H_
 
 #include "base/macros.h"
-#include "core/html/HTMLAreaElement.h"
-#include "core/html/HTMLMapElement.h"
-#include "modules/accessibility/AXNodeObject.h"
+#include "third_party/blink/renderer/core/html/html_area_element.h"
+#include "third_party/blink/renderer/core/html/html_map_element.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_node_object.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ DEFINE_AX_OBJECT_TYPE_CASTS(AXImageMapLink, IsImageMapLink());
 
 }  // namespace blink
 
-#endif  // AXImageMapLink_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_IMAGE_MAP_LINK_H_

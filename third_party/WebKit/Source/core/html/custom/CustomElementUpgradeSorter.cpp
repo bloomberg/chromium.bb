@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/custom/CustomElementUpgradeSorter.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_upgrade_sorter.h"
 
-#include "core/dom/Element.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/Node.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/html/HTMLLinkElement.h"
-#include "core/html/imports/HTMLImportChild.h"
-#include "core/html/imports/HTMLImportLoader.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/html_link_element.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_child.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
 
 namespace blink {
 

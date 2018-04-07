@@ -26,14 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MultiChannelResampler_h
-#define MultiChannelResampler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_MULTI_CHANNEL_RESAMPLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_MULTI_CHANNEL_RESAMPLER_H_
 
 #include <memory>
-#include "platform/audio/SincResampler.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/audio/sinc_resampler.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ class PLATFORM_EXPORT MultiChannelResampler {
 
 }  // namespace blink
 
-#endif  // MultiChannelResampler_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_MULTI_CHANNEL_RESAMPLER_H_

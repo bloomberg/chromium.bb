@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 
 #include "SkTypes.h"
-#include "platform/graphics/paint/PaintRecorder.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/testing/FakeDisplayItemClient.h"
-#include "public/platform/WebDisplayItemList.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_display_item_list.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
 
 namespace blink {
 namespace {

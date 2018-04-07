@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/PaintTiming.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 
 #include <memory>
 #include <utility>
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/InteractiveDetector.h"
-#include "core/loader/ProgressTracker.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "core/probe/CoreProbes.h"
-#include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/WindowPerformance.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/Histogram.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/scheduler/public/frame_scheduler.h"
-#include "public/platform/WebLayerTreeView.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/interactive_detector.h"
+#include "third_party/blink/renderer/core/loader/progress_tracker.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGL2RenderingContextBase_h
-#define WebGL2RenderingContextBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL2_RENDERING_CONTEXT_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL2_RENDERING_CONTEXT_BASE_H_
 
 #include <memory>
-#include "modules/webgl/WebGLExtension.h"
-#include "modules/webgl/WebGLRenderingContextBase.h"
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_extension.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 

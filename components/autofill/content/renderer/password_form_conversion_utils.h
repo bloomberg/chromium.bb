@@ -15,7 +15,7 @@
 #include "components/autofill/content/renderer/html_based_username_detector.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "url/gurl.h"
 
 namespace blink {

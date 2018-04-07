@@ -19,7 +19,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_associated_interface.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "third_party/WebKit/public/mojom/clipboard/clipboard.mojom.h"
+#include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
 
 class GURL;

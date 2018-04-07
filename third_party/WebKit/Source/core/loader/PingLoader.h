@@ -29,17 +29,17 @@
  *
  */
 
-#ifndef PingLoader_h
-#define PingLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PING_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PING_LOADER_H_
 
 #include <memory>
 
-#include "core/CoreExport.h"
-#include "platform/Timer.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/SelfKeepAlive.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/WebURLLoaderClient.h"
+#include "third_party/blink/public/platform/web_url_loader_client.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -84,4 +84,4 @@ class CORE_EXPORT PingLoader {
 
 }  // namespace blink
 
-#endif  // PingLoader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PING_LOADER_H_

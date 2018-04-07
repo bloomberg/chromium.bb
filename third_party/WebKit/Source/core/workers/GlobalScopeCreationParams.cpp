@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/GlobalScopeCreationParams.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 
 #include <memory>
-#include "platform/network/ContentSecurityPolicyParsers.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 
 namespace blink {
 

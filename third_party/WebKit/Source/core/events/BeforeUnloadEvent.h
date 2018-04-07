@@ -22,10 +22,10 @@
  *
  */
 
-#ifndef BeforeUnloadEvent_h
-#define BeforeUnloadEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_BEFORE_UNLOAD_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_BEFORE_UNLOAD_EVENT_H_
 
-#include "core/dom/events/Event.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ DEFINE_EVENT_TYPE_CASTS(BeforeUnloadEvent);
 
 }  // namespace blink
 
-#endif  // BeforeUnloadEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_BEFORE_UNLOAD_EVENT_H_

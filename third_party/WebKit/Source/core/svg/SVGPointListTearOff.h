@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGPointListTearOff_h
-#define SVGPointListTearOff_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_POINT_LIST_TEAR_OFF_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_POINT_LIST_TEAR_OFF_H_
 
-#include "core/svg/SVGPointList.h"
-#include "core/svg/properties/SVGListPropertyTearOffHelper.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_list_property_tear_off_helper.h"
+#include "third_party/blink/renderer/core/svg/svg_point_list.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class SVGPointListTearOff final
 
 }  // namespace blink
 
-#endif  // SVGPointListTearOff_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_POINT_LIST_TEAR_OFF_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BoxDecorationData_h
-#define BoxDecorationData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_DECORATION_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_DECORATION_DATA_H_
 
-#include "core/layout/BackgroundBleedAvoidance.h"
-#include "platform/graphics/Color.h"
+#include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 
 namespace blink {
 

@@ -176,11 +176,11 @@
     "type": "console_test_launcher",
   },
   "blink_heap_unittests": {
-    "label": "//third_party/WebKit/Source/platform/heap:blink_heap_unittests",
+    "label": "//third_party/blink/renderer/platform/heap:blink_heap_unittests",
     "type": "console_test_launcher",
   },
   "blink_platform_unittests": {
-    "label": "//third_party/WebKit/Source/platform:blink_platform_unittests",
+    "label": "//third_party/blink/renderer/platform:blink_platform_unittests",
     "type": "console_test_launcher",
   },
   "blink_tests": {
@@ -492,19 +492,19 @@
     "type": "console_test_launcher",
   },
   "devtools_closure_compile": {
-    "label": "//third_party/WebKit/Source/devtools:devtools_closure_compile",
+    "label": "//third_party/blink/renderer/devtools:devtools_closure_compile",
     "type": "script",
     "script": "//testing/scripts/run_devtools_check.py",
     "args": [
-        "../../third_party/WebKit/Source/devtools/scripts/compile_frontend.py",
+        "../../third_party/blink/renderer/devtools/scripts/compile_frontend.py",
     ],
   },
   "devtools_eslint": {
-    "label": "//third_party/WebKit/Source/devtools:devtools_eslint",
+    "label": "//third_party/blink/renderer/devtools:devtools_eslint",
     "type": "script",
     "script": "//testing/scripts/run_devtools_check.py",
     "args": [
-        "../../third_party/WebKit/Source/devtools/scripts/lint_javascript.py",
+        "../../third_party/blink/renderer/devtools/scripts/lint_javascript.py",
     ],
   },
   "display_unittests": {
@@ -1348,7 +1348,7 @@
     ]
   },
   "webkit_unit_tests": {
-    "label": "//third_party/WebKit/Source/controller:webkit_unit_tests",
+    "label": "//third_party/blink/renderer/controller:webkit_unit_tests",
     "type": "console_test_launcher",
   },
   "webview_instrumentation_test_apk": {
@@ -1364,7 +1364,7 @@
     "type": "windowed_test_launcher",
   },
   "wtf_unittests": {
-    "label": "//third_party/WebKit/Source/platform/wtf:wtf_unittests",
+    "label": "//third_party/blink/renderer/platform/wtf:wtf_unittests",
     "type": "console_test_launcher",
   },
   "zucchini_unittests": {

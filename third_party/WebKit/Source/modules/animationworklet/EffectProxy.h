@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EffectProxy_h
-#define EffectProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_EFFECT_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_EFFECT_PROXY_H_
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "modules/ModulesExport.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

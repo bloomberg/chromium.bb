@@ -23,20 +23,20 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollingCoordinator_h
-#define ScrollingCoordinator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLLING_COORDINATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLLING_COORDINATOR_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/paint/LayerHitTestRects.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/CompositorElementId.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/MainThreadScrollingReason.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebLayerScrollClient.h"
+#include "third_party/blink/public/platform/web_layer_scroll_client.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/paint/layer_hit_test_rects.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 using MainThreadScrollingReasons = uint32_t;
@@ -197,4 +197,4 @@ class CORE_EXPORT ScrollingCoordinator final
 
 }  // namespace blink
 
-#endif  // ScrollingCoordinator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLLING_COORDINATOR_H_

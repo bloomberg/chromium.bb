@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSecurityPolicy_h
-#define WebSecurityPolicy_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SECURITY_POLICY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SECURITY_POLICY_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebReferrerPolicy.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
 
 namespace blink {
 

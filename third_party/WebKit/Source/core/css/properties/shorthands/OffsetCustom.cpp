@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/shorthands/offset.h"
+#include "third_party/blink/renderer/core/css/properties/shorthands/offset.h"
 
-#include "core/css/CSSInitialValue.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/parser/CSSParserLocalContext.h"
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSParsingUtils.h"
-#include "core/css/properties/ComputedStyleUtils.h"
-#include "core/css/properties/Longhand.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
+#include "third_party/blink/renderer/core/css/properties/longhand.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 namespace CSSShorthand {

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webaudio/IIRDSPKernel.h"
+#include "third_party/blink/renderer/modules/webaudio/iirdsp_kernel.h"
 
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

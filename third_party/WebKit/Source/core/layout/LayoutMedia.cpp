@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutMedia.h"
+#include "third_party/blink/renderer/core/layout/layout_media.h"
 
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/VisualViewport.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/media/MediaControls.h"
-#include "core/layout/LayoutView.h"
-#include "core/page/Page.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/media_controls.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
 

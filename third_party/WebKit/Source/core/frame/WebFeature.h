@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebFeature_h
-#define WebFeature_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_FEATURE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_FEATURE_H_
 
 // Including the actual file that defines the WebFeature enum, like we do here,
 // is heavy on the compiler. Those who do not need the definition, but could do
 // with just a forward-declaration, should include WebFeatureForward.h instead.
 
-#include "public/platform/web_feature.mojom-blink.h"
+#include "third_party/blink/public/platform/web_feature.mojom-blink.h"
 
 namespace blink {
 using WebFeature = mojom::WebFeature;
 }  // namespace blink
 
-#endif  // WebFeature_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_FEATURE_H_

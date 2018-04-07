@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaDevices_h
-#define MediaDevices_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_DEVICES_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_DEVICES_H_
 
 #include "base/callback.h"
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/PausableObject.h"
-#include "core/dom/events/EventTarget.h"
-#include "modules/EventTargetModules.h"
-#include "modules/ModulesExport.h"
-#include "modules/mediastream/MediaDeviceInfo.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/AsyncMethodRunner.h"
-#include "platform/heap/HeapAllocator.h"
-#include "public/platform/modules/mediastream/media_devices.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/mediastream/media_device_info.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/async_method_runner.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
 

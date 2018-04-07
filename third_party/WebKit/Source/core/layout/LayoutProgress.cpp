@@ -18,13 +18,13 @@
  *
  */
 
-#include "core/layout/LayoutProgress.h"
+#include "third_party/blink/renderer/core/layout/layout_progress.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "core/html/HTMLProgressElement.h"
-#include "core/layout/LayoutTheme.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/html/html_progress_element.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ImageAnimationPolicy_h
-#define ImageAnimationPolicy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_ANIMATION_POLICY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_ANIMATION_POLICY_H_
 
 namespace blink {
 
@@ -21,4 +21,4 @@ enum ImageAnimationPolicy {
 
 }  // namespace blink
 
-#endif  // ImageAnimationPolicy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_ANIMATION_POLICY_H_

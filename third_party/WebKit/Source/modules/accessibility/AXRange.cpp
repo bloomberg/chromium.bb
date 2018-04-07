@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/accessibility/AXRange.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_range.h"
 
-#include "core/dom/Document.h"
-#include "modules/accessibility/AXObject.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 
 namespace blink {
 

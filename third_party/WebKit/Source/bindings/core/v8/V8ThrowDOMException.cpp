@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/V8ThrowDOMException.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "core/dom/DOMException.h"
-#include "platform/bindings/V8PrivateProperty.h"
-#include "platform/bindings/V8ThrowException.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 
 namespace blink {
 

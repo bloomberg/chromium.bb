@@ -2,24 +2,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("shapedetection") {
   sources = [
-    "BarcodeDetector.cpp",
-    "BarcodeDetector.h",
-    "DetectedBarcode.cpp",
-    "DetectedBarcode.h",
-    "DetectedFace.cpp",
-    "DetectedFace.h",
-    "DetectedText.cpp",
-    "DetectedText.h",
-    "FaceDetector.cpp",
-    "FaceDetector.h",
-    "ShapeDetector.cpp",
-    "ShapeDetector.h",
-    "TextDetector.cpp",
-    "TextDetector.h",
+    "barcode_detector.cc",
+    "barcode_detector.h",
+    "detected_barcode.cc",
+    "detected_barcode.h",
+    "detected_face.cc",
+    "detected_face.h",
+    "detected_text.cc",
+    "detected_text.h",
+    "face_detector.cc",
+    "face_detector.h",
+    "shape_detector.cc",
+    "shape_detector.h",
+    "text_detector.cc",
+    "text_detector.h",
   ]
 
   public_deps = [

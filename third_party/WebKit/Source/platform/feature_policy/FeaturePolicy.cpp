@@ -1,16 +1,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/feature_policy/FeaturePolicy.h"
+#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 
-#include "platform/json/JSONValues.h"
-#include "platform/network/HTTPParsers.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/BitVector.h"
-#include "platform/wtf/text/ParsingUtilities.h"
-#include "platform/wtf/text/StringUTF8Adaptor.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
+#include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "url/gurl.h"
 
 namespace blink {

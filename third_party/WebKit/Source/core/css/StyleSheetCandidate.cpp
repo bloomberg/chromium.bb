@@ -24,16 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/StyleSheetCandidate.h"
+#include "third_party/blink/renderer/core/css/style_sheet_candidate.h"
 
-#include "core/css/StyleEngine.h"
-#include "core/dom/Element.h"
-#include "core/dom/ProcessingInstruction.h"
-#include "core/html/HTMLLinkElement.h"
-#include "core/html/HTMLStyleElement.h"
-#include "core/html/imports/HTMLImport.h"
-#include "core/html_names.h"
-#include "core/svg/SVGStyleElement.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/processing_instruction.h"
+#include "third_party/blink/renderer/core/html/html_link_element.h"
+#include "third_party/blink/renderer/core/html/html_style_element.h"
+#include "third_party/blink/renderer/core/html/imports/html_import.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/svg/svg_style_element.h"
 
 namespace blink {
 

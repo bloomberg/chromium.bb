@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef XMLParserScriptRunner_h
-#define XMLParserScriptRunner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_XML_PARSER_SCRIPT_RUNNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_XML_PARSER_SCRIPT_RUNNER_H_
 
 #include "base/macros.h"
-#include "core/script/PendingScript.h"
-#include "platform/wtf/text/TextPosition.h"
+#include "third_party/blink/renderer/core/script/pending_script.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
 namespace blink {
 

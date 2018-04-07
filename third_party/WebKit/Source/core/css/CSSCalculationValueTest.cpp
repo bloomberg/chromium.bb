@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSCalculationValue.h"
+#include "third_party/blink/renderer/core/css/css_calculation_value.h"
 
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/CSSToLengthConversionData.h"
-#include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

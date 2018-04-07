@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/SimplifyMarkupCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/simplify_markup_command.h"
 
-#include "core/dom/NodeComputedStyle.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutObject.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorFilterKeyframe_h
-#define CompositorFilterKeyframe_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_FILTER_KEYFRAME_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_FILTER_KEYFRAME_H_
 
 #include "cc/animation/keyframed_animation_curve.h"
-#include "platform/PlatformExport.h"
-#include "platform/animation/CompositorKeyframe.h"
-#include "platform/graphics/CompositorFilterOperations.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/animation/compositor_keyframe.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -36,4 +36,4 @@ class PLATFORM_EXPORT CompositorFilterKeyframe : public CompositorKeyframe {
 
 }  // namespace blink
 
-#endif  // CompositorFilterKeyframe_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_FILTER_KEYFRAME_H_

@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "content/common/push_messaging.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "third_party/WebKit/public/platform/modules/manifest/manifest.mojom.h"
-#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushClient.h"
+#include "third_party/blink/public/platform/modules/manifest/manifest.mojom.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_client.h"
 
 class GURL;
 

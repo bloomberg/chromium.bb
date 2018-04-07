@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSLengthInterpolationType_h
-#define CSSLengthInterpolationType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_LENGTH_INTERPOLATION_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_LENGTH_INTERPOLATION_TYPE_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/animation/CSSInterpolationType.h"
-#include "core/animation/LengthPropertyFunctions.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/length_property_functions.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ class CORE_EXPORT CSSLengthInterpolationType : public CSSInterpolationType {
 
 }  // namespace blink
 
-#endif  // CSSLengthInterpolationType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_LENGTH_INTERPOLATION_TYPE_H_

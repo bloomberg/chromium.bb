@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/OrderIterator.h"
+#include "third_party/blink/renderer/core/layout/order_iterator.h"
 
-#include "core/layout/LayoutBox.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 
 namespace blink {
 

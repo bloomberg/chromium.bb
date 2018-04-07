@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkletModulatorImpl_h
-#define WorkletModulatorImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_WORKLET_MODULATOR_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_WORKLET_MODULATOR_IMPL_H_
 
-#include "core/script/ModulatorImplBase.h"
+#include "third_party/blink/renderer/core/script/modulator_impl_base.h"
 
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -34,4 +34,4 @@ class WorkletModulatorImpl final : public ModulatorImplBase {
 
 }  // namespace blink
 
-#endif  // WorkletModulatorImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_WORKLET_MODULATOR_IMPL_H_

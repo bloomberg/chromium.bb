@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/child/worker_global_scope_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_global_scope_scheduler.h"
 
 #include <memory>
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
-#include "platform/scheduler/test/task_queue_manager_for_test.h"
-#include "platform/scheduler/worker/worker_thread_scheduler.h"
-#include "platform/wtf/Functional.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using testing::ElementsAreArray;
 

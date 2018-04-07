@@ -29,14 +29,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebElementCollection_h
-#define WebElementCollection_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ELEMENT_COLLECTION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ELEMENT_COLLECTION_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebPrivatePtr.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
 
 #if INSIDE_BLINK
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #endif
 
 namespace blink {

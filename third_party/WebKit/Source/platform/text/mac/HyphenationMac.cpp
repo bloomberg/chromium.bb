@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/text/Hyphenation.h"
+#include "third_party/blink/renderer/platform/text/hyphenation.h"
 
 #include <CoreFoundation/CoreFoundation.h>
-#include "platform/wtf/RetainPtr.h"
-#include "platform/wtf/text/StringView.h"
+#include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 

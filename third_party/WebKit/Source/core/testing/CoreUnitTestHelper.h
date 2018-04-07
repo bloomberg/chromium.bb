@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CoreUnitTestHelper_h
-#define CoreUnitTestHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_CORE_UNIT_TEST_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_CORE_UNIT_TEST_HELPER_H_
 
 #include <gtest/gtest.h>
 #include <memory>
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/Settings.h"
-#include "core/html/HTMLElement.h"
-#include "core/layout/LayoutView.h"
-#include "core/loader/EmptyClients.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/testing/UseMockScrollbarSettings.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/use_mock_scrollbar_settings.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -111,4 +111,4 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
 
 }  // namespace blink
 
-#endif  // CoreUnitTestHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_CORE_UNIT_TEST_HELPER_H_

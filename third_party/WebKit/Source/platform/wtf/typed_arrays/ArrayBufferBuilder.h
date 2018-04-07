@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ArrayBufferBuilder_h
-#define ArrayBufferBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_BUILDER_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
-#include "platform/wtf/typed_arrays/ArrayBuffer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
 
 namespace WTF {
 
@@ -100,4 +100,4 @@ class WTF_EXPORT ArrayBufferBuilder final {
 
 using WTF::ArrayBufferBuilder;
 
-#endif  // ArrayBufferBuilder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_ARRAY_BUFFER_BUILDER_H_

@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V0CustomElementBinding_h
-#define V0CustomElementBinding_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V0_CUSTOM_ELEMENT_BINDING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V0_CUSTOM_ELEMENT_BINDING_H_
 
 #include <memory>
 
-#include "platform/PlatformExport.h"
-#include "platform/bindings/ScopedPersistent.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -56,4 +56,4 @@ class PLATFORM_EXPORT V0CustomElementBinding {
 
 }  // namespace blink
 
-#endif  // V0CustomElementBinding_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V0_CUSTOM_ELEMENT_BINDING_H_

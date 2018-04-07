@@ -20,13 +20,13 @@
  *
  */
 
-#include "core/css/resolver/ElementResolveContext.h"
+#include "third_party/blink/renderer/core/css/resolver/element_resolve_context.h"
 
-#include "core/dom/LayoutTreeBuilderTraversal.h"
-#include "core/dom/Node.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/dom/V0InsertionPoint.h"
-#include "core/dom/VisitedLinkState.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
+#include "third_party/blink/renderer/core/dom/visited_link_state.h"
 
 namespace blink {
 

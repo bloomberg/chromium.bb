@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSVariableResolver_h
-#define CSSVariableResolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_CSS_VARIABLE_RESOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_CSS_VARIABLE_RESOLVER_H_
 
-#include "core/css/parser/CSSParserToken.h"
-#include "core/css_property_names.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
 

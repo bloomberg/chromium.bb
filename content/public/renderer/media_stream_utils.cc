@@ -18,9 +18,9 @@
 #include "content/renderer/media/stream/media_stream_video_track.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/capture/video_capturer_source.h"
-#include "third_party/WebKit/public/platform/WebMediaStream.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/web/web_media_stream_registry.h"
 
 namespace content {
 

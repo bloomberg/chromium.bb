@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8ContextSnapshotExternalReferences_h
-#define V8ContextSnapshotExternalReferences_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_V8_CONTEXT_SNAPSHOT_EXTERNAL_REFERENCES_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_V8_CONTEXT_SNAPSHOT_EXTERNAL_REFERENCES_H_
 
 #include <cstdint>
 
-#include "modules/ModulesExport.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -26,4 +26,4 @@ class MODULES_EXPORT V8ContextSnapshotExternalReferences {
 
 }  // namespace blink
 
-#endif  // V8ContextSnapshotExternalReferences_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_V8_CONTEXT_SNAPSHOT_EXTERNAL_REFERENCES_H_

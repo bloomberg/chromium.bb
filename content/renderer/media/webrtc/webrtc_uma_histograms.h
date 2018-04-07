@@ -10,7 +10,7 @@
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"
-#include "third_party/WebKit/public/platform/WebRTCAPIName.h"
+#include "third_party/blink/public/platform/web_rtc_api_name.h"
 
 namespace content {
 

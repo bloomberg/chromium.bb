@@ -24,17 +24,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/events/EventPath.h"
+#include "third_party/blink/renderer/core/dom/events/event_path.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/V0InsertionPoint.h"
-#include "core/event_names.h"
-#include "core/events/TouchEvent.h"
-#include "core/events/TouchEventContext.h"
-#include "core/html/HTMLSlotElement.h"
-#include "core/input/Touch.h"
-#include "core/input/TouchList.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
+#include "third_party/blink/renderer/core/event_names.h"
+#include "third_party/blink/renderer/core/events/touch_event.h"
+#include "third_party/blink/renderer/core/events/touch_event_context.h"
+#include "third_party/blink/renderer/core/html/html_slot_element.h"
+#include "third_party/blink/renderer/core/input/touch.h"
+#include "third_party/blink/renderer/core/input/touch_list.h"
 
 namespace blink {
 

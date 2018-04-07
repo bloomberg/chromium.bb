@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutGrid_h
-#define LayoutGrid_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_GRID_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_GRID_H_
 
 #include <memory>
-#include "core/layout/Grid.h"
-#include "core/layout/GridLayoutUtils.h"
-#include "core/layout/GridTrackSizingAlgorithm.h"
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/OrderIterator.h"
-#include "core/style/GridPositionsResolver.h"
+#include "third_party/blink/renderer/core/layout/grid.h"
+#include "third_party/blink/renderer/core/layout/grid_layout_utils.h"
+#include "third_party/blink/renderer/core/layout/grid_track_sizing_algorithm.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/order_iterator.h"
+#include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
 
 namespace blink {
 
@@ -322,4 +322,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutGrid, IsLayoutGrid());
 
 }  // namespace blink
 
-#endif  // LayoutGrid_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_GRID_H_

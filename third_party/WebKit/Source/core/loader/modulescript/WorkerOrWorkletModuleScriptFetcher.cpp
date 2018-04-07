@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/modulescript/WorkerOrWorkletModuleScriptFetcher.h"
+#include "third_party/blink/renderer/core/loader/modulescript/worker_or_worklet_module_script_fetcher.h"
 
-#include "platform/CrossThreadFunctional.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 
 namespace blink {
 

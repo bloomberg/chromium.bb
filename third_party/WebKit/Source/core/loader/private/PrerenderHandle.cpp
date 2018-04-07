@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/loader/private/PrerenderHandle.h"
+#include "third_party/blink/renderer/core/loader/private/prerender_handle.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/loader/FrameLoader.h"
-#include "core/loader/PrerendererClient.h"
-#include "platform/Prerender.h"
-#include "platform/weborigin/ReferrerPolicy.h"
-#include "platform/weborigin/SecurityPolicy.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/loader/prerenderer_client.h"
+#include "third_party/blink/renderer/platform/prerender.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
 

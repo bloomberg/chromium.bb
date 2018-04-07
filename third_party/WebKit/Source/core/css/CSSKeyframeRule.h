@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSKeyframeRule_h
-#define CSSKeyframeRule_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_KEYFRAME_RULE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_KEYFRAME_RULE_H_
 
-#include "core/css/CSSRule.h"
-#include "core/css/StyleRuleKeyframe.h"
+#include "third_party/blink/renderer/core/css/css_rule.h"
+#include "third_party/blink/renderer/core/css/style_rule_keyframe.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ DEFINE_CSS_RULE_TYPE_CASTS(CSSKeyframeRule, kKeyframeRule);
 
 }  // namespace blink
 
-#endif  // CSSKeyframeRule_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_KEYFRAME_RULE_H_

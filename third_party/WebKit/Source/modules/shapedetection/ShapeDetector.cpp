@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/shapedetection/ShapeDetector.h"
+#include "third_party/blink/renderer/modules/shapedetection/shape_detector.h"
 
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/LocalFrame.h"
-#include "core/geometry/DOMRect.h"
-#include "core/html/HTMLImageElement.h"
-#include "core/html/canvas/ImageData.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/imagebitmap/ImageBitmap.h"
-#include "core/loader/resource/ImageResourceContent.h"
-#include "platform/graphics/Image.h"
-#include "platform/wtf/CheckedNumeric.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/html/canvas/image_data.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 

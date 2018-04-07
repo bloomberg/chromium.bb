@@ -27,15 +27,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/MediaQueryExp.h"
+#include "third_party/blink/renderer/core/css/media_query_exp.h"
 
-#include "core/css/parser/CSSParserTokenRange.h"
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "platform/Decimal.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/text/StringBuffer.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/platform/decimal.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

@@ -24,31 +24,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StyleBuilderConverter_h
-#define StyleBuilderConverter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_BUILDER_CONVERTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_BUILDER_CONVERTER_H_
 
-#include "core/css/CSSFunctionValue.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSStringValue.h"
-#include "core/css/CSSValue.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/CSSValuePair.h"
-#include "core/style/GridArea.h"
-#include "core/style/GridPositionsResolver.h"
-#include "core/style/NamedGridLinesMap.h"
-#include "core/style/OrderedNamedGridLines.h"
-#include "core/style/QuotesData.h"
-#include "core/style/SVGComputedStyleDefs.h"
-#include "core/style/ShadowList.h"
-#include "core/style/StyleOffsetRotation.h"
-#include "core/style/StyleReflection.h"
-#include "core/style/TransformOrigin.h"
-#include "platform/LengthSize.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/text/TabSize.h"
-#include "platform/transforms/Rotation.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/css/css_function_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_string_value.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
+#include "third_party/blink/renderer/core/style/grid_area.h"
+#include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
+#include "third_party/blink/renderer/core/style/named_grid_lines_map.h"
+#include "third_party/blink/renderer/core/style/ordered_named_grid_lines.h"
+#include "third_party/blink/renderer/core/style/quotes_data.h"
+#include "third_party/blink/renderer/core/style/shadow_list.h"
+#include "third_party/blink/renderer/core/style/style_offset_rotation.h"
+#include "third_party/blink/renderer/core/style/style_reflection.h"
+#include "third_party/blink/renderer/core/style/svg_computed_style_defs.h"
+#include "third_party/blink/renderer/core/style/transform_origin.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/length_size.h"
+#include "third_party/blink/renderer/platform/text/tab_size.h"
+#include "third_party/blink/renderer/platform/transforms/rotation.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

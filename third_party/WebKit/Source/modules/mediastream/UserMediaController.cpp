@@ -22,7 +22,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/UserMediaController.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
 
 namespace blink {
 

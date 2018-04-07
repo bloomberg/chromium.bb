@@ -28,28 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMWebSocket_h
-#define DOMWebSocket_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_DOM_WEB_SOCKET_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_DOM_WEB_SOCKET_H_
 
 #include <stddef.h>
 #include <stdint.h>
 #include <memory>
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/PausableObject.h"
-#include "core/dom/events/EventListener.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/typed_arrays/ArrayBufferViewHelpers.h"
-#include "modules/EventTargetModules.h"
-#include "modules/ModulesExport.h"
-#include "modules/websockets/WebSocketChannel.h"
-#include "modules/websockets/WebSocketChannelClient.h"
-#include "platform/Timer.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_channel.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_channel_client.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -256,4 +256,4 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // DOMWebSocket_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_DOM_WEB_SOCKET_H_

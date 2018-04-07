@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/events/VisualViewportScrollEvent.h"
+#include "third_party/blink/renderer/core/events/visual_viewport_scroll_event.h"
 
-#include "core/frame/UseCounter.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 
 namespace blink {
 

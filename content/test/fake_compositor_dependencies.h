@@ -9,7 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
-#include "third_party/WebKit/public/platform/scheduler/test/fake_renderer_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
 
 namespace content {
 

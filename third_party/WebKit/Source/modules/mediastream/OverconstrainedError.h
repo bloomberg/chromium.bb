@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef OverconstrainedError_h
-#define OverconstrainedError_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_OVERCONSTRAINED_ERROR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_OVERCONSTRAINED_ERROR_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -30,4 +30,4 @@ class OverconstrainedError final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // OverconstrainedError_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_OVERCONSTRAINED_ERROR_H_

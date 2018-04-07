@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFileChooserCompletionImpl_h
-#define WebFileChooserCompletionImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_FILE_CHOOSER_COMPLETION_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_FILE_CHOOSER_COMPLETION_IMPL_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/html/forms/FileChooser.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "public/web/WebFileChooserCompletion.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_file_chooser_completion.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/file_chooser.h"
 
 namespace blink {
 

@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebFormControlElement.h"
+#include "third_party/blink/public/web/web_form_control_element.h"
 
-#include "core/dom/NodeComputedStyle.h"
-#include "core/dom/events/Event.h"
-#include "core/html/forms/HTMLFormControlElement.h"
-#include "core/html/forms/HTMLFormElement.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/forms/HTMLSelectElement.h"
-#include "core/html/forms/HTMLTextAreaElement.h"
-#include "core/input_type_names.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
 
 #include "base/memory/scoped_refptr.h"
 

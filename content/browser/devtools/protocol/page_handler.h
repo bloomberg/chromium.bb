@@ -24,7 +24,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/javascript_dialog_type.h"
-#include "third_party/WebKit/public/platform/modules/manifest/manifest_manager.mojom.h"
+#include "third_party/blink/public/platform/modules/manifest/manifest_manager.mojom.h"
 #include "url/gurl.h"
 
 class SkBitmap;

@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ChannelMergerNode_h
-#define ChannelMergerNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_CHANNEL_MERGER_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_CHANNEL_MERGER_NODE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/webaudio/AudioNode.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class ChannelMergerNode final : public AudioNode {
 
 }  // namespace blink
 
-#endif  // ChannelMergerNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_CHANNEL_MERGER_NODE_H_

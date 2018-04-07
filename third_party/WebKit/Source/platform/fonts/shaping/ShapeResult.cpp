@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/shaping/ShapeResult.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
 
 #include <hb.h>
 #include <algorithm>
@@ -37,12 +37,12 @@
 #include <memory>
 #include <utility>
 
-#include "platform/fonts/CharacterRange.h"
-#include "platform/fonts/Font.h"
-#include "platform/fonts/shaping/ShapeResultBuffer.h"
-#include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
-#include "platform/fonts/shaping/ShapeResultSpacing.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/platform/fonts/character_range.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

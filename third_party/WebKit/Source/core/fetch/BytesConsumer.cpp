@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/BytesConsumer.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
 
 #include <string.h>
 #include <algorithm>
 #include "base/memory/scoped_refptr.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fetch/BlobBytesConsumer.h"
-#include "platform/blob/BlobData.h"
-#include "platform/wtf/Functional.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "v8/include/v8.h"
 
 namespace blink {

@@ -26,18 +26,18 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/DatabaseThread.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_thread.h"
 
 #include <memory>
-#include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/DatabaseTask.h"
-#include "modules/webdatabase/SQLTransactionClient.h"
-#include "modules/webdatabase/SQLTransactionCoordinator.h"
-#include "modules/webdatabase/StorageLog.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WaitableEvent.h"
-#include "platform/WebThreadSupportingGC.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/modules/webdatabase/database.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_task.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction_client.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction_coordinator.h"
+#include "third_party/blink/renderer/modules/webdatabase/storage_log.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
+#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 
 namespace blink {
 

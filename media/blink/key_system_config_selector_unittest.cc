@@ -14,10 +14,10 @@
 #include "media/base/media_permission.h"
 #include "media/blink/key_system_config_selector.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebEncryptedMediaTypes.h"
-#include "third_party/WebKit/public/platform/WebMediaKeySystemConfiguration.h"
-#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_encrypted_media_types.h"
+#include "third_party/blink/public/platform/web_media_key_system_configuration.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "url/gurl.h"
 
 namespace media {

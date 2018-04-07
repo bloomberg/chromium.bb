@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGNumberList_h
-#define SVGNumberList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_NUMBER_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_NUMBER_LIST_H_
 
-#include "core/svg/SVGNumber.h"
-#include "core/svg/SVGParsingError.h"
-#include "core/svg/properties/SVGListPropertyHelper.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_list_property_helper.h"
+#include "third_party/blink/renderer/core/svg/svg_number.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 
 namespace blink {
 
@@ -79,4 +79,4 @@ DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGNumberList);
 
 }  // namespace blink
 
-#endif  // SVGNumberList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_NUMBER_LIST_H_

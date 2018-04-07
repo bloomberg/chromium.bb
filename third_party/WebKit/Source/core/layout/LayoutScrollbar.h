@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutScrollbar_h
-#define LayoutScrollbar_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_H_
 
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/Scrollbar.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -106,4 +106,4 @@ DEFINE_TYPE_CASTS(LayoutScrollbar,
 
 }  // namespace blink
 
-#endif  // LayoutScrollbar_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_H_

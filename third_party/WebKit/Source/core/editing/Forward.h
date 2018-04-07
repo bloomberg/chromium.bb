@@ -4,8 +4,8 @@
 
 // This file contains forward declarations of template classes in editing/
 
-#ifndef Forward_h
-#define Forward_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FORWARD_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FORWARD_H_
 
 namespace blink {
 
@@ -55,4 +55,4 @@ using VisibleSelectionInFlatTree =
 
 }  // namespace blink
 
-#endif  // Forward_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FORWARD_H_

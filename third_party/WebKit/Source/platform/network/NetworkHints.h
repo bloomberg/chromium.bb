@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NetworkHints_h
-#define NetworkHints_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_HINTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_HINTS_H_
 
-#include "platform/CrossOriginAttributeValue.h"
-#include "platform/PlatformExport.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

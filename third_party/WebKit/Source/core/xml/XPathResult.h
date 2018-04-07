@@ -24,13 +24,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XPathResult_h
-#define XPathResult_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_RESULT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_RESULT_H_
 
-#include "core/xml/XPathValue.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/xml/xpath_value.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -97,4 +97,4 @@ class XPathResult final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // XPathResult_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_RESULT_H_

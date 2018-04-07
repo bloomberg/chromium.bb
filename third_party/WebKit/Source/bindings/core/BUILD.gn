@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
-import("//third_party/WebKit/Source/core/core_idl_files.gni")
+import("//third_party/blink/renderer/bindings/scripts/scripts.gni")
+import("//third_party/blink/renderer/core/core_idl_files.gni")
 
-visibility = [ "//third_party/WebKit/*" ]
+visibility = [ "//third_party/blink/*" ]
 
 compute_interfaces_info_individual("interfaces_info_individual_core") {
   sources =
@@ -15,9 +15,9 @@ compute_interfaces_info_individual("interfaces_info_individual_core") {
       "$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle"
   component_info_file = "$bindings_core_output_dir/ComponentInfoCore.pickle"
   deps = [
-    "//third_party/WebKit/Source/bindings/core:core_global_constructors_idls",
-    "//third_party/WebKit/Source/core:generated_testing_idls_internal_runtime_flags",
-    "//third_party/WebKit/Source/core:generated_testing_idls_settings",
+    "//third_party/blink/renderer/bindings/core:core_global_constructors_idls",
+    "//third_party/blink/renderer/core:generated_testing_idls_internal_runtime_flags",
+    "//third_party/blink/renderer/core:generated_testing_idls_settings",
   ]
 }
 

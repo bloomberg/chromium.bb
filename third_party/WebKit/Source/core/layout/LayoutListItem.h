@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef LayoutListItem_h
-#define LayoutListItem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_LIST_ITEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_LIST_ITEM_H_
 
-#include "core/html/ListItemOrdinal.h"
-#include "core/layout/LayoutBlockFlow.h"
+#include "third_party/blink/renderer/core/html/list_item_ordinal.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 
 namespace blink {
 
@@ -84,4 +84,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutListItem, IsListItem());
 
 }  // namespace blink
 
-#endif  // LayoutListItem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_LIST_ITEM_H_

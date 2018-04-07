@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/ActiveStyleSheets.h"
+#include "third_party/blink/renderer/core/css/active_style_sheets.h"
 
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/RuleSet.h"
-#include "core/css/StyleChangeReason.h"
-#include "core/css/StyleEngine.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/css/resolver/ScopedStyleResolver.h"
-#include "core/dom/ContainerNode.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
+#include "third_party/blink/renderer/core/css/rule_set.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
 
 namespace blink {
 

@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/serviceworkers/ExtendableEvent.h"
+#include "third_party/blink/renderer/modules/serviceworkers/extendable_event.h"
 
-#include "modules/serviceworkers/WaitUntilObserver.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/modules/serviceworkers/wait_until_observer.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 

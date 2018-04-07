@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EditingState_h
-#define EditingState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_EDITING_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_EDITING_STATE_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -96,4 +96,4 @@ class NoEditingAbortChecker final {
 
 }  // namespace blink
 
-#endif  // EditingState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_EDITING_STATE_H_

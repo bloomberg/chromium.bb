@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/FetchDataLoader.h"
+#include "third_party/blink/renderer/core/fetch/fetch_data_loader.h"
 
 #include <memory>
-#include "core/fetch/BytesConsumer.h"
-#include "core/fetch/MultipartParser.h"
-#include "core/fileapi/File.h"
-#include "core/html/forms/FormData.h"
-#include "core/html/parser/TextResourceDecoder.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-#include "platform/loader/fetch/TextResourceDecoderOptions.h"
-#include "platform/network/ParsedContentDisposition.h"
-#include "platform/network/http_names.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/WTFString.h"
-#include "platform/wtf/typed_arrays/ArrayBufferBuilder.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/multipart_parser.h"
+#include "third_party/blink/renderer/core/fileapi/file.h"
+#include "third_party/blink/renderer/core/html/forms/form_data.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/network/parsed_content_disposition.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_builder.h"
 
 namespace blink {
 

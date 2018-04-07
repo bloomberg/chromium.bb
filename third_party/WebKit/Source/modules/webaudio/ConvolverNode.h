@@ -23,15 +23,15 @@
  * DAMAGE.
  */
 
-#ifndef ConvolverNode_h
-#define ConvolverNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_CONVOLVER_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_CONVOLVER_NODE_H_
 
 #include <memory>
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "modules/ModulesExport.h"
-#include "modules/webaudio/AudioNode.h"
-#include "platform/wtf/ThreadingPrimitives.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 
@@ -111,4 +111,4 @@ class MODULES_EXPORT ConvolverNode final : public AudioNode {
 
 }  // namespace blink
 
-#endif  // ConvolverNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_CONVOLVER_NODE_H_

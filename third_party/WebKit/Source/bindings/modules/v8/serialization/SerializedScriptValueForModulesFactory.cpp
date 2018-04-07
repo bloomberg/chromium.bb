@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/modules/v8/serialization/SerializedScriptValueForModulesFactory.h"
+#include "third_party/blink/renderer/bindings/modules/v8/serialization/serialized_script_value_for_modules_factory.h"
 
-#include "bindings/modules/v8/serialization/V8ScriptValueDeserializerForModules.h"
-#include "bindings/modules/v8/serialization/V8ScriptValueSerializerForModules.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "third_party/blink/renderer/bindings/modules/v8/serialization/v8_script_value_deserializer_for_modules.h"
+#include "third_party/blink/renderer/bindings/modules/v8/serialization/v8_script_value_serializer_for_modules.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 

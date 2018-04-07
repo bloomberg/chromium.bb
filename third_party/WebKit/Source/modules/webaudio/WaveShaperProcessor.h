@@ -23,16 +23,16 @@
  * DAMAGE.
  */
 
-#ifndef WaveShaperProcessor_h
-#define WaveShaperProcessor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_WAVE_SHAPER_PROCESSOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_WAVE_SHAPER_PROCESSOR_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "modules/webaudio/AudioNode.h"
-#include "platform/audio/AudioDSPKernel.h"
-#include "platform/audio/AudioDSPKernelProcessor.h"
-#include "platform/wtf/ThreadingPrimitives.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/platform/audio/audio_dsp_kernel.h"
+#include "third_party/blink/renderer/platform/audio/audio_dsp_kernel_processor.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ class WaveShaperProcessor final : public AudioDSPKernelProcessor {
 
 }  // namespace blink
 
-#endif  // WaveShaperProcessor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_WAVE_SHAPER_PROCESSOR_H_

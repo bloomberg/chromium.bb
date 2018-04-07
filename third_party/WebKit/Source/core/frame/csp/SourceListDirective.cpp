@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/csp/SourceListDirective.h"
+#include "third_party/blink/renderer/core/frame/csp/source_list_directive.h"
 
-#include "core/frame/csp/CSPSource.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "platform/network/ContentSecurityPolicyParsers.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/Base64.h"
-#include "platform/wtf/text/ParsingUtilities.h"
-#include "platform/wtf/text/StringToNumber.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/csp/csp_source.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace {
 struct SupportedPrefixesStruct {

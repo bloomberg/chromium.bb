@@ -26,7 +26,7 @@ import histogram_paths
 ENUMS_PATH = histogram_paths.ENUMS_XML
 ENUM_NAME = 'MappedEditingCommands'
 
-EDITOR_COMMAND_CPP = 'third_party/WebKit/Source/core/editing/EditorCommand.cpp'
+EDITOR_COMMAND_CPP = 'third_party/blink/renderer/core/editing/editor_command.cc'
 ENUM_START_MARKER = "^    static const CommandEntry commands\[\] = {"
 ENUM_END_MARKER = "^    };"
 

@@ -20,20 +20,20 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/CharacterData.h"
+#include "third_party/blink/renderer/core/dom/character_data.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/MutationObserverInterestGroup.h"
-#include "core/dom/MutationRecord.h"
-#include "core/dom/ProcessingInstruction.h"
-#include "core/dom/Text.h"
-#include "core/dom/events/Event.h"
-#include "core/editing/FrameSelection.h"
-#include "core/events/MutationEvent.h"
-#include "core/probe/CoreProbes.h"
-#include "platform/wtf/CheckedNumeric.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer_interest_group.h"
+#include "third_party/blink/renderer/core/dom/mutation_record.h"
+#include "third_party/blink/renderer/core/dom/processing_instruction.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/events/mutation_event.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 
 namespace blink {
 

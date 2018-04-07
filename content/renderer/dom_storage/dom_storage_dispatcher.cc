@@ -17,9 +17,9 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/message_filter.h"
-#include "third_party/WebKit/public/platform/Platform.h"
-#include "third_party/WebKit/public/web/WebKit.h"
-#include "third_party/WebKit/public/web/WebStorageEventDispatcher.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/web/web_storage_event_dispatcher.h"
 
 namespace content {
 

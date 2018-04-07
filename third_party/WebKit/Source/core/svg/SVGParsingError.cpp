@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/svg/SVGParsingError.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 
-#include "core/dom/QualifiedName.h"
-#include "platform/json/JSONValues.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 #include <utility>
 

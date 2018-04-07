@@ -27,7 +27,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/SimpleFontData.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 
 #include <unicode/utf16.h>
 
@@ -41,15 +41,15 @@
 
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "platform/font_family_names.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/skia/SkiaTextMetrics.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/wtf/ByteOrder.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/allocator/Partitions.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/font_family_names.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/skia/skia_text_metrics.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/byte_order.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
 

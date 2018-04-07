@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PageAnimator_h
-#define PageAnimator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_ANIMATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_ANIMATOR_H_
 
-#include "core/CoreExport.h"
-#include "core/animation/AnimationClock.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/animation/animation_clock.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class CORE_EXPORT PageAnimator final : public GarbageCollected<PageAnimator> {
 
 }  // namespace blink
 
-#endif  // PageAnimator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_ANIMATOR_H_

@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8NodeFilterCondition.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_node_filter_condition.h"
 
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/V8Node.h"
-#include "core/dom/Node.h"
-#include "core/dom/NodeFilter.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/UseCounter.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8PrivateProperty.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_filter.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
 namespace blink {
 

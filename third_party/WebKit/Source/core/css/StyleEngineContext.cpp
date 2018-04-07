@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/StyleEngineContext.h"
+#include "third_party/blink/renderer/core/css/style_engine_context.h"
 
-#include "core/frame/UseCounter.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 
 namespace blink {
 

@@ -6,12 +6,12 @@
 #define NGBlockLayoutAlgorithm_h
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_margin_strut.h"
-#include "core/layout/ng/ng_block_break_token.h"
-#include "core/layout/ng/ng_block_node.h"
-#include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_layout_algorithm.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
 
 namespace blink {
 

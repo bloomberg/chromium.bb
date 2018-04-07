@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AudioDSPKernelProcessor_h
-#define AudioDSPKernelProcessor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DSP_KERNEL_PROCESSOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DSP_KERNEL_PROCESSOR_H_
 
 #include <memory>
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioProcessor.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_processor.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ class PLATFORM_EXPORT AudioDSPKernelProcessor : public AudioProcessor {
 
 }  // namespace blink
 
-#endif  // AudioDSPKernelProcessor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DSP_KERNEL_PROCESSOR_H_

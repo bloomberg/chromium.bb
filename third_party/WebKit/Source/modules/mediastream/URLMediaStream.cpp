@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/URLMediaStream.h"
+#include "third_party/blink/renderer/modules/mediastream/url_media_stream.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/Deprecation.h"
-#include "core/url/DOMURL.h"
-#include "modules/mediastream/MediaStream.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/url/dom_url.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

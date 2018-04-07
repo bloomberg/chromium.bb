@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/SmartReplace.h"
+#include "third_party/blink/renderer/core/editing/commands/smart_replace.h"
 
 #include <CoreFoundation/CFCharacterSet.h>
 #include <CoreFoundation/CFString.h>

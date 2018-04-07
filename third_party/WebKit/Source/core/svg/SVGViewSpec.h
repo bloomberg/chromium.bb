@@ -17,11 +17,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGViewSpec_h
-#define SVGViewSpec_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_VIEW_SPEC_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_VIEW_SPEC_H_
 
-#include "core/svg/SVGZoomAndPan.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/svg_zoom_and_pan.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -79,4 +79,4 @@ void SVGViewSpec::InheritViewAttributesFromElement(T& inherit_from_element) {
 
 }  // namespace blink
 
-#endif  // SVGViewSpec_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_VIEW_SPEC_H_

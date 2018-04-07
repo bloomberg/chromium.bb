@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/media/MediaCustomControlsFullscreenDetector.h"
+#include "third_party/blink/renderer/core/html/media/media_custom_controls_fullscreen_detector.h"
 
-#include "core/dom/events/Event.h"
-#include "core/fullscreen/Fullscreen.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/layout/IntersectionGeometry.h"
-#include "platform/runtime_enabled_features.h"
-#include "public/platform/TaskType.h"
-#include "third_party/WebKit/public/platform/WebFullscreenVideoStatus.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_fullscreen_video_status.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/layout/intersection_geometry.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

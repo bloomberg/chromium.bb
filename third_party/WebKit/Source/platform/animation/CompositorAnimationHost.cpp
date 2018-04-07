@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/animation/CompositorAnimationHost.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
 
 #include "cc/animation/animation_host.h"
 #include "cc/animation/scroll_offset_animations.h"
-#include "platform/animation/CompositorAnimationTimeline.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 
 namespace blink {
 

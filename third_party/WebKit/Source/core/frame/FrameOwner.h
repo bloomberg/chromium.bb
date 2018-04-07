@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FrameOwner_h
-#define FrameOwner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_OWNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_OWNER_H_
 
-#include "core/CoreExport.h"
-#include "core/frame/SandboxFlags.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
 
@@ -110,4 +110,4 @@ class CORE_EXPORT DummyFrameOwner final
 
 }  // namespace blink
 
-#endif  // FrameOwner_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_OWNER_H_

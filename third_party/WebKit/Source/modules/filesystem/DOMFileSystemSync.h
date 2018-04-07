@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMFileSystemSync_h
-#define DOMFileSystemSync_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DOM_FILE_SYSTEM_SYNC_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DOM_FILE_SYSTEM_SYNC_H_
 
-#include "modules/filesystem/DOMFileSystemBase.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system_base.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -76,4 +76,4 @@ class DOMFileSystemSync final : public DOMFileSystemBase {
 
 }  // namespace blink
 
-#endif  // DOMFileSystemSync_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DOM_FILE_SYSTEM_SYNC_H_

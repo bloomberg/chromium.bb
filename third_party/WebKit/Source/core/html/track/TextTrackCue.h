@@ -29,12 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextTrackCue_h
-#define TextTrackCue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_CUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_CUE_H_
 
-#include "core/dom/events/EventTarget.h"
-#include "core/html/HTMLDivElement.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -126,4 +126,4 @@ class TextTrackCue : public EventTargetWithInlineData {
 
 }  // namespace blink
 
-#endif  // TextTrackCue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_CUE_H_

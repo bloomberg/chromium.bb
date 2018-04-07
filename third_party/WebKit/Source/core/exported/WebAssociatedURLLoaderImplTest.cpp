@@ -28,30 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebAssociatedURLLoader.h"
+#include "third_party/blink/public/web/web_associated_url_loader.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "core/frame/FrameTestHelpers.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "platform/testing/URLTestHelpers.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebThread.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLLoaderMockFactory.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/WebURLResponse.h"
-#include "public/web/WebAssociatedURLLoaderClient.h"
-#include "public/web/WebAssociatedURLLoaderOptions.h"
-#include "public/web/WebFrame.h"
-#include "public/web/WebView.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/web/web_associated_url_loader_client.h"
+#include "third_party/blink/public/web/web_associated_url_loader_options.h"
+#include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 using blink::URLTestHelpers::ToKURL;
 using blink::test::RunPendingTasks;

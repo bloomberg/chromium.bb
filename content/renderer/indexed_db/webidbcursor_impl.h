@@ -16,10 +16,10 @@
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "content/common/indexed_db/indexed_db_key.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCallbacks.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCursor.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBKey.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBValue.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 
 namespace base {
 class SingleThreadTaskRunner;

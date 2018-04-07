@@ -5,9 +5,9 @@
 #ifndef NGListLayoutAlgorithm_h
 #define NGListLayoutAlgorithm_h
 
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
-#include "core/layout/ng/inline/ng_line_box_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment_builder.h"
 
 namespace blink {
 

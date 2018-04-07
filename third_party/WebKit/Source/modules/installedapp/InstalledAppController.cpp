@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/installedapp/InstalledAppController.h"
+#include "third_party/blink/renderer/modules/installedapp/installed_app_controller.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "platform/wtf/Functional.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 #include <utility>
 

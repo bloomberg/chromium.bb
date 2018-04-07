@@ -22,13 +22,13 @@
  *
  */
 
-#ifndef StyleReflection_h
-#define StyleReflection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_REFLECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_REFLECTION_H_
 
-#include "core/css/CSSReflectionDirection.h"
-#include "core/style/NinePieceImage.h"
-#include "platform/Length.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/core/css/css_reflection_direction.h"
+#include "third_party/blink/renderer/core/style/nine_piece_image.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ class StyleReflection : public RefCounted<StyleReflection> {
 
 }  // namespace blink
 
-#endif  // StyleReflection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_REFLECTION_H_

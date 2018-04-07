@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaSession_h
-#define MediaSession_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASESSION_MEDIA_SESSION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASESSION_MEDIA_SESSION_H_
 
 #include <memory>
-#include "core/dom/ContextLifecycleObserver.h"
-#include "modules/ModulesExport.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/mediasession/media_session.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/mediasession/media_session.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class MODULES_EXPORT MediaSession final
 
 }  // namespace blink
 
-#endif  // MediaSession_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASESSION_MEDIA_SESSION_H_

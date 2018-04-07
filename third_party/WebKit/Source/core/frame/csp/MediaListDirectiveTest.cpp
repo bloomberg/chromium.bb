@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/csp/MediaListDirective.h"
+#include "third_party/blink/renderer/core/frame/csp/media_list_directive.h"
 
-#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 
 namespace blink {
 

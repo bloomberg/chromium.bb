@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/WebFontDecoder.h"
+#include "third_party/blink/renderer/platform/fonts/web_font_decoder.h"
 
 #include "build/build_config.h"
-#include "platform/Histogram.h"
-#include "platform/SharedBuffer.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/WebFontTypefaceFactory.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/web_font_typeface_factory.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/ots/include/ots-memory-stream.h"
 #include "third_party/skia/include/core/SkStream.h"
 

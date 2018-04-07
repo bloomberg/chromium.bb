@@ -21,12 +21,12 @@
  *
  */
 
-#ifndef HTMLFrameElementBase_h
-#define HTMLFrameElementBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_ELEMENT_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_ELEMENT_BASE_H_
 
-#include "core/CoreExport.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "public/platform/WebFocusType.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 
 namespace blink {
 
@@ -95,4 +95,4 @@ DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLFrameElementBase);
 
 }  // namespace blink
 
-#endif  // HTMLFrameElementBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_ELEMENT_BASE_H_

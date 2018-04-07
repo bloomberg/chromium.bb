@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_INPUT_IME_TEXT_SPAN_CONVERSIONS_H_
 #define CONTENT_COMMON_INPUT_IME_TEXT_SPAN_CONVERSIONS_H_
 
-#include "third_party/WebKit/public/web/WebImeTextSpan.h"
+#include "third_party/blink/public/web/web_ime_text_span.h"
 #include "ui/base/ime/ime_text_span.h"
 
 namespace content {

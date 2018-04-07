@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/events/PointerEvent.h"
+#include "third_party/blink/renderer/core/events/pointer_event.h"
 
-#include "core/dom/Element.h"
-#include "core/dom/events/EventDispatcher.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 
 namespace blink {
 

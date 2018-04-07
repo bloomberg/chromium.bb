@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontFamilyMatcherMac_h
-#define FontFamilyMatcherMac_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_MAC_FONT_FAMILY_MATCHER_MAC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_MAC_FONT_FAMILY_MATCHER_MAC_H_
 
 #include <AppKit/NSFontManager.h>
-#include "platform/PlatformExport.h"
-#include "platform/fonts/FontSelectionTypes.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -44,4 +44,4 @@ PLATFORM_EXPORT NSFont* MatchNSFontFamily(const AtomicString& desired_family,
 int ToAppKitFontWeight(FontSelectionValue);
 }
 
-#endif  // FontFamilyMatcherMac_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_MAC_FONT_FAMILY_MATCHER_MAC_H_

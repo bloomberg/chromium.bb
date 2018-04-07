@@ -18,7 +18,7 @@
 #include "net/reporting/reporting_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "third_party/WebKit/public/platform/reporting.mojom.h"
+#include "third_party/blink/public/platform/reporting.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

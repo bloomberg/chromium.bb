@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSSelectorParser_h
-#define CSSSelectorParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_SELECTOR_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_SELECTOR_PARSER_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css/parser/CSSParserSelector.h"
-#include "core/css/parser/CSSParserTokenRange.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_selector.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 
 namespace blink {
 
@@ -109,4 +109,4 @@ class CORE_EXPORT CSSSelectorParser {
 
 }  // namespace blink
 
-#endif  // CSSSelectorParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_SELECTOR_PARSER_H_

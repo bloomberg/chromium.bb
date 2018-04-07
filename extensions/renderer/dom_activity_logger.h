@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "extensions/common/dom_action_types.h"
-#include "third_party/WebKit/public/web/WebDOMActivityLogger.h"
+#include "third_party/blink/public/web/web_dom_activity_logger.h"
 #include "v8/include/v8.h"
 
 namespace base {

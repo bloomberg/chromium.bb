@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BoxBorderPainter_h
-#define BoxBorderPainter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_BORDER_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_BORDER_PAINTER_H_
 
-#include "core/layout/BackgroundBleedAvoidance.h"
-#include "core/style/BorderEdge.h"
-#include "platform/geometry/FloatRoundedRect.h"
+#include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
+#include "third_party/blink/renderer/core/style/border_edge.h"
+#include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 
 namespace blink {
 

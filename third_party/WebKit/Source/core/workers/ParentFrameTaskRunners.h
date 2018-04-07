@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ParentFrameTaskRunners_h
-#define ParentFrameTaskRunners_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_PARENT_FRAME_TASK_RUNNERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_PARENT_FRAME_TASK_RUNNERS_H_
 
 #include <memory>
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/TaskTypeTraits.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/task_type_traits.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class CORE_EXPORT ParentFrameTaskRunners final
 
 }  // namespace blink
 
-#endif  // ParentFrameTaskRunners_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_PARENT_FRAME_TASK_RUNNERS_H_

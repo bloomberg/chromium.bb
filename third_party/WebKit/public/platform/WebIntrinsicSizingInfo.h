@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebIntrinsicSizingInfo_h
-#define WebIntrinsicSizingInfo_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_INTRINSIC_SIZING_INFO_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_INTRINSIC_SIZING_INFO_H_
 
-#include "public/platform/WebFloatSize.h"
+#include "third_party/blink/public/platform/web_float_size.h"
 
 namespace blink {
 
@@ -20,4 +20,4 @@ struct WebIntrinsicSizingInfo {
 
 }  // namespace blink
 
-#endif  // WebIntrinsicSizingInfo_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_INTRINSIC_SIZING_INFO_H_

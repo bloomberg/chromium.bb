@@ -14,18 +14,18 @@
 
 {{source_files_for_generated_file(template_file, input_files)}}
 
-#include "core/style_builder_functions.h"
+#include "third_party/blink/renderer/core/style_builder_functions.h"
 
-#include "core/animation/css/CSSAnimationData.h"
-#include "core/css/BasicShapeFunctions.h"
-#include "core/css/CSSContentDistributionValue.h"
-#include "core/css/CSSCustomIdentValue.h"
-#include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/CSSURIValue.h"
-#include "core/css/CSSValuePair.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include "core/css_value_keywords.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
+#include "third_party/blink/renderer/core/css/basic_shape_functions.h"
+#include "third_party/blink/renderer/core/css/css_content_distribution_value.h"
+#include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
+#include "third_party/blink/renderer/core/css/css_uri_value.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 {% macro declare_initial_function(property_id) %}
 void StyleBuilderFunctions::applyInitial{{property_id}}(StyleResolverState& state)

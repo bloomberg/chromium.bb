@@ -10,7 +10,7 @@
 #include "base/sequence_checker.h"
 #include "components/autofill/core/common/submission_source.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/blink/public/web/web_input_element.h"
 
 namespace blink {
 class WebFormElementObserver;

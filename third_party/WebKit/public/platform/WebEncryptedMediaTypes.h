@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebEncryptedMediaTypes_h
-#define WebEncryptedMediaTypes_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_ENCRYPTED_MEDIA_TYPES_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_ENCRYPTED_MEDIA_TYPES_H_
 
 namespace blink {
 
@@ -26,4 +26,4 @@ enum class WebEncryptedMediaSessionType {
 
 }  // namespace blink
 
-#endif  // WebEncryptedMediaTypes_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_ENCRYPTED_MEDIA_TYPES_H_

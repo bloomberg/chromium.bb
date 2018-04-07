@@ -22,12 +22,12 @@
  *
  */
 
-#ifndef HTMLFormControlElementWithState_h
-#define HTMLFormControlElementWithState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_FORM_CONTROL_ELEMENT_WITH_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_FORM_CONTROL_ELEMENT_WITH_STATE_H_
 
-#include "core/CoreExport.h"
-#include "core/html/forms/HTMLFormControlElement.h"
-#include "platform/wtf/DoublyLinkedList.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/platform/wtf/doubly_linked_list.h"
 
 namespace blink {
 

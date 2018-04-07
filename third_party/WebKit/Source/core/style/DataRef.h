@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef DataRef_h
-#define DataRef_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_DATA_REF_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_DATA_REF_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class DataRef {
 
 }  // namespace blink
 
-#endif  // DataRef_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_DATA_REF_H_

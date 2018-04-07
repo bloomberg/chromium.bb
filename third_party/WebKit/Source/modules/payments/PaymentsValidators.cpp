@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/payments/PaymentsValidators.h"
+#include "third_party/blink/renderer/modules/payments/payments_validators.h"
 
-#include "bindings/core/v8/ScriptRegexp.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/StringImpl.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 namespace blink {
 

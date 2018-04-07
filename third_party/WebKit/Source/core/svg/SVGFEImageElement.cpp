@@ -19,18 +19,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGFEImageElement.h"
+#include "third_party/blink/renderer/core/svg/svg_fe_image_element.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/IdTargetObserver.h"
-#include "core/loader/resource/ImageResourceContent.h"
-#include "core/svg/SVGPreserveAspectRatio.h"
-#include "core/svg/graphics/filters/SVGFEImage.h"
-#include "core/svg_names.h"
-#include "platform/graphics/Image.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/id_target_observer.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/svg/graphics/filters/svg_fe_image.h"
+#include "third_party/blink/renderer/core/svg/svg_preserve_aspect_ratio.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 
 namespace blink {
 

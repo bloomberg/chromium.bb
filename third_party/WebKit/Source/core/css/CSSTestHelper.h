@@ -27,12 +27,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSTestHelper_h
-#define CSSTestHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_TEST_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_TEST_HELPER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/css/RuleSet.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/css/rule_set.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class CSSTestHelper {
 
 }  // namespace blink
 
-#endif  // CSSTestHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_TEST_HELPER_H_

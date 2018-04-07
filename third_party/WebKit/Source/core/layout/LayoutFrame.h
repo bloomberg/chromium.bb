@@ -20,11 +20,11 @@
  *
  */
 
-#ifndef LayoutFrame_h
-#define LayoutFrame_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FRAME_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FRAME_H_
 
-#include "core/layout/LayoutEmbeddedContent.h"
-#include "core/layout/LayoutFrameSet.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_frame_set.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFrame, IsFrame());
 
 }  // namespace blink
 
-#endif  // LayoutFrame_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FRAME_H_

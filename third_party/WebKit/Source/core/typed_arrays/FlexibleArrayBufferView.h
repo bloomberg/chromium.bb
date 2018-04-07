@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FlexibleArrayBufferView_h
-#define FlexibleArrayBufferView_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_FLEXIBLE_ARRAY_BUFFER_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_FLEXIBLE_ARRAY_BUFFER_VIEW_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/typed_arrays/DOMArrayBufferView.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ class CORE_EXPORT FlexibleArrayBufferView {
 
 }  // namespace blink
 
-#endif  // FlexibleArrayBufferView_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_FLEXIBLE_ARRAY_BUFFER_VIEW_H_

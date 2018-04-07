@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/speech/SpeechSynthesis.h"
+#include "third_party/blink/renderer/modules/speech/speech_synthesis.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/speech/SpeechSynthesisEvent.h"
-#include "platform/speech/PlatformSpeechSynthesisVoice.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/speech/speech_synthesis_event.h"
+#include "third_party/blink/renderer/platform/speech/platform_speech_synthesis_voice.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

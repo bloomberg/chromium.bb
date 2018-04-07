@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMIDIAccessor_h
-#define WebMIDIAccessor_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBMIDI_WEB_MIDI_ACCESSOR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBMIDI_WEB_MIDI_ACCESSOR_H_
 
 #include "base/time/time.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class WebMIDIAccessor {
 
 }  // namespace blink
 
-#endif  // WebMIDIAccessor_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBMIDI_WEB_MIDI_ACCESSOR_H_

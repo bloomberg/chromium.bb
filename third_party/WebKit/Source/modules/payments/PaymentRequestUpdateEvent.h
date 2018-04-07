@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaymentRequestUpdateEvent_h
-#define PaymentRequestUpdateEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_UPDATE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_UPDATE_EVENT_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/events/Event.h"
-#include "modules/ModulesExport.h"
-#include "modules/payments/PaymentRequestUpdateEventInit.h"
-#include "modules/payments/PaymentUpdater.h"
-#include "platform/Timer.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/payments/payment_request_update_event_init.h"
+#include "third_party/blink/renderer/modules/payments/payment_updater.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class MODULES_EXPORT PaymentRequestUpdateEvent final : public Event,
 
 }  // namespace blink
 
-#endif  // PaymentRequestUpdateEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_REQUEST_UPDATE_EVENT_H_

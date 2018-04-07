@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSFontFaceSource.h"
+#include "third_party/blink/renderer/core/css/css_font_face_source.h"
 
-#include "platform/fonts/FontCacheKey.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontPlatformData.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/graphics/skia/SkiaUtils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache_key.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 
 namespace blink {
 

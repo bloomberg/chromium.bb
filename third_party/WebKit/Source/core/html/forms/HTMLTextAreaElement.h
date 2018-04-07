@@ -21,12 +21,12 @@
  *
  */
 
-#ifndef HTMLTextAreaElement_h
-#define HTMLTextAreaElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_TEXT_AREA_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_TEXT_AREA_ELEMENT_H_
 
 #include "base/gtest_prod_util.h"
-#include "core/CoreExport.h"
-#include "core/html/forms/TextControlElement.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 
 namespace blink {
 
@@ -148,4 +148,4 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
 
 }  // namespace blink
 
-#endif  // HTMLTextAreaElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_TEXT_AREA_ELEMENT_H_

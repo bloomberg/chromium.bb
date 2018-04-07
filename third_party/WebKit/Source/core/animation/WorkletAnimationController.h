@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkletAnimationController_h
-#define WorkletAnimationController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_WORKLET_ANIMATION_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_WORKLET_ANIMATION_CONTROLLER_H_
 
-#include "core/CoreExport.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/heap/Visitor.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
 
 namespace blink {
 
@@ -47,4 +47,4 @@ class CORE_EXPORT WorkletAnimationController
 
 }  // namespace blink
 
-#endif  // WorkletAnimationController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_WORKLET_ANIMATION_CONTROLLER_H_

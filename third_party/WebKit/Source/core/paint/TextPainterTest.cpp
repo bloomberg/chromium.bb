@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/TextPainter.h"
+#include "third_party/blink/renderer/core/paint/text_painter.h"
 
 #include <memory>
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css_property_names.h"
-#include "core/css_value_keywords.h"
-#include "core/frame/Settings.h"
-#include "core/layout/api/LineLayoutText.h"
-#include "core/paint/PaintInfo.h"
-#include "core/style/ShadowData.h"
-#include "core/style/ShadowList.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/graphics/paint/PaintController.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_text.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/style/shadow_data.h"
+#include "third_party/blink/renderer/core/style/shadow_list.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 
 namespace blink {
 namespace {

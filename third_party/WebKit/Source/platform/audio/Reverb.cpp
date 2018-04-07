@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/Reverb.h"
+#include "third_party/blink/renderer/platform/audio/reverb.h"
 
 #include <math.h>
 
@@ -35,9 +35,9 @@
 #include <utility>
 
 #include "build/build_config.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/VectorMath.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

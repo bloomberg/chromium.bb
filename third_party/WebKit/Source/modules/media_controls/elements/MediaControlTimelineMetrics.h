@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlTimelineMetrics_h
-#define MediaControlTimelineMetrics_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_TIMELINE_METRICS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_TIMELINE_METRICS_H_
 
-#include "platform/Histogram.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_type.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class MediaControlTimelineMetrics {
 
 }  // namespace blink
 
-#endif  // MediaControlTimelineMetrics_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_TIMELINE_METRICS_H_

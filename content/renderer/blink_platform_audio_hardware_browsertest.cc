@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/test/render_view_test.h"
-#include "third_party/WebKit/public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
 
 namespace content {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/commands/SplitTextNodeCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/split_text_node_command.h"
 
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/PlainTextRange.h"
-#include "core/editing/commands/EditingState.h"
-#include "core/editing/markers/DocumentMarkerController.h"
-#include "core/editing/testing/EditingTestBase.h"
+#include "third_party/blink/renderer/core/editing/commands/editing_state.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/plain_text_range.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 
 namespace blink {
 

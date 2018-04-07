@@ -20,15 +20,15 @@
  *
  */
 
-#include "core/html/HTMLHRElement.h"
+#include "third_party/blink/renderer/core/html/html_hr_element.h"
 
-#include "core/css/CSSColorValue.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css_property_names.h"
-#include "core/css_value_keywords.h"
-#include "core/html/forms/HTMLOptGroupElement.h"
-#include "core/html/forms/HTMLSelectElement.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

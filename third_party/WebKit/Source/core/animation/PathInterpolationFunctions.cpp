@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/PathInterpolationFunctions.h"
+#include "third_party/blink/renderer/core/animation/path_interpolation_functions.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/animation/InterpolatedSVGPathSource.h"
-#include "core/animation/InterpolationEnvironment.h"
-#include "core/animation/SVGPathSegInterpolationFunctions.h"
-#include "core/css/CSSPathValue.h"
-#include "core/svg/SVGPath.h"
-#include "core/svg/SVGPathByteStreamBuilder.h"
-#include "core/svg/SVGPathByteStreamSource.h"
-#include "core/svg/SVGPathParser.h"
+#include "third_party/blink/renderer/core/animation/interpolated_svg_path_source.h"
+#include "third_party/blink/renderer/core/animation/interpolation_environment.h"
+#include "third_party/blink/renderer/core/animation/svg_path_seg_interpolation_functions.h"
+#include "third_party/blink/renderer/core/css/css_path_value.h"
+#include "third_party/blink/renderer/core/svg/svg_path.h"
+#include "third_party/blink/renderer/core/svg/svg_path_byte_stream_builder.h"
+#include "third_party/blink/renderer/core/svg/svg_path_byte_stream_source.h"
+#include "third_party/blink/renderer/core/svg/svg_path_parser.h"
 
 namespace blink {
 

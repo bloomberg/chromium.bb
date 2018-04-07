@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/presentation/PresentationAvailabilityCallbacks.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability_callbacks.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "modules/presentation/PresentationAvailability.h"
-#include "modules/presentation/PresentationError.h"
-#include "modules/presentation/PresentationRequest.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_error.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_request.h"
 
 namespace blink {
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlOverlayEnclosureElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_overlay_enclosure_element.h"
 
-#include "core/dom/events/Event.h"
-#include "modules/media_controls/MediaControlsImpl.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 
 namespace blink {
 

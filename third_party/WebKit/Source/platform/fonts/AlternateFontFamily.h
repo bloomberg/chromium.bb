@@ -28,13 +28,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AlternateFontFamily_h
-#define AlternateFontFamily_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_ALTERNATE_FONT_FAMILY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_ALTERNATE_FONT_FAMILY_H_
 
 #include "build/build_config.h"
-#include "platform/font_family_names.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/font_family_names.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -116,4 +116,4 @@ inline const AtomicString& GetFallbackFontFamily(
 
 }  // namespace blink
 
-#endif  // AlternateFontFamily_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_ALTERNATE_FONT_FAMILY_H_

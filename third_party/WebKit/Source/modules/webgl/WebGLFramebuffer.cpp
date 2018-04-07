@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webgl/WebGLFramebuffer.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_framebuffer.h"
 
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "modules/webgl/WebGLRenderbuffer.h"
-#include "modules/webgl/WebGLRenderingContextBase.h"
-#include "modules/webgl/WebGLTexture.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_renderbuffer.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_texture.h"
 
 namespace blink {
 

@@ -5,8 +5,8 @@
 #ifndef NGMarginStrut_h
 #define NGMarginStrut_h
 
-#include "core/CoreExport.h"
-#include "platform/LayoutUnit.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
 
 namespace blink {
 

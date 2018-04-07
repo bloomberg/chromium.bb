@@ -5,9 +5,9 @@
 #ifndef NGBlockNode_h
 #define NGBlockNode_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_physical_offset.h"
-#include "core/layout/ng/ng_layout_input_node.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
 
 namespace blink {
 

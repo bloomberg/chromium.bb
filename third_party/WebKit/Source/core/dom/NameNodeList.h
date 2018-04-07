@@ -21,12 +21,12 @@
  *
  */
 
-#ifndef NameNodeList_h
-#define NameNodeList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NAME_NODE_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NAME_NODE_LIST_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/LiveNodeList.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/live_node_list.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class CORE_EXPORT NameNodeList final : public LiveNodeList {
 
 }  // namespace blink
 
-#endif  // NameNodeList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_NAME_NODE_LIST_H_

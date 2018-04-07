@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SkiaTextureHolder_h
-#define SkiaTextureHolder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SKIA_TEXTURE_HOLDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SKIA_TEXTURE_HOLDER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "platform/PlatformExport.h"
-#include "platform/graphics/TextureHolder.h"
+#include "third_party/blink/renderer/platform/graphics/texture_holder.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
 
 }  // namespace blink
 
-#endif  // SkiaTextureHolder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SKIA_TEXTURE_HOLDER_H_

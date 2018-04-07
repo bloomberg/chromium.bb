@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DirectoryReader_h
-#define DirectoryReader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DIRECTORY_READER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DIRECTORY_READER_H_
 
-#include "bindings/modules/v8/V8EntriesCallback.h"
-#include "bindings/modules/v8/V8ErrorCallback.h"
-#include "modules/filesystem/DOMFileSystem.h"
-#include "modules/filesystem/DirectoryReaderBase.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_entries_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_error_callback.h"
+#include "third_party/blink/renderer/modules/filesystem/directory_reader_base.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class DirectoryReader : public DirectoryReaderBase {
 
 }  // namespace blink
 
-#endif  // DirectoryReader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DIRECTORY_READER_H_

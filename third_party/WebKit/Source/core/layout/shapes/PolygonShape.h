@@ -27,14 +27,14 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PolygonShape_h
-#define PolygonShape_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_POLYGON_SHAPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_POLYGON_SHAPE_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "core/layout/shapes/Shape.h"
-#include "core/layout/shapes/ShapeInterval.h"
-#include "platform/geometry/FloatPolygon.h"
+#include "third_party/blink/renderer/core/layout/shapes/shape.h"
+#include "third_party/blink/renderer/core/layout/shapes/shape_interval.h"
+#include "third_party/blink/renderer/platform/geometry/float_polygon.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ class PolygonShape final : public Shape {
 
 }  // namespace blink
 
-#endif  // PolygonShape_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_POLYGON_SHAPE_H_

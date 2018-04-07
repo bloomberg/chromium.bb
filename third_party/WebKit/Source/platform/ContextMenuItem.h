@@ -24,12 +24,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ContextMenuItem_h
-#define ContextMenuItem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_CONTEXT_MENU_ITEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CONTEXT_MENU_ITEM_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -102,4 +102,4 @@ class PLATFORM_EXPORT ContextMenuItem {
 
 }  // namespace blink
 
-#endif  // ContextMenuItem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_CONTEXT_MENU_ITEM_H_

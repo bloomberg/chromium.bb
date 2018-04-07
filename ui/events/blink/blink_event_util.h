@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "build/build_config.h"
-#include "third_party/WebKit/public/platform/WebGestureEvent.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "third_party/WebKit/public/platform/WebTouchEvent.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_touch_event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/motion_event.h"
 

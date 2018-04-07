@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/gpu/DrawingBuffer.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 
 #include "cc/resources/shared_bitmap_id_registrar.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/config/gpu_feature_info.h"
-#include "platform/graphics/gpu/DrawingBufferTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer_test_helpers.h"
 
 // These unit tests are separate from DrawingBufferTests.cpp because they are
 // built as a part of webkit_unittests instead blink_platform_unittests. This is

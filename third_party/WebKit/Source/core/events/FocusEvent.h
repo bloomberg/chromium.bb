@@ -23,12 +23,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FocusEvent_h
-#define FocusEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_FOCUS_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_FOCUS_EVENT_H_
 
-#include "core/dom/events/EventTarget.h"
-#include "core/events/FocusEventInit.h"
-#include "core/events/UIEvent.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/events/focus_event_init.h"
+#include "third_party/blink/renderer/core/events/ui_event.h"
 
 namespace blink {
 
@@ -82,4 +82,4 @@ DEFINE_EVENT_TYPE_CASTS(FocusEvent);
 
 }  // namespace blink
 
-#endif  // FocusEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_FOCUS_EVENT_H_

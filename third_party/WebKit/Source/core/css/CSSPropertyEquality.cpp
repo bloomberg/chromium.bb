@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSPropertyEquality.h"
+#include "third_party/blink/renderer/core/css/css_property_equality.h"
 
-#include "core/animation/PropertyHandle.h"
-#include "core/css/CSSValue.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/DataEquivalency.h"
-#include "core/style/ShadowList.h"
+#include "third_party/blink/renderer/core/animation/property_handle.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/data_equivalency.h"
+#include "third_party/blink/renderer/core/style/shadow_list.h"
 
 // TODO(ikilpatrick): generate this file.
 

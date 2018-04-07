@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebMouseWheelEvent.h"
+#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8HTMLConstructor_h
-#define V8HTMLConstructor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_HTML_CONSTRUCTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_HTML_CONSTRUCTOR_H_
 
-#include "core/html_element_type_helpers.h"
-#include "platform/bindings/WrapperTypeInfo.h"
+#include "third_party/blink/renderer/core/html_element_type_helpers.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -23,4 +23,4 @@ class CORE_EXPORT V8HTMLConstructor {
 
 }  // namespace blink
 
-#endif  // V8HTMLConstructor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_HTML_CONSTRUCTOR_H_

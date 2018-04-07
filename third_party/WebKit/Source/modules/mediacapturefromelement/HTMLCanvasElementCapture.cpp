@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediacapturefromelement/HTMLCanvasElementCapture.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/html_canvas_element_capture.h"
 
 #include <memory>
-#include "core/dom/ExceptionCode.h"
-#include "core/html/canvas/HTMLCanvasElement.h"
-#include "modules/mediacapturefromelement/CanvasCaptureMediaStreamTrack.h"
-#include "modules/mediastream/MediaStream.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCanvasCaptureHandler.h"
-#include "public/platform/WebMediaStream.h"
-#include "public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_canvas_capture_handler.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/canvas_capture_media_stream_track.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 
 namespace {
 const double kDefaultFrameRate = 60.0;

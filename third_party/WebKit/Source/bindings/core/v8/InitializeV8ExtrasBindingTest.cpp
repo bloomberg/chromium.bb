@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/InitializeV8ExtrasBinding.h"
+#include "third_party/blink/renderer/bindings/core/v8/initialize_v8_extras_binding.h"
 
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/core/v8/V8ExtrasTestUtils.h"
-#include "core/dom/Document.h"
-#include "core/frame/UseCounter.h"
-#include "core/frame/WebFeature.h"
-#include "platform/bindings/V8Binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_extras_test_utils.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "v8/include/v8.h"
 
 namespace blink {

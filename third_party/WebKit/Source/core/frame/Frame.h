@@ -26,22 +26,22 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef Frame_h
-#define Frame_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_H_
 
 #include "base/unguessable_token.h"
-#include "core/CoreExport.h"
-#include "core/dom/UserGestureIndicator.h"
-#include "core/frame/FrameLifecycle.h"
-#include "core/frame/FrameTypes.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/UserActivationState.h"
-#include "core/loader/FrameLoaderTypes.h"
-#include "core/page/FrameTree.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Optional.h"
-#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/frame/frame_lifecycle.h"
+#include "third_party/blink/renderer/core/frame/frame_types.h"
+#include "third_party/blink/renderer/core/frame/frame_view.h"
+#include "third_party/blink/renderer/core/frame/user_activation_state.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/page/frame_tree.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -281,4 +281,4 @@ static inline CString ToTraceValue(Frame* frame) {
 
 }  // namespace blink
 
-#endif  // Frame_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_H_

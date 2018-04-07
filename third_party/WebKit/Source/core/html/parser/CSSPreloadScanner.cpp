@@ -25,20 +25,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/CSSPreloadScanner.h"
+#include "third_party/blink/renderer/core/html/parser/css_preload_scanner.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/frame/Settings.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/parser/HTMLResourcePreloader.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/resource/CSSStyleSheetResource.h"
-#include "platform/Histogram.h"
-#include "platform/loader/fetch/fetch_initiator_type_names.h"
-#include "platform/network/http_names.h"
-#include "platform/text/SegmentedString.h"
-#include "platform/weborigin/SecurityPolicy.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/parser/html_resource_preloader.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/text/segmented_string.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
 

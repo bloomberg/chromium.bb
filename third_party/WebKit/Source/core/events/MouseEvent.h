@@ -21,13 +21,13 @@
  *
  */
 
-#ifndef MouseEvent_h
-#define MouseEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_MOUSE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_MOUSE_EVENT_H_
 
-#include "core/CoreExport.h"
-#include "core/events/MouseEventInit.h"
-#include "core/events/UIEventWithKeyState.h"
-#include "public/platform/WebMenuSourceType.h"
+#include "third_party/blink/public/platform/web_menu_source_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/events/mouse_event_init.h"
+#include "third_party/blink/renderer/core/events/ui_event_with_key_state.h"
 
 namespace blink {
 class DataTransfer;
@@ -254,4 +254,4 @@ DEFINE_EVENT_TYPE_CASTS(MouseEvent);
 
 }  // namespace blink
 
-#endif  // MouseEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_MOUSE_EVENT_H_

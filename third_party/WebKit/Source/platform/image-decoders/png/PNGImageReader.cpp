@@ -36,12 +36,12 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#include "platform/image-decoders/png/PNGImageReader.h"
+#include "third_party/blink/renderer/platform/image-decoders/png/png_image_reader.h"
 
 #include <memory>
-#include "platform/image-decoders/FastSharedBufferReader.h"
-#include "platform/image-decoders/SegmentReader.h"
-#include "platform/image-decoders/png/PNGImageDecoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
+#include "third_party/blink/renderer/platform/image-decoders/png/png_image_decoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "zlib.h"
 
 namespace {

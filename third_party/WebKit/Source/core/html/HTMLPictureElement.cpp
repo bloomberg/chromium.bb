@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/HTMLPictureElement.h"
+#include "third_party/blink/renderer/core/html/html_picture_element.h"
 
-#include "core/dom/ElementTraversal.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLImageElement.h"
-#include "core/html/HTMLSourceElement.h"
-#include "core/html_names.h"
-#include "core/loader/ImageLoader.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html/html_source_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/loader/image_loader.h"
 
 namespace blink {
 

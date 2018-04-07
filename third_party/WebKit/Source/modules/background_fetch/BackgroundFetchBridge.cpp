@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/background_fetch/BackgroundFetchBridge.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_bridge.h"
 
 #include <utility>
-#include "modules/background_fetch/BackgroundFetchOptions.h"
-#include "modules/background_fetch/BackgroundFetchRegistration.h"
-#include "modules/background_fetch/BackgroundFetchTypeConverters.h"
-#include "modules/background_fetch/IconDefinition.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_options.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_type_converters.h"
+#include "third_party/blink/renderer/modules/background_fetch/icon_definition.h"
 
 namespace blink {
 

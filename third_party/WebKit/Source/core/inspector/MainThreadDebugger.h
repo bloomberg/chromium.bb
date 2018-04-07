@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MainThreadDebugger_h
-#define MainThreadDebugger_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_MAIN_THREAD_DEBUGGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_MAIN_THREAD_DEBUGGER_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/inspector/ThreadDebugger.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/inspector/thread_debugger.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "v8/include/v8-inspector.h"
 #include "v8/include/v8.h"
 
@@ -125,4 +125,4 @@ class CORE_EXPORT MainThreadDebugger final : public ThreadDebugger {
 
 }  // namespace blink
 
-#endif  // MainThreadDebugger_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_MAIN_THREAD_DEBUGGER_H_

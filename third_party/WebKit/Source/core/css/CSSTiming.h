@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSTiming_h
-#define CSSTiming_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_TIMING_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_TIMING_H_
 
 #include "base/macros.h"
-#include "core/dom/Document.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ class CSSTiming : public GarbageCollectedFinalized<CSSTiming>,
 
 }  // namespace blink
 
-#endif  // CSSTiming_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_TIMING_H_

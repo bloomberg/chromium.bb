@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SVGResourceClient_h
-#define SVGResourceClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_RESOURCE_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_RESOURCE_CLIENT_H_
 
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -33,4 +33,4 @@ class CORE_EXPORT SVGResourceClient : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // SVGResourceClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_RESOURCE_CLIENT_H_

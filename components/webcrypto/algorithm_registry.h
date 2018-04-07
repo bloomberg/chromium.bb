@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_WEBCRYPTO_ALGORITHM_REGISTRY_H_
 #define COMPONENTS_WEBCRYPTO_ALGORITHM_REGISTRY_H_
 
-#include "third_party/WebKit/public/platform/WebCrypto.h"
+#include "third_party/blink/public/platform/web_crypto.h"
 
 namespace webcrypto {
 

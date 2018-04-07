@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AXEnums_h
-#define AXEnums_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_ENUMS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_ENUMS_H_
 
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 
@@ -334,4 +334,4 @@ enum AXIgnoredReason {
 
 }  // namespace blink
 
-#endif  // AXEnums_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_ENUMS_H_

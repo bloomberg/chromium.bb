@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScriptedIdleTaskController_h
-#define ScriptedIdleTaskController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SCRIPTED_IDLE_TASK_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SCRIPTED_IDLE_TASK_CONTROLLER_H_
 
-#include "bindings/core/v8/v8_idle_request_callback.h"
-#include "core/dom/IdleDeadline.h"
-#include "core/dom/PausableObject.h"
-#include "platform/Timer.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_callback.h"
+#include "third_party/blink/renderer/core/dom/idle_deadline.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 namespace internal {
@@ -110,4 +110,4 @@ class CORE_EXPORT ScriptedIdleTaskController
 
 }  // namespace blink
 
-#endif  // ScriptedIdleTaskController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SCRIPTED_IDLE_TASK_CONTROLLER_H_

@@ -14,7 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc/two_keys_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_adapter.h"
-#include "third_party/WebKit/public/platform/WebMediaStream.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 
 namespace content {

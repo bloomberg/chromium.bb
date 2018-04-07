@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include <memory>
-#include "core/testing/DummyPageHolder.h"
-#include "modules/webaudio/AudioBasicProcessorHandler.h"
-#include "modules/webaudio/OfflineAudioContext.h"
-#include "platform/audio/AudioProcessor.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_basic_processor_handler.h"
+#include "third_party/blink/renderer/modules/webaudio/offline_audio_context.h"
+#include "third_party/blink/renderer/platform/audio/audio_processor.h"
 
 namespace blink {
 

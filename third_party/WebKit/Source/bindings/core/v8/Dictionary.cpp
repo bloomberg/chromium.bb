@@ -23,11 +23,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/Dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 
-#include "bindings/core/v8/V8ScriptRunner.h"
-#include "bindings/core/v8/V8StringResource.h"
-#include "core/execution_context/ExecutionContext.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_string_resource.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
 namespace blink {
 

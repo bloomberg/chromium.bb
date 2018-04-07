@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCVoidRequestImpl_h
-#define RTCVoidRequestImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_VOID_REQUEST_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_VOID_REQUEST_IMPL_H_
 
-#include "bindings/core/v8/v8_void_function.h"
-#include "bindings/modules/v8/v8_rtc_peer_connection_error_callback.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/ExceptionCode.h"
-#include "platform/heap/Handle.h"
-#include "platform/peerconnection/RTCVoidRequest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_peer_connection_error_callback.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 
 namespace blink {
 
@@ -84,4 +84,4 @@ class RTCVoidRequestImpl final : public RTCVoidRequest,
 
 }  // namespace blink
 
-#endif  // RTCVoidRequestImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_VOID_REQUEST_IMPL_H_

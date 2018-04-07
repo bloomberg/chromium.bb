@@ -20,15 +20,15 @@
  *
  */
 
-#ifndef XSLTProcessor_h
-#define XSLTProcessor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_XSLT_PROCESSOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_XSLT_PROCESSOR_H_
 
-#include "core/dom/Node.h"
-#include "core/xml/XSLStyleSheet.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/xml/xsl_style_sheet.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 #include <libxml/parserInternals.h>
 #include <libxslt/documents.h>
@@ -98,4 +98,4 @@ class XSLTProcessor final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // XSLTProcessor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XSLT_PROCESSOR_H_

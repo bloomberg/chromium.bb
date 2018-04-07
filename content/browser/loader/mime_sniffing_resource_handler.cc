@@ -40,7 +40,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/resource_response.h"
-#include "third_party/WebKit/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "url/origin.h"
 
 namespace content {

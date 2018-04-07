@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediarecorder/MediaRecorder.h"
+#include "third_party/blink/renderer/modules/mediarecorder/media_recorder.h"
 
 #include <algorithm>
 #include <limits>
-#include "bindings/core/v8/Dictionary.h"
-#include "core/dom/events/Event.h"
-#include "core/fileapi/Blob.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "modules/EventTargetModules.h"
-#include "modules/mediarecorder/BlobEvent.h"
-#include "platform/blob/BlobData.h"
-#include "platform/network/mime/ContentType.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebMediaStream.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/mediarecorder/blob_event.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/network/mime/content_type.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

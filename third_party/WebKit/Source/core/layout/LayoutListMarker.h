@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef LayoutListMarker_h
-#define LayoutListMarker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_LIST_MARKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_LIST_MARKER_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutBox.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 
 namespace blink {
 
@@ -136,4 +136,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutListMarker, IsListMarker());
 
 }  // namespace blink
 
-#endif  // LayoutListMarker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_LIST_MARKER_H_

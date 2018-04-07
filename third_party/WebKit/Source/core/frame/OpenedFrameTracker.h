@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef OpenedFrameTracker_h
-#define OpenedFrameTracker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_OPENED_FRAME_TRACKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_OPENED_FRAME_TRACKER_H_
 
 #include "base/macros.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 

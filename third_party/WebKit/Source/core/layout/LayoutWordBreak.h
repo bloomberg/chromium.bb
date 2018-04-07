@@ -24,10 +24,10 @@
  *
  */
 
-#ifndef LayoutWordBreak_h
-#define LayoutWordBreak_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_WORD_BREAK_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_WORD_BREAK_H_
 
-#include "core/layout/LayoutText.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
 
 namespace blink {
 

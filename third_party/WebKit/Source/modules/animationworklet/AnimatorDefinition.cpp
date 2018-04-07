@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/animationworklet/AnimatorDefinition.h"
+#include "third_party/blink/renderer/modules/animationworklet/animator_definition.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/animationworklet/Animator.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8Binding.h"
-#include "platform/bindings/V8ObjectConstructor.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/animationworklet/animator.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 
 namespace blink {
 

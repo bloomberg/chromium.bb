@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/web/WebScriptSource.h"
+#include "third_party/blink/public/web/web_script_source.h"
 
-#include "bindings/core/v8/ScriptSourceCode.h"
-#include "platform/wtf/text/TextPosition.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
 namespace blink {
 

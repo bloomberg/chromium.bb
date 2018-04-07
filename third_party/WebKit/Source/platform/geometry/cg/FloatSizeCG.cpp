@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/geometry/FloatSize.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 

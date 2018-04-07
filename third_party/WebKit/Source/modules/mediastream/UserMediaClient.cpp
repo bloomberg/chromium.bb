@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/UserMediaClient.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/mediastream/ApplyConstraintsRequest.h"
-#include "modules/mediastream/UserMediaRequest.h"
-#include "public/web/WebApplyConstraintsRequest.h"
-#include "public/web/WebFrameClient.h"
-#include "public/web/WebUserMediaClient.h"
-#include "public/web/WebUserMediaRequest.h"
+#include "third_party/blink/public/web/web_apply_constraints_request.h"
+#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_user_media_client.h"
+#include "third_party/blink/public/web/web_user_media_request.h"
+#include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 
 namespace blink {
 

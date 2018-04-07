@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/image-decoders/ico/ICOImageDecoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/ico/ico_image_decoder.h"
 
 #include <memory>
-#include "platform/image-decoders/ImageDecoderTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
 
 namespace blink {
 

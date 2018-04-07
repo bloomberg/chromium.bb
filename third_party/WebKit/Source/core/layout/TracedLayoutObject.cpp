@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/TracedLayoutObject.h"
+#include "third_party/blink/renderer/core/layout/traced_layout_object.h"
 
-#include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutTableCell.h"
-#include "core/layout/LayoutText.h"
-#include "core/layout/LayoutView.h"
 #include <inttypes.h>
 #include <memory>
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 
 namespace blink {
 

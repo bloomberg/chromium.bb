@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebPagePopupImpl_h
-#define WebPagePopupImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_PAGE_POPUP_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_PAGE_POPUP_IMPL_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/page/PagePopup.h"
-#include "core/page/PageWidgetDelegate.h"
-#include "platform/wtf/RefCounted.h"
-#include "public/web/WebPagePopup.h"
+#include "third_party/blink/public/web/web_page_popup.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/page/page_popup.h"
+#include "third_party/blink/renderer/core/page/page_widget_delegate.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -144,4 +144,4 @@ DEFINE_TYPE_CASTS(WebPagePopupImpl,
 DEFINE_TYPE_CASTS(WebPagePopupImpl, PagePopup, popup, true, true);
 
 }  // namespace blink
-#endif  // WebPagePopupImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_PAGE_POPUP_IMPL_H_

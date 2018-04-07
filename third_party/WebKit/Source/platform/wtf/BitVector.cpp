@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/BitVector.h"
+#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 
-#include "platform/wtf/LeakAnnotations.h"
-#include "platform/wtf/allocator/Partitions.h"
-#include <algorithm>
 #include <string.h>
+#include <algorithm>
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
 
 namespace WTF {
 

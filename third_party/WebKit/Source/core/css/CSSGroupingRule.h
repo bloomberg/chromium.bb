@@ -20,12 +20,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSGroupingRule_h
-#define CSSGroupingRule_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GROUPING_RULE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GROUPING_RULE_H_
 
-#include "core/css/CSSRule.h"
-#include "core/css/StyleRule.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/css/css_rule.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class CSSGroupingRule : public CSSRule {
 
 }  // namespace blink
 
-#endif  // CSSGroupingRule_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GROUPING_RULE_H_

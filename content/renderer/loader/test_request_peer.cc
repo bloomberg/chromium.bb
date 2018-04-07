@@ -7,7 +7,7 @@
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "net/url_request/redirect_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace content {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSMathMin_h
-#define CSSMathMin_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_MIN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_MIN_H_
 
 #include "base/macros.h"
-#include "core/css/cssom/CSSMathVariadic.h"
+#include "third_party/blink/renderer/core/css/cssom/css_math_variadic.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class CORE_EXPORT CSSMathMin final : public CSSMathVariadic {
 
 }  // namespace blink
 
-#endif  // CSSMathMin_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_MIN_H_

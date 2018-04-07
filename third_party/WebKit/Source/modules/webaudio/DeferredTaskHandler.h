@@ -23,17 +23,17 @@
  * DAMAGE.
  */
 
-#ifndef DeferredTaskHandler_h
-#define DeferredTaskHandler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DEFERRED_TASK_HANDLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DEFERRED_TASK_HANDLER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/ModulesExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -223,4 +223,4 @@ class MODULES_EXPORT DeferredTaskHandler final
 
 }  // namespace blink
 
-#endif  // DeferredTaskHandler_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DEFERRED_TASK_HANDLER_H_

@@ -30,18 +30,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/ImageDataBuffer.h"
+#include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/image-encoders/ImageEncoder.h"
-#include "platform/network/mime/MIMETypeRegistry.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/Base64.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkSwizzle.h"
 #include "third_party/skia/include/encode/SkJpegEncoder.h"
 

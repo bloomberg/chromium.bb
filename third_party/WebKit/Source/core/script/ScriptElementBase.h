@@ -18,16 +18,16 @@
  * Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ScriptElementBase_h
-#define ScriptElementBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_ELEMENT_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_ELEMENT_BASE_H_
 
-#include "core/CoreExport.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/Heap.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/TextPosition.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 class Document;

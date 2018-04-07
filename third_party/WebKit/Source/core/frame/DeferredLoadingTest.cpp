@@ -4,14 +4,14 @@
 
 #include <memory>
 
-#include "core/dom/Element.h"
-#include "core/exported/WebViewImpl.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/testing/sim/SimCompositor.h"
-#include "core/testing/sim/SimRequest.h"
-#include "core/testing/sim/SimTest.h"
-#include "platform/testing/HistogramTester.h"
-#include "platform/testing/UnitTestHelpers.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 

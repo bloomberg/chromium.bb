@@ -20,20 +20,20 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-#include "base/strings/string_util.h"
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/dtoa.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/IntegerToStringConversion.h"
-#include "platform/wtf/text/UTF8.h"
-#include "platform/wtf/text/Unicode.h"
-#include <algorithm>
 #include <stdarg.h>
+#include <algorithm>
+#include "base/strings/string_util.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/integer_to_string_conversion.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/text/utf8.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace WTF {
 

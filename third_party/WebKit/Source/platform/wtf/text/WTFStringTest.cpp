@@ -23,12 +23,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/CString.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include <limits>
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 namespace WTF {
 

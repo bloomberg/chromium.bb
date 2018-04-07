@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/custom/V0CustomElementMicrotaskRunQueue.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_run_queue.h"
 
-#include "core/html/custom/V0CustomElementAsyncImportMicrotaskQueue.h"
-#include "core/html/custom/V0CustomElementSyncMicrotaskQueue.h"
-#include "core/html/imports/HTMLImportLoader.h"
-#include "platform/bindings/Microtask.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_async_import_microtask_queue.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_sync_microtask_queue.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
 
 namespace blink {
 

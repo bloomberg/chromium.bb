@@ -21,25 +21,25 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/svg/LayoutSVGRoot.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 
-#include "core/frame/FrameOwner.h"
-#include "core/frame/LocalFrame.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutAnalyzer.h"
-#include "core/layout/LayoutEmbeddedContent.h"
-#include "core/layout/LayoutView.h"
-#include "core/layout/svg/LayoutSVGResourceMasker.h"
-#include "core/layout/svg/LayoutSVGText.h"
-#include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/layout/svg/SVGResources.h"
-#include "core/layout/svg/SVGResourcesCache.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/SVGRootPainter.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGSVGElement.h"
-#include "core/svg/graphics/SVGImage.h"
-#include "platform/LengthFunctions.h"
+#include "third_party/blink/renderer/core/frame/frame_owner.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/svg_root_painter.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_svg_element.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
 
 namespace blink {
 

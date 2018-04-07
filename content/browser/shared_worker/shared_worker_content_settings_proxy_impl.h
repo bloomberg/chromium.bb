@@ -10,7 +10,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_context.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/WebKit/public/web/worker_content_settings_proxy.mojom.h"
+#include "third_party/blink/public/web/worker_content_settings_proxy.mojom.h"
 #include "url/origin.h"
 
 namespace content {

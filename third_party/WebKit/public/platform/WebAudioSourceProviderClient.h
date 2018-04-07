@@ -22,8 +22,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebAudioSourceProviderClient_h
-#define WebAudioSourceProviderClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_AUDIO_SOURCE_PROVIDER_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_AUDIO_SOURCE_PROVIDER_CLIENT_H_
 
 namespace blink {
 
@@ -37,4 +37,4 @@ class WebAudioSourceProviderClient {
 
 }  // namespace blink
 
-#endif  // WebAudioSourceProviderClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_AUDIO_SOURCE_PROVIDER_CLIENT_H_

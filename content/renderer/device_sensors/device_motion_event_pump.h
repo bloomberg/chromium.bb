@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "content/renderer/device_sensors/device_sensor_event_pump.h"
-#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionListener.h"
+#include "third_party/blink/public/platform/modules/device_orientation/web_device_motion_listener.h"
 
 namespace device {
 class MotionData;

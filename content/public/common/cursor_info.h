@@ -7,7 +7,7 @@
 
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebCursorInfo.h"
+#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {

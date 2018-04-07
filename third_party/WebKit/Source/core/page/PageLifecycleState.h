@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PageLifecycleState_h
-#define PageLifecycleState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_LIFECYCLE_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_LIFECYCLE_STATE_H_
 
 namespace blink {
 
@@ -15,4 +15,4 @@ enum class PageLifecycleState {
 };
 
 }  // namespace blink
-#endif  // PageLifecycleState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_LIFECYCLE_STATE_H_

@@ -21,15 +21,15 @@
  *
  */
 
-#ifndef LayoutThemeMac_h
-#define LayoutThemeMac_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_MAC_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_MAC_H_
 
 #import <AppKit/AppKit.h>
 
-#import "core/layout/LayoutTheme.h"
-#import "core/paint/ThemePainterMac.h"
-#import "platform/wtf/HashMap.h"
-#import "platform/wtf/RetainPtr.h"
+#import "third_party/blink/renderer/core/layout/layout_theme.h"
+#import "third_party/blink/renderer/core/paint/theme_painter_mac.h"
+#import "third_party/blink/renderer/platform/wtf/hash_map.h"
+#import "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 
 OBJC_CLASS BlinkLayoutThemeNotificationObserver;
 
@@ -211,4 +211,4 @@ class LayoutThemeMac final : public LayoutTheme {
 
 }  // namespace blink
 
-#endif  // LayoutThemeMac_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_MAC_H_

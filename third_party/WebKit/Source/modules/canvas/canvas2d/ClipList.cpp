@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/canvas/canvas2d/ClipList.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/clip_list.h"
 
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/transforms/AffineTransform.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 
 namespace blink {

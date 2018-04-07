@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PreloadRequest_h
-#define PreloadRequest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_PRELOAD_REQUEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_PRELOAD_REQUEST_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/CoreExport.h"
-#include "core/script/Script.h"
-#include "platform/CrossOriginAttributeValue.h"
-#include "platform/loader/fetch/ClientHintsPreferences.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/IntegrityMetadata.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/weborigin/SecurityPolicy.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/TextPosition.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/script/script.h"
+#include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
+#include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
 namespace blink {
 

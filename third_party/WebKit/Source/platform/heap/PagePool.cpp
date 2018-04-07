@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/heap/PagePool.h"
+#include "third_party/blink/renderer/platform/heap/page_pool.h"
 
-#include "platform/heap/Heap.h"
-#include "platform/heap/PageMemory.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/page_memory.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

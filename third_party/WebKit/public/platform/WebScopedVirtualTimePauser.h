@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebScopedVirtualTimePauser_h
-#define WebScopedVirtualTimePauser_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCOPED_VIRTUAL_TIME_PAUSER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCOPED_VIRTUAL_TIME_PAUSER_H_
 
-#include "WebCommon.h"
 #include "base/time/time.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 namespace scheduler {
@@ -60,4 +60,4 @@ class BLINK_PLATFORM_EXPORT WebScopedVirtualTimePauser {
 
 }  // namespace blink
 
-#endif  // WebScopedVirtualTimePauser_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCOPED_VIRTUAL_TIME_PAUSER_H_

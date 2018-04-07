@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MemoryCacheDumpProvider_h
-#define MemoryCacheDumpProvider_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_TRACING_MEMORY_CACHE_DUMP_PROVIDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_TRACING_MEMORY_CACHE_DUMP_PROVIDER_H_
 
 #include "base/macros.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/process_memory_dump.h"
-#include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/instrumentation/tracing/web_process_memory_dump.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ class PLATFORM_EXPORT MemoryCacheDumpProvider final
 
 }  // namespace blink
 
-#endif  // MemoryCacheDumpProvider_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_TRACING_MEMORY_CACHE_DUMP_PROVIDER_H_

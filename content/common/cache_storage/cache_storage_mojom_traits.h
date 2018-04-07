@@ -15,7 +15,7 @@
 #include "content/common/service_worker/service_worker_fetch_response_mojom_traits.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
-#include "third_party/WebKit/public/platform/modules/cache_storage/cache_storage.mojom.h"
+#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "url/gurl.h"
 
 namespace mojo {

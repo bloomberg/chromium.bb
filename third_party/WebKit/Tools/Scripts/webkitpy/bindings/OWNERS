@@ -1,5 +1,5 @@
 # Bindings OWNERS
-file://third_party/WebKit/Source/platform/bindings/OWNERS
+file://third_party/blink/renderer/platform/bindings/OWNERS
 
 # TEAM: blink-reviews-bindings@chromium.org
 # COMPONENT: Blink>Bindings

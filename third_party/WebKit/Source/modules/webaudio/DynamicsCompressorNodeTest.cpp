@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/testing/DummyPageHolder.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "modules/webaudio/DynamicsCompressorNode.h"
-#include "modules/webaudio/OfflineAudioContext.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/dynamics_compressor_node.h"
+#include "third_party/blink/renderer/modules/webaudio/offline_audio_context.h"
 
 namespace blink {
 

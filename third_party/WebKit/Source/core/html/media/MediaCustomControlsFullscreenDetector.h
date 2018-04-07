@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaCustomControlsFullscreenDetector_h
-#define MediaCustomControlsFullscreenDetector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_MEDIA_CUSTOM_CONTROLS_FULLSCREEN_DETECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_MEDIA_CUSTOM_CONTROLS_FULLSCREEN_DETECTOR_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/events/EventListener.h"
-#include "platform/Timer.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class CORE_EXPORT MediaCustomControlsFullscreenDetector final
 
 }  // namespace blink
 
-#endif  // MediaCustomControlsFullscreenDetector_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_MEDIA_CUSTOM_CONTROLS_FULLSCREEN_DETECTOR_H_

@@ -20,11 +20,11 @@
  *
  */
 
-#include "core/layout/LayoutTextControlMultiLine.h"
+#include "third_party/blink/renderer/core/layout/layout_text_control_multi_line.h"
 
-#include "core/html/forms/HTMLTextAreaElement.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutTheme.h"
+#include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
 
 namespace blink {
 

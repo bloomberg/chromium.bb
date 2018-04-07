@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/FontData.h"
+#include "third_party/blink/renderer/platform/fonts/font_data.h"
 
 namespace blink {
 

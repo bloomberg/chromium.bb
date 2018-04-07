@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/timing/PerformanceObserver.h"
+#include "third_party/blink/renderer/core/timing/performance_observer.h"
 
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/core/v8/v8_performance_observer_callback.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/timing/Performance.h"
-#include "core/timing/PerformanceMark.h"
-#include "core/timing/PerformanceObserverInit.h"
-#include "core/timing/WindowPerformance.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/TaskType.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_performance_observer_callback.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/timing/performance.h"
+#include "third_party/blink/renderer/core/timing/performance_mark.h"
+#include "third_party/blink/renderer/core/timing/performance_observer_init.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaValues_h
-#define MediaValues_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_H_
 
-#include "core/CoreExport.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/PointerProperties.h"
-#include "public/platform/ShapeProperties.h"
-#include "public/platform/WebDisplayMode.h"
+#include "third_party/blink/public/platform/pointer_properties.h"
+#include "third_party/blink/public/platform/shape_properties.h"
+#include "third_party/blink/public/platform/web_display_mode.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -101,4 +101,4 @@ class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
 
 }  // namespace blink
 
-#endif  // MediaValues_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_H_

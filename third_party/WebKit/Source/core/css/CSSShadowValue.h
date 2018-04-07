@@ -18,12 +18,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSShadowValue_h
-#define CSSShadowValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SHADOW_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SHADOW_VALUE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/css/CSSValue.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
 
 namespace blink {
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/push_messaging/PushMessageData.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_message_data.h"
 
-#include "public/platform/WebString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 namespace {

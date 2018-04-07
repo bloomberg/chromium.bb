@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 
 #include <algorithm>
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutTableCell.h"
-#include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/LayoutUnit.h"
-#include "platform/Length.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 // TODO(layout-ng):

@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFrameSerializerClient_h
-#define WebFrameSerializerClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_SERIALIZER_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_SERIALIZER_CLIENT_H_
 
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 

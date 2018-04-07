@@ -10,7 +10,7 @@
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
-#include "third_party/WebKit/public/platform/WebStorageArea.h"
+#include "third_party/blink/public/platform/web_storage_area.h"
 #include "url/gurl.h"
 #include "url/ipc/url_param_traits.h"
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/push_messaging/PushManager.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_manager.h"
 
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "modules/push_messaging/PushSubscriptionOptions.h"
-#include "modules/push_messaging/PushSubscriptionOptionsInit.h"
-#include "public/platform/WebString.h"
-#include "public/platform/modules/push_messaging/WebPushSubscriptionOptions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription_options.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription_options_init.h"
 
 namespace blink {
 namespace {

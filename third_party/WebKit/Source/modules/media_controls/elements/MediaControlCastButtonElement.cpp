@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlCastButtonElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_cast_button_element.h"
 
-#include "core/dom/events/Event.h"
-#include "core/geometry/DOMRect.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/input_type_names.h"
-#include "modules/media_controls/MediaControlsImpl.h"
-#include "modules/media_controls/elements/MediaControlElementsHelper.h"
-#include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
-#include "modules/remoteplayback/RemotePlayback.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
+#include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 
 namespace blink {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AccessControlStatus_h
-#define AccessControlStatus_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_ACCESS_CONTROL_STATUS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_ACCESS_CONTROL_STATUS_H_
 
 namespace blink {
 
@@ -15,4 +15,4 @@ enum AccessControlStatus {
 
 }  // namespace blink
 
-#endif  // AccessControlStatus_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_ACCESS_CONTROL_STATUS_H_

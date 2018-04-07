@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 
 namespace storage {
 class BlobRegistryImpl;

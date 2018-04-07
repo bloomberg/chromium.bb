@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/csp/CSPDirectiveList.h"
+#include "third_party/blink/renderer/core/frame/csp/csp_directive_list.h"
 
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/frame/csp/SourceListDirective.h"
-#include "platform/loader/SubresourceIntegrity.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/network/ContentSecurityPolicyParsers.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringOperators.h"
-#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/csp/source_list_directive.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_operators.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

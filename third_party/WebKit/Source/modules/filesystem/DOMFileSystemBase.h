@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMFileSystemBase_h
-#define DOMFileSystemBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DOM_FILE_SYSTEM_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DOM_FILE_SYSTEM_BASE_H_
 
-#include "core/fileapi/FileError.h"
-#include "modules/ModulesExport.h"
-#include "modules/filesystem/FileSystemCallbacks.h"
-#include "modules/filesystem/FileSystemFlags.h"
-#include "platform/FileSystemType.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_flags.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/file_system_type.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 class WebFileSystem;
@@ -181,4 +181,4 @@ inline bool operator==(const DOMFileSystemBase& a, const DOMFileSystemBase& b) {
 
 }  // namespace blink
 
-#endif  // DOMFileSystemBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DOM_FILE_SYSTEM_BASE_H_

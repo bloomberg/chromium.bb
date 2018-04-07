@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigatorMediaSession_h
-#define NavigatorMediaSession_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASESSION_NAVIGATOR_MEDIA_SESSION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASESSION_NAVIGATOR_MEDIA_SESSION_H_
 
-#include "core/frame/Navigator.h"
-#include "modules/mediasession/MediaSession.h"
-#include "platform/Supplementable.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/mediasession/media_session.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -37,4 +37,4 @@ class NavigatorMediaSession final
 
 }  // namespace blink
 
-#endif  // NavigatorMediaSession_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASESSION_NAVIGATOR_MEDIA_SESSION_H_

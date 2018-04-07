@@ -22,16 +22,16 @@
  *
  */
 
-#ifndef HTMLInputElement_h
-#define HTMLInputElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_INPUT_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_INPUT_ELEMENT_H_
 
 #include "base/gtest_prod_util.h"
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/CoreExport.h"
-#include "core/dom/CreateElementFlags.h"
-#include "core/html/forms/FileChooser.h"
-#include "core/html/forms/StepRange.h"
-#include "core/html/forms/TextControlElement.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/create_element_flags.h"
+#include "third_party/blink/renderer/core/html/forms/file_chooser.h"
+#include "third_party/blink/renderer/core/html/forms/step_range.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 
 namespace blink {
 
@@ -438,4 +438,4 @@ class CORE_EXPORT HTMLInputElement
 
 }  // namespace blink
 
-#endif  // HTMLInputElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_INPUT_ELEMENT_H_

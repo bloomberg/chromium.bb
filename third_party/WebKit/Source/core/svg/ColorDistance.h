@@ -17,10 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef ColorDistance_h
-#define ColorDistance_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_COLOR_DISTANCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_COLOR_DISTANCE_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -36,4 +36,4 @@ class ColorDistance {
 
 }  // namespace blink
 
-#endif  // ColorDistance_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_COLOR_DISTANCE_H_

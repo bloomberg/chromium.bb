@@ -24,18 +24,18 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InternalSettings_h
-#define InternalSettings_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_INTERNAL_SETTINGS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_INTERNAL_SETTINGS_H_
 
-#include "core/editing/EditingBehaviorTypes.h"
-#include "core/page/Page.h"
-#include "core/testing/InternalSettingsGenerated.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/ImageAnimationPolicy.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebDisplayMode.h"
+#include "third_party/blink/public/platform/web_display_mode.h"
+#include "third_party/blink/renderer/core/editing/editing_behavior_types.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/testing/internal_settings_generated.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/image_animation_policy.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -155,4 +155,4 @@ class InternalSettings final : public InternalSettingsGenerated,
 
 }  // namespace blink
 
-#endif  // InternalSettings_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_INTERNAL_SETTINGS_H_

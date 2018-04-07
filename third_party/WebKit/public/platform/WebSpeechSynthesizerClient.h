@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSpeechSynthesizerClient_h
-#define WebSpeechSynthesizerClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SPEECH_SYNTHESIZER_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SPEECH_SYNTHESIZER_CLIENT_H_
 
-#include "WebSpeechSynthesisUtterance.h"
-#include "WebSpeechSynthesisVoice.h"
-#include "WebVector.h"
+#include "third_party/blink/public/platform/web_speech_synthesis_utterance.h"
+#include "third_party/blink/public/platform/web_speech_synthesis_voice.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class WebSpeechSynthesizerClient {
 
 }  // namespace blink
 
-#endif  // WebSpeechSynthesizerClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SPEECH_SYNTHESIZER_CLIENT_H_

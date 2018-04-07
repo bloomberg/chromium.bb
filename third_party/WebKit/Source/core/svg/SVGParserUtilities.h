@@ -19,10 +19,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGParserUtilities_h
-#define SVGParserUtilities_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PARSER_UTILITIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PARSER_UTILITIES_H_
 
-#include "core/html/parser/HTMLParserIdioms.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ inline bool SkipOptionalSVGSpacesOrDelimiter(const CharType*& ptr,
 
 }  // namespace blink
 
-#endif  // SVGParserUtilities_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PARSER_UTILITIES_H_

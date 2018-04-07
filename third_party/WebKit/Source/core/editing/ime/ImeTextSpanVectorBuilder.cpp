@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/ime/ImeTextSpanVectorBuilder.h"
+#include "third_party/blink/renderer/core/editing/ime/ime_text_span_vector_builder.h"
 
 namespace blink {
 

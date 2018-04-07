@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MojoInterfaceRequestEvent_h
-#define MojoInterfaceRequestEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_MOJO_TEST_MOJO_INTERFACE_REQUEST_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_MOJO_TEST_MOJO_INTERFACE_REQUEST_EVENT_H_
 
-#include "core/dom/events/Event.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class MojoInterfaceRequestEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // MojoInterfaceRequestEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_MOJO_TEST_MOJO_INTERFACE_REQUEST_EVENT_H_

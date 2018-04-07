@@ -14,9 +14,9 @@
 #include "content/common/media/peer_connection_tracker.mojom.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "ipc/ipc_platform_file.h"
-#include "third_party/WebKit/public/platform/WebMediaStream.h"
-#include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandlerClient.h"
-#include "third_party/WebKit/public/platform/WebRTCSessionDescription.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
+#include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 
 namespace blink {

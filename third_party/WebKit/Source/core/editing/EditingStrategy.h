@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EditingStrategy_h
-#define EditingStrategy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_STRATEGY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_STRATEGY_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/FlatTreeTraversal.h"
-#include "core/dom/NodeTraversal.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ using EditingInFlatTreeStrategy = EditingAlgorithm<FlatTreeTraversal>;
 
 }  // namespace blink
 
-#endif  // EditingStrategy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_STRATEGY_H_

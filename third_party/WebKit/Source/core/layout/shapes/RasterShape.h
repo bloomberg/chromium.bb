@@ -27,16 +27,16 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RasterShape_h
-#define RasterShape_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_RASTER_SHAPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_RASTER_SHAPE_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "core/layout/shapes/Shape.h"
-#include "core/layout/shapes/ShapeInterval.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/layout/shapes/shape.h"
+#include "third_party/blink/renderer/core/layout/shapes/shape_interval.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -111,4 +111,4 @@ class RasterShape final : public Shape {
 
 }  // namespace blink
 
-#endif  // RasterShape_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_RASTER_SHAPE_H_

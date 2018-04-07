@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webusb/USB.h"
+#include "third_party/blink/renderer/modules/webusb/usb.h"
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/frame/Frame.h"
 #include "device/usb/public/mojom/device.mojom-blink.h"
-#include "modules/EventTargetModules.h"
-#include "modules/webusb/USBConnectionEvent.h"
-#include "modules/webusb/USBDevice.h"
-#include "modules/webusb/USBDeviceFilter.h"
-#include "modules/webusb/USBDeviceRequestOptions.h"
-#include "platform/feature_policy/FeaturePolicy.h"
-#include "platform/mojo/MojoHelper.h"
-#include "platform/wtf/Functional.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/webusb/usb_connection_event.h"
+#include "third_party/blink/renderer/modules/webusb/usb_device.h"
+#include "third_party/blink/renderer/modules/webusb/usb_device_filter.h"
+#include "third_party/blink/renderer/modules/webusb/usb_device_request_options.h"
+#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using device::mojom::blink::UsbDeviceFilterPtr;
 using device::mojom::blink::UsbDeviceInfoPtr;

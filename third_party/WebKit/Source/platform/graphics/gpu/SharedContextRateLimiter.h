@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SharedContextRateLimiter_h
-#define SharedContextRateLimiter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_SHARED_CONTEXT_RATE_LIMITER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_SHARED_CONTEXT_RATE_LIMITER_H_
 
 #include <memory>
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 

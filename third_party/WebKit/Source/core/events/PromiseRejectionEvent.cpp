@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/events/PromiseRejectionEvent.h"
+#include "third_party/blink/renderer/core/events/promise_rejection_event.h"
 
-#include "platform/bindings/DOMWrapperWorld.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 
 namespace blink {
 

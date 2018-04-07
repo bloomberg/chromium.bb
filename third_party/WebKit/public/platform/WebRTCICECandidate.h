@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebRTCICECandidate_h
-#define WebRTCICECandidate_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_ICE_CANDIDATE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_ICE_CANDIDATE_H_
 
-#include "WebCommon.h"
-#include "WebPrivatePtr.h"
-#include "WebString.h"
 #include "base/memory/ref_counted.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -82,4 +82,4 @@ class WebRTCICECandidate final : public base::RefCounted<WebRTCICECandidate> {
 
 }  // namespace blink
 
-#endif  // WebRTCICECandidate_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_ICE_CANDIDATE_H_

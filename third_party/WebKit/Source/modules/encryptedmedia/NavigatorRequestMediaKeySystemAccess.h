@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigatorRequestMediaKeySystemAccess_h
-#define NavigatorRequestMediaKeySystemAccess_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_NAVIGATOR_REQUEST_MEDIA_KEY_SYSTEM_ACCESS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_NAVIGATOR_REQUEST_MEDIA_KEY_SYSTEM_ACCESS_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/modules/v8/V8MediaKeySystemConfiguration.h"
-#include "core/frame/Navigator.h"
-#include "modules/encryptedmedia/MediaKeySystemConfiguration.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_media_key_system_configuration.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_key_system_configuration.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -27,4 +27,4 @@ class NavigatorRequestMediaKeySystemAccess {
 
 }  // namespace blink
 
-#endif  // NavigatorRequestMediaKeySystemAccess_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_NAVIGATOR_REQUEST_MEDIA_KEY_SYSTEM_ACCESS_H_

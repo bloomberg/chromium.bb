@@ -5,18 +5,18 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/jumbo.gni")
 import("//build/split_static_library.gni")
-import("//third_party/WebKit/Source/config.gni")
+import("//third_party/blink/renderer/config.gni")
 
-blink_core_output_dir = "$root_gen_dir/blink/core"
+blink_core_output_dir = "$root_gen_dir/third_party/blink/renderer/core"
 
 # This file sets core_config_add and core_config_remove lists of configs to
 # modify the default lists of configs set in the build as appropriate for core
 # targets. This avoids duplicating logic across many targets.
 core_config_add = [
   "//build/config/compiler:wexit_time_destructors",
-  "//third_party/WebKit/Source:config",
-  "//third_party/WebKit/Source:non_test_config",
-  "//third_party/WebKit/Source/core:config",
+  "//third_party/blink/renderer:config",
+  "//third_party/blink/renderer:non_test_config",
+  "//third_party/blink/renderer/core:config",
 ]
 core_config_remove = []
 
@@ -85,21 +85,21 @@ template("blink_core_sources") {
   target(target_type, target_name) {
     # The visibility will get overridden by forward_variables_from below if the
     # invoker defined it.
-    visibility = [ "//third_party/WebKit/Source/core/*" ]
+    visibility = [ "//third_party/blink/renderer/core/*" ]
 
     if (target_type == "jumbo_split_static_library") {
       split_count = invoker.split_count
     }
 
     deps = [
-      "//third_party/WebKit/Source/core:prerequisites",
+      "//third_party/blink/renderer/core:prerequisites",
     ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
 
     public_deps = [
-      "//third_party/WebKit/Source/core:all_generators",
+      "//third_party/blink/renderer/core:all_generators",
     ]
     if (defined(invoker.public_deps)) {
       public_deps += invoker.public_deps
@@ -123,5 +123,5 @@ set_defaults("blink_core_sources") {
 
   # Compile each of the core sources targets with (core) precompiled header
   # support, for lower Windows build times.
-  configs += [ "//third_party/WebKit/Source/core:blink_core_pch" ]
+  configs += [ "//third_party/blink/renderer/core:blink_core_pch" ]
 }

@@ -2,34 +2,34 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("bluetooth") {
   sources = [
-    "Bluetooth.cpp",
-    "Bluetooth.h",
-    "BluetoothAttributeInstanceMap.cpp",
-    "BluetoothAttributeInstanceMap.h",
-    "BluetoothCharacteristicProperties.cpp",
-    "BluetoothCharacteristicProperties.h",
-    "BluetoothDevice.cpp",
-    "BluetoothDevice.h",
-    "BluetoothError.cpp",
-    "BluetoothError.h",
-    "BluetoothRemoteGATTCharacteristic.cpp",
-    "BluetoothRemoteGATTCharacteristic.h",
-    "BluetoothRemoteGATTDescriptor.cpp",
-    "BluetoothRemoteGATTDescriptor.h",
-    "BluetoothRemoteGATTServer.cpp",
-    "BluetoothRemoteGATTServer.h",
-    "BluetoothRemoteGATTService.cpp",
-    "BluetoothRemoteGATTService.h",
-    "BluetoothRemoteGATTUtils.cpp",
-    "BluetoothRemoteGATTUtils.h",
-    "BluetoothUUID.cpp",
-    "BluetoothUUID.h",
-    "NavigatorBluetooth.cpp",
-    "NavigatorBluetooth.h",
+    "bluetooth.cc",
+    "bluetooth.h",
+    "bluetooth_attribute_instance_map.cc",
+    "bluetooth_attribute_instance_map.h",
+    "bluetooth_characteristic_properties.cc",
+    "bluetooth_characteristic_properties.h",
+    "bluetooth_device.cc",
+    "bluetooth_device.h",
+    "bluetooth_error.cc",
+    "bluetooth_error.h",
+    "bluetooth_remote_gatt_characteristic.cc",
+    "bluetooth_remote_gatt_characteristic.h",
+    "bluetooth_remote_gatt_descriptor.cc",
+    "bluetooth_remote_gatt_descriptor.h",
+    "bluetooth_remote_gatt_server.cc",
+    "bluetooth_remote_gatt_server.h",
+    "bluetooth_remote_gatt_service.cc",
+    "bluetooth_remote_gatt_service.h",
+    "bluetooth_remote_gatt_utils.cc",
+    "bluetooth_remote_gatt_utils.h",
+    "bluetooth_uuid.cc",
+    "bluetooth_uuid.h",
+    "navigator_bluetooth.cc",
+    "navigator_bluetooth.h",
   ]
 
   deps = [

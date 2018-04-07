@@ -24,13 +24,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XPathPredicate_h
-#define XPathPredicate_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_PREDICATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_PREDICATE_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/xml/XPathExpressionNode.h"
-#include "core/xml/XPathValue.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/xml/xpath_expression_node.h"
+#include "third_party/blink/renderer/core/xml/xpath_value.h"
 
 namespace blink {
 
@@ -140,4 +140,4 @@ class Predicate final : public GarbageCollected<Predicate> {
 
 }  // namespace blink
 
-#endif  // XPathPredicate_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_PREDICATE_H_

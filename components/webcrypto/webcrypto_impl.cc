@@ -24,8 +24,8 @@
 #include "components/webcrypto/crypto_data.h"
 #include "components/webcrypto/generate_key_result.h"
 #include "components/webcrypto/status.h"
-#include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_crypto_key_algorithm.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace webcrypto {
 

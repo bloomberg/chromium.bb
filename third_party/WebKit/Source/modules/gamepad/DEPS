@@ -6,8 +6,8 @@ include_rules = [
 
     "+device/gamepad/public/mojom/gamepad.mojom-blink.h",
 
-    "-modules",
-    "+modules/EventModules.h",
-    "+modules/ModulesExport.h",
-    "+modules/gamepad",
+    "-third_party/blink/renderer/modules",
+    "+third_party/blink/renderer/modules/event_modules.h",
+    "+third_party/blink/renderer/modules/modules_export.h",
+    "+third_party/blink/renderer/modules/gamepad",
 ]

@@ -23,36 +23,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLRenderingContextBase_h
-#define WebGLRenderingContextBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_RENDERING_CONTEXT_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_RENDERING_CONTEXT_BASE_H_
 
 #include <memory>
 #include <set>
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/CoreExport.h"
-#include "core/html/canvas/CanvasContextCreationAttributesCore.h"
-#include "core/html/canvas/CanvasRenderingContext.h"
-#include "core/layout/ContentChangeType.h"
-#include "core/typed_arrays/ArrayBufferViewHelpers.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "core/typed_arrays/TypedFlexibleArrayBufferView.h"
-#include "modules/webgl/WebGLContextAttributes.h"
-#include "modules/webgl/WebGLExtensionName.h"
-#include "modules/webgl/WebGLTexture.h"
-#include "modules/webgl/WebGLVertexArrayObjectBase.h"
-#include "modules/xr/XRDevice.h"
-#include "platform/Timer.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/ScriptWrappableVisitor.h"
-#include "platform/graphics/gpu/DrawingBuffer.h"
-#include "platform/graphics/gpu/Extensions3DUtil.h"
-#include "platform/graphics/gpu/WebGLImageConversion.h"
-#include "platform/wtf/CheckedNumeric.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebGraphicsContext3DProvider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
+#include "third_party/blink/renderer/core/layout/content_change_type.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/core/typed_arrays/typed_flexible_array_buffer_view.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_context_attributes.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_extension_name.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_texture.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_vertex_array_object_base.h"
+#include "third_party/blink/renderer/modules/xr/xr_device.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/webgl_image_conversion.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace blink {
@@ -1728,4 +1728,4 @@ DEFINE_TYPE_CASTS(WebGLRenderingContextBase,
 WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
     blink::WebGLRenderingContextBase::TextureUnitState);
 
-#endif  // WebGLRenderingContextBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_RENDERING_CONTEXT_BASE_H_

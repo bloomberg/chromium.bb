@@ -23,18 +23,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UseCounter_h
-#define UseCounter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_USE_COUNTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_USE_COUNTER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css/parser/CSSParserMode.h"
-#include "core/css_property_names.h"
-#include "core/frame/WebFeature.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/wtf/BitVector.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -183,4 +183,4 @@ class CORE_EXPORT UseCounter {
 
 }  // namespace blink
 
-#endif  // UseCounter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_USE_COUNTER_H_

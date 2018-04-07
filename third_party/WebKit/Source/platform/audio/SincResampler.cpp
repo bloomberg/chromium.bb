@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/SincResampler.h"
+#include "third_party/blink/renderer/platform/audio/sinc_resampler.h"
 
 #include "build/build_config.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 #if defined(ARCH_CPU_X86_FAMILY)
 #include <emmintrin.h>

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSPaintWorklet_h
-#define CSSPaintWorklet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_CSS_PAINT_WORKLET_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_CSS_PAINT_WORKLET_H_
 
-#include "modules/ModulesExport.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -22,4 +22,4 @@ class MODULES_EXPORT CSSPaintWorklet {
 
 }  // namespace blink
 
-#endif  // CSSPaintWorklet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_CSS_PAINT_WORKLET_H_

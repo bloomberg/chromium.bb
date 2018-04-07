@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/V0InsertionPoint.h"
+#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 
-#include "core/css/StyleChangeReason.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/QualifiedName.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/ShadowRootV0.h"
-#include "core/dom/StaticNodeList.h"
-#include "core/dom/WhitespaceAttacher.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/shadow_root_v0.h"
+#include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

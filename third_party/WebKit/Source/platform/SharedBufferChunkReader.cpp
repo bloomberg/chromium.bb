@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/SharedBufferChunkReader.h"
+#include "third_party/blink/renderer/platform/shared_buffer_chunk_reader.h"
 
-#include "platform/SharedBuffer.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 
 namespace blink {
 

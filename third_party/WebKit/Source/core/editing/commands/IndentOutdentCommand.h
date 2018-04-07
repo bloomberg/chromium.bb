@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IndentOutdentCommand_h
-#define IndentOutdentCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_INDENT_OUTDENT_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_INDENT_OUTDENT_COMMAND_H_
 
-#include "core/editing/commands/ApplyBlockElementCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/apply_block_element_command.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ class CORE_EXPORT IndentOutdentCommand final : public ApplyBlockElementCommand {
 
 }  // namespace blink
 
-#endif  // IndentOutdentCommand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_INDENT_OUTDENT_COMMAND_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/MediaValuesCached.h"
+#include "third_party/blink/renderer/core/css/media_values_cached.h"
 
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/layout/LayoutObject.h"
-#include "platform/graphics/ColorSpaceGamut.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
 
 namespace blink {
 

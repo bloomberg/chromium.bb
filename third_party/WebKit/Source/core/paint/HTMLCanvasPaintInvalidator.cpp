@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/HTMLCanvasPaintInvalidator.h"
+#include "third_party/blink/renderer/core/paint/html_canvas_paint_invalidator.h"
 
-#include "core/html/canvas/HTMLCanvasElement.h"
-#include "core/layout/LayoutHTMLCanvas.h"
-#include "core/paint/BoxPaintInvalidator.h"
-#include "core/paint/PaintInvalidator.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/layout/layout_html_canvas.h"
+#include "third_party/blink/renderer/core/paint/box_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 
 namespace blink {
 

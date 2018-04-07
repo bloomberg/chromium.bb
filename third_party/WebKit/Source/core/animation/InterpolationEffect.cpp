@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/InterpolationEffect.h"
+#include "third_party/blink/renderer/core/animation/interpolation_effect.h"
 
-#include "platform/animation/AnimationUtilities.h"
+#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
 
 namespace blink {
 

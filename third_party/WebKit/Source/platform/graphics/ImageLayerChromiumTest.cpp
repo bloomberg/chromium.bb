@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#include "platform/graphics/Image.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
 
 #include <memory>
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/testing/FakeGraphicsLayer.h"
-#include "platform/testing/FakeGraphicsLayerClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/testing/fake_graphics_layer.h"
+#include "third_party/blink/renderer/platform/testing/fake_graphics_layer_client.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 

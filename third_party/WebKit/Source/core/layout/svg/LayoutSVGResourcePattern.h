@@ -19,14 +19,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LayoutSVGResourcePattern_h
-#define LayoutSVGResourcePattern_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_PATTERN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_PATTERN_H_
 
 #include <memory>
-#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
-#include "core/svg/PatternAttributes.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
+#include "third_party/blink/renderer/core/svg/pattern_attributes.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {

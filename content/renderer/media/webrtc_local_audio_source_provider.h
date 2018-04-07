@@ -17,9 +17,9 @@
 #include "content/common/content_export.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "media/base/audio_converter.h"
-#include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_audio_source_provider.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace media {
 class AudioBus;

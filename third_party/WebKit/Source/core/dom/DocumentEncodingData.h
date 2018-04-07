@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DocumentEncodingData_h
-#define DocumentEncodingData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_ENCODING_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_ENCODING_DATA_H_
 
-#include "platform/CrossThreadCopier.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/platform/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 class TextResourceDecoder;
@@ -69,4 +69,4 @@ inline bool operator!=(const DocumentEncodingData& a,
 
 }  // namespace blink
 
-#endif  // DocumentEncodingData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_ENCODING_DATA_H_

@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutThemeFontProvider_h
-#define LayoutThemeFontProvider_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_FONT_PROVIDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_FONT_PROVIDER_H_
 
-#include "core/CoreExport.h"
-#include "core/css_value_keywords.h"
-#include "platform/fonts/FontSelectionTypes.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class CORE_EXPORT LayoutThemeFontProvider {
 
 }  // namespace blink
 
-#endif  // LayoutThemeFontProvider_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_FONT_PROVIDER_H_

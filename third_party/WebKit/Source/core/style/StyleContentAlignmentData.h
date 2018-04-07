@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StyleContentAlignmentData_h
-#define StyleContentAlignmentData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_CONTENT_ALIGNMENT_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_CONTENT_ALIGNMENT_DATA_H_
 
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class StyleContentAlignmentData {
 
 }  // namespace blink
 
-#endif  // StyleContentAlignmentData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_CONTENT_ALIGNMENT_DATA_H_

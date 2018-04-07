@@ -20,15 +20,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSToStyleMap_h
-#define CSSToStyleMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_CSS_TO_STYLE_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_CSS_TO_STYLE_MAP_H_
 
-#include "core/animation/Timing.h"
-#include "core/animation/css/CSSTransitionData.h"
-#include "core/css_property_names.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/animation/TimingFunction.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/animation/css/css_transition_data.h"
+#include "third_party/blink/renderer/core/animation/timing.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/animation/timing_function.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

@@ -28,24 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HeapPage_h
-#define HeapPage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_PAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_PAGE_H_
 
 #include <stdint.h>
 #include "base/bits.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "build/build_config.h"
-#include "platform/PlatformExport.h"
-#include "platform/heap/BlinkGC.h"
-#include "platform/heap/GCInfo.h"
-#include "platform/heap/ThreadState.h"
-#include "platform/heap/Visitor.h"
-#include "platform/wtf/AddressSanitizer.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/ContainerAnnotations.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/allocator/Partitions.h"
+#include "third_party/blink/renderer/platform/heap/blink_gc.h"
+#include "third_party/blink/renderer/platform/heap/gc_info.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/container_annotations.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -1189,4 +1189,4 @@ inline HeapObjectHeader::HeapObjectHeader(size_t size,
 
 }  // namespace blink
 
-#endif  // HeapPage_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_PAGE_H_

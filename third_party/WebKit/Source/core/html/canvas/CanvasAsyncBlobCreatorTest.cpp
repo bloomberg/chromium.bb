@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/canvas/CanvasAsyncBlobCreator.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_async_blob_creator.h"
 
-#include "core/html/canvas/ImageData.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/wtf/Functional.h"
-#include "public/platform/Platform.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/html/canvas/image_data.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {

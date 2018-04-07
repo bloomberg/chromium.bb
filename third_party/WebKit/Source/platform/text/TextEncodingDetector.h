@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextEncodingDetector_h
-#define TextEncodingDetector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_ENCODING_DETECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_ENCODING_DETECTOR_H_
 
-#include "platform/PlatformExport.h"
 #include <cstddef>
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace WTF {
 class TextEncoding;

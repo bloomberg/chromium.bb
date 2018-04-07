@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/geometry/DOMMatrixReadOnly.h"
+#include "third_party/blink/renderer/core/geometry/dom_matrix_read_only.h"
 
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSToLengthConversionData.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css/resolver/TransformBuilder.h"
-#include "core/geometry/DOMMatrix.h"
-#include "core/geometry/DOMMatrixInit.h"
-#include "core/geometry/DOMPoint.h"
-#include "core/geometry/DOMPointInit.h"
-#include "core/layout/LayoutView.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/resolver/transform_builder.h"
+#include "third_party/blink/renderer/core/geometry/dom_matrix.h"
+#include "third_party/blink/renderer/core/geometry/dom_matrix_init.h"
+#include "third_party/blink/renderer/core/geometry/dom_point.h"
+#include "third_party/blink/renderer/core/geometry/dom_point_init.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 namespace {

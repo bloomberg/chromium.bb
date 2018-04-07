@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/ScriptRunIterator.h"
+#include "third_party/blink/renderer/platform/fonts/script_run_iterator.h"
 
 #include <string>
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 

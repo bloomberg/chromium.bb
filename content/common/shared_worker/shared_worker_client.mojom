@@ -4,8 +4,8 @@
 
 module content.mojom;
 
-import "third_party/WebKit/public/mojom/shared_worker/shared_worker_creation_context_type.mojom";
-import "third_party/WebKit/public/platform/web_feature.mojom";
+import "third_party/blink/public/mojom/shared_worker/shared_worker_creation_context_type.mojom";
+import "third_party/blink/public/platform/web_feature.mojom";
 
 // An interface used by clients (e.g., the renderer where "new SharedWorker()"
 // was invoked) to observe events from a shared worker.

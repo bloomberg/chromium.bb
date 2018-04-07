@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/core/core.gni")
+import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("imagebitmap") {
   sources = [
-    "ImageBitmap.cpp",
-    "ImageBitmap.h",
-    "ImageBitmapFactories.cpp",
-    "ImageBitmapFactories.h",
-    "ImageBitmapSource.cpp",
-    "ImageBitmapSource.h",
+    "image_bitmap.cc",
+    "image_bitmap.h",
+    "image_bitmap_factories.cc",
+    "image_bitmap_factories.h",
+    "image_bitmap_source.cc",
+    "image_bitmap_source.h",
   ]
 }

@@ -21,20 +21,20 @@
  *
  */
 
-#ifndef TextRun_h
-#define TextRun_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_RUN_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_RUN_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/fonts/Glyph.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/heap/Heap.h"
-#include "platform/text/TabSize.h"
-#include "platform/text/TextDirection.h"
-#include "platform/text/TextJustify.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/text/StringView.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/fonts/glyph.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/text/tab_size.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/text/text_justify.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #include <SkRefCnt.h>
 #include <unicode/utf16.h>

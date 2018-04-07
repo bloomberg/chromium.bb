@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/filesystem/FileWriter.h"
+#include "third_party/blink/renderer/modules/filesystem/file_writer.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/events/ProgressEvent.h"
-#include "core/fileapi/Blob.h"
-#include "core/probe/CoreProbes.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/WebFileWriter.h"
-#include "public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_file_writer.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/events/progress_event.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

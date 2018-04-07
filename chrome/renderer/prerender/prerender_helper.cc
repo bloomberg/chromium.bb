@@ -11,8 +11,8 @@
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/public/web/web_view.h"
 
 using content::DocumentState;
 

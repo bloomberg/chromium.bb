@@ -27,11 +27,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef DedicatedWorkerThread_h
-#define DedicatedWorkerThread_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_THREAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_THREAD_H_
 
-#include "core/workers/WorkerThread.h"
 #include <memory>
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class CORE_EXPORT DedicatedWorkerThread : public WorkerThread {
 
 }  // namespace blink
 
-#endif  // DedicatedWorkerThread_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_THREAD_H_

@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMediaStreamRegistry_h
-#define WebMediaStreamRegistry_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_MEDIA_STREAM_REGISTRY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_MEDIA_STREAM_REGISTRY_H_
 
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class WebMediaStreamRegistry {
 
 }  // namespace blink
 
-#endif  // WebMediaStreamRegistry_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_MEDIA_STREAM_REGISTRY_H_

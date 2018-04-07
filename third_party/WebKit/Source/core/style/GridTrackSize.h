@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GridTrackSize_h
-#define GridTrackSize_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_TRACK_SIZE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_TRACK_SIZE_H_
 
-#include "core/style/GridLength.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/style/grid_length.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -199,4 +199,4 @@ class GridTrackSize {
 
 }  // namespace blink
 
-#endif  // GridTrackSize_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_TRACK_SIZE_H_

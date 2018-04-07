@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/blob/BlobData.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
 
 #include <memory>
 #include <utility>
@@ -10,15 +10,15 @@
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "platform/UUID.h"
-#include "platform/blob/BlobBytesProvider.h"
-#include "platform/blob/testing/FakeBlobRegistry.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "public/platform/FilePathConversion.h"
-#include "public/platform/InterfaceProvider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/renderer/platform/blob/blob_bytes_provider.h"
+#include "third_party/blink/renderer/platform/blob/testing/fake_blob_registry.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/uuid.h"
 
 namespace blink {
 

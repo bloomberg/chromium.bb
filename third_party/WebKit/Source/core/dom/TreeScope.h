@@ -24,15 +24,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TreeScope_h
-#define TreeScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TREE_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TREE_SCOPE_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/TreeOrderedMap.h"
-#include "core/html/forms/RadioButtonGroupScope.h"
-#include "core/layout/HitTestRequest.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/tree_ordered_map.h"
+#include "third_party/blink/renderer/core/html/forms/radio_button_group_scope.h"
+#include "third_party/blink/renderer/core/layout/hit_test_request.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -195,4 +195,4 @@ HitTestResult HitTestInDocument(
 
 }  // namespace blink
 
-#endif  // TreeScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TREE_SCOPE_H_

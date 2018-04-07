@@ -112,7 +112,7 @@ component("test_runner") {
     "//services/device/public/cpp/generic_sensor:shared_with_blink",
     "//services/device/public/mojom",
     "//skia",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//ui/display",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",

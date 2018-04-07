@@ -25,9 +25,9 @@
 #include "net/base/net_errors.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/WebKit/public/platform/WebURLError.h"
-#include "third_party/WebKit/public/web/WebTestingSupport.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/public/web/web_testing_support.h"
+#include "third_party/blink/public/web/web_view.h"
 #include "v8/include/v8.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)

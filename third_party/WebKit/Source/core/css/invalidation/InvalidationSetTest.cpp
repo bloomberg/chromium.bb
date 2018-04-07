@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/invalidation/InvalidationSet.h"
+#include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/shaping/CachingWordShaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
 
-#include "platform/fonts/CharacterRange.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/shaping/CachingWordShapeIterator.h"
-#include "platform/fonts/shaping/HarfBuzzShaper.h"
-#include "platform/fonts/shaping/ShapeCache.h"
-#include "platform/fonts/shaping/ShapeResultBuffer.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/platform/fonts/character_range.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shape_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_shaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_cache.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
 

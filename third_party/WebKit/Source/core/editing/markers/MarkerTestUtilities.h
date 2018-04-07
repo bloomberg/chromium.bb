@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MarkerTestUtilities_h
-#define MarkerTestUtilities_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_MARKER_TEST_UTILITIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_MARKER_TEST_UTILITIES_H_
 
-#include "core/editing/markers/SuggestionMarker.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/editing/markers/suggestion_marker.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 inline bool compare_markers(const Member<DocumentMarker>& marker1,
@@ -18,4 +18,4 @@ inline bool compare_markers(const Member<DocumentMarker>& marker1,
 }
 }  // namespace blink
 
-#endif  // MarkerTestUtilities_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_MARKER_TEST_UTILITIES_H_

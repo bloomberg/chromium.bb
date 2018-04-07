@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_COMPOSITOR_METRICS_HELPER_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_COMPOSITOR_METRICS_HELPER_H_
 
-#include "platform/scheduler/child/metrics_helper.h"
-#include "platform/scheduler/child/worker_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/child/metrics_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_task_queue.h"
 
 namespace blink {
 namespace scheduler {

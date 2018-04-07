@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be found
 // in the LICENSE file.
 
-#ifndef RemoteFrameOwner_h
-#define RemoteFrameOwner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_OWNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_OWNER_H_
 
-#include "core/CoreExport.h"
-#include "core/frame/FrameOwner.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "public/web/WebFrameOwnerProperties.h"
+#include "third_party/blink/public/web/web_frame_owner_properties.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/frame_owner.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
 
@@ -113,4 +113,4 @@ DEFINE_TYPE_CASTS(RemoteFrameOwner,
 
 }  // namespace blink
 
-#endif  // RemoteFrameOwner_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_OWNER_H_

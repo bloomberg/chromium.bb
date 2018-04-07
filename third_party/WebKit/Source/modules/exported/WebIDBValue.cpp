@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/modules/indexeddb/WebIDBValue.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 
-#include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBKeyPath.h"
-#include "modules/indexeddb/IDBValue.h"
-#include "public/platform/WebBlobInfo.h"
-#include "public/platform/WebData.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/indexeddb/WebIDBKey.h"
-#include "public/platform/modules/indexeddb/WebIDBKeyPath.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_path.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 
 namespace blink {
 

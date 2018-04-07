@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebPrescientNetworking_h
-#define WebPrescientNetworking_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PRESCIENT_NETWORKING_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PRESCIENT_NETWORKING_H_
 
-#include "WebCommon.h"
-#include "WebString.h"
-#include "WebURL.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class WebPrescientNetworking {
 
 }  // namespace blink
 
-#endif  // WebPrescientNetworking_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PRESCIENT_NETWORKING_H_

@@ -22,12 +22,12 @@
  *
  */
 
-#ifndef LayoutMenuList_h
-#define LayoutMenuList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_MENU_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_MENU_LIST_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutFlexibleBox.h"
-#include "platform/geometry/LayoutRect.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 namespace blink {
 

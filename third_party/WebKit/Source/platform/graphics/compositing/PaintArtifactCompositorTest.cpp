@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/compositing/PaintArtifactCompositor.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 
 #include <memory>
 
@@ -17,18 +17,18 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
-#include "platform/graphics/paint/EffectPaintPropertyNode.h"
-#include "platform/graphics/paint/PaintArtifact.h"
-#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
-#include "platform/testing/FakeDisplayItemClient.h"
-#include "platform/testing/PaintPropertyTestHelpers.h"
-#include "platform/testing/PictureMatchers.h"
-#include "platform/testing/TestPaintArtifact.h"
-#include "platform/testing/WebLayerTreeViewImplForTesting.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "public/platform/WebLayerScrollClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_layer_scroll_client.h"
+#include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
+#include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
+#include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/picture_matchers.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/test_paint_artifact.h"
+#include "third_party/blink/renderer/platform/testing/web_layer_tree_view_impl_for_testing.h"
 
 namespace blink {
 

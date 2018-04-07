@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/ProfilingCanvas.h"
+#include "third_party/blink/renderer/platform/graphics/profiling_canvas.h"
 
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

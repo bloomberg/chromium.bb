@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InterfaceRegistry_h
-#define InterfaceRegistry_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_INTERFACE_REGISTRY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_INTERFACE_REGISTRY_H_
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 #if INSIDE_BLINK
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/wtf/Functional.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #endif
 
 namespace base {

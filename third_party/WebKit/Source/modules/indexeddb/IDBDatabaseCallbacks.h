@@ -23,13 +23,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IDBDatabaseCallbacks_h
-#define IDBDatabaseCallbacks_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_DATABASE_CALLBACKS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_DATABASE_CALLBACKS_H_
 
-#include "modules/ModulesExport.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 #include <unordered_map>
 
@@ -86,4 +86,4 @@ class MODULES_EXPORT IDBDatabaseCallbacks
 
 }  // namespace blink
 
-#endif  // IDBDatabaseCallbacks_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_DATABASE_CALLBACKS_H_

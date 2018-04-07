@@ -21,19 +21,19 @@
  *  MA 02110-1301, USA
  */
 
-#include "core/frame/Navigator.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
 
-#include "bindings/core/v8/ScriptController.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/NavigatorID.h"
-#include "core/frame/Settings.h"
-#include "core/loader/CookieJar.h"
-#include "core/loader/FrameLoader.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "platform/Language.h"
-#include "platform/MemoryCoordinator.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator_id.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/loader/cookie_jar.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/memory_coordinator.h"
 
 namespace blink {
 

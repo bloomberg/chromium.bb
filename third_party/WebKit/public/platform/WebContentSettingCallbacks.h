@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebContentSettingCallbacks_h
-#define WebContentSettingCallbacks_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_SETTING_CALLBACKS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_SETTING_CALLBACKS_H_
 
-#include "WebPrivatePtr.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
 
 #if INSIDE_BLINK
 #include <memory>

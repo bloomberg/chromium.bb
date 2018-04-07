@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/document_metadata/CopylessPasteServer.h"
+#include "third_party/blink/renderer/modules/document_metadata/copyless_paste_server.h"
 
 #include <memory>
 #include <utility>
 
-#include "core/frame/LocalFrame.h"
-#include "modules/document_metadata/CopylessPasteExtractor.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/document_metadata/copyless_paste_extractor.h"
 
 namespace blink {
 

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/heap/HeapCompact.h"
+#include "third_party/blink/renderer/platform/heap/heap_compact.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "platform/Histogram.h"
-#include "platform/heap/Heap.h"
-#include "platform/heap/SparseHeapBitmap.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/sparse_heap_bitmap.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

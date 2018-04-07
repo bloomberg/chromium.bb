@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PaintLayerStackingNodeIterator_h
-#define PaintLayerStackingNodeIterator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_STACKING_NODE_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_STACKING_NODE_ITERATOR_H_
 
 #include "base/macros.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -96,4 +96,4 @@ class PaintLayerStackingNodeReverseIterator {
 
 }  // namespace blink
 
-#endif  // PaintLayerStackingNodeIterator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_STACKING_NODE_ITERATOR_H_

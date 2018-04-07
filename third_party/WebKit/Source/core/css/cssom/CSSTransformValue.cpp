@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/CSSTransformValue.h"
+#include "third_party/blink/renderer/core/css/cssom/css_transform_value.h"
 
-#include "core/css/CSSValueList.h"
-#include "core/css/cssom/CSSTransformComponent.h"
-#include "core/geometry/DOMMatrix.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/cssom/css_transform_component.h"
+#include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 
 namespace blink {
 

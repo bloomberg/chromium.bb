@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositingDisplayItem_h
-#define CompositingDisplayItem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_COMPOSITING_DISPLAY_ITEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_COMPOSITING_DISPLAY_ITEM_H_
 
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/paint/DisplayItem.h"
-#include "public/platform/WebBlendMode.h"
+#include "third_party/blink/public/platform/web_blend_mode.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 
 namespace blink {
 
@@ -79,4 +79,4 @@ class PLATFORM_EXPORT EndCompositingDisplayItem final
 
 }  // namespace blink
 
-#endif  // CompositingDisplayItem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_COMPOSITING_DISPLAY_ITEM_H_

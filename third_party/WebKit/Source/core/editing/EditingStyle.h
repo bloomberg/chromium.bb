@@ -29,17 +29,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EditingStyle_h
-#define EditingStyle_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_STYLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_STYLE_H_
 
-#include "core/CoreExport.h"
-#include "core/css_property_names.h"
-#include "core/css_value_keywords.h"
-#include "core/editing/Forward.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -271,4 +271,4 @@ CSSValueID GetIdentifierValue(CSSPropertyValueSet*, CSSPropertyID);
 
 }  // namespace blink
 
-#endif  // EditingStyle_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_STYLE_H_

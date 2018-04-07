@@ -22,7 +22,7 @@
 #include "media/base/audio_latency.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/sample_rates.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 
 #if defined(OS_WIN)

@@ -5,10 +5,10 @@
 #ifndef NGPhysicalBoxFragment_h
 #define NGPhysicalBoxFragment_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_box_strut.h"
-#include "core/layout/ng/inline/ng_baseline.h"
-#include "core/layout/ng/ng_physical_container_fragment.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 
 namespace blink {
 

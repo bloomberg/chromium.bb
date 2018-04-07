@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlScrubbingMessageElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_scrubbing_message_element.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/html/HTMLStyleElement.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "modules/media_controls/MediaControlsResourceLoader.h"
-#include "modules/media_controls/elements/MediaControlElementsHelper.h"
-#include "platform/text/PlatformLocale.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/html_style_element.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 

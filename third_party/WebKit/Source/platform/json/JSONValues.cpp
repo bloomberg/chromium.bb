@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/json/JSONValues.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
 
 #include <algorithm>
 #include <cmath>
-#include "platform/Decimal.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/platform/decimal.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

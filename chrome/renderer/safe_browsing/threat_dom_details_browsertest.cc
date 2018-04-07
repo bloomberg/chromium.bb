@@ -16,7 +16,7 @@
 #include "content/public/renderer/render_view.h"
 #include "net/base/escape.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
+#include "third_party/blink/public/platform/web_runtime_features.h"
 #include "ui/native_theme/native_theme_features.h"
 
 namespace {

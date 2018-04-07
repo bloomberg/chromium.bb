@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/network/ContentSecurityPolicyParsers.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/StringUTF8Adaptor.h"
-#include "public/platform/WebContentSecurityPolicy.h"
+#include "third_party/blink/public/platform/web_content_security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 

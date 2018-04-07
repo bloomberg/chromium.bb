@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/heap/ThreadState.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
 
 #include <v8.h>
 
@@ -41,27 +41,27 @@
 #include "base/location.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
-#include "platform/Histogram.h"
-#include "platform/bindings/RuntimeCallStats.h"
-#include "platform/heap/BlinkGCMemoryDumpProvider.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/Heap.h"
-#include "platform/heap/HeapCompact.h"
-#include "platform/heap/MarkingVisitor.h"
-#include "platform/heap/PagePool.h"
-#include "platform/heap/SafePoint.h"
-#include "platform/heap/Visitor.h"
-#include "platform/heap/heap_buildflags.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
-#include "platform/instrumentation/tracing/web_process_memory_dump.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/StackUtil.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/allocator/Partitions.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
+#include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
+#include "third_party/blink/renderer/platform/heap/heap_compact.h"
+#include "third_party/blink/renderer/platform/heap/marking_visitor.h"
+#include "third_party/blink/renderer/platform/heap/page_pool.h"
+#include "third_party/blink/renderer/platform/heap/safe_point.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/stack_util.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 #if defined(OS_WIN)
 #include <stddef.h>

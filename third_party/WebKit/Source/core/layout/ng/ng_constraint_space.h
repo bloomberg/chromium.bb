@@ -5,19 +5,19 @@
 #ifndef NGConstraintSpace_h
 #define NGConstraintSpace_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/exclusions/ng_exclusion_space.h"
-#include "core/layout/ng/geometry/ng_bfc_offset.h"
-#include "core/layout/ng/geometry/ng_logical_size.h"
-#include "core/layout/ng/geometry/ng_margin_strut.h"
-#include "core/layout/ng/geometry/ng_physical_size.h"
-#include "core/layout/ng/inline/ng_baseline.h"
-#include "core/layout/ng/ng_unpositioned_float.h"
-#include "platform/text/TextDirection.h"
-#include "platform/text/WritingMode.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

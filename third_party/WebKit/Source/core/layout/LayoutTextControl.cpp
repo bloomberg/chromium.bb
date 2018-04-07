@@ -20,13 +20,13 @@
  *
  */
 
-#include "core/layout/LayoutTextControl.h"
+#include "third_party/blink/renderer/core/layout/layout_text_control.h"
 
-#include "core/css/StyleChangeReason.h"
-#include "core/html/forms/TextControlElement.h"
-#include "core/layout/HitTestResult.h"
-#include "core/page/Page.h"
-#include "platform/scroll/ScrollbarTheme.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
 namespace blink {
 

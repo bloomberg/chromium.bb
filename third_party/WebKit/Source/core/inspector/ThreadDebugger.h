@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ThreadDebugger_h
-#define ThreadDebugger_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_THREAD_DEBUGGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_THREAD_DEBUGGER_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/UserGestureIndicator.h"
-#include "core/inspector/ConsoleTypes.h"
-#include "platform/Timer.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/inspector/console_types.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8-inspector.h"
 #include "v8/include/v8-profiler.h"
 #include "v8/include/v8.h"
@@ -126,4 +126,4 @@ struct CrossThreadCopier<v8_inspector::V8StackTraceId> {
 
 }  // namespace blink
 
-#endif  // ThreadDebugger_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_THREAD_DEBUGGER_H_

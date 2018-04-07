@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScreenOrientationController_h
-#define ScreenOrientationController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SCREEN_ORIENTATION_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SCREEN_ORIENTATION_CONTROLLER_H_
 
-#include "core/CoreExport.h"
-#include "core/frame/LocalFrame.h"
-#include "platform/Supplementable.h"
-#include "public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_lock_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ class CORE_EXPORT ScreenOrientationController
 
 }  // namespace blink
 
-#endif  // ScreenOrientationController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SCREEN_ORIENTATION_CONTROLLER_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/keyboard/NavigatorKeyboard.h"
+#include "third_party/blink/renderer/modules/keyboard/navigator_keyboard.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Navigator.h"
-#include "modules/keyboard/Keyboard.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/keyboard/keyboard.h"
 
 namespace blink {
 

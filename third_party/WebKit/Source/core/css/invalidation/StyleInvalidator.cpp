@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/invalidation/StyleInvalidator.h"
+#include "third_party/blink/renderer/core/css/invalidation/style_invalidator.h"
 
-#include "core/css/StyleChangeReason.h"
-#include "core/css/invalidation/InvalidationSet.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/html/HTMLSlotElement.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/html_slot_element.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 

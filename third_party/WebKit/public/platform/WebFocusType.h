@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFocusType_h
-#define WebFocusType_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FOCUS_TYPE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FOCUS_TYPE_H_
 
 namespace blink {
 
@@ -56,4 +56,4 @@ enum WebFocusType {
 };
 }
 
-#endif  // WebFocusType_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FOCUS_TYPE_H_

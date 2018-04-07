@@ -18,13 +18,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPolyElement_h
-#define SVGPolyElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_POLY_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_POLY_ELEMENT_H_
 
-#include "core/svg/SVGAnimatedPointList.h"
-#include "core/svg/SVGGeometryElement.h"
-#include "core/svg_names.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_point_list.h"
+#include "third_party/blink/renderer/core/svg/svg_geometry_element.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

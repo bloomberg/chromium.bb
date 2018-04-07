@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/TablePaintInvalidator.h"
+#include "third_party/blink/renderer/core/paint/table_paint_invalidator.h"
 
-#include "core/layout/LayoutTable.h"
-#include "core/layout/LayoutTableCell.h"
-#include "core/layout/LayoutTableCol.h"
-#include "core/layout/LayoutTableRow.h"
-#include "core/layout/LayoutTableSection.h"
-#include "core/paint/BoxPaintInvalidator.h"
-#include "core/paint/PaintInvalidator.h"
+#include "third_party/blink/renderer/core/layout/layout_table.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/layout_table_col.h"
+#include "third_party/blink/renderer/core/layout/layout_table_row.h"
+#include "third_party/blink/renderer/core/layout/layout_table_section.h"
+#include "third_party/blink/renderer/core/paint/box_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 
 namespace blink {
 

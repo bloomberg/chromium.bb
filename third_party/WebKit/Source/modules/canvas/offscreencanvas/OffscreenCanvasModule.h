@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef OffscreenCanvasModule_h
-#define OffscreenCanvasModule_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_OFFSCREENCANVAS_OFFSCREEN_CANVAS_MODULE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_OFFSCREENCANVAS_OFFSCREEN_CANVAS_MODULE_H_
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/offscreencanvas/OffscreenCanvas.h"
-#include "modules/ModulesExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -30,4 +30,4 @@ class MODULES_EXPORT OffscreenCanvasModule {
 
 }  // namespace blink
 
-#endif  // OffscreenCanvasModule_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_OFFSCREENCANVAS_OFFSCREEN_CANVAS_MODULE_H_

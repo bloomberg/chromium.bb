@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GamepadEvent_h
-#define GamepadEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/gamepad/Gamepad.h"
-#include "modules/gamepad/GamepadEventInit.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad_event_init.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class GamepadEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // GamepadEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_EVENT_H_

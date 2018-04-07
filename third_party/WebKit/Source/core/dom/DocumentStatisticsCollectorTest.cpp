@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/DocumentStatisticsCollector.h"
+#include "third_party/blink/renderer/core/dom/document_statistics_collector.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLHeadElement.h"
-#include "core/html/HTMLLinkElement.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/WebDistillability.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_distillability.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_head_element.h"
+#include "third_party/blink/renderer/core/html/html_link_element.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

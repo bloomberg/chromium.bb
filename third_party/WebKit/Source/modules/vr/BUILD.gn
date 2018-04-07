@@ -2,30 +2,30 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("vr") {
   sources = [
-    "NavigatorVR.cpp",
-    "NavigatorVR.h",
-    "VRController.cpp",
-    "VRController.h",
-    "VRDisplay.cpp",
-    "VRDisplay.h",
-    "VRDisplayCapabilities.h",
-    "VRDisplayEvent.cpp",
-    "VRDisplayEvent.h",
-    "VREyeParameters.cpp",
-    "VREyeParameters.h",
-    "VRFieldOfView.h",
-    "VRFrameData.cpp",
-    "VRFrameData.h",
-    "VRGetDevicesCallback.cpp",
-    "VRGetDevicesCallback.h",
-    "VRPose.cpp",
-    "VRPose.h",
-    "VRStageParameters.cpp",
-    "VRStageParameters.h",
+    "navigator_vr.cc",
+    "navigator_vr.h",
+    "vr_controller.cc",
+    "vr_controller.h",
+    "vr_display.cc",
+    "vr_display.h",
+    "vr_display_capabilities.h",
+    "vr_display_event.cc",
+    "vr_display_event.h",
+    "vr_eye_parameters.cc",
+    "vr_eye_parameters.h",
+    "vr_field_of_view.h",
+    "vr_frame_data.cc",
+    "vr_frame_data.h",
+    "vr_get_devices_callback.cc",
+    "vr_get_devices_callback.h",
+    "vr_pose.cc",
+    "vr_pose.h",
+    "vr_stage_parameters.cc",
+    "vr_stage_parameters.h",
   ]
 
   deps = [

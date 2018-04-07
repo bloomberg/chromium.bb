@@ -17,11 +17,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPathBlender_h
-#define SVGPathBlender_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_BLENDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_BLENDER_H_
 
 #include "base/macros.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ class SVGPathBlender final {
 
 }  // namespace blink
 
-#endif  // SVGPathBlender_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_BLENDER_H_

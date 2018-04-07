@@ -19,17 +19,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef MediaList_h
-#define MediaList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_LIST_H_
 
-#include "core/CoreExport.h"
-#include "core/css/MediaQuery.h"
-#include "core/dom/ExceptionCode.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/media_query.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

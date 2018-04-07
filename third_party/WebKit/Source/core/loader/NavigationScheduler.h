@@ -29,22 +29,22 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NavigationScheduler_h
-#define NavigationScheduler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_NAVIGATION_SCHEDULER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_NAVIGATION_SCHEDULER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/dom/Document.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/scheduler/web_main_thread_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -116,4 +116,4 @@ class NavigationDisablerForBeforeUnload {
 
 }  // namespace blink
 
-#endif  // NavigationScheduler_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_NAVIGATION_SCHEDULER_H_

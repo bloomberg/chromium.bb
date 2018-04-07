@@ -27,11 +27,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef CanvasPath_h
-#define CanvasPath_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_PATH_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_PATH_H_
 
-#include "modules/ModulesExport.h"
-#include "platform/graphics/Path.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
 
 namespace blink {
 

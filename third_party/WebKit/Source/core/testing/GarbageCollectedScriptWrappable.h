@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GarbageCollectedScriptWrappable_h
-#define GarbageCollectedScriptWrappable_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_GARBAGE_COLLECTED_SCRIPT_WRAPPABLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_GARBAGE_COLLECTED_SCRIPT_WRAPPABLE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Heap.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -27,4 +27,4 @@ class GarbageCollectedScriptWrappable : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // GarbageCollectedScriptWrappable_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_GARBAGE_COLLECTED_SCRIPT_WRAPPABLE_H_

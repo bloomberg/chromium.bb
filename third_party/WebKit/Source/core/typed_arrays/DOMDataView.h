@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DOMDataView_h
-#define DOMDataView_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_DATA_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_DATA_VIEW_H_
 
-#include "core/CoreExport.h"
-#include "core/typed_arrays/DOMArrayBufferView.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 
 namespace blink {
 
@@ -31,4 +31,4 @@ class CORE_EXPORT DOMDataView final : public DOMArrayBufferView {
 
 }  // namespace blink
 
-#endif  // DOMDataView_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_DATA_VIEW_H_

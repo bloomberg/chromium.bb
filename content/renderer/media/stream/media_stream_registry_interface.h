@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "third_party/WebKit/public/platform/WebMediaStream.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
 
 namespace content {
 

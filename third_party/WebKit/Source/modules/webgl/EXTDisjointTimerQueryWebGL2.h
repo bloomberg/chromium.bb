@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTDisjointTimerQueryWebGL2_h
-#define EXTDisjointTimerQueryWebGL2_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_EXT_DISJOINT_TIMER_QUERY_WEBGL2_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_EXT_DISJOINT_TIMER_QUERY_WEBGL2_H_
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "modules/webgl/WebGLExtension.h"
-#include "modules/webgl/WebGLQuery.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_extension.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_query.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -35,4 +35,4 @@ class EXTDisjointTimerQueryWebGL2 final : public WebGLExtension {
 
 }  // namespace blink
 
-#endif  // EXTDisjointTimerQueryWebGL2_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_EXT_DISJOINT_TIMER_QUERY_WEBGL2_H_

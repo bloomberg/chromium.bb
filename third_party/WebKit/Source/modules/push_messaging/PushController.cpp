@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/push_messaging/PushController.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_controller.h"
 
-#include "platform/wtf/Assertions.h"
-#include "public/platform/modules/push_messaging/WebPushClient.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_client.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

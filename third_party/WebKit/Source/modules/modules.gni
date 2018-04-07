@@ -9,9 +9,9 @@
 # separate .gni.
 import("//build/config/jumbo.gni")
 import("//build/split_static_library.gni")
-import("//third_party/WebKit/Source/config.gni")
+import("//third_party/blink/renderer/config.gni")
 
-blink_modules_output_dir = "$root_gen_dir/blink/modules"
+blink_modules_output_dir = "$root_gen_dir/third_party/blink/renderer/modules"
 
 # Defines a part of blink modules. This is either a source set or a static
 # library with defaults for commonly-used values.
@@ -35,11 +35,11 @@ template("blink_modules_sources") {
   target("jumbo_" + target_type, target_name) {
     # The visibility will get overridden by forward_variables_from below if the
     # invoker defined it.
-    visibility = [ "//third_party/WebKit/Source/modules/*" ]
+    visibility = [ "//third_party/blink/renderer/modules/*" ]
 
     deps = [
-      "//third_party/WebKit/Source/core",
-      "//third_party/WebKit/Source/modules:make_modules_generated",
+      "//third_party/blink/renderer/core",
+      "//third_party/blink/renderer/modules:make_modules_generated",
       "//third_party/icu",
     ]
     if (defined(invoker.deps)) {
@@ -66,10 +66,10 @@ set_defaults("blink_modules_sources") {
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
-    "//third_party/WebKit/Source:config",
-    "//third_party/WebKit/Source/modules:modules_implementation",
-    "//third_party/WebKit/Source:non_test_config",
-    "//third_party/WebKit/Source:inside_blink",
+    "//third_party/blink/renderer:config",
+    "//third_party/blink/renderer/modules:modules_implementation",
+    "//third_party/blink/renderer:non_test_config",
+    "//third_party/blink/renderer:inside_blink",
   ]
   configs -= [ "//build/config/compiler:default_symbols" ]
   configs += blink_symbols_config

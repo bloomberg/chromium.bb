@@ -26,12 +26,12 @@
  *
  */
 
-#include "core/layout/LayoutImageResource.h"
+#include "third_party/blink/renderer/core/layout/layout_image_resource.h"
 
-#include "core/dom/Element.h"
-#include "core/layout/LayoutImage.h"
-#include "core/page/Page.h"
-#include "core/svg/graphics/SVGImageForContainer.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 
 namespace blink {
 

@@ -27,10 +27,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/ClassCollection.h"
+#include "third_party/blink/renderer/core/dom/class_collection.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/NodeRareData.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_rare_data.h"
 
 namespace blink {
 

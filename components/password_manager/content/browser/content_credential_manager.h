@@ -8,7 +8,7 @@
 #include "components/password_manager/core/browser/credential_manager_impl.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/WebKit/public/platform/modules/credentialmanager/credential_manager.mojom.h"
+#include "third_party/blink/public/platform/modules/credentialmanager/credential_manager.mojom.h"
 
 class GURL;
 

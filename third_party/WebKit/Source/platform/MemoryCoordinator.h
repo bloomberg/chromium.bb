@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MemoryCoordinator_h
-#define MemoryCoordinator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEMORY_COORDINATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEMORY_COORDINATOR_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Noncopyable.h"
-#include "public/platform/WebMemoryPressureLevel.h"
-#include "public/platform/WebMemoryState.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/web_memory_pressure_level.h"
+#include "third_party/blink/public/platform/web_memory_state.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -85,4 +85,4 @@ class PLATFORM_EXPORT MemoryCoordinator final
 
 }  // namespace blink
 
-#endif  // MemoryCoordinator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEMORY_COORDINATOR_H_

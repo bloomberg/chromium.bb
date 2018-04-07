@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLProgram_h
-#define WebGLProgram_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_PROGRAM_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_PROGRAM_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/webgl/WebGLShader.h"
-#include "modules/webgl/WebGLSharedPlatform3DObject.h"
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_shader.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_shared_platform_3d_object.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -105,4 +105,4 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
 
 }  // namespace blink
 
-#endif  // WebGLProgram_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_PROGRAM_H_

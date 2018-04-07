@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SelectionAdjuster_h
-#define SelectionAdjuster_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_ADJUSTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_ADJUSTER_H_
 
-#include "core/CoreExport.h"
-#include "core/editing/Forward.h"
-#include "core/editing/TextGranularity.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/text_granularity.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -37,4 +37,4 @@ class CORE_EXPORT SelectionAdjuster final {
 
 }  // namespace blink
 
-#endif  // SelectionAdjuster_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_ADJUSTER_H_

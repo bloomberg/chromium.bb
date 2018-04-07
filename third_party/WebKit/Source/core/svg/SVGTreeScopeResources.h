@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SVGTreeScopeResources_h
-#define SVGTreeScopeResources_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_TREE_SCOPE_RESOURCES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_TREE_SCOPE_RESOURCES_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class SVGTreeScopeResources
 
 }  // namespace blink
 
-#endif  // SVGTreeScopeResources_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_TREE_SCOPE_RESOURCES_H_

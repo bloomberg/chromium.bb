@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/RoundedInnerRectClipper.h"
+#include "third_party/blink/renderer/core/paint/rounded_inner_rect_clipper.h"
 
-#include "core/paint/PaintInfo.h"
-#include "platform/graphics/paint/ClipDisplayItem.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
-#include "platform/graphics/paint/PaintController.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 
 namespace blink {
 

@@ -23,7 +23,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebRect.h"
+#include "third_party/blink/public/platform/web_rect.h"
 #include "ui/gfx/geometry/rect.h"
 
 using testing::ElementsAre;

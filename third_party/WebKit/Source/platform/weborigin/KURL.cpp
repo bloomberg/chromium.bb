@@ -25,18 +25,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 #include <algorithm>
 
-#include "platform/weborigin/KnownPorts.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/StringStatics.h"
-#include "platform/wtf/text/StringUTF8Adaptor.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/platform/weborigin/known_ports.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_statics.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 #ifndef NDEBUG

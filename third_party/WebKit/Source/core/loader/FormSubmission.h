@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FormSubmission_h
-#define FormSubmission_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FORM_SUBMISSION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FORM_SUBMISSION_H_
 
 #include "base/macros.h"
-#include "core/loader/FrameLoadRequest.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/Referrer.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/loader/frame_load_request.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -137,4 +137,4 @@ class FormSubmission : public GarbageCollectedFinalized<FormSubmission> {
 
 }  // namespace blink
 
-#endif  // FormSubmission_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_FORM_SUBMISSION_H_

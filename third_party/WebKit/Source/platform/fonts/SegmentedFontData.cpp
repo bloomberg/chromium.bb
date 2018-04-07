@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/SegmentedFontData.h"
+#include "third_party/blink/renderer/platform/fonts/segmented_font_data.h"
 
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScreenOrientationDispatcher_h
-#define ScreenOrientationDispatcher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_H_
 
 #include "base/macros.h"
-#include "core/frame/PlatformEventDispatcher.h"
-#include "platform/heap/Handle.h"
 #include "services/device/public/mojom/screen_orientation.mojom-blink.h"
+#include "third_party/blink/renderer/core/frame/platform_event_dispatcher.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class ScreenOrientationDispatcher final
 
 }  // namespace blink
 
-#endif  // ScreenOrientationDispatcher_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_H_

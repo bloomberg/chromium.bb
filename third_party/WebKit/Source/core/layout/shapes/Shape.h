@@ -27,16 +27,16 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Shape_h
-#define Shape_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_SHAPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_SHAPE_H_
 
-#include "core/CoreExport.h"
-#include "core/style/BasicShapes.h"
-#include "core/style/StyleImage.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/Path.h"
-#include "platform/text/WritingMode.h"
 #include <memory>
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/style/basic_shapes.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
 
@@ -121,4 +121,4 @@ class CORE_EXPORT Shape {
 
 }  // namespace blink
 
-#endif  // Shape_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_SHAPE_H_

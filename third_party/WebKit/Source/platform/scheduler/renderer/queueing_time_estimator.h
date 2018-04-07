@@ -7,10 +7,10 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "platform/PlatformExport.h"
-#include "platform/scheduler/renderer/main_thread_task_queue.h"
-#include "platform/scheduler/renderer/renderer_metrics_helper.h"
-#include "third_party/WebKit/public/common/page/launching_process_state.h"
+#include "third_party/blink/public/common/page/launching_process_state.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/main_thread_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/renderer_metrics_helper.h"
 
 #include <array>
 #include <vector>

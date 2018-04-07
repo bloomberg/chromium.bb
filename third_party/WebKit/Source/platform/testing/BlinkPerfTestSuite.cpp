@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/testing/BlinkPerfTestSuite.h"
+#include "third_party/blink/renderer/platform/testing/blink_perf_test_suite.h"
 
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
@@ -12,9 +12,9 @@
 #include "base/strings/string_util.h"
 #include "base/test/perf_log.h"
 #include "build/build_config.h"
-#include "platform/wtf/WTF.h"
-#include "platform/wtf/allocator/Partitions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 

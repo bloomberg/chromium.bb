@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/canvas/canvas2d/CanvasRenderingContext2D.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/Settings.h"
-#include "core/html/canvas/HTMLCanvasElement.h"
-#include "core/html/canvas/ImageData.h"
-#include "core/loader/EmptyClients.h"
-#include "core/testing/PageTestBase.h"
-#include "modules/accessibility/AXObject.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/canvas/canvas2d/CanvasGradient.h"
-#include "modules/canvas/canvas2d/CanvasPattern.h"
-#include "modules/canvas/canvas2d/HitRegionOptions.h"
-#include "modules/webgl/WebGLRenderingContext.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/html/canvas/image_data.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_gradient.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_pattern.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/hit_region_options.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
 
 using testing::Mock;
 

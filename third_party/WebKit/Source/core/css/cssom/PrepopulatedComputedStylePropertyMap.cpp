@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/PrepopulatedComputedStylePropertyMap.h"
+#include "third_party/blink/renderer/core/css/cssom/prepopulated_computed_style_property_map.h"
 
-#include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/CSSVariableData.h"
-#include "core/css/ComputedStyleCSSValueMapping.h"
-#include "core/css/cssom/CSSUnparsedValue.h"
-#include "core/css/cssom/ComputedStylePropertyMap.h"
-#include "core/dom/Document.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/css/computed_style_css_value_mapping.h"
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/core/css/cssom/computed_style_property_map.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unparsed_value.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

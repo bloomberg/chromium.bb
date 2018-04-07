@@ -27,15 +27,15 @@
  * SUCH DAMAGE.
  */
 
-#ifndef ShapeValue_h
-#define ShapeValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_SHAPE_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_SHAPE_VALUE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/loader/resource/ImageResourceContent.h"
-#include "core/style/BasicShapes.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "core/style/DataEquivalency.h"
-#include "core/style/StyleImage.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/style/basic_shapes.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/core/style/data_equivalency.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
 
 namespace blink {
 

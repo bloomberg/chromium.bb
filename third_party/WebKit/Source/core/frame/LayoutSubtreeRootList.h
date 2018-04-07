@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayoutSubtreeRootList_h
-#define LayoutSubtreeRootList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LAYOUT_SUBTREE_ROOT_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LAYOUT_SUBTREE_ROOT_LIST_H_
 
-#include "core/layout/DepthOrderedLayoutObjectList.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/core/layout/depth_ordered_layout_object_list.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -47,4 +47,4 @@ class LayoutSubtreeRootList : public DepthOrderedLayoutObjectList {
 
 }  // namespace blink
 
-#endif  // LayoutSubtreeRootList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LAYOUT_SUBTREE_ROOT_LIST_H_

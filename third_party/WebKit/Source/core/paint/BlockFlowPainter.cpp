@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/BlockFlowPainter.h"
+#include "third_party/blink/renderer/core/paint/block_flow_painter.h"
 
-#include "core/layout/FloatingObjects.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/paint/BlockPainter.h"
-#include "core/paint/LineBoxListPainter.h"
-#include "core/paint/ObjectPainter.h"
-#include "core/paint/PaintInfo.h"
+#include "third_party/blink/renderer/core/layout/floating_objects.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/paint/block_painter.h"
+#include "third_party/blink/renderer/core/paint/line_box_list_painter.h"
+#include "third_party/blink/renderer/core/paint/object_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
 
 namespace blink {
 

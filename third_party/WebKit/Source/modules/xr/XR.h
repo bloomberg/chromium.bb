@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef XR_h
-#define XR_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/events/EventTarget.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/WebCallbacks.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ class XR final : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // XR_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_H_

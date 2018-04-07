@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/presentation/PresentationError.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_error.h"
 
-#include "core/dom/ExceptionCode.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 

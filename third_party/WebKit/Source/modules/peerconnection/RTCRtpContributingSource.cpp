@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/peerconnection/RTCRtpContributingSource.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_contributing_source.h"
 
-#include "modules/peerconnection/RTCRtpReceiver.h"
-#include "public/platform/WebRTCRtpContributingSource.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_contributing_source.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver.h"
 
 namespace blink {
 

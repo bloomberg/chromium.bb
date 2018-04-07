@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/typed_arrays/DOMDataView.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
 
-#include "bindings/core/v8/V8ArrayBuffer.h"
-#include "platform/bindings/DOMDataStore.h"
-#include "platform/wtf/CheckedNumeric.h"
-#include "platform/wtf/typed_arrays/ArrayBufferView.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
+#include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
+#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_view.h"
 
 namespace blink {
 

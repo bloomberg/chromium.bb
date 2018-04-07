@@ -25,11 +25,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef Locker_h
-#define Locker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_LOCKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_LOCKER_H_
 
 #include "base/macros.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace WTF {
 

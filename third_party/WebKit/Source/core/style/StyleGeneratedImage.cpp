@@ -21,11 +21,11 @@
  *
  */
 
-#include "core/style/StyleGeneratedImage.h"
+#include "third_party/blink/renderer/core/style/style_generated_image.h"
 
-#include "core/css/CSSImageGeneratorValue.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/geometry/LayoutSize.h"
+#include "third_party/blink/renderer/core/css/css_image_generator_value.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
 
 namespace blink {
 

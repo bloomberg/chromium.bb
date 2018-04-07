@@ -5,8 +5,8 @@
 #include "cc/blink/scrollbar_impl.h"
 
 #include "base/logging.h"
-#include "third_party/WebKit/public/platform/WebScrollbar.h"
-#include "third_party/WebKit/public/platform/WebScrollbarThemeGeometry.h"
+#include "third_party/blink/public/platform/web_scrollbar.h"
+#include "third_party/blink/public/platform/web_scrollbar_theme_geometry.h"
 
 using blink::WebScrollbar;
 

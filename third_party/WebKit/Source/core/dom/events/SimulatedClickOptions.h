@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef SimulatedClickOptions_h
-#define SimulatedClickOptions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_SIMULATED_CLICK_OPTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_SIMULATED_CLICK_OPTIONS_H_
 
 namespace blink {
 
@@ -33,4 +33,4 @@ enum class SimulatedClickCreationScope { kFromScript, kFromUserAgent };
 
 }  // namespace blink
 
-#endif  // SimulatedClickOptions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_SIMULATED_CLICK_OPTIONS_H_

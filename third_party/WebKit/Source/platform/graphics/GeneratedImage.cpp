@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/GeneratedImage.h"
+#include "third_party/blink/renderer/platform/graphics/generated_image.h"
 
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/graphics/paint/PaintRecord.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {

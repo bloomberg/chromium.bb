@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebRTCAPIName_h
-#define WebRTCAPIName_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_API_NAME_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_API_NAME_H_
 
 namespace blink {
 
@@ -24,4 +24,4 @@ enum class WebRTCAPIName {
 
 }  // namespace blink
 
-#endif  // WebRTCAPIName_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_API_NAME_H_

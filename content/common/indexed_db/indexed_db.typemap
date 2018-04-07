@@ -8,7 +8,7 @@ public_headers = [
   "//content/common/indexed_db/indexed_db_key_path.h",
   "//content/common/indexed_db/indexed_db_key_range.h",
   "//content/common/indexed_db/indexed_db_metadata.h",
-  "//third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h",
+  "//third_party/blink/public/platform/modules/indexeddb/web_idb_types.h",
 ]
 traits_headers = [ "//content/common/indexed_db/indexed_db_struct_traits.h" ]
 type_mappings = [

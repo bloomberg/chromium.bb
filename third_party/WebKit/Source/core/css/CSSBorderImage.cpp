@@ -17,7 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/CSSBorderImage.h"
+#include "third_party/blink/renderer/core/css/css_border_image.h"
 
 namespace blink {
 

@@ -27,10 +27,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextTrackContainer_h
-#define TextTrackContainer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_CONTAINER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_CONTAINER_H_
 
-#include "core/html/HTMLDivElement.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ DEFINE_ELEMENT_TYPE_CASTS(TextTrackContainer, IsTextTrackContainer());
 
 }  // namespace blink
 
-#endif  // TextTrackContainer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_TEXT_TRACK_CONTAINER_H_

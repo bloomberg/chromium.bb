@@ -24,18 +24,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLTokenizer_h
-#define HTMLTokenizer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_TOKENIZER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_TOKENIZER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "core/CoreExport.h"
-#include "core/html/parser/HTMLParserOptions.h"
-#include "core/html/parser/HTMLToken.h"
-#include "core/html/parser/InputStreamPreprocessor.h"
-#include "platform/text/SegmentedString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
+#include "third_party/blink/renderer/core/html/parser/html_token.h"
+#include "third_party/blink/renderer/core/html/parser/input_stream_preprocessor.h"
+#include "third_party/blink/renderer/platform/text/segmented_string.h"
 
 namespace blink {
 

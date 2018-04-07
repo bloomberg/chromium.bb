@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webgl/WebGLSharedPlatform3DObject.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_shared_platform_3d_object.h"
 
-#include "modules/webgl/WebGLRenderingContextBase.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 
 namespace blink {
 

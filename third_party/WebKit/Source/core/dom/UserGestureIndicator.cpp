@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/UserGestureIndicator.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
-#include "platform/Histogram.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

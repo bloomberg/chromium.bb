@@ -18,15 +18,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef StyleSheetList_h
-#define StyleSheetList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_SHEET_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_SHEET_LIST_H_
 
-#include "core/css/CSSStyleSheet.h"
-#include "core/dom/TreeScope.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class CORE_EXPORT StyleSheetList final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // StyleSheetList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_SHEET_LIST_H_

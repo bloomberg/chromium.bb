@@ -9,7 +9,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/blink/public/web/web_view.h"
 
 namespace content {
 

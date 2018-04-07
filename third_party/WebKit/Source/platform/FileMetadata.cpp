@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/FileMetadata.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
 
-#include "public/platform/Platform.h"
-#include "public/platform/WebFileInfo.h"
-#include "public/platform/WebFileUtilities.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_file_info.h"
+#include "third_party/blink/public/platform/web_file_utilities.h"
 
 namespace blink {
 

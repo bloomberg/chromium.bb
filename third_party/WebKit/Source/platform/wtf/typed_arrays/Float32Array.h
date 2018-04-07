@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Float32Array_h
-#define Float32Array_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_FLOAT32_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_FLOAT32_ARRAY_H_
 
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/typed_arrays/TypedArrayBase.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/typed_array_base.h"
 
 namespace WTF {
 
@@ -98,4 +98,4 @@ Float32Array::Float32Array(scoped_refptr<ArrayBuffer> buffer,
 
 using WTF::Float32Array;
 
-#endif  // Float32Array_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_FLOAT32_ARRAY_H_

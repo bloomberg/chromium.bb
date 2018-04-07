@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebClipboard_h
-#define WebClipboard_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CLIPBOARD_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CLIPBOARD_H_
 
-#include "public/platform/WebBlobInfo.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebImage.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebVector.h"
-#include "third_party/WebKit/public/mojom/clipboard/clipboard.mojom-shared.h"
+#include "third_party/blink/public/mojom/clipboard/clipboard.mojom-shared.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_image.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 

@@ -12,7 +12,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_database_data.h"
 #include "content/public/browser/notification_event_dispatcher.h"
-#include "third_party/WebKit/public/platform/modules/notifications/notification_service.mojom.h"
+#include "third_party/blink/public/platform/modules/notifications/notification_service.mojom.h"
 
 namespace content {
 

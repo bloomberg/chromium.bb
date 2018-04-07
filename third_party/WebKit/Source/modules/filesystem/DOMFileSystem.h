@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMFileSystem_h
-#define DOMFileSystem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DOM_FILE_SYSTEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DOM_FILE_SYSTEM_H_
 
 #include "base/location.h"
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/ModulesExport.h"
-#include "modules/filesystem/DOMFileSystemBase.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system_base.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -104,4 +104,4 @@ class MODULES_EXPORT DOMFileSystem final
 
 }  // namespace blink
 
-#endif  // DOMFileSystem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DOM_FILE_SYSTEM_H_

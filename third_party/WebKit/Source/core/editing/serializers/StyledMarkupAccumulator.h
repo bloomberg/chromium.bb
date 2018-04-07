@@ -27,14 +27,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StyledMarkupAccumulator_h
-#define StyledMarkupAccumulator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_STYLED_MARKUP_ACCUMULATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_STYLED_MARKUP_ACCUMULATOR_H_
 
 #include "base/macros.h"
-#include "core/editing/EditingStyle.h"
-#include "core/editing/serializers/MarkupFormatter.h"
-#include "core/editing/serializers/TextOffset.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/editing/editing_style.h"
+#include "third_party/blink/renderer/core/editing/serializers/markup_formatter.h"
+#include "third_party/blink/renderer/core/editing/serializers/text_offset.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -97,4 +97,4 @@ class StyledMarkupAccumulator final {
 
 }  // namespace blink
 
-#endif  // StyledMarkupAccumulator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_STYLED_MARKUP_ACCUMULATOR_H_

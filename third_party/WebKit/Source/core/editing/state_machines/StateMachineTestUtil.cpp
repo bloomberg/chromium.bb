@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/state_machines/StateMachineTestUtil.h"
+#include "third_party/blink/renderer/core/editing/state_machines/state_machine_test_util.h"
 
 #include <algorithm>
-#include "core/editing/state_machines/BackwardGraphemeBoundaryStateMachine.h"
-#include "core/editing/state_machines/ForwardGraphemeBoundaryStateMachine.h"
-#include "core/editing/state_machines/TextSegmentationMachineState.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/editing/state_machines/backward_grapheme_boundary_state_machine.h"
+#include "third_party/blink/renderer/core/editing/state_machines/forward_grapheme_boundary_state_machine.h"
+#include "third_party/blink/renderer/core/editing/state_machines/text_segmentation_machine_state.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

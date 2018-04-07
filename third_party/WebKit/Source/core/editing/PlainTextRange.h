@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PlainTextRange_h
-#define PlainTextRange_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_PLAIN_TEXT_RANGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_PLAIN_TEXT_RANGE_H_
 
-#include "core/CoreExport.h"
-#include "core/editing/Forward.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/NotFound.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/not_found.h"
 
 namespace blink {
 
@@ -83,4 +83,4 @@ class CORE_EXPORT PlainTextRange {
 
 }  // namespace blink
 
-#endif  // PlainTextRange_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_PLAIN_TEXT_RANGE_H_

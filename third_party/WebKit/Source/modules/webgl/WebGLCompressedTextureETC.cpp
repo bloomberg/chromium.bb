@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webgl/WebGLCompressedTextureETC.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_compressed_texture_etc.h"
 
-#include "modules/webgl/WebGLRenderingContextBase.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 
 namespace blink {
 

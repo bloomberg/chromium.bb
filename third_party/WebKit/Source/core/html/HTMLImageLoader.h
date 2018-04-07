@@ -20,11 +20,11 @@
  *
  */
 
-#ifndef HTMLImageLoader_h
-#define HTMLImageLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_IMAGE_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_IMAGE_LOADER_H_
 
-#include "core/CoreExport.h"
-#include "core/loader/ImageLoader.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/loader/image_loader.h"
 
 namespace blink {
 

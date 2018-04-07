@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaQueryParser_h
-#define MediaQueryParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_MEDIA_QUERY_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_MEDIA_QUERY_PARSER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css/MediaList.h"
-#include "core/css/MediaQuery.h"
-#include "core/css/MediaQueryExp.h"
-#include "core/css/parser/CSSParserMode.h"
-#include "core/css/parser/CSSParserToken.h"
-#include "core/css/parser/CSSParserTokenRange.h"
-#include "core/css/parser/MediaQueryBlockWatcher.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/media_list.h"
+#include "third_party/blink/renderer/core/css/media_query.h"
+#include "third_party/blink/renderer/core/css/media_query_exp.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/css/parser/media_query_block_watcher.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -143,4 +143,4 @@ class CORE_EXPORT MediaQueryParser {
 
 }  // namespace blink
 
-#endif  // MediaQueryParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_MEDIA_QUERY_PARSER_H_

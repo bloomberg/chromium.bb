@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGParsingError_h
-#define SVGParsingError_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PARSING_ERROR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PARSING_ERROR_H_
 
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -114,4 +114,4 @@ inline bool operator!=(const SVGParsingError& error, SVGParseStatus status) {
 
 }  // namespace blink
 
-#endif  // SVGParsingError_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PARSING_ERROR_H_

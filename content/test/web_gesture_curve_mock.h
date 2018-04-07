@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebFloatPoint.h"
-#include "third_party/WebKit/public/platform/WebGestureCurve.h"
-#include "third_party/WebKit/public/platform/WebSize.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_gesture_curve.h"
+#include "third_party/blink/public/platform/web_size.h"
 
 // A simple class for mocking a WebGestureCurve. The curve flings at velocity
 // indefinitely.

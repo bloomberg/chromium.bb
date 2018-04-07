@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/LayoutBoxModelObject.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 
-#include "core/dom/DOMTokenList.h"
-#include "core/dom/DocumentLifecycle.h"
-#include "core/html/HTMLElement.h"
-#include "core/page/scrolling/StickyPositionScrollingConstraints.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/PaintLayerScrollableArea.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/page/scrolling/sticky_position_scrolling_constraints.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 

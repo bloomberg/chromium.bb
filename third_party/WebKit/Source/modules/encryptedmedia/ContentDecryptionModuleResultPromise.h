@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ContentDecryptionModuleResultPromise_h
-#define ContentDecryptionModuleResultPromise_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_CONTENT_DECRYPTION_MODULE_RESULT_PROMISE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_CONTENT_DECRYPTION_MODULE_RESULT_PROMISE_H_
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/ExceptionCode.h"
-#include "platform/ContentDecryptionModuleResult.h"
-#include "public/platform/WebEncryptedMediaKeyInformation.h"
+#include "third_party/blink/public/platform/web_encrypted_media_key_information.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/content_decryption_module_result.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class ContentDecryptionModuleResultPromise
 
 }  // namespace blink
 
-#endif  // ContentDecryptionModuleResultPromise_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_CONTENT_DECRYPTION_MODULE_RESULT_PROMISE_H_

@@ -9,10 +9,10 @@
 
 #include "content/common/appcache_interfaces.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "third_party/WebKit/public/platform/WebApplicationCacheHost.h"
-#include "third_party/WebKit/public/platform/WebApplicationCacheHostClient.h"
-#include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_application_cache_host.h"
+#include "third_party/blink/public/platform/web_application_cache_host_client.h"
+#include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "url/gurl.h"
 
 namespace content {

@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutVideo.h"
+#include "third_party/blink/renderer/core/layout/layout_video.h"
 
-#include "core/dom/Document.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutFullScreen.h"
-#include "core/paint/VideoPainter.h"
-#include "public/platform/WebLayer.h"
+#include "third_party/blink/public/platform/web_layer.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_full_screen.h"
+#include "third_party/blink/renderer/core/paint/video_painter.h"
 
 namespace blink {
 

@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/notifications/NotificationImageLoader.h"
+#include "third_party/blink/renderer/modules/notifications/notification_image_loader.h"
 
 #include <memory>
-#include "core/execution_context/ExecutionContext.h"
-#include "platform/Histogram.h"
-#include "platform/image-decoders/ImageDecoder.h"
-#include "platform/image-decoders/ImageFrame.h"
-#include "platform/loader/fetch/ResourceError.h"
-#include "platform/loader/fetch/ResourceLoadPriority.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/modules/notifications/WebNotificationConstants.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_frame.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 #define NOTIFICATION_PER_TYPE_HISTOGRAM_COUNTS(metric, type_name, value, max) \
   case NotificationImageLoader::Type::k##type_name: {                         \

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef KeyboardEventManager_h
-#define KeyboardEventManager_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_KEYBOARD_EVENT_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_KEYBOARD_EVENT_MANAGER_H_
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/Visitor.h"
-#include "platform/wtf/Allocator.h"
-#include "public/platform/WebFocusType.h"
-#include "public/platform/WebInputEvent.h"
-#include "public/platform/WebInputEventResult.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_input_event_result.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class CORE_EXPORT KeyboardEventManager
 
 }  // namespace blink
 
-#endif  // KeyboardEventManager_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_KEYBOARD_EVENT_MANAGER_H_

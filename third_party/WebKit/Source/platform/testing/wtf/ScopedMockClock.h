@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScopedMockClock_h
-#define ScopedMockClock_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_WTF_SCOPED_MOCK_CLOCK_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_WTF_SCOPED_MOCK_CLOCK_H_
 
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace WTF {
 

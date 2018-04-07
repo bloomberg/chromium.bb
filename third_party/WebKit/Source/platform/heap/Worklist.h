@@ -8,8 +8,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Worklist_h
-#define Worklist_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_WORKLIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_WORKLIST_H_
 
 #include <cstddef>
 #include <utility>
@@ -19,7 +19,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -417,4 +417,4 @@ class Worklist {
 
 }  // namespace blink
 
-#endif  // Worklist_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_WORKLIST_H_

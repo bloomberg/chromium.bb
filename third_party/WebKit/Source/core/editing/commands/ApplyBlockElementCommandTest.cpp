@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Document.h"
-#include "core/dom/QualifiedName.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/Position.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/VisibleSelection.h"
-#include "core/editing/commands/FormatBlockCommand.h"
-#include "core/editing/commands/IndentOutdentCommand.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/html/HTMLHeadElement.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/editing/commands/format_block_command.h"
+#include "third_party/blink/renderer/core/editing/commands/indent_outdent_command.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
+#include "third_party/blink/renderer/core/html/html_head_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 #include <memory>
 

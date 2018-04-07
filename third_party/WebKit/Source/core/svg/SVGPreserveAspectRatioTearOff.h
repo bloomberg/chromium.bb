@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGPreserveAspectRatioTearOff_h
-#define SVGPreserveAspectRatioTearOff_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PRESERVE_ASPECT_RATIO_TEAR_OFF_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PRESERVE_ASPECT_RATIO_TEAR_OFF_H_
 
-#include "core/svg/SVGPreserveAspectRatio.h"
-#include "core/svg/properties/SVGPropertyTearOff.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property_tear_off.h"
+#include "third_party/blink/renderer/core/svg/svg_preserve_aspect_ratio.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -96,4 +96,4 @@ class SVGPreserveAspectRatioTearOff final
 
 }  // namespace blink
 
-#endif  // SVGPreserveAspectRatioTearOff_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PRESERVE_ASPECT_RATIO_TEAR_OFF_H_

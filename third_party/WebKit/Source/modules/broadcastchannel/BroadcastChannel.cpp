@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/broadcastchannel/BroadcastChannel.h"
+#include "third_party/blink/renderer/modules/broadcastchannel/broadcast_channel.h"
 
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/events/EventQueue.h"
-#include "core/events/MessageEvent.h"
-#include "platform/mojo/MojoHelper.h"
-#include "platform/wtf/Functional.h"
-#include "public/platform/InterfaceProvider.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/events/message_event.h"
+#include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "controller/OomInterventionImpl.h"
+#include "third_party/blink/renderer/controller/oom_intervention_impl.h"
 
-#include "core/exported/WebViewImpl.h"
-#include "core/frame/FrameTestHelpers.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/page/Page.h"
-#include "core/testing/DummyPageHolder.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/testing/UnitTestHelpers.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 

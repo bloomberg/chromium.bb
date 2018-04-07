@@ -23,26 +23,26 @@
  *
  */
 
-#ifndef FontDescription_h
-#define FontDescription_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_DESCRIPTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_DESCRIPTION_H_
 
 #include "SkFontStyle.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/LayoutLocale.h"
-#include "platform/font_family_names.h"
-#include "platform/fonts/FontCacheKey.h"
-#include "platform/fonts/FontFamily.h"
-#include "platform/fonts/FontOrientation.h"
-#include "platform/fonts/FontSelectionTypes.h"
-#include "platform/fonts/FontSmoothingMode.h"
-#include "platform/fonts/FontVariantEastAsian.h"
-#include "platform/fonts/FontVariantNumeric.h"
-#include "platform/fonts/FontWidthVariant.h"
-#include "platform/fonts/TextRenderingMode.h"
-#include "platform/fonts/TypesettingFeatures.h"
-#include "platform/fonts/opentype/FontSettings.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/font_family_names.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache_key.h"
+#include "third_party/blink/renderer/platform/fonts/font_family.h"
+#include "third_party/blink/renderer/platform/fonts/font_orientation.h"
+#include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
+#include "third_party/blink/renderer/platform/fonts/font_smoothing_mode.h"
+#include "third_party/blink/renderer/platform/fonts/font_variant_east_asian.h"
+#include "third_party/blink/renderer/platform/fonts/font_variant_numeric.h"
+#include "third_party/blink/renderer/platform/fonts/font_width_variant.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/font_settings.h"
+#include "third_party/blink/renderer/platform/fonts/text_rendering_mode.h"
+#include "third_party/blink/renderer/platform/fonts/typesetting_features.h"
+#include "third_party/blink/renderer/platform/layout_locale.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 #include <unicode/uscript.h>
 

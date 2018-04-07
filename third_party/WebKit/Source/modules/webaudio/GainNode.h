@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#ifndef GainNode_h
-#define GainNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_GAIN_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_GAIN_NODE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/webaudio/AudioNode.h"
-#include "modules/webaudio/AudioParam.h"
-#include "platform/wtf/Threading.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 
@@ -87,4 +87,4 @@ class GainNode final : public AudioNode {
 
 }  // namespace blink
 
-#endif  // GainNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_GAIN_NODE_H_

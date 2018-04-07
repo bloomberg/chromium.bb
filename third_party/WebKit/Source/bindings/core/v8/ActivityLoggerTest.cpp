@@ -3,16 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/memory/ptr_util.h"
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/frame/FrameTestHelpers.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "platform/bindings/V8DOMActivityLogger.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/Base64.h"
-#include "public/platform/WebCache.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_cache.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "v8/include/v8.h"
 
 namespace blink {

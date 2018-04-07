@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ICOImageDecoder_h
-#define ICOImageDecoder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_ICO_ICO_IMAGE_DECODER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_ICO_ICO_IMAGE_DECODER_H_
 
-#include "platform/image-decoders/FastSharedBufferReader.h"
-#include "platform/image-decoders/bmp/BMPImageReader.h"
 #include <memory>
+#include "third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_reader.h"
+#include "third_party/blink/renderer/platform/image-decoders/fast_shared_buffer_reader.h"
 
 namespace blink {
 

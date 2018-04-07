@@ -24,10 +24,10 @@
  *
  */
 
-#ifndef TouchEventContext_h
-#define TouchEventContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TOUCH_EVENT_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TOUCH_EVENT_CONTEXT_H_
 
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ class TouchEventContext : public GarbageCollected<TouchEventContext> {
 
 }  // namespace blink
 
-#endif  // TouchEventContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TOUCH_EVENT_CONTEXT_H_

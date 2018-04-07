@@ -27,7 +27,7 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/blink/public/web/web_input_element.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "components/autofill/content/renderer/page_passwords_analyser.h"

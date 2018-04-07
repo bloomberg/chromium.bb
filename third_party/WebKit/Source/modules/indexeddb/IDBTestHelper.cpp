@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/indexeddb/IDBTestHelper.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_test_helper.h"
 
 #include <memory>
 #include <utility>
 
-#include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBKeyPath.h"
-#include "modules/indexeddb/IDBValueWrapping.h"
-#include "platform/SharedBuffer.h"
-#include "platform/blob/BlobData.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebBlobInfo.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value_wrapping.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

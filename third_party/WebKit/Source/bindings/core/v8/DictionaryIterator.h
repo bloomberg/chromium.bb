@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DictionaryIterator_h
-#define DictionaryIterator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_DICTIONARY_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_DICTIONARY_ITERATOR_H_
 
-#include "core/CoreExport.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "v8/include/v8.h"
 
 namespace WTF {
@@ -52,4 +52,4 @@ class CORE_EXPORT DictionaryIterator {
 
 }  // namespace blink
 
-#endif  // DictionaryIterator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_DICTIONARY_ITERATOR_H_

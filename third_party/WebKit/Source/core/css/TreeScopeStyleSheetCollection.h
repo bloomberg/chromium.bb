@@ -27,13 +27,13 @@
  *
  */
 
-#ifndef TreeScopeStyleSheetCollection_h
-#define TreeScopeStyleSheetCollection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_TREE_SCOPE_STYLE_SHEET_COLLECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_TREE_SCOPE_STYLE_SHEET_COLLECTION_H_
 
-#include "core/CoreExport.h"
-#include "core/css/StyleSheetCollection.h"
-#include "core/dom/TreeOrderedList.h"
-#include "core/dom/TreeScope.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/style_sheet_collection.h"
+#include "third_party/blink/renderer/core/dom/tree_ordered_list.h"
+#include "third_party/blink/renderer/core/dom/tree_scope.h"
 
 namespace blink {
 

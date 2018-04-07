@@ -19,17 +19,17 @@
  *
  */
 
-#ifndef BidiResolver_h
-#define BidiResolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_RESOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_RESOLVER_H_
 
-#include "platform/text/BidiCharacterRun.h"
-#include "platform/text/BidiContext.h"
-#include "platform/text/BidiRunList.h"
-#include "platform/text/TextDirection.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/text/bidi_character_run.h"
+#include "third_party/blink/renderer/platform/text/bidi_context.h"
+#include "third_party/blink/renderer/platform/text/bidi_run_list.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -1249,4 +1249,4 @@ BidiResolver<Iterator, Run, IsolatedRun>::MidpointStateForIsolatedRun(
 
 }  // namespace blink
 
-#endif  // BidiResolver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_RESOLVER_H_

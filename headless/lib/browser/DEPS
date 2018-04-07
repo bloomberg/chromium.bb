@@ -8,7 +8,7 @@ include_rules = [
   "+storage/browser/quota",
   "+storage/common/quota",
   "+third_party/skia/include",
-  "+third_party/WebKit/public/mojom/quota",
+  "+third_party/blink/public/mojom/quota",
   "+ui/aura",
   "+ui/compositor",
 ]

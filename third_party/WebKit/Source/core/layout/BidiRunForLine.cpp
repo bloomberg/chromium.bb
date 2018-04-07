@@ -21,9 +21,9 @@
  *
  */
 
-#include "core/layout/BidiRunForLine.h"
+#include "third_party/blink/renderer/core/layout/bidi_run_for_line.h"
 
-#include "core/layout/line/InlineIterator.h"
+#include "third_party/blink/renderer/core/layout/line/inline_iterator.h"
 
 namespace blink {
 

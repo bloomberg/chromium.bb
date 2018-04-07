@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/testing/CoreUnitTestHelper.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/html/HTMLIFrameElement.h"
-#include "core/page/Page.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "platform/loader/fetch/MemoryCache.h"
-#include "platform/scroll/ScrollbarTheme.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
 namespace blink {
 

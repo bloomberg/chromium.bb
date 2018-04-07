@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/blink/public/platform/web_url_response.h"
 
 namespace blink {
 class WebURLLoader;

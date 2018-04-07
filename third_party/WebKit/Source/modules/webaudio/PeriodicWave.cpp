@@ -26,17 +26,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webaudio/PeriodicWave.h"
 #include <algorithm>
 #include <memory>
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "modules/webaudio/OscillatorNode.h"
-#include "modules/webaudio/PeriodicWaveOptions.h"
-#include "platform/audio/FFTFrame.h"
-#include "platform/audio/VectorMath.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/oscillator_node.h"
+#include "third_party/blink/renderer/modules/webaudio/periodic_wave.h"
+#include "third_party/blink/renderer/modules/webaudio/periodic_wave_options.h"
+#include "third_party/blink/renderer/platform/audio/fft_frame.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
 
 namespace blink {
 

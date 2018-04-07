@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/HTMLMetaCharsetParser.h"
+#include "third_party/blink/renderer/core/html/parser/html_meta_charset_parser.h"
 
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/parser/HTMLParserOptions.h"
-#include "core/html/parser/HTMLTokenizer.h"
-#include "core/html_names.h"
-#include "platform/wtf/text/TextEncodingRegistry.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
+#include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

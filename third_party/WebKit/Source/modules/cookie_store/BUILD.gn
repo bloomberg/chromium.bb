@@ -2,19 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("cookie_store") {
   sources = [
-    "CookieChangeEvent.cpp",
-    "CookieChangeEvent.h",
-    "CookieStore.cpp",
-    "CookieStore.h",
-    "GlobalCookieStore.cpp",
-    "GlobalCookieStore.h",
+    "cookie_change_event.cc",
+    "cookie_change_event.h",
+    "cookie_store.cc",
+    "cookie_store.h",
+    "global_cookie_store.cc",
+    "global_cookie_store.h",
   ]
 
   deps = [
-    "//third_party/WebKit/Source/platform",
+    "//third_party/blink/renderer/platform",
   ]
 }

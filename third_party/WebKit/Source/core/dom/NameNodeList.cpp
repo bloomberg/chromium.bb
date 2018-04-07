@@ -20,11 +20,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/NameNodeList.h"
+#include "third_party/blink/renderer/core/dom/name_node_list.h"
 
-#include "core/dom/Element.h"
-#include "core/dom/NodeRareData.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_rare_data.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

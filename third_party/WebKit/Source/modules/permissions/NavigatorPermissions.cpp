@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/permissions/NavigatorPermissions.h"
+#include "third_party/blink/renderer/modules/permissions/navigator_permissions.h"
 
-#include "core/frame/Navigator.h"
-#include "modules/permissions/Permissions.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/permissions/permissions.h"
 
 namespace blink {
 

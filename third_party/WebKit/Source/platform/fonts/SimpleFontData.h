@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef SimpleFontData_h
-#define SimpleFontData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SIMPLE_FONT_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SIMPLE_FONT_DATA_H_
 
 #include <SkPaint.h>
 
@@ -30,20 +30,20 @@
 #include <utility>
 
 #include "build/build_config.h"
-#include "platform/PlatformExport.h"
-#include "platform/fonts/CanvasRotationInVertical.h"
-#include "platform/fonts/CustomFontData.h"
-#include "platform/fonts/FontBaseline.h"
-#include "platform/fonts/FontData.h"
-#include "platform/fonts/FontMetrics.h"
-#include "platform/fonts/FontPlatformData.h"
-#include "platform/fonts/FontVerticalPositionType.h"
-#include "platform/fonts/TypesettingFeatures.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/fonts/canvas_rotation_in_vertical.h"
+#include "third_party/blink/renderer/platform/fonts/custom_font_data.h"
+#include "third_party/blink/renderer/platform/fonts/font_baseline.h"
+#include "third_party/blink/renderer/platform/fonts/font_data.h"
+#include "third_party/blink/renderer/platform/fonts/font_metrics.h"
+#include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
+#include "third_party/blink/renderer/platform/fonts/font_vertical_position_type.h"
+#include "third_party/blink/renderer/platform/fonts/typesetting_features.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 #if defined(OS_MACOSX)
-#include "platform/fonts/GlyphMetricsMap.h"
+#include "third_party/blink/renderer/platform/fonts/glyph_metrics_map.h"
 #endif
 
 namespace blink {
@@ -247,4 +247,4 @@ ALWAYS_INLINE float SimpleFontData::WidthForGlyph(Glyph glyph) const {
 DEFINE_FONT_DATA_TYPE_CASTS(SimpleFontData, false);
 
 }  // namespace blink
-#endif  // SimpleFontData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SIMPLE_FONT_DATA_H_

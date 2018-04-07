@@ -26,15 +26,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMException_h
-#define DOMException_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_EXCEPTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_EXCEPTION_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/ExceptionCode.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ class CORE_EXPORT DOMException final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // DOMException_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_EXCEPTION_H_

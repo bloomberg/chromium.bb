@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/ElementData.h"
+#include "third_party/blink/renderer/core/dom/element_data.h"
 
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/dom/QualifiedName.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

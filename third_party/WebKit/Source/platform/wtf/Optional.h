@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Optional_h
-#define Optional_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_OPTIONAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_OPTIONAL_H_
 
 #include "base/optional.h"
 #include "base/stl_util.h"
@@ -34,4 +34,4 @@ T* OptionalOrNullptr(Optional<T>& optional) {
 
 using WTF::Optional;
 
-#endif  // Optional_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_OPTIONAL_H_

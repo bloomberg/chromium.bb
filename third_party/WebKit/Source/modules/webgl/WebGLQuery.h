@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGLQuery_h
-#define WebGLQuery_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_QUERY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_QUERY_H_
 
 #include "base/single_thread_task_runner.h"
-#include "modules/webgl/WebGLSharedPlatform3DObject.h"
-#include "platform/WebTaskRunner.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_shared_platform_3d_object.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace gpu {
 namespace gles2 {
@@ -60,4 +60,4 @@ class WebGLQuery : public WebGLSharedPlatform3DObject {
 
 }  // namespace blink
 
-#endif  // WebGLQuery_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_QUERY_H_

@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PageVisibilityNotifier_h
-#define PageVisibilityNotifier_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_VISIBILITY_NOTIFIER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_VISIBILITY_NOTIFIER_H_
 
-#include "core/CoreExport.h"
-#include "platform/LifecycleNotifier.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/lifecycle_notifier.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class CORE_EXPORT PageVisibilityNotifier
 
 }  // namespace blink
 
-#endif  // PageVisibilityNotifier_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_VISIBILITY_NOTIFIER_H_

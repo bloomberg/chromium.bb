@@ -42,16 +42,16 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#include "core/paint/PaintLayerStackingNode.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_stacking_node.h"
 
 #include <algorithm>
 #include <memory>
 
-#include "core/layout/LayoutMultiColumnFlowThread.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/compositing/PaintLayerCompositor.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
 

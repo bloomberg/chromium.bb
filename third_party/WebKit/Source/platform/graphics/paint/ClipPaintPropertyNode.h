@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ClipPaintPropertyNode_h
-#define ClipPaintPropertyNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_PAINT_PROPERTY_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_PAINT_PROPERTY_NODE_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatRoundedRect.h"
-#include "platform/graphics/Path.h"
-#include "platform/graphics/paint/GeometryMapperClipCache.h"
-#include "platform/graphics/paint/PaintPropertyNode.h"
-#include "platform/graphics/paint/TransformPaintPropertyNode.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper_clip_cache.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #include <iosfwd>
 
@@ -151,4 +151,4 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
 
 }  // namespace blink
 
-#endif  // ClipPaintPropertyNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_PAINT_PROPERTY_NODE_H_

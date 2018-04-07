@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "third_party/WebKit/public/platform/WebCryptoKey.h"
+#include "third_party/blink/public/platform/web_crypto_key.h"
 
 namespace webcrypto {
 

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/WebKit/public/web/WebAssociatedURLLoader.h"
+#include "third_party/blink/public/web/web_associated_url_loader.h"
 
 namespace media {
 

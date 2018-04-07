@@ -27,8 +27,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_Deque_h
-#define WTF_Deque_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DEQUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DEQUE_H_
 
 // FIXME: Could move what Vector and Deque share into a separate file.
 // Deque doesn't actually use Vector.
@@ -36,9 +36,9 @@
 #include <iterator>
 
 #include "base/macros.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/ConstructTraits.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/construct_traits.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace WTF {
 
@@ -716,4 +716,4 @@ inline void swap(Deque<T, inlineCapacity, Allocator>& a,
 
 using WTF::Deque;
 
-#endif  // WTF_Deque_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DEQUE_H_

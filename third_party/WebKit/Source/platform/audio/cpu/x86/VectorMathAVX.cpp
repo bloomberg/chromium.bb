@@ -6,7 +6,7 @@
 
 #if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_MACOSX)
 
-#include "platform/audio/cpu/x86/VectorMathAVX.h"
+#include "third_party/blink/renderer/platform/audio/cpu/x86/vector_math_avx.h"
 
 #include <immintrin.h>
 
@@ -23,7 +23,7 @@ using MType = __m256;
 #define MM_PS(name) _mm256_##name##_ps
 #define VECTOR_MATH_SIMD_NAMESPACE_NAME AVX
 
-#include "platform/audio/cpu/x86/VectorMathImpl.h"
+#include "third_party/blink/renderer/platform/audio/cpu/x86/vector_math_impl.h"
 
 #undef MM_PS
 #undef VECTOR_MATH_SIMD_NAMESPACE_NAME

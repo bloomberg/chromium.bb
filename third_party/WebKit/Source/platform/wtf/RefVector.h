@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RefVector_h
-#define RefVector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_REF_VECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_REF_VECTOR_H_
 
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class RefVector : public RefCounted<RefVector<T>> {
 
 }  // namespace blink
 
-#endif  // RefVector_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_REF_VECTOR_H_

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/gpu/DrawingBuffer.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
@@ -38,12 +38,12 @@
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "platform/graphics/CanvasColorParams.h"
-#include "platform/graphics/gpu/DrawingBufferTestHelpers.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "v8/include/v8.h"
 
 using testing::Test;

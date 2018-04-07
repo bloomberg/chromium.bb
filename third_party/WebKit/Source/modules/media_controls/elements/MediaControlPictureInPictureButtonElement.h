@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlPictureInPictureButtonElement_h
-#define MediaControlPictureInPictureButtonElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_PICTURE_IN_PICTURE_BUTTON_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_PICTURE_IN_PICTURE_BUTTON_ELEMENT_H_
 
-#include "modules/media_controls/elements/MediaControlInputElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_input_element.h"
 
 namespace blink {
 
@@ -33,4 +33,4 @@ class MediaControlPictureInPictureButtonElement final
 
 }  // namespace blink
 
-#endif  // MediaControlPictureInPictureButtonElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_PICTURE_IN_PICTURE_BUTTON_ELEMENT_H_

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ResizeViewportAnchor_h
-#define ResizeViewportAnchor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_RESIZE_VIEWPORT_ANCHOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_RESIZE_VIEWPORT_ANCHOR_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/page/Page.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollTypes.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class CORE_EXPORT ResizeViewportAnchor final
 
 }  // namespace blink
 
-#endif  // ResizeViewportAnchor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_RESIZE_VIEWPORT_ANCHOR_H_

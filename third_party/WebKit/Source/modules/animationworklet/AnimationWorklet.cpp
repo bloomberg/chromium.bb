@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/animationworklet/AnimationWorklet.h"
+#include "third_party/blink/renderer/modules/animationworklet/animation_worklet.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/AnimationWorkletProxyClient.h"
-#include "core/dom/Document.h"
-#include "core/page/ChromeClient.h"
-#include "core/workers/WorkerClients.h"
-#include "modules/animationworklet/AnimationWorkletMessagingProxy.h"
-#include "modules/animationworklet/AnimationWorkletProxyClientImpl.h"
-#include "modules/animationworklet/AnimationWorkletThread.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_messaging_proxy.h"
+#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_proxy_client_impl.h"
+#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_thread.h"
 
 namespace blink {
 

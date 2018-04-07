@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SimCompositor_h
-#define SimCompositor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_SIM_SIM_COMPOSITOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_SIM_SIM_COMPOSITOR_H_
 
-#include "core/testing/sim/SimCanvas.h"
-#include "public/platform/WebLayerTreeView.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_canvas.h"
 
 namespace blink {
 

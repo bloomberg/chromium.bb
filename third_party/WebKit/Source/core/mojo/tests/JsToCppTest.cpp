@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/frame/Settings.h"
-#include "core/mojo/MojoHandle.h"
-#include "core/page/Page.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/wait.h"
-#include "platform/SharedBuffer.h"
-#include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/Source/core/mojo/tests/JsToCpp.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/mojo/mojo_handle.h"
+#include "third_party/blink/renderer/core/mojo/tests/JsToCpp.mojom-blink.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 namespace {

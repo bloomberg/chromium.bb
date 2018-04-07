@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VRGetDevicesCallback_h
-#define VRGetDevicesCallback_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_GET_DEVICES_CALLBACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_GET_DEVICES_CALLBACK_H_
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "modules/vr/VRDisplay.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebCallbacks.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/renderer/modules/vr/vr_display.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -32,4 +32,4 @@ class VRGetDevicesCallback final : public WebVRGetDisplaysCallback {
 
 }  // namespace blink
 
-#endif  // VRGetDevicesCallback_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_GET_DEVICES_CALLBACK_H_

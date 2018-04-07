@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "storage/common/database/database_connections.h"
-#include "third_party/WebKit/public/platform/WebDatabaseObserver.h"
-#include "third_party/WebKit/public/platform/modules/webdatabase/web_database.mojom.h"
+#include "third_party/blink/public/platform/modules/webdatabase/web_database.mojom.h"
+#include "third_party/blink/public/platform/web_database_observer.h"
 
 namespace base {
 class SingleThreadTaskRunner;

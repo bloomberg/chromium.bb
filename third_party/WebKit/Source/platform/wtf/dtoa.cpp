@@ -33,10 +33,10 @@
  * file.
  */
 
-#include "platform/wtf/dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa.h"
 
-#include "platform/wtf/Vector.h"
 #include <string.h>
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace WTF {
 

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/background_fetch/BackgroundFetchSettledFetch.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_settled_fetch.h"
 
-#include "core/fetch/Response.h"
+#include "third_party/blink/renderer/core/fetch/response.h"
 
 namespace blink {
 

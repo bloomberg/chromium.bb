@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGInteger_h
-#define SVGInteger_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_INTEGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_INTEGER_H_
 
-#include "core/svg/SVGParsingError.h"
-#include "core/svg/properties/SVGPropertyHelper.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property_helper.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 
 namespace blink {
 
@@ -74,4 +74,4 @@ DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGInteger);
 
 }  // namespace blink
 
-#endif  // SVGInteger_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_INTEGER_H_

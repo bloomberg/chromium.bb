@@ -1,16 +1,16 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef TerminatedArray_h
-#define TerminatedArray_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TERMINATED_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TERMINATED_ARRAY_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/VectorTraits.h"
-#include "platform/wtf/allocator/Partitions.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/vector_traits.h"
 
 namespace WTF {
 
@@ -127,4 +127,4 @@ class TerminatedArray {
 
 using WTF::TerminatedArray;
 
-#endif  // TerminatedArray_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TERMINATED_ARRAY_H_

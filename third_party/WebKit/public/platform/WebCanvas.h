@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebCanvas_h
-#define WebCanvas_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CANVAS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CANVAS_H_
 
 #include "cc/paint/paint_canvas.h"
 

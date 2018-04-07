@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/frame/FullscreenController.h"
+#include "third_party/blink/renderer/core/frame/fullscreen_controller.h"
 
 #include "base/memory/ptr_util.h"
-#include "core/dom/Document.h"
-#include "core/exported/WebViewImpl.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/PageScaleConstraintsSet.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/fullscreen/Fullscreen.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/layout/LayoutFullScreen.h"
-#include "core/page/Page.h"
-#include "public/platform/WebLayerTreeView.h"
-#include "public/web/WebFrameClient.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/layout/layout_full_screen.h"
+#include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
 

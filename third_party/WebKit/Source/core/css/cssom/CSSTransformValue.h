@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSTransformValue_h
-#define CSSTransformValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_TRANSFORM_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_TRANSFORM_VALUE_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css/cssom/CSSStyleValue.h"
-#include "core/css/cssom/CSSTransformComponent.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/HeapAllocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_transform_component.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class CORE_EXPORT CSSTransformValue final : public CSSStyleValue {
 
 }  // namespace blink
 
-#endif  // CSSTransformValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_TRANSFORM_VALUE_H_

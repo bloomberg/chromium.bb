@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/DataResourceHelper.h"
+#include "third_party/blink/renderer/platform/data_resource_helper.h"
 
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebData.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

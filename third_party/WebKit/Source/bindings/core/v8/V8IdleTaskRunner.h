@@ -23,19 +23,19 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8IdleTaskRunner_h
-#define V8IdleTaskRunner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_IDLE_TASK_RUNNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_IDLE_TASK_RUNNER_H_
 
 #include <memory>
 
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "core/CoreExport.h"
 #include "gin/public/v8_idle_task_runner.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
 
 namespace blink {
 

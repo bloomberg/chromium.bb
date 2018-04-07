@@ -29,29 +29,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediastream/UserMediaRequest.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 
 #include <type_traits>
 
-#include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/SpaceSplitString.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/HostsUsingFeatures.h"
-#include "core/origin_trials/origin_trials.h"
-#include "modules/mediastream/MediaConstraintsImpl.h"
-#include "modules/mediastream/MediaStream.h"
-#include "modules/mediastream/MediaStreamConstraints.h"
-#include "modules/mediastream/MediaTrackConstraints.h"
-#include "modules/mediastream/OverconstrainedError.h"
-#include "modules/mediastream/UserMediaController.h"
-#include "platform/mediastream/MediaStreamCenter.h"
-#include "platform/mediastream/MediaStreamDescriptor.h"
-#include "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/dom/space_split_string.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints.h"
+#include "third_party/blink/renderer/modules/mediastream/media_track_constraints.h"
+#include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 
 namespace blink {
 

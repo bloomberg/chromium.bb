@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/peerconnection/RTCVoidRequestPromiseImpl.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_void_request_promise_impl.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/peerconnection/RTCErrorUtil.h"
-#include "modules/peerconnection/RTCPeerConnection.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
 
 namespace blink {
 

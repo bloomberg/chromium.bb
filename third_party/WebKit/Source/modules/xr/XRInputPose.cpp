@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/xr/XRInputPose.h"
+#include "third_party/blink/renderer/modules/xr/xr_input_pose.h"
 
-#include "modules/xr/XRUtils.h"
+#include "third_party/blink/renderer/modules/xr/xr_utils.h"
 
 namespace blink {
 

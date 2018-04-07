@@ -24,15 +24,15 @@
  * DAMAGE.
  */
 
-#ifndef NavigatorContentUtils_h
-#define NavigatorContentUtils_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NAVIGATORCONTENTUTILS_NAVIGATOR_CONTENT_UTILS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_NAVIGATORCONTENTUTILS_NAVIGATOR_CONTENT_UTILS_H_
 
-#include "core/frame/Navigator.h"
-#include "modules/ModulesExport.h"
-#include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ class MODULES_EXPORT NavigatorContentUtils final
 
 }  // namespace blink
 
-#endif  // NavigatorContentUtils_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_NAVIGATORCONTENTUTILS_NAVIGATOR_CONTENT_UTILS_H_

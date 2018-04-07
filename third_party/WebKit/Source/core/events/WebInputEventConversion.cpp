@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/events/WebInputEventConversion.h"
+#include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 
-#include "core/events/GestureEvent.h"
-#include "core/events/KeyboardEvent.h"
-#include "core/events/MouseEvent.h"
-#include "core/events/TouchEvent.h"
-#include "core/events/WheelEvent.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/VisualViewport.h"
-#include "core/input/Touch.h"
-#include "core/input/TouchList.h"
-#include "core/layout/LayoutObject.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "platform/KeyboardCodes.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/events/gesture_event.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/events/touch_event.h"
+#include "third_party/blink/renderer/core/events/wheel_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/input/touch.h"
+#include "third_party/blink/renderer/core/input/touch_list.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/keyboard_codes.h"
 
 namespace blink {
 

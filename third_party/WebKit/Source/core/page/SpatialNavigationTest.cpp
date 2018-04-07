@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/SpatialNavigation.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation.h"
 
-#include "core/testing/CoreUnitTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
 

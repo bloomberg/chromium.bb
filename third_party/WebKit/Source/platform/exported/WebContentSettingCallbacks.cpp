@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebContentSettingCallbacks.h"
+#include "third_party/blink/public/platform/web_content_setting_callbacks.h"
 
 #include <memory>
-#include "platform/ContentSettingCallbacks.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/platform/content_setting_callbacks.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 

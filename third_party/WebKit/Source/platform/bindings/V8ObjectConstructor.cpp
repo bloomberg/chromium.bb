@@ -22,14 +22,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/bindings/V8ObjectConstructor.h"
+#include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 
-#include "platform/bindings/OriginTrialFeatures.h"
-#include "platform/bindings/RuntimeCallStats.h"
-#include "platform/bindings/V8Binding.h"
-#include "platform/bindings/V8PerContextData.h"
-#include "platform/bindings/V8ThrowException.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "third_party/blink/renderer/platform/bindings/origin_trial_features.h"
+#include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 

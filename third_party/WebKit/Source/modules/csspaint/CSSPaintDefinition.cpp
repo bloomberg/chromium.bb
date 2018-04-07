@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/csspaint/CSSPaintDefinition.h"
+#include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
 
 #include <memory>
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/css/cssom/PrepopulatedComputedStylePropertyMap.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/layout/LayoutObject.h"
-#include "modules/csspaint/PaintRenderingContext2D.h"
-#include "modules/csspaint/PaintSize.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8BindingMacros.h"
-#include "platform/bindings/V8ObjectConstructor.h"
-#include "platform/graphics/PaintGeneratedImage.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/css/cssom/prepopulated_computed_style_property_map.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_rendering_context_2d.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_size.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
+#include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/platform/graphics/paint_generated_image.h"
 
 namespace blink {
 

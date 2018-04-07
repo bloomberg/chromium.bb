@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ChildNode_h
-#define ChildNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHILD_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHILD_NODE_H_
 
-#include "core/dom/Node.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 
 namespace blink {
 
@@ -36,4 +36,4 @@ class ChildNode {
 
 }  // namespace blink
 
-#endif  // ChildNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHILD_NODE_H_

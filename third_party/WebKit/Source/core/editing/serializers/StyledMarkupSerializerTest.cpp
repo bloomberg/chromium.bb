@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/serializers/StyledMarkupSerializer.h"
+#include "third_party/blink/renderer/core/editing/serializers/styled_markup_serializer.h"
 
-#include "core/dom/Text.h"
-#include "core/editing/testing/EditingTestBase.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 
 namespace blink {
 

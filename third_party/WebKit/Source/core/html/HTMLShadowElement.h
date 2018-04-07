@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLShadowElement_h
-#define HTMLShadowElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_SHADOW_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_SHADOW_ELEMENT_H_
 
-#include "core/dom/V0InsertionPoint.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class HTMLShadowElement final : public V0InsertionPoint {
 
 }  // namespace blink
 
-#endif  // HTMLShadowElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_SHADOW_ELEMENT_H_

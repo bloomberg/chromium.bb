@@ -24,21 +24,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HistoryItem_h
-#define HistoryItem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_HISTORY_ITEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_HISTORY_ITEM_H_
 
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/CoreExport.h"
-#include "core/loader/FrameLoaderTypes.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/IntPoint.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/weborigin/Referrer.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebScrollAnchorData.h"
-#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/web_scroll_anchor_data.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

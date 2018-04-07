@@ -23,12 +23,12 @@
  * SUCH DAMAGE.
  */
 
-#ifndef DateTimeSymbolicFieldElement_h
-#define DateTimeSymbolicFieldElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_DATE_TIME_SYMBOLIC_FIELD_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_DATE_TIME_SYMBOLIC_FIELD_ELEMENT_H_
 
 #include "base/macros.h"
-#include "core/html/forms/DateTimeFieldElement.h"
-#include "core/html/forms/TypeAhead.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_field_element.h"
+#include "third_party/blink/renderer/core/html/forms/type_ahead.h"
 
 namespace blink {
 

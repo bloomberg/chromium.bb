@@ -26,14 +26,14 @@
  *
  */
 
-#ifndef ViewportDescription_h
-#define ViewportDescription_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_VIEWPORT_DESCRIPTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_VIEWPORT_DESCRIPTION_H_
 
-#include "core/CoreExport.h"
-#include "core/frame/PageScaleConstraints.h"
-#include "platform/Length.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/page_scale_constraints.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -159,4 +159,4 @@ struct CORE_EXPORT ViewportDescription {
 
 }  // namespace blink
 
-#endif  // ViewportDescription_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_VIEWPORT_DESCRIPTION_H_

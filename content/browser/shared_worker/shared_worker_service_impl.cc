@@ -29,7 +29,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "third_party/WebKit/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/message_port/message_port_channel.h"
 #include "url/origin.h"
 
 namespace content {

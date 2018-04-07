@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DrawingDisplayItem_h
-#define DrawingDisplayItem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DRAWING_DISPLAY_ITEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DRAWING_DISPLAY_ITEM_H_
 
 #include "base/compiler_specific.h"
-#include "platform/PlatformExport.h"
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
@@ -72,4 +72,4 @@ inline DrawingDisplayItem::DrawingDisplayItem(const DisplayItemClient& client,
 
 }  // namespace blink
 
-#endif  // DrawingDisplayItem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DRAWING_DISPLAY_ITEM_H_

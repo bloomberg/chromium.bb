@@ -22,7 +22,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/geometry/Region.h"
+#include "third_party/blink/renderer/platform/geometry/region.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/canvas/canvas2d/HitRegion.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/hit_region.h"
 
-#include "core/dom/AXObjectCache.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
 
 namespace blink {
 

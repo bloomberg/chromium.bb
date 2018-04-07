@@ -23,21 +23,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Editor_h
-#define Editor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITOR_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/editing/EditingBehavior.h"
-#include "core/editing/EditingStyle.h"
-#include "core/editing/Forward.h"
-#include "core/editing/VisibleSelection.h"
-#include "core/editing/finder/FindOptions.h"
-#include "core/events/InputEvent.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollAlignment.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/editing_behavior.h"
+#include "third_party/blink/renderer/core/editing/editing_style.h"
+#include "third_party/blink/renderer/core/editing/finder/find_options.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
+#include "third_party/blink/renderer/core/events/input_event.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
 
 namespace blink {
 
@@ -289,4 +289,4 @@ inline void Editor::SetTypingStyle(EditingStyle* style) {
 
 }  // namespace blink
 
-#endif  // Editor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITOR_H_

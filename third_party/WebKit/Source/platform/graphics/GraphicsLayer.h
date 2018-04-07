@@ -24,34 +24,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GraphicsLayer_h
-#define GraphicsLayer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_LAYER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_LAYER_H_
 
 #include <memory>
 #include "base/memory/weak_ptr.h"
 #include "cc/layers/layer_client.h"
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatPoint3D.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/Color.h"
-#include "platform/graphics/CompositorElementId.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsLayerClient.h"
-#include "platform/graphics/GraphicsLayerDebugInfo.h"
-#include "platform/graphics/ImageOrientation.h"
-#include "platform/graphics/PaintInvalidationReason.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/heap/Handle.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebContentLayer.h"
-#include "public/platform/WebContentLayerClient.h"
-#include "public/platform/WebImageLayer.h"
-#include "public/platform/WebLayerStickyPositionConstraint.h"
-#include "public/platform/WebOverscrollBehavior.h"
+#include "third_party/blink/public/platform/web_content_layer.h"
+#include "third_party/blink/public/platform/web_content_layer_client.h"
+#include "third_party/blink/public/platform/web_image_layer.h"
+#include "third_party/blink/public/platform/web_layer_sticky_position_constraint.h"
+#include "third_party/blink/public/platform/web_overscroll_behavior.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer_debug_info.h"
+#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -463,4 +463,4 @@ void PLATFORM_EXPORT showGraphicsLayerTree(const blink::GraphicsLayer*);
 void PLATFORM_EXPORT showGraphicsLayers(const blink::GraphicsLayer*);
 #endif
 
-#endif  // GraphicsLayer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_LAYER_H_

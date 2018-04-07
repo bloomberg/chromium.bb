@@ -18,11 +18,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPreserveAspectRatio_h
-#define SVGPreserveAspectRatio_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PRESERVE_ASPECT_RATIO_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PRESERVE_ASPECT_RATIO_H_
 
-#include "core/svg/SVGParsingError.h"
-#include "core/svg/properties/SVGPropertyHelper.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property_helper.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 
 namespace blink {
 
@@ -121,4 +121,4 @@ DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGPreserveAspectRatio);
 
 }  // namespace blink
 
-#endif  // SVGPreserveAspectRatio_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PRESERVE_ASPECT_RATIO_H_

@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/SinkDocument.h"
+#include "third_party/blink/renderer/core/dom/sink_document.h"
 
-#include "core/dom/RawDataDocumentParser.h"
-#include "core/frame/UseCounter.h"
+#include "third_party/blink/renderer/core/dom/raw_data_document_parser.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 
 namespace blink {
 

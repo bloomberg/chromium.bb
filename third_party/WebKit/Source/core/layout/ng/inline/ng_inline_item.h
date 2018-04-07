@@ -5,14 +5,14 @@
 #ifndef NGInlineItem_h
 #define NGInlineItem_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/ng_style_variant.h"
-#include "platform/LayoutUnit.h"
-#include "platform/fonts/FontFallbackPriority.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/shaping/ShapeResult.h"
-#include "platform/text/TextDirection.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 #include <unicode/ubidi.h>
 

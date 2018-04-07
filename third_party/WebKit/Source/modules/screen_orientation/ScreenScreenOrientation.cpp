@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/screen_orientation/ScreenScreenOrientation.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_screen_orientation.h"
 
-#include "core/frame/Screen.h"
-#include "modules/screen_orientation/ScreenOrientation.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/core/frame/screen.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

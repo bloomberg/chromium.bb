@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AppliedDecorationPainter_h
-#define AppliedDecorationPainter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_APPLIED_DECORATION_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_APPLIED_DECORATION_PAINTER_H_
 
-#include "core/paint/DecorationInfo.h"
-#include "core/style/AppliedTextDecoration.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/Path.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/paint/decoration_info.h"
+#include "third_party/blink/renderer/core/style/applied_text_decoration.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class AppliedDecorationPainter final {
 
 }  // namespace blink
 
-#endif  // AppliedDecorationPainter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_APPLIED_DECORATION_PAINTER_H_

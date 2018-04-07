@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/BaseTemporalInputType.h"
+#include "third_party/blink/renderer/core/html/forms/base_temporal_input_type.h"
 
 #include <limits>
-#include "core/html/forms/ChooserOnlyTemporalInputTypeView.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/forms/MultipleFieldsTemporalInputTypeView.h"
-#include "platform/text/PlatformLocale.h"
-#include "platform/wtf/DateMath.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/html/forms/chooser_only_temporal_input_type_view.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/multiple_fields_temporal_input_type_view.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

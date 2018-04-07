@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FileWriterBase_h
-#define FileWriterBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_BASE_H_
 
-#include "platform/heap/Handle.h"
 #include <memory>
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class FileWriterBase : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // FileWriterBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_BASE_H_

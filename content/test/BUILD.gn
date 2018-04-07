@@ -16,7 +16,7 @@ import("//ppapi/buildflags/buildflags.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
-import("//third_party/WebKit/public/public_features.gni")
+import("//third_party/blink/public/public_features.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//v8/gni/v8.gni")
 
@@ -279,8 +279,8 @@ jumbo_static_library("test_support") {
     "//ipc",
     "//media/mojo/clients",
     "//media/mojo/interfaces",
-    "//third_party/WebKit/public:blink",
-    "//third_party/WebKit/public:test_support",
+    "//third_party/blink/public:blink",
+    "//third_party/blink/public:test_support",
     "//tools/v8_context_snapshot",
   ]
   deps = [
@@ -635,7 +635,7 @@ static_library("test_runner_support") {
   deps = [
     "//content/public/renderer",
     "//content/renderer:for_content_tests",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
   ]
 }
 
@@ -913,7 +913,7 @@ test("content_browsertests") {
     "//storage/browser",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//third_party/leveldatabase",
     "//third_party/libaom:av1_features",
     "//third_party/mesa:osmesa",
@@ -989,7 +989,7 @@ test("content_browsertests") {
     deps += [
       "//content/app/strings",
       "//net:net_resources",
-      "//third_party/WebKit/public:resources",
+      "//third_party/blink/public:resources",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
     ]
@@ -1733,7 +1733,7 @@ test("content_unittests") {
     "//storage/common",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//third_party/icu",
     "//third_party/leveldatabase",
     "//third_party/metrics_proto",

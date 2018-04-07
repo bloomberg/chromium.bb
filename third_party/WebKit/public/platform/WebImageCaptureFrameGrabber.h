@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebImageCaptureFrameGrabber_h
-#define WebImageCaptureFrameGrabber_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_IMAGE_CAPTURE_FRAME_GRABBER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_IMAGE_CAPTURE_FRAME_GRABBER_H_
 
-#include "public/platform/WebCallbacks.h"
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkImage;
@@ -28,4 +28,4 @@ class WebImageCaptureFrameGrabber {
 
 }  // namespace blink
 
-#endif  // WebImageCaptureFrameGrabber_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_IMAGE_CAPTURE_FRAME_GRABBER_H_

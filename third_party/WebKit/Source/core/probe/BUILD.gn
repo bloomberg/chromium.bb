@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/core/core.gni")
+import("//third_party/blink/renderer/core/core.gni")
 
 action("instrumentation_probes") {
   script = "../../build/scripts/make_instrumenting_probes.py"
@@ -39,18 +39,18 @@ source_set("generated") {
 # Compiles the sources generated above.
 blink_core_sources("probe") {
   sources = [
-    "CoreProbes.cpp",
-    "CoreProbes.h",
+    "core_probes.cc",
+    "core_probes.h",
   ]
   sources += get_target_outputs(":instrumentation_probes")
 
   deps = [
     ":instrumentation_probes",
     "//skia",
-    "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
-    "//third_party/WebKit/Source/core:all_generators",
-    "//third_party/WebKit/Source/platform:make_platform_generated",
-    "//third_party/WebKit/Source/platform/wtf",
+    "//third_party/blink/renderer/bindings/core/v8:bindings_core_v8_generated",
+    "//third_party/blink/renderer/core:all_generators",
+    "//third_party/blink/renderer/platform:make_platform_generated",
+    "//third_party/blink/renderer/platform/wtf",
     "//v8",
   ]
 }

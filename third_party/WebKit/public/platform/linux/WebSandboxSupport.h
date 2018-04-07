@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSandboxSupport_h
-#define WebSandboxSupport_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_LINUX_WEB_SANDBOX_SUPPORT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_LINUX_WEB_SANDBOX_SUPPORT_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebString.h"
-#include "public/platform/linux/WebFallbackFont.h"
+#include "third_party/blink/public/platform/linux/web_fallback_font.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 

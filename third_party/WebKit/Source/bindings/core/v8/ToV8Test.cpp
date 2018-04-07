@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ToV8ForCore.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 
 #include <limits>
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/testing/GarbageCollectedScriptWrappable.h"
-#include "platform/heap/Heap.h"
-#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/testing/garbage_collected_script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 #define TEST_TOV8(expected, value) \
   TestToV8(&scope, expected, value, __FILE__, __LINE__)

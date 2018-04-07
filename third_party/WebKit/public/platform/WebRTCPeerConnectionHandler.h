@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebRTCPeerConnectionHandler_h
-#define WebRTCPeerConnectionHandler_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_PEER_CONNECTION_HANDLER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_PEER_CONNECTION_HANDLER_H_
 
-#include "WebRTCICECandidate.h"
-#include "WebRTCStats.h"
-#include "WebVector.h"
+#include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
+#include "third_party/blink/public/platform/web_rtc_stats.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -109,4 +109,4 @@ class WebRTCPeerConnectionHandler {
 
 }  // namespace blink
 
-#endif  // WebRTCPeerConnectionHandler_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_PEER_CONNECTION_HANDLER_H_

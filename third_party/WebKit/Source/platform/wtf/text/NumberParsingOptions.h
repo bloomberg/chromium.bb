@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NumberParsingOptions_h
-#define NumberParsingOptions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_NUMBER_PARSING_OPTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_NUMBER_PARSING_OPTIONS_H_
 
 #include "base/logging.h"
 
@@ -48,4 +48,4 @@ class NumberParsingOptions {
 
 }  // namespace WTF
 
-#endif  // NumberParsingOptions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_NUMBER_PARSING_OPTIONS_H_

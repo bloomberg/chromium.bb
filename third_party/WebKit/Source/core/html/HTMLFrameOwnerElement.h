@@ -18,20 +18,20 @@
  *
  */
 
-#ifndef HTMLFrameOwnerElement_h
-#define HTMLFrameOwnerElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_OWNER_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_OWNER_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Document.h"
-#include "core/frame/DOMWindow.h"
-#include "core/frame/EmbeddedContentView.h"
-#include "core/frame/FrameOwner.h"
-#include "core/html/HTMLElement.h"
-#include "platform/feature_policy/FeaturePolicy.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/weborigin/SecurityPolicy.h"
-#include "platform/wtf/HashCountedSet.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/dom_window.h"
+#include "third_party/blink/renderer/core/frame/embedded_content_view.h"
+#include "third_party/blink/renderer/core/frame/frame_owner.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
 
 namespace blink {
 
@@ -221,4 +221,4 @@ DEFINE_TYPE_CASTS(HTMLFrameOwnerElement,
 
 }  // namespace blink
 
-#endif  // HTMLFrameOwnerElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_OWNER_ELEMENT_H_

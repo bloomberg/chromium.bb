@@ -19,14 +19,14 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef LengthBox_h
-#define LengthBox_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LENGTH_BOX_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LENGTH_BOX_H_
 
-#include "platform/Length.h"
-#include "platform/PlatformExport.h"
-#include "platform/text/TextDirection.h"
-#include "platform/text/WritingMode.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -79,4 +79,4 @@ class PLATFORM_EXPORT LengthBox {
 
 }  // namespace blink
 
-#endif  // LengthBox_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LENGTH_BOX_H_

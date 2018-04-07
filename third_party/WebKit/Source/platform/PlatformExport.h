@@ -47,8 +47,8 @@
 //   with PLATFORM_EXTERN_TEMPLATE_EXPORT. Template specialization uses this
 //   macro to provide an actual definition.
 
-#ifndef PlatformExport_h
-#define PlatformExport_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLATFORM_EXPORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLATFORM_EXPORT_H_
 
 #include "build/build_config.h"
 
@@ -124,4 +124,4 @@
 #pragma warning(suppress : 4275)
 #endif
 
-#endif  // PlatformExport_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLATFORM_EXPORT_H_

@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/scroll/ScrollbarThemeAura.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_aura.h"
 
-#include "platform/LayoutTestSupport.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/scroll/ScrollableArea.h"
-#include "platform/scroll/Scrollbar.h"
-#include "platform/scroll/ScrollbarThemeOverlay.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebThemeEngine.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_overlay.h"
 
 namespace blink {
 

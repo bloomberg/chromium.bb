@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Entry_h
-#define Entry_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_ENTRY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_ENTRY_H_
 
-#include "modules/ModulesExport.h"
-#include "modules/filesystem/DOMFileSystem.h"
-#include "modules/filesystem/EntryBase.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/modules/filesystem/entry_base.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -82,4 +82,4 @@ class MODULES_EXPORT Entry : public EntryBase {
 
 }  // namespace blink
 
-#endif  // Entry_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_ENTRY_H_

@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFileChooserParams_h
-#define WebFileChooserParams_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FILE_CHOOSER_PARAMS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FILE_CHOOSER_PARAMS_H_
 
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebVector.h"
-#include "WebFileChooserCompletion.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_file_chooser_completion.h"
 
 namespace blink {
 

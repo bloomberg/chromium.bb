@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UnicodeRangeSet_h
-#define UnicodeRangeSet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_UNICODE_RANGE_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_UNICODE_RANGE_SET_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/Unicode.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

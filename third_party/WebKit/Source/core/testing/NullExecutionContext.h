@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NullExecutionContext_h
-#define NullExecutionContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_NULL_EXECUTION_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_NULL_EXECUTION_CONTEXT_H_
 
 #include <memory>
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/dom/events/EventQueue.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/execution_context/SecurityContext.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class NullExecutionContext
 
 }  // namespace blink
 
-#endif  // NullExecutionContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_NULL_EXECUTION_CONTEXT_H_

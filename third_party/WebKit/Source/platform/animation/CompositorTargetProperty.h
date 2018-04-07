@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorTargetProperty_h
-#define CompositorTargetProperty_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_TARGET_PROPERTY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_TARGET_PROPERTY_H_
 
 #include "cc/trees/target_property.h"
 
@@ -13,4 +13,4 @@ namespace CompositorTargetProperty = cc::TargetProperty;
 
 }  // namespace blink
 
-#endif  // CompositorTargetProperty_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_TARGET_PROPERTY_H_

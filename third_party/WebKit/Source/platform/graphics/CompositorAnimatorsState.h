@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorAnimatorsState_h
-#define CompositorAnimatorsState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_ANIMATORS_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_ANIMATORS_STATE_H_
 
 #include "cc/trees/layer_tree_mutator.h"
 
@@ -15,4 +15,4 @@ using CompositorMutatorOutputState = cc::MutatorOutputState;
 
 }  // namespace blink
 
-#endif  // CompositorAnimatorsState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_ANIMATORS_STATE_H_

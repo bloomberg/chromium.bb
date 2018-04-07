@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/EphemeralRange.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 
 #include <sstream>
-#include "core/dom/Range.h"
-#include "core/editing/testing/EditingTestBase.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 
 namespace blink {
 

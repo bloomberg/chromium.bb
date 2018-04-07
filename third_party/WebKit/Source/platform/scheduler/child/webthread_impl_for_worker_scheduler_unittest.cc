@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
 
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/scheduler/child/web_scheduler_impl.h"
-#include "platform/scheduler/worker/worker_thread_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 using testing::_;
 using testing::AnyOf;

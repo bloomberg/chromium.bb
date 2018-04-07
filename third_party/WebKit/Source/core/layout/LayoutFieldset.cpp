@@ -21,12 +21,12 @@
  *
  */
 
-#include "core/layout/LayoutFieldset.h"
+#include "third_party/blink/renderer/core/layout/layout_fieldset.h"
 
-#include "core/css_property_names.h"
-#include "core/html/forms/HTMLLegendElement.h"
-#include "core/html_names.h"
-#include "core/paint/FieldsetPainter.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/html/forms/html_legend_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/paint/fieldset_painter.h"
 
 namespace blink {
 

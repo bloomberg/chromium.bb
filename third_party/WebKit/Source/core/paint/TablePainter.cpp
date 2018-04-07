@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/TablePainter.h"
+#include "third_party/blink/renderer/core/paint/table_painter.h"
 
-#include "core/layout/CollapsedBorderValue.h"
-#include "core/layout/LayoutTable.h"
-#include "core/layout/LayoutTableSection.h"
-#include "core/paint/BoxClipper.h"
-#include "core/paint/BoxPainter.h"
-#include "core/paint/ObjectPainter.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/TableSectionPainter.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
+#include "third_party/blink/renderer/core/layout/collapsed_border_value.h"
+#include "third_party/blink/renderer/core/layout/layout_table.h"
+#include "third_party/blink/renderer/core/layout/layout_table_section.h"
+#include "third_party/blink/renderer/core/paint/box_clipper.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
+#include "third_party/blink/renderer/core/paint/object_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/table_section_painter.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
 

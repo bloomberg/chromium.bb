@@ -20,12 +20,12 @@
  *
  */
 
-#ifndef BidiRunList_h
-#define BidiRunList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_RUN_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_RUN_LIST_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 

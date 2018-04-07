@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/FontFaceSet.h"
+#include "third_party/blink/renderer/core/css/font_face_set.h"
 
-#include "core/css/FontFaceCache.h"
-#include "core/css/FontFaceSetLoadEvent.h"
-#include "platform/fonts/Font.h"
+#include "third_party/blink/renderer/core/css/font_face_cache.h"
+#include "third_party/blink/renderer/core/css/font_face_set_load_event.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
 
 namespace blink {
 

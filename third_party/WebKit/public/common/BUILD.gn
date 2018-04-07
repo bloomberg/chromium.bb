@@ -13,11 +13,11 @@ component("common") {
   output_name = "blink_common"
 
   public_deps = [
-    "//third_party/WebKit/public/common:headers",
-    "//third_party/WebKit/public/mojom:mojom_core",
+    "//third_party/blink/public/common:headers",
+    "//third_party/blink/public/mojom:mojom_core",
   ]
   deps = [
-    "//third_party/WebKit/common",
+    "//third_party/blink/common",
   ]
 }
 
@@ -25,7 +25,7 @@ source_set("headers") {
   visibility = [
     "//chrome/*",
     "//content/*",
-    "//third_party/WebKit/*",
+    "//third_party/blink/*",
     "//components/*",
     "//storage/*",
     ":*",
@@ -50,7 +50,7 @@ source_set("headers") {
   ]
 
   public_deps = [
-    "//third_party/WebKit/public/mojom:mojom_core",
+    "//third_party/blink/public/mojom:mojom_core",
   ]
 
   deps = [

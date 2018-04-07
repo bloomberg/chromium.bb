@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebURLLoaderFactory_h
-#define WebURLLoaderFactory_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_LOADER_FACTORY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_LOADER_FACTORY_H_
 
 #include "base/memory/scoped_refptr.h"
 
@@ -31,4 +31,4 @@ class WebURLLoaderFactory {
 
 }  // namespace blink
 
-#endif  // WebURLLoaderFactory_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_LOADER_FACTORY_H_

@@ -23,20 +23,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/ImageFrameGenerator.h"
+#include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
 
 #include <memory>
 #include "base/location.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/SharedBuffer.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/graphics/ImageDecodingStore.h"
-#include "platform/graphics/test/MockImageDecoder.h"
-#include "platform/image-decoders/SegmentReader.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
+#include "third_party/blink/renderer/platform/graphics/test/mock_image_decoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 

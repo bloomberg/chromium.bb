@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_SAD_PLUGIN_H_
 #define CONTENT_RENDERER_SAD_PLUGIN_H_
 
-#include "third_party/WebKit/public/platform/WebCanvas.h"
+#include "third_party/blink/public/platform/web_canvas.h"
 
 class SkBitmap;
 

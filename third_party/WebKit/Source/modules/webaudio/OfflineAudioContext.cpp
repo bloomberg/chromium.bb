@@ -23,24 +23,24 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/OfflineAudioContext.h"
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/webaudio/AudioListener.h"
-#include "modules/webaudio/DeferredTaskHandler.h"
-#include "modules/webaudio/OfflineAudioCompletionEvent.h"
-#include "modules/webaudio/OfflineAudioContextOptions.h"
-#include "modules/webaudio/OfflineAudioDestinationNode.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_listener.h"
+#include "third_party/blink/renderer/modules/webaudio/deferred_task_handler.h"
+#include "third_party/blink/renderer/modules/webaudio/offline_audio_completion_event.h"
+#include "third_party/blink/renderer/modules/webaudio/offline_audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/offline_audio_context_options.h"
+#include "third_party/blink/renderer/modules/webaudio/offline_audio_destination_node.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
-#include "platform/CrossThreadFunctional.h"
-#include "platform/Histogram.h"
-#include "platform/audio/AudioUtilities.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
 

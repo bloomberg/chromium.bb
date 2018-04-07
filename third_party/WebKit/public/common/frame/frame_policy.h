@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_WEBKIT_PUBLIC_COMMON_FRAME_FRAME_POLICY_H_
 #define THIRD_PARTY_WEBKIT_PUBLIC_COMMON_FRAME_FRAME_POLICY_H_
 
-#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
-#include "third_party/WebKit/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
 
 namespace blink {
 

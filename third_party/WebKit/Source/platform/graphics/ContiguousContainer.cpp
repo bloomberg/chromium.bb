@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/ContiguousContainer.h"
+#include "third_party/blink/renderer/platform/graphics/contiguous_container.h"
 
 #include <algorithm>
 #include <memory>
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/ContainerAnnotations.h"
-#include "platform/wtf/allocator/Partitions.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/container_annotations.h"
 
 namespace blink {
 

@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXSVGRoot_h
-#define AXSVGRoot_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_SVG_ROOT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_SVG_ROOT_H_
 
 #include "base/macros.h"
-#include "modules/accessibility/AXLayoutObject.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class AXSVGRoot final : public AXLayoutObject {
 
 }  // namespace blink
 
-#endif  // AXSVGRoot_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_SVG_ROOT_H_

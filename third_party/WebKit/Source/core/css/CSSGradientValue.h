@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSGradientValue_h
-#define CSSGradientValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GRADIENT_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GRADIENT_VALUE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSImageGeneratorValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_image_generator_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -340,4 +340,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSConicGradientValue, IsConicGradientValue());
 }  // namespace cssvalue
 }  // namespace blink
 
-#endif  // CSSGradientValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GRADIENT_VALUE_H_

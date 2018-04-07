@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef MatchRequest_h
-#define MatchRequest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_MATCH_REQUEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_MATCH_REQUEST_H_
 
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/RuleSet.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/rule_set.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ class MatchRequest {
 
 }  // namespace blink
 
-#endif  // MatchRequest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_MATCH_REQUEST_H_

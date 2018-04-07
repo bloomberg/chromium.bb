@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be found
 // in the LICENSE file.
 
-#ifndef WebViewFrameWidget_h
-#define WebViewFrameWidget_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_VIEW_FRAME_WIDGET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_VIEW_FRAME_WIDGET_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/frame/WebFrameWidgetBase.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "platform/heap/Member.h"
-#include "platform/heap/SelfKeepAlive.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 
 namespace blink {
 
@@ -118,4 +118,4 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
 
 }  // namespace blink
 
-#endif  // WebViewFrameWidget_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_VIEW_FRAME_WIDGET_H_

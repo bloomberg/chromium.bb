@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PlatformSpeechSynthesizer_h
-#define PlatformSpeechSynthesizer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SPEECH_PLATFORM_SPEECH_SYNTHESIZER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SPEECH_PLATFORM_SPEECH_SYNTHESIZER_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/speech/PlatformSpeechSynthesisVoice.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/speech/platform_speech_synthesis_voice.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -113,4 +113,4 @@ class PLATFORM_EXPORT PlatformSpeechSynthesizer
 
 }  // namespace blink
 
-#endif  // PlatformSpeechSynthesizer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SPEECH_PLATFORM_SPEECH_SYNTHESIZER_H_

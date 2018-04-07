@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CryptoUtilities_h
-#define CryptoUtilities_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_CRYPTO_UTILITIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_CRYPTO_UTILITIES_H_
 
-#include "core/typed_arrays/DOMArrayPiece.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 
 namespace blink {
 inline WebVector<uint8_t> CopyBytes(const DOMArrayPiece& source) {
@@ -15,4 +15,4 @@ inline WebVector<uint8_t> CopyBytes(const DOMArrayPiece& source) {
 }
 }  // namespace blink
 
-#endif  // CryptoUtilities_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_CRYPTO_UTILITIES_H_

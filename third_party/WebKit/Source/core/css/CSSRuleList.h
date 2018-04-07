@@ -19,14 +19,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSRuleList_h
-#define CSSRuleList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_RULE_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_RULE_LIST_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -96,4 +96,4 @@ class LiveCSSRuleList final : public CSSRuleList {
 
 }  // namespace blink
 
-#endif  // CSSRuleList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_RULE_LIST_H_

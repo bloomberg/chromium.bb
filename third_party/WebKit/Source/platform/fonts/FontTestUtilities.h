@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FontTestUtilities_h
-#define FontTestUtilities_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_TEST_UTILITIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_TEST_UTILITIES_H_
 
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 String To16Bit(const char* text, unsigned length);
 }
 
-#endif  // FontTestUtilities_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_TEST_UTILITIES_H_

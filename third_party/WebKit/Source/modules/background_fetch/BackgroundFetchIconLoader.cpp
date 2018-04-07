@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LiICENSE file.
 
-#include "modules/background_fetch/BackgroundFetchIconLoader.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_icon_loader.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/loader/ThreadableLoader.h"
-#include "modules/background_fetch/BackgroundFetchBridge.h"
-#include "modules/background_fetch/IconDefinition.h"
-#include "platform/graphics/ColorBehavior.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/image-decoders/ImageDecoder.h"
-#include "platform/image-decoders/ImageFrame.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Threading.h"
-#include "public/platform/WebSize.h"
-#include "public/platform/WebURLRequest.h"
 #include "skia/ext/image_operations.h"
-#include "third_party/WebKit/Source/platform/wtf/text/StringImpl.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_bridge.h"
+#include "third_party/blink/renderer/modules/background_fetch/icon_definition.h"
+#include "third_party/blink/renderer/platform/graphics/color_behavior.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_frame.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 

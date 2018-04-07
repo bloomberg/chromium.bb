@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AtomicHTMLToken_h
-#define AtomicHTMLToken_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_ATOMIC_HTML_TOKEN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_ATOMIC_HTML_TOKEN_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/dom/Attribute.h"
-#include "core/html/parser/CompactHTMLToken.h"
-#include "core/html/parser/HTMLToken.h"
-#include "core/html_element_lookup_trie.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/dom/attribute.h"
+#include "third_party/blink/renderer/core/html/parser/compact_html_token.h"
+#include "third_party/blink/renderer/core/html/parser/html_token.h"
+#include "third_party/blink/renderer/core/html_element_lookup_trie.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

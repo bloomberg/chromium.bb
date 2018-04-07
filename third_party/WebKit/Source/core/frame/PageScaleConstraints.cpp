@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/frame/PageScaleConstraints.h"
+#include "third_party/blink/renderer/core/frame/page_scale_constraints.h"
 
 #include <algorithm>
 

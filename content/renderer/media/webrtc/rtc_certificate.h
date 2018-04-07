@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebRTCCertificate.h"
+#include "third_party/blink/public/platform/web_rtc_certificate.h"
 #include "third_party/webrtc/rtc_base/rtccertificate.h"
 #include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
 

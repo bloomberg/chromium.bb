@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSConditionRule.h"
+#include "third_party/blink/renderer/core/css/css_condition_rule.h"
 
-#include "core/css/CSSStyleSheet.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
 
 namespace blink {
 

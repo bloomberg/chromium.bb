@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/parser/SharedBufferReader.h"
+#include "third_party/blink/renderer/core/xml/parser/shared_buffer_reader.h"
 
-#include "platform/SharedBuffer.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include <algorithm>
 #include <cstdlib>
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 
 namespace blink {
 

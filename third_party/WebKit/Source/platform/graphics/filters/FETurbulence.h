@@ -22,10 +22,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef FETurbulence_h
-#define FETurbulence_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_TURBULENCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_TURBULENCE_H_
 
-#include "platform/graphics/filters/FilterEffect.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class PLATFORM_EXPORT FETurbulence final : public FilterEffect {
 
 }  // namespace blink
 
-#endif  // FETurbulence_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_TURBULENCE_H_

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/animationworklet/WorkletAnimation.h"
+#include "third_party/blink/renderer/modules/animationworklet/worklet_animation.h"
 
-#include "bindings/modules/v8/animation_effect_or_animation_effect_sequence.h"
-#include "core/animation/ElementAnimations.h"
-#include "core/animation/KeyframeEffectModel.h"
-#include "core/animation/ScrollTimeline.h"
-#include "core/animation/Timing.h"
-#include "core/dom/Node.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/layout/LayoutBox.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCompositorSupport.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_compositor_support.h"
+#include "third_party/blink/renderer/bindings/modules/v8/animation_effect_or_animation_effect_sequence.h"
+#include "third_party/blink/renderer/core/animation/element_animations.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
+#include "third_party/blink/renderer/core/animation/timing.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

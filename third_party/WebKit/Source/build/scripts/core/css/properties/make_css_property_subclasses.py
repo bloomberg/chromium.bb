@@ -157,30 +157,30 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
                 yield include
 
     def apply_includes(self, property_):
-        yield "core/css/resolver/StyleResolverState.h"
-        yield "core/css/CSSPrimitiveValueMappings.h"
+        yield "core/css/resolver/style_resolver_state.h"
+        yield "core/css/css_primitive_value_mappings.h"
         if property_['converter'] == "CSSPrimitiveValue":
-            yield "core/css/CSSPrimitiveValue.h"
-            yield "core/css/CSSPrimitiveValueMappings.h"
+            yield "core/css/css_primitive_value.h"
+            yield "core/css/css_primitive_value_mappings.h"
         elif property_['converter'] == "CSSIdentifierValue":
-            yield "core/css/CSSIdentifierValue.h"
+            yield "core/css/css_identifier_value.h"
         else:
-            yield "core/css/CSSPrimitiveValueMappings.h"
-            yield "core/css/resolver/StyleBuilderConverter.h"
+            yield "core/css/css_primitive_value_mappings.h"
+            yield "core/css/resolver/style_builder_converter.h"
         if property_['font']:
-            yield "core/css/resolver/FontBuilder.h"
+            yield "core/css/resolver/font_builder.h"
         elif property_['svg']:
-            yield "core/css/CSSPrimitiveValueMappings.h"
-            yield "core/style/ComputedStyle.h"
-            yield "core/style/SVGComputedStyle.h"
+            yield "core/css/css_primitive_value_mappings.h"
+            yield "core/style/computed_style.h"
+            yield "core/style/svg_computed_style.h"
         else:
-            yield "core/style/ComputedStyle.h"
+            yield "core/style/computed_style.h"
         if ('custom_apply_args' in property_ and
                 property_['custom_apply_args'].get('modifier_type')
                 in ['Width', 'Slice', 'Outset']):
-            yield "core/css/properties/StyleBuildingUtils.h"
+            yield "core/css/properties/style_building_utils.h"
         if property_.get('custom_apply') == "fill_layer":
-            yield "core/css/CSSValueList.h"
+            yield "core/css/css_value_list.h"
 
 
 if __name__ == '__main__':

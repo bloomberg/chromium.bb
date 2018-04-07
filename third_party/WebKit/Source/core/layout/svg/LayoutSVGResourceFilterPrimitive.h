@@ -24,10 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutSVGResourceFilterPrimitive_h
-#define LayoutSVGResourceFilterPrimitive_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_FILTER_PRIMITIVE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_FILTER_PRIMITIVE_H_
 
-#include "core/layout/svg/LayoutSVGHiddenContainer.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_hidden_container.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ class LayoutSVGResourceFilterPrimitive final : public LayoutSVGHiddenContainer {
 
 }  // namespace blink
 
-#endif  // LayoutSVGResourceFilterPrimitive_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_FILTER_PRIMITIVE_H_

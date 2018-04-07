@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RTCRtpReceiver_h
-#define RTCRtpReceiver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_RTP_RECEIVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_RTP_RECEIVER_H_
 
 #include <map>
 
-#include "modules/mediastream/MediaStream.h"
-#include "modules/mediastream/MediaStreamTrack.h"
-#include "modules/peerconnection/RTCRtpContributingSource.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/heap/Member.h"
-#include "platform/heap/Visitor.h"
-#include "public/platform/WebRTCRtpReceiver.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_contributing_source.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ class RTCRtpReceiver final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // RTCRtpReceiver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_RTP_RECEIVER_H_

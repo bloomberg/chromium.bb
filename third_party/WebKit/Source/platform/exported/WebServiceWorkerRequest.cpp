@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
 
-#include "platform/blob/BlobData.h"
-#include "platform/network/EncodedFormData.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/RefCounted.h"
-#include "public/platform/WebHTTPHeaderVisitor.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_http_header_visitor.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 

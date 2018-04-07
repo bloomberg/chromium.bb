@@ -23,19 +23,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLResourcePreloader_h
-#define HTMLResourcePreloader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_RESOURCE_PRELOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_RESOURCE_PRELOADER_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/html/parser/CSSPreloadScanner.h"
-#include "core/html/parser/PreloadRequest.h"
-#include "core/html/parser/ResourcePreloader.h"
-#include "core/loader/NetworkHintsInterface.h"
-#include "platform/heap/Heap.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/TextPosition.h"
+#include "third_party/blink/renderer/core/html/parser/css_preload_scanner.h"
+#include "third_party/blink/renderer/core/html/parser/preload_request.h"
+#include "third_party/blink/renderer/core/html/parser/resource_preloader.h"
+#include "third_party/blink/renderer/core/loader/network_hints_interface.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

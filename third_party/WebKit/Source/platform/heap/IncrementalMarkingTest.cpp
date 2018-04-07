@@ -5,17 +5,17 @@
 #include <initializer_list>
 #include <vector>
 
-#include "platform/heap/GarbageCollected.h"
-#include "platform/heap/Heap.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/heap/HeapTerminatedArray.h"
-#include "platform/heap/HeapTerminatedArrayBuilder.h"
-#include "platform/heap/Member.h"
-#include "platform/heap/ThreadState.h"
-#include "platform/heap/TraceTraits.h"
-#include "platform/heap/Visitor.h"
-#include "platform/heap/heap_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
+#include "third_party/blink/renderer/platform/heap/heap_terminated_array.h"
+#include "third_party/blink/renderer/platform/heap/heap_terminated_array_builder.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/heap/trace_traits.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
 
 #if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
 

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/jumbo.gni")
-import("//third_party/WebKit/Source/platform/platform.gni")
+import("//third_party/blink/renderer/platform/platform.gni")
 
 # Intentionally depends on generator targets so to depend only on generated
 # mojo biding header files. This is needed to use mojo interfaces from a static
@@ -13,7 +13,7 @@ import("//third_party/WebKit/Source/platform/platform.gni")
 # another.
 jumbo_source_set("generator") {
   public_deps = [
-    "//third_party/WebKit/public/mojom:mojom_platform_blink__generator",
+    "//third_party/blink/public/mojom:mojom_platform_blink__generator",
     "//url/mojom:url_mojom_gurl_blink__generator",
     "//url/mojom:url_mojom_gurl_shared__generator",
     "//url/mojom:url_mojom_origin_blink__generator",
@@ -23,16 +23,16 @@ jumbo_source_set("generator") {
 
 blink_platform_sources("blob") {
   sources = [
-    "BlobBytesProvider.cpp",
-    "BlobBytesProvider.h",
-    "BlobData.cpp",
-    "BlobData.h",
-    "BlobRegistry.cpp",
-    "BlobRegistry.h",
-    "BlobURL.cpp",
-    "BlobURL.h",
-    "SerializedBlobStructTraits.cpp",
-    "SerializedBlobStructTraits.h",
+    "blob_bytes_provider.cc",
+    "blob_bytes_provider.h",
+    "blob_data.cc",
+    "blob_data.h",
+    "blob_registry.cc",
+    "blob_registry.h",
+    "blob_url.cc",
+    "blob_url.h",
+    "serialized_blob_struct_traits.cc",
+    "serialized_blob_struct_traits.h",
   ]
 
   deps = [
@@ -41,48 +41,48 @@ blink_platform_sources("blob") {
 }
 
 jumbo_source_set("unit_tests") {
-  visibility = [ "//third_party/WebKit/Source/platform:*" ]
+  visibility = [ "//third_party/blink/renderer/platform:*" ]
   testonly = true
 
   sources = [
-    "BlobBytesProviderTest.cpp",
-    "BlobDataTest.cpp",
+    "blob_bytes_provider_test.cc",
+    "blob_data_test.cc",
   ]
 
-  configs += [ "//third_party/WebKit/Source/platform:blink_platform_config" ]
+  configs += [ "//third_party/blink/renderer/platform:blink_platform_config" ]
 
   deps = [
     "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/WebKit/Source/platform:platform",
+    "//third_party/blink/renderer/platform:platform",
   ]
 }
 
 jumbo_source_set("test_support") {
   # This target defines test files for platform:test_support that
   # blink_platform_unittests and webkit_unit_tests can use.
-  visibility = [ "//third_party/WebKit/Source/platform:test_support" ]
+  visibility = [ "//third_party/blink/renderer/platform:test_support" ]
   testonly = true
 
   # Source files that can be called from blink_platform_unittests and
   # webkit_unit_tests.
   sources = [
-    "testing/FakeBlob.cpp",
-    "testing/FakeBlob.h",
-    "testing/FakeBlobRegistry.cpp",
-    "testing/FakeBlobRegistry.h",
-    "testing/FakeBlobURLStore.cpp",
-    "testing/FakeBlobURLStore.h",
+    "testing/fake_blob.cc",
+    "testing/fake_blob.h",
+    "testing/fake_blob_registry.cc",
+    "testing/fake_blob_registry.h",
+    "testing/fake_blob_url_store.cc",
+    "testing/fake_blob_url_store.h",
   ]
 
   configs += [
-    "//third_party/WebKit/Source:non_test_config",
-    "//third_party/WebKit/Source/platform:blink_platform_config",
+    "//third_party/blink/renderer:non_test_config",
+    "//third_party/blink/renderer/platform:blink_platform_config",
   ]
 
   public_deps = [
     ":generator",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
   ]
 }

@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/FontCache.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
 
 #include <memory>
 #include <utility>
@@ -37,13 +37,13 @@
 #include "SkFontMgr.h"
 #include "SkTypeface_win.h"
 #include "base/debug/alias.h"
-#include "platform/Language.h"
-#include "platform/fonts/BitmapGlyphsBlacklist.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontFaceCreationParams.h"
-#include "platform/fonts/FontPlatformData.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/win/FontFallbackWin.h"
+#include "third_party/blink/renderer/platform/fonts/bitmap_glyphs_blacklist.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_face_creation_params.h"
+#include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/fonts/win/font_fallback_win.h"
+#include "third_party/blink/renderer/platform/language.h"
 
 namespace blink {
 

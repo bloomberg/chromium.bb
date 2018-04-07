@@ -28,30 +28,30 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSPrimitiveValueMappings_h
-#define CSSPrimitiveValueMappings_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PRIMITIVE_VALUE_MAPPINGS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PRIMITIVE_VALUE_MAPPINGS_H_
 
-#include "core/css/CSSCalculationValue.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSReflectionDirection.h"
-#include "core/css/CSSToLengthConversionData.h"
-#include "core/css_value_keywords.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "core/style/SVGComputedStyleDefs.h"
-#include "platform/Length.h"
-#include "platform/ThemeTypes.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontSmoothingMode.h"
-#include "platform/fonts/TextRenderingMode.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/TouchAction.h"
-#include "platform/scroll/ScrollCustomization.h"
-#include "platform/scroll/ScrollableArea.h"
-#include "platform/text/TextRun.h"
-#include "platform/text/WritingMode.h"
-#include "platform/wtf/MathExtras.h"
-#include "public/platform/WebBlendMode.h"
+#include "third_party/blink/public/platform/web_blend_mode.h"
+#include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_reflection_direction.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/core/style/svg_computed_style_defs.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_smoothing_mode.h"
+#include "third_party/blink/renderer/platform/fonts/text_rendering_mode.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/touch_action.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_customization.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
+#include "third_party/blink/renderer/platform/theme_types.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

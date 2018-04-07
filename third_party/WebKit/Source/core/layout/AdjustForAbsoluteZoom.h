@@ -23,12 +23,12 @@
  *
  */
 
-#ifndef AdjustForAbsoluteZoom_h
-#define AdjustForAbsoluteZoom_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_ADJUST_FOR_ABSOLUTE_ZOOM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_ADJUST_FOR_ABSOLUTE_ZOOM_H_
 
-#include "core/layout/LayoutObject.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/LayoutUnit.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
 
 namespace blink {
 
@@ -107,4 +107,4 @@ class AdjustForAbsoluteZoom {
 
 }  // namespace blink
 
-#endif  // AdjustForAbsoluteZoom_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_ADJUST_FOR_ABSOLUTE_ZOOM_H_

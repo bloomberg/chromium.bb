@@ -18,13 +18,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGTransform_h
-#define SVGTransform_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_TRANSFORM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_TRANSFORM_H_
 
-#include "core/svg/properties/SVGProperty.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -122,4 +122,4 @@ class SVGTransform final : public SVGPropertyBase {
 
 }  // namespace blink
 
-#endif  // SVGTransform_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_TRANSFORM_H_

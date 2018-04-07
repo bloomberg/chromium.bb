@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_BROWSER_BLOB_HANDLE_H_
 
 #include <string>
-#include "third_party/WebKit/public/mojom/blob/blob.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 namespace content {
 

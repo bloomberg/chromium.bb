@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebDraggableRegion_h
-#define WebDraggableRegion_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DRAGGABLE_REGION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DRAGGABLE_REGION_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 

@@ -4,7 +4,7 @@
 
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
 
-#include "third_party/WebKit/public/web/WebSerializedScriptValueVersion.h"
+#include "third_party/blink/public/web/web_serialized_script_value_version.h"
 #include "v8/include/v8-value-serializer-version.h"
 
 namespace content {

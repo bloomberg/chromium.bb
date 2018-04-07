@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ReportingServiceProxyPtrHolder_h
-#define ReportingServiceProxyPtrHolder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_REPORTING_SERVICE_PROXY_PTR_HOLDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_REPORTING_SERVICE_PROXY_PTR_HOLDER_H_
 
-#include "platform/weborigin/KURL.h"
-#include "public/platform/InterfaceProvider.h"
-#include "public/platform/Platform.h"
-#include "public/platform/reporting.mojom-blink.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/reporting.mojom-blink.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class ReportingServiceProxyPtrHolder {
 
 }  // namespace blink
 
-#endif  // ReportingServiceProxyPtrHolder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_REPORTING_SERVICE_PROXY_PTR_HOLDER_H_

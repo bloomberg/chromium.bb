@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/FetchResponseData.h"
+#include "third_party/blink/renderer/core/fetch/fetch_response_data.h"
 
-#include "core/fetch/FetchHeaderList.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "platform/blob/BlobData.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
+#include "third_party/blink/renderer/core/fetch/fetch_header_list.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

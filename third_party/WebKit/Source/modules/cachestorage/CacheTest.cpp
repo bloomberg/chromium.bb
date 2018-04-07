@@ -2,38 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/cachestorage/Cache.h"
+#include "third_party/blink/renderer/modules/cachestorage/cache.h"
 
 #include <algorithm>
 #include <memory>
 #include <string>
 
 #include "base/memory/ptr_util.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/IDLTypes.h"
-#include "bindings/core/v8/NativeValueTraitsImpl.h"
-#include "bindings/core/v8/ScriptFunction.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8Request.h"
-#include "bindings/core/v8/V8Response.h"
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fetch/BodyStreamBuffer.h"
-#include "core/fetch/FormDataBytesConsumer.h"
-#include "core/fetch/GlobalFetch.h"
-#include "core/fetch/Request.h"
-#include "core/fetch/Response.h"
-#include "core/fetch/ResponseInit.h"
-#include "core/frame/Frame.h"
-#include "core/testing/PageTestBase.h"
-#include "public/platform/WebURLResponse.h"
-#include "public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache.h"
+#include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_request.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_response.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
+#include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/global_fetch.h"
+#include "third_party/blink/renderer/core/fetch/request.h"
+#include "third_party/blink/renderer/core/fetch/response.h"
+#include "third_party/blink/renderer/core/fetch/response_init.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 using blink::mojom::CacheStorageError;
 

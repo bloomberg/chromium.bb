@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/canvas/CanvasRenderingContextHost.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
 
-#include "core/html/canvas/CanvasRenderingContext.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {

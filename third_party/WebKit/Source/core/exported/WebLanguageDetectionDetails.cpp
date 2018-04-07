@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/web/WebLanguageDetectionDetails.h"
+#include "third_party/blink/public/web/web_language_detection_details.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/html/HTMLHeadElement.h"
-#include "core/html/HTMLMetaElement.h"
-#include "public/web/WebDocument.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/html/html_head_element.h"
+#include "third_party/blink/renderer/core/html/html_meta_element.h"
 
 namespace blink {
 

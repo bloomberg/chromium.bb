@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/testing/EditingTestBase.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Range.h"
-#include "core/dom/Text.h"
-#include "core/editing/Position.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/testing/SelectionSample.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLCollection.h"
-#include "core/html/HTMLElement.h"
-#include "core/testing/DummyPageHolder.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/testing/selection_sample.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 namespace blink {
 

@@ -23,11 +23,11 @@
  * DAMAGE.
  */
 
-#ifndef DelayNode_h
-#define DelayNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DELAY_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DELAY_NODE_H_
 
-#include "modules/webaudio/AudioBasicProcessorHandler.h"
-#include "modules/webaudio/AudioNode.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_basic_processor_handler.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 
 namespace blink {
 
@@ -72,4 +72,4 @@ class DelayNode final : public AudioNode {
 
 }  // namespace blink
 
-#endif  // DelayNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DELAY_NODE_H_

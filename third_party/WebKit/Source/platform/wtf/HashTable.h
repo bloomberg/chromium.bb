@@ -20,18 +20,18 @@
  *
  */
 
-#ifndef WTF_HashTable_h
-#define WTF_HashTable_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TABLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TABLE_H_
 
 #include <memory>
 
-#include "platform/wtf/Alignment.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/ConditionalDestructor.h"
-#include "platform/wtf/ConstructTraits.h"
-#include "platform/wtf/HashTraits.h"
-#include "platform/wtf/allocator/PartitionAllocator.h"
+#include "third_party/blink/renderer/platform/wtf/alignment.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/conditional_destructor.h"
+#include "third_party/blink/renderer/platform/wtf/construct_traits.h"
+#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 
 #if !defined(DUMP_HASHTABLE_STATS)
 #define DUMP_HASHTABLE_STATS 0
@@ -42,13 +42,13 @@
 #endif
 
 #if DUMP_HASHTABLE_STATS
-#include "platform/wtf/Atomics.h"
-#include "platform/wtf/Threading.h"
+#include "third_party/blink/renderer/platform/wtf/atomics.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 #endif
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
-#include "platform/wtf/DataLog.h"
 #include <type_traits>
+#include "third_party/blink/renderer/platform/wtf/DataLog.h"
 #endif
 
 #if DUMP_HASHTABLE_STATS
@@ -2261,6 +2261,6 @@ inline void RemoveAll(Collection1& collection,
 
 }  // namespace WTF
 
-#include "platform/wtf/HashIterators.h"
+#include "third_party/blink/renderer/platform/wtf/hash_iterators.h"
 
-#endif  // WTF_HashTable_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HASH_TABLE_H_

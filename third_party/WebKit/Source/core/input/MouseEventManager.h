@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MouseEventManager_h
-#define MouseEventManager_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_MOUSE_EVENT_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_MOUSE_EVENT_MANAGER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/SynchronousMutationObserver.h"
-#include "core/input/BoundaryEventDispatcher.h"
-#include "core/page/DragActions.h"
-#include "core/page/EventWithHitTestResults.h"
-#include "platform/Timer.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/WebInputEventResult.h"
-#include "public/platform/WebMouseEvent.h"
+#include "third_party/blink/public/platform/web_input_event_result.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
+#include "third_party/blink/renderer/core/input/boundary_event_dispatcher.h"
+#include "third_party/blink/renderer/core/page/drag_actions.h"
+#include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -252,4 +252,4 @@ class CORE_EXPORT MouseEventManager final
 
 }  // namespace blink
 
-#endif  // MouseEventManager_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_MOUSE_EVENT_MANAGER_H_

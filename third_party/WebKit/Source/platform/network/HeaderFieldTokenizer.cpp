@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/network/HeaderFieldTokenizer.h"
+#include "third_party/blink/renderer/platform/network/header_field_tokenizer.h"
 
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/StringView.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 

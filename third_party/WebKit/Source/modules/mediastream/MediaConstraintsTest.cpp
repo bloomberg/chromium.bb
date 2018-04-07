@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediastream/MediaConstraintsImpl.h"
-#include "modules/mediastream/MediaTrackConstraints.h"
-#include "public/platform/WebMediaConstraints.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
+#include "third_party/blink/renderer/modules/mediastream/media_track_constraints.h"
 
 namespace blink {
 

@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SQLTransactionStateMachine_h
-#define SQLTransactionStateMachine_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_TRANSACTION_STATE_MACHINE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_TRANSACTION_STATE_MACHINE_H_
 
-#include "modules/webdatabase/SQLTransactionState.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction_state.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -100,4 +100,4 @@ void SQLTransactionStateMachine<T>::RunStateMachine() {
 
 }  // namespace blink
 
-#endif  // SQLTransactionStateMachine_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_TRANSACTION_STATE_MACHINE_H_

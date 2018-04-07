@@ -22,13 +22,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaStreamEvent_h
-#define MediaStreamEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/mediastream/MediaStream.h"
-#include "modules/mediastream/MediaStreamEventInit.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_event_init.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class MediaStreamEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // MediaStreamEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_EVENT_H_

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/loader/fetch/FetchUtils.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 
-#include "platform/loader/cors/CORS.h"
-#include "platform/network/HTTPHeaderMap.h"
-#include "platform/network/HTTPParsers.h"
-#include "platform/network/http_names.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/WTFString.h"
 #include "services/network/public/cpp/cors/cors.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 

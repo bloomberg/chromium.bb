@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebDistillability_h
-#define WebDistillability_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DISTILLABILITY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DISTILLABILITY_H_
 
 namespace blink {
 
@@ -28,4 +28,4 @@ struct WebDistillabilityFeatures {
 
 }  // namespace blink
 
-#endif  // WebDistillability_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DISTILLABILITY_H_

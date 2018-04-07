@@ -5,7 +5,7 @@
 #include "content/common/indexed_db/indexed_db_key_range.h"
 
 #include "base/logging.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
 
 namespace content {
 

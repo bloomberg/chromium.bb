@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HTMLImageFallbackHelper_h
-#define HTMLImageFallbackHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_IMAGE_FALLBACK_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_IMAGE_FALLBACK_HELPER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -25,4 +25,4 @@ class HTMLImageFallbackHelper {
 
 }  // namespace blink
 
-#endif  // HTMLImageFallbackHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_IMAGE_FALLBACK_HELPER_H_

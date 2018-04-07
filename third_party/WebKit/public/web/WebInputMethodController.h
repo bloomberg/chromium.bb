@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebInputMethodController_h
-#define WebInputMethodController_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_INPUT_METHOD_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_INPUT_METHOD_CONTROLLER_H_
 
-#include "WebImeTextSpan.h"
-#include "WebWidget.h"
-#include "public/platform/WebTextInputInfo.h"
+#include "third_party/blink/public/platform/web_text_input_info.h"
+#include "third_party/blink/public/web/web_ime_text_span.h"
+#include "third_party/blink/public/web/web_widget.h"
 
 namespace blink {
 

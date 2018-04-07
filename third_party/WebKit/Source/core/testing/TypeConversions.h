@@ -23,11 +23,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TypeConversions_h
-#define TypeConversions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_TYPE_CONVERSIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_TYPE_CONVERSIONS_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -96,4 +96,4 @@ class TypeConversions final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // TypeConversions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_TYPE_CONVERSIONS_H_

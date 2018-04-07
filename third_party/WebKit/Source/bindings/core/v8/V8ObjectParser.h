@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8ObjectParser_h
-#define V8ObjectParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_OBJECT_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_OBJECT_PARSER_H_
 
-#include "core/CoreExport.h"
-#include "core/css_property_names.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -56,4 +56,4 @@ class CORE_EXPORT V8ObjectParser final {
 
 }  // namespace blink
 
-#endif  // V8ObjectParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_OBJECT_PARSER_H_

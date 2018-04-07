@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIAccessorClient_h
-#define MIDIAccessorClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_ACCESSOR_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_ACCESSOR_CLIENT_H_
 
 #include "base/time/time.h"
 #include "media/midi/midi_service.mojom-blink.h"
-#include "modules/webmidi/MIDIAccessor.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_accessor.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -64,4 +64,4 @@ class MIDIAccessorClient {
 
 }  // namespace blink
 
-#endif  // MIDIAccessorClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBMIDI_MIDI_ACCESSOR_CLIENT_H_

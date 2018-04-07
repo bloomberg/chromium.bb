@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/iterators/FullyClippedStateStack.h"
+#include "third_party/blink/renderer/core/editing/iterators/fully_clipped_state_stack.h"
 
-#include "core/dom/ContainerNode.h"
-#include "core/dom/Node.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 

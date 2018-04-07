@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NavigatorOnLine_h
-#define NavigatorOnLine_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_NAVIGATOR_ON_LINE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_NAVIGATOR_ON_LINE_H_
 
-#include "core/CoreExport.h"
-#include "platform/network/NetworkStateNotifier.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 
 namespace blink {
 
@@ -43,4 +43,4 @@ class CORE_EXPORT NavigatorOnLine {
 
 }  // namespace blink
 
-#endif  // NavigatorOnLine_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_NAVIGATOR_ON_LINE_H_

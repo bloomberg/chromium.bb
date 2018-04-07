@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/BoxReflection.h"
+#include "third_party/blink/renderer/platform/graphics/box_reflection.h"
 
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 
 #include <utility>

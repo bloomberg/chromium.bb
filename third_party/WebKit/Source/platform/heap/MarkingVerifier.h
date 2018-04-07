@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MarkingVerifier_h
-#define MarkingVerifier_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MARKING_VERIFIER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MARKING_VERIFIER_H_
 
-#include "platform/heap/GarbageCollected.h"
-#include "platform/heap/HeapPage.h"
-#include "platform/heap/Visitor.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/heap_page.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class MarkingVerifier final : public Visitor {
 
 }  // namespace blink
 
-#endif  // MarkingVerifier_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MARKING_VERIFIER_H_

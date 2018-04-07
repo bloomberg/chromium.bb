@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/ConsoleMessage.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/dom/Node.h"
-#include "core/frame/LocalFrame.h"
-#include "core/inspector/IdentifiersFactory.h"
-#include "core/workers/WorkerThread.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Time.h"
-#include "public/web/WebConsoleMessage.h"
+#include "third_party/blink/public/web/web_console_message.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

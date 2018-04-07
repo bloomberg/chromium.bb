@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebRTCError_h
-#define WebRTCError_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_ERROR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_ERROR_H_
 
 // This header provides a Blink equivalent of webrtc::RTCError from
 // third_party/webrtc. It's used to communicate errors between Blink and the
 // WebRTCPeerConnectionHandler implementation.
 
-#include "WebCommon.h"
-#include "WebString.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class WebRTCError {
 
 }  // namespace blink
 
-#endif  // WebRTCError_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_ERROR_H_

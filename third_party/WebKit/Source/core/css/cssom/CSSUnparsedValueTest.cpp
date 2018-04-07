@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/cssom/CSSUnparsedValue.h"
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unparsed_value.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/page/PageVisibilityState.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/page/page_visibility_state.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

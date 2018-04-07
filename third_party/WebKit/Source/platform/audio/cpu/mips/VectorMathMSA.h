@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VectorMathMSA_h
-#define VectorMathMSA_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CPU_MIPS_VECTOR_MATH_MSA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CPU_MIPS_VECTOR_MATH_MSA_H_
 
 #include <algorithm>
 
-#include "platform/audio/VectorMathScalar.h"
-#include "platform/cpu/mips/CommonMacrosMSA.h"
+#include "third_party/blink/renderer/platform/audio/vector_math_scalar.h"
+#include "third_party/blink/renderer/platform/cpu/mips/common_macros_msa.h"
 
 namespace blink {
 namespace VectorMath {
@@ -216,4 +216,4 @@ static ALWAYS_INLINE void Vsmul(const float* source_p,
 }  // namespace VectorMath
 }  // namespace blink
 
-#endif  // VectorMathMSA_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CPU_MIPS_VECTOR_MATH_MSA_H_

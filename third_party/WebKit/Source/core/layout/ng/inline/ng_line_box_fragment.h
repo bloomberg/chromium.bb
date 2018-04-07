@@ -5,10 +5,10 @@
 #ifndef NGLineBoxFragment_h
 #define NGLineBoxFragment_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "core/layout/ng/ng_fragment.h"
-#include "platform/text/WritingMode.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
 

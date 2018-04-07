@@ -2,19 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("picture_in_picture") {
   sources = [
-    "DocumentPictureInPicture.cpp",
-    "DocumentPictureInPicture.h",
-    "HTMLVideoElementPictureInPicture.cpp",
-    "HTMLVideoElementPictureInPicture.h",
-    "PictureInPictureControllerImpl.cpp",
-    "PictureInPictureControllerImpl.h",
-    "PictureInPictureWindow.cpp",
-    "PictureInPictureWindow.h",
-    "ShadowRootPictureInPicture.cpp",
-    "ShadowRootPictureInPicture.h",
+    "document_picture_in_picture.cc",
+    "document_picture_in_picture.h",
+    "html_video_element_picture_in_picture.cc",
+    "html_video_element_picture_in_picture.h",
+    "picture_in_picture_controller_impl.cc",
+    "picture_in_picture_controller_impl.h",
+    "picture_in_picture_window.cc",
+    "picture_in_picture_window.h",
+    "shadow_root_picture_in_picture.cc",
+    "shadow_root_picture_in_picture.h",
   ]
 }

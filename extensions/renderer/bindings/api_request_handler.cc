@@ -13,8 +13,8 @@
 #include "extensions/renderer/bindings/js_runner.h"
 #include "gin/converter.h"
 #include "gin/data_object_builder.h"
-#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
-#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
+#include "third_party/blink/public/web/web_scoped_user_gesture.h"
+#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 
 namespace extensions {
 

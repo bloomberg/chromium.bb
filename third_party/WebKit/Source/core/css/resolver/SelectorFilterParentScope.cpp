@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/resolver/SelectorFilterParentScope.h"
+#include "third_party/blink/renderer/core/css/resolver/selector_filter_parent_scope.h"
 
 namespace blink {
 

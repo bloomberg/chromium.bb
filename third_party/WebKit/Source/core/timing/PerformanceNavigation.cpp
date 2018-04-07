@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/timing/PerformanceNavigation.h"
+#include "third_party/blink/renderer/core/timing/performance_navigation.h"
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/frame/LocalFrame.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/FrameLoaderTypes.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 
 // Legacy support for NT1(https://www.w3.org/TR/navigation-timing/).
 namespace blink {

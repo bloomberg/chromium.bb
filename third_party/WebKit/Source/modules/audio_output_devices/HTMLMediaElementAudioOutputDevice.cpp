@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/audio_output_devices/HTMLMediaElementAudioOutputDevice.h"
+#include "third_party/blink/renderer/modules/audio_output_devices/html_media_element_audio_output_device.h"
 
 #include <memory>
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/audio_output_devices/AudioOutputDeviceClient.h"
-#include "modules/audio_output_devices/SetSinkIdCallbacks.h"
-#include "platform/bindings/ScriptState.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebSecurityOrigin.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/audio_output_devices/audio_output_device_client.h"
+#include "third_party/blink/renderer/modules/audio_output_devices/set_sink_id_callbacks.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

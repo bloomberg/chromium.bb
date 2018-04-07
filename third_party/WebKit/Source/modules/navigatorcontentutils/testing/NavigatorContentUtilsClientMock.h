@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigatorContentUtilsClientMock_h
-#define NavigatorContentUtilsClientMock_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NAVIGATORCONTENTUTILS_TESTING_NAVIGATOR_CONTENT_UTILS_CLIENT_MOCK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_NAVIGATORCONTENTUTILS_TESTING_NAVIGATOR_CONTENT_UTILS_CLIENT_MOCK_H_
 
-#include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class NavigatorContentUtilsClientMock final
 
 }  // namespace blink
 
-#endif  // NavigatorContentUtilsClientMock_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_NAVIGATORCONTENTUTILS_TESTING_NAVIGATOR_CONTENT_UTILS_CLIENT_MOCK_H_

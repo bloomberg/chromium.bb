@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/ScriptedAnimationController.h"
+#include "third_party/blink/renderer/core/dom/scripted_animation_controller.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/dom/FrameRequestCallbackCollection.h"
-#include "core/dom/events/Event.h"
-#include "core/dom/events/EventListener.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Functional.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

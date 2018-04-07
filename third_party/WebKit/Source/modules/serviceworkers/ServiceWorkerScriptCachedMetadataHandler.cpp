@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/serviceworkers/ServiceWorkerScriptCachedMetadataHandler.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_script_cached_metadata_handler.h"
 
-#include "core/workers/WorkerGlobalScope.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
-#include "platform/loader/fetch/CachedMetadata.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_client.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
 
 namespace blink {
 

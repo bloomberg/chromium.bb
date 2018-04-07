@@ -20,7 +20,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/events/ClipboardEvent.h"
+#include "third_party/blink/renderer/core/events/clipboard_event.h"
 
 namespace blink {
 

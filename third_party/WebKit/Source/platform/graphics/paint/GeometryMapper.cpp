@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/GeometryMapper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
-#include "platform/geometry/LayoutRect.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

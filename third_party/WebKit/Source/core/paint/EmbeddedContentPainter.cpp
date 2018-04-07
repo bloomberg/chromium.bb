@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/EmbeddedContentPainter.h"
+#include "third_party/blink/renderer/core/paint/embedded_content_painter.h"
 
-#include "core/frame/EmbeddedContentView.h"
-#include "core/layout/LayoutEmbeddedContent.h"
-#include "core/paint/AdjustPaintOffsetScope.h"
-#include "core/paint/BoxPainter.h"
-#include "core/paint/ObjectPainter.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/ReplacedPainter.h"
-#include "core/paint/RoundedInnerRectClipper.h"
-#include "core/paint/ScrollableAreaPainter.h"
-#include "core/paint/SelectionPaintingUtils.h"
-#include "core/paint/TransformRecorder.h"
-#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/frame/embedded_content_view.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
+#include "third_party/blink/renderer/core/paint/object_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/replaced_painter.h"
+#include "third_party/blink/renderer/core/paint/rounded_inner_rect_clipper.h"
+#include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
+#include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
+#include "third_party/blink/renderer/core/paint/transform_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

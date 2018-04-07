@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AXSparseAttributeSetter_h
-#define AXSparseAttributeSetter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_SPARSE_ATTRIBUTE_SETTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_SPARSE_ATTRIBUTE_SETTER_H_
 
-#include "core/dom/AccessibleNode.h"
-#include "core/dom/AccessibleNodeList.h"
-#include "modules/accessibility/AXObject.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/dom/accessible_node.h"
+#include "third_party/blink/renderer/core/dom/accessible_node_list.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class AXSparseAttributeAOMPropertyClient : public AOMPropertyClient {
 
 }  // namespace blink
 
-#endif  // AXSparseAttributeSetter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_SPARSE_ATTRIBUTE_SETTER_H_

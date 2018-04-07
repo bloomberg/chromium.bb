@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/ElementVisibilityObserver.h"
+#include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
 
-#include "core/dom/DOMImplementation.h"
-#include "core/dom/Document.h"
-#include "core/frame/RemoteFrame.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/html/HTMLDocument.h"
-#include "core/loader/EmptyClients.h"
-#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_implementation.h"
+#include "third_party/blink/renderer/core/frame/remote_frame.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

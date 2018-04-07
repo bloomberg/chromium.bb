@@ -20,12 +20,12 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
-#include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
-#include "third_party/WebKit/public/platform/WebContentSettingsClient.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebSharedWorkerClient.h"
-#include "third_party/WebKit/public/web/devtools_agent.mojom.h"
-#include "third_party/WebKit/public/web/worker_content_settings_proxy.mojom.h"
+#include "third_party/blink/public/platform/web_content_security_policy.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/devtools_agent.mojom.h"
+#include "third_party/blink/public/web/web_shared_worker_client.h"
+#include "third_party/blink/public/web/worker_content_settings_proxy.mojom.h"
 #include "url/gurl.h"
 
 namespace blink {

@@ -9,8 +9,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/tick_clock.h"
 #include "cc/base/rolling_time_delta_history.h"
-#include "platform/PlatformExport.h"
-#include "platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 
 namespace blink {
 namespace scheduler {

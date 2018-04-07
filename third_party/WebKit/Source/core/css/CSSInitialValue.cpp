@@ -18,10 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/CSSInitialValue.h"
+#include "third_party/blink/renderer/core/css/css_initial_value.h"
 
-#include "core/css/CSSValuePool.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/css/css_value_pool.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

@@ -23,24 +23,24 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IDBObjectStore_h
-#define IDBObjectStore_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_OBJECT_STORE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_OBJECT_STORE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "modules/indexeddb/IDBCursor.h"
-#include "modules/indexeddb/IDBIndex.h"
-#include "modules/indexeddb/IDBIndexParameters.h"
-#include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBKeyRange.h"
-#include "modules/indexeddb/IDBMetadata.h"
-#include "modules/indexeddb/IDBRequest.h"
-#include "modules/indexeddb/IDBTransaction.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/indexeddb/WebIDBCursor.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabase.h"
-#include "public/platform/modules/indexeddb/WebIDBTypes.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_cursor.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_index.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_index_parameters.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_transaction.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -224,4 +224,4 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // IDBObjectStore_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_OBJECT_STORE_H_

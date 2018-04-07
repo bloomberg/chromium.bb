@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutScrollbarPart_h
-#define LayoutScrollbarPart_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_PART_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_PART_H_
 
-#include "core/layout/LayoutBlock.h"
-#include "platform/scroll/ScrollTypes.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
 
@@ -119,4 +119,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutScrollbarPart, IsLayoutScrollbarPart());
 
 }  // namespace blink
 
-#endif  // LayoutScrollbarPart_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SCROLLBAR_PART_H_

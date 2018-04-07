@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ForeignLayerDisplayItem_h
-#define ForeignLayerDisplayItem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_FOREIGN_LAYER_DISPLAY_ITEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_FOREIGN_LAYER_DISPLAY_ITEM_H_
 
 #include "base/memory/ref_counted.h"
-#include "platform/PlatformExport.h"
-#include "platform/graphics/paint/DisplayItem.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace cc {
 class Layer;
@@ -64,4 +64,4 @@ PLATFORM_EXPORT void RecordForeignLayer(GraphicsContext&,
 
 }  // namespace blink
 
-#endif  // ForeignLayerDisplayItem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_FOREIGN_LAYER_DISPLAY_ITEM_H_

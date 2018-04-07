@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFloatPoint_h
-#define WebFloatPoint_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FLOAT_POINT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FLOAT_POINT_H_
 
-#include "WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 #if INSIDE_BLINK
-#include "platform/geometry/FloatPoint.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
 #else
 #include <ui/gfx/geometry/point_f.h>
 #endif

@@ -21,12 +21,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/graphics/filters/FEColorMatrix.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_color_matrix.h"
 
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"
-#include "platform/graphics/filters/PaintFilterBuilder.h"
-#include "platform/text/TextStream.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
 
 namespace blink {
 

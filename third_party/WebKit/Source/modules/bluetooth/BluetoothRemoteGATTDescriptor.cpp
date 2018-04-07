@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/bluetooth/BluetoothRemoteGATTDescriptor.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_descriptor.h"
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "modules/bluetooth/BluetoothError.h"
-#include "modules/bluetooth/BluetoothRemoteGATTService.h"
-#include "modules/bluetooth/BluetoothRemoteGATTUtils.h"
 #include <memory>
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_error.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_service.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_utils.h"
 
 namespace blink {
 

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/testing/NullExecutionContext.h"
-#include "modules/mediastream/MediaDevices.h"
-#include "modules/mediastream/MediaStreamConstraints.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/testing/TestingPlatformSupport.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/testing/null_execution_context.h"
+#include "third_party/blink/renderer/modules/mediastream/media_devices.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 using blink::mojom::blink::MediaDeviceInfoPtr;
 using blink::mojom::blink::MediaDeviceType;

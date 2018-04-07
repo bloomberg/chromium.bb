@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/parser/HTMLEntityParser.h"
+#include "third_party/blink/renderer/core/html/parser/html_entity_parser.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

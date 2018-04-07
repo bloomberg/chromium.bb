@@ -28,25 +28,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/fileapi/FileReader.h"
+#include "third_party/blink/renderer/core/fileapi/file_reader.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/string_or_array_buffer.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/events/ProgressEvent.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fileapi/File.h"
-#include "core/frame/UseCounter.h"
-#include "core/probe/CoreProbes.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "platform/Supplementable.h"
-#include "platform/wtf/AutoReset.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/CString.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_array_buffer.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/events/progress_event.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/file.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

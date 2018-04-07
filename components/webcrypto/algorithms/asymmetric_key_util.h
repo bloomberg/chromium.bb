@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_WEBCRYPTO_ALGORITHMS_ASYMMETRIC_KEY_UTIL_
 #define COMPONENTS_WEBCRYPTO_ALGORITHMS_ASYMMETRIC_KEY_UTIL_
 
-#include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
-#include "third_party/WebKit/public/platform/WebCryptoKey.h"
+#include "third_party/blink/public/platform/web_crypto_algorithm.h"
+#include "third_party/blink/public/platform/web_crypto_key.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 
 // This file contains functions shared by multiple asymmetric key algorithms.

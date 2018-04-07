@@ -23,16 +23,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/scroll/ScrollbarThemeOverlay.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_overlay.h"
 
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/scroll/Scrollbar.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/MathExtras.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebThemeEngine.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 #include <algorithm>
 

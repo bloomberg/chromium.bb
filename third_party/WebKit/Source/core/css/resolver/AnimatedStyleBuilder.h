@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimatedStyleBuilder_h
-#define AnimatedStyleBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_ANIMATED_STYLE_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_ANIMATED_STYLE_BUILDER_H_
 
-#include "core/css_property_names.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class AnimatedStyleBuilder {
 
 }  // namespace blink
 
-#endif  // AnimatedStyleBuilder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_ANIMATED_STYLE_BUILDER_H_

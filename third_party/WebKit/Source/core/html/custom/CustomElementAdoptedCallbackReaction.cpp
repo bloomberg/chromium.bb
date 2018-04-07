@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/custom/CustomElementAdoptedCallbackReaction.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_adopted_callback_reaction.h"
 
-#include "core/dom/Document.h"
-#include "core/html/custom/CustomElementDefinition.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 
 namespace blink {
 

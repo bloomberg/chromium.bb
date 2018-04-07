@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/serialization/SerializedColorParams.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_color_params.h"
 
 namespace blink {
 

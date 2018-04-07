@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LineLayoutItem_h
-#define LineLayoutItem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_ITEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_ITEM_H_
 
-#include "core/editing/PositionWithAffinity.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutObjectInlines.h"
-#include "core/layout/LayoutText.h"
-#include "core/paint/ObjectPaintInvalidator.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 
-#include "platform/LayoutUnit.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashTableDeletedValueType.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
 
 namespace blink {
 
@@ -375,4 +375,4 @@ struct HashTraits<blink::LineLayoutItem>
 
 }  // namespace WTF
 
-#endif  // LineLayoutItem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_ITEM_H_

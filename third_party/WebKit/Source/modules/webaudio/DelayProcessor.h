@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#ifndef DelayProcessor_h
-#define DelayProcessor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DELAY_PROCESSOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DELAY_PROCESSOR_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "modules/webaudio/AudioParam.h"
-#include "platform/audio/AudioDSPKernelProcessor.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param.h"
+#include "third_party/blink/renderer/platform/audio/audio_dsp_kernel_processor.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class DelayProcessor final : public AudioDSPKernelProcessor {
 
 }  // namespace blink
 
-#endif  // DelayProcessor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DELAY_PROCESSOR_H_

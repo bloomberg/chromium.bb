@@ -25,15 +25,15 @@
  * SUCH DAMAGE.
  */
 
-#ifndef Path2D_h
-#define Path2D_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_PATH_2D_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_PATH_2D_H_
 
-#include "core/svg/SVGMatrixTearOff.h"
-#include "core/svg/SVGPathUtilities.h"
-#include "modules/canvas/canvas2d/CanvasPath.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/transforms/AffineTransform.h"
+#include "third_party/blink/renderer/core/svg/svg_matrix_tear_off.h"
+#include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_path.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class MODULES_EXPORT Path2D final : public ScriptWrappable, public CanvasPath {
 
 }  // namespace blink
 
-#endif  // Path2D_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_PATH_2D_H_

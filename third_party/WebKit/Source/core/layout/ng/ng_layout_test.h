@@ -5,9 +5,9 @@
 #ifndef NGLayoutTest_h
 #define NGLayoutTest_h
 
-#include "core/frame/LocalFrameClient.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 

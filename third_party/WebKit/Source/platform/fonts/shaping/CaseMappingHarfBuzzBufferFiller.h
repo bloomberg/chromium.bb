@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CaseMappingHarfBuzzBufferFiller_h
-#define CaseMappingHarfBuzzBufferFiller_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_CASE_MAPPING_HARF_BUZZ_BUFFER_FILLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_CASE_MAPPING_HARF_BUZZ_BUFFER_FILLER_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 #include <hb.h>
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TraceWrapperV8Reference_h
-#define TraceWrapperV8Reference_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_V8_REFERENCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_V8_REFERENCE_H_
 
-#include "platform/bindings/ScriptWrappableMarkingVisitor.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class TraceWrapperV8Reference {
 
 }  // namespace blink
 
-#endif  // TraceWrapperV8Reference_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_V8_REFERENCE_H_

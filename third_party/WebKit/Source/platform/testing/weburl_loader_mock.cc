@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/testing/weburl_loader_mock.h"
+#include "third_party/blink/renderer/platform/testing/weburl_loader_mock.h"
 
 #include <utility>
 
-#include "platform/SharedBuffer.h"
-#include "platform/testing/weburl_loader_mock_factory_impl.h"
-#include "public/platform/URLConversion.h"
-#include "public/platform/WebData.h"
-#include "public/platform/WebURLError.h"
-#include "public/platform/WebURLLoaderClient.h"
+#include "third_party/blink/public/platform/url_conversion.h"
+#include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/public/platform/web_url_loader_client.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/testing/weburl_loader_mock_factory_impl.h"
 
 namespace blink {
 

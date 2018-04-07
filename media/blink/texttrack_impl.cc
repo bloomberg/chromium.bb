@@ -11,8 +11,8 @@
 #include "base/single_thread_task_runner.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/blink/webinbandtexttrack_impl.h"
-#include "third_party/WebKit/public/platform/WebInbandTextTrackClient.h"
-#include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
+#include "third_party/blink/public/platform/web_inband_text_track_client.h"
+#include "third_party/blink/public/platform/web_media_player_client.h"
 
 namespace media {
 

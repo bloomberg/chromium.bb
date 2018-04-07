@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSTokenizer.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 
 namespace blink {
-#include "core/css_tokenizer_codepoints.cc"
+#include "third_party/blink/renderer/core/css_tokenizer_codepoints.cc"
 }
 
-#include "core/css/parser/CSSParserIdioms.h"
-#include "core/css/parser/CSSParserTokenRange.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
 

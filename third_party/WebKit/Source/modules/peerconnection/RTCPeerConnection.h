@@ -28,25 +28,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCPeerConnection_h
-#define RTCPeerConnection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_PEER_CONNECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_PEER_CONNECTION_H_
 
 #include <memory>
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/PausableObject.h"
-#include "modules/EventTargetModules.h"
-#include "modules/crypto/NormalizeAlgorithm.h"
-#include "modules/mediastream/MediaStream.h"
-#include "modules/peerconnection/RTCIceCandidate.h"
-#include "platform/AsyncMethodRunner.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/scheduler/public/frame_scheduler.h"
-#include "public/platform/WebMediaConstraints.h"
-#include "public/platform/WebRTCConfiguration.h"
-#include "public/platform/WebRTCPeerConnectionHandler.h"
-#include "public/platform/WebRTCPeerConnectionHandlerClient.h"
+#include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/public/platform/web_rtc_configuration.h"
+#include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
+#include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/modules/crypto/normalize_algorithm.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate.h"
+#include "third_party/blink/renderer/platform/async_method_runner.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 
 namespace blink {
 
@@ -357,4 +357,4 @@ class MODULES_EXPORT RTCPeerConnection final
 
 }  // namespace blink
 
-#endif  // RTCPeerConnection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_PEER_CONNECTION_H_

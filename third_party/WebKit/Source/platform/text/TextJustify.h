@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextJustify_h
-#define TextJustify_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_JUSTIFY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_JUSTIFY_H_
 
 namespace blink {
 
@@ -16,4 +16,4 @@ enum class TextJustify : unsigned {
 
 }  // namespace blink
 
-#endif  // TextJustify_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_JUSTIFY_H_

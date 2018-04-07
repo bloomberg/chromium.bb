@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/resource/MultipartImageResourceParser.h"
+#include "third_party/blink/renderer/core/loader/resource/multipart_image_resource_parser.h"
 
-#include "platform/network/HTTPParsers.h"
-#include "platform/wtf/NotFound.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/wtf/not_found.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #include <algorithm>
 

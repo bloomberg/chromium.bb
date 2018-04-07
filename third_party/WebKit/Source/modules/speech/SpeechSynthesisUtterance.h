@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SpeechSynthesisUtterance_h
-#define SpeechSynthesisUtterance_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_SYNTHESIS_UTTERANCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_SYNTHESIS_UTTERANCE_H_
 
-#include "core/dom/ContextLifecycleObserver.h"
-#include "modules/EventTargetModules.h"
-#include "modules/speech/SpeechSynthesisVoice.h"
-#include "platform/heap/Handle.h"
-#include "platform/speech/PlatformSpeechSynthesisUtterance.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/speech/speech_synthesis_voice.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/speech/platform_speech_synthesis_utterance.h"
 
 namespace blink {
 
@@ -99,4 +99,4 @@ class SpeechSynthesisUtterance final
 
 }  // namespace blink
 
-#endif  // SpeechSynthesisUtterance_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_SYNTHESIS_UTTERANCE_H_

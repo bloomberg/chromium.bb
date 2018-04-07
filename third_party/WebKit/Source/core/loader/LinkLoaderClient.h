@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef LinkLoaderClient_h
-#define LinkLoaderClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_LINK_LOADER_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_LINK_LOADER_CLIENT_H_
 
 #include "base/single_thread_task_runner.h"
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

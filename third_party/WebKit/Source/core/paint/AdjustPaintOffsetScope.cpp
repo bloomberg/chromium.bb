@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/AdjustPaintOffsetScope.h"
+#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 
-#include "core/layout/LayoutTableSection.h"
+#include "third_party/blink/renderer/core/layout/layout_table_section.h"
 
 namespace blink {
 

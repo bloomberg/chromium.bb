@@ -25,15 +25,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef SQLStatement_h
-#define SQLStatement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_STATEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_STATEMENT_H_
 
-#include "bindings/modules/v8/V8SQLStatementCallback.h"
-#include "bindings/modules/v8/V8SQLStatementErrorCallback.h"
-#include "modules/webdatabase/SQLResultSet.h"
-#include "modules/webdatabase/sqlite/SQLValue.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_sql_statement_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_sql_statement_error_callback.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_result_set.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sql_value.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -120,4 +120,4 @@ class SQLStatement final : public GarbageCollected<SQLStatement> {
 
 }  // namespace blink
 
-#endif  // SQLStatement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_STATEMENT_H_

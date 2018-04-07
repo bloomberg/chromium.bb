@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InspectorPerformanceAgent_h
-#define InspectorPerformanceAgent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORPERFORMANCEAGENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORPERFORMANCEAGENT_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/protocol/Performance.h"
-#include "platform/scheduler/base/task_time_observer.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Performance.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_time_observer.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

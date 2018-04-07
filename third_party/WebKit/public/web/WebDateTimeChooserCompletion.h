@@ -23,10 +23,10 @@
  * SUCH DAMAGE.
  */
 
-#ifndef WebDateTimeChooserCompletion_h
-#define WebDateTimeChooserCompletion_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DATE_TIME_CHOOSER_COMPLETION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DATE_TIME_CHOOSER_COMPLETION_H_
 
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 

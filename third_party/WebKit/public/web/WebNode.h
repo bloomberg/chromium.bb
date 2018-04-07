@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebNode_h
-#define WebNode_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_NODE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_NODE_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebPrivatePtr.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 

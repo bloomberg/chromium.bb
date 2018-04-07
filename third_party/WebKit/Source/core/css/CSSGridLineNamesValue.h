@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSGridLineNamesValue_h
-#define CSSGridLineNamesValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GRID_LINE_NAMES_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GRID_LINE_NAMES_VALUE_H_
 
-#include "core/css/CSSValueList.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
 
 namespace blink {
 

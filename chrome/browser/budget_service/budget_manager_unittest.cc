@@ -16,7 +16,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
+#include "third_party/blink/public/platform/modules/budget_service/budget_service.mojom.h"
 #include "url/origin.h"
 
 namespace {

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebScrollIntoViewParams.h"
+#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 
-#include "platform/wtf/SizeAssertions.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
 namespace {

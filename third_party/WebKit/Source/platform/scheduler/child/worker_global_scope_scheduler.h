@@ -6,8 +6,8 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_WORKER_GLOBAL_SCOPE_SCHEDULER_H_
 
 #include "base/single_thread_task_runner.h"
-#include "platform/scheduler/base/task_queue.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 
 namespace blink {
 

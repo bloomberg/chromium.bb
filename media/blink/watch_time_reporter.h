@@ -18,7 +18,7 @@
 #include "media/blink/media_blink_export.h"
 #include "media/mojo/interfaces/media_metrics_provider.mojom.h"
 #include "media/mojo/interfaces/watch_time_recorder.mojom.h"
-#include "third_party/WebKit/public/platform/WebMediaPlayer.h"
+#include "third_party/blink/public/platform/web_media_player.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
 

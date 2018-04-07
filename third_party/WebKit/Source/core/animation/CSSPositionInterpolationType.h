@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSPositionInterpolationType_h
-#define CSSPositionInterpolationType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_POSITION_INTERPOLATION_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_POSITION_INTERPOLATION_TYPE_H_
 
-#include "core/animation/CSSLengthListInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_length_list_interpolation_type.h"
 
-#include "core/animation/CSSPositionAxisListInterpolationType.h"
-#include "core/animation/ListInterpolationFunctions.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSValuePair.h"
+#include "third_party/blink/renderer/core/animation/css_position_axis_list_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/list_interpolation_functions.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
 
 namespace blink {
 
@@ -36,4 +36,4 @@ class CSSPositionInterpolationType : public CSSLengthListInterpolationType {
 
 }  // namespace blink
 
-#endif  // CSSPositionInterpolationType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_POSITION_INTERPOLATION_TYPE_H_

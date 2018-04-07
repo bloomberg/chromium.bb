@@ -26,16 +26,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/FontFallbackList.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_list.h"
 
-#include "platform/font_family_names.h"
-#include "platform/fonts/AlternateFontFamily.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/FontCacheKey.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontFamily.h"
-#include "platform/fonts/SegmentedFontData.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/platform/font_family_names.h"
+#include "third_party/blink/renderer/platform/fonts/alternate_font_family.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache_key.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_family.h"
+#include "third_party/blink/renderer/platform/fonts/segmented_font_data.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
 

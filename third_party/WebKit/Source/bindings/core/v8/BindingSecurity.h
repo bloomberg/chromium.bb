@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BindingSecurity_h
-#define BindingSecurity_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_BINDING_SECURITY_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_BINDING_SECURITY_H_
 
-#include "core/CoreExport.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -144,4 +144,4 @@ class CORE_EXPORT BindingSecurity {
 
 }  // namespace blink
 
-#endif  // BindingSecurity_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_BINDING_SECURITY_H_

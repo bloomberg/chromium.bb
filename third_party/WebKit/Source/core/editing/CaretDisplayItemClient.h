@@ -24,15 +24,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CaretDisplayItemClient_h
-#define CaretDisplayItemClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_CARET_DISPLAY_ITEM_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_CARET_DISPLAY_ITEM_CLIENT_H_
 
 #include "base/macros.h"
-#include "core/editing/Forward.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/Color.h"
-#include "platform/graphics/paint/DisplayItem.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 
 namespace blink {
 
@@ -110,4 +110,4 @@ class CaretDisplayItemClient final : public DisplayItemClient {
 
 }  // namespace blink
 
-#endif  // CaretDisplayItemClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_CARET_DISPLAY_ITEM_CLIENT_H_

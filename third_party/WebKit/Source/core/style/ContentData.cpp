@@ -20,17 +20,17 @@
  *
  */
 
-#include "core/style/ContentData.h"
+#include "third_party/blink/renderer/core/style/content_data.h"
 
 #include <memory>
-#include "core/dom/PseudoElement.h"
-#include "core/layout/LayoutCounter.h"
-#include "core/layout/LayoutImage.h"
-#include "core/layout/LayoutImageResource.h"
-#include "core/layout/LayoutImageResourceStyleImage.h"
-#include "core/layout/LayoutQuote.h"
-#include "core/layout/LayoutTextFragment.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/layout/layout_counter.h"
+#include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/core/layout/layout_image_resource.h"
+#include "third_party/blink/renderer/core/layout/layout_image_resource_style_image.h"
+#include "third_party/blink/renderer/core/layout/layout_quote.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8IteratorResultValue_h
-#define V8IteratorResultValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ITERATOR_RESULT_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ITERATOR_RESULT_VALUE_H_
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -42,4 +42,4 @@ inline ScriptValue V8IteratorResultDone(ScriptState* script_state) {
 
 }  // namespace blink
 
-#endif  // V8IteratorResultValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_ITERATOR_RESULT_VALUE_H_

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ComputedAccessibleNode_h
-#define ComputedAccessibleNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_COMPUTED_ACCESSIBLE_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_COMPUTED_ACCESSIBLE_NODE_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/AXObjectCache.h"
-#include "core/dom/events/EventTarget.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "third_party/WebKit/Source/core/dom/Element.h"
-#include "third_party/WebKit/Source/core/frame/LocalFrame.h"
-#include "third_party/WebKit/Source/platform/wtf/text/WTFString.h"
-#include "third_party/WebKit/public/platform/WebComputedAXTree.h"
+#include "third_party/blink/public/platform/web_computed_ax_tree.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -109,4 +109,4 @@ class ComputedAccessibleNode : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // ComputedAccessibleNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_COMPUTED_ACCESSIBLE_NODE_H_

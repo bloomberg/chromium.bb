@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/media/AutoplayUmaHelper.h"
+#include "third_party/blink/renderer/core/html/media/autoplay_uma_helper.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/ElementVisibilityObserver.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/media/AutoplayPolicy.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/page/Page.h"
-#include "platform/Histogram.h"
-#include "platform/network/NetworkStateNotifier.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/InterfaceProvider.h"
-#include "public/platform/Platform.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

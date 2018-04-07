@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/presentation/PresentationAvailability.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/dom/DOMException.h"
-#include "core/frame/LocalFrame.h"
-#include "core/page/Page.h"
-#include "core/testing/DummyPageHolder.h"
-#include "modules/presentation/PresentationRequest.h"
-#include "platform/testing/URLTestHelpers.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_request.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
 namespace blink {

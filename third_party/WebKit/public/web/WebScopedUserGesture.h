@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebScopedUserGesture_h
-#define WebScopedUserGesture_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SCOPED_USER_GESTURE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SCOPED_USER_GESTURE_H_
 
-#include "public/platform/WebCommon.h"
 #include <memory>
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ class WebScopedUserGesture {
 
 }  // namespace blink
 
-#endif  // WebScopedUserGesture_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SCOPED_USER_GESTURE_H_

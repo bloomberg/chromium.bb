@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EffectInput_h
-#define EffectInput_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_EFFECT_INPUT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_EFFECT_INPUT_H_
 
-#include "core/CoreExport.h"
-#include "core/animation/EffectModel.h"
-#include "core/animation/KeyframeEffectModel.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/animation/effect_model.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

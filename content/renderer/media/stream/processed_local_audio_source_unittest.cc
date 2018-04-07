@@ -18,8 +18,8 @@
 #include "media/base/audio_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
-#include "third_party/WebKit/public/web/WebHeap.h"
+#include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/public/web/web_heap.h"
 
 using ::testing::_;
 using ::testing::AtLeast;

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FullyClippedStateStack_h
-#define FullyClippedStateStack_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_FULLY_CLIPPED_STATE_STACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_FULLY_CLIPPED_STATE_STACK_H_
 
-#include "core/editing/EditingStrategy.h"
-#include "core/editing/iterators/BitStack.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/editing/editing_strategy.h"
+#include "third_party/blink/renderer/core/editing/iterators/bit_stack.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -33,4 +33,4 @@ using FullyClippedStateStack = FullyClippedStateStackAlgorithm<EditingStrategy>;
 
 }  // namespace blink
 
-#endif  // FullyClippedStateStack_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_FULLY_CLIPPED_STATE_STACK_H_

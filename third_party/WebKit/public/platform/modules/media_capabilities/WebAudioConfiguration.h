@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebAudioConfiguration_h
-#define WebAudioConfiguration_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIA_CAPABILITIES_WEB_AUDIO_CONFIGURATION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIA_CAPABILITIES_WEB_AUDIO_CONFIGURATION_H_
 
 #include "base/optional.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -25,4 +25,4 @@ struct WebAudioConfiguration {
 
 }  // namespace blink
 
-#endif  // WebAudioConfiguration_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_MEDIA_CAPABILITIES_WEB_AUDIO_CONFIGURATION_H_

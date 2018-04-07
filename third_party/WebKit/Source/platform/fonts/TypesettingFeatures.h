@@ -23,11 +23,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TypesettingFeatures_h
-#define TypesettingFeatures_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_TYPESETTING_FEATURES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_TYPESETTING_FEATURES_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ PLATFORM_EXPORT String ToString(TypesettingFeatures);
 
 }  // namespace blink
 
-#endif  // TypesettingFeatures_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_TYPESETTING_FEATURES_H_

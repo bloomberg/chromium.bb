@@ -27,12 +27,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMWindowCSS_h
-#define DOMWindowCSS_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_DOM_WINDOW_CSS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_DOM_WINDOW_CSS_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

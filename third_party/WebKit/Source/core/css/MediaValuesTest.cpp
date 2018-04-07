@@ -2,11 +2,11 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // found in the LICENSE file.
 
-#include "core/css/MediaValues.h"
+#include "third_party/blink/renderer/core/css/media_values.h"
 
-#include "core/css/CSSPrimitiveValue.h"
-#include "platform/wtf/text/StringBuilder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XMLHttpRequestUpload_h
-#define XMLHttpRequestUpload_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XMLHTTPREQUEST_XML_HTTP_REQUEST_UPLOAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XMLHTTPREQUEST_XML_HTTP_REQUEST_UPLOAD_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/xmlhttprequest/XMLHttpRequest.h"
-#include "core/xmlhttprequest/XMLHttpRequestEventTarget.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request.h"
+#include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request_event_target.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class XMLHttpRequestUpload final : public XMLHttpRequestEventTarget {
 
 }  // namespace blink
 
-#endif  // XMLHttpRequestUpload_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XMLHTTPREQUEST_XML_HTTP_REQUEST_UPLOAD_H_

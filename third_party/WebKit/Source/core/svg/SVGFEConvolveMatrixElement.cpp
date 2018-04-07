@@ -17,13 +17,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGFEConvolveMatrixElement.h"
+#include "third_party/blink/renderer/core/svg/svg_fe_convolve_matrix_element.h"
 
-#include "core/dom/Document.h"
-#include "core/svg/graphics/filters/SVGFilterBuilder.h"
-#include "core/svg_names.h"
-#include "platform/geometry/IntPoint.h"
-#include "platform/geometry/IntSize.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
 
 namespace blink {
 

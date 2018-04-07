@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/imagecapture/ImageCapture.h"
+#include "third_party/blink/renderer/modules/imagecapture/image_capture.h"
 
 #include <utility>
 
-#include "bindings/core/v8/CallbackPromiseAdapter.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/fileapi/Blob.h"
-#include "core/frame/LocalFrame.h"
-#include "core/imagebitmap/ImageBitmap.h"
-#include "modules/EventTargetModules.h"
-#include "modules/imagecapture/MediaSettingsRange.h"
-#include "modules/imagecapture/PhotoCapabilities.h"
-#include "modules/mediastream/MediaStreamTrack.h"
-#include "modules/mediastream/MediaTrackCapabilities.h"
-#include "modules/mediastream/MediaTrackConstraints.h"
-#include "platform/WaitableEvent.h"
-#include "platform/mojo/MojoHelper.h"
-#include "public/platform/InterfaceProvider.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebImageCaptureFrameGrabber.h"
-#include "public/platform/WebMediaStreamTrack.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_image_capture_frame_grabber.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/imagecapture/media_settings_range.h"
+#include "third_party/blink/renderer/modules/imagecapture/photo_capabilities.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
+#include "third_party/blink/renderer/modules/mediastream/media_track_capabilities.h"
+#include "third_party/blink/renderer/modules/mediastream/media_track_constraints.h"
+#include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
 
 namespace blink {
 

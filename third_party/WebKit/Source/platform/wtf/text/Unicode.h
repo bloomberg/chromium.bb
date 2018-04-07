@@ -20,16 +20,16 @@
  *
  */
 
-#ifndef WTF_Unicode_h
-#define WTF_Unicode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_UNICODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_UNICODE_H_
 
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 // Define platform neutral 8 bit character type (L is for Latin-1).
 typedef unsigned char LChar;
 
-#include "platform/wtf/text/icu/UnicodeIcu.h"
+#include "third_party/blink/renderer/platform/wtf/text/icu/unicode_icu.h"
 
 static_assert(sizeof(UChar) == 2, "UChar should be two bytes");
 
-#endif  // WTF_Unicode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_UNICODE_H_

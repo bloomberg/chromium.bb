@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/background_fetch/BackgroundFetchTypeConverters.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_type_converters.h"
 
 #include <utility>
-#include "modules/background_fetch/BackgroundFetchRegistration.h"
-#include "platform/heap/HeapAllocator.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace mojo {
 

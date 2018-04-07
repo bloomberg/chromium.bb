@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V0CustomElementMicrotaskQueueBase_h
-#define V0CustomElementMicrotaskQueueBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_MICROTASK_QUEUE_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_MICROTASK_QUEUE_BASE_H_
 
 #include "base/macros.h"
-#include "core/html/custom/V0CustomElementMicrotaskStep.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_step.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class V0CustomElementMicrotaskQueueBase
 
 }  // namespace blink
 
-#endif  // V0CustomElementMicrotaskQueueBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_MICROTASK_QUEUE_BASE_H_

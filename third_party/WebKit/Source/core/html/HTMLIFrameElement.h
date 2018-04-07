@@ -21,14 +21,14 @@
  *
  */
 
-#ifndef HTMLIFrameElement_h
-#define HTMLIFrameElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_IFRAME_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_IFRAME_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/html/HTMLFrameElementBase.h"
-#include "core/html/HTMLIFrameElementSandbox.h"
-#include "platform/Supplementable.h"
-#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/html_frame_element_base.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element_sandbox.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 class Policy;
@@ -92,4 +92,4 @@ class CORE_EXPORT HTMLIFrameElement final
 
 }  // namespace blink
 
-#endif  // HTMLIFrameElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_IFRAME_ELEMENT_H_

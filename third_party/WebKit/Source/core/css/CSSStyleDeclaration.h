@@ -18,17 +18,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSStyleDeclaration_h
-#define CSSStyleDeclaration_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_STYLE_DECLARATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_STYLE_DECLARATION_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css_property_names.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -108,4 +108,4 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // CSSStyleDeclaration_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_STYLE_DECLARATION_H_

@@ -27,10 +27,10 @@
  * SUCH DAMAGE.
  */
 
-#include "core/paint/PaintLayerResourceInfo.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_resource_info.h"
 
-#include "core/paint/PaintLayer.h"
-#include "platform/graphics/filters/FilterEffect.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
 
 namespace blink {
 

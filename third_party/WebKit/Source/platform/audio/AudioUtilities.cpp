@@ -23,9 +23,9 @@
  * DAMAGE.
  */
 
-#include "platform/audio/AudioUtilities.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

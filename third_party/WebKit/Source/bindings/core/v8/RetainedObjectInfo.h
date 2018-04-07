@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RetainedObjectInfo_h
-#define RetainedObjectInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_RETAINED_OBJECT_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_RETAINED_OBJECT_INFO_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "v8/include/v8-profiler.h"
 
 namespace blink {
@@ -45,4 +45,4 @@ class RetainedObjectInfo : public v8::RetainedObjectInfo {
 
 }  // namespace blink
 
-#endif  // RetainedObjectInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_RETAINED_OBJECT_INFO_H_

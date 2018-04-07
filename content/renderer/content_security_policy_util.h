@@ -7,7 +7,7 @@
 
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/content_security_policy/csp_context.h"
-#include "third_party/WebKit/public/platform/WebContentSecurityPolicyStruct.h"
+#include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 
 namespace content {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/testing/GarbageCollectedScriptWrappable.h"
+#include "third_party/blink/renderer/core/testing/garbage_collected_script_wrappable.h"
 
 namespace blink {
 

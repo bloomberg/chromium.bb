@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VectorMathX86_h
-#define VectorMathX86_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CPU_X86_VECTOR_MATH_X8_6_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CPU_X86_VECTOR_MATH_X8_6_H_
 
 #include "base/cpu.h"
-#include "platform/audio/VectorMathScalar.h"
-#include "platform/audio/cpu/x86/VectorMathAVX.h"
-#include "platform/audio/cpu/x86/VectorMathSSE.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/audio/cpu/x86/vector_math_avx.h"
+#include "third_party/blink/renderer/platform/audio/cpu/x86/vector_math_sse.h"
+#include "third_party/blink/renderer/platform/audio/vector_math_scalar.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 namespace VectorMath {
@@ -410,4 +410,4 @@ static ALWAYS_INLINE void Zvmul(const float* real1p,
 }  // namespace VectorMath
 }  // namespace blink
 
-#endif  // VectorMathX86_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CPU_X86_VECTOR_MATH_X8_6_H_

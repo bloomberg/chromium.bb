@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TableCellPainter_h
-#define TableCellPainter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TABLE_CELL_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TABLE_CELL_PAINTER_H_
 
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class TableCellPainter {
 
 }  // namespace blink
 
-#endif  // TableCellPainter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TABLE_CELL_PAINTER_H_

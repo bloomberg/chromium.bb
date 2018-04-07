@@ -24,13 +24,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/XPathValue.h"
+#include "third_party/blink/renderer/core/xml/xpath_value.h"
 
 #include <limits>
-#include "core/xml/XPathExpressionNode.h"
-#include "core/xml/XPathUtil.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/core/xml/xpath_expression_node.h"
+#include "third_party/blink/renderer/core/xml/xpath_util.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 namespace XPath {

@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/workers/SharedWorkerThread.h"
+#include "third_party/blink/renderer/core/workers/shared_worker_thread.h"
 
 #include <memory>
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/SharedWorkerGlobalScope.h"
-#include "core/workers/WorkerBackingThread.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/shared_worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 
 namespace blink {
 

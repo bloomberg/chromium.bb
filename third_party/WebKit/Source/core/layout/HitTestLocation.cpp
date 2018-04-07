@@ -19,9 +19,9 @@
  *
 */
 
-#include "core/layout/HitTestLocation.h"
+#include "third_party/blink/renderer/core/layout/hit_test_location.h"
 
-#include "platform/geometry/FloatRoundedRect.h"
+#include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 
 namespace blink {
 

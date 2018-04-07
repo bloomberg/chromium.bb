@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ListMarkerPainter.h"
+#include "third_party/blink/renderer/core/paint/list_marker_painter.h"
 
-#include "core/layout/LayoutListItem.h"
-#include "core/layout/LayoutListMarker.h"
-#include "core/layout/ListMarkerText.h"
-#include "core/layout/api/SelectionState.h"
-#include "core/paint/AdjustPaintOffsetScope.h"
-#include "core/paint/BoxModelObjectPainter.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/SelectionPaintingUtils.h"
-#include "core/paint/TextPainter.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
+#include "third_party/blink/renderer/core/layout/api/selection_state.h"
+#include "third_party/blink/renderer/core/layout/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
+#include "third_party/blink/renderer/core/layout/list_marker_text.h"
+#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
+#include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
+#include "third_party/blink/renderer/core/paint/text_painter.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
 

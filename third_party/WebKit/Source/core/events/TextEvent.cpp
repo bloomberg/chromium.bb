@@ -24,9 +24,9 @@
  *
  */
 
-#include "core/events/TextEvent.h"
+#include "third_party/blink/renderer/core/events/text_event.h"
 
-#include "core/dom/DocumentFragment.h"
+#include "third_party/blink/renderer/core/dom/document_fragment.h"
 
 namespace blink {
 

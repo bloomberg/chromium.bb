@@ -20,25 +20,25 @@
  *
  */
 
-#ifndef StyleResolver_h
-#define StyleResolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_RESOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_RESOLVER_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/animation/Interpolation.h"
-#include "core/animation/PropertyHandle.h"
-#include "core/css/ElementRuleCollector.h"
-#include "core/css/PseudoStyleRequest.h"
-#include "core/css/SelectorChecker.h"
-#include "core/css/SelectorFilter.h"
-#include "core/css/resolver/CSSPropertyPriority.h"
-#include "core/css/resolver/MatchedPropertiesCache.h"
-#include "core/css/resolver/StyleBuilder.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/core/animation/interpolation.h"
+#include "third_party/blink/renderer/core/animation/property_handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/element_rule_collector.h"
+#include "third_party/blink/renderer/core/css/pseudo_style_request.h"
+#include "third_party/blink/renderer/core/css/resolver/css_property_priority.h"
+#include "third_party/blink/renderer/core/css/resolver/matched_properties_cache.h"
+#include "third_party/blink/renderer/core/css/resolver/style_builder.h"
+#include "third_party/blink/renderer/core/css/selector_checker.h"
+#include "third_party/blink/renderer/core/css/selector_filter.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -302,4 +302,4 @@ class CORE_EXPORT StyleResolver final
 
 }  // namespace blink
 
-#endif  // StyleResolver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_RESOLVER_H_

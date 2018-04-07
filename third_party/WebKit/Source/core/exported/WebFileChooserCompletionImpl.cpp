@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/exported/WebFileChooserCompletionImpl.h"
+#include "third_party/blink/renderer/core/exported/web_file_chooser_completion_impl.h"
 
-#include "platform/FileMetadata.h"
-#include "platform/wtf/DateMath.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
 
 namespace blink {
 

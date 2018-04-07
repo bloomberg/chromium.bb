@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/SVGForeignObjectPainter.h"
+#include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
 
-#include "core/layout/svg/LayoutSVGForeignObject.h"
-#include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/paint/BlockPainter.h"
-#include "core/paint/FloatClipRecorder.h"
-#include "core/paint/ObjectPainter.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/SVGPaintContext.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/paint/block_painter.h"
+#include "third_party/blink/renderer/core/paint/float_clip_recorder.h"
+#include "third_party/blink/renderer/core/paint/object_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

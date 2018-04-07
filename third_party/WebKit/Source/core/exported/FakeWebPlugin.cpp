@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/exported/FakeWebPlugin.h"
+#include "third_party/blink/renderer/core/exported/fake_web_plugin.h"
 
 namespace blink {
 

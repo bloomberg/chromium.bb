@@ -23,10 +23,10 @@
  * SUCH DAMAGE.
  */
 
-#ifndef DateTimeFieldsState_h
-#define DateTimeFieldsState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_DATE_TIME_FIELDS_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_DATE_TIME_FIELDS_STATE_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

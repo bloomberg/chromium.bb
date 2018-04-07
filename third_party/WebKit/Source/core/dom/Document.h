@@ -27,55 +27,55 @@
  *
  */
 
-#ifndef Document_h
-#define Document_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_H_
 
 #include <string>
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/CoreExport.h"
-#include "core/animation/WorkletAnimationController.h"
-#include "core/dom/ContainerNode.h"
-#include "core/dom/CreateElementFlags.h"
-#include "core/dom/DocumentEncodingData.h"
-#include "core/dom/DocumentInit.h"
-#include "core/dom/DocumentLifecycle.h"
-#include "core/dom/DocumentShutdownNotifier.h"
-#include "core/dom/DocumentShutdownObserver.h"
-#include "core/dom/DocumentTiming.h"
-#include "core/dom/FrameRequestCallbackCollection.h"
-#include "core/dom/LiveNodeListRegistry.h"
-#include "core/dom/MutationObserver.h"
-#include "core/dom/ScriptedIdleTaskController.h"
-#include "core/dom/SynchronousMutationNotifier.h"
-#include "core/dom/SynchronousMutationObserver.h"
-#include "core/dom/Text.h"
-#include "core/dom/TextLinkColors.h"
-#include "core/dom/TreeScope.h"
-#include "core/dom/UserActionElementSet.h"
-#include "core/dom/ViewportDescription.h"
-#include "core/editing/Forward.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/DOMTimerCoordinator.h"
-#include "core/frame/HostsUsingFeatures.h"
-#include "core/html/custom/V0CustomElement.h"
-#include "core/html/parser/ParserSynchronizationPolicy.h"
-#include "core/page/PageVisibilityState.h"
-#include "platform/Length.h"
-#include "platform/Timer.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/loader/fetch/ClientHintsPreferences.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/ReferrerPolicy.h"
-#include "platform/wtf/HashSet.h"
-#include "public/platform/WebFocusType.h"
-#include "public/platform/WebInsecureRequestPolicy.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/create_element_flags.h"
+#include "third_party/blink/renderer/core/dom/document_encoding_data.h"
+#include "third_party/blink/renderer/core/dom/document_init.h"
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/core/dom/document_shutdown_notifier.h"
+#include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
+#include "third_party/blink/renderer/core/dom/document_timing.h"
+#include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
+#include "third_party/blink/renderer/core/dom/live_node_list_registry.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer.h"
+#include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
+#include "third_party/blink/renderer/core/dom/synchronous_mutation_notifier.h"
+#include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/dom/text_link_colors.h"
+#include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/core/dom/user_action_element_set.h"
+#include "third_party/blink/renderer/core/dom/viewport_description.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
+#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
+#include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
+#include "third_party/blink/renderer/core/page/page_visibility_state.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace ukm {
 class UkmRecorder;
@@ -1873,4 +1873,4 @@ DEFINE_TYPE_CASTS(TreeScope, Document, document, true, true);
 CORE_EXPORT void showLiveDocumentInstances();
 #endif
 
-#endif  // Document_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_H_

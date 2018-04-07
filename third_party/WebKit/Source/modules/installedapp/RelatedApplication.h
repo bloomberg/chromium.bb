@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RelatedApplication_h
-#define RelatedApplication_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INSTALLEDAPP_RELATED_APPLICATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INSTALLEDAPP_RELATED_APPLICATION_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ class RelatedApplication final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // RelatedApplication_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INSTALLEDAPP_RELATED_APPLICATION_H_

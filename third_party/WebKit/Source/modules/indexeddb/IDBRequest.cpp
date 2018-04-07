@@ -26,34 +26,34 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/indexeddb/IDBRequest.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
 
 #include <atomic>
 #include <memory>
 #include <utility>
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/modules/v8/ToV8ForModules.h"
-#include "bindings/modules/v8/V8BindingForModules.h"
-#include "bindings/modules/v8/idb_object_store_or_idb_index_or_idb_cursor.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/events/EventQueue.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/indexed_db_names.h"
-#include "modules/indexeddb/IDBCursorWithValue.h"
-#include "modules/indexeddb/IDBDatabase.h"
-#include "modules/indexeddb/IDBEventDispatcher.h"
-#include "modules/indexeddb/IDBRequestQueueItem.h"
-#include "modules/indexeddb/IDBTracing.h"
-#include "modules/indexeddb/IDBValue.h"
-#include "modules/indexeddb/IDBValueWrapping.h"
-#include "modules/indexeddb/WebIDBCallbacksImpl.h"
-#include "platform/Histogram.h"
-#include "platform/SharedBuffer.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebBlobInfo.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/modules/v8/idb_object_store_or_idb_index_or_idb_cursor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/to_v8_for_modules.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/indexed_db_names.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_cursor_with_value.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_event_dispatcher.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_request_queue_item.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value_wrapping.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks_impl.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 
 using blink::WebIDBCursor;
 

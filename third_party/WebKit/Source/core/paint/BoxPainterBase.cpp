@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/BoxPainterBase.h"
+#include "third_party/blink/renderer/core/paint/box_painter_base.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/Settings.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/paint/BackgroundImageGeometry.h"
-#include "core/paint/BoxBorderPainter.h"
-#include "core/paint/NinePieceImagePainter.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/RoundedInnerRectClipper.h"
-#include "core/style/BorderEdge.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/ShadowList.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/graphics/ScopedInterpolationQuality.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/paint/background_image_geometry.h"
+#include "third_party/blink/renderer/core/paint/box_border_painter.h"
+#include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/rounded_inner_rect_clipper.h"
+#include "third_party/blink/renderer/core/style/border_edge.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/shadow_list.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebMemoryCoordinator.h"
+#include "third_party/blink/public/platform/web_memory_coordinator.h"
 
-#include "platform/MemoryCoordinator.h"
+#include "third_party/blink/renderer/platform/memory_coordinator.h"
 
 namespace blink {
 

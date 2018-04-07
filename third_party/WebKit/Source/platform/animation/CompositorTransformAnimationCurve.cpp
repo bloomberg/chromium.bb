@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/animation/CompositorTransformAnimationCurve.h"
+#include "third_party/blink/renderer/platform/animation/compositor_transform_animation_curve.h"
 
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
-#include "platform/animation/CompositorTransformOperations.h"
+#include "third_party/blink/renderer/platform/animation/compositor_transform_operations.h"
 
 namespace blink {
 

@@ -23,14 +23,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebScrollbarThemePainter.h"
+#include "third_party/blink/public/platform/web_scrollbar_theme_painter.h"
 
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/graphics/paint/PaintRecordBuilder.h"
-#include "platform/scroll/Scrollbar.h"
-#include "platform/scroll/ScrollbarTheme.h"
-#include "public/platform/WebRect.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
 namespace blink {
 

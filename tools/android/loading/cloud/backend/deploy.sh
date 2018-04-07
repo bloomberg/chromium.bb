@@ -41,9 +41,9 @@ cp build/android/video_recorder.py $tmp_src_dir/build/android/
 cp build/android/devil_chromium.json $tmp_src_dir/build/android/
 cp -r build/android/pylib $tmp_src_dir/build/android/
 mkdir -p \
-  $tmp_src_dir/third_party/WebKit/Source/devtools/front_end/emulated_devices
-cp third_party/WebKit/Source/devtools/front_end/emulated_devices/module.json \
-  $tmp_src_dir/third_party/WebKit/Source/devtools/front_end/emulated_devices/
+  $tmp_src_dir/third_party/blink/renderer/devtools/front_end/emulated_devices
+cp third_party/blink/renderer/devtools/front_end/emulated_devices/module.json \
+  $tmp_src_dir/third_party/blink/renderer/devtools/front_end/emulated_devices/
 
 # Tar up the source and copy it to Google Cloud Storage.
 source_tarball=$tmpdir/source.tgz

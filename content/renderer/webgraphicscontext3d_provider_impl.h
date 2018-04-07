@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3DProvider.h"
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 
 namespace cc {
 class ImageDecodeCache;

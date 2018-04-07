@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SerializedScriptValueForModulesFactory_h
-#define SerializedScriptValueForModulesFactory_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_SERIALIZATION_SERIALIZED_SCRIPT_VALUE_FOR_MODULES_FACTORY_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_SERIALIZATION_SERIALIZED_SCRIPT_VALUE_FOR_MODULES_FACTORY_H_
 
-#include "bindings/core/v8/serialization/SerializedScriptValueFactory.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class SerializedScriptValueForModulesFactory final
 
 }  // namespace blink
 
-#endif  // SerializedScriptValueForModulesFactory_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_SERIALIZATION_SERIALIZED_SCRIPT_VALUE_FOR_MODULES_FACTORY_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/LocalCaretRect.h"
+#include "third_party/blink/renderer/core/editing/local_caret_rect.h"
 
-#include "core/editing/PositionWithAffinity.h"
-#include "core/editing/TextAffinity.h"
-#include "core/editing/testing/EditingTestBase.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
 
 namespace blink {
 

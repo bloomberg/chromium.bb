@@ -17,20 +17,20 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef Navigator_h
-#define Navigator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_NAVIGATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_NAVIGATOR_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/frame/NavigatorConcurrentHardware.h"
-#include "core/frame/NavigatorDeviceMemory.h"
-#include "core/frame/NavigatorID.h"
-#include "core/frame/NavigatorLanguage.h"
-#include "core/frame/NavigatorOnLine.h"
-#include "platform/Supplementable.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/navigator_concurrent_hardware.h"
+#include "third_party/blink/renderer/core/frame/navigator_device_memory.h"
+#include "third_party/blink/renderer/core/frame/navigator_id.h"
+#include "third_party/blink/renderer/core/frame/navigator_language.h"
+#include "third_party/blink/renderer/core/frame/navigator_on_line.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -74,4 +74,4 @@ class CORE_EXPORT Navigator final : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // Navigator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_NAVIGATOR_H_

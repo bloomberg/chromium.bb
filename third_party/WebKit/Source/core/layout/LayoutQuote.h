@@ -19,11 +19,11 @@
  *
  */
 
-#ifndef LayoutQuote_h
-#define LayoutQuote_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_QUOTE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_QUOTE_H_
 
-#include "core/layout/LayoutInline.h"
-#include "core/style/QuotesData.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/style/quotes_data.h"
 
 namespace blink {
 
@@ -101,4 +101,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutQuote, IsQuote());
 
 }  // namespace blink
 
-#endif  // LayoutQuote_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_QUOTE_H_

@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSpeechRecognizerClient_h
-#define WebSpeechRecognizerClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNIZER_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNIZER_CLIENT_H_
 
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -102,4 +102,4 @@ class WebSpeechRecognizerClient {
 
 }  // namespace blink
 
-#endif  // WebSpeechRecognizerClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNIZER_CLIENT_H_

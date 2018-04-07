@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8ScriptValueDeserializerForModules_h
-#define V8ScriptValueDeserializerForModules_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_SERIALIZATION_V8_SCRIPT_VALUE_DESERIALIZER_FOR_MODULES_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_SERIALIZATION_V8_SCRIPT_VALUE_DESERIALIZER_FOR_MODULES_H_
 
-#include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
-#include "modules/ModulesExport.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/v8_script_value_deserializer.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ class MODULES_EXPORT V8ScriptValueDeserializerForModules final
 
 }  // namespace blink
 
-#endif  // V8ScriptValueDeserializerForModules_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_MODULES_V8_SERIALIZATION_V8_SCRIPT_VALUE_DESERIALIZER_FOR_MODULES_H_

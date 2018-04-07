@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebScrollAnchorData_h
-#define WebScrollAnchorData_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLL_ANCHOR_DATA_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLL_ANCHOR_DATA_H_
 
-#include "public/platform/WebFloatPoint.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ struct ScrollAnchorData {
 
 }  // namespace blink
 
-#endif  // WebScrollAnchorData_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLL_ANCHOR_DATA_H_

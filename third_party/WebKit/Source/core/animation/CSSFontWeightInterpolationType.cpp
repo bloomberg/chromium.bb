@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSFontWeightInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_font_weight_interpolation_type.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

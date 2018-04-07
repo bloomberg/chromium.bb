@@ -21,13 +21,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LayoutBlock_h
-#define LayoutBlock_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BLOCK_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BLOCK_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/layout/LayoutBox.h"
-#include "platform/wtf/ListHashSet.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/platform/wtf/list_hash_set.h"
 
 namespace blink {
 
@@ -569,4 +569,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBlock, IsLayoutBlock());
 
 }  // namespace blink
 
-#endif  // LayoutBlock_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BLOCK_H_

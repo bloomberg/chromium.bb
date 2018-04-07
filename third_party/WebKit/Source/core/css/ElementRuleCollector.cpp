@@ -28,23 +28,23 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/ElementRuleCollector.h"
+#include "third_party/blink/renderer/core/css/element_rule_collector.h"
 
-#include "core/css/CSSImportRule.h"
-#include "core/css/CSSKeyframesRule.h"
-#include "core/css/CSSMediaRule.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/CSSRuleList.h"
-#include "core/css/CSSSelector.h"
-#include "core/css/CSSStyleRule.h"
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/CSSSupportsRule.h"
-#include "core/css/StyleEngine.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/css/resolver/StyleResolverStats.h"
-#include "core/css/resolver/StyleRuleUsageTracker.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/css/css_import_rule.h"
+#include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
+#include "third_party/blink/renderer/core/css/css_media_rule.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_rule_list.h"
+#include "third_party/blink/renderer/core/css/css_selector.h"
+#include "third_party/blink/renderer/core/css/css_style_rule.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/css_supports_rule.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
+#include "third_party/blink/renderer/core/css/resolver/style_rule_usage_tracker.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

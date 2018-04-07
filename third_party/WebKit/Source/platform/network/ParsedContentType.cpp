@@ -29,11 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/network/ParsedContentType.h"
+#include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 
-#include "platform/network/HeaderFieldTokenizer.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/StringView.h"
+#include "third_party/blink/renderer/platform/network/header_field_tokenizer.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 

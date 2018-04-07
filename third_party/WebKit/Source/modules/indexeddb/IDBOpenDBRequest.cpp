@@ -23,18 +23,18 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/indexeddb/IDBOpenDBRequest.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_open_db_request.h"
 
 #include <memory>
-#include "bindings/modules/v8/idb_object_store_or_idb_index_or_idb_cursor.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/indexeddb/IDBDatabase.h"
-#include "modules/indexeddb/IDBDatabaseCallbacks.h"
-#include "modules/indexeddb/IDBTracing.h"
-#include "modules/indexeddb/IDBVersionChangeEvent.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/bindings/modules/v8/idb_object_store_or_idb_index_or_idb_cursor.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_version_change_event.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 using blink::WebIDBDatabase;
 

@@ -27,12 +27,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LineWidth_h
-#define LineWidth_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_WIDTH_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_WIDTH_H_
 
-#include "core/layout/api/LineLayoutBlockFlow.h"
-#include "platform/LayoutUnit.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -124,4 +124,4 @@ class LineWidth {
 
 }  // namespace blink
 
-#endif  // LineWidth_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_WIDTH_H_

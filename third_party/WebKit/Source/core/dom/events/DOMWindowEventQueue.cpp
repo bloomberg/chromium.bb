@@ -24,14 +24,14 @@
  *
  */
 
-#include "core/dom/events/DOMWindowEventQueue.h"
+#include "third_party/blink/renderer/core/dom/events/dom_window_event_queue.h"
 
 #include "base/macros.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/PausableTimer.h"
-#include "core/probe/CoreProbes.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/pausable_timer.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 
 namespace blink {
 

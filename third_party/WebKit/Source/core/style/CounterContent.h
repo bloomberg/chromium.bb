@@ -22,11 +22,11 @@
  *
  */
 
-#ifndef CounterContent_h
-#define CounterContent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COUNTER_CONTENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COUNTER_CONTENT_H_
 
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ static inline bool operator==(const CounterContent& a,
 
 }  // namespace blink
 
-#endif  // CounterContent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COUNTER_CONTENT_H_

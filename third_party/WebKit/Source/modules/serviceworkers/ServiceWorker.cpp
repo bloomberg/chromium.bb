@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/serviceworkers/ServiceWorker.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker.h"
 
 #include <memory>
-#include "bindings/core/v8/CallbackPromiseAdapter.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/events/Event.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/messaging/BlinkTransferableMessage.h"
-#include "core/messaging/MessagePort.h"
-#include "modules/EventTargetModules.h"
-#include "modules/serviceworkers/ServiceWorkerContainerClient.h"
-#include "platform/bindings/ScriptState.h"
-#include "public/platform/WebString.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_state.mojom-blink.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_container_client.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

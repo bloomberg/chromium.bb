@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ClipboardMimeTypes_h
-#define ClipboardMimeTypes_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_CLIPBOARD_CLIPBOARD_MIME_TYPES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CLIPBOARD_CLIPBOARD_MIME_TYPES_H_
 
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 

@@ -19,15 +19,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSParserSelector_h
-#define CSSParserSelector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_SELECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_SELECTOR_H_
 
 #include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css/CSSSelector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_selector.h"
 
 namespace blink {
 

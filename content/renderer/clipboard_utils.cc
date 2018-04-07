@@ -6,8 +6,8 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/escape.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 namespace content {
 

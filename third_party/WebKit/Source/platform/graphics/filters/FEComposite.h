@@ -20,11 +20,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef FEComposite_h
-#define FEComposite_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_COMPOSITE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_COMPOSITE_H_
 
 #include "SkBlendMode.h"
-#include "platform/graphics/filters/FilterEffect.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
 
 namespace blink {
 
@@ -96,4 +96,4 @@ class PLATFORM_EXPORT FEComposite final : public FilterEffect {
 
 }  // namespace blink
 
-#endif  // FEComposite_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_COMPOSITE_H_

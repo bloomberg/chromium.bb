@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SubresourceIntegrityHelper_h
-#define SubresourceIntegrityHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_SUBRESOURCE_INTEGRITY_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_SUBRESOURCE_INTEGRITY_HELPER_H_
 
-#include "core/CoreExport.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "platform/loader/SubresourceIntegrity.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/loader/subresource_integrity.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

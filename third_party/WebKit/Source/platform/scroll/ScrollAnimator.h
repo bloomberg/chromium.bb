@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollAnimator_h
-#define ScrollAnimator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_ANIMATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_ANIMATOR_H_
 
 #include <memory>
-#include "platform/Timer.h"
-#include "platform/animation/CompositorAnimationClient.h"
-#include "platform/animation/CompositorAnimationDelegate.h"
-#include "platform/animation/CompositorScrollOffsetAnimationCurve.h"
-#include "platform/scroll/ScrollAnimatorBase.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
+#include "third_party/blink/renderer/platform/animation/compositor_scroll_offset_animation_curve.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -161,4 +161,4 @@ class PLATFORM_EXPORT ScrollAnimator : public ScrollAnimatorBase {
 
 }  // namespace blink
 
-#endif  // ScrollAnimator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_ANIMATOR_H_

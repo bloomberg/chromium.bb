@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/shorthands/border_radius.h"
+#include "third_party/blink/renderer/core/css/properties/shorthands/border_radius.h"
 
-#include "core/css/CSSValuePair.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/parser/CSSParserLocalContext.h"
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSParsingUtils.h"
-#include "core/css/properties/ComputedStyleUtils.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 namespace CSSShorthand {

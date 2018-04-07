@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/ShadowInterpolationFunctions.h"
+#include "third_party/blink/renderer/core/animation/shadow_interpolation_functions.h"
 
-#include "core/animation/CSSColorInterpolationType.h"
-#include "core/animation/InterpolationValue.h"
-#include "core/animation/LengthInterpolationFunctions.h"
-#include "core/animation/NonInterpolableValue.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSShadowValue.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include "core/style/ShadowData.h"
-#include "platform/geometry/FloatPoint.h"
 #include <memory>
+#include "third_party/blink/renderer/core/animation/css_color_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/interpolation_value.h"
+#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/non_interpolable_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_shadow_value.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/style/shadow_data.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
 
 namespace blink {
 

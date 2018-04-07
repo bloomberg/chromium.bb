@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NavigatorEvents_h
-#define NavigatorEvents_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_NAVIGATOR_EVENTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_NAVIGATOR_EVENTS_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class NavigatorEvents {
 
 }  // namespace blink
 
-#endif  // NavigatorEvents_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_NAVIGATOR_EVENTS_H_

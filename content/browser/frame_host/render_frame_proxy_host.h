@@ -14,7 +14,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-#include "third_party/WebKit/public/platform/WebFocusType.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
 
 struct FrameHostMsg_OpenURL_Params;
 struct FrameMsg_PostMessage_Params;

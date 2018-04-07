@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/app_banner/AppBannerController.h"
+#include "third_party/blink/renderer/modules/app_banner/app_banner_controller.h"
 
 #include <memory>
 #include <utility>
-#include "core/dom/Document.h"
-#include "core/event_type_names.h"
-#include "core/frame/DOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "modules/app_banner/BeforeInstallPromptEvent.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/Referrer.h"
-#include "platform/weborigin/SecurityPolicy.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/core/frame/dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/app_banner/before_install_prompt_event.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

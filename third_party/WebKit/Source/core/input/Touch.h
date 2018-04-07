@@ -23,18 +23,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Touch_h
-#define Touch_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_TOUCH_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_TOUCH_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Document.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/input/TouchInit.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/input/touch_init.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -128,4 +128,4 @@ class CORE_EXPORT Touch final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // Touch_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_TOUCH_H_

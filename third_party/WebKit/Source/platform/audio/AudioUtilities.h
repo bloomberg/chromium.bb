@@ -23,11 +23,11 @@
  * DAMAGE.
  */
 
-#ifndef AudioUtilities_h
-#define AudioUtilities_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_UTILITIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_UTILITIES_H_
 
 #include <cstddef>
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 namespace AudioUtilities {
@@ -63,4 +63,4 @@ PLATFORM_EXPORT bool IsPowerOfTwo(size_t x);
 }  // namespace AudioUtilities
 }  // namespace blink
 
-#endif  // AudioUtilities_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_UTILITIES_H_

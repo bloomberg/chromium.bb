@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/image-decoders/gif/GIFImageDecoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/gif/gif_image_decoder.h"
 
 #include <limits>
 #include <memory>
-#include "platform/image-decoders/gif/GIFImageReader.h"
-#include "platform/wtf/NotFound.h"
+#include "third_party/blink/renderer/platform/image-decoders/gif/gif_image_reader.h"
+#include "third_party/blink/renderer/platform/wtf/not_found.h"
 
 namespace blink {
 

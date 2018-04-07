@@ -12,10 +12,10 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_object.mojom.h"
-#include "third_party/WebKit/public/platform/WebApplicationCacheHost.h"
-#include "third_party/WebKit/public/platform/WebWorkerFetchContext.h"
+#include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
+#include "third_party/blink/public/platform/web_application_cache_host.h"
+#include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "url/gurl.h"
 
 namespace IPC {

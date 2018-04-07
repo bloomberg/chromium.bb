@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/parser/HTMLPreloadScanner.h"
+#include "third_party/blink/renderer/core/html/parser/html_preload_scanner.h"
 
 #include <memory>
-#include "core/css/MediaValuesCached.h"
-#include "core/frame/Settings.h"
-#include "core/html/CrossOriginAttribute.h"
-#include "core/html/parser/HTMLParserOptions.h"
-#include "core/html/parser/HTMLResourcePreloader.h"
-#include "core/html/parser/PreloadRequest.h"
-#include "core/media_type_names.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/exported/WrappedResourceResponse.h"
-#include "platform/loader/fetch/ClientHintsPreferences.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebClientHintsType.h"
-#include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_client_hints_type.h"
+#include "third_party/blink/public/platform/web_runtime_features.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/renderer/core/css/media_values_cached.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
+#include "third_party/blink/renderer/core/html/parser/html_resource_preloader.h"
+#include "third_party/blink/renderer/core/html/parser/preload_request.h"
+#include "third_party/blink/renderer/core/media_type_names.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
+#include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

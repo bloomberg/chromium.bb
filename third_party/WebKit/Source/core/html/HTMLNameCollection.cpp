@@ -21,9 +21,9 @@
  *
  */
 
-#include "core/html/HTMLNameCollection.h"
+#include "third_party/blink/renderer/core/html/html_name_collection.h"
 
-#include "core/dom/NodeRareData.h"
+#include "third_party/blink/renderer/core/dom/node_rare_data.h"
 
 namespace blink {
 

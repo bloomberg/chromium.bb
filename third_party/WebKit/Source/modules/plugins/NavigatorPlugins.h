@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigatorPlugins_h
-#define NavigatorPlugins_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PLUGINS_NAVIGATOR_PLUGINS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PLUGINS_NAVIGATOR_PLUGINS_H_
 
-#include "core/frame/Navigator.h"
-#include "platform/Supplementable.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -43,4 +43,4 @@ class NavigatorPlugins final : public GarbageCollected<NavigatorPlugins>,
 
 }  // namespace blink
 
-#endif  // NavigatorPlugins_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PLUGINS_NAVIGATOR_PLUGINS_H_

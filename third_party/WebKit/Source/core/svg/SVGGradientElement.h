@@ -18,18 +18,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGGradientElement_h
-#define SVGGradientElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_GRADIENT_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_GRADIENT_ELEMENT_H_
 
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/svg/SVGAnimatedEnumeration.h"
-#include "core/svg/SVGAnimatedTransformList.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGURIReference.h"
-#include "core/svg/SVGUnitTypes.h"
-#include "core/svg_names.h"
-#include "platform/graphics/Gradient.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_enumeration.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_transform_list.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_unit_types.h"
+#include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/graphics/gradient.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -105,4 +105,4 @@ DEFINE_SVGELEMENT_TYPE_CASTS_WITH_FUNCTION(SVGGradientElement);
 
 }  // namespace blink
 
-#endif  // SVGGradientElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_GRADIENT_ELEMENT_H_

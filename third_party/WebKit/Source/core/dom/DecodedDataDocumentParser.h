@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DecodedDataDocumentParser_h
-#define DecodedDataDocumentParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DECODED_DATA_DOCUMENT_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DECODED_DATA_DOCUMENT_PARSER_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/DocumentParser.h"
 #include <memory>
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document_parser.h"
 
 namespace blink {
 class TextResourceDecoder;
@@ -61,4 +61,4 @@ class CORE_EXPORT DecodedDataDocumentParser : public DocumentParser {
 
 }  // namespace blink
 
-#endif  // DecodedDataDocumentParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DECODED_DATA_DOCUMENT_PARSER_H_

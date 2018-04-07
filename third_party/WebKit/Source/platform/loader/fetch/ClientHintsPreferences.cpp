@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/loader/fetch/ClientHintsPreferences.h"
+#include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 
 #include "base/macros.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/network/HTTPParsers.h"
-#include "platform/network/http_names.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/weborigin/KURL.h"
-#include "third_party/WebKit/public/common/client_hints/client_hints.h"
+#include "third_party/blink/public/common/client_hints/client_hints.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

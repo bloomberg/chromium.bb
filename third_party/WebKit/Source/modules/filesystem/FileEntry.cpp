@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/filesystem/FileEntry.h"
+#include "third_party/blink/renderer/modules/filesystem/file_entry.h"
 
-#include "core/fileapi/File.h"
-#include "modules/filesystem/DOMFileSystem.h"
-#include "modules/filesystem/FileSystemCallbacks.h"
+#include "third_party/blink/renderer/core/fileapi/file.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 
 namespace blink {
 

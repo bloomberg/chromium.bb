@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebUserGestureToken.h"
+#include "third_party/blink/public/web/web_user_gesture_token.h"
 
-#include "core/dom/UserGestureIndicator.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 
 namespace blink {
 

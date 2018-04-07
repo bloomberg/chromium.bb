@@ -30,7 +30,7 @@ static_library("mus") {
     "//services/service_manager/public/cpp",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//ui/events:events",
     "//ui/events:events_base",
     "//ui/events/blink",

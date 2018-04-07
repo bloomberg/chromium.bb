@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediasource/MediaSourceRegistry.h"
+#include "third_party/blink/renderer/modules/mediasource/media_source_registry.h"
 
-#include "modules/mediasource/MediaSource.h"
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/modules/mediasource/media_source.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

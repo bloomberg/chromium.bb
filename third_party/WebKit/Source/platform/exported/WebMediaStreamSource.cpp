@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebMediaStreamSource.h"
+#include "third_party/blink/public/platform/web_media_stream_source.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/mediastream/MediaStreamSource.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebAudioDestinationConsumer.h"
-#include "public/platform/WebMediaConstraints.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_audio_destination_consumer.h"
+#include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

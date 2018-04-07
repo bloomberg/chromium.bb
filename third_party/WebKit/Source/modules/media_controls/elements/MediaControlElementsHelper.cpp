@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlElementsHelper.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 
-#include "core/dom/events/Event.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/layout/LayoutSlider.h"
-#include "core/layout/LayoutView.h"
-#include "modules/media_controls/elements/MediaControlDivElement.h"
-#include "modules/media_controls/elements/MediaControlInputElement.h"
-#include "public/platform/WebSize.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/layout/layout_slider.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_div_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_input_element.h"
 
 namespace blink {
 

@@ -30,7 +30,7 @@
 
 #include <atomic>
 
-#include "platform/loader/fetch/UniqueIdentifier.h"
+#include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 
 namespace blink {
 

@@ -23,18 +23,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/scroll/Scrollbar.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar.h"
 
 #include <algorithm>
-#include "platform/PlatformChromeClient.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/paint/CullRect.h"
-#include "platform/scroll/ScrollAnimatorBase.h"
-#include "platform/scroll/ScrollableArea.h"
-#include "platform/scroll/ScrollbarTheme.h"
-#include "public/platform/WebGestureEvent.h"
-#include "public/platform/WebMouseEvent.h"
-#include "public/platform/WebScrollbar.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/platform/web_scrollbar.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/platform_chrome_client.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
 namespace blink {
 

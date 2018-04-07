@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/UserActivationState.h"
+#include "third_party/blink/renderer/core/frame/user_activation_state.h"
 
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCVoidRequest_h
-#define RTCVoidRequest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_VOID_REQUEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_VOID_REQUEST_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/WebRTCError.h"
+#include "third_party/blink/public/platform/web_rtc_error.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class RTCVoidRequest : public GarbageCollectedFinalized<RTCVoidRequest> {
 
 }  // namespace blink
 
-#endif  // RTCVoidRequest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_VOID_REQUEST_H_

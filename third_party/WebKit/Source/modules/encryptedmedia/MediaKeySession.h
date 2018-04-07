@@ -23,20 +23,20 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaKeySession_h
-#define MediaKeySession_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEY_SESSION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEY_SESSION_H_
 
 #include <memory>
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptPromiseProperty.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/typed_arrays/DOMArrayPiece.h"
-#include "modules/EventTargetModules.h"
-#include "modules/encryptedmedia/MediaKeyStatusMap.h"
-#include "platform/Timer.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebContentDecryptionModuleSession.h"
-#include "public/platform/WebEncryptedMediaTypes.h"
+#include "third_party/blink/public/platform/web_content_decryption_module_session.h"
+#include "third_party/blink/public/platform/web_encrypted_media_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_key_status_map.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -164,4 +164,4 @@ class MediaKeySession final
 
 }  // namespace blink
 
-#endif  // MediaKeySession_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEY_SESSION_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SVGPropertyHelper_h
-#define SVGPropertyHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_PROPERTIES_SVG_PROPERTY_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_PROPERTIES_SVG_PROPERTY_HELPER_H_
 
-#include "core/svg/properties/SVGProperty.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property.h"
 
 namespace blink {
 
@@ -23,4 +23,4 @@ class SVGPropertyHelper : public SVGPropertyBase {
 
 }  // namespace blink
 
-#endif  // SVGPropertyHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_PROPERTIES_SVG_PROPERTY_HELPER_H_

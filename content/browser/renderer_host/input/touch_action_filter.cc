@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
 
 using blink::WebInputEvent;
 using blink::WebGestureEvent;

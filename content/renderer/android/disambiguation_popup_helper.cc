@@ -8,7 +8,7 @@
 
 #include <algorithm>
 
-#include "third_party/WebKit/public/platform/WebRect.h"
+#include "third_party/blink/public/platform/web_rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 using blink::WebRect;

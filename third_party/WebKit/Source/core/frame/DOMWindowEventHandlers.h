@@ -27,10 +27,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMWindowEventHandlers_h
-#define DOMWindowEventHandlers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_EVENT_HANDLERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_WINDOW_EVENT_HANDLERS_H_
 
-#include "core/dom/events/EventTarget.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
 
 namespace blink {
 

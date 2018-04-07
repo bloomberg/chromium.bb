@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/shell/test_runner/mock_spell_check.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/web/WebTextCheckClient.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_text_check_client.h"
 #include "v8/include/v8.h"
 
 namespace blink {

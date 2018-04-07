@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SpeechSynthesisEvent_h
-#define SpeechSynthesisEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_SYNTHESIS_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_SYNTHESIS_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/speech/SpeechSynthesisUtterance.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/speech/speech_synthesis_utterance.h"
 
 namespace blink {
 
@@ -69,4 +69,4 @@ class SpeechSynthesisEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // SpeechSynthesisEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_SYNTHESIS_EVENT_H_

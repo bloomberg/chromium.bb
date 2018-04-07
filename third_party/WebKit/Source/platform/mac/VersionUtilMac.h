@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VersionUtilMac_h
-#define VersionUtilMac_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_VERSION_UTIL_MAC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_VERSION_UTIL_MAC_H_
 
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 #include <AvailabilityMacros.h>
 
@@ -29,4 +29,4 @@ const auto IsOS10_12 = internal::IsOS<12, 101200>;
 
 }  // namespace blink
 
-#endif  // VersionUtilMac_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_VERSION_UTIL_MAC_H_

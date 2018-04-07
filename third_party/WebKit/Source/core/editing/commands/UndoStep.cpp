@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/commands/UndoStep.h"
+#include "third_party/blink/renderer/core/editing/commands/undo_step.h"
 
-#include "core/dom/events/ScopedEventQueue.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/Editor.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/SetSelectionOptions.h"
-#include "core/editing/commands/EditCommand.h"
-#include "core/editing/commands/EditingCommandsUtilities.h"
-#include "core/editing/commands/UndoStack.h"
+#include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
+#include "third_party/blink/renderer/core/editing/commands/edit_command.h"
+#include "third_party/blink/renderer/core/editing/commands/editing_commands_utilities.h"
+#include "third_party/blink/renderer/core/editing/commands/undo_stack.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/set_selection_options.h"
 
 namespace blink {
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 #include "build/build_config.h"
-#include "core/style/ClipPathOperation.h"
-#include "core/style/ShapeValue.h"
-#include "core/style/StyleDifference.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/style/clip_path_operation.h"
+#include "third_party/blink/renderer/core/style/shape_value.h"
+#include "third_party/blink/renderer/core/style/style_difference.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 

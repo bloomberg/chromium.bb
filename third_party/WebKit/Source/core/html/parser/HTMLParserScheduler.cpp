@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/HTMLParserScheduler.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_scheduler.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/parser/HTMLDocumentParser.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

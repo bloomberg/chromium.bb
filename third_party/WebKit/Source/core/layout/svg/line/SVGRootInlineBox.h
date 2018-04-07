@@ -20,10 +20,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGRootInlineBox_h
-#define SVGRootInlineBox_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LINE_SVG_ROOT_INLINE_BOX_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LINE_SVG_ROOT_INLINE_BOX_H_
 
-#include "core/layout/line/RootInlineBox.h"
+#include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
 
 namespace blink {
 
@@ -64,4 +64,4 @@ DEFINE_INLINE_BOX_TYPE_CASTS(SVGRootInlineBox);
 
 }  // namespace blink
 
-#endif  // SVGRootInlineBox_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LINE_SVG_ROOT_INLINE_BOX_H_

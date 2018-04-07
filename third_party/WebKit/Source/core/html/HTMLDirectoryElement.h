@@ -20,10 +20,10 @@
  *
  */
 
-#ifndef HTMLDirectoryElement_h
-#define HTMLDirectoryElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_DIRECTORY_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_DIRECTORY_ELEMENT_H_
 
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -39,4 +39,4 @@ class HTMLDirectoryElement final : public HTMLElement {
 
 }  // namespace blink
 
-#endif  // HTMLDirectoryElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_DIRECTORY_ELEMENT_H_

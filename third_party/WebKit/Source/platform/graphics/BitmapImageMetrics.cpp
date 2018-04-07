@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/BitmapImageMetrics.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 
-#include "platform/Histogram.h"
-#include "platform/graphics/ColorSpaceGamut.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 

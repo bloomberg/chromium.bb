@@ -23,9 +23,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/indexeddb/IDBVersionChangeEvent.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_version_change_event.h"
 
-#include "modules/indexed_db_names.h"
+#include "third_party/blink/renderer/modules/indexed_db_names.h"
 
 namespace blink {
 

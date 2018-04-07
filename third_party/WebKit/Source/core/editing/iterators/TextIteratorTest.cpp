@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/iterators/TextIterator.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 
-#include "core/dom/Document.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/forms/TextControlElement.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 namespace text_iterator_test {

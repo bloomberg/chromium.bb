@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/MainThreadDebugger.h"
+#include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 
 #include <memory>
-#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 class MainThreadDebuggerTest : public PageTestBase {

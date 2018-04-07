@@ -14,7 +14,7 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/notification_database_data.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 
 class GURL;
 

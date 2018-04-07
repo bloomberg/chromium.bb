@@ -23,12 +23,12 @@
  * DAMAGE.
  */
 
-#ifndef DOMWindowFileSystem_h
-#define DOMWindowFileSystem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DOM_WINDOW_FILE_SYSTEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DOM_WINDOW_FILE_SYSTEM_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ class DOMWindowFileSystem {
 
 }  // namespace blink
 
-#endif  // DOMWindowFileSystem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_DOM_WINDOW_FILE_SYSTEM_H_

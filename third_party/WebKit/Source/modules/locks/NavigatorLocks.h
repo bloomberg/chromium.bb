@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigatorLocks_h
-#define NavigatorLocks_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_LOCKS_NAVIGATOR_LOCKS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_LOCKS_NAVIGATOR_LOCKS_H_
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -24,4 +24,4 @@ class NavigatorLocks final {
 
 }  // namespace blink
 
-#endif  // NavigatorLocks_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_LOCKS_NAVIGATOR_LOCKS_H_

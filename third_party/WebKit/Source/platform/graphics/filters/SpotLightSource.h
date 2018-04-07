@@ -20,11 +20,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SpotLightSource_h
-#define SpotLightSource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_SPOT_LIGHT_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_SPOT_LIGHT_SOURCE_H_
 
-#include "platform/graphics/filters/LightSource.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/graphics/filters/light_source.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class PLATFORM_EXPORT SpotLightSource final : public LightSource {
 
 }  // namespace blink
 
-#endif  // SpotLightSource_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_SPOT_LIGHT_SOURCE_H_

@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSGridTemplateAreasValue_h
-#define CSSGridTemplateAreasValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GRID_TEMPLATE_AREAS_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GRID_TEMPLATE_AREAS_VALUE_H_
 
-#include "core/css/CSSValue.h"
-#include "core/style/GridArea.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/style/grid_area.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSGridTemplateAreasValue,
 
 }  // namespace blink
 
-#endif  // CSSGridTemplateAreasValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_GRID_TEMPLATE_AREAS_VALUE_H_

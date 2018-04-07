@@ -26,16 +26,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/ReverbConvolverStage.h"
+#include "third_party/blink/renderer/platform/audio/reverb_convolver_stage.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
-#include "platform/audio/ReverbAccumulationBuffer.h"
-#include "platform/audio/ReverbConvolver.h"
-#include "platform/audio/ReverbInputBuffer.h"
-#include "platform/audio/VectorMath.h"
+#include "third_party/blink/renderer/platform/audio/reverb_accumulation_buffer.h"
+#include "third_party/blink/renderer/platform/audio/reverb_convolver.h"
+#include "third_party/blink/renderer/platform/audio/reverb_input_buffer.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
 
 namespace blink {
 

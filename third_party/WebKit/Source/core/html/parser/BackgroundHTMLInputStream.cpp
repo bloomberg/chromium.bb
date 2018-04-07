@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/BackgroundHTMLInputStream.h"
+#include "third_party/blink/renderer/core/html/parser/background_html_input_stream.h"
 
 namespace blink {
 

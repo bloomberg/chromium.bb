@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/inspector/InspectorHistory.h"
+#include "third_party/blink/renderer/core/inspector/inspector_history.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Node.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 
 namespace blink {
 

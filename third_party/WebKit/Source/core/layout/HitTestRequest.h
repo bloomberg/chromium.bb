@@ -20,11 +20,11 @@
  *
 */
 
-#ifndef HitTestRequest_h
-#define HitTestRequest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_REQUEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_REQUEST_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -102,4 +102,4 @@ class HitTestRequest {
 
 }  // namespace blink
 
-#endif  // HitTestRequest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_REQUEST_H_

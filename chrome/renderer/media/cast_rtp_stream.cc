@@ -40,7 +40,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/net/cast_transport_config.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
+#include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "ui/gfx/geometry/size.h"
 
 using media::cast::FrameSenderConfig;

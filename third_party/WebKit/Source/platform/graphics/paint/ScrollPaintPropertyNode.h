@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScrollPaintPropertyNode_h
-#define ScrollPaintPropertyNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCROLL_PAINT_PROPERTY_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCROLL_PAINT_PROPERTY_NODE_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/CompositorElementId.h"
-#include "platform/graphics/paint/PaintPropertyNode.h"
-#include "platform/scroll/MainThreadScrollingReason.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #include <iosfwd>
 
@@ -178,4 +178,4 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
 
 }  // namespace blink
 
-#endif  // ScrollPaintPropertyNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCROLL_PAINT_PROPERTY_NODE_H_

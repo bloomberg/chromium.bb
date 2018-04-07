@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "extensions/renderer/script_context.h"
-#include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
+#include "third_party/blink/public/web/web_serialized_script_value.h"
 
 namespace extensions {
 

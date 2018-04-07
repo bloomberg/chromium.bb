@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ValidationMessageOverlayDelegate_h
-#define ValidationMessageOverlayDelegate_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_VALIDATION_MESSAGE_OVERLAY_DELEGATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_VALIDATION_MESSAGE_OVERLAY_DELEGATE_H_
 
-#include "core/page/PageOverlay.h"
-#include "platform/text/TextDirection.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/page/page_overlay.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class ValidationMessageOverlayDelegate : public PageOverlay::Delegate {
 };
 
 }  // namespace blink
-#endif  // ValidationMessageOverlayDelegate_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_VALIDATION_MESSAGE_OVERLAY_DELEGATE_H_

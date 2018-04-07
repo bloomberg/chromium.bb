@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ProgrammaticScrollAnimator_h
-#define ProgrammaticScrollAnimator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_PROGRAMMATIC_SCROLL_ANIMATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_PROGRAMMATIC_SCROLL_ANIMATOR_H_
 
 #include <memory>
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollAnimatorCompositorCoordinator.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_animator_compositor_coordinator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class ProgrammaticScrollAnimator : public ScrollAnimatorCompositorCoordinator {
 
 }  // namespace blink
 
-#endif  // ProgrammaticScrollAnimator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_PROGRAMMATIC_SCROLL_ANIMATOR_H_

@@ -10,7 +10,7 @@
 #include "base/strings/string16.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "storage/browser/database/database_tracker.h"
-#include "third_party/WebKit/public/platform/modules/webdatabase/web_database.mojom.h"
+#include "third_party/blink/public/platform/modules/webdatabase/web_database.mojom.h"
 
 namespace url {
 class Origin;

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/shapedetection/DetectedText.h"
+#include "third_party/blink/renderer/modules/shapedetection/detected_text.h"
 
-#include "core/geometry/DOMRect.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
 
 namespace blink {
 

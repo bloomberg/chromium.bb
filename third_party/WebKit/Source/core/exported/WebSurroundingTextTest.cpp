@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/web/WebSurroundingText.h"
+#include "third_party/blink/public/web/web_surrounding_text.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/dom/Range.h"
-#include "core/dom/Text.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/Position.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/forms/TextControlElement.h"
-#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 namespace blink {
 

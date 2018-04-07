@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/shaping/ShapeResultBloberizer.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_bloberizer.h"
 
 #include <memory>
-#include "platform/fonts/CharacterRange.h"
-#include "platform/fonts/Font.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/opentype/OpenTypeVerticalData.h"
-#include "platform/fonts/shaping/CachingWordShaper.h"
-#include "platform/fonts/shaping/ShapeResultTestInfo.h"
-#include "platform/graphics/paint/PaintTypeface.h"
-#include "platform/wtf/Optional.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/fonts/character_range.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/open_type_vertical_data.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_test_info.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_typeface.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

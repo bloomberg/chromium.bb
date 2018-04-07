@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/animation/CompositorAnimation.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
-#include "platform/animation/CompositorAnimationDelegate.h"
-#include "platform/animation/CompositorKeyframeModel.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
+#include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

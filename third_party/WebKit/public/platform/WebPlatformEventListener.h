@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPlatformEventListener_h
-#define WebPlatformEventListener_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PLATFORM_EVENT_LISTENER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PLATFORM_EVENT_LISTENER_H_
 
 namespace blink {
 
@@ -14,4 +14,4 @@ class WebPlatformEventListener {
 
 }  // namespace blink
 
-#endif  // WebPlatformEventListener_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PLATFORM_EVENT_LISTENER_H_

@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/parser/XMLDocumentParserScope.h"
+#include "third_party/blink/renderer/core/xml/parser/xml_document_parser_scope.h"
 
 namespace blink {
 

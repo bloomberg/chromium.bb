@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/RefCountedPropertyTreeState.h"
+#include "third_party/blink/renderer/platform/graphics/paint/ref_counted_property_tree_state.h"
 
 #include <memory>
 

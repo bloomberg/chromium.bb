@@ -26,15 +26,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DirectConvolver_h
-#define DirectConvolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_DIRECT_CONVOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_DIRECT_CONVOLVER_H_
 
 #include <memory>
 
-#include "platform/PlatformExport.h"
-#include "platform/audio/AudioArray.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class PLATFORM_EXPORT DirectConvolver {
 
 }  // namespace blink
 
-#endif  // DirectConvolver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_DIRECT_CONVOLVER_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlInputElement_h
-#define MediaControlInputElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_INPUT_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_INPUT_ELEMENT_H_
 
-#include "core/html/forms/HTMLInputElement.h"
-#include "modules/ModulesExport.h"
-#include "modules/media_controls/elements/MediaControlElementBase.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_element_base.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -128,4 +128,4 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
 
 }  // namespace blink
 
-#endif  // MediaControlInputElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_INPUT_ELEMENT_H_

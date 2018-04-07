@@ -22,11 +22,11 @@
  *
  */
 
-#ifndef SkewTransformOperation_h
-#define SkewTransformOperation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_SKEW_TRANSFORM_OPERATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_SKEW_TRANSFORM_OPERATION_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/transforms/TransformOperation.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operation.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ DEFINE_TRANSFORM_TYPE_CASTS(SkewTransformOperation);
 
 }  // namespace blink
 
-#endif  // SkewTransformOperation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_SKEW_TRANSFORM_OPERATION_H_

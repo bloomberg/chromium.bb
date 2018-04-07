@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FeaturePolicy_h
-#define FeaturePolicy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FEATURE_POLICY_FEATURE_POLICY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FEATURE_POLICY_FEATURE_POLICY_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/PlatformExport.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/WTFString.h"
-#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "url/origin.h"
 
 #include <memory>
@@ -76,4 +76,4 @@ PLATFORM_EXPORT bool IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature);
 
 }  // namespace blink
 
-#endif  // FeaturePolicy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FEATURE_POLICY_FEATURE_POLICY_H_

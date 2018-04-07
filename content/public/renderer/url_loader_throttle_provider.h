@@ -11,7 +11,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_loader_throttle.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 namespace content {
 

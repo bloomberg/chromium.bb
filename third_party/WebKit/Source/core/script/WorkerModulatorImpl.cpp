@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/script/WorkerModulatorImpl.h"
+#include "third_party/blink/renderer/core/script/worker_modulator_impl.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/loader/modulescript/WorkerOrWorkletModuleScriptFetcher.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/bindings/V8ThrowException.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/loader/modulescript/worker_or_worklet_module_script_fetcher.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

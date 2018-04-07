@@ -28,25 +28,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSharedWorkerImpl_h
-#define WebSharedWorkerImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_SHARED_WORKER_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_SHARED_WORKER_IMPL_H_
 
-#include "public/web/WebSharedWorker.h"
+#include "third_party/blink/public/web/web_shared_worker.h"
 
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "core/CoreExport.h"
-#include "core/exported/WorkerShadowPage.h"
-#include "core/workers/SharedWorkerReportingProxy.h"
-#include "core/workers/WorkerClients.h"
-#include "core/workers/WorkerThread.h"
-#include "public/mojom/net/ip_address_space.mojom-shared.h"
-#include "public/platform/WebContentSecurityPolicy.h"
-#include "public/web/WebSharedWorkerClient.h"
-#include "public/web/worker_content_settings_proxy.mojom-blink.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-shared.h"
+#include "third_party/blink/public/platform/web_content_security_policy.h"
+#include "third_party/blink/public/web/web_shared_worker_client.h"
+#include "third_party/blink/public/web/worker_content_settings_proxy.mojom-blink.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/exported/worker_shadow_page.h"
+#include "third_party/blink/renderer/core/workers/shared_worker_reporting_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
 
 namespace blink {
 
@@ -150,4 +150,4 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
 
 }  // namespace blink
 
-#endif  // WebSharedWorkerImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_SHARED_WORKER_IMPL_H_

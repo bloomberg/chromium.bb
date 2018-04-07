@@ -25,23 +25,23 @@
  *
  */
 
-#ifndef ExecutionContext_h
-#define ExecutionContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_EXECUTION_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_EXECUTION_CONTEXT_H_
 
 #include <memory>
 
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleNotifier.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/execution_context/SecurityContext.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/AccessControlStatus.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/ReferrerPolicy.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_notifier.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "v8/include/v8.h"
 
 namespace service_manager {
@@ -242,4 +242,4 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
 }  // namespace blink
 
-#endif  // ExecutionContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_EXECUTION_CONTEXT_H_

@@ -32,7 +32,7 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#include "platform/text/UnicodeRange.h"
+#include "third_party/blink/renderer/platform/text/unicode_range.h"
 
 namespace blink {
 

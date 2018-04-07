@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/util/task_duration_metric_reporter.h"
+#include "third_party/blink/renderer/platform/scheduler/util/task_duration_metric_reporter.h"
 
 namespace blink {
 namespace scheduler {

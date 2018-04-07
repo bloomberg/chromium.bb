@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/spellcheck/HotModeSpellCheckRequester.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/hot_mode_spell_check_requester.h"
 
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/Editor.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/commands/CompositeEditCommand.h"
-#include "core/editing/commands/TypingCommand.h"
-#include "core/editing/iterators/BackwardsCharacterIterator.h"
-#include "core/editing/iterators/CharacterIterator.h"
-#include "core/editing/markers/DocumentMarkerController.h"
-#include "core/editing/spellcheck/SpellCheckRequester.h"
-#include "core/editing/spellcheck/SpellChecker.h"
+#include "third_party/blink/renderer/core/editing/commands/composite_edit_command.h"
+#include "third_party/blink/renderer/core/editing/commands/typing_command.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/iterators/backwards_character_iterator.h"
+#include "third_party/blink/renderer/core/editing/iterators/character_iterator.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_check_requester.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
 
 namespace blink {
 

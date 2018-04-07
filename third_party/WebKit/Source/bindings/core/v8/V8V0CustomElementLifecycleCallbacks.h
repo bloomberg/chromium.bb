@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8V0CustomElementLifecycleCallbacks_h
-#define V8V0CustomElementLifecycleCallbacks_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_V0_CUSTOM_ELEMENT_LIFECYCLE_CALLBACKS_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_V0_CUSTOM_ELEMENT_LIFECYCLE_CALLBACKS_H_
 
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "core/html/custom/V0CustomElementLifecycleCallbacks.h"
-#include "platform/bindings/ScopedPersistent.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_lifecycle_callbacks.h"
+#include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -93,4 +93,4 @@ class V8V0CustomElementLifecycleCallbacks final
 
 }  // namespace blink
 
-#endif  // V8V0CustomElementLifecycleCallbacks_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_V0_CUSTOM_ELEMENT_LIFECYCLE_CALLBACKS_H_

@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_MathExtras_h
-#define WTF_MathExtras_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_MATH_EXTRAS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_MATH_EXTRAS_H_
 
 #include <cmath>
 #include <cstddef>
 #include <limits>
 #include "build/build_config.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/CPU.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/cpu.h"
 
 #if defined(COMPILER_MSVC)
 // Make math.h behave like other platforms.
@@ -439,4 +439,4 @@ inline unsigned FastLog2(unsigned i) {
 
 }  // namespace WTF
 
-#endif  // #ifndef WTF_MathExtras_h
+#endif  // #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_MATH_EXTRAS_H_

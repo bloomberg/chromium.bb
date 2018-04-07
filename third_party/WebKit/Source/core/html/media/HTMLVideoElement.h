@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLVideoElement_h
-#define HTMLVideoElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_HTML_VIDEO_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_HTML_VIDEO_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/html/HTMLImageLoader.h"
-#include "core/html/canvas/CanvasImageSource.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/imagebitmap/ImageBitmapSource.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
+#include "third_party/blink/renderer/core/html/html_image_loader.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace gpu {
@@ -199,4 +199,4 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
 }  // namespace blink
 
-#endif  // HTMLVideoElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_HTML_VIDEO_ELEMENT_H_

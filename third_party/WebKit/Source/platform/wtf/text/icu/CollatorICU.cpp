@@ -26,17 +26,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/text/Collator.h"
+#include "third_party/blink/renderer/platform/wtf/text/collator.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <unicode/ucol.h>
 #include <memory>
 #include "base/memory/ptr_util.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/ThreadingPrimitives.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace WTF {
 

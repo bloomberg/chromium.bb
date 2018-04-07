@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/CanvasResourceProvider.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 
 #include "cc/paint/decode_stashing_image_provider.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
-#include "platform/graphics/AcceleratedStaticBitmapImage.h"
-#include "platform/graphics/CanvasHeuristicParameters.h"
-#include "platform/graphics/CanvasResource.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/gpu/SharedGpuContext.h"
-#include "platform/runtime_enabled_features.h"
 #include "skia/ext/texture_handle.h"
+#include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"

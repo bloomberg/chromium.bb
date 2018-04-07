@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UkmTimeAggregator_h
-#define UkmTimeAggregator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_UKM_TIME_AGGREGATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_UKM_TIME_AGGREGATOR_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace ukm {
 class UkmRecorder;
@@ -160,4 +160,4 @@ class PLATFORM_EXPORT UkmTimeAggregator {
 
 }  // namespace blink
 
-#endif  // UkmTimeAggregator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_UKM_TIME_AGGREGATOR_H_

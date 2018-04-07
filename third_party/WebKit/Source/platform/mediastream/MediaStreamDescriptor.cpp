@@ -29,10 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/mediastream/MediaStreamDescriptor.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 
-#include "platform/UUID.h"
-#include "public/platform/WebMediaStream.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/renderer/platform/uuid.h"
 
 namespace blink {
 

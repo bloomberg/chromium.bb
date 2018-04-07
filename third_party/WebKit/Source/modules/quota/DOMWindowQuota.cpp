@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/quota/DOMWindowQuota.h"
+#include "third_party/blink/renderer/modules/quota/dom_window_quota.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "modules/quota/DeprecatedStorageInfo.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/quota/deprecated_storage_info.h"
 
 namespace blink {
 

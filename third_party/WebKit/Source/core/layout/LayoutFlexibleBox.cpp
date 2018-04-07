@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutFlexibleBox.h"
+#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 
 #include <limits>
-#include "core/frame/UseCounter.h"
-#include "core/layout/FlexibleBoxAlgorithm.h"
-#include "core/layout/LayoutState.h"
-#include "core/layout/LayoutView.h"
-#include "core/layout/MinMaxSize.h"
-#include "core/layout/TextAutosizer.h"
-#include "core/layout/ng/ng_layout_result.h"
-#include "core/paint/BlockPainter.h"
-#include "core/paint/PaintLayer.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/LengthFunctions.h"
-#include "platform/wtf/AutoReset.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
+#include "third_party/blink/renderer/core/layout/layout_state.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/text_autosizer.h"
+#include "third_party/blink/renderer/core/paint/block_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

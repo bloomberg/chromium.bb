@@ -17,7 +17,7 @@
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/shared_impl/url_request_info_data.h"
 #include "ppapi/shared_impl/url_response_info_data.h"
-#include "third_party/WebKit/public/web/WebAssociatedURLLoaderClient.h"
+#include "third_party/blink/public/web/web_associated_url_loader_client.h"
 
 namespace blink {
 class WebAssociatedURLLoader;

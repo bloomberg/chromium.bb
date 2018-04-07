@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BorderImageLength_h
-#define BorderImageLength_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_BORDER_IMAGE_LENGTH_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_BORDER_IMAGE_LENGTH_H_
 
-#include "platform/Length.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -89,4 +89,4 @@ class BorderImageLength {
 
 }  // namespace blink
 
-#endif  // BorderImageLength_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_BORDER_IMAGE_LENGTH_H_

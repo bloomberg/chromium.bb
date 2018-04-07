@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ListInterpolationFunctions_h
-#define ListInterpolationFunctions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_LIST_INTERPOLATION_FUNCTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_LIST_INTERPOLATION_FUNCTIONS_H_
 
 #include <memory>
-#include "core/animation/InterpolationValue.h"
-#include "core/animation/PairwiseInterpolationValue.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/animation/interpolation_value.h"
+#include "third_party/blink/renderer/core/animation/pairwise_interpolation_value.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -112,4 +112,4 @@ InterpolationValue ListInterpolationFunctions::CreateList(
 
 }  // namespace blink
 
-#endif  // ListInterpolationFunctions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_LIST_INTERPOLATION_FUNCTIONS_H_

@@ -22,15 +22,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef FloatingObjects_h
-#define FloatingObjects_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FLOATING_OBJECTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FLOATING_OBJECTS_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "platform/PODFreeListArena.h"
-#include "platform/PODIntervalTree.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/wtf/ListHashSet.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/pod_free_list_arena.h"
+#include "third_party/blink/renderer/platform/pod_interval_tree.h"
+#include "third_party/blink/renderer/platform/wtf/list_hash_set.h"
 
 namespace blink {
 
@@ -293,4 +293,4 @@ struct ValueToString<FloatingObject*> {
 
 }  // namespace blink
 
-#endif  // FloatingObjects_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FLOATING_OBJECTS_H_

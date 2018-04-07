@@ -29,11 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutSliderThumb.h"
+#include "third_party/blink/renderer/core/layout/layout_slider_thumb.h"
 
-#include "core/html/forms/SliderThumbElement.h"
-#include "core/layout/LayoutTheme.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/html/forms/slider_thumb_element.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

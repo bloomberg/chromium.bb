@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Hyphenation_h
-#define Hyphenation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_HYPHENATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_HYPHENATION_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/text/AtomicStringHash.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class PLATFORM_EXPORT Hyphenation : public RefCounted<Hyphenation> {
 
 }  // namespace blink
 
-#endif  // Hyphenation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_HYPHENATION_H_

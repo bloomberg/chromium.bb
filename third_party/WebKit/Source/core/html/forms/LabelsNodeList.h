@@ -22,11 +22,11 @@
  *
  */
 
-#ifndef LabelsNodeList_h
-#define LabelsNodeList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_LABELS_NODE_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_LABELS_NODE_LIST_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/LiveNodeList.h"
+#include "third_party/blink/renderer/core/dom/live_node_list.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ class LabelsNodeList final : public LiveNodeList {
 
 }  // namespace blink
 
-#endif  // LabelsNodeList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_LABELS_NODE_LIST_H_

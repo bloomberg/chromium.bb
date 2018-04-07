@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/HTMLIFrameElement.h"
-#include "core/html/forms/HTMLSelectElement.h"
-#include "core/paint/PaintPropertyTreeBuilderTest.h"
-#include "core/paint/PaintPropertyTreePrinter.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/paint/paint_property_tree_builder_test.h"
+#include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
 
 namespace blink {
 

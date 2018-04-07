@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebScrollbarLayer_h
-#define WebScrollbarLayer_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLLBAR_LAYER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLLBAR_LAYER_H_
 
-#include "WebLayer.h"
-#include "WebScrollbarThemeGeometry.h"
-#include "WebScrollbarThemePainter.h"
+#include "third_party/blink/public/platform/web_layer.h"
+#include "third_party/blink/public/platform/web_scrollbar_theme_geometry.h"
+#include "third_party/blink/public/platform/web_scrollbar_theme_painter.h"
 
 namespace cc {
 
@@ -54,4 +54,4 @@ class WebScrollbarLayer {
 
 }  // namespace blink
 
-#endif  // WebScrollbarLayer_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLLBAR_LAYER_H_

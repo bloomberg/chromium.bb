@@ -51,11 +51,11 @@ mojom("mojom_platform") {
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
-  export_header = "third_party/WebKit/common/common_export.h"
+  export_header = "third_party/blink/common/common_export.h"
 
   export_class_attribute_blink = "PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
-  export_header_blink = "third_party/WebKit/Source/platform/PlatformExport.h"
+  export_header_blink = "third_party/blink/renderer/platform/platform_export.h"
 }
 
 # This target can include mojom interfaces which do use types that are
@@ -83,13 +83,13 @@ mojom("mojom_core") {
   ]
 
   overridden_deps_blink = [ ":mojom_platform" ]
-  component_deps_blink = [ "//third_party/WebKit/Source/platform" ]
+  component_deps_blink = [ "//third_party/blink/renderer/platform" ]
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"
-  export_header = "third_party/WebKit/common/common_export.h"
+  export_header = "third_party/blink/common/common_export.h"
 
   export_class_attribute_blink = "CORE_EXPORT"
   export_define_blink = "BLINK_CORE_IMPLEMENTATION=1"
-  export_header_blink = "third_party/WebKit/Source/core/CoreExport.h"
+  export_header_blink = "third_party/blink/renderer/core/core_export.h"
 }

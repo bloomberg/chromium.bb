@@ -16,8 +16,8 @@
 #include "content/renderer/notifications/notification_data_conversions.h"
 #include "content/renderer/notifications/notification_dispatcher.h"
 #include "content/renderer/service_worker/web_service_worker_registration_impl.h"
-#include "third_party/WebKit/public/platform/URLConversion.h"
-#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
+#include "third_party/blink/public/platform/url_conversion.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
 #include "url/origin.h"
 
 using blink::WebString;

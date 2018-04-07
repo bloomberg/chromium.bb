@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NamedGridLinesMap_h
-#define NamedGridLinesMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_NAMED_GRID_LINES_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_NAMED_GRID_LINES_MAP_H_
 
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -15,4 +15,4 @@ using NamedGridLinesMap = HashMap<String, Vector<size_t>>;
 
 }  // namespace blink
 
-#endif  // NamedGridLinesMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_NAMED_GRID_LINES_MAP_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef XRCoordinateSystem_h
-#define XRCoordinateSystem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_COORDINATE_SYSTEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_COORDINATE_SYSTEM_H_
 
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

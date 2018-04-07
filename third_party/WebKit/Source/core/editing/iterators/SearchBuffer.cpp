@@ -25,17 +25,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/iterators/SearchBuffer.h"
+#include "third_party/blink/renderer/core/editing/iterators/search_buffer.h"
 
-#include "core/dom/Document.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/iterators/CharacterIterator.h"
-#include "core/editing/iterators/SimplifiedBackwardsTextIterator.h"
-#include "core/editing/iterators/TextSearcherICU.h"
-#include "platform/text/Character.h"
-#include "platform/text/TextBoundaries.h"
-#include "platform/text/UnicodeUtilities.h"
-#include "platform/wtf/text/StringView.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/iterators/character_iterator.h"
+#include "third_party/blink/renderer/core/editing/iterators/simplified_backwards_text_iterator.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_searcher_icu.h"
+#include "third_party/blink/renderer/platform/text/character.h"
+#include "third_party/blink/renderer/platform/text/text_boundaries.h"
+#include "third_party/blink/renderer/platform/text/unicode_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 

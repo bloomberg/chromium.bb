@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 
 #include <string.h>
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/allocator/Partitions.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace WTF {
 

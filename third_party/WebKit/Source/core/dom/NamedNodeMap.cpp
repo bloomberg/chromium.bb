@@ -23,14 +23,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/NamedNodeMap.h"
+#include "third_party/blink/renderer/core/dom/named_node_map.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Attr.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/ExceptionCode.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/attr.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

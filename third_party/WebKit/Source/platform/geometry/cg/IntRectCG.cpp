@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/geometry/IntRect.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 

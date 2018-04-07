@@ -21,16 +21,16 @@
  *
  */
 
-#ifndef InlineTextBox_h
-#define InlineTextBox_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_TEXT_BOX_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_TEXT_BOX_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/api/LineLayoutText.h"
-#include "core/layout/api/SelectionState.h"
-#include "core/layout/line/InlineBox.h"
-#include "platform/text/TextRun.h"
-#include "platform/text/Truncation.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_text.h"
+#include "third_party/blink/renderer/core/layout/api/selection_state.h"
+#include "third_party/blink/renderer/core/layout/line/inline_box.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
+#include "third_party/blink/renderer/platform/text/truncation.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -241,4 +241,4 @@ DEFINE_INLINE_BOX_TYPE_CASTS(InlineTextBox);
 
 }  // namespace blink
 
-#endif  // InlineTextBox_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_TEXT_BOX_H_

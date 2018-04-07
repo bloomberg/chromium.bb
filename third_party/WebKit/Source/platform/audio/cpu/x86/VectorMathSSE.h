@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VectorMathSSE_h
-#define VectorMathSSE_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CPU_X86_VECTOR_MATH_SSE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CPU_X86_VECTOR_MATH_SSE_H_
 
 #include <cstddef>
 
-#include "platform/audio/AudioArray.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
 
 namespace blink {
 namespace VectorMath {
@@ -87,4 +87,4 @@ void Zvmul(const float* real1p,
 }  // namespace VectorMath
 }  // namespace blink
 
-#endif  // VectorMathSSE_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_CPU_X86_VECTOR_MATH_SSE_H_

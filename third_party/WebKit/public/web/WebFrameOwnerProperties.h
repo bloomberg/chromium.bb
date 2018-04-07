@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebFrameOwnerProperties_h
-#define WebFrameOwnerProperties_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_OWNER_PROPERTIES_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_OWNER_PROPERTIES_H_
 
-#include "public/platform/WebScrollbar.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_scrollbar.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 #if INSIDE_BLINK
-#include "platform/scroll/ScrollTypes.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #endif
 
 namespace blink {

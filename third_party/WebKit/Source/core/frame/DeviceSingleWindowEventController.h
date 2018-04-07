@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DeviceSingleWindowEventController_h
-#define DeviceSingleWindowEventController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DEVICE_SINGLE_WINDOW_EVENT_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DEVICE_SINGLE_WINDOW_EVENT_CONTROLLER_H_
 
-#include "core/CoreExport.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/PlatformEventController.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/platform_event_controller.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class CORE_EXPORT DeviceSingleWindowEventController
 
 }  // namespace blink
 
-#endif  // DeviceSingleWindowEventController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DEVICE_SINGLE_WINDOW_EVENT_CONTROLLER_H_

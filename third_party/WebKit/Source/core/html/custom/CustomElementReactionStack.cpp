@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/custom/CustomElementReactionStack.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction_stack.h"
 
-#include "core/dom/Element.h"
-#include "core/html/custom/CEReactionsScope.h"
-#include "core/html/custom/CustomElementReactionQueue.h"
-#include "platform/bindings/Microtask.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction_queue.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
 
 namespace blink {
 

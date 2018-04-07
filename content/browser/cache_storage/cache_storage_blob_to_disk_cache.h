@@ -15,7 +15,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/disk_cache/disk_cache.h"
 #include "services/network/public/cpp/net_adapters.h"
-#include "third_party/WebKit/public/mojom/blob/blob.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 namespace content {
 

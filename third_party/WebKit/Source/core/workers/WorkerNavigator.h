@@ -23,18 +23,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef WorkerNavigator_h
-#define WorkerNavigator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_NAVIGATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_NAVIGATOR_H_
 
-#include "core/CoreExport.h"
-#include "core/frame/NavigatorConcurrentHardware.h"
-#include "core/frame/NavigatorDeviceMemory.h"
-#include "core/frame/NavigatorID.h"
-#include "core/frame/NavigatorOnLine.h"
-#include "platform/Supplementable.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/navigator_concurrent_hardware.h"
+#include "third_party/blink/renderer/core/frame/navigator_device_memory.h"
+#include "third_party/blink/renderer/core/frame/navigator_id.h"
+#include "third_party/blink/renderer/core/frame/navigator_on_line.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class CORE_EXPORT WorkerNavigator final
 
 }  // namespace blink
 
-#endif  // WorkerNavigator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_NAVIGATOR_H_

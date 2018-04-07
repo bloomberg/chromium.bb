@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PendingAnimations_h
-#define PendingAnimations_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_PENDING_ANIMATIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_PENDING_ANIMATIONS_H_
 
-#include "core/CoreExport.h"
-#include "core/animation/Animation.h"
-#include "core/dom/Document.h"
-#include "platform/Timer.h"
-#include "platform/graphics/CompositorElementId.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

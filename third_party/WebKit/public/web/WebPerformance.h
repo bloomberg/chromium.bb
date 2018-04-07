@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebPerformance_h
-#define WebPerformance_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PERFORMANCE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PERFORMANCE_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebPrivatePtr.h"
-#include "WebNavigationType.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/web/web_navigation_type.h"
 
 #if INSIDE_BLINK
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #endif
 
 namespace blink {

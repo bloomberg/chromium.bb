@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/messaging/BlinkTransferableMessage.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 
-#include "platform/blob/BlobData.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
 
 namespace blink {
 

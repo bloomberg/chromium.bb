@@ -23,14 +23,14 @@
  * DAMAGE.
  */
 
-#ifndef RealtimeAnalyser_h
-#define RealtimeAnalyser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_REALTIME_ANALYSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_REALTIME_ANALYSER_H_
 
 #include <memory>
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "platform/audio/AudioArray.h"
-#include "platform/audio/FFTFrame.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
+#include "third_party/blink/renderer/platform/audio/fft_frame.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -116,4 +116,4 @@ class RealtimeAnalyser final {
 
 }  // namespace blink
 
-#endif  // RealtimeAnalyser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_REALTIME_ANALYSER_H_

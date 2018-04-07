@@ -25,12 +25,12 @@
 
 // Tests for the red-black tree class.
 
-#include "platform/PODRedBlackTree.h"
+#include "third_party/blink/renderer/platform/pod_red_black_tree.h"
 
-#include "platform/testing/ArenaTestHelpers.h"
-#include "platform/testing/TreeTestHelpers.h"
-#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/testing/arena_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/tree_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

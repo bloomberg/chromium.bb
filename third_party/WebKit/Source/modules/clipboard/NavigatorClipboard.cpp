@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/clipboard/NavigatorClipboard.h"
+#include "third_party/blink/renderer/modules/clipboard/navigator_clipboard.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "modules/clipboard/Clipboard.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/clipboard/clipboard.h"
 
 namespace blink {
 

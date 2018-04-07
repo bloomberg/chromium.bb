@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/WTF.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/StackUtil.h"
-#include "platform/wtf/ThreadSpecific.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/allocator/Partitions.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/StringStatics.h"
-#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/stack_util.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_statics.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 
 namespace WTF {
 

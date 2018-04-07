@@ -18,7 +18,7 @@ static_library("renderer") {
     "//base",
     "//components/network_hints/common",
     "//content/public/renderer",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//url",
   ]
 }

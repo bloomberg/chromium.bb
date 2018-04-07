@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/PropertyHandle.h"
+#include "third_party/blink/renderer/core/animation/property_handle.h"
 
-#include "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
 

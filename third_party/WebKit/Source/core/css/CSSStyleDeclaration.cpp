@@ -28,23 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSStyleDeclaration.h"
+#include "third_party/blink/renderer/core/css/css_style_declaration.h"
 
 #include <algorithm>
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/string_or_float.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSPropertyIDTemplates.h"
-#include "core/css/CSSStyleDeclaration.h"
-#include "core/css/CSSValue.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css/properties/css_property.h"
-#include "core/css_property_names.h"
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_float.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_property_id_templates.h"
+#include "third_party/blink/renderer/core/css/css_style_declaration.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/script/ScriptRunner.h"
+#include "third_party/blink/renderer/core/script/script_runner.h"
 
-#include "core/script/MockScriptElementBase.h"
-#include "core/script/ScriptLoader.h"
-#include "platform/bindings/RuntimeCallStats.h"
-#include "platform/heap/Handle.h"
-#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
-#include "public/platform/Platform.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/script/mock_script_element_base.h"
+#include "third_party/blink/renderer/core/script/script_loader.h"
+#include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 using testing::Invoke;
 using testing::ElementsAre;

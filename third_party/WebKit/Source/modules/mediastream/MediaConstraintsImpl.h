@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaConstraintsImpl_h
-#define MediaConstraintsImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_CONSTRAINTS_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_CONSTRAINTS_IMPL_H_
 
-#include "modules/ModulesExport.h"
-#include "modules/mediastream/MediaErrorState.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebMediaConstraints.h"
+#include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ ConvertConstraintsToWeb(const MediaTrackConstraints&);
 
 }  // namespace blink
 
-#endif  // MediaConstraintsImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_CONSTRAINTS_IMPL_H_

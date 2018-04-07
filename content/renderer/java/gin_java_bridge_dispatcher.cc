@@ -10,8 +10,8 @@
 #include "content/common/gin_java_bridge_messages.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/java/gin_java_bridge_object.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_view.h"
 
 namespace content {
 

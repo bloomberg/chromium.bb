@@ -23,19 +23,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/animation/SMILTimeContainer.h"
+#include "third_party/blink/renderer/core/svg/animation/smil_time_container.h"
 
 #include <algorithm>
-#include "core/animation/AnimationClock.h"
-#include "core/animation/DocumentTimeline.h"
-#include "core/dom/Document.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
-#include "core/svg/SVGSVGElement.h"
-#include "core/svg/animation/SMILTime.h"
-#include "core/svg/animation/SVGSMILElement.h"
+#include "third_party/blink/renderer/core/animation/animation_clock.h"
+#include "third_party/blink/renderer/core/animation/document_timeline.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/svg/animation/smil_time.h"
+#include "third_party/blink/renderer/core/svg/animation/svg_smil_element.h"
+#include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 
 namespace blink {
 

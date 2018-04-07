@@ -27,8 +27,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontCache_h
-#define FontCache_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_CACHE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_CACHE_H_
 
 #include <limits.h>
 
@@ -36,23 +36,23 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
-#include "platform/PlatformExport.h"
-#include "platform/fonts/FallbackListCompositeKey.h"
-#include "platform/fonts/FontCacheClient.h"
-#include "platform/fonts/FontCacheKey.h"
-#include "platform/fonts/FontDataCache.h"
-#include "platform/fonts/FontFaceCreationParams.h"
-#include "platform/fonts/FontFallbackPriority.h"
-#include "platform/fonts/FontPlatformData.h"
-#include "platform/fonts/shaping/ShapeCache.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/Unicode.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/fonts/fallback_list_composite_key.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache_client.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache_key.h"
+#include "third_party/blink/renderer/platform/fonts/font_data_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_face_creation_params.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
+#include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_cache.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 #include "SkFontMgr.h"

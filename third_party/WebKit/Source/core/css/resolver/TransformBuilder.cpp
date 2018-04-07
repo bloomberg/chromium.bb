@@ -28,19 +28,19 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/resolver/TransformBuilder.h"
+#include "third_party/blink/renderer/core/css/resolver/transform_builder.h"
 
-#include "core/css/CSSFunctionValue.h"
-#include "core/css/CSSPrimitiveValueMappings.h"
-#include "platform/heap/Handle.h"
-#include "platform/transforms/Matrix3DTransformOperation.h"
-#include "platform/transforms/MatrixTransformOperation.h"
-#include "platform/transforms/PerspectiveTransformOperation.h"
-#include "platform/transforms/RotateTransformOperation.h"
-#include "platform/transforms/ScaleTransformOperation.h"
-#include "platform/transforms/SkewTransformOperation.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/transforms/TranslateTransformOperation.h"
+#include "third_party/blink/renderer/core/css/css_function_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/transforms/matrix_3d_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/matrix_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/perspective_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/rotate_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/scale_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/skew_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
 
 namespace blink {
 

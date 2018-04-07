@@ -9,8 +9,8 @@
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_plugin_container.h"
 
 using blink::WebString;
 using blink::WebPluginContainer;

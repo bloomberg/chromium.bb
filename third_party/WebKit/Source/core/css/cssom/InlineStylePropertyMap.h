@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InlineStylePropertyMap_h
-#define InlineStylePropertyMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_INLINE_STYLE_PROPERTY_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_INLINE_STYLE_PROPERTY_MAP_H_
 
 #include "base/macros.h"
-#include "core/css/cssom/StylePropertyMap.h"
-#include "core/dom/Element.h"
+#include "third_party/blink/renderer/core/css/cssom/style_property_map.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 
 namespace blink {
 

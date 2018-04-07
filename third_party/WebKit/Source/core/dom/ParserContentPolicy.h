@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ParserContentPolicy_h
-#define ParserContentPolicy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PARSER_CONTENT_POLICY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PARSER_CONTENT_POLICY_H_
 
 namespace blink {
 
@@ -48,4 +48,4 @@ static inline bool PluginContentIsAllowed(
 
 }  // namespace blink
 
-#endif  // ParserContentPolicy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PARSER_CONTENT_POLICY_H_

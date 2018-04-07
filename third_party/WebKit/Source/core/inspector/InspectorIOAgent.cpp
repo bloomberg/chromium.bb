@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/InspectorIOAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorIOAgent.h"
 
-#include "bindings/core/v8/V8Blob.h"
-#include "core/fileapi/Blob.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "v8/include/v8-inspector.h"
 
 namespace blink {

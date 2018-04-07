@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/WorkerThread.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
 
 #include <memory>
 #include <utility>
 
-#include "bindings/core/v8/V8CacheOptions.h"
-#include "core/frame/Settings.h"
-#include "core/inspector/InspectorTaskRunner.h"
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/WorkerReportingProxy.h"
-#include "core/workers/WorkerThreadTestHelper.h"
-#include "platform/WaitableEvent.h"
-#include "platform/testing/UnitTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_thread_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
 
 using testing::_;
 using testing::AtMost;

@@ -26,24 +26,24 @@
  * DAMAGE.
  */
 
-#include "core/css/resolver/ScopedStyleResolver.h"
+#include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 
-#include "core/animation/DocumentTimeline.h"
-#include "core/css/CSSFontSelector.h"
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/FontFace.h"
-#include "core/css/PageRuleCollector.h"
-#include "core/css/RuleFeatureSet.h"
-#include "core/css/StyleChangeReason.h"
-#include "core/css/StyleEngine.h"
-#include "core/css/StyleRule.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/css/resolver/MatchRequest.h"
-#include "core/dom/Document.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/html/HTMLStyleElement.h"
-#include "core/html_names.h"
-#include "core/svg/SVGStyleElement.h"
+#include "third_party/blink/renderer/core/animation/document_timeline.h"
+#include "third_party/blink/renderer/core/css/css_font_selector.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/font_face.h"
+#include "third_party/blink/renderer/core/css/page_rule_collector.h"
+#include "third_party/blink/renderer/core/css/resolver/match_request.h"
+#include "third_party/blink/renderer/core/css/rule_feature_set.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/html_style_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/svg/svg_style_element.h"
 
 namespace blink {
 

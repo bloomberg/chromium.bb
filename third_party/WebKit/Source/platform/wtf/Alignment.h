@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef WTF_Alignment_h
-#define WTF_Alignment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALIGNMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALIGNMENT_H_
 
 #include <stdint.h>
 #include "build/build_config.h"
@@ -45,4 +45,4 @@ inline bool IsAlignedTo(const void* pointer) {
 
 }  // namespace WTF
 
-#endif  // WTF_Alignment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALIGNMENT_H_

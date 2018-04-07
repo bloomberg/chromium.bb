@@ -22,18 +22,18 @@
  *
  */
 
-#include "core/layout/LayoutDeprecatedFlexibleBox.h"
+#include "third_party/blink/renderer/core/layout/layout_deprecated_flexible_box.h"
 
 #include <algorithm>
-#include "core/frame/UseCounter.h"
-#include "core/layout/LayoutView.h"
-#include "core/layout/TextAutosizer.h"
-#include "core/layout/TextRunConstructor.h"
-#include "core/layout/api/LineLayoutBlockFlow.h"
-#include "core/paint/PaintLayer.h"
-#include "platform/fonts/Font.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/text_autosizer.h"
+#include "third_party/blink/renderer/core/layout/text_run_constructor.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebRemotePlaybackState_h
-#define WebRemotePlaybackState_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_REMOTEPLAYBACK_WEB_REMOTE_PLAYBACK_STATE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_REMOTEPLAYBACK_WEB_REMOTE_PLAYBACK_STATE_H_
 
 namespace blink {
 
@@ -15,4 +15,4 @@ enum class WebRemotePlaybackState {
 
 }  // namespace blink
 
-#endif  // WebRemotePlaybackState_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_REMOTEPLAYBACK_WEB_REMOTE_PLAYBACK_STATE_H_

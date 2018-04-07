@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AsyncFileSystemCallbacks_h
-#define AsyncFileSystemCallbacks_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ASYNC_FILE_SYSTEM_CALLBACKS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ASYNC_FILE_SYSTEM_CALLBACKS_H_
 
 #include <memory>
-#include "platform/FileMetadata.h"
-#include "platform/FileSystemType.h"
-#include "platform/blob/BlobData.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebFileWriter.h"
+#include "third_party/blink/public/platform/web_file_writer.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/file_system_type.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -113,4 +113,4 @@ class PLATFORM_EXPORT AsyncFileSystemCallbacks {
 
 }  // namespace blink
 
-#endif  // AsyncFileSystemCallbacks_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_ASYNC_FILE_SYSTEM_CALLBACKS_H_

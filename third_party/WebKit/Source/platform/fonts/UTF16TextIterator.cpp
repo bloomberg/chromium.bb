@@ -21,7 +21,7 @@
  *
  */
 
-#include "platform/fonts/UTF16TextIterator.h"
+#include "third_party/blink/renderer/platform/fonts/utf16_text_iterator.h"
 
 namespace blink {
 

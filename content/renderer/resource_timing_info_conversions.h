@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_RESOURCE_TIMING_INFO_CONVERSIONS_H_
 
 #include "content/common/resource_timing_info.h"
-#include "third_party/WebKit/public/platform/WebResourceTimingInfo.h"
+#include "third_party/blink/public/platform/web_resource_timing_info.h"
 
 namespace content {
 

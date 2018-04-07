@@ -18,16 +18,16 @@
  *
  */
 
-#include "core/html/HTMLProgressElement.h"
+#include "third_party/blink/renderer/core/html/html_progress_element.h"
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/shadow/ProgressShadowElement.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutProgress.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/shadow/progress_shadow_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_progress.h"
 
 namespace blink {
 

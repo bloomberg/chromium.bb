@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/WebKit/public/web/ConsoleMessageStructTraits.h"
+#include "third_party/blink/public/web/console_message_struct_traits.h"
 
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace mojo {
 

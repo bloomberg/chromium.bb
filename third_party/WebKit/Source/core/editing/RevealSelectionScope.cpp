@@ -28,11 +28,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/RevealSelectionScope.h"
+#include "third_party/blink/renderer/core/editing/reveal_selection_scope.h"
 
-#include "core/editing/Editor.h"
-#include "core/editing/FrameSelection.h"
-#include "core/frame/LocalFrame.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
 

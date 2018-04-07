@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/LayoutMultiColumnFlowThread.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 
-#include "core/layout/LayoutMultiColumnSet.h"
-#include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
-#include "core/testing/CoreUnitTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
 

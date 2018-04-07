@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebVideoFrameSubmitter.h"
+#include "third_party/blink/public/platform/web_video_frame_submitter.h"
 
 #include <memory>
 #include <utility>
 
-#include "third_party/WebKit/Source/platform/graphics/VideoFrameSubmitter.h"
+#include "third_party/blink/renderer/platform/graphics/video_frame_submitter.h"
 
 namespace cc {
 class LayerTreeSettings;

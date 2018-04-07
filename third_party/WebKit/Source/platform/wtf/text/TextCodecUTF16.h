@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextCodecUTF16_h
-#define TextCodecUTF16_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_CODEC_UTF16_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_CODEC_UTF16_H_
 
-#include "platform/wtf/text/TextCodec.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec.h"
 
 namespace WTF {
 
@@ -55,4 +55,4 @@ class TextCodecUTF16 final : public TextCodec {
 
 }  // namespace WTF
 
-#endif  // TextCodecUTF16_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_CODEC_UTF16_H_

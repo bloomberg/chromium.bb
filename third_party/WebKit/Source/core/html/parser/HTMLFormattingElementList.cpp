@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/HTMLFormattingElementList.h"
+#include "third_party/blink/renderer/core/html/parser/html_formatting_element_list.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

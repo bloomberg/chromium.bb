@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScrollState_h
-#define ScrollState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLL_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLL_STATE_H_
 
 #include <deque>
 #include <memory>
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/CoreExport.h"
-#include "core/dom/Element.h"
-#include "core/page/scrolling/ScrollStateInit.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/scroll/ScrollStateData.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/page/scrolling/scroll_state_init.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_state_data.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -104,4 +104,4 @@ class CORE_EXPORT ScrollState final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // ScrollState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLL_STATE_H_

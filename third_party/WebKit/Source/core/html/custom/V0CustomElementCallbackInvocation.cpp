@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/custom/V0CustomElementCallbackInvocation.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_callback_invocation.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/html/custom/V0CustomElementScheduler.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_scheduler.h"
 
 namespace blink {
 

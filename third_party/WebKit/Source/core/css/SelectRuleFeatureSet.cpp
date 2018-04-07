@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/SelectRuleFeatureSet.h"
+#include "third_party/blink/renderer/core/css/select_rule_feature_set.h"
 
-#include "core/css/CSSSelector.h"
-#include "core/css/CSSSelectorList.h"
-#include "platform/wtf/BitVector.h"
+#include "third_party/blink/renderer/core/css/css_selector.h"
+#include "third_party/blink/renderer/core/css/css_selector_list.h"
+#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 
 namespace blink {
 

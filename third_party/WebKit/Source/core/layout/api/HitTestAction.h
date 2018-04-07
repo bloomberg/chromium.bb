@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HitTestAction_h
-#define HitTestAction_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_HIT_TEST_ACTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_HIT_TEST_ACTION_H_
 
 namespace blink {
 
@@ -17,4 +17,4 @@ enum HitTestAction {
 
 }  // namespace blink
 
-#endif  // HitTestAction_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_HIT_TEST_ACTION_H_

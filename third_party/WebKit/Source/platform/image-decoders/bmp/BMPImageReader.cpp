@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/image-decoders/bmp/BMPImageReader.h"
+#include "third_party/blink/renderer/platform/image-decoders/bmp/bmp_image_reader.h"
 
 namespace {
 

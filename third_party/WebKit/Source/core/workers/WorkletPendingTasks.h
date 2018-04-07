@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkletPendingTasks_h
-#define WorkletPendingTasks_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_PENDING_TASKS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_PENDING_TASKS_H_
 
-#include "core/CoreExport.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "platform/heap/Heap.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class CORE_EXPORT WorkletPendingTasks final
 
 }  // namespace blink
 
-#endif  // WorkletPendingTasks_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKLET_PENDING_TASKS_H_

@@ -24,14 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CompositingLayerAssigner_h
-#define CompositingLayerAssigner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_LAYER_ASSIGNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_LAYER_ASSIGNER_H_
 
-#include "core/paint/compositing/PaintLayerCompositor.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/graphics/SquashingDisallowedReasons.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/graphics/squashing_disallowed_reasons.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -114,4 +114,4 @@ class CompositingLayerAssigner {
 
 }  // namespace blink
 
-#endif  // CompositingLayerAssigner_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_LAYER_ASSIGNER_H_

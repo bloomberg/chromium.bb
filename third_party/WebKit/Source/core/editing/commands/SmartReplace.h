@@ -26,10 +26,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SmartReplace_h
-#define SmartReplace_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SMART_REPLACE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SMART_REPLACE_H_
 
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
 
@@ -37,4 +37,4 @@ bool IsCharacterSmartReplaceExempt(UChar32, bool is_previous_character);
 
 }  // namespace blink
 
-#endif  // SmartReplace_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SMART_REPLACE_H_

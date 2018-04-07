@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SuffixTree_h
-#define SuffixTree_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_SUFFIX_TREE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_SUFFIX_TREE_H_
 
 #include <algorithm>
 #include <utility>
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -142,4 +142,4 @@ class SuffixTree {
 
 }  // namespace blink
 
-#endif  // SuffixTree_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_SUFFIX_TREE_H_

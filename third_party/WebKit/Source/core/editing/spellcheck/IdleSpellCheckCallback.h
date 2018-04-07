@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IdleSpellCheckCallback_h
-#define IdleSpellCheckCallback_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_IDLE_SPELL_CHECK_CALLBACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_IDLE_SPELL_CHECK_CALLBACK_H_
 
-#include "core/dom/DocumentShutdownObserver.h"
-#include "core/dom/ScriptedIdleTaskController.h"
-#include "core/editing/Forward.h"
-#include "platform/Timer.h"
+#include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
+#include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -106,4 +106,4 @@ class CORE_EXPORT IdleSpellCheckCallback final
 
 }  // namespace blink
 
-#endif  // IdleSpellCheckCallback_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_IDLE_SPELL_CHECK_CALLBACK_H_

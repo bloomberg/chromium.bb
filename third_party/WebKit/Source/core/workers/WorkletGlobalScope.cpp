@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/WorkletGlobalScope.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 
 #include <memory>
-#include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/SourceLocation.h"
-#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/inspector/MainThreadDebugger.h"
-#include "core/origin_trials/OriginTrialContext.h"
-#include "core/probe/CoreProbes.h"
-#include "core/script/Modulator.h"
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/WorkerReportingProxy.h"
-#include "core/workers/WorkletModuleResponsesMap.h"
-#include "core/workers/WorkletModuleTreeClient.h"
-#include "core/workers/WorkletPendingTasks.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
+#include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
+#include "third_party/blink/renderer/core/workers/worklet_module_tree_client.h"
+#include "third_party/blink/renderer/core/workers/worklet_pending_tasks.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Accelerometer_h
-#define Accelerometer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_ACCELEROMETER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_ACCELEROMETER_H_
 
-#include "modules/sensor/Sensor.h"
-#include "modules/sensor/SpatialSensorOptions.h"
+#include "third_party/blink/renderer/modules/sensor/sensor.h"
+#include "third_party/blink/renderer/modules/sensor/spatial_sensor_options.h"
 
 namespace blink {
 
@@ -35,4 +35,4 @@ class Accelerometer : public Sensor {
 
 }  // namespace blink
 
-#endif  // Accelerometer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_ACCELEROMETER_H_

@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_controller_impl.h"
 
 #include <memory>
 #include <utility>
-#include "core/dom/Document.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "modules/screen_orientation/ScreenOrientation.h"
-#include "modules/screen_orientation/ScreenOrientationDispatcher.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/ScopedOrientationChangeIndicator.h"
-#include "public/common/associated_interfaces/associated_interface_provider.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebScreenInfo.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_dispatcher.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/scoped_orientation_change_indicator.h"
 
 namespace blink {
 

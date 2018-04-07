@@ -24,29 +24,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/XSSAuditor.h"
+#include "third_party/blink/renderer/core/html/parser/xss_auditor.h"
 
 #include <memory>
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLParamElement.h"
-#include "core/html/LinkRelAttribute.h"
-#include "core/html/parser/HTMLDocumentParser.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/parser/TextResourceDecoder.h"
-#include "core/html/parser/XSSAuditorDelegate.h"
-#include "core/html_names.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/MixedContentChecker.h"
-#include "core/svg_names.h"
-#include "core/xlink_names.h"
-#include "platform/network/EncodedFormData.h"
-#include "platform/text/DecodeEscapeSequences.h"
-#include "platform/wtf/ASCIICType.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_param_element.h"
+#include "third_party/blink/renderer/core/html/link_rel_attribute.h"
+#include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/core/html/parser/xss_auditor_delegate.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/core/xlink_names.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/text/decode_escape_sequences.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 
 namespace {
 

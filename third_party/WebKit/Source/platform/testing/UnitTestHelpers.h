@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UnitTestHelpers_h
-#define UnitTestHelpers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_UNIT_TEST_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_UNIT_TEST_HELPERS_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/Timer.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

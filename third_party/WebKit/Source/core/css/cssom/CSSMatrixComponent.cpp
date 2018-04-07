@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/CSSMatrixComponent.h"
+#include "third_party/blink/renderer/core/css/cssom/css_matrix_component.h"
 
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/cssom/CSSMatrixComponentOptions.h"
-#include "core/geometry/DOMMatrix.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_matrix_component_options.h"
+#include "third_party/blink/renderer/core/geometry/dom_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

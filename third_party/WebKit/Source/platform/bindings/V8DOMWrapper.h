@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8DOMWrapper_h
-#define V8DOMWrapper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_DOM_WRAPPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_DOM_WRAPPER_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/bindings/DOMDataStore.h"
-#include "platform/bindings/RuntimeCallStats.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/V8Binding.h"
-#include "platform/bindings/WrapperCreationSecurityCheck.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
+#include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_creation_security_check.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -197,4 +197,4 @@ class V8WrapperInstantiationScope {
 
 }  // namespace blink
 
-#endif  // V8DOMWrapper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_DOM_WRAPPER_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ColorCorrectionTestUtils_h
-#define ColorCorrectionTestUtils_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_CORRECTION_TEST_UTILS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_CORRECTION_TEST_UTILS_H_
 
-#include "platform/graphics/CanvasColorParams.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 
 namespace blink {
@@ -49,4 +49,4 @@ class ColorCorrectionTestUtils {
 
 }  // namespace blink
 
-#endif  // ColorCorrectionTestUtils_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COLOR_CORRECTION_TEST_UTILS_H_

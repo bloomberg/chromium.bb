@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PerformanceMark_h
-#define PerformanceMark_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_MARK_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_MARK_H_
 
-#include "core/timing/PerformanceEntry.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/timing/performance_entry.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
 
 }  // namespace blink
 
-#endif  // PerformanceMark_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_MARK_H_

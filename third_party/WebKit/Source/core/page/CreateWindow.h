@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CreateWindow_h
-#define CreateWindow_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_CREATE_WINDOW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_CREATE_WINDOW_H_
 
-#include "core/frame/LocalDOMWindow.h"
-#include "core/loader/FrameLoaderTypes.h"
-#include "core/loader/NavigationPolicy.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/loader/navigation_policy.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef CreateWindow
@@ -64,4 +64,4 @@ CORE_EXPORT WebWindowFeatures GetWindowFeaturesFromString(const String&);
 
 }  // namespace blink
 
-#endif  // CreateWindow_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_CREATE_WINDOW_H_

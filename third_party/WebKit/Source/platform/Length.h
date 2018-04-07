@@ -20,12 +20,12 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef Length_h
-#define Length_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LENGTH_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LENGTH_H_
 
-#include "platform/LayoutUnit.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -305,4 +305,4 @@ class PLATFORM_EXPORT Length {
 
 }  // namespace blink
 
-#endif  // Length_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LENGTH_H_

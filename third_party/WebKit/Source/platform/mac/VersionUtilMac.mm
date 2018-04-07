@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "platform/mac/VersionUtilMac.h"
+#import "third_party/blink/renderer/platform/mac/version_util_mac.h"
 
 #include <sstream>
 #include <string>

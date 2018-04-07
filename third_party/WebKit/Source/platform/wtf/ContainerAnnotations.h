@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WTF_ContainerAnnotations_h
-#define WTF_ContainerAnnotations_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CONTAINER_ANNOTATIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CONTAINER_ANNOTATIONS_H_
 
 #include "build/build_config.h"
-#include "platform/wtf/AddressSanitizer.h"
+#include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
 
 // TODO(ochang): Remove the ARCH_CPU_X86_64 condition to enable this for X86
 // once the crashes there have been fixed: http://crbug.com/461406
@@ -44,4 +44,4 @@
 
 #endif  // ADDRESS_SANITIZER && OS_LINUX && ARCH_CPU_X86_64
 
-#endif  // WTF_ContainerAnnotations_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CONTAINER_ANNOTATIONS_H_

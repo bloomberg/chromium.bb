@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/DocumentShutdownNotifier.h"
+#include "third_party/blink/renderer/core/dom/document_shutdown_notifier.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/DocumentShutdownObserver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
 
 namespace blink {
 

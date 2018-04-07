@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebInputEventConversion_h
-#define WebInputEventConversion_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_WEB_INPUT_EVENT_CONVERSION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_WEB_INPUT_EVENT_CONVERSION_H_
 
 #include <vector>
-#include "core/CoreExport.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/wtf/Compiler.h"
-#include "public/platform/WebCoalescedInputEvent.h"
-#include "public/platform/WebInputEvent.h"
-#include "public/platform/WebKeyboardEvent.h"
-#include "public/platform/WebMouseWheelEvent.h"
-#include "public/platform/WebPointerEvent.h"
-#include "public/platform/WebTouchEvent.h"
+#include "third_party/blink/public/platform/web_coalesced_input_event.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_keyboard_event.h"
+#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
+#include "third_party/blink/public/platform/web_pointer_event.h"
+#include "third_party/blink/public/platform/web_touch_event.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 

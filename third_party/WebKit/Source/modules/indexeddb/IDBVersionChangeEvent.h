@@ -23,17 +23,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IDBVersionChangeEvent_h
-#define IDBVersionChangeEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_VERSION_CHANGE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_VERSION_CHANGE_EVENT_H_
 
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "modules/EventModules.h"
-#include "modules/indexeddb/IDBAny.h"
-#include "modules/indexeddb/IDBRequest.h"
-#include "modules/indexeddb/IDBVersionChangeEventInit.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/indexeddb/WebIDBTypes.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_any.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_version_change_event_init.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -85,4 +85,4 @@ class IDBVersionChangeEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // IDBVersionChangeEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_VERSION_CHANGE_EVENT_H_

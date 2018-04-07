@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DeprecatedStorageQuota_h
-#define DeprecatedStorageQuota_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_DEPRECATED_STORAGE_QUOTA_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_DEPRECATED_STORAGE_QUOTA_H_
 
-#include "core/dom/ExceptionCode.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "third_party/WebKit/public/mojom/quota/quota_dispatcher_host.mojom-blink.h"
+#include "third_party/blink/public/mojom/quota/quota_dispatcher_host.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -83,4 +83,4 @@ class DeprecatedStorageQuota final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // DeprecatedStorageQuota_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_DEPRECATED_STORAGE_QUOTA_H_

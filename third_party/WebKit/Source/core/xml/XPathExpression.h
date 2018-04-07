@@ -24,11 +24,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XPathExpression_h
-#define XPathExpression_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_EXPRESSION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_EXPRESSION_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class XPathExpression : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // XPathExpression_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_EXPRESSION_H_

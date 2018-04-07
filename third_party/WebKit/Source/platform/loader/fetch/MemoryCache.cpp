@@ -20,18 +20,18 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "platform/loader/fetch/MemoryCache.h"
+#include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/loader/fetch/ResourceLoadingLog.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/weborigin/SecurityOriginHash.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/AutoReset.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/CString.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin_hash.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

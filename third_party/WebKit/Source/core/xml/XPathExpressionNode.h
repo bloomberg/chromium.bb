@@ -24,16 +24,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XPathExpressionNode_h
-#define XPathExpressionNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_EXPRESSION_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_EXPRESSION_NODE_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/Node.h"
-#include "core/xml/XPathValue.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/xml/xpath_value.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -112,4 +112,4 @@ class CORE_EXPORT Expression : public ParseNode {
 
 }  // namespace blink
 
-#endif  // XPathExpressionNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_EXPRESSION_NODE_H_

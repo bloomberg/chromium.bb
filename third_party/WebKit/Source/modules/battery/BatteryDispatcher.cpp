@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/battery/BatteryDispatcher.h"
+#include "third_party/blink/renderer/modules/battery/battery_dispatcher.h"
 
-#include "platform/mojo/MojoHelper.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/InterfaceProvider.h"
-#include "public/platform/Platform.h"
 #include "services/device/public/mojom/constants.mojom-blink.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

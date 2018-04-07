@@ -23,14 +23,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/exported/WebScrollbarThemeGeometryNative.h"
+#include "third_party/blink/renderer/platform/exported/web_scrollbar_theme_geometry_native.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "platform/exported/WebScrollbarThemeClientImpl.h"
-#include "platform/scroll/ScrollbarTheme.h"
-#include "public/platform/WebScrollbar.h"
+#include "third_party/blink/public/platform/web_scrollbar.h"
+#include "third_party/blink/renderer/platform/exported/web_scrollbar_theme_client_impl.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
 namespace blink {
 

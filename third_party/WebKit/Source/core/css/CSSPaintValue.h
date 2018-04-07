@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSPaintValue_h
-#define CSSPaintValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PAINT_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PAINT_VALUE_H_
 
 #include "base/macros.h"
-#include "core/css/CSSCustomIdentValue.h"
-#include "core/css/CSSImageGeneratorValue.h"
-#include "core/css/CSSPaintImageGenerator.h"
-#include "core/css/CSSVariableData.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
+#include "third_party/blink/renderer/core/css/css_image_generator_value.h"
+#include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
+#include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -98,4 +98,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSPaintValue, IsPaintValue());
 
 }  // namespace blink
 
-#endif  // CSSPaintValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PAINT_VALUE_H_

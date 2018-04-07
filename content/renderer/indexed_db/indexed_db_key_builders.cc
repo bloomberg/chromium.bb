@@ -11,12 +11,12 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBKey.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBKeyPath.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBKeyRange.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_path.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_range.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 using blink::WebIDBKey;
 using blink::WebIDBKeyRange;

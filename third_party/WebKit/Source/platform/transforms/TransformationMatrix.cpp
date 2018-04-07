@@ -25,29 +25,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/transforms/TransformationMatrix.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 #include <cmath>
 #include <cstdlib>
 
-#include "platform/geometry/FloatBox.h"
-#include "platform/geometry/FloatQuad.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/transforms/Rotation.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/CPU.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/geometry/float_box.h"
+#include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/transforms/rotation.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/cpu.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #if defined(ARCH_CPU_X86_64)
 #include <emmintrin.h>
 #endif
 
 #if HAVE_MIPS_MSA_INTRINSICS
-#include "platform/cpu/mips/CommonMacrosMSA.h"
+#include "third_party/blink/renderer/platform/cpu/mips/common_macros_msa.h"
 #endif
 
 namespace blink {

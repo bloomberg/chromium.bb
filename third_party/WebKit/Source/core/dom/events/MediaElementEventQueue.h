@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaElementEventQueue_h
-#define MediaElementEventQueue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_MEDIA_ELEMENT_EVENT_QUEUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_MEDIA_ELEMENT_EVENT_QUEUE_H_
 
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/dom/events/EventQueue.h"
-#include "core/dom/events/EventTarget.h"
-#include "platform/Timer.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

@@ -25,17 +25,17 @@
  *
  */
 
-#include "modules/webdatabase/DatabaseContext.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_context.h"
 
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/DatabaseManager.h"
-#include "modules/webdatabase/DatabaseTask.h"
-#include "modules/webdatabase/DatabaseThread.h"
-#include "platform/weborigin/SchemeRegistry.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/webdatabase/database.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_manager.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_task.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_thread.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

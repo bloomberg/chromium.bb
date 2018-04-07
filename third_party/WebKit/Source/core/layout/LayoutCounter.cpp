@@ -19,24 +19,24 @@
  *
  */
 
-#include "core/layout/LayoutCounter.h"
+#include "third_party/blink/renderer/core/layout/layout_counter.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/dom/Element.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/dom/PseudoElement.h"
-#include "core/html/HTMLOListElement.h"
-#include "core/html/ListItemOrdinal.h"
-#include "core/html_names.h"
-#include "core/layout/CounterNode.h"
-#include "core/layout/LayoutListItem.h"
-#include "core/layout/LayoutView.h"
-#include "core/layout/ListMarkerText.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/html/html_olist_element.h"
+#include "third_party/blink/renderer/core/html/list_item_ordinal.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/counter_node.h"
+#include "third_party/blink/renderer/core/layout/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/list_marker_text.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

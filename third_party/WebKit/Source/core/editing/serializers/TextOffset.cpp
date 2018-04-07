@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/serializers/TextOffset.h"
+#include "third_party/blink/renderer/core/editing/serializers/text_offset.h"
 
-#include "core/dom/Text.h"
+#include "third_party/blink/renderer/core/dom/text.h"
 
 namespace blink {
 

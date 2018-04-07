@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef XRWebGLLayer_h
-#define XRWebGLLayer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_WEBGL_LAYER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_WEBGL_LAYER_H_
 
-#include "bindings/modules/v8/webgl_rendering_context_or_webgl2_rendering_context.h"
-#include "modules/webgl/WebGL2RenderingContext.h"
-#include "modules/webgl/WebGLRenderingContext.h"
-#include "modules/xr/XRLayer.h"
-#include "modules/xr/XRView.h"
-#include "modules/xr/XRWebGLLayerInit.h"
-#include "platform/graphics/gpu/XRWebGLDrawingBuffer.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/bindings/modules/v8/webgl_rendering_context_or_webgl2_rendering_context.h"
+#include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
+#include "third_party/blink/renderer/modules/xr/xr_layer.h"
+#include "third_party/blink/renderer/modules/xr/xr_view.h"
+#include "third_party/blink/renderer/modules/xr/xr_webgl_layer_init.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/xr_webgl_drawing_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace viz {
 class SingleReleaseCallback;
@@ -104,4 +104,4 @@ class XRWebGLLayer final : public XRLayer,
 
 }  // namespace blink
 
-#endif  // XRWebGLLayer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_WEBGL_LAYER_H_

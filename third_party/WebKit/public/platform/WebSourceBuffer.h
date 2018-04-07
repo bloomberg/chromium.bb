@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSourceBuffer_h
-#define WebSourceBuffer_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SOURCE_BUFFER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SOURCE_BUFFER_H_
 
-#include "WebTimeRange.h"
+#include "third_party/blink/public/platform/web_time_range.h"
 
 namespace blink {
 

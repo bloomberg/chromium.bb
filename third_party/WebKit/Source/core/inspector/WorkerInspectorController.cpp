@@ -28,23 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/inspector/WorkerInspectorController.h"
+#include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 
-#include "core/CoreProbeSink.h"
-#include "core/inspector/InspectorLogAgent.h"
-#include "core/inspector/InspectorNetworkAgent.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/inspector/WorkerThreadDebugger.h"
-#include "core/inspector/protocol/Protocol.h"
-#include "core/loader/WorkerFetchContext.h"
-#include "core/probe/CoreProbes.h"
-#include "core/workers/WorkerBackingThread.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerReportingProxy.h"
-#include "core/workers/WorkerThread.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/WebThreadSupportingGC.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/CoreProbeSink.h"
+#include "third_party/blink/renderer/core/inspector/InspectorLogAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorNetworkAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Protocol.h"
+#include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
+#include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 
 namespace blink {
 

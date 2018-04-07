@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlElementBase.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_element_base.h"
 
-#include "core/html/media/HTMLMediaElement.h"
-#include "modules/media_controls/MediaControlsImpl.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 
 namespace blink {
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebEncryptedMediaRequest.h"
+#include "third_party/blink/public/platform/web_encrypted_media_request.h"
 
-#include "platform/EncryptedMediaRequest.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebMediaKeySystemConfiguration.h"
-#include "public/platform/WebSecurityOrigin.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_media_key_system_configuration.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/platform/encrypted_media_request.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

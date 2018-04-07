@@ -1805,10 +1805,10 @@ jumbo_split_static_library("browser") {
     "//sql",
     "//storage/browser",
     "//storage/common",
-    "//third_party/WebKit/public:buildflags",
-    "//third_party/WebKit/public:resources",
-    "//third_party/WebKit/public:scaled_resources",
-    "//third_party/WebKit/public/common",
+    "//third_party/blink/public:buildflags",
+    "//third_party/blink/public:resources",
+    "//third_party/blink/public:scaled_resources",
+    "//third_party/blink/public/common",
     "//third_party/cacheinvalidation",
     "//third_party/icu",
     "//third_party/leveldatabase",
@@ -4902,7 +4902,7 @@ static_library("test_support_ui") {
     "//components/translate/content/common",
     "//skia",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
   ]
 
   public_deps = [

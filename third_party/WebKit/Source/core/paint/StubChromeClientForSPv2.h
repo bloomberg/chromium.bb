@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StubChromeClientForSPv2_h
-#define StubChromeClientForSPv2_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_STUB_CHROME_CLIENT_FOR_SPV2_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_STUB_CHROME_CLIENT_FOR_SPV2_H_
 
-#include "core/loader/EmptyClients.h"
-#include "platform/testing/WebLayerTreeViewImplForTesting.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/platform/testing/web_layer_tree_view_impl_for_testing.h"
 
 namespace blink {
 
@@ -31,4 +31,4 @@ class StubChromeClientForSPv2 : public EmptyChromeClient {
 
 }  // namespace blink
 
-#endif  // StubChromeClientForSPv2_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_STUB_CHROME_CLIENT_FOR_SPV2_H_

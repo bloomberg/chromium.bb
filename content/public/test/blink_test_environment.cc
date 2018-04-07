@@ -17,9 +17,9 @@
 #include "content/public/common/user_agent.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/test/test_blink_web_unit_test_support.h"
-#include "third_party/WebKit/public/platform/WebCache.h"
-#include "third_party/WebKit/public/platform/WebRuntimeFeatures.h"
-#include "third_party/WebKit/public/web/WebKit.h"
+#include "third_party/blink/public/platform/web_cache.h"
+#include "third_party/blink/public/platform/web_runtime_features.h"
+#include "third_party/blink/public/web/blink.h"
 #include "url/url_util.h"
 
 #if defined(OS_WIN)

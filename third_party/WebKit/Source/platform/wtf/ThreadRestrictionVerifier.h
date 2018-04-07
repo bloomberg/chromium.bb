@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ThreadRestrictionVerifier_h
-#define ThreadRestrictionVerifier_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREAD_RESTRICTION_VERIFIER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREAD_RESTRICTION_VERIFIER_H_
 
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #if DCHECK_IS_ON()
 
-#include "platform/wtf/Threading.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace WTF {
 
@@ -105,4 +105,4 @@ class ThreadRestrictionVerifier {
 }  // namespace WTF
 
 #endif  // DCHECK_IS_ON()
-#endif  // ThreadRestrictionVerifier_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREAD_RESTRICTION_VERIFIER_H_

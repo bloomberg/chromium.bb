@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebDeviceEmulationParams_h
-#define WebDeviceEmulationParams_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DEVICE_EMULATION_PARAMS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DEVICE_EMULATION_PARAMS_H_
 
 #include "base/optional.h"
-#include "public/platform/WebFloatPoint.h"
-#include "public/platform/WebPoint.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebSize.h"
-#include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_type.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_size.h"
 
 namespace blink {
 

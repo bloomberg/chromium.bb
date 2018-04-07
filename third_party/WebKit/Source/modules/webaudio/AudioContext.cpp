@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webaudio/AudioContext.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/UseCounter.h"
-#include "core/timing/DOMWindowPerformance.h"
-#include "core/timing/WindowPerformance.h"
-#include "modules/webaudio/AudioContextOptions.h"
-#include "modules/webaudio/AudioTimestamp.h"
-#include "modules/webaudio/DefaultAudioDestinationNode.h"
-#include "platform/Histogram.h"
-#include "platform/audio/AudioUtilities.h"
-#include "public/platform/WebAudioLatencyHint.h"
+#include "third_party/blink/public/platform/web_audio_latency_hint.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_context_options.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_timestamp.h"
+#include "third_party/blink/renderer/modules/webaudio/default_audio_destination_node.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 #if DEBUG_AUDIONODE_REFERENCES
 #include <stdio.h>

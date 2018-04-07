@@ -9,7 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
-#include "third_party/WebKit/public/web/WebNavigationPolicy.h"
+#include "third_party/blink/public/web/web_navigation_policy.h"
 #include "url/gurl.h"
 
 namespace test_runner {

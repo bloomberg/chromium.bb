@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/WhitespaceAttacher.h"
+#include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 
 #include <gtest/gtest.h>
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/ShadowRootInit.h"
-#include "core/layout/LayoutText.h"
-#include "core/testing/PageTestBase.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/shadow_root_init.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

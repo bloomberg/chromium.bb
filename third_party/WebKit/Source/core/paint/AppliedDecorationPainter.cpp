@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/AppliedDecorationPainter.h"
+#include "third_party/blink/renderer/core/paint/applied_decoration_painter.h"
 
-#include "platform/graphics/GraphicsContext.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 namespace blink {
 

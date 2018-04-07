@@ -23,20 +23,20 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/OfflineAudioDestinationNode.h"
+#include "third_party/blink/renderer/modules/webaudio/offline_audio_destination_node.h"
 
 #include <algorithm>
-#include "modules/webaudio/AudioNodeInput.h"
-#include "modules/webaudio/AudioNodeOutput.h"
-#include "modules/webaudio/AudioWorklet.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "modules/webaudio/OfflineAudioContext.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/audio/DenormalDisabler.h"
-#include "platform/audio/HRTFDatabaseLoader.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/offline_audio_context.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/audio/denormal_disabler.h"
+#include "third_party/blink/renderer/platform/audio/hrtf_database_loader.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 
 namespace blink {
 

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/animation/CompositorAnimation.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 
 #include "base/time/time.h"
-#include "platform/animation/CompositorAnimationClient.h"
-#include "platform/animation/CompositorAnimationDelegate.h"
-#include "platform/animation/CompositorAnimationTimeline.h"
-#include "platform/animation/CompositorFloatAnimationCurve.h"
-#include "platform/animation/CompositorKeyframeModel.h"
-#include "platform/animation/CompositorTargetProperty.h"
-#include "platform/testing/CompositorTest.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
+#include "third_party/blink/renderer/platform/animation/compositor_float_animation_curve.h"
+#include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
+#include "third_party/blink/renderer/platform/animation/compositor_target_property.h"
+#include "third_party/blink/renderer/platform/testing/compositor_test.h"
 
 #include <memory>
 

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InspectorWebSocketEvents_h
-#define InspectorWebSocketEvents_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_INSPECTOR_WEB_SOCKET_EVENTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_INSPECTOR_WEB_SOCKET_EVENTS_H_
 
 #include <memory>
-#include "core/inspector/InspectorTraceEvents.h"
-#include "platform/heap/Handle.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/instrumentation/tracing/TracedValue.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Functional.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

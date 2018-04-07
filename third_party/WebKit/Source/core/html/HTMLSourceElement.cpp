@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLSourceElement.h"
+#include "third_party/blink/renderer/core/html/html_source_element.h"
 
-#include "core/css/MediaList.h"
-#include "core/css/MediaQueryList.h"
-#include "core/css/MediaQueryMatcher.h"
-#include "core/dom/Document.h"
-#include "core/dom/events/Event.h"
-#include "core/html/HTMLPictureElement.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html_names.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/css/media_list.h"
+#include "third_party/blink/renderer/core/css/media_query_list.h"
+#include "third_party/blink/renderer/core/css/media_query_matcher.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/html/html_picture_element.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 #define SOURCE_LOG_LEVEL 3
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PendingLayoutRegistry_h
-#define PendingLayoutRegistry_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_PENDING_LAYOUT_REGISTRY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_PENDING_LAYOUT_REGISTRY_H_
 
-#include "platform/heap/Heap.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
 
@@ -44,4 +44,4 @@ class PendingLayoutRegistry : public GarbageCollected<PendingLayoutRegistry> {
 
 }  // namespace blink
 
-#endif  // PendingLayoutRegistry_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_PENDING_LAYOUT_REGISTRY_H_

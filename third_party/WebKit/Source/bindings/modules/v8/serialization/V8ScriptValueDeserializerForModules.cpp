@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/modules/v8/serialization/V8ScriptValueDeserializerForModules.h"
+#include "third_party/blink/renderer/bindings/modules/v8/serialization/v8_script_value_deserializer_for_modules.h"
 
-#include "bindings/modules/v8/serialization/WebCryptoSubTags.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/crypto/CryptoKey.h"
-#include "modules/filesystem/DOMFileSystem.h"
-#include "modules/peerconnection/RTCCertificate.h"
-#include "platform/FileSystemType.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCrypto.h"
-#include "public/platform/WebCryptoKeyAlgorithm.h"
-#include "public/platform/WebRTCCertificateGenerator.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_crypto.h"
+#include "third_party/blink/public/platform/web_crypto_key_algorithm.h"
+#include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
+#include "third_party/blink/renderer/bindings/modules/v8/serialization/web_crypto_sub_tags.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/crypto/crypto_key.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
+#include "third_party/blink/renderer/platform/file_system_type.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BlobBytesProvider_h
-#define BlobBytesProvider_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_BLOB_BYTES_PROVIDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_BLOB_BYTES_PROVIDER_H_
 
-#include "platform/blob/BlobData.h"
-#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class PLATFORM_EXPORT BlobBytesProvider : public mojom::blink::BytesProvider {
 
 }  // namespace blink
 
-#endif  // BlobBytesProvider_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_BLOB_BYTES_PROVIDER_H_

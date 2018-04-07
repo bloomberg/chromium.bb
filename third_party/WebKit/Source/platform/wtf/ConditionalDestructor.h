@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ConditionalDestructor_h
-#define ConditionalDestructor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CONDITIONAL_DESTRUCTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CONDITIONAL_DESTRUCTOR_H_
 
 namespace WTF {
 
@@ -25,4 +25,4 @@ class ConditionalDestructor<Derived, true> {};
 
 }  // namespace WTF
 
-#endif  // ConditionalDestructor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CONDITIONAL_DESTRUCTOR_H_

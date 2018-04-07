@@ -18,13 +18,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LayoutSVGTextPath_h
-#define LayoutSVGTextPath_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_TEXT_PATH_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_TEXT_PATH_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/layout/svg/LayoutSVGInline.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_inline.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGTextPath, IsSVGTextPath());
 
 }  // namespace blink
 
-#endif  // LayoutSVGTextPath_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_TEXT_PATH_H_

@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutVTTCue.h"
+#include "third_party/blink/renderer/core/layout/layout_vtt_cue.h"
 
-#include "core/frame/Settings.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/media/MediaControls.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutState.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/media_controls.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_state.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

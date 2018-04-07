@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ConsoleTypes_h
-#define ConsoleTypes_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_CONSOLE_TYPES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_CONSOLE_TYPES_H_
 
 namespace blink {
 

@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/tick_clock.h"
-#include "platform/scheduler/base/task_queue_manager.h"
-#include "platform/scheduler/base/task_queue_selector.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 
 namespace blink {
 namespace scheduler {

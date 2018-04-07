@@ -11,8 +11,8 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "third_party/WebKit/common/common_export.h"
-#include "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom.h"
+#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 #include "url/origin.h"
 
 namespace blink {

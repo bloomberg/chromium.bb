@@ -23,20 +23,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebLayerTreeView_h
-#define WebLayerTreeView_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_TREE_VIEW_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_TREE_VIEW_H_
 
-#include "WebBrowserControlsState.h"
-#include "WebColor.h"
-#include "WebCommon.h"
-#include "WebEventListenerProperties.h"
-#include "WebFloatPoint.h"
-#include "WebImageLayer.h"
-#include "WebOverscrollBehavior.h"
-#include "WebSize.h"
 #include "base/callback.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "third_party/blink/public/platform/web_browser_controls_state.h"
+#include "third_party/blink/public/platform/web_color.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_event_listener_properties.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_image_layer.h"
+#include "third_party/blink/public/platform/web_overscroll_behavior.h"
+#include "third_party/blink/public/platform/web_size.h"
 
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -231,4 +231,4 @@ class WebLayerTreeView {
 
 }  // namespace blink
 
-#endif  // WebLayerTreeView_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_TREE_VIEW_H_

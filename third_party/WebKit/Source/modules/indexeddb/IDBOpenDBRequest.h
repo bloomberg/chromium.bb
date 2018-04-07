@@ -23,13 +23,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IDBOpenDBRequest_h
-#define IDBOpenDBRequest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_OPEN_DB_REQUEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_OPEN_DB_REQUEST_H_
 
-#include "modules/ModulesExport.h"
-#include "modules/indexeddb/IDBRequest.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include <memory>
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_request.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -87,4 +87,4 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
 
 }  // namespace blink
 
-#endif  // IDBOpenDBRequest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_IDB_OPEN_DB_REQUEST_H_

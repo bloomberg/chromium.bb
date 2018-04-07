@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebFontRenderStyle.h"
+#include "third_party/blink/public/platform/web_font_render_style.h"
 
 #include "build/build_config.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/graphics/paint/PaintFont.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_font.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
 
 namespace blink {
 

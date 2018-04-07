@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGLSampler_h
-#define WebGLSampler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_SAMPLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_SAMPLER_H_
 
-#include "modules/webgl/WebGLSharedPlatform3DObject.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_shared_platform_3d_object.h"
 
 namespace blink {
 
@@ -30,4 +30,4 @@ class WebGLSampler : public WebGLSharedPlatform3DObject {
 
 }  // namespace blink
 
-#endif  // WebGLSampler_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_SAMPLER_H_

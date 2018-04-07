@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/BlockFlowPaintInvalidator.h"
+#include "third_party/blink/renderer/core/paint/block_flow_paint_invalidator.h"
 
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutInline.h"
-#include "core/paint/BoxPaintInvalidator.h"
-#include "core/paint/PaintInvalidator.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/paint/box_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 
 namespace blink {
 

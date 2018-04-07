@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/SelectionPaintingUtils.h"
+#include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
 
-#include "core/css/PseudoStyleRequest.h"
-#include "core/dom/Element.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/Node.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/editing/FrameSelection.h"
-#include "core/frame/LocalFrame.h"
-#include "core/layout/LayoutTheme.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/TextPaintStyle.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/graphics/Color.h"
+#include "third_party/blink/renderer/core/css/pseudo_style_request.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/text_paint_style.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 
 namespace blink {
 

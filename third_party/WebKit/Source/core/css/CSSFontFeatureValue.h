@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSFontFeatureValue_h
-#define CSSFontFeatureValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_FONT_FEATURE_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_FONT_FEATURE_VALUE_H_
 
-#include "core/css/CSSValue.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 namespace cssvalue {

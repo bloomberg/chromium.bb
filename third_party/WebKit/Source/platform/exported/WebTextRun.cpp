@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebTextRun.h"
+#include "third_party/blink/public/platform/web_text_run.h"
 
-#include "platform/text/TextRun.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
 
 namespace blink {
 

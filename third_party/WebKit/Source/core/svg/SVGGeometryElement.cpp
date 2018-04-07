@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/SVGGeometryElement.h"
+#include "third_party/blink/renderer/core/svg/svg_geometry_element.h"
 
-#include "core/css/StyleChangeReason.h"
-#include "core/layout/HitTestRequest.h"
-#include "core/layout/PointerEventsHitRules.h"
-#include "core/layout/svg/LayoutSVGPath.h"
-#include "core/layout/svg/LayoutSVGShape.h"
-#include "core/svg/SVGPointTearOff.h"
-#include "core/svg_names.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/layout/hit_test_request.h"
+#include "third_party/blink/renderer/core/layout/pointer_events_hit_rules.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_path.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_shape.h"
+#include "third_party/blink/renderer/core/svg/svg_point_tear_off.h"
+#include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 

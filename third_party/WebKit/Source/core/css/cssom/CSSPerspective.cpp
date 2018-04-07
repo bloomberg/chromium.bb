@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/CSSPerspective.h"
+#include "third_party/blink/renderer/core/css/cssom/css_perspective.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/css/CSSCalculationValue.h"
-#include "core/css/cssom/CSSUnitValue.h"
-#include "core/geometry/DOMMatrix.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
+#include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 
 namespace blink {
 

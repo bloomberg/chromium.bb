@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/track/HTMLTrackElement.h"
+#include "third_party/blink/renderer/core/html/track/html_track_element.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/html/CrossOriginAttribute.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/track/LoadableTextTrack.h"
-#include "core/html_names.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/track/loadable_text_track.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 #define TRACK_LOG_LEVEL 3
 

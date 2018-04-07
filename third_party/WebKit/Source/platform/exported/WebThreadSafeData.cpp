@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebThreadSafeData.h"
+#include "third_party/blink/public/platform/web_thread_safe_data.h"
 
-#include "platform/blob/BlobData.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
 
 namespace blink {
 

@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webgl/OESTextureHalfFloat.h"
+#include "third_party/blink/renderer/modules/webgl/oes_texture_half_float.h"
 
 namespace blink {
 

@@ -27,12 +27,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/shapes/RasterShape.h"
+#include "third_party/blink/renderer/core/layout/shapes/raster_shape.h"
 
 #include <algorithm>
 #include <memory>
 
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

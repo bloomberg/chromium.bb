@@ -19,7 +19,7 @@
 #include "net/log/net_log_source.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "third_party/WebKit/public/public_buildflags.h"
+#include "third_party/blink/public/public_buildflags.h"
 
 namespace {
 

@@ -13,7 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "media/base/audio_parameters.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace content {
 

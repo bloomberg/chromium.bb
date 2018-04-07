@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerFetchContext_h
-#define WorkerFetchContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_WORKER_FETCH_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_WORKER_FETCH_CONTEXT_H_
 
 #include <memory>
 #include "base/single_thread_task_runner.h"
-#include "core/CoreExport.h"
-#include "core/loader/BaseFetchContext.h"
-#include "platform/wtf/Forward.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/loader/base_fetch_context.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -131,4 +131,4 @@ class WorkerFetchContext final : public BaseFetchContext {
 
 }  // namespace blink
 
-#endif  // WorkerFetchContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_WORKER_FETCH_CONTEXT_H_

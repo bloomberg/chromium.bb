@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextPainterBase_h
-#define TextPainterBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TEXT_PAINTER_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TEXT_PAINTER_BASE_H_
 
-#include "core/CoreExport.h"
-#include "core/paint/DecorationInfo.h"
-#include "core/paint/TextPaintStyle.h"
-#include "core/style/AppliedTextDecoration.h"
-#include "platform/fonts/Font.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/Color.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/paint/decoration_info.h"
+#include "third_party/blink/renderer/core/paint/text_paint_style.h"
+#include "third_party/blink/renderer/core/style/applied_text_decoration.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -142,4 +142,4 @@ inline AffineTransform TextPainterBase::Rotation(
 
 }  // namespace blink
 
-#endif  // TextPainterBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_TEXT_PAINTER_BASE_H_

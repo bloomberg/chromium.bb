@@ -6,7 +6,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
+#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 
 namespace internal {
 const char kHistogramDocWriteBlockFirstContentfulPaint[] =

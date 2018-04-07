@@ -17,10 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGImageLoader_h
-#define SVGImageLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_IMAGE_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_IMAGE_LOADER_H_
 
-#include "core/loader/ImageLoader.h"
+#include "third_party/blink/renderer/core/loader/image_loader.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ class SVGImageLoader final : public ImageLoader {
 
 }  // namespace blink
 
-#endif  // SVGImageLoader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_IMAGE_LOADER_H_

@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CryptoKey_h
-#define CryptoKey_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_CRYPTO_KEY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_CRYPTO_KEY_H_
 
-#include "modules/ModulesExport.h"
-#include "modules/crypto/NormalizeAlgorithm.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebCryptoKey.h"
+#include "third_party/blink/public/platform/web_crypto_key.h"
+#include "third_party/blink/renderer/modules/crypto/normalize_algorithm.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ class MODULES_EXPORT CryptoKey final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // CryptoKey_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_CRYPTO_KEY_H_

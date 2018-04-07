@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/media/HTMLAudioElement.h"
+#include "third_party/blink/renderer/core/html/media/html_audio_element.h"
 
-#include "core/dom/ShadowRoot.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AnimationWorkletThread_h
-#define AnimationWorkletThread_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_THREAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_THREAD_H_
 
 #include <memory>
-#include "core/workers/WorkerThread.h"
-#include "modules/ModulesExport.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -56,4 +56,4 @@ class MODULES_EXPORT AnimationWorkletThread final : public WorkerThread {
 
 }  // namespace blink
 
-#endif  // AnimationWorkletThread_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_THREAD_H_

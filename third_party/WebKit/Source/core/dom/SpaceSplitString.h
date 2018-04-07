@@ -18,14 +18,14 @@
  *
  */
 
-#ifndef SpaceSplitString_h
-#define SpaceSplitString_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SPACE_SPLIT_STRING_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SPACE_SPLIT_STRING_H_
 
-#include "core/CoreExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -117,4 +117,4 @@ class CORE_EXPORT SpaceSplitString {
 
 }  // namespace blink
 
-#endif  // SpaceSplitString_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SPACE_SPLIT_STRING_H_

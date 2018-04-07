@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/accessibility/AXRadioInput.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_radio_input.h"
 
-#include "core/dom/AccessibleNode.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/forms/RadioInputType.h"
-#include "core/input_type_names.h"
-#include "core/layout/LayoutObject.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
+#include "third_party/blink/renderer/core/dom/accessible_node.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/radio_input_type.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 
 namespace blink {
 

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_BUDGET_SERVICE_BUDGET_SERVICE_IMPL_H_
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
+#include "third_party/blink/public/platform/modules/budget_service/budget_service.mojom.h"
 #include "url/origin.h"
 
 namespace content {

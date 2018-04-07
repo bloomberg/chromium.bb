@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace base {
 template <typename T>

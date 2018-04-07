@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSScaleInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_scale_interpolation_type.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

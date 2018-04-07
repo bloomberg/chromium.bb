@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/inspector/InspectorMemoryAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorMemoryAgent.h"
 
 #include <cstdio>
 
 #include "base/debug/stack_trace.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "build/build_config.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/inspector/InspectedFrames.h"
-#include "platform/InstanceCounters.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/inspector/inspected_frames.h"
+#include "third_party/blink/renderer/platform/instance_counters.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InterpolationEnvironment_h
-#define InterpolationEnvironment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATION_ENVIRONMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATION_ENVIRONMENT_H_
 
-#include "core/animation/InterpolationTypesMap.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/animation/interpolation_types_map.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -32,4 +32,4 @@ class InterpolationEnvironment {
 
 }  // namespace blink
 
-#endif  // InterpolationEnvironment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATION_ENVIRONMENT_H_

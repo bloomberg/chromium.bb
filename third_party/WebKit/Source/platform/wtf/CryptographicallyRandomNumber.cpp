@@ -15,7 +15,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "platform/wtf/CryptographicallyRandomNumber.h"
+#include "third_party/blink/renderer/platform/wtf/cryptographically_random_number.h"
 
 #include "base/rand_util.h"
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlDivElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_div_element.h"
 
-#include "modules/media_controls/MediaControlsImpl.h"
-#include "modules/media_controls/elements/MediaControlElementsHelper.h"
-#include "public/platform/WebSize.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 
 namespace blink {
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StyleRay_h
-#define StyleRay_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_RAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_RAY_H_
 
-#include "core/style/BasicShapes.h"
+#include "third_party/blink/renderer/core/style/basic_shapes.h"
 
 namespace blink {
 

@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMediaPlayer_h
-#define WebMediaPlayer_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_H_
 
-#include "WebCallbacks.h"
-#include "WebCanvas.h"
-#include "WebContentDecryptionModule.h"
-#include "WebMediaSource.h"
-#include "WebSetSinkIdCallbacks.h"
-#include "WebString.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/public/platform/web_canvas.h"
+#include "third_party/blink/public/platform/web_content_decryption_module.h"
+#include "third_party/blink/public/platform/web_media_source.h"
+#include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 #include "cc/paint/paint_flags.h"
 

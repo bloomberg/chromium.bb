@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PrerenderHandle_h
-#define PrerenderHandle_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PRIVATE_PRERENDER_HANDLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PRIVATE_PRERENDER_HANDLE_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -76,4 +76,4 @@ class PrerenderHandle final : public GarbageCollectedFinalized<PrerenderHandle>,
 
 }  // namespace blink
 
-#endif  // PrerenderHandle_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PRIVATE_PRERENDER_HANDLE_H_

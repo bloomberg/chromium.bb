@@ -23,14 +23,14 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/RealtimeAnalyser.h"
 #include <limits.h>
 #include <algorithm>
 #include <complex>
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/audio/VectorMath.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/modules/webaudio/realtime_analyser.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

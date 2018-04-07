@@ -24,13 +24,13 @@
  *
  */
 
-#ifndef ElementDataCache_h
-#define ElementDataCache_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_DATA_CACHE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_DATA_CACHE_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

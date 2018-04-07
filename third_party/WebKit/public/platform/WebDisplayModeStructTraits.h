@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebDisplayModeStructTraits_h
-#define WebDisplayModeStructTraits_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DISPLAY_MODE_STRUCT_TRAITS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DISPLAY_MODE_STRUCT_TRAITS_H_
 
 #include "mojo/public/cpp/bindings/enum_traits.h"
-#include "third_party/WebKit/public/platform/WebDisplayMode.h"
-#include "third_party/WebKit/public/platform/display_mode.mojom-shared.h"
+#include "third_party/blink/public/platform/display_mode.mojom-shared.h"
+#include "third_party/blink/public/platform/web_display_mode.h"
 
 namespace mojo {
 
@@ -55,4 +55,4 @@ struct EnumTraits<blink::mojom::DisplayMode, blink::WebDisplayMode> {
 
 }  // namespace mojo
 
-#endif  // WebDisplayModeStructTraits_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DISPLAY_MODE_STRUCT_TRAITS_H_

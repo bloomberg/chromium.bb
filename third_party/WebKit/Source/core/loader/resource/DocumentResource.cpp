@@ -20,15 +20,15 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "core/loader/resource/DocumentResource.h"
+#include "third_party/blink/renderer/core/loader/resource/document_resource.h"
 
-#include "core/dom/XMLDocument.h"
-#include "platform/SharedBuffer.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/TextResourceDecoderOptions.h"
-#include "platform/wtf/text/StringBuilder.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/xml_document.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

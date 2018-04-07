@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLStackItem_h
-#define HTMLStackItem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_STACK_ITEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_STACK_ITEM_H_
 
-#include "core/dom/Element.h"
-#include "core/html/parser/AtomicHTMLToken.h"
-#include "core/html_names.h"
-#include "core/mathml_names.h"
-#include "core/svg_names.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/parser/atomic_html_token.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/mathml_names.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -215,4 +215,4 @@ class HTMLStackItem : public GarbageCollectedFinalized<HTMLStackItem> {
 
 }  // namespace blink
 
-#endif  // HTMLStackItem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_STACK_ITEM_H_

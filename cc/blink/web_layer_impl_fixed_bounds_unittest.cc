@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/blink/web_layer_impl_fixed_bounds.h"
 #include <vector>
 #include "cc/animation/animation_host.h"
-#include "cc/blink/web_layer_impl_fixed_bounds.h"
 #include "cc/layers/picture_image_layer.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebFloatPoint.h"
-#include "third_party/WebKit/public/platform/WebSize.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_size.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/point3_f.h"
 

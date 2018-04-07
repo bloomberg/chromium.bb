@@ -12,7 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "components/subresource_filter/core/common/document_subresource_filter.h"
 #include "components/url_pattern_index/proto/rules.pb.h"
-#include "third_party/WebKit/public/platform/WebDocumentSubresourceFilter.h"
+#include "third_party/blink/public/platform/web_document_subresource_filter.h"
 #include "url/origin.h"
 
 namespace subresource_filter {

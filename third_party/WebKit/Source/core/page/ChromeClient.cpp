@@ -19,23 +19,23 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/page/ChromeClient.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 
 #include <algorithm>
-#include "core/CoreInitializer.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/frame/FrameConsole.h"
-#include "core/frame/LocalFrame.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/layout/HitTestResult.h"
-#include "core/page/FrameTree.h"
-#include "core/page/Page.h"
-#include "core/page/ScopedPagePauser.h"
-#include "core/probe/CoreProbes.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/network/NetworkHints.h"
-#include "public/platform/WebScreenInfo.h"
+#include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/renderer/core/core_initializer.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/page/frame_tree.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/network/network_hints.h"
 
 namespace blink {
 

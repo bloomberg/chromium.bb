@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebElement.h"
+#include "third_party/blink/public/web/web_element.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Element.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/fullscreen/Fullscreen.h"
-#include "core/html/custom/CustomElement.h"
-#include "core/html/custom/V0CustomElement.h"
-#include "core/html/custom/V0CustomElementProcessingStack.h"
-#include "core/html/forms/TextControlElement.h"
-#include "core/html_names.h"
-#include "platform/graphics/Image.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebRect.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

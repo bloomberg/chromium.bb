@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef WTF_UnicodeIcu_h
-#define WTF_UnicodeIcu_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_ICU_UNICODE_ICU_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_ICU_UNICODE_ICU_H_
 
 #include <unicode/uchar.h>
 #include <unicode/ustring.h>
@@ -223,4 +223,4 @@ inline int Umemcasecmp(const UChar* a, const UChar* b, int len) {
 
 }  // namespace WTF
 
-#endif  // WTF_UnicodeIcu_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_ICU_UNICODE_ICU_H_

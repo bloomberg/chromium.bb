@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebImage_h
-#define WebImage_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_IMAGE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_IMAGE_H_
 
-#include "WebCommon.h"
-#include "WebVector.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if INSIDE_BLINK
-#include "platform/graphics/ImageOrientation.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #endif
 
 namespace blink {

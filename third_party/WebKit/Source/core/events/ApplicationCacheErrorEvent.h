@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ApplicationCacheErrorEvent_h
-#define ApplicationCacheErrorEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_APPLICATION_CACHE_ERROR_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_APPLICATION_CACHE_ERROR_EVENT_H_
 
-#include "core/dom/events/Event.h"
-#include "core/events/ApplicationCacheErrorEventInit.h"
-#include "core/loader/appcache/ApplicationCacheHost.h"
-#include "public/platform/WebApplicationCacheHostClient.h"
+#include "third_party/blink/public/platform/web_application_cache_host_client.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/application_cache_error_event_init.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ class ApplicationCacheErrorEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // ApplicationCacheErrorEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_APPLICATION_CACHE_ERROR_EVENT_H_

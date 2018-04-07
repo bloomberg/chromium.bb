@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/heap/PersistentNode.h"
+#include "third_party/blink/renderer/platform/heap/persistent_node.h"
 
 #include "base/debug/alias.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/ProcessHeap.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/process_heap.h"
 
 namespace blink {
 

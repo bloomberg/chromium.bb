@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlTimelineElement_h
-#define MediaControlTimelineElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_TIMELINE_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_TIMELINE_ELEMENT_H_
 
-#include "modules/ModulesExport.h"
-#include "modules/media_controls/elements/MediaControlSliderElement.h"
-#include "modules/media_controls/elements/MediaControlTimelineMetrics.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_slider_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_timeline_metrics.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 

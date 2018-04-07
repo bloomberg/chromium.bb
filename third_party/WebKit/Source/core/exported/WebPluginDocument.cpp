@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebPluginDocument.h"
+#include "third_party/blink/public/web/web_plugin_document.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/Document.h"
-#include "core/exported/WebPluginContainerImpl.h"
-#include "core/html/PluginDocument.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
+#include "third_party/blink/renderer/core/html/plugin_document.h"
 
 namespace blink {
 

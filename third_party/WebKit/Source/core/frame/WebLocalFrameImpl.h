@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebLocalFrameImpl_h
-#define WebLocalFrameImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_LOCAL_FRAME_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_LOCAL_FRAME_IMPL_H_
 
 #include "base/single_thread_task_runner.h"
-#include "core/CoreExport.h"
-#include "core/editing/Forward.h"
-#include "core/exported/WebInputMethodControllerImpl.h"
-#include "core/frame/ContentSettingsClient.h"
-#include "core/frame/LocalFrame.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/heap/SelfKeepAlive.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebFileSystemType.h"
-#include "public/web/WebLocalFrame.h"
-#include "public/web/devtools_agent.mojom-blink.h"
+#include "third_party/blink/public/platform/web_file_system_type.h"
+#include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/exported/web_input_method_controller_impl.h"
+#include "third_party/blink/renderer/core/frame/content_settings_client.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #include <memory>
 

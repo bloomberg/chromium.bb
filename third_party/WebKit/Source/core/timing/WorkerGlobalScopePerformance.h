@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerGlobalScopePerformance_h
-#define WorkerGlobalScopePerformance_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_WORKER_GLOBAL_SCOPE_PERFORMANCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_WORKER_GLOBAL_SCOPE_PERFORMANCE_H_
 
-#include "core/CoreExport.h"
-#include "core/timing/WorkerPerformance.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/timing/worker_performance.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class CORE_EXPORT WorkerGlobalScopePerformance final
 
 }  // namespace blink
 
-#endif  // WorkerGlobalScopePerformance_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_WORKER_GLOBAL_SCOPE_PERFORMANCE_H_

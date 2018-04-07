@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/intersection_observer/IntersectionObservation.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observation.h"
 
-#include "core/dom/ElementRareData.h"
-#include "core/frame/LocalFrame.h"
-#include "core/intersection_observer/IntersectionObserver.h"
-#include "core/layout/IntersectionGeometry.h"
+#include "third_party/blink/renderer/core/dom/element_rare_data.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
+#include "third_party/blink/renderer/core/layout/intersection_geometry.h"
 
 namespace blink {
 

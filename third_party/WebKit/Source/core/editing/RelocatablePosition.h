@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RelocatablePosition_h
-#define RelocatablePosition_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_RELOCATABLE_POSITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_RELOCATABLE_POSITION_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Range.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/range.h"
 
 namespace blink {
 
@@ -32,4 +32,4 @@ class CORE_EXPORT RelocatablePosition final {
 
 }  // namespace blink
 
-#endif  // RelocatablePosition_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_RELOCATABLE_POSITION_H_

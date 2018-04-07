@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/typed_arrays/DOMArrayPiece.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 
-#include "bindings/core/v8/array_buffer_or_array_buffer_view.h"
+#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
 
 namespace blink {
 

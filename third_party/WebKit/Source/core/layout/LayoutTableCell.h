@@ -23,17 +23,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LayoutTableCell_h
-#define LayoutTableCell_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_CELL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_CELL_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/layout/CollapsedBorderValue.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutTableRow.h"
-#include "core/layout/LayoutTableSection.h"
-#include "platform/LengthFunctions.h"
-#include "platform/text/WritingModeUtils.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/collapsed_border_value.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_table_row.h"
+#include "third_party/blink/renderer/core/layout/layout_table_section.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/text/writing_mode_utils.h"
 
 namespace blink {
 
@@ -539,4 +539,4 @@ inline LayoutTableCell* LayoutTableRow::LastCell() const {
 
 }  // namespace blink
 
-#endif  // LayoutTableCell_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_CELL_H_

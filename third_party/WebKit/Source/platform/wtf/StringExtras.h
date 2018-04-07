@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_StringExtras_h
-#define WTF_StringExtras_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_STRING_EXTRAS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_STRING_EXTRAS_H_
 
 #include <string.h>
 #include "build/build_config.h"
@@ -46,4 +46,4 @@ inline int strcasecmp(const char* s1, const char* s2) {
 
 #endif  // defined(COMPILER_MSVC)
 
-#endif  // WTF_StringExtras_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_STRING_EXTRAS_H_

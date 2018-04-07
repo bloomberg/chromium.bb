@@ -29,22 +29,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaStreamSource_h
-#define MediaStreamSource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_SOURCE_H_
 
 #include <memory>
 #include <utility>
 
-#include "platform/PlatformExport.h"
-#include "platform/audio/AudioDestinationConsumer.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebMediaConstraints.h"
-#include "public/platform/WebMediaStreamSource.h"
-#include "public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/platform/audio/audio_destination_consumer.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -156,4 +156,4 @@ typedef HeapVector<Member<MediaStreamSource>> MediaStreamSourceVector;
 
 }  // namespace blink
 
-#endif  // MediaStreamSource_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MEDIASTREAM_MEDIA_STREAM_SOURCE_H_

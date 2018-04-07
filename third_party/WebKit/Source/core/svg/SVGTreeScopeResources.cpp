@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/svg/SVGTreeScopeResources.h"
+#include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
 
-#include "core/dom/Element.h"
-#include "core/dom/TreeScope.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGResource.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_resource.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

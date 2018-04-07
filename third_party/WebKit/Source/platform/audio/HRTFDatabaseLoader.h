@@ -26,15 +26,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HRTFDatabaseLoader_h
-#define HRTFDatabaseLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_HRTF_DATABASE_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_HRTF_DATABASE_LOADER_H_
 
 #include <memory>
-#include "platform/audio/HRTFDatabase.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/audio/hrtf_database.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 
@@ -95,4 +95,4 @@ class PLATFORM_EXPORT HRTFDatabaseLoader final
 
 }  // namespace blink
 
-#endif  // HRTFDatabaseLoader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_HRTF_DATABASE_LOADER_H_

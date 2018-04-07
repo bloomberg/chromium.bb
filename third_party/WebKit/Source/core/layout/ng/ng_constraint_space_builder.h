@@ -5,12 +5,12 @@
 #ifndef NGConstraintSpaceBuilder_h
 #define NGConstraintSpaceBuilder_h
 
-#include "core/layout/ng/geometry/ng_bfc_offset.h"
-#include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_exclusion.h"
-#include "core/layout/ng/ng_unpositioned_float.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_exclusion.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WTF_SizeAssertions_h
-#define WTF_SizeAssertions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SIZE_ASSERTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SIZE_ASSERTIONS_H_
 
 namespace WTF {
 
@@ -26,4 +26,4 @@ struct assert_size {
 #define ASSERT_SIZE(className, sameSizeAsClassName) \
   static_assert(WTF::assert_size<className, sameSizeAsClassName>::value, "");
 
-#endif  // WTF_SizeAssertions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SIZE_ASSERTIONS_H_

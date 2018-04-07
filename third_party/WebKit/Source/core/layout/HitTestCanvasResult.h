@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HitTestCanvasResult_h
-#define HitTestCanvasResult_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_CANVAS_RESULT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_CANVAS_RESULT_H_
 
-#include "core/dom/Element.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 
 namespace blink {
 
@@ -30,4 +30,4 @@ class CORE_EXPORT HitTestCanvasResult final
 
 }  // namespace blink
 
-#endif  // HitTestCanvasResult_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_CANVAS_RESULT_H_

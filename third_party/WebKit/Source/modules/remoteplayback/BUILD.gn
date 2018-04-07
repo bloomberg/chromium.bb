@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("remoteplayback") {
   sources = [
-    "AvailabilityCallbackWrapper.cpp",
-    "AvailabilityCallbackWrapper.h",
-    "HTMLMediaElementRemotePlayback.cpp",
-    "HTMLMediaElementRemotePlayback.h",
-    "RemotePlayback.cpp",
-    "RemotePlayback.h",
+    "availability_callback_wrapper.cc",
+    "availability_callback_wrapper.h",
+    "html_media_element_remote_playback.cc",
+    "html_media_element_remote_playback.h",
+    "remote_playback.cc",
+    "remote_playback.h",
   ]
 }

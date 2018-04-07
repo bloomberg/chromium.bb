@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/geolocation/GeolocationWatchers.h"
+#include "third_party/blink/renderer/modules/geolocation/geolocation_watchers.h"
 
-#include "modules/geolocation/GeoNotifier.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/modules/geolocation/geo_notifier.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

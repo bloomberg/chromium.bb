@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/TextPainterBase.h"
+#include "third_party/blink/renderer/core/paint/text_painter_base.h"
 
-#include "core/dom/Document.h"
-#include "core/layout/TextDecorationOffsetBase.h"
-#include "core/paint/AppliedDecorationPainter.h"
-#include "core/paint/BoxPainterBase.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/SelectionPaintingUtils.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/ShadowList.h"
-#include "platform/fonts/Font.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/layout/text_decoration_offset_base.h"
+#include "third_party/blink/renderer/core/paint/applied_decoration_painter.h"
+#include "third_party/blink/renderer/core/paint/box_painter_base.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/shadow_list.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
 

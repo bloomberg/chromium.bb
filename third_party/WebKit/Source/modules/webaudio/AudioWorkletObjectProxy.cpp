@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webaudio/AudioWorkletObjectProxy.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_object_proxy.h"
 
-#include "core/workers/ThreadedWorkletMessagingProxy.h"
-#include "core/workers/WorkerThread.h"
-#include "modules/webaudio/CrossThreadAudioWorkletProcessorInfo.h"
-#include "modules/webaudio/AudioWorkletGlobalScope.h"
-#include "modules/webaudio/AudioWorkletMessagingProxy.h"
-#include "platform/CrossThreadFunctional.h"
+#include "third_party/blink/renderer/core/workers/threaded_worklet_messaging_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_global_scope.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_messaging_proxy.h"
+#include "third_party/blink/renderer/modules/webaudio/cross_thread_audio_worklet_processor_info.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 
 namespace blink {
 

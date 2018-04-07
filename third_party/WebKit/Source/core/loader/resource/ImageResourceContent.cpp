@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/resource/ImageResourceContent.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 
 #include <memory>
 
-#include "core/loader/resource/ImageResource.h"
-#include "core/loader/resource/ImageResourceInfo.h"
-#include "core/loader/resource/ImageResourceObserver.h"
-#include "core/svg/graphics/SVGImage.h"
-#include "platform/Histogram.h"
-#include "platform/SharedBuffer.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/BitmapImage.h"
-#include "platform/graphics/PlaceholderImage.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/network/HTTPParsers.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_info.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/placeholder_image.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
 namespace blink {

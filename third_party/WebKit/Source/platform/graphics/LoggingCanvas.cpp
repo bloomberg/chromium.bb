@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/LoggingCanvas.h"
+#include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
 
 #include <unicode/unistr.h>
 #include "build/build_config.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/skia/ImagePixelLocker.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/image-encoders/ImageEncoder.h"
-#include "platform/wtf/ByteSwap.h"
-#include "platform/wtf/HexNumber.h"
-#include "platform/wtf/text/Base64.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/skia/image_pixel_locker.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
+#include "third_party/blink/renderer/platform/wtf/byte_swap.h"
+#include "third_party/blink/renderer/platform/wtf/hex_number.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPaint.h"

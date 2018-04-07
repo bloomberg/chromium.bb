@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/core/core.gni")
+import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("policy") {
   sources = [
-    "DocumentPolicy.h",
-    "IFramePolicy.h",
-    "Policy.cpp",
-    "Policy.h",
+    "document_policy.h",
+    "iframe_policy.h",
+    "policy.cc",
+    "policy.h",
   ]
 }

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/float.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/float.h"
 
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 namespace CSSLonghand {

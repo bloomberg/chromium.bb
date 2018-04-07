@@ -37,16 +37,16 @@ default_args = {
   v8_extra_library_files = [
     # Dependencies used by the extra libraries. Putting them here causes them
     # to be executed first during snapshot creation.
-    "//third_party/WebKit/Source/core/streams/CommonOperations.js",
-    "//third_party/WebKit/Source/core/streams/CommonStrings.js",
-    "//third_party/WebKit/Source/core/streams/SimpleQueue.js",
+    "//third_party/blink/renderer/core/streams/CommonOperations.js",
+    "//third_party/blink/renderer/core/streams/CommonStrings.js",
+    "//third_party/blink/renderer/core/streams/SimpleQueue.js",
 
     # Extra libraries.
-    "//third_party/WebKit/Source/core/streams/ByteLengthQueuingStrategy.js",
-    "//third_party/WebKit/Source/core/streams/CountQueuingStrategy.js",
-    "//third_party/WebKit/Source/core/streams/ReadableStream.js",
-    "//third_party/WebKit/Source/core/streams/WritableStream.js",
-    "//third_party/WebKit/Source/core/streams/TransformStream.js",
+    "//third_party/blink/renderer/core/streams/ByteLengthQueuingStrategy.js",
+    "//third_party/blink/renderer/core/streams/CountQueuingStrategy.js",
+    "//third_party/blink/renderer/core/streams/ReadableStream.js",
+    "//third_party/blink/renderer/core/streams/WritableStream.js",
+    "//third_party/blink/renderer/core/streams/TransformStream.js",
   ]
   v8_experimental_extra_library_files = []
   v8_enable_gdbjit = false

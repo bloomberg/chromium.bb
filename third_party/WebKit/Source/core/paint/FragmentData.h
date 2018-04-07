@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FragmentData_h
-#define FragmentData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FRAGMENT_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FRAGMENT_DATA_H_
 
-#include "core/paint/ObjectPaintProperties.h"
-#include "platform/graphics/paint/RefCountedPropertyTreeState.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/paint/object_paint_properties.h"
+#include "third_party/blink/renderer/platform/graphics/paint/ref_counted_property_tree_state.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -245,4 +245,4 @@ class CORE_EXPORT FragmentData {
 
 }  // namespace blink
 
-#endif  // FragmentData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FRAGMENT_DATA_H_

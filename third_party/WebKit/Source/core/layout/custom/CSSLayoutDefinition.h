@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSLayoutDefinition_h
-#define CSSLayoutDefinition_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_CSS_LAYOUT_DEFINITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_CSS_LAYOUT_DEFINITION_H_
 
-#include "core/css/cssom/CSSStyleValue.h"
-#include "core/css_property_names.h"
-#include "platform/bindings/ScopedPersistent.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -108,4 +108,4 @@ class CSSLayoutDefinition final
 
 }  // namespace blink
 
-#endif  // CSSLayoutDefinition_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_CSS_LAYOUT_DEFINITION_H_

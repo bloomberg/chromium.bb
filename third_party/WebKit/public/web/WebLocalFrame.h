@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebLocalFrame_h
-#define WebLocalFrame_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LOCAL_FRAME_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LOCAL_FRAME_H_
 
 #include <memory>
 #include <set>
 
-#include "WebFrame.h"
-#include "WebFrameLoadType.h"
-#include "WebHistoryItem.h"
-#include "WebImeTextSpan.h"
 #include "base/callback.h"
 #include "base/unguessable_token.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebFocusType.h"
-#include "public/platform/WebSize.h"
-#include "public/platform/WebURLError.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
-#include "public/platform/site_engagement.mojom-shared.h"
-#include "public/web/WebTextDirection.h"
-#include "public/web/commit_result.mojom-shared.h"
-#include "public/web/selection_menu_behavior.mojom-shared.h"
-#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
-#include "third_party/WebKit/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/site_engagement.mojom-shared.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/commit_result.mojom-shared.h"
+#include "third_party/blink/public/web/selection_menu_behavior.mojom-shared.h"
+#include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/public/web/web_frame_load_type.h"
+#include "third_party/blink/public/web/web_history_item.h"
+#include "third_party/blink/public/web/web_ime_text_span.h"
+#include "third_party/blink/public/web/web_text_direction.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -900,4 +900,4 @@ class WebLocalFrame : public WebFrame {
 
 }  // namespace blink
 
-#endif  // WebLocalFrame_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_LOCAL_FRAME_H_

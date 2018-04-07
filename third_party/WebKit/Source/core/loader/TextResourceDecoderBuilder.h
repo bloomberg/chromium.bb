@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextResourceDecoderBuilder_h
-#define TextResourceDecoderBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_TEXT_RESOURCE_DECODER_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_TEXT_RESOURCE_DECODER_BUILDER_H_
 
 #include <memory>
-#include "core/html/parser/TextResourceDecoder.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ CORE_EXPORT std::unique_ptr<TextResourceDecoder> BuildTextResourceDecoderFor(
 
 }  // namespace blink
 
-#endif  // TextResourceDecoderBuilder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_TEXT_RESOURCE_DECODER_BUILDER_H_

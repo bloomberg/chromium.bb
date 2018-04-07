@@ -1,11 +1,11 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "modules/canvas/htmlcanvas/CanvasContextCreationAttributesHelpers.h"
+#include "third_party/blink/renderer/modules/canvas/htmlcanvas/canvas_context_creation_attributes_helpers.h"
 
-#include "core/html/canvas/CanvasContextCreationAttributesCore.h"
-#include "modules/canvas/htmlcanvas/CanvasContextCreationAttributesModule.h"
-#include "third_party/WebKit/Source/modules/xr/XRDevice.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
+#include "third_party/blink/renderer/modules/canvas/htmlcanvas/canvas_context_creation_attributes_module.h"
+#include "third_party/blink/renderer/modules/xr/xr_device.h"
 
 namespace blink {
 

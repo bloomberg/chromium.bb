@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HostsUsingFeatures_h
-#define HostsUsingFeatures_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_HOSTS_USING_FEATURES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_HOSTS_USING_FEATURES_H_
 
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -94,4 +94,4 @@ class CORE_EXPORT HostsUsingFeatures {
 
 }  // namespace blink
 
-#endif  // HostsUsingFeatures_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_HOSTS_USING_FEATURES_H_

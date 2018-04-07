@@ -26,14 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AudioBus_h
-#define AudioBus_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_BUS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_BUS_H_
 
 #include <memory>
-#include "platform/audio/AudioChannel.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/audio/audio_channel.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -184,4 +184,4 @@ class PLATFORM_EXPORT AudioBus : public ThreadSafeRefCounted<AudioBus> {
 
 }  // namespace blink
 
-#endif  // AudioBus_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_BUS_H_

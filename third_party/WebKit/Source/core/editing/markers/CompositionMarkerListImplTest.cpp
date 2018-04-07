@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/markers/CompositionMarkerListImpl.h"
+#include "third_party/blink/renderer/core/editing/markers/composition_marker_list_impl.h"
 
-#include "core/editing/markers/CompositionMarker.h"
-#include "core/editing/markers/MarkerTestUtilities.h"
-#include "core/editing/testing/EditingTestBase.h"
+#include "third_party/blink/renderer/core/editing/markers/composition_marker.h"
+#include "third_party/blink/renderer/core/editing/markers/marker_test_utilities.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 
 namespace blink {
 

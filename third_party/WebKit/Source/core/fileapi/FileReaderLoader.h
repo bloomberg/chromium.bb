@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FileReaderLoader_h
-#define FileReaderLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_READER_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_READER_LOADER_H_
 
 #include <memory>
 
-#include "core/CoreExport.h"
-#include "core/fileapi/FileError.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/text/TextEncoding.h"
-#include "platform/wtf/text/WTFString.h"
-#include "platform/wtf/typed_arrays/ArrayBufferBuilder.h"
-#include "third_party/WebKit/public/mojom/blob/blob.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_builder.h"
 
 namespace blink {
 
@@ -166,4 +166,4 @@ class CORE_EXPORT FileReaderLoader : public mojom::blink::BlobReaderClient {
 
 }  // namespace blink
 
-#endif  // FileReaderLoader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_READER_LOADER_H_

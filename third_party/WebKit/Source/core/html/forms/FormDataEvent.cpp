@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/forms/FormDataEvent.h"
+#include "third_party/blink/renderer/core/html/forms/form_data_event.h"
 
-#include "core/html/forms/FormData.h"
+#include "third_party/blink/renderer/core/html/forms/form_data.h"
 
 namespace blink {
 

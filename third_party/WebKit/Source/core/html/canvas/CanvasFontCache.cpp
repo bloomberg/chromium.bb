@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/canvas/CanvasFontCache.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_font_cache.h"
 
-#include "core/css/parser/CSSParser.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/dom/Document.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/MemoryCoordinator.h"
-#include "platform/fonts/FontCache.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/memory_coordinator.h"
 
 namespace {
 

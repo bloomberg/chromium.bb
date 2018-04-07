@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/Position.h"
+#include "third_party/blink/renderer/core/editing/position.h"
 
 #include <stdio.h>
 #include <ostream>  // NOLINT
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/TextAffinity.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

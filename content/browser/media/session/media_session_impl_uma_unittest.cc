@@ -13,7 +13,7 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/media_content_type.h"
-#include "third_party/WebKit/public/platform/modules/mediasession/media_session.mojom.h"
+#include "third_party/blink/public/platform/modules/mediasession/media_session.mojom.h"
 
 namespace content {
 

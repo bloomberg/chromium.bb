@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPresentationClient_h
-#define WebPresentationClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PRESENTATION_WEB_PRESENTATION_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PRESENTATION_WEB_PRESENTATION_CLIENT_H_
 
 namespace blink {
 
@@ -23,4 +23,4 @@ class WebPresentationClient {
 
 }  // namespace blink
 
-#endif  // WebPresentationClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PRESENTATION_WEB_PRESENTATION_CLIENT_H_

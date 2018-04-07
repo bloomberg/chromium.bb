@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/EmbeddedObjectPaintInvalidator.h"
+#include "third_party/blink/renderer/core/paint/embedded_object_paint_invalidator.h"
 
-#include "core/exported/WebPluginContainerImpl.h"
-#include "core/layout/LayoutEmbeddedObject.h"
-#include "core/paint/BoxPaintInvalidator.h"
+#include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
+#include "third_party/blink/renderer/core/paint/box_paint_invalidator.h"
 
 namespace blink {
 

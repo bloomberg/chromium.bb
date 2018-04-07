@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/filesystem/LocalFileSystemClient.h"
+#include "third_party/blink/renderer/modules/filesystem/local_file_system_client.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/dom/Document.h"
-#include "core/frame/ContentSettingsClient.h"
-#include "core/frame/LocalFrame.h"
-#include "core/workers/WorkerContentSettingsClient.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/ContentSettingCallbacks.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/content_settings_client.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/content_setting_callbacks.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

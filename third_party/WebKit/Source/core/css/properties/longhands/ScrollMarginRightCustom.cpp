@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/scroll_margin_right.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/scroll_margin_right.h"
 
-#include "core/css/ZoomAdjustedPixelValue.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/ComputedStyleUtils.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
+#include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
 
 namespace blink {
 namespace CSSLonghand {

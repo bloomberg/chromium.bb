@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "content/public/common/manifest.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/modules/installedapp/WebRelatedApplication.h"
-#include "third_party/WebKit/public/platform/modules/manifest/manifest.mojom.h"
-#include "third_party/WebKit/public/platform/modules/manifest/manifest_manager.mojom.h"
+#include "third_party/blink/public/platform/modules/installedapp/web_related_application.h"
+#include "third_party/blink/public/platform/modules/manifest/manifest.mojom.h"
+#include "third_party/blink/public/platform/modules/manifest/manifest_manager.mojom.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace content {
 

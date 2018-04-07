@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/WebKit/public/web/WebFindOptions.h"
+#include "third_party/blink/public/web/web_find_options.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace extensions {

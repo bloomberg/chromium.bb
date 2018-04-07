@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UserActivationState_h
-#define UserActivationState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_USER_ACTIVATION_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_USER_ACTIVATION_STATE_H_
 
-#include "core/CoreExport.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -44,4 +44,4 @@ class CORE_EXPORT UserActivationState {
 
 }  // namespace blink
 
-#endif  // UserActivationState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_USER_ACTIVATION_STATE_H_

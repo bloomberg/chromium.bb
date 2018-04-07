@@ -23,13 +23,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextTrackLoader_h
-#define TextTrackLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_TEXT_TRACK_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_TEXT_TRACK_LOADER_H_
 
-#include "core/html/track/vtt/VTTParser.h"
-#include "platform/CrossOriginAttributeValue.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/RawResource.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_parser.h"
+#include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 
 namespace blink {
 

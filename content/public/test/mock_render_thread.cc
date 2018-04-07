@@ -22,7 +22,7 @@
 #include "ipc/message_filter.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebScriptController.h"
+#include "third_party/blink/public/web/web_script_controller.h"
 
 namespace content {
 

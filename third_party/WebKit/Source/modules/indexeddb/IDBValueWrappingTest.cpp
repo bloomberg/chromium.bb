@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/indexeddb/IDBValueWrapping.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value_wrapping.h"
 
 #include <algorithm>
 #include <limits>
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/fileapi/Blob.h"
-#include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBKeyPath.h"
-#include "modules/indexeddb/IDBValue.h"
-#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
 namespace blink {

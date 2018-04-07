@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/main_thread/frame_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 
 #include <memory>
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/blame_context.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/scheduler/base/real_time_domain.h"
-#include "platform/scheduler/base/virtual_time_domain.h"
-#include "platform/scheduler/child/default_params.h"
-#include "platform/scheduler/child/page_visibility_state.h"
-#include "platform/scheduler/child/task_runner_impl.h"
-#include "platform/scheduler/child/worker_scheduler_proxy.h"
-#include "platform/scheduler/common/throttling/budget_pool.h"
-#include "platform/scheduler/main_thread/main_thread_scheduler.h"
-#include "platform/scheduler/main_thread/page_scheduler_impl.h"
-#include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
-#include "platform/scheduler/util/tracing_helper.h"
-#include "public/platform/BlameContext.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/blame_context.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/child/default_params.h"
+#include "third_party/blink/renderer/platform/scheduler/child/page_visibility_state.h"
+#include "third_party/blink/renderer/platform/scheduler/child/task_runner_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_proxy.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 
 namespace blink {
 namespace scheduler {

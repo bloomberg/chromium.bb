@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ng_text_painter_h
-#define ng_text_painter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_TEXT_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_TEXT_PAINTER_H_
 
-#include "core/CoreExport.h"
-#include "core/paint/TextPainterBase.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/paint/text_painter_base.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class CORE_EXPORT NGTextPainter : public TextPainterBase {
 
 }  // namespace blink
 
-#endif  // ng_text_painter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NG_NG_TEXT_PAINTER_H_

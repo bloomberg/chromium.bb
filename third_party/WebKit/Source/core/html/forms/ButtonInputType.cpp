@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/ButtonInputType.h"
+#include "third_party/blink/renderer/core/html/forms/button_input_type.h"
 
-#include "core/input_type_names.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
 
 namespace blink {
 

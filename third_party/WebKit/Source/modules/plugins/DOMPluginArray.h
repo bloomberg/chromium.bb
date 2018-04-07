@@ -18,16 +18,16 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef DOMPluginArray_h
-#define DOMPluginArray_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PLUGINS_DOM_PLUGIN_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PLUGINS_DOM_PLUGIN_ARRAY_H_
 
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/page/PluginsChangedObserver.h"
-#include "modules/plugins/DOMPlugin.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/page/plugins_changed_observer.h"
+#include "third_party/blink/renderer/modules/plugins/dom_plugin.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -69,4 +69,4 @@ class DOMPluginArray final : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // DOMPluginArray_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PLUGINS_DOM_PLUGIN_ARRAY_H_

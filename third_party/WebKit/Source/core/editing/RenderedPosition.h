@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RenderedPosition_h
-#define RenderedPosition_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_RENDERED_POSITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_RENDERED_POSITION_H_
 
-#include "core/CoreExport.h"
-#include "core/editing/Forward.h"
-#include "core/layout/line/InlineBox.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/layout/line/inline_box.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -124,4 +124,4 @@ CORE_EXPORT bool LayoutObjectContainsPosition(LayoutObject*, const Position&);
 
 }  // namespace blink
 
-#endif  // RenderedPosition_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_RENDERED_POSITION_H_

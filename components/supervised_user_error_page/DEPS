@@ -4,7 +4,7 @@ include_rules = [
   "+components/web_restrictions/interfaces",
   "+content/public/renderer",
   "+gin",
-  "+third_party/WebKit",
+  "+third_party/blink",
   "+ui/base",
   "+url",
   "+v8",

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSFontFamilyValue_h
-#define CSSFontFamilyValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_FONT_FAMILY_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_FONT_FAMILY_VALUE_H_
 
-#include "core/css/CSSValue.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -37,4 +37,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFamilyValue, IsFontFamilyValue());
 
 }  // namespace blink
 
-#endif  // CSSFontFamilyValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_FONT_FAMILY_VALUE_H_

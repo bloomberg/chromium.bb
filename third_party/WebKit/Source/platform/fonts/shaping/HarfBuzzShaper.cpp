@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/shaping/HarfBuzzShaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_shaper.h"
 
 #include <hb.h>
 #include <unicode/uchar.h>
@@ -39,20 +39,20 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "platform/fonts/Font.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontFallbackIterator.h"
-#include "platform/fonts/SmallCapsIterator.h"
-#include "platform/fonts/UTF16TextIterator.h"
-#include "platform/fonts/opentype/OpenTypeCapsSupport.h"
-#include "platform/fonts/shaping/CaseMappingHarfBuzzBufferFiller.h"
-#include "platform/fonts/shaping/HarfBuzzFace.h"
-#include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/open_type_caps_support.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/case_mapping_harf_buzz_buffer_filler.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_face.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
+#include "third_party/blink/renderer/platform/fonts/small_caps_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/utf16_text_iterator.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
 

@@ -26,25 +26,25 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InspectorOverlayAgent_h
-#define InspectorOverlayAgent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOROVERLAYAGENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOROVERLAYAGENT_H_
 
 #include <v8-inspector.h>
 #include <memory>
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/InspectorHighlight.h"
-#include "core/inspector/InspectorOverlayHost.h"
-#include "core/inspector/protocol/Overlay.h"
-#include "platform/Timer.h"
-#include "platform/geometry/FloatQuad.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/Color.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/inspector_highlight.h"
+#include "third_party/blink/renderer/core/inspector/inspector_overlay_host.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Overlay.h"
+#include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -229,4 +229,4 @@ class CORE_EXPORT InspectorOverlayAgent final
 
 }  // namespace blink
 
-#endif  // InspectorOverlayAgent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOROVERLAYAGENT_H_

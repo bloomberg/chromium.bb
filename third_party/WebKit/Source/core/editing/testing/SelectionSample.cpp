@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/testing/SelectionSample.h"
+#include "third_party/blink/renderer/core/editing/testing/selection_sample.h"
 
 #include <algorithm>
 
-#include "core/dom/Attribute.h"
-#include "core/dom/CharacterData.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/ProcessingInstruction.h"
-#include "core/dom/ShadowRootInit.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/html/HTMLCollection.h"
-#include "core/html/HTMLTemplateElement.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/dom/attribute.h"
+#include "third_party/blink/renderer/core/dom/character_data.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/processing_instruction.h"
+#include "third_party/blink/renderer/core/dom/shadow_root_init.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
+#include "third_party/blink/renderer/core/html/html_template_element.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

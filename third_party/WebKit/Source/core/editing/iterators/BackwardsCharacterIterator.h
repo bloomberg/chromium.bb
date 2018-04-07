@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BackwardsCharacterIterator_h
-#define BackwardsCharacterIterator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_BACKWARDS_CHARACTER_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_BACKWARDS_CHARACTER_ITERATOR_H_
 
-#include "core/editing/Forward.h"
-#include "core/editing/iterators/SimplifiedBackwardsTextIterator.h"
-#include "platform/heap/Heap.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/iterators/simplified_backwards_text_iterator.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ using BackwardsCharacterIterator =
 
 }  // namespace blink
 
-#endif  // BackwardsCharacterIterator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_BACKWARDS_CHARACTER_ITERATOR_H_

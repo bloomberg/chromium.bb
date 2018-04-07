@@ -28,14 +28,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/VisitedLinkState.h"
+#include "third_party/blink/renderer/core/dom/visited_link_state.h"
 
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/html/HTMLAnchorElement.h"
-#include "core/html_names.h"
-#include "core/svg/SVGURIReference.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/html_anchor_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
 
 namespace blink {
 

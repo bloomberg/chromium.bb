@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerBackingThreadStartupData_h
-#define WorkerBackingThreadStartupData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_BACKING_THREAD_STARTUP_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_BACKING_THREAD_STARTUP_DATA_H_
 
-#include "platform/CrossThreadCopier.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/platform/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ struct CrossThreadCopier<WTF::Optional<WorkerBackingThreadStartupData>>
 
 }  // namespace blink
 
-#endif  // WorkerBackingThreadStartupData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_BACKING_THREAD_STARTUP_DATA_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RevocableBinding_h
-#define RevocableBinding_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_REVOCABLE_BINDING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_REVOCABLE_BINDING_H_
 
 #include <utility>
 
@@ -16,7 +16,7 @@
 #include "mojo/public/cpp/bindings/lib/binding_state.h"
 #include "mojo/public/cpp/bindings/raw_ptr_impl_ref_traits.h"
 #include "mojo/public/cpp/system/core.h"
-#include "platform/mojo/InterfaceInvalidator.h"
+#include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
 
 namespace blink {
 
@@ -178,4 +178,4 @@ class RevocableBinding : public InterfaceInvalidator::Observer {
 
 }  // namespace blink
 
-#endif  // RevocableBinding_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_REVOCABLE_BINDING_H_

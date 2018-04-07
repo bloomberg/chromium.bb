@@ -23,19 +23,19 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollAnimatorMac_h
-#define ScrollAnimatorMac_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_SCROLL_ANIMATOR_MAC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_SCROLL_ANIMATOR_MAC_H_
 
 #include <memory>
 #include "base/single_thread_task_runner.h"
-#include "platform/Timer.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollAnimatorBase.h"
-#include "platform/wtf/RetainPtr.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 
 OBJC_CLASS BlinkScrollAnimationHelperDelegate;
 OBJC_CLASS BlinkScrollbarPainterControllerDelegate;
@@ -175,4 +175,4 @@ class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
 
 }  // namespace blink
 
-#endif  // ScrollAnimatorMac_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_SCROLL_ANIMATOR_MAC_H_

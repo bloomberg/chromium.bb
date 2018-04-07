@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AXRange_h
-#define AXRange_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_RANGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_RANGE_H_
 
 #include <base/logging.h>
 #include <stdint.h>
 #include <ostream>
 
-#include "modules/ModulesExport.h"
-#include "modules/accessibility/AXPosition.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_position.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ MODULES_EXPORT std::ostream& operator<<(std::ostream&, const AXRange&);
 
 }  // namespace blink
 
-#endif  // AXRange_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_RANGE_H_

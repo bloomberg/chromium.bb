@@ -23,14 +23,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebIDBDatabase_h
-#define WebIDBDatabase_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_DATABASE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_DATABASE_H_
 
-#include "public/platform/WebBlobInfo.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/modules/indexeddb/WebIDBCursor.h"
-#include "public/platform/modules/indexeddb/WebIDBMetadata.h"
-#include "public/platform/modules/indexeddb/WebIDBTypes.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_cursor.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_metadata.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 #include <bitset>
 
@@ -154,4 +154,4 @@ class WebIDBDatabase {
 
 }  // namespace blink
 
-#endif  // WebIDBDatabase_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_DATABASE_H_

@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMWrapperMap_h
-#define DOMWrapperMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_DOM_WRAPPER_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_DOM_WRAPPER_MAP_H_
 
 #include <utility>
 
-#include "platform/bindings/ScriptForbiddenScope.h"
-#include "platform/bindings/WrapperTypeInfo.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
 
@@ -176,4 +176,4 @@ class DOMWrapperMap {
 
 }  // namespace blink
 
-#endif  // DOMWrapperMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_DOM_WRAPPER_MAP_H_

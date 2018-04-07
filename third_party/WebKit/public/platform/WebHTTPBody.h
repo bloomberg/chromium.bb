@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebHTTPBody_h
-#define WebHTTPBody_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_HTTP_BODY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_HTTP_BODY_H_
 
-#include "WebData.h"
-#include "WebString.h"
-#include "WebURL.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 #if INSIDE_BLINK
 #include "base/memory/scoped_refptr.h"

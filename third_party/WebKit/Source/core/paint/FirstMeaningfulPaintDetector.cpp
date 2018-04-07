@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/FirstMeaningfulPaintDetector.h"
+#include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 
-#include "core/css/FontFaceSetDocument.h"
-#include "core/paint/PaintTiming.h"
-#include "core/probe/CoreProbes.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/Histogram.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebLayerTreeView.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/renderer/core/css/font_face_set_document.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 namespace blink {
 

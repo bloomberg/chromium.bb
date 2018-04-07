@@ -19,7 +19,7 @@
 #include "components/payments/content/web_app_manifest.h"
 #include "components/payments/core/payment_manifest_downloader.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
+#include "third_party/blink/public/platform/modules/payments/payment_request.mojom.h"
 
 class GURL;
 

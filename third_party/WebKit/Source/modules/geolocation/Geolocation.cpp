@@ -25,23 +25,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/geolocation/Geolocation.h"
+#include "third_party/blink/renderer/modules/geolocation/geolocation.h"
 
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/dom/Document.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/HostsUsingFeatures.h"
-#include "core/frame/PerformanceMonitor.h"
-#include "core/frame/Settings.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/probe/CoreProbes.h"
-#include "modules/geolocation/Coordinates.h"
-#include "modules/geolocation/GeolocationError.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/WebKit/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/PerformanceMonitor.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/modules/geolocation/coordinates.h"
+#include "third_party/blink/renderer/modules/geolocation/geolocation_error.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 namespace {

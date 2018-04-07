@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ColorChooserPopupUIController_h
-#define ColorChooserPopupUIController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_COLOR_CHOOSER_POPUP_UI_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_COLOR_CHOOSER_POPUP_UI_CONTROLLER_H_
 
-#include "core/CoreExport.h"
-#include "core/html/forms/ColorChooserUIController.h"
-#include "core/page/PagePopupClient.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/color_chooser_ui_controller.h"
+#include "third_party/blink/renderer/core/page/page_popup_client.h"
 
 namespace blink {
 
@@ -84,4 +84,4 @@ class CORE_EXPORT ColorChooserPopupUIController final
 
 }  // namespace blink
 
-#endif  // ColorChooserPopupUIController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_COLOR_CHOOSER_POPUP_UI_CONTROLLER_H_

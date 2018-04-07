@@ -18,13 +18,13 @@
  *
  */
 
-#ifndef StepRange_h
-#define StepRange_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_STEP_RANGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_STEP_RANGE_H_
 
-#include "core/CoreExport.h"
-#include "platform/Decimal.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/decimal.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -127,4 +127,4 @@ class CORE_EXPORT StepRange {
 
 }  // namespace blink
 
-#endif  // StepRange_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_STEP_RANGE_H_

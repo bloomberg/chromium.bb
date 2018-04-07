@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RemoteDOMWindow_h
-#define RemoteDOMWindow_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_DOM_WINDOW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_DOM_WINDOW_H_
 
-#include "core/frame/DOMWindow.h"
-#include "core/frame/RemoteFrame.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/frame/dom_window.h"
+#include "third_party/blink/renderer/core/frame/remote_frame.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/LengthInterpolationFunctions.h"
+#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
 
-#include "core/css/CSSCalculationValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSToLengthConversionData.h"
-#include "platform/CalculationValue.h"
+#include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/platform/calculation_value.h"
 
 namespace blink {
 

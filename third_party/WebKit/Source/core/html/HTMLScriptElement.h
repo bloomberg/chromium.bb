@@ -22,14 +22,14 @@
  *
  */
 
-#ifndef HTMLScriptElement_h
-#define HTMLScriptElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_SCRIPT_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_SCRIPT_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/CreateElementFlags.h"
-#include "core/html/HTMLElement.h"
-#include "core/script/ScriptElementBase.h"
-#include "core/script/ScriptLoader.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/create_element_flags.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/script/script_element_base.h"
+#include "third_party/blink/renderer/core/script/script_loader.h"
 
 namespace blink {
 
@@ -106,4 +106,4 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
 
 }  // namespace blink
 
-#endif  // HTMLScriptElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_SCRIPT_ELEMENT_H_

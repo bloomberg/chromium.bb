@@ -26,8 +26,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AudioIOCallback_h
-#define AudioIOCallback_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_IO_CALLBACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_IO_CALLBACK_H_
 
 #include "base/time/time.h"
 
@@ -59,4 +59,4 @@ class AudioIOCallback {
 
 }  // namespace blink
 
-#endif  // AudioIOCallback_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_IO_CALLBACK_H_

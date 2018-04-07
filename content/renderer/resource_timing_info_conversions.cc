@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "content/common/resource_timing_info.h"
-#include "third_party/WebKit/public/platform/WebResourceTimingInfo.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_resource_timing_info.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace content {
 

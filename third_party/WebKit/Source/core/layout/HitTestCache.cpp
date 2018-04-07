@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/HitTestCache.h"
+#include "third_party/blink/renderer/core/layout/hit_test_cache.h"
 
-#include "platform/Histogram.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
 

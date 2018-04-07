@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaValuesInitialViewport_h
-#define MediaValuesInitialViewport_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_INITIAL_VIEWPORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_INITIAL_VIEWPORT_H_
 
-#include "core/css/MediaValuesDynamic.h"
+#include "third_party/blink/renderer/core/css/media_values_dynamic.h"
 
 namespace blink {
 
@@ -22,4 +22,4 @@ class CORE_EXPORT MediaValuesInitialViewport final : public MediaValuesDynamic {
 
 }  // namespace blink
 
-#endif  // MediaValuesInitialViewport_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_VALUES_INITIAL_VIEWPORT_H_

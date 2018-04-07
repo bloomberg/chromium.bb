@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FormData_h
-#define FormData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_FORM_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_FORM_DATA_H_
 
-#include "bindings/core/v8/Iterable.h"
-#include "bindings/core/v8/file_or_usv_string.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/network/EncodedFormData.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/bindings/core/v8/file_or_usv_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/iterable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 
@@ -136,4 +136,4 @@ class FormData::Entry : public GarbageCollectedFinalized<FormData::Entry> {
 
 }  // namespace blink
 
-#endif  // FormData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_FORM_DATA_H_

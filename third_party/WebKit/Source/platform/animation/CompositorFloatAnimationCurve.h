@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorFloatAnimationCurve_h
-#define CompositorFloatAnimationCurve_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_FLOAT_ANIMATION_CURVE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_FLOAT_ANIMATION_CURVE_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/PlatformExport.h"
-#include "platform/animation/CompositorAnimationCurve.h"
-#include "platform/animation/CompositorFloatKeyframe.h"
-#include "platform/animation/TimingFunction.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_curve.h"
+#include "third_party/blink/renderer/platform/animation/compositor_float_keyframe.h"
+#include "third_party/blink/renderer/platform/animation/timing_function.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace cc {
 class KeyframedFloatAnimationCurve;
@@ -64,4 +64,4 @@ class PLATFORM_EXPORT CompositorFloatAnimationCurve
 
 }  // namespace blink
 
-#endif  // CompositorFloatAnimationCurve_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_FLOAT_ANIMATION_CURVE_H_

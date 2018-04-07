@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/ThreadableLoadingContext.h"
+#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
 
-#include "core/dom/Document.h"
-#include "core/loader/WorkerFetchContext.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 namespace blink {
 

@@ -18,11 +18,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSInitialValue_h
-#define CSSInitialValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_INITIAL_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_INITIAL_VALUE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/css/CSSValue.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSInitialValue, IsInitialValue());
 
 }  // namespace blink
 
-#endif  // CSSInitialValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_INITIAL_VALUE_H_

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BaseFetchContext_h
-#define BaseFetchContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_BASE_FETCH_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_BASE_FETCH_CONTEXT_H_
 
-#include "core/CoreExport.h"
-#include "core/frame/WebFeatureForward.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/FetchContext.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/weborigin/ReferrerPolicy.h"
-#include "platform/wtf/Optional.h"
-#include "public/mojom/net/ip_address_space.mojom-blink.h"
-#include "public/platform/WebURLRequest.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/web_feature_forward.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -119,4 +119,4 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
 
 }  // namespace blink
 
-#endif  // BaseFetchContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_BASE_FETCH_CONTEXT_H_

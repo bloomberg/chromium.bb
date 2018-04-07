@@ -8,8 +8,8 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/java/gin_java_function_invocation_helper.h"
 #include "gin/function_template.h"
-#include "third_party/WebKit/public/web/WebKit.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace content {
 

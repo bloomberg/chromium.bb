@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/picture_in_picture/HTMLVideoElementPictureInPicture.h"
+#include "third_party/blink/renderer/modules/picture_in_picture/html_video_element_picture_in_picture.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/events/Event.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "modules/picture_in_picture/PictureInPictureControllerImpl.h"
-#include "modules/picture_in_picture/PictureInPictureWindow.h"
-#include "platform/feature_policy/FeaturePolicy.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
+#include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
+#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 
 namespace blink {
 

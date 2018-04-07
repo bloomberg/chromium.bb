@@ -18,20 +18,20 @@
  *
  */
 
-#include "core/layout/LayoutFileUploadControl.h"
+#include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 
 #include <math.h>
-#include "core/dom/ShadowRoot.h"
-#include "core/editing/PositionWithAffinity.h"
-#include "core/fileapi/FileList.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html_names.h"
-#include "core/input_type_names.h"
-#include "core/layout/LayoutTheme.h"
-#include "core/paint/FileUploadControlPainter.h"
-#include "platform/fonts/Font.h"
-#include "platform/text/PlatformLocale.h"
-#include "platform/text/TextRun.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/fileapi/file_list.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/paint/file_upload_control_painter.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
 
 namespace blink {
 

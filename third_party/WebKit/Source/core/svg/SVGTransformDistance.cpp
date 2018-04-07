@@ -17,11 +17,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGTransformDistance.h"
+#include "third_party/blink/renderer/core/svg/svg_transform_distance.h"
 
 #include <math.h>
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatSize.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
 
 namespace blink {
 

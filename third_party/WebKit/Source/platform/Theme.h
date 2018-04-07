@@ -23,20 +23,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Theme_h
-#define Theme_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_THEME_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_THEME_H_
 
-#include "platform/LengthBox.h"
-#include "platform/LengthSize.h"
-#include "platform/PlatformExport.h"
-#include "platform/ThemeTypes.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/Color.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/length_box.h"
+#include "third_party/blink/renderer/platform/length_size.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/theme_types.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -156,4 +156,4 @@ PLATFORM_EXPORT Theme* PlatformTheme();
 
 }  // namespace blink
 
-#endif  // Theme_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_THEME_H_

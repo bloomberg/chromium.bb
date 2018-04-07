@@ -21,18 +21,18 @@
  *
  */
 
-#ifndef ElementStyleResources_h
-#define ElementStyleResources_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_ELEMENT_STYLE_RESOURCES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_ELEMENT_STYLE_RESOURCES_H_
 
 #include "base/macros.h"
-#include "core/css/CSSPropertyIDTemplates.h"
-#include "core/css_property_names.h"
-#include "platform/CrossOriginAttributeValue.h"
-#include "platform/graphics/Color.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/core/css/css_property_id_templates.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -89,4 +89,4 @@ class ElementStyleResources {
 
 }  // namespace blink
 
-#endif  // ElementStyleResources_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_ELEMENT_STYLE_RESOURCES_H_

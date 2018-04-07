@@ -17,8 +17,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "media/base/content_decryption_module.h"
-#include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
-#include "third_party/WebKit/public/platform/WebContentDecryptionModuleSession.h"
+#include "third_party/blink/public/platform/web_content_decryption_module_result.h"
+#include "third_party/blink/public/platform/web_content_decryption_module_session.h"
 
 namespace url {
 class Origin;

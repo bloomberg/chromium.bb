@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InterfaceProvider_h
-#define InterfaceProvider_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_INTERFACE_PROVIDER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_INTERFACE_PROVIDER_H_
 
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 

@@ -11,7 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/shell/renderer/layout_test/blink_test_runner.h"
-#include "third_party/WebKit/public/web/WebLeakDetector.h"
+#include "third_party/blink/public/web/web_leak_detector.h"
 
 using blink::WebLeakDetector;
 

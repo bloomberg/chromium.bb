@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ImageDecodingStore_h
-#define ImageDecodingStore_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_DECODING_STORE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_DECODING_STORE_H_
 
 #include <memory>
 #include <utility>
@@ -32,14 +32,14 @@
 #include "SkSize.h"
 #include "SkTypes.h"
 #include "base/memory/ptr_util.h"
-#include "platform/PlatformExport.h"
-#include "platform/graphics/ImageFrameGenerator.h"
-#include "platform/graphics/skia/SkSizeHash.h"
-#include "platform/image-decoders/ImageDecoder.h"
-#include "platform/wtf/DoublyLinkedList.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
+#include "third_party/blink/renderer/platform/graphics/skia/sk_size_hash.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/doubly_linked_list.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

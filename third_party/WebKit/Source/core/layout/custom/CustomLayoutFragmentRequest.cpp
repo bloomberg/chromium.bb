@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/custom/CustomLayoutFragmentRequest.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment_request.h"
 
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/custom/CustomLayoutChild.h"
-#include "core/layout/custom/CustomLayoutConstraintsOptions.h"
-#include "core/layout/custom/CustomLayoutFragment.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_child.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_constraints_options.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 
 namespace blink {
 

@@ -22,13 +22,13 @@
  *
  */
 
-#ifndef TreeWalker_h
-#define TreeWalker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TREE_WALKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TREE_WALKER_H_
 
-#include "core/dom/NodeFilter.h"
-#include "core/dom/NodeIteratorBase.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/dom/node_filter.h"
+#include "third_party/blink/renderer/core/dom/node_iterator_base.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -72,4 +72,4 @@ class TreeWalker final : public ScriptWrappable, public NodeIteratorBase {
 
 }  // namespace blink
 
-#endif  // TreeWalker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TREE_WALKER_H_

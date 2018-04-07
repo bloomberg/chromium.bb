@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaEncryptedEvent_h
-#define MediaEncryptedEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_ENCRYPTED_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_ENCRYPTED_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/encryptedmedia/MediaEncryptedEventInit.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_encrypted_event_init.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class MediaEncryptedEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // MediaEncryptedEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_ENCRYPTED_EVENT_H_

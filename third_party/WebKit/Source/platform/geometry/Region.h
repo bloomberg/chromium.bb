@@ -23,13 +23,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Region_h
-#define Region_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_REGION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_REGION_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -177,4 +177,4 @@ inline bool operator==(const Region::Span& a, const Region::Span& b) {
 
 }  // namespace blink
 
-#endif  // Region_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_REGION_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WTF_ConstructTraits_h
-#define WTF_ConstructTraits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CONSTRUCT_TRAITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CONSTRUCT_TRAITS_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/TypeTraits.h"
-#include "platform/wtf/VectorTraits.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
+#include "third_party/blink/renderer/platform/wtf/vector_traits.h"
 
 namespace WTF {
 
@@ -37,4 +37,4 @@ class ConstructTraits {
 
 }  // namespace WTF
 
-#endif  // WTF_ConstructTraits_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_CONSTRUCT_TRAITS_H_

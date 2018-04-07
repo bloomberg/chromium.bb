@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositionMarkerListImpl_h
-#define CompositionMarkerListImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_COMPOSITION_MARKER_LIST_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_COMPOSITION_MARKER_LIST_IMPL_H_
 
-#include "core/editing/markers/DocumentMarkerList.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_list.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class CORE_EXPORT CompositionMarkerListImpl final : public DocumentMarkerList {
 
 }  // namespace blink
 
-#endif  // CompositionMarkerListImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_COMPOSITION_MARKER_LIST_IMPL_H_

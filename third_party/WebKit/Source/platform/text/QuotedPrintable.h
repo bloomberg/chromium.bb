@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef QuotedPrintable_h
-#define QuotedPrintable_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_QUOTED_PRINTABLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_QUOTED_PRINTABLE_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -72,4 +72,4 @@ PLATFORM_EXPORT void QuotedPrintableDecode(const char*, size_t, Vector<char>&);
 
 }  // namespace blink
 
-#endif  // QuotedPrintable_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_QUOTED_PRINTABLE_H_

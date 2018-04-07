@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSTokenizer.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 
-#include "core/css/parser/CSSParserTokenRange.h"
-#include "core/css/parser/MediaQueryBlockWatcher.h"
-#include "platform/wtf/allocator/Partitions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/css/parser/media_query_block_watcher.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 namespace blink {
 

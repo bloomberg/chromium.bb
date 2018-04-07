@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/push_messaging/PushMessagingBridge.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_messaging_bridge.h"
 
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/permissions/PermissionUtils.h"
-#include "modules/push_messaging/PushError.h"
-#include "modules/push_messaging/PushSubscriptionOptionsInit.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/wtf/Functional.h"
-#include "public/platform/modules/push_messaging/WebPushError.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/permissions/permission_utils.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_error.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription_options_init.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 namespace {

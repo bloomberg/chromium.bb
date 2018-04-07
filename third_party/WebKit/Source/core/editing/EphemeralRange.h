@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EphemeralRange_h
-#define EphemeralRange_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EPHEMERAL_RANGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EPHEMERAL_RANGE_H_
 
-#include "core/editing/Position.h"
+#include "third_party/blink/renderer/core/editing/position.h"
 
 namespace blink {
 

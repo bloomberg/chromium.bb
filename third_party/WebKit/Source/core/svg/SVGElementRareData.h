@@ -17,15 +17,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGElementRareData_h
-#define SVGElementRareData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ELEMENT_RARE_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ELEMENT_RARE_DATA_H_
 
 #include "base/macros.h"
-#include "core/style/ComputedStyle.h"
-#include "core/svg/SVGElement.h"
-#include "platform/heap/Handle.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 

@@ -27,14 +27,14 @@
 
 %{
 
-#include "core/xml/XPathFunctions.h"
-#include "core/xml/XPathNSResolver.h"
-#include "core/xml/XPathParser.h"
-#include "core/xml/XPathPath.h"
-#include "core/xml/XPathPredicate.h"
-#include "core/xml/XPathStep.h"
-#include "core/xml/XPathVariableReference.h"
-#include "platform/wtf/allocator/Partitions.h"
+#include "third_party/blink/renderer/core/xml/xpath_functions.h"
+#include "third_party/blink/renderer/core/xml/xpath_ns_resolver.h"
+#include "third_party/blink/renderer/core/xml/xpath_parser.h"
+#include "third_party/blink/renderer/core/xml/xpath_path.h"
+#include "third_party/blink/renderer/core/xml/xpath_predicate.h"
+#include "third_party/blink/renderer/core/xml/xpath_step.h"
+#include "third_party/blink/renderer/core/xml/xpath_variable_reference.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 void* YyFastMalloc(size_t size)
 {

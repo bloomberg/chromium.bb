@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ContentChangeType_h
-#define ContentChangeType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CONTENT_CHANGE_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CONTENT_CHANGE_TYPE_H_
 
 namespace blink {
 
@@ -11,4 +11,4 @@ enum ContentChangeType { kImageChanged, kCanvasChanged, kCanvasContextChanged };
 
 }  // namespace blink
 
-#endif  // ContentChangeType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CONTENT_CHANGE_TYPE_H_

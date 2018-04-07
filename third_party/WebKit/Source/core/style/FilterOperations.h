@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FilterOperations_h
-#define FilterOperations_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_FILTER_OPERATIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_FILTER_OPERATIONS_H_
 
-#include "core/CoreExport.h"
-#include "core/style/FilterOperation.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/style/filter_operation.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -107,4 +107,4 @@ class FilterOperationsWrapper
 
 }  // namespace blink
 
-#endif  // FilterOperations_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_FILTER_OPERATIONS_H_

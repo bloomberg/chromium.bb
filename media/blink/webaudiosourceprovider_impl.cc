@@ -18,7 +18,7 @@
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_log.h"
-#include "third_party/WebKit/public/platform/WebAudioSourceProviderClient.h"
+#include "third_party/blink/public/platform/web_audio_source_provider_client.h"
 
 using blink::WebVector;
 

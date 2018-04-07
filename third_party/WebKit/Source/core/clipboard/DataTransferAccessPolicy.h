@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DataTransferAccessPolicy_h
-#define DataTransferAccessPolicy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_DATA_TRANSFER_ACCESS_POLICY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_DATA_TRANSFER_ACCESS_POLICY_H_
 
 namespace blink {
 
@@ -38,4 +38,4 @@ enum class DataTransferAccessPolicy {
 
 }  // namespace
 
-#endif  // DataTransferAccessPolicy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_DATA_TRANSFER_ACCESS_POLICY_H_

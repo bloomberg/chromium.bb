@@ -22,17 +22,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMTokenList_h
-#define DOMTokenList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_TOKEN_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_TOKEN_LIST_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/QualifiedName.h"
-#include "core/dom/SpaceSplitString.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/dom/space_split_string.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -96,4 +96,4 @@ class CORE_EXPORT DOMTokenList : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // DOMTokenList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_TOKEN_LIST_H_

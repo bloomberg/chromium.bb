@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SensorProxy_h
-#define SensorProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_PROXY_H_
 
-#include "core/dom/ExceptionCode.h"
-#include "core/page/FocusChangedObserver.h"
-#include "core/page/PageVisibilityObserver.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/Supplementable.h"
-#include "platform/Timer.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
 #include "services/device/public/mojom/sensor.mojom-blink.h"
 #include "services/device/public/mojom/sensor_provider.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/page/focus_changed_observer.h"
+#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -157,4 +157,4 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
 
 }  // namespace blink
 
-#endif  // SensorProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_PROXY_H_

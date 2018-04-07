@@ -6,7 +6,7 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_TEST_TASK_QUEUE_H_
 
 #include "base/memory/weak_ptr.h"
-#include "platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 
 namespace blink {
 namespace scheduler {

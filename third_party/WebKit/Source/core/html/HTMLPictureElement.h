@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HTMLPictureElement_h
-#define HTMLPictureElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_PICTURE_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_PICTURE_ELEMENT_H_
 
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -28,4 +28,4 @@ class HTMLPictureElement final : public HTMLElement {
 
 }  // namespace blink
 
-#endif  // HTMLPictureElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_PICTURE_ELEMENT_H_

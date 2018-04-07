@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/events/TouchEvent.h"
+#include "third_party/blink/renderer/core/events/touch_event.h"
 
-#include "core/frame/FrameConsole.h"
-#include "core/frame/UseCounter.h"
-#include "core/loader/EmptyClients.h"
-#include "core/testing/PageTestBase.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 using testing::ElementsAre;
 

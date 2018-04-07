@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/ContextMenuController.h"
+#include "third_party/blink/renderer/core/page/context_menu_controller.h"
 
-#include "core/frame/FrameTestHelpers.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/input/ContextMenuAllowedScope.h"
-#include "core/page/ContextMenuController.h"
-#include "platform/ContextMenu.h"
-#include "platform/testing/EmptyWebMediaPlayer.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/WebMenuSourceType.h"
-#include "public/web/WebContextMenuData.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_menu_source_type.h"
+#include "third_party/blink/public/web/web_context_menu_data.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
+#include "third_party/blink/renderer/core/page/context_menu_controller.h"
+#include "third_party/blink/renderer/platform/context_menu.h"
+#include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 using testing::Return;
 

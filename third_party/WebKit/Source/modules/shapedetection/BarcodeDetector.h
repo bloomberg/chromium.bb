@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BarcodeDetector_h
-#define BarcodeDetector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_BARCODE_DETECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_BARCODE_DETECTOR_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "modules/ModulesExport.h"
-#include "modules/canvas/canvas2d/CanvasRenderingContext2D.h"
-#include "modules/shapedetection/ShapeDetector.h"
 #include "services/shape_detection/public/mojom/barcodedetection.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/shapedetection/shape_detector.h"
 
 namespace blink {
 
@@ -41,4 +41,4 @@ class MODULES_EXPORT BarcodeDetector final : public ShapeDetector {
 
 }  // namespace blink
 
-#endif  // BarcodeDetector_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SHAPEDETECTION_BARCODE_DETECTOR_H_

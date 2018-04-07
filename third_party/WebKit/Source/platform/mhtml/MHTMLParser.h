@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MHTMLParser_h
-#define MHTMLParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MHTML_MHTML_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MHTML_MHTML_PARSER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/SharedBufferChunkReader.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/Member.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/shared_buffer_chunk_reader.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace WTF {
 class String;

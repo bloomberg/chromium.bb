@@ -18,11 +18,11 @@
  *
  */
 
-#ifndef HTMLMeterElement_h
-#define HTMLMeterElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_METER_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_METER_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/html/forms/LabelableElement.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/labelable_element.h"
 
 namespace blink {
 
@@ -86,4 +86,4 @@ class CORE_EXPORT HTMLMeterElement final : public LabelableElement {
 
 }  // namespace blink
 
-#endif  // HTMLMeterElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_METER_ELEMENT_H_

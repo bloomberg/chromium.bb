@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/bluetooth/BluetoothAttributeInstanceMap.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_attribute_instance_map.h"
 
-#include "modules/bluetooth/BluetoothDevice.h"
-#include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include <memory>
 #include <utility>
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_device.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_service.h"
 
 namespace blink {
 

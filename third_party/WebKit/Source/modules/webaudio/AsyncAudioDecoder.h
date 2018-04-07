@@ -23,14 +23,14 @@
  * DAMAGE.
  */
 
-#ifndef AsyncAudioDecoder_h
-#define AsyncAudioDecoder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_ASYNC_AUDIO_DECODER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_ASYNC_AUDIO_DECODER_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "bindings/modules/v8/v8_decode_error_callback.h"
-#include "bindings/modules/v8/v8_decode_success_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_decode_error_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_decode_success_callback.h"
 
 namespace blink {
 
@@ -85,4 +85,4 @@ class AsyncAudioDecoder {
 
 }  // namespace blink
 
-#endif  // AsyncAudioDecoder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_ASYNC_AUDIO_DECODER_H_

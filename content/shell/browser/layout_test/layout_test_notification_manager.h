@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/test/mock_platform_notification_service.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
 namespace base {

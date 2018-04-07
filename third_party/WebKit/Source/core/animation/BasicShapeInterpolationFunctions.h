@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BasicShapeInterpolationFunctions_h
-#define BasicShapeInterpolationFunctions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_BASIC_SHAPE_INTERPOLATION_FUNCTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_BASIC_SHAPE_INTERPOLATION_FUNCTIONS_H_
 
-#include "core/animation/InterpolationValue.h"
 #include <memory>
+#include "third_party/blink/renderer/core/animation/interpolation_value.h"
 
 namespace blink {
 
@@ -30,4 +30,4 @@ scoped_refptr<BasicShape> CreateBasicShape(const InterpolableValue&,
 
 }  // namespace blink
 
-#endif  // BasicShapeInterpolationFunctions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_BASIC_SHAPE_INTERPOLATION_FUNCTIONS_H_

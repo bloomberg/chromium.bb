@@ -6,9 +6,9 @@
 
 #include "content/shell/renderer/layout_test/test_media_stream_video_renderer.h"
 #include "media/media_buildflags.h"
-#include "third_party/WebKit/public/platform/WebMediaStream.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/web/web_media_stream_registry.h"
 #include "url/gurl.h"
 
 using namespace blink;

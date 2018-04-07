@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MockResourceClient_h
-#define MockResourceClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_TESTING_MOCK_RESOURCE_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_TESTING_MOCK_RESOURCE_CLIENT_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ResourceClient.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class MockResourceClient : public GarbageCollectedFinalized<MockResourceClient>,
 
 }  // namespace blink
 
-#endif  // MockResourceClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_TESTING_MOCK_RESOURCE_CLIENT_H_

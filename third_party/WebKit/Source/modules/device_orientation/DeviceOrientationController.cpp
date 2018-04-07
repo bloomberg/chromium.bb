@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/device_orientation/DeviceOrientationController.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_controller.h"
 
-#include "core/frame/Deprecation.h"
-#include "core/frame/FrameConsole.h"
-#include "core/frame/HostsUsingFeatures.h"
-#include "core/frame/Settings.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "modules/EventModules.h"
-#include "modules/device_orientation/DeviceOrientationData.h"
-#include "modules/device_orientation/DeviceOrientationDispatcher.h"
-#include "modules/device_orientation/DeviceOrientationEvent.h"
-#include "platform/feature_policy/FeaturePolicy.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/hosts_using_features.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_dispatcher.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_event.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

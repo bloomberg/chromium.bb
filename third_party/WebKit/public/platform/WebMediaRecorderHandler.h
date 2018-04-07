@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebMediaRecorderHandler_h
-#define WebMediaRecorderHandler_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_RECORDER_HANDLER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_RECORDER_HANDLER_H_
 
 #include <memory>
 
-#include "WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
-#include "public/platform/modules/media_capabilities/WebMediaCapabilitiesInfo.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
 
 namespace blink {
 
@@ -56,4 +56,4 @@ class BLINK_PLATFORM_EXPORT WebMediaRecorderHandler {
 
 }  // namespace blink
 
-#endif  // WebMediaRecorderHandler_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_RECORDER_HANDLER_H_

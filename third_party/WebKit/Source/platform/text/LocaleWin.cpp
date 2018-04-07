@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/text/LocaleWin.h"
+#include "third_party/blink/renderer/platform/text/locale_win.h"
 
 #include <limits>
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "platform/DateComponents.h"
-#include "platform/Language.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/text/DateTimeFormat.h"
-#include "platform/wtf/DateMath.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/StringBuffer.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/date_components.h"
+#include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/text/date_time_format.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

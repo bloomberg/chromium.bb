@@ -26,18 +26,18 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GlyphMetricsMap_h
-#define GlyphMetricsMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_GLYPH_METRICS_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_GLYPH_METRICS_MAP_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "platform/fonts/Glyph.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/fonts/glyph.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace blink {
 

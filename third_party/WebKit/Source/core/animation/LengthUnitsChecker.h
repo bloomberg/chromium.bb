@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LengthUnitsChecker_h
-#define LengthUnitsChecker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_LENGTH_UNITS_CHECKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_LENGTH_UNITS_CHECKER_H_
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/animation/CSSInterpolationType.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/resolver/StyleResolverState.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_type.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ class LengthUnitsChecker : public CSSInterpolationType::CSSConversionChecker {
 
 }  // namespace blink
 
-#endif  // LengthUnitsChecker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_LENGTH_UNITS_CHECKER_H_

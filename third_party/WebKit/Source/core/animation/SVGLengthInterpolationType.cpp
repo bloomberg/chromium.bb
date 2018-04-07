@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/SVGLengthInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/svg_length_interpolation_type.h"
 
 #include <memory>
-#include "core/animation/SVGInterpolationEnvironment.h"
-#include "core/animation/StringKeyframe.h"
-#include "core/css/CSSResolutionUnits.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGLength.h"
-#include "core/svg/SVGLengthContext.h"
+#include "third_party/blink/renderer/core/animation/string_keyframe.h"
+#include "third_party/blink/renderer/core/animation/svg_interpolation_environment.h"
+#include "third_party/blink/renderer/core/css/css_resolution_units.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_length.h"
+#include "third_party/blink/renderer/core/svg/svg_length_context.h"
 
 namespace blink {
 

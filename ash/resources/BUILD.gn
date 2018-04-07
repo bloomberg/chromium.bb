@@ -62,8 +62,10 @@ template("ash_test_resources") {
 
     if (percent == "100") {
       # TODO(msw): This seems bad, but follows repack_ui_test_pak's example.
-      deps += [ "//third_party/WebKit/public:resources_grit" ]
-      sources += [ "$root_gen_dir/blink/public/resources/blink_resources.pak" ]
+      deps += [ "//third_party/blink/public:resources_grit" ]
+      sources += [
+        "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
+      ]
     }
   }
 }

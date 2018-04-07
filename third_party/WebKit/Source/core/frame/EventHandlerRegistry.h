@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EventHandlerRegistry_h
-#define EventHandlerRegistry_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_EVENT_HANDLER_REGISTRY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_EVENT_HANDLER_REGISTRY_H_
 
-#include "core/CoreExport.h"  // TODO(sashab): Remove this.
-#include "core/page/Page.h"
-#include "platform/wtf/HashCountedSet.h"
+#include "third_party/blink/renderer/core/core_export.h"  // TODO(sashab): Remove this.
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
 
 namespace blink {
 
@@ -130,4 +130,4 @@ class CORE_EXPORT EventHandlerRegistry final
 
 }  // namespace blink
 
-#endif  // EventHandlerRegistry_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_EVENT_HANDLER_REGISTRY_H_

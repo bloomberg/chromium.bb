@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/CSSRotate.h"
+#include "third_party/blink/renderer/core/css/cssom/css_rotate.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/css/CSSFunctionValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/cssom/CSSUnitValue.h"
-#include "core/geometry/DOMMatrix.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/css/css_function_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
+#include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 
 namespace blink {
 

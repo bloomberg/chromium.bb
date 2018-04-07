@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/HTMLEmbedElement.h"
+#include "third_party/blink/renderer/core/html/html_embed_element.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLObjectElement.h"
-#include "core/style/ComputedStyle.h"
-#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_object_element.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

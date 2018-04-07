@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGBoolean_h
-#define SVGBoolean_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_BOOLEAN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_BOOLEAN_H_
 
-#include "core/svg/SVGParsingError.h"
-#include "core/svg/properties/SVGPropertyHelper.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property_helper.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 
 namespace blink {
 
@@ -76,4 +76,4 @@ DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGBoolean);
 
 }  // namespace blink
 
-#endif  // SVGBoolean_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_BOOLEAN_H_

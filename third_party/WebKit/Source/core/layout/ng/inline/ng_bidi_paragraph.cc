@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/inline/ng_bidi_paragraph.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 
-#include "core/style/ComputedStyle.h"
-#include "platform/text/ICUError.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/text/icu_error.h"
 
 namespace blink {
 

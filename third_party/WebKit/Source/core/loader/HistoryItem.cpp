@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/loader/HistoryItem.h"
+#include "third_party/blink/renderer/core/loader/history_item.h"
 
 #include <memory>
 #include <utility>
 
-#include "core/html/forms/FormController.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/weborigin/SecurityPolicy.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/CString.h"
+#include "third_party/blink/renderer/core/html/forms/form_controller.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

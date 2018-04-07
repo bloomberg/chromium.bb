@@ -5,11 +5,11 @@
 #ifndef NGCaretRect_h
 #define NGCaretRect_h
 
-#include "core/editing/Forward.h"
-#include "core/layout/ng/geometry/ng_physical_offset_rect.h"
-#include "core/layout/ng/ng_physical_fragment.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

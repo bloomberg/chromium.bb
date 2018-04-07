@@ -28,23 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebWidget_h
-#define WebWidget_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_H_
 
-#include "public/platform/WebBrowserControlsState.h"
-#include "public/platform/WebCanvas.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebFloatSize.h"
-#include "public/platform/WebInputEventResult.h"
-#include "public/platform/WebMenuSourceType.h"
-#include "public/platform/WebPoint.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebSize.h"
-#include "public/platform/WebTextInputInfo.h"
-#include "public/web/WebHitTestResult.h"
-#include "public/web/WebImeTextSpan.h"
-#include "public/web/WebRange.h"
-#include "public/web/WebTextDirection.h"
+#include "third_party/blink/public/platform/web_browser_controls_state.h"
+#include "third_party/blink/public/platform/web_canvas.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_float_size.h"
+#include "third_party/blink/public/platform/web_input_event_result.h"
+#include "third_party/blink/public/platform/web_menu_source_type.h"
+#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_text_input_info.h"
+#include "third_party/blink/public/web/web_hit_test_result.h"
+#include "third_party/blink/public/web/web_ime_text_span.h"
+#include "third_party/blink/public/web/web_range.h"
+#include "third_party/blink/public/web/web_text_direction.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/V8BindingForTesting.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/Settings.h"
-#include "core/testing/DummyPageHolder.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 namespace blink {
 

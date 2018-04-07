@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "extensions/common/api/display_source.h"
-#include "third_party/WebKit/public/web/WebDOMMediaStreamTrack.h"
+#include "third_party/blink/public/web/web_dom_media_stream_track.h"
 
 namespace content {
 class RenderFrame;

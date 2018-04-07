@@ -24,14 +24,14 @@
  * ings in this Software without prior written authorization from him.
  */
 
-#include "core/xml/XSLTExtensions.h"
+#include "third_party/blink/renderer/core/xml/xslt_extensions.h"
 
 #include <libxml/xpathInternals.h>
 #include <libxslt/extensions.h>
 #include <libxslt/extra.h>
 #include <libxslt/xsltutils.h>
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

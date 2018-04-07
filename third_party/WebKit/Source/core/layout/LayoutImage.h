@@ -23,13 +23,13 @@
  *
  */
 
-#ifndef LayoutImage_h
-#define LayoutImage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_IMAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_IMAGE_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutImageResource.h"
-#include "core/layout/LayoutReplaced.h"
-#include "platform/loader/fetch/ResourceClient.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_image_resource.h"
+#include "third_party/blink/renderer/core/layout/layout_replaced.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 
 namespace blink {
 
@@ -153,4 +153,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutImage, IsLayoutImage());
 
 }  // namespace blink
 
-#endif  // LayoutImage_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_IMAGE_H_

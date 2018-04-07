@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/custom/LayoutWorkletGlobalScopeProxy.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope_proxy.h"
 
-#include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/origin_trials/OriginTrialContext.h"
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/WorkletModuleResponsesMap.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/WTF.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 

@@ -22,13 +22,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UserMediaController_h
-#define UserMediaController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CONTROLLER_H_
 
 #include <memory>
 
-#include "core/frame/LocalFrame.h"
-#include "modules/mediastream/UserMediaClient.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 
 namespace blink {
 
@@ -82,4 +82,4 @@ inline void UserMediaController::StopTrack(MediaStreamComponent* track) {
 
 }  // namespace blink
 
-#endif  // UserMediaController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_USER_MEDIA_CONTROLLER_H_

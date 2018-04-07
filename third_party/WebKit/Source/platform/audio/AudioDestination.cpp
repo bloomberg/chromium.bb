@@ -26,22 +26,22 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/AudioDestination.h"
+#include "third_party/blink/renderer/platform/audio/audio_destination.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
-#include "platform/CrossThreadFunctional.h"
-#include "platform/Histogram.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/audio/PushPullFIFO.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebAudioLatencyHint.h"
-#include "public/platform/WebSecurityOrigin.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_audio_latency_hint.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/audio/push_pull_fifo.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

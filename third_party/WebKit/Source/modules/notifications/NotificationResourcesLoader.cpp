@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/notifications/NotificationResourcesLoader.h"
+#include "third_party/blink/renderer/modules/notifications/notification_resources_loader.h"
 
 #include <cmath>
-#include "platform/Histogram.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/modules/notifications/WebNotificationData.h"
-#include "public/platform/modules/notifications/WebNotificationResources.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_resources.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

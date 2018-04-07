@@ -23,16 +23,16 @@
  * DAMAGE.
  */
 
-#ifndef ScriptProcessorNode_h
-#define ScriptProcessorNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_SCRIPT_PROCESSOR_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_SCRIPT_PROCESSOR_NODE_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "modules/webaudio/AudioNode.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -156,4 +156,4 @@ class ScriptProcessorNode final
 
 }  // namespace blink
 
-#endif  // ScriptProcessorNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_SCRIPT_PROCESSOR_NODE_H_

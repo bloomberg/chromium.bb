@@ -22,13 +22,13 @@
  *
  */
 
-#ifndef HTMLFormControlElement_h
-#define HTMLFormControlElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_FORM_CONTROL_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_FORM_CONTROL_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/html/forms/FormAssociated.h"
-#include "core/html/forms/LabelableElement.h"
-#include "core/html/forms/ListedElement.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/form_associated.h"
+#include "third_party/blink/renderer/core/html/forms/labelable_element.h"
+#include "third_party/blink/renderer/core/html/forms/listed_element.h"
 
 namespace blink {
 

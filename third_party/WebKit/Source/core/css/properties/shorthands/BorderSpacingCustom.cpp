@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/shorthands/border_spacing.h"
+#include "third_party/blink/renderer/core/css/properties/shorthands/border_spacing.h"
 
-#include "core/css/ZoomAdjustedPixelValue.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 namespace CSSShorthand {

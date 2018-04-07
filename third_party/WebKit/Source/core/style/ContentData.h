@@ -23,14 +23,14 @@
  *
  */
 
-#ifndef ContentData_h
-#define ContentData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CONTENT_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CONTENT_DATA_H_
 
 #include <memory>
 #include <utility>
 
-#include "core/style/CounterContent.h"
-#include "core/style/StyleImage.h"
+#include "third_party/blink/renderer/core/style/counter_content.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
 
 namespace blink {
 
@@ -214,4 +214,4 @@ inline bool operator==(const ContentData& a, const ContentData& b) {
 
 }  // namespace blink
 
-#endif  // ContentData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CONTENT_DATA_H_

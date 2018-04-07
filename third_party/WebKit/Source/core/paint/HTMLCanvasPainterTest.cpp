@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/HTMLCanvasPainter.h"
+#include "third_party/blink/renderer/core/paint/html_canvas_painter.h"
 
 #include <memory>
 #include <utility>
 
-#include "core/frame/LocalFrameView.h"
-#include "core/html/canvas/CanvasContextCreationAttributesCore.h"
-#include "core/html/canvas/CanvasRenderingContext.h"
-#include "core/html/canvas/HTMLCanvasElement.h"
-#include "core/paint/PaintControllerPaintTest.h"
-#include "core/paint/StubChromeClientForSPv2.h"
-#include "platform/graphics/Canvas2DLayerBridge.h"
-#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
-#include "platform/graphics/gpu/SharedGpuContext.h"
-#include "platform/graphics/test/FakeGLES2Interface.h"
-#include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "public/platform/WebLayer.h"
-#include "public/platform/WebSize.h"
+#include "third_party/blink/public/platform/web_layer.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
+#include "third_party/blink/renderer/core/paint/stub_chrome_client_for_spv2.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
+#include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
-#include "platform/scroll/ScrollbarTheme.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
 // Integration tests of canvas painting code (in SPv2 mode).
 

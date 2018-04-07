@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DOMTypedArray_h
-#define DOMTypedArray_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_TYPED_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_TYPED_ARRAY_H_
 
-#include "core/CoreExport.h"
-#include "core/typed_arrays/DOMArrayBufferView.h"
-#include "core/typed_arrays/DOMSharedArrayBuffer.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/typed_arrays/Float32Array.h"
-#include "platform/wtf/typed_arrays/Float64Array.h"
-#include "platform/wtf/typed_arrays/Int16Array.h"
-#include "platform/wtf/typed_arrays/Int32Array.h"
-#include "platform/wtf/typed_arrays/Int8Array.h"
-#include "platform/wtf/typed_arrays/Uint16Array.h"
-#include "platform/wtf/typed_arrays/Uint32Array.h"
-#include "platform/wtf/typed_arrays/Uint8Array.h"
-#include "platform/wtf/typed_arrays/Uint8ClampedArray.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_shared_array_buffer.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/float32_array.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/float64_array.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/int16_array.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/int32_array.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/int8_array.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/uint16_array.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/uint32_array.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/uint8_array.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/uint8_clamped_array.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -117,4 +117,4 @@ typedef DOMTypedArray<WTF::Float64Array, v8::Float64Array> DOMFloat64Array;
 
 }  // namespace blink
 
-#endif  // DOMTypedArray_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TYPED_ARRAYS_DOM_TYPED_ARRAY_H_

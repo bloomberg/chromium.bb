@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaKeyMessageEvent_h
-#define MediaKeyMessageEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEY_MESSAGE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEY_MESSAGE_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/encryptedmedia/MediaKeyMessageEventInit.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_key_message_event_init.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class MediaKeyMessageEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // MediaKeyMessageEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ENCRYPTEDMEDIA_MEDIA_KEY_MESSAGE_EVENT_H_

@@ -28,11 +28,11 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef URLSecurityOriginMap_h
-#define URLSecurityOriginMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_URL_SECURITY_ORIGIN_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_URL_SECURITY_ORIGIN_MAP_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ class URLSecurityOriginMap {
 
 }  // namespace blink
 
-#endif  // URLSecurityOriginMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_URL_SECURITY_ORIGIN_MAP_H_

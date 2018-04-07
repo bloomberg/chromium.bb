@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/clipboard/DataTransferItem.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer_item.h"
 
 #include "base/location.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/clipboard/DataObjectItem.h"
-#include "core/clipboard/DataTransfer.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/probe/CoreProbes.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/clipboard/data_object_item.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

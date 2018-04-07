@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/public/browser/screen_orientation_delegate.h"
-#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_lock_type.h"
 
 namespace content {
 

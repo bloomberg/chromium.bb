@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebPagePopup_h
-#define WebPagePopup_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PAGE_POPUP_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PAGE_POPUP_H_
 
-#include "public/platform/WebCommon.h"
-#include "WebWidget.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/web/web_widget.h"
 
 namespace blink {
 

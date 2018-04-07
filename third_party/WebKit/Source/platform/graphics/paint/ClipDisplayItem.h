@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ClipDisplayItem_h
-#define ClipDisplayItem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_DISPLAY_ITEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_DISPLAY_ITEM_H_
 
 #include "SkRegion.h"
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatRoundedRect.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class PLATFORM_EXPORT EndClipDisplayItem final : public PairedEndDisplayItem {
 
 }  // namespace blink
 
-#endif  // ClipDisplayItem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_CLIP_DISPLAY_ITEM_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/BinaryDataFontFaceSource.h"
+#include "third_party/blink/renderer/core/css/binary_data_font_face_source.h"
 
-#include "platform/SharedBuffer.h"
-#include "platform/fonts/FontCustomPlatformData.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/SimpleFontData.h"
+#include "third_party/blink/renderer/platform/fonts/font_custom_platform_data.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 
 namespace blink {
 

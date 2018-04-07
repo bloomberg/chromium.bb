@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SubtleCrypto_h
-#define SubtleCrypto_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_SUBTLE_CRYPTO_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_SUBTLE_CRYPTO_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/array_buffer_or_array_buffer_view.h"
-#include "bindings/modules/v8/array_buffer_or_array_buffer_view_or_dictionary.h"
-#include "bindings/modules/v8/dictionary_or_string.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/modules/v8/array_buffer_or_array_buffer_view_or_dictionary.h"
+#include "third_party/blink/renderer/bindings/modules/v8/dictionary_or_string.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -118,4 +118,4 @@ class SubtleCrypto final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // SubtleCrypto_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_SUBTLE_CRYPTO_H_

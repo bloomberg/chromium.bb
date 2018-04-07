@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSMathVariadic_h
-#define CSSMathVariadic_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_VARIADIC_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_VARIADIC_H_
 
 #include "base/macros.h"
-#include "core/css/cssom/CSSMathValue.h"
-#include "core/css/cssom/CSSNumericArray.h"
+#include "third_party/blink/renderer/core/css/cssom/css_math_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_numeric_array.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class CORE_EXPORT CSSMathVariadic : public CSSMathValue {
 
 }  // namespace blink
 
-#endif  // CSSMathVariadic_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_VARIADIC_H_

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/shadow/ShadowElementNames.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 
 namespace blink {
 

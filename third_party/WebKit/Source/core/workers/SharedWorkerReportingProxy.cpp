@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/SharedWorkerReportingProxy.h"
+#include "third_party/blink/renderer/core/workers/shared_worker_reporting_proxy.h"
 
 #include "base/location.h"
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/exported/WebSharedWorkerImpl.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/wtf/WTF.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/exported/web_shared_worker_impl.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 

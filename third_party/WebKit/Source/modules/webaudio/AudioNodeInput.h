@@ -23,15 +23,15 @@
  * DAMAGE.
  */
 
-#ifndef AudioNodeInput_h
-#define AudioNodeInput_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_NODE_INPUT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_NODE_INPUT_H_
 
 #include <memory>
-#include "modules/webaudio/AudioNode.h"
-#include "modules/webaudio/AudioSummingJunction.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_summing_junction.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -114,4 +114,4 @@ class AudioNodeInput final : public AudioSummingJunction {
 
 }  // namespace blink
 
-#endif  // AudioNodeInput_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_NODE_INPUT_H_

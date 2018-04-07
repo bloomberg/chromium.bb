@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/InspectorHighlight.h"
+#include "third_party/blink/renderer/core/inspector/inspector_highlight.h"
 
 #include "base/macros.h"
-#include "core/dom/PseudoElement.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/VisualViewport.h"
-#include "core/geometry/DOMRect.h"
-#include "core/layout/AdjustForAbsoluteZoom.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutGrid.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/shapes/ShapeOutsideInfo.h"
-#include "core/page/Page.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/PlatformChromeClient.h"
-#include "platform/graphics/Path.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_grid.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/platform_chrome_client.h"
 
 namespace blink {
 

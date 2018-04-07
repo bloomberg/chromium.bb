@@ -5,7 +5,7 @@
 #include "content/renderer/render_view_impl.h"
 
 #include "content/public/common/renderer_preferences.h"
-#include "third_party/WebKit/public/platform/WebFontRenderStyle.h"
+#include "third_party/blink/public/platform/web_font_render_style.h"
 #include "third_party/skia/include/core/SkFontLCDConfig.h"
 #include "ui/gfx/font_render_params.h"
 

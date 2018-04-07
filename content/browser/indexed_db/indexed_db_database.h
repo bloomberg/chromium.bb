@@ -29,7 +29,7 @@
 #include "content/browser/indexed_db/list_set.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db_metadata.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_types.h"
 
 namespace url {
 class Origin;

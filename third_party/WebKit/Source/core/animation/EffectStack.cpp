@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/EffectStack.h"
+#include "third_party/blink/renderer/core/animation/effect_stack.h"
 
 #include <algorithm>
-#include "core/animation/CompositorAnimations.h"
-#include "core/animation/InvalidatableInterpolation.h"
-#include "core/animation/css/CSSAnimations.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/animation/compositor_animations.h"
+#include "third_party/blink/renderer/core/animation/css/css_animations.h"
+#include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

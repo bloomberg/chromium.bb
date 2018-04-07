@@ -13,7 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/navigation_controller.h"
-#include "third_party/WebKit/public/web/WebTriggeringEventInfo.h"
+#include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "ui/base/window_open_disposition.h"
 
 class GURL;

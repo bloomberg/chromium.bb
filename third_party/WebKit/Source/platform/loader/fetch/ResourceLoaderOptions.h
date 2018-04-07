@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ResourceLoaderOptions_h
-#define ResourceLoaderOptions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_LOADER_OPTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_LOADER_OPTIONS_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/CrossThreadCopier.h"
-#include "platform/loader/fetch/FetchInitiatorInfo.h"
-#include "platform/loader/fetch/IntegrityMetadata.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
+#include "third_party/blink/renderer/platform/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -206,4 +206,4 @@ struct CrossThreadCopier<ResourceLoaderOptions> {
 
 }  // namespace blink
 
-#endif  // ResourceLoaderOptions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_LOADER_OPTIONS_H_

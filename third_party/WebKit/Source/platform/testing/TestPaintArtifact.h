@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TestPaintArtifact_h
-#define TestPaintArtifact_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TEST_PAINT_ARTIFACT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TEST_PAINT_ARTIFACT_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "platform/graphics/Color.h"
-#include "platform/graphics/paint/DisplayItemList.h"
-#include "platform/graphics/paint/PaintArtifact.h"
-#include "platform/graphics/paint/TransformPaintPropertyNode.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_list.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
+#include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace cc {
 class Layer;
@@ -100,4 +100,4 @@ class TestPaintArtifact {
 
 }  // namespace blink
 
-#endif  // TestPaintArtifact_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TEST_PAINT_ARTIFACT_H_

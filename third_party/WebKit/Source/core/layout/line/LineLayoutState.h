@@ -22,12 +22,12 @@
  *
  */
 
-#ifndef LineLayoutState_h
-#define LineLayoutState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_LAYOUT_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_LAYOUT_STATE_H_
 
-#include "core/layout/LayoutBlockFlow.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -114,4 +114,4 @@ class LineLayoutState {
 
 }  // namespace blink
 
-#endif  // LineLayoutState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_LAYOUT_STATE_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerOrWorkletModuleScriptFetcher_h
-#define WorkerOrWorkletModuleScriptFetcher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_WORKER_OR_WORKLET_MODULE_SCRIPT_FETCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_WORKER_OR_WORKLET_MODULE_SCRIPT_FETCHER_H_
 
-#include "core/loader/modulescript/ModuleScriptFetcher.h"
-#include "core/workers/WorkerOrWorkletModuleFetchCoordinator.h"
-#include "core/workers/WorkerOrWorkletModuleFetchCoordinatorProxy.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator_proxy.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class CORE_EXPORT WorkerOrWorkletModuleScriptFetcher final
 
 }  // namespace blink
 
-#endif  // WorkerOrWorkletModuleScriptFetcher_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_WORKER_OR_WORKLET_MODULE_SCRIPT_FETCHER_H_

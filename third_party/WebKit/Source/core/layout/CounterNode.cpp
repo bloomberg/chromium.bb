@@ -19,10 +19,10 @@
  *
  */
 
-#include "core/layout/CounterNode.h"
+#include "third_party/blink/renderer/core/layout/counter_node.h"
 
-#include "core/layout/LayoutCounter.h"
-#include "platform/wtf/CheckedNumeric.h"
+#include "third_party/blink/renderer/core/layout/layout_counter.h"
+#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

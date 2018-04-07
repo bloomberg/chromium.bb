@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SlotScopedTraversal_h
-#define SlotScopedTraversal_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SLOT_SCOPED_TRAVERSAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SLOT_SCOPED_TRAVERSAL_H_
 
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 

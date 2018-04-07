@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/state_machines/BackwardGraphemeBoundaryStateMachine.h"
+#include "third_party/blink/renderer/core/editing/state_machines/backward_grapheme_boundary_state_machine.h"
 
-#include "core/editing/state_machines/StateMachineTestUtil.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/core/editing/state_machines/state_machine_test_util.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
 

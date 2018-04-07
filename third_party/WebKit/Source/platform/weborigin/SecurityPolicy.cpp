@@ -26,21 +26,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/weborigin/SecurityPolicy.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 #include <memory>
-#include "platform/runtime_enabled_features.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/OriginAccessEntry.h"
-#include "platform/weborigin/SchemeRegistry.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/text/ParsingUtilities.h"
-#include "platform/wtf/text/StringHash.h"
-#include "public/platform/WebReferrerPolicy.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 

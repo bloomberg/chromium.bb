@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SelectRuleFeatureSet_h
-#define SelectRuleFeatureSet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_SELECT_RULE_FEATURE_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_SELECT_RULE_FEATURE_SET_H_
 
-#include "core/css/RuleFeatureSet.h"
-#include "core/dom/Element.h"
+#include "third_party/blink/renderer/core/css/rule_feature_set.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 
 namespace blink {
 

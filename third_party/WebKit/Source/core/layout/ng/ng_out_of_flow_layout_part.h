@@ -5,11 +5,11 @@
 #ifndef NGOutOfFlowLayoutPart_h
 #define NGOutOfFlowLayoutPart_h
 
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
-#include "core/layout/ng/ng_absolute_utils.h"
-#include "core/layout/ng/ng_constraint_space.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

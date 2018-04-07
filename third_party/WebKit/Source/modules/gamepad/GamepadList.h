@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#ifndef GamepadList_h
-#define GamepadList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_LIST_H_
 
 #include "device/gamepad/public/cpp/gamepads.h"
-#include "modules/gamepad/Gamepad.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class GamepadList final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // GamepadList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_LIST_H_

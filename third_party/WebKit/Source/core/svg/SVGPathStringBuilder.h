@@ -17,12 +17,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPathStringBuilder_h
-#define SVGPathStringBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_STRING_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_STRING_BUILDER_H_
 
-#include "core/CoreExport.h"
-#include "core/svg/SVGPathConsumer.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/svg/svg_path_consumer.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class CORE_EXPORT SVGPathStringBuilder final : public SVGPathConsumer {
 
 }  // namespace blink
 
-#endif  // SVGPathStringBuilder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_STRING_BUILDER_H_

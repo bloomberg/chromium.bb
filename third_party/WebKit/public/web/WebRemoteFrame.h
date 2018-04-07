@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebRemoteFrame_h
-#define WebRemoteFrame_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_REMOTE_FRAME_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_REMOTE_FRAME_H_
 
-#include "public/platform/WebContentSecurityPolicy.h"
-#include "public/platform/WebInsecureRequestPolicy.h"
-#include "public/web/WebFrame.h"
-#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
-#include "third_party/WebKit/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/platform/web_content_security_policy.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/web/web_frame.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -139,4 +139,4 @@ class WebRemoteFrame : public WebFrame {
 
 }  // namespace blink
 
-#endif  // WebRemoteFrame_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_REMOTE_FRAME_H_

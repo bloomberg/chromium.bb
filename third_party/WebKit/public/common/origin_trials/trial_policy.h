@@ -6,7 +6,7 @@
 #define THIRD_PARTY_WEBKIT_PUBLIC_COMMON_ORIGIN_TRIALS_TRIAL_POLICY_H_
 
 #include "base/strings/string_piece.h"
-#include "third_party/WebKit/common/common_export.h"
+#include "third_party/blink/common/common_export.h"
 #include "url/gurl.h"
 
 namespace blink {

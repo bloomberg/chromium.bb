@@ -26,20 +26,20 @@
  *
  */
 
-#ifndef MessageEvent_h
-#define MessageEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_MESSAGE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_MESSAGE_EVENT_H_
 
 #include <memory>
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "bindings/core/v8/serialization/UnpackedSerializedScriptValue.h"
-#include "core/CoreExport.h"
-#include "core/dom/events/Event.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/events/MessageEventInit.h"
-#include "core/fileapi/Blob.h"
-#include "core/messaging/MessagePort.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "platform/wtf/Compiler.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/unpacked_serialized_script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/events/message_event_init.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 
@@ -221,4 +221,4 @@ class CORE_EXPORT MessageEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // MessageEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_MESSAGE_EVENT_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/modulescript/DocumentModuleScriptFetcher.h"
+#include "third_party/blink/renderer/core/loader/modulescript/document_module_script_fetcher.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/loader/SubresourceIntegrityHelper.h"
-#include "platform/loader/fetch/FetchUtils.h"
-#include "platform/network/mime/MIMETypeRegistry.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 
 namespace blink {
 

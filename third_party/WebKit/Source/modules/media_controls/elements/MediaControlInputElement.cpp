@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlInputElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_input_element.h"
 
-#include "core/dom/DOMTokenList.h"
-#include "core/dom/events/Event.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/html/HTMLSpanElement.h"
-#include "core/html/forms/HTMLLabelElement.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "modules/media_controls/MediaControlsImpl.h"
-#include "modules/media_controls/elements/MediaControlElementsHelper.h"
-#include "platform/Histogram.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/text/PlatformLocale.h"
-#include "public/platform/WebSize.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/html/forms/html_label_element.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/html/html_span_element.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace {
 

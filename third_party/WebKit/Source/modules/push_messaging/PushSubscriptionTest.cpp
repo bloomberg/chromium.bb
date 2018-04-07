@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/push_messaging/PushSubscription.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_subscription.h"
 
 #include "base/macros.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "platform/bindings/StringResource.h"
-#include "public/platform/modules/push_messaging/WebPushSubscription.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/platform/bindings/string_resource.h"
 
 namespace blink {
 

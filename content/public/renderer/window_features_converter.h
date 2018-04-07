@@ -6,8 +6,8 @@
 #define CONTENT_PUBLIC_RENDERER_WINDOW_FEATURES_CONVERTER_H_
 
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/web/WebWindowFeatures.h"
-#include "third_party/WebKit/public/web/window_features.mojom.h"
+#include "third_party/blink/public/web/web_window_features.h"
+#include "third_party/blink/public/web/window_features.mojom.h"
 
 namespace content {
 

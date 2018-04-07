@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ICUError_h
-#define ICUError_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_ICU_ERROR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_ICU_ERROR_H_
 
 #include <unicode/utypes.h>
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -41,4 +41,4 @@ inline void ICUError::CrashIfCritical() {
 
 }  // namespace blink
 
-#endif  // ICUError_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_ICU_ERROR_H_

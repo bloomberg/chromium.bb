@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigatorNFC_h
-#define NavigatorNFC_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NAVIGATOR_NFC_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NAVIGATOR_NFC_H_
 
-#include "core/frame/Navigator.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -37,4 +37,4 @@ class NavigatorNFC final : public GarbageCollected<NavigatorNFC>,
 
 }  // namespace blink
 
-#endif  // NavigatorNFC_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NAVIGATOR_NFC_H_

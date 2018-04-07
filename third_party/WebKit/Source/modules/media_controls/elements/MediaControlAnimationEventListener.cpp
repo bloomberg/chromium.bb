@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlAnimationEventListener.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_animation_event_listener.h"
 
-#include "core/dom/Element.h"
-#include "core/dom/events/Event.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
 
 namespace blink {
 

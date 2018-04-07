@@ -23,9 +23,9 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/WaveShaperProcessor.h"
 #include <memory>
-#include "modules/webaudio/WaveShaperDSPKernel.h"
+#include "third_party/blink/renderer/modules/webaudio/wave_shaper_dsp_kernel.h"
+#include "third_party/blink/renderer/modules/webaudio/wave_shaper_processor.h"
 
 namespace blink {
 

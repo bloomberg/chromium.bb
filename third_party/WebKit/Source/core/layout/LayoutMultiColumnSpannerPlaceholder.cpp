@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 
-#include "core/layout/LayoutMultiColumnFlowThread.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 
 namespace blink {
 

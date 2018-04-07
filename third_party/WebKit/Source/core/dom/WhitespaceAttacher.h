@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WhitespaceAttacher_h
-#define WhitespaceAttacher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_WHITESPACE_ATTACHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_WHITESPACE_ATTACHER_H_
 
-#include "core/CoreExport.h"
-#include "platform/heap/Member.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
 
@@ -101,4 +101,4 @@ class CORE_EXPORT WhitespaceAttacher {
 
 }  // namespace blink
 
-#endif  // WhitespaceAttacher_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_WHITESPACE_ATTACHER_H_

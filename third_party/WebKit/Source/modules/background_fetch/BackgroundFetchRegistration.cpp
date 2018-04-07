@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/background_fetch/BackgroundFetchRegistration.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
 
-#include "core/dom/DOMException.h"
-#include "core/dom/events/Event.h"
-#include "modules/background_fetch/BackgroundFetchBridge.h"
-#include "modules/background_fetch/IconDefinition.h"
-#include "modules/event_target_modules_names.h"
-#include "modules/serviceworkers/ServiceWorkerRegistration.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_bridge.h"
+#include "third_party/blink/renderer/modules/background_fetch/icon_definition.h"
+#include "third_party/blink/renderer/modules/event_target_modules_names.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_registration.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

@@ -19,16 +19,16 @@
  *
 */
 
-#ifndef HitTestLocation_h
-#define HitTestLocation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_LOCATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_LOCATION_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "platform/geometry/FloatQuad.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -106,4 +106,4 @@ class CORE_EXPORT HitTestLocation {
 
 }  // namespace blink
 
-#endif  // HitTestLocation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_LOCATION_H_

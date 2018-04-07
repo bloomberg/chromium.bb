@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GraphicsLayerUpdater_h
-#define GraphicsLayerUpdater_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_GRAPHICS_LAYER_UPDATER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_GRAPHICS_LAYER_UPDATER_H_
 
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ class GraphicsLayerUpdater {
 
 }  // namespace blink
 
-#endif  // GraphicsLayerUpdater_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_GRAPHICS_LAYER_UPDATER_H_

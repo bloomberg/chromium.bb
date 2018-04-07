@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/DrawingRecorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/PaintControllerTest.h"
-#include "platform/testing/FakeDisplayItemClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller_test.h"
+#include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
 
 namespace blink {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/list/layout_ng_list_marker_image.h"
-#include "core/svg/graphics/SVGImage.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker_image.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 
 namespace blink {
 

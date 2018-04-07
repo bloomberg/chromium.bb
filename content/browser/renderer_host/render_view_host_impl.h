@@ -29,9 +29,9 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "net/base/load_states.h"
-#include "third_party/WebKit/public/web/WebAXEnums.h"
-#include "third_party/WebKit/public/web/WebConsoleMessage.h"
-#include "third_party/WebKit/public/web/WebPopupType.h"
+#include "third_party/blink/public/web/web_ax_enums.h"
+#include "third_party/blink/public/web/web_console_message.h"
+#include "third_party/blink/public/web/web_popup_type.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/mojo/window_open_disposition.mojom.h"
 

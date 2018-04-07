@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AvailabilityCallbackWrapper_h
-#define AvailabilityCallbackWrapper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_REMOTEPLAYBACK_AVAILABILITY_CALLBACK_WRAPPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_REMOTEPLAYBACK_AVAILABILITY_CALLBACK_WRAPPER_H_
 
 #include <memory>
 
 #include "base/callback.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/wtf/Compiler.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class AvailabilityCallbackWrapper final
 
 }  // namespace blink
 
-#endif  // AvailabilityCallbackWrapper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_REMOTEPLAYBACK_AVAILABILITY_CALLBACK_WRAPPER_H_

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/script/ModuleMap.h"
+#include "third_party/blink/renderer/core/script/module_map.h"
 
-#include "core/dom/Document.h"
-#include "core/loader/modulescript/ModuleScriptFetchRequest.h"
-#include "core/loader/modulescript/ModuleScriptLoaderClient.h"
-#include "core/script/Modulator.h"
-#include "core/script/ModuleScript.h"
-#include "core/script/ScriptModuleResolver.h"
-#include "core/testing/DummyModulator.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/heap/Handle.h"
-#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
-#include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_client.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/core/script/script_module_resolver.h"
+#include "third_party/blink/renderer/core/testing/dummy_modulator.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 namespace blink {
 

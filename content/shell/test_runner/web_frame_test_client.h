@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/web/WebFrameClient.h"
+#include "third_party/blink/public/web/web_frame_client.h"
 
 namespace test_runner {
 

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/BoxReflectionUtils.h"
+#include "third_party/blink/renderer/core/paint/box_reflection_utils.h"
 
-#include "core/layout/LayoutBox.h"
-#include "core/paint/NinePieceImagePainter.h"
-#include "core/paint/PaintLayer.h"
-#include "platform/LengthFunctions.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/BoxReflection.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/PaintRecordBuilder.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/box_reflection.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
 
 namespace blink {
 

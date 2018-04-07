@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VideoFrameSubmitter_h
-#define VideoFrameSubmitter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_VIDEO_FRAME_SUBMITTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_VIDEO_FRAME_SUBMITTER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/PlatformExport.h"
-#include "platform/graphics/VideoFrameResourceProvider.h"
-#include "platform/wtf/Functional.h"
-#include "public/platform/WebVideoFrameSubmitter.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
+#include "third_party/blink/public/platform/web_video_frame_submitter.h"
+#include "third_party/blink/renderer/platform/graphics/video_frame_resource_provider.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -96,4 +96,4 @@ class PLATFORM_EXPORT VideoFrameSubmitter
 
 }  // namespace blink
 
-#endif  // VideoFrameSubmitter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_VIDEO_FRAME_SUBMITTER_H_

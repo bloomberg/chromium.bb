@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
 
 namespace vr {
 

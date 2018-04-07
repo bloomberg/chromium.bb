@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ContextFeatureSettings_h
-#define ContextFeatureSettings_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CONTEXT_FEATURES_CONTEXT_FEATURE_SETTINGS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CONTEXT_FEATURES_CONTEXT_FEATURE_SETTINGS_H_
 
-#include "core/CoreExport.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "platform/Supplementable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -43,4 +43,4 @@ class CORE_EXPORT ContextFeatureSettings final
 
 }  // namespace blink
 
-#endif  // ContextFeatureSettings_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CONTEXT_FEATURES_CONTEXT_FEATURE_SETTINGS_H_

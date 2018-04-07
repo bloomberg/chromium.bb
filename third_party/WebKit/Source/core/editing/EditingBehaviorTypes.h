@@ -18,8 +18,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef EditingBehaviorTypes_h
-#define EditingBehaviorTypes_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_BEHAVIOR_TYPES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_BEHAVIOR_TYPES_H_
 
 namespace blink {
 
@@ -46,4 +46,4 @@ enum EditingBehaviorType {
 
 }  // namespace blink
 
-#endif  // EditingBehaviorTypes_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_BEHAVIOR_TYPES_H_

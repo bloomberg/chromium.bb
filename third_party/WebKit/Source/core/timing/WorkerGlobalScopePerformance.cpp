@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/timing/WorkerGlobalScopePerformance.h"
+#include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
 
-#include "core/timing/WorkerPerformance.h"
-#include "core/workers/WorkerGlobalScope.h"
+#include "third_party/blink/renderer/core/timing/worker_performance.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 
 namespace blink {
 

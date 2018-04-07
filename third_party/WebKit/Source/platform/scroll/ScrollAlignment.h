@@ -41,12 +41,12 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef ScrollAlignment_h
-#define ScrollAlignment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_ALIGNMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_ALIGNMENT_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -112,4 +112,4 @@ inline bool PLATFORM_EXPORT operator==(const ScrollAlignment& lhs,
 
 }  // namespace blink
 
-#endif  // ScrollAlignment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_ALIGNMENT_H_

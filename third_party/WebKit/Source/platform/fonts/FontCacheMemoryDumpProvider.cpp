@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/FontCacheMemoryDumpProvider.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache_memory_dump_provider.h"
 
-#include "platform/fonts/FontCache.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

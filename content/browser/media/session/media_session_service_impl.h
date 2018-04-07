@@ -8,7 +8,7 @@
 #include "base/optional.h"
 #include "content/public/common/media_metadata.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/WebKit/public/platform/modules/mediasession/media_session.mojom.h"
+#include "third_party/blink/public/platform/modules/mediasession/media_session.mojom.h"
 
 namespace content {
 

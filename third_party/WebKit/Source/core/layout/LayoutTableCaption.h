@@ -17,10 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LayoutTableCaption_h
-#define LayoutTableCaption_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_CAPTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_CAPTION_H_
 
-#include "core/layout/LayoutBlockFlow.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableCaption, IsTableCaption());
 
 }  // namespace blink
 
-#endif  // LayoutTableCaption_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_CAPTION_H_

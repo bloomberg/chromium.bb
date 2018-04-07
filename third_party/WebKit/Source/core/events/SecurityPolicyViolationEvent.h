@@ -23,12 +23,12 @@
  * DAMAGE.
  */
 
-#ifndef SecurityPolicyViolationEvent_h
-#define SecurityPolicyViolationEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_SECURITY_POLICY_VIOLATION_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_SECURITY_POLICY_VIOLATION_EVENT_H_
 
-#include "core/dom/events/Event.h"
-#include "core/events/SecurityPolicyViolationEventInit.h"
-#include "platform/network/ContentSecurityPolicyParsers.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/security_policy_violation_event_init.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 
 namespace blink {
 
@@ -82,4 +82,4 @@ class SecurityPolicyViolationEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // SecurityPolicyViolationEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_SECURITY_POLICY_VIOLATION_EVENT_H_

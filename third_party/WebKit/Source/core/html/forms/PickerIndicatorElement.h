@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PickerIndicatorElement_h
-#define PickerIndicatorElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_PICKER_INDICATOR_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_PICKER_INDICATOR_ELEMENT_H_
 
-#include "core/html/HTMLDivElement.h"
-#include "core/html/forms/DateTimeChooser.h"
-#include "core/html/forms/DateTimeChooserClient.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
 
 namespace blink {
 

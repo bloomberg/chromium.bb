@@ -13,7 +13,7 @@
 #include "base/stl_util.h"
 #include "cc/layers/layer.h"
 #include "jni/ViewAndroidDelegate_jni.h"
-#include "third_party/WebKit/public/platform/WebCursorInfo.h"
+#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/android/event_forwarder.h"
 #include "ui/android/view_client.h"
 #include "ui/android/window_android.h"

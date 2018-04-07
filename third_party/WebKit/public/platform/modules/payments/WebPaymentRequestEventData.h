@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPaymentRequestEventData_h
-#define WebPaymentRequestEventData_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PAYMENTS_WEB_PAYMENT_REQUEST_EVENT_DATA_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PAYMENTS_WEB_PAYMENT_REQUEST_EVENT_DATA_H_
 
-#include "public/platform/WebString.h"
-#include "public/platform/modules/payments/WebCanMakePaymentEventData.h"
-#include "public/platform/modules/payments/WebPaymentCurrencyAmount.h"
+#include "third_party/blink/public/platform/modules/payments/web_can_make_payment_event_data.h"
+#include "third_party/blink/public/platform/modules/payments/web_payment_currency_amount.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -19,4 +19,4 @@ struct WebPaymentRequestEventData : public WebCanMakePaymentEventData {
 
 }  // namespace blink
 
-#endif  // WebPaymentRequestEventData_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PAYMENTS_WEB_PAYMENT_REQUEST_EVENT_DATA_H_

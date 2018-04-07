@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CheckboxInputType_h
-#define CheckboxInputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_CHECKBOX_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_CHECKBOX_INPUT_TYPE_H_
 
-#include "core/html/forms/BaseCheckableInputType.h"
+#include "third_party/blink/renderer/core/html/forms/base_checkable_input_type.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class CheckboxInputType final : public BaseCheckableInputType {
 
 }  // namespace blink
 
-#endif  // CheckboxInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_CHECKBOX_INPUT_TYPE_H_

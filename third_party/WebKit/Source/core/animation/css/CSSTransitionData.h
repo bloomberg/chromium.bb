@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSTransitionData_h
-#define CSSTransitionData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_CSS_TRANSITION_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_CSS_TRANSITION_DATA_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/animation/css/CSSTimingData.h"
-#include "core/css_property_names.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/animation/css/css_timing_data.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -84,4 +84,4 @@ class CORE_EXPORT CSSTransitionData final : public CSSTimingData {
 
 }  // namespace blink
 
-#endif  // CSSTransitionData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_CSS_TRANSITION_DATA_H_

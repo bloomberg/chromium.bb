@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXMenuListOption_h
-#define AXMenuListOption_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_MENU_LIST_OPTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_MENU_LIST_OPTION_H_
 
 #include "base/macros.h"
-#include "core/html/forms/HTMLOptionElement.h"
-#include "modules/accessibility/AXMockObject.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_mock_object.h"
 
 namespace blink {
 
@@ -84,4 +84,4 @@ DEFINE_AX_OBJECT_TYPE_CASTS(AXMenuListOption, IsMenuListOption());
 
 }  // namespace blink
 
-#endif  // AXMenuListOption_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_MENU_LIST_OPTION_H_

@@ -24,15 +24,15 @@
  *
  */
 
-#ifndef DOMTimer_h
-#define DOMTimer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_TIMER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_TIMER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ScheduledAction.h"
-#include "core/CoreExport.h"
-#include "core/dom/UserGestureIndicator.h"
-#include "core/frame/PausableTimer.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/scheduled_action.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/frame/pausable_timer.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -93,4 +93,4 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
 
 }  // namespace blink
 
-#endif  // DOMTimer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_TIMER_H_

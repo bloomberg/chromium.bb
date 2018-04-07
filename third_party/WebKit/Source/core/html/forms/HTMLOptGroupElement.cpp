@@ -23,17 +23,17 @@
  *
  */
 
-#include "core/html/forms/HTMLOptGroupElement.h"
+#include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 
-#include "core/dom/Text.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/html/HTMLSlotElement.h"
-#include "core/html/forms/HTMLSelectElement.h"
-#include "core/html/shadow/ShadowElementNames.h"
-#include "core/html_names.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/html/html_slot_element.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
 

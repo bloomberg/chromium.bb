@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebTouchPoint_h
-#define WebTouchPoint_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TOUCH_POINT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TOUCH_POINT_H_
 
-#include "WebCommon.h"
-#include "WebFloatPoint.h"
-#include "WebPointerProperties.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_pointer_properties.h"
 
 namespace blink {
 

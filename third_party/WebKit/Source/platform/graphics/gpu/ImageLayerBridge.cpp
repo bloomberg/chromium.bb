@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/gpu/ImageLayerBridge.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/image_layer_bridge.h"
 
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "platform/graphics/AcceleratedStaticBitmapImage.h"
-#include "platform/graphics/ColorBehavior.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/gpu/SharedGpuContext.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebExternalTextureLayer.h"
-#include "public/platform/WebGraphicsContext3DProvider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_compositor_support.h"
+#include "third_party/blink/public/platform/web_external_texture_layer.h"
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/color_behavior.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 
 namespace blink {
 

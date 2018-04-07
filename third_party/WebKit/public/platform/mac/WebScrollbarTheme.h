@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebScrollbarTheme_h
-#define WebScrollbarTheme_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MAC_WEB_SCROLLBAR_THEME_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MAC_WEB_SCROLLBAR_THEME_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebScrollbarButtonsPlacement.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_scrollbar_buttons_placement.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockFontResourceClient_h
-#define MockFontResourceClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_MOCK_FONT_RESOURCE_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_MOCK_FONT_RESOURCE_CLIENT_H_
 
-#include "core/loader/resource/FontResource.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/ResourceClient.h"
+#include "third_party/blink/renderer/core/loader/resource/font_resource.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 
 namespace blink {
 
@@ -41,4 +41,4 @@ class MockFontResourceClient final
 
 }  // namespace blink
 
-#endif  // MockFontResourceClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_MOCK_FONT_RESOURCE_CLIENT_H_

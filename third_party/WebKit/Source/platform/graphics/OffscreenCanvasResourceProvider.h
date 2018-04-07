@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef OffscreenCanvasResourceProvider_h
-#define OffscreenCanvasResourceProvider_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_RESOURCE_PROVIDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_RESOURCE_PROVIDER_H_
 
 #include "components/viz/common/quads/shared_bitmap.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
-#include "platform/graphics/StaticBitmapImage.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class PLATFORM_EXPORT OffscreenCanvasResourceProvider {
 
 }  // namespace blink
 
-#endif  // OffscreenCanvasResourceProvider_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_RESOURCE_PROVIDER_H_

@@ -18,19 +18,19 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSPropertyValueSet_h
-#define CSSPropertyValueSet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_VALUE_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_VALUE_SET_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSPropertyValue.h"
-#include "core/css/PropertySetCSSStyleDeclaration.h"
-#include "core/css/parser/CSSParserMode.h"
-#include "core/css_property_names.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_property_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
+#include "third_party/blink/renderer/core/css/property_set_css_style_declaration.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -352,4 +352,4 @@ inline int CSSPropertyValueSet::FindPropertyIndex(T property) const {
 
 }  // namespace blink
 
-#endif  // CSSPropertyValueSet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_VALUE_SET_H_

@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ApplyStyleCommand_h
-#define ApplyStyleCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_APPLY_STYLE_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_APPLY_STYLE_COMMAND_H_
 
-#include "core/editing/commands/CompositeEditCommand.h"
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/editing/commands/composite_edit_command.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 

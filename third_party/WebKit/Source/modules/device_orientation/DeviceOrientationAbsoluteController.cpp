@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/device_orientation/DeviceOrientationAbsoluteController.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_absolute_controller.h"
 
-#include "core/frame/Settings.h"
-#include "modules/device_orientation/DeviceOrientationDispatcher.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_dispatcher.h"
 
 namespace blink {
 

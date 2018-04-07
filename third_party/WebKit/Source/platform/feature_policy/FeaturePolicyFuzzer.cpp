@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/feature_policy/FeaturePolicy.h"
+#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 
 #include <stddef.h>
 #include <stdint.h>
 #include <memory>
-#include "platform/heap/Handle.h"
-#include "platform/testing/BlinkFuzzerTestSupport.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static blink::BlinkFuzzerTestSupport test_support =

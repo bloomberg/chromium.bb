@@ -20,21 +20,21 @@
  *
  */
 
-#ifndef ImageLoader_h
-#define ImageLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_IMAGE_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_IMAGE_LOADER_H_
 
 #include <memory>
 #include "base/memory/weak_ptr.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/CoreExport.h"
-#include "core/loader/resource/ImageResource.h"
-#include "core/loader/resource/ImageResourceContent.h"
-#include "core/loader/resource/ImageResourceObserver.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

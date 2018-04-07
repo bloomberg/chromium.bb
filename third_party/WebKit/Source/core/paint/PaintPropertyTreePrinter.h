@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintPropertyTreePrinter_h
-#define PaintPropertyTreePrinter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_PROPERTY_TREE_PRINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_PROPERTY_TREE_PRINTER_H_
 
-#include "core/CoreExport.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #if DCHECK_IS_ON()
 
@@ -43,4 +43,4 @@ scrollPropertyTreeAsString(const blink::LocalFrameView& rootFrame);
 
 #endif  // if DCHECK_IS_ON()
 
-#endif  // PaintPropertyTreePrinter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_PROPERTY_TREE_PRINTER_H_

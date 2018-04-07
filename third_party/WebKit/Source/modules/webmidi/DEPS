@@ -1,9 +1,9 @@
 include_rules = [
     "+media/midi/midi_service.mojom-blink.h",
-    "-modules",
-    "+modules/EventModules.h",
-    "+modules/EventTargetModules.h",
-    "+modules/ModulesExport.h",
-    "+modules/permissions",
-    "+modules/webmidi",
+    "-third_party/blink/renderer/modules",
+    "+third_party/blink/renderer/modules/event_modules.h",
+    "+third_party/blink/renderer/modules/event_target_modules.h",
+    "+third_party/blink/renderer/modules/modules_export.h",
+    "+third_party/blink/renderer/modules/permissions",
+    "+third_party/blink/renderer/modules/webmidi",
 ]

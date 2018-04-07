@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/testing/sim/SimWebViewClient.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_web_view_client.h"
 
-#include "public/platform/WebLayerTreeView.h"
-#include "public/web/WebLocalFrame.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace blink {
 

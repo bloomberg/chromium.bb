@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "storage/common/fileapi/file_system_util.h"
-#include "third_party/WebKit/public/platform/WebFileError.h"
-#include "third_party/WebKit/public/platform/WebFileWriterClient.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_file_error.h"
+#include "third_party/blink/public/platform/web_file_writer_client.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 using storage::FileErrorToWebFileError;
 

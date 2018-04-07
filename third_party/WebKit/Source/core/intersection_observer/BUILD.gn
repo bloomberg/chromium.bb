@@ -2,19 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/core/core.gni")
+import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("intersection_observer") {
   sources = [
-    "ElementIntersectionObserverData.cpp",
-    "ElementIntersectionObserverData.h",
-    "IntersectionObservation.cpp",
-    "IntersectionObservation.h",
-    "IntersectionObserver.cpp",
-    "IntersectionObserver.h",
-    "IntersectionObserverController.cpp",
-    "IntersectionObserverController.h",
-    "IntersectionObserverEntry.cpp",
-    "IntersectionObserverEntry.h",
+    "element_intersection_observer_data.cc",
+    "element_intersection_observer_data.h",
+    "intersection_observation.cc",
+    "intersection_observation.h",
+    "intersection_observer.cc",
+    "intersection_observer.h",
+    "intersection_observer_controller.cc",
+    "intersection_observer_controller.h",
+    "intersection_observer_entry.cc",
+    "intersection_observer_entry.h",
   ]
 }

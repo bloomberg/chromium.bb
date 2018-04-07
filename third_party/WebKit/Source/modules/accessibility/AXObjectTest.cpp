@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/accessibility/AXObject.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 
-#include "modules/accessibility/testing/AccessibilityTest.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/modules/accessibility/testing/accessibility_test.h"
 
 namespace blink {
 

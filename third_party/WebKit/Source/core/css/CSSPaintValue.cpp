@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSPaintValue.h"
+#include "third_party/blink/renderer/core/css/css_paint_value.h"
 
-#include "core/css/CSSCustomIdentValue.h"
-#include "core/css/CSSSyntaxDescriptor.h"
-#include "core/css/cssom/StyleValueFactory.h"
-#include "core/layout/LayoutObject.h"
-#include "platform/graphics/Image.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
+#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/cssom/style_value_factory.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

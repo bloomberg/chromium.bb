@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebSelector.h"
+#include "third_party/blink/public/web/web_selector.h"
 
-#include "public/platform/WebString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 

@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_file_system.h"
 
-#include "platform/heap/Handle.h"
-#include "platform/heap/SafePoint.h"
-#include "platform/wtf/text/CString.h"
 #include "sql/initialization.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/safe_point.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/sqlite/sqlite3.h"
 
 // SQLiteFileSystem::registerSQLiteVFS() is implemented in the

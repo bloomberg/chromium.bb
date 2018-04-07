@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MinMaxSize_h
-#define MinMaxSize_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_MIN_MAX_SIZE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_MIN_MAX_SIZE_H_
 
-#include "core/CoreExport.h"
-#include "platform/LayoutUnit.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
 
 namespace blink {
 
@@ -36,4 +36,4 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&, const MinMaxSize&);
 
 }  // namespace blink
 
-#endif  // MinMaxSize_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_MIN_MAX_SIZE_H_

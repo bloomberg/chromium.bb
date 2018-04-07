@@ -17,12 +17,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGTextFragment_h
-#define SVGTextFragment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_TEXT_FRAGMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_TEXT_FRAGMENT_H_
 
-#include "core/layout/line/GlyphOverflow.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/layout/line/glyph_overflow.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

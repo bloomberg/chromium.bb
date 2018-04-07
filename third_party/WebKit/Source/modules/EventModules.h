@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EventModules_h
-#define EventModules_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_EVENT_MODULES_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_EVENT_MODULES_H_
 
-#include "core/dom/events/Event.h"
-#include "modules/event_modules_names.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/modules/event_modules_names.h"
 
-#endif  // EventModules_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_EVENT_MODULES_H_

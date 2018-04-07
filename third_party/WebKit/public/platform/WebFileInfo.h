@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFileInfo_h
-#define WebFileInfo_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FILE_INFO_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FILE_INFO_H_
 
-#include "WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ struct WebFileInfo {
 
 }  // namespace blink
 
-#endif  // WebFileInfo_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FILE_INFO_H_

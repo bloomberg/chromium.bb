@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSPropertySourceData.h"
+#include "third_party/blink/renderer/core/css/css_property_source_data.h"
 
-#include "platform/wtf/StaticConstructors.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/wtf/static_constructors.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 

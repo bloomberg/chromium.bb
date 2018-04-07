@@ -23,24 +23,24 @@
  * DAMAGE.
  */
 
-#ifndef InspectorCSSAgent_h
-#define InspectorCSSAgent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORCSSAGENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORCSSAGENT_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/css/CSSSelector.h"
-#include "core/execution_context/SecurityContext.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/InspectorStyleSheet.h"
-#include "core/inspector/protocol/CSS.h"
-#include "platform/wtf/HashCountedSet.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_selector.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorDOMAgent.h"
+#include "third_party/blink/renderer/core/inspector/inspector_style_sheet.h"
+#include "third_party/blink/renderer/core/inspector/protocol/CSS.h"
+#include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

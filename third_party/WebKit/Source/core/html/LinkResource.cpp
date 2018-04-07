@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/LinkResource.h"
+#include "third_party/blink/renderer/core/html/link_resource.h"
 
-#include "core/dom/Document.h"
-#include "core/html/HTMLLinkElement.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/html_link_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

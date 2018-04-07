@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/Panner.h"
+#include "third_party/blink/renderer/platform/audio/panner.h"
 
 #include <memory>
-#include "platform/audio/EqualPowerPanner.h"
-#include "platform/audio/HRTFPanner.h"
+#include "third_party/blink/renderer/platform/audio/equal_power_panner.h"
+#include "third_party/blink/renderer/platform/audio/hrtf_panner.h"
 
 namespace blink {
 

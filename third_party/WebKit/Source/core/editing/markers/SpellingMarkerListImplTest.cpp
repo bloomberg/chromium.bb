@@ -2,12 +2,12 @@
 // this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/markers/SpellCheckMarkerListImpl.h"
+#include "third_party/blink/renderer/core/editing/markers/spell_check_marker_list_impl.h"
 
-#include "core/editing/markers/SpellingMarker.h"
-#include "core/editing/markers/SpellingMarkerListImpl.h"
-#include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/editing/markers/spelling_marker.h"
+#include "third_party/blink/renderer/core/editing/markers/spelling_marker_list_impl.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

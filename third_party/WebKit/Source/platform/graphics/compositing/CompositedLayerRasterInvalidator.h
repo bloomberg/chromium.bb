@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositedLayerRasterInvalidator_h
-#define CompositedLayerRasterInvalidator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_COMPOSITED_LAYER_RASTER_INVALIDATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_COMPOSITED_LAYER_RASTER_INVALIDATOR_H_
 
-#include "platform/graphics/compositing/ChunkToLayerMapper.h"
-#include "platform/graphics/paint/FloatClipRect.h"
-#include "platform/graphics/paint/PaintChunk.h"
-#include "platform/graphics/paint/RasterInvalidationTracking.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/chunk_to_layer_mapper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
+#include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -118,4 +118,4 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
 
 }  // namespace blink
 
-#endif  // CompositedLayerRasterInvalidator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_COMPOSITED_LAYER_RASTER_INVALIDATOR_H_

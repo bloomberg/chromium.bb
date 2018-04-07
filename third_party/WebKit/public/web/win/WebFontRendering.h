@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebFontRendering_h
-#define WebFontRendering_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WIN_WEB_FONT_RENDERING_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WIN_WEB_FONT_RENDERING_H_
 
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkFontMgr;

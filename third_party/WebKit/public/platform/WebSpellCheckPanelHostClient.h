@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebSpellCheckPanelHostClient_h
-#define WebSpellCheckPanelHostClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SPELL_CHECK_PANEL_HOST_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SPELL_CHECK_PANEL_HOST_CLIENT_H_
 
 namespace blink {
 

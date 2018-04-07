@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ObjectPaintInvalidator.h"
+#include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 
-#include "core/editing/FrameSelection.h"
-#include "core/layout/LayoutObject.h"
-#include "core/paint/PaintLayer.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/json/JSONValues.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
 
 namespace blink {
 

@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MixedContentChecker_h
-#define MixedContentChecker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MIXED_CONTENT_CHECKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MIXED_CONTENT_CHECKER_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/weborigin/SecurityViolationReportingPolicy.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebMixedContentContextType.h"
-#include "public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_mixed_content_context_type.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -146,4 +146,4 @@ class CORE_EXPORT MixedContentChecker final {
 
 }  // namespace blink
 
-#endif  // MixedContentChecker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MIXED_CONTENT_CHECKER_H_

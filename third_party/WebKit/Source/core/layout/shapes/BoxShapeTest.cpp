@@ -27,11 +27,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/shapes/BoxShape.h"
+#include "third_party/blink/renderer/core/layout/shapes/box_shape.h"
 
-#include "platform/geometry/FloatRoundedRect.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 
 namespace blink {
 

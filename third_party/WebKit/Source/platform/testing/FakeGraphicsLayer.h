@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FakeGraphicsLayer_h
-#define FakeGraphicsLayer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FAKE_GRAPHICS_LAYER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FAKE_GRAPHICS_LAYER_H_
 
 namespace blink {
 
@@ -16,4 +16,4 @@ class FakeGraphicsLayer : public GraphicsLayer {
 
 }  // namespace blink
 
-#endif  // FakeGraphicsLayer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FAKE_GRAPHICS_LAYER_H_

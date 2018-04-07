@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BlockFlowPaintInvalidator_h
-#define BlockFlowPaintInvalidator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BLOCK_FLOW_PAINT_INVALIDATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BLOCK_FLOW_PAINT_INVALIDATOR_H_
 
-#include "platform/graphics/PaintInvalidationReason.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

@@ -17,12 +17,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGUnitTypes_h
-#define SVGUnitTypes_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_UNIT_TYPES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_UNIT_TYPES_H_
 
-#include "core/svg/SVGEnumeration.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/svg_enumeration.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ GetStaticStringEntries<SVGUnitTypes::SVGUnitType>();
 
 }  // namespace blink
 
-#endif  // SVGUnitTypes_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_UNIT_TYPES_H_

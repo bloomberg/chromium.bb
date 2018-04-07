@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CompositeEditCommand_h
-#define CompositeEditCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_COMPOSITE_EDIT_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_COMPOSITE_EDIT_COMMAND_H_
 
-#include "core/CoreExport.h"
-#include "core/css_property_names.h"
-#include "core/editing/Forward.h"
-#include "core/editing/commands/EditCommand.h"
-#include "core/editing/commands/EditingState.h"
-#include "core/editing/commands/UndoStep.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/editing/commands/edit_command.h"
+#include "third_party/blink/renderer/core/editing/commands/editing_state.h"
+#include "third_party/blink/renderer/core/editing/commands/undo_step.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -236,4 +236,4 @@ DEFINE_TYPE_CASTS(CompositeEditCommand,
 
 }  // namespace blink
 
-#endif  // CompositeEditCommand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_COMPOSITE_EDIT_COMMAND_H_

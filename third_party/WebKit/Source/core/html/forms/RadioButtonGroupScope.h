@@ -18,13 +18,13 @@
  *
  */
 
-#ifndef RadioButtonGroupScope_h
-#define RadioButtonGroupScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_RADIO_BUTTON_GROUP_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_RADIO_BUTTON_GROUP_SCOPE_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class RadioButtonGroupScope {
 
 }  // namespace blink
 
-#endif  // RadioButtonGroupScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_RADIO_BUTTON_GROUP_SCOPE_H_

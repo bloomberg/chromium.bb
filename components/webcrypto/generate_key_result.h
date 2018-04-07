@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_WEBCRYPTO_GENERATE_KEY_RESULT_H_
 #define COMPONENTS_WEBCRYPTO_GENERATE_KEY_RESULT_H_
 
-#include "third_party/WebKit/public/platform/WebCrypto.h"
+#include "third_party/blink/public/platform/web_crypto.h"
 
 namespace webcrypto {
 

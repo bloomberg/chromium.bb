@@ -20,15 +20,15 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "core/html/parser/TextResourceDecoder.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 
-#include "core/dom/DOMImplementation.h"
-#include "core/html/parser/HTMLMetaCharsetParser.h"
-#include "core/html_names.h"
-#include "platform/text/TextEncodingDetector.h"
-#include "platform/wtf/StringExtras.h"
-#include "platform/wtf/text/TextCodec.h"
-#include "platform/wtf/text/TextEncodingRegistry.h"
+#include "third_party/blink/renderer/core/dom/dom_implementation.h"
+#include "third_party/blink/renderer/core/html/parser/html_meta_charset_parser.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/text/text_encoding_detector.h"
+#include "third_party/blink/renderer/platform/wtf/string_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
 
 namespace blink {
 

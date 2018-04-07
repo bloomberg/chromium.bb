@@ -39,7 +39,7 @@ static_library("browser") {
     "//net",
     "//services/service_manager/public/cpp",
     "//skia",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
     "//ui/base",
     "//ui/display",
     "//ui/gfx",
@@ -47,9 +47,7 @@ static_library("browser") {
   ]
 
   if (is_android) {
-    sources += [
-      "distillable_page_utils_android.cc",
-    ]
+    sources += [ "distillable_page_utils_android.cc" ]
     deps += [ "android:jni_headers" ]
   }
 }

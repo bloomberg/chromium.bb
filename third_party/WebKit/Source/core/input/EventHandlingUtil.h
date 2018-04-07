@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EventHandlingUtil_h
-#define EventHandlingUtil_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_EVENT_HANDLING_UTIL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_EVENT_HANDLING_UTIL_H_
 
-#include "core/frame/LocalFrame.h"
-#include "core/layout/HitTestResult.h"
-#include "core/page/EventWithHitTestResults.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "public/platform/WebInputEventResult.h"
+#include "third_party/blink/public/platform/web_input_event_result.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class PointerEventTarget {
 
 WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::EventHandlingUtil::PointerEventTarget);
 
-#endif  // EventHandlingUtil_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_EVENT_HANDLING_UTIL_H_

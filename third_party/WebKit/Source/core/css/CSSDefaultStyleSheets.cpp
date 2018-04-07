@@ -28,18 +28,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/CSSDefaultStyleSheets.h"
+#include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
 
-#include "core/css/MediaQueryEvaluator.h"
-#include "core/css/RuleSet.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/html/HTMLAnchorElement.h"
-#include "core/html/HTMLHtmlElement.h"
-#include "core/layout/LayoutTheme.h"
-#include "core/mathml_names.h"
-#include "platform/DataResourceHelper.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/LeakAnnotations.h"
+#include "third_party/blink/renderer/core/css/media_query_evaluator.h"
+#include "third_party/blink/renderer/core/css/rule_set.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/html/html_anchor_element.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/mathml_names.h"
+#include "third_party/blink/renderer/platform/data_resource_helper.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
 
 namespace blink {
 

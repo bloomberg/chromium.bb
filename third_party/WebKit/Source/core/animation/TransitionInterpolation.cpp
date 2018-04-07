@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/TransitionInterpolation.h"
+#include "third_party/blink/renderer/core/animation/transition_interpolation.h"
 
-#include "core/animation/CSSInterpolationTypesMap.h"
-#include "core/animation/InterpolationEnvironment.h"
-#include "core/animation/InterpolationType.h"
-#include "core/css/resolver/StyleResolverState.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_types_map.h"
+#include "third_party/blink/renderer/core/animation/interpolation_environment.h"
+#include "third_party/blink/renderer/core/animation/interpolation_type.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 
 namespace blink {
 

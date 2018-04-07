@@ -16,15 +16,15 @@
 #include "content/renderer/render_widget.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "third_party/WebKit/public/platform/WebPoint.h"
-#include "third_party/WebKit/public/platform/WebRect.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_view.h"
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_MACOSX)
-#include "third_party/WebKit/public/web/mac/WebSubstringUtil.h"
+#include "third_party/blink/public/web/mac/web_substring_util.h"
 #endif
 
 namespace content {

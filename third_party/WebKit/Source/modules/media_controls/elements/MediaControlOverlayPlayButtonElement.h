@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlOverlayPlayButtonElement_h
-#define MediaControlOverlayPlayButtonElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_OVERLAY_PLAY_BUTTON_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_OVERLAY_PLAY_BUTTON_ELEMENT_H_
 
-#include "core/html/HTMLDivElement.h"
-#include "modules/ModulesExport.h"
-#include "modules/media_controls/elements/MediaControlAnimationEventListener.h"
-#include "modules/media_controls/elements/MediaControlInputElement.h"
-#include "platform/Timer.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_animation_event_listener.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_input_element.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace WTF {
 class AtomicString;
@@ -92,4 +92,4 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
 
 }  // namespace blink
 
-#endif  // MediaControlOverlayPlayButtonElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_OVERLAY_PLAY_BUTTON_ELEMENT_H_

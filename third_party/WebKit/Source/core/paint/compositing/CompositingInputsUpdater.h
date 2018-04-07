@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositingInputsUpdater_h
-#define CompositingInputsUpdater_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_INPUTS_UPDATER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_INPUTS_UPDATER_H_
 
-#include "core/layout/LayoutGeometryMap.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class CompositingInputsUpdater {
 
 }  // namespace blink
 
-#endif  // CompositingInputsUpdater_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_COMPOSITING_COMPOSITING_INPUTS_UPDATER_H_

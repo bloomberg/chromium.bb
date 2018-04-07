@@ -21,12 +21,12 @@
  *
  */
 
-#ifndef ValidityState_h
-#define ValidityState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_VALIDITY_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_VALIDITY_STATE_H_
 
 #include "base/macros.h"
-#include "core/html/forms/ListedElement.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/core/html/forms/listed_element.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ class ValidityState final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // ValidityState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_VALIDITY_STATE_H_

@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "media/blink/cdm_result_promise_helper.h"
-#include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_content_decryption_module_result.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace media {
 

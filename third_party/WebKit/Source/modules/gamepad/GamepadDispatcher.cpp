@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/gamepad/GamepadDispatcher.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad_dispatcher.h"
 
-#include "modules/gamepad/NavigatorGamepad.h"
-#include "public/platform/Platform.h"
-#include "third_party/WebKit/public/platform/InterfaceProvider.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/modules/gamepad/navigator_gamepad.h"
 
 namespace blink {
 

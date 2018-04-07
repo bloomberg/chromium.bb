@@ -29,11 +29,11 @@ template("chrome_repack_percent") {
 
     # All sources should also have deps for completeness.
     sources = [
-      "$root_gen_dir/blink/public/resources/blink_scaled_resources_${percent}_percent.pak",
       "$root_gen_dir/chrome/renderer_resources_${percent}_percent.pak",
       "$root_gen_dir/chrome/theme_resources_${percent}_percent.pak",
       "$root_gen_dir/components/components_resources_${percent}_percent.pak",
       "$root_gen_dir/content/app/resources/content_resources_${percent}_percent.pak",
+      "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_${percent}_percent.pak",
       "$root_gen_dir/ui/resources/ui_resources_${percent}_percent.pak",
     ]
 
@@ -44,7 +44,7 @@ template("chrome_repack_percent") {
       "//components/strings",
       "//content/app/resources",
       "//net:net_resources",
-      "//third_party/WebKit/public:scaled_resources_${percent}_percent",
+      "//third_party/blink/public:scaled_resources_${percent}_percent",
       "//ui/resources",
     ]
 
@@ -91,7 +91,6 @@ template("chrome_extra_paks") {
                            ])
     output = "${invoker.output_dir}/resources.pak"
     sources = [
-      "$root_gen_dir/blink/public/resources/blink_resources.pak",
       "$root_gen_dir/chrome/browser_resources.pak",
       "$root_gen_dir/chrome/chrome_unscaled_resources.pak",
       "$root_gen_dir/chrome/common_resources.pak",
@@ -105,6 +104,7 @@ template("chrome_extra_paks") {
       "$root_gen_dir/content/content_resources.pak",
       "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
       "$root_gen_dir/net/net_resources.pak",
+      "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
       "$root_gen_dir/ui/resources/webui_resources.pak",
     ]
     deps = [
@@ -121,7 +121,7 @@ template("chrome_extra_paks") {
       "//content/browser/tracing:resources",
       "//mojo/public/js:resources",
       "//net:net_resources",
-      "//third_party/WebKit/public:resources",
+      "//third_party/blink/public:resources",
       "//ui/resources",
     ]
     if (defined(invoker.deps)) {

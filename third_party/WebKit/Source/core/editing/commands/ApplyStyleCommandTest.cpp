@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/commands/ApplyStyleCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/apply_style_command.h"
 
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/dom/Document.h"
-#include "core/editing/EditingStyle.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/frame/LocalFrame.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/editing/editing_style.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
 

@@ -26,18 +26,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/canvas/canvas2d/CanvasStyle.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css_property_names.h"
-#include "core/html/canvas/HTMLCanvasElement.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "modules/canvas/canvas2d/CanvasGradient.h"
-#include "modules/canvas/canvas2d/CanvasPattern.h"
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_gradient.h"
+#include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_pattern.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/skia/include/core/SkShader.h"
 
 namespace blink {

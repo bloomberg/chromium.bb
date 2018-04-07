@@ -7,7 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/platform_notification_data.h"
-#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationData.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
 
 namespace content {
 

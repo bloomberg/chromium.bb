@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMIDIAccessorClient_h
-#define WebMIDIAccessorClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBMIDI_WEB_MIDI_ACCESSOR_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBMIDI_WEB_MIDI_ACCESSOR_CLIENT_H_
 
 #include "media/midi/midi_service.mojom-shared.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class WebMIDIAccessorClient {
 
 }  // namespace blink
 
-#endif  // WebMIDIAccessorClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_WEBMIDI_WEB_MIDI_ACCESSOR_CLIENT_H_

@@ -10,10 +10,10 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/web/WebFormControlElement.h"
-#include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_form_control_element.h"
+#include "third_party/blink/public/web/web_input_element.h"
 
 using autofill::form_util::WebFormControlElementToFormField;
 using blink::WebFormControlElement;

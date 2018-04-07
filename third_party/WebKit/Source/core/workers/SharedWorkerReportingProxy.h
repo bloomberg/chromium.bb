@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SharedWorkerReportingProxy_h
-#define SharedWorkerReportingProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_REPORTING_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_REPORTING_PROXY_H_
 
 #include "base/macros.h"
-#include "core/workers/ParentFrameTaskRunners.h"
-#include "core/workers/WorkerReportingProxy.h"
-#include "platform/heap/GarbageCollected.h"
+#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class SharedWorkerReportingProxy final
 
 }  // namespace blink
 
-#endif  // SharedWorkerReportingProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_REPORTING_PROXY_H_

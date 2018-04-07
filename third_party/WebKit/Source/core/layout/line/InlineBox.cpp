@@ -17,18 +17,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/line/InlineBox.h"
+#include "third_party/blink/renderer/core/layout/line/inline_box.h"
 
-#include "core/layout/HitTestLocation.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/api/LineLayoutAPIShim.h"
-#include "core/layout/api/LineLayoutBlockFlow.h"
-#include "core/layout/line/InlineFlowBox.h"
-#include "core/layout/line/RootInlineBox.h"
-#include "core/paint/BlockPainter.h"
-#include "core/paint/PaintInfo.h"
-#include "platform/fonts/FontMetrics.h"
-#include "platform/wtf/allocator/Partitions.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/hit_test_location.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/line/inline_flow_box.h"
+#include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/paint/block_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/fonts/font_metrics.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

@@ -1,4 +1,4 @@
-file://third_party/WebKit/Source/modules/background_fetch/OWNERS
+file://third_party/blink/renderer/modules/background_fetch/OWNERS
 
 # TEAM: platform-capabilities@chromium.org
 # COMPONENT: Blink>BackgroundFetch

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebFeatureForward_h
-#define WebFeatureForward_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_FEATURE_FORWARD_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_FEATURE_FORWARD_H_
 
 #include <cstdint>
 
@@ -21,4 +21,4 @@ using WebFeature = mojom::WebFeature;
 
 }  // namespace blink
 
-#endif  // WebFeatureForward_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_FEATURE_FORWARD_H_

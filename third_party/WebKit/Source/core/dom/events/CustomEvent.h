@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomEvent_h
-#define CustomEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_CUSTOM_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_CUSTOM_EVENT_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/events/CustomEventInit.h"
-#include "core/dom/events/Event.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/custom_event_init.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 
 namespace blink {
 
@@ -74,4 +74,4 @@ class CORE_EXPORT CustomEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // CustomEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_CUSTOM_EVENT_H_

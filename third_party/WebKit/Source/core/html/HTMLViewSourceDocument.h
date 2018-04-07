@@ -22,11 +22,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLViewSourceDocument_h
-#define HTMLViewSourceDocument_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_VIEW_SOURCE_DOCUMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_VIEW_SOURCE_DOCUMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/html/HTMLDocument.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 
 namespace blink {
 
@@ -89,4 +89,4 @@ class CORE_EXPORT HTMLViewSourceDocument final : public HTMLDocument {
 
 }  // namespace blink
 
-#endif  // HTMLViewSourceDocument_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_VIEW_SOURCE_DOCUMENT_H_

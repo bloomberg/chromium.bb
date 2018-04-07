@@ -18,13 +18,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SpatialNavigation_h
-#define SpatialNavigation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SPATIAL_NAVIGATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SPATIAL_NAVIGATION_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Node.h"
-#include "platform/geometry/LayoutRect.h"
-#include "public/platform/WebFocusType.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 #include <limits>
 
@@ -153,4 +153,4 @@ LayoutRect FindSearchStartPoint(const LocalFrame*, WebFocusType);
 
 }  // namespace blink
 
-#endif  // SpatialNavigation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SPATIAL_NAVIGATION_H_

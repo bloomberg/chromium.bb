@@ -18,13 +18,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/parser/CSSParserSelector.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_selector.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/css/CSSSelectorList.h"
+#include "third_party/blink/renderer/core/css/css_selector_list.h"
 
 namespace blink {
 

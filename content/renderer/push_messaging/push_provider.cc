@@ -17,9 +17,9 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/service_worker/web_service_worker_registration_impl.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushSubscription.h"
-#include "third_party/WebKit/public/platform/modules/push_messaging/WebPushSubscriptionOptions.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace content {
 namespace {

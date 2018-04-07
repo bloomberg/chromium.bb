@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPresentationReceiver_h
-#define WebPresentationReceiver_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PRESENTATION_WEB_PRESENTATION_RECEIVER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PRESENTATION_WEB_PRESENTATION_RECEIVER_H_
 
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 
@@ -31,4 +31,4 @@ class BLINK_PLATFORM_EXPORT WebPresentationReceiver {
 
 }  // namespace blink
 
-#endif  // WebPresentationReceiver_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PRESENTATION_WEB_PRESENTATION_RECEIVER_H_

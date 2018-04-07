@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FontTestHelpers_h
-#define FontTestHelpers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FONT_TEST_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FONT_TEST_HELPERS_H_
 
-#include "platform/fonts/FontDescription.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -23,4 +23,4 @@ Font CreateTestFont(const AtomicString& family_name,
 }  // namespace test
 }  // namespace blink
 
-#endif  // FontTestHelpers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FONT_TEST_HELPERS_H_

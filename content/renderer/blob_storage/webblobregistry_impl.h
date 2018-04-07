@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_BLOB_STORAGE_WEBBLOBREGISTRY_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "third_party/WebKit/public/platform/WebBlobRegistry.h"
+#include "third_party/blink/public/platform/web_blob_registry.h"
 
 namespace content {
 class ThreadSafeSender;

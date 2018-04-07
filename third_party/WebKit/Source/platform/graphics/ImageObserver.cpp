@@ -27,7 +27,7 @@
  *
  */
 
-#include "platform/graphics/ImageObserver.h"
+#include "third_party/blink/renderer/platform/graphics/image_observer.h"
 
 namespace blink {
 

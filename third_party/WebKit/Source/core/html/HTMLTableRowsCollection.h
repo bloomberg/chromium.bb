@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLTableRowsCollection_h
-#define HTMLTableRowsCollection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TABLE_ROWS_COLLECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TABLE_ROWS_COLLECTION_H_
 
-#include "core/html/HTMLCollection.h"
-#include "core/html/HTMLTableRowElement.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
+#include "third_party/blink/renderer/core/html/html_table_row_element.h"
 
 namespace blink {
 

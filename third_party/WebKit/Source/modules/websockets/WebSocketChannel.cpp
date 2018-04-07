@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/websockets/WebSocketChannel.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_channel.h"
 
 #include <memory>
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerThread.h"
-#include "modules/websockets/DocumentWebSocketChannel.h"
-#include "modules/websockets/WebSocketChannelClient.h"
-#include "modules/websockets/WorkerWebSocketChannel.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/modules/websockets/document_web_socket_channel.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_channel_client.h"
+#include "third_party/blink/renderer/modules/websockets/worker_web_socket_channel.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

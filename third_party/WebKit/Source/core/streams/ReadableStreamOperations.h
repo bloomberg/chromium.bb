@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ReadableStreamOperations_h
-#define ReadableStreamOperations_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_READABLE_STREAM_OPERATIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_READABLE_STREAM_OPERATIONS_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -83,4 +83,4 @@ class CORE_EXPORT ReadableStreamOperations {
 
 }  // namespace blink
 
-#endif  // ReadableStreamOperations_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STREAMS_READABLE_STREAM_OPERATIONS_H_

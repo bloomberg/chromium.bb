@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FileError_h
-#define FileError_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_ERROR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_ERROR_H_
 
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ CORE_EXPORT DOMException* CreateDOMException(ErrorCode);
 
 }  // namespace blink
 
-#endif  // FileError_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_ERROR_H_

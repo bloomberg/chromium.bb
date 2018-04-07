@@ -25,6 +25,6 @@ wangxianzhu@chromium.org
 # Please make sure to get a review from someone with expertise on the feature
 # you are changing.
 per-file runtime_enabled_features.json5=file://third_party/WebKit/API_OWNERS
-per-file runtime_enabled_features.json5=file://third_party/WebKit/Source/core/OWNERS
+per-file runtime_enabled_features.json5=file://third_party/blink/renderer/core/OWNERS
 
 # COMPONENT: Platform

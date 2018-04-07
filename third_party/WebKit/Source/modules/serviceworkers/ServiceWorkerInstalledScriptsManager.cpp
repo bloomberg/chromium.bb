@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/serviceworkers/ServiceWorkerInstalledScriptsManager.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_installed_scripts_manager.h"
 
 #include <memory>
 #include <utility>
 
-#include "core/html/parser/TextResourceDecoder.h"
-#include "modules/serviceworkers/ServiceWorkerThread.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_thread.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

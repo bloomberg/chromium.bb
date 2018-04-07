@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/WorkerThreadLifecycleObserver.h"
+#include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_observer.h"
 
-#include "core/workers/WorkerThread.h"
-#include "core/workers/WorkerThreadLifecycleContext.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/WTF.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_context.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 

@@ -24,15 +24,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextCodecICU_h
-#define TextCodecICU_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_CODEC_ICU_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_CODEC_ICU_H_
 
 #include <unicode/utypes.h>
 #include <memory>
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "platform/wtf/text/TextCodec.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 typedef struct UConverter UConverter;
 
@@ -98,4 +98,4 @@ struct ICUConverterWrapper {
 
 }  // namespace WTF
 
-#endif  // TextCodecICU_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_CODEC_ICU_H_

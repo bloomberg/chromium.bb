@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InstalledScriptsManager_h
-#define InstalledScriptsManager_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_INSTALLED_SCRIPTS_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_INSTALLED_SCRIPTS_MANAGER_H_
 
-#include "core/CoreExport.h"
-#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
-#include "platform/network/HTTPHeaderMap.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -69,4 +69,4 @@ class InstalledScriptsManager {
 
 }  // namespace blink
 
-#endif  // InstalledScriptsManager_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_INSTALLED_SCRIPTS_MANAGER_H_

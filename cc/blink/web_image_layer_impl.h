@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "cc/blink/cc_blink_export.h"
 #include "cc/paint/paint_image.h"
-#include "third_party/WebKit/public/platform/WebImageLayer.h"
+#include "third_party/blink/public/platform/web_image_layer.h"
 
 namespace cc_blink {
 

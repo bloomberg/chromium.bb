@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/presentation/PresentationRequest.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_request.h"
 
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/dom/ExceptionCode.h"
-#include "platform/weborigin/KURL.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 namespace {

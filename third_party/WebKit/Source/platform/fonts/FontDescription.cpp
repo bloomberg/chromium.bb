@@ -27,15 +27,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/FontDescription.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
 
-#include "platform/Language.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/HashFunctions.h"
-#include "platform/wtf/StringHasher.h"
-#include "platform/wtf/text/AtomicStringHash.h"
-#include "platform/wtf/text/StringHash.h"
-#include "public/platform/WebFontDescription.h"
+#include "third_party/blink/public/platform/web_font_description.h"
+#include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 

@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RadioInputType_h
-#define RadioInputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_RADIO_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_RADIO_INPUT_TYPE_H_
 
-#include "core/CoreExport.h"
-#include "core/html/forms/BaseCheckableInputType.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/base_checkable_input_type.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class RadioInputType final : public BaseCheckableInputType {
 
 }  // namespace blink
 
-#endif  // RadioInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_RADIO_INPUT_TYPE_H_

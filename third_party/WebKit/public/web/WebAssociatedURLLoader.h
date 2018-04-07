@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebAssociatedURLLoader_h
-#define WebAssociatedURLLoader_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ASSOCIATED_URL_LOADER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ASSOCIATED_URL_LOADER_H_
 
-#include "public/web/WebAssociatedURLLoaderOptions.h"
+#include "third_party/blink/public/web/web_associated_url_loader_options.h"
 
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace base {
 class SingleThreadTaskRunner;

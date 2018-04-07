@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/NativeValueTraitsImpl.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 
 #include <utility>
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/IDLTypes.h"
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/core/v8/V8Internals.h"
-#include "bindings/core/v8/v8_test_sequence_callback.h"
-#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest-death-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_internals.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_test_sequence_callback.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

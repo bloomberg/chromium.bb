@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InspectorDOMDebuggerAgent_h
-#define InspectorDOMDebuggerAgent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORDOMDEBUGGERAGENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORDOMDEBUGGERAGENT_H_
 
 #include "base/macros.h"
-#include "bindings/core/v8/V8EventListenerInfo.h"
-#include "core/CoreExport.h"
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/protocol/DOMDebugger.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_info.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorDOMAgent.h"
+#include "third_party/blink/renderer/core/inspector/protocol/DOMDebugger.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8-inspector.h"
 
 namespace blink {

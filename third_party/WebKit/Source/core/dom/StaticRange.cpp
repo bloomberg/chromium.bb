@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/StaticRange.h"
+#include "third_party/blink/renderer/core/dom/static_range.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Range.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

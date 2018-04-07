@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scroll/ScrollAnimatorCompositorCoordinator.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_animator_compositor_coordinator.h"
 
 #include <memory>
 #include "cc/animation/scroll_offset_animation_curve.h"
-#include "platform/animation/CompositorAnimation.h"
-#include "platform/animation/CompositorAnimationHost.h"
-#include "platform/animation/CompositorAnimationTimeline.h"
-#include "platform/animation/CompositorKeyframeModel.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/scroll/ScrollableArea.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCompositorSupport.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_compositor_support.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_host.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
+#include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 
 namespace blink {
 

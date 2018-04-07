@@ -22,16 +22,16 @@
  *
  */
 
-#include "core/css/resolver/FontBuilder.h"
+#include "third_party/blink/renderer/core/css/resolver/font_builder.h"
 
-#include "core/css_value_keywords.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "core/layout/TextAutosizer.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/font_family_names.h"
-#include "platform/fonts/FontDescription.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/layout/text_autosizer.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/font_family_names.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
 
 namespace blink {
 

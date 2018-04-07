@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HighContrastSettings_h
-#define HighContrastSettings_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_HIGH_CONTRAST_SETTINGS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_HIGH_CONTRAST_SETTINGS_H_
 
 namespace blink {
 
@@ -34,4 +34,4 @@ struct HighContrastSettings {
 
 }  // namespace blink
 
-#endif  // HighContrastSettings_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_HIGH_CONTRAST_SETTINGS_H_

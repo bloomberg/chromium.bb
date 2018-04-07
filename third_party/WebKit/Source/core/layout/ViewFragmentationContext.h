@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ViewFragmentationContext_h
-#define ViewFragmentationContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_VIEW_FRAGMENTATION_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_VIEW_FRAGMENTATION_CONTEXT_H_
 
-#include "core/layout/FragmentationContext.h"
+#include "third_party/blink/renderer/core/layout/fragmentation_context.h"
 
 namespace blink {
 
@@ -24,4 +24,4 @@ class ViewFragmentationContext final : public FragmentationContext {
 
 }  // namespace blink
 
-#endif  // ViewFragmentationContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_VIEW_FRAGMENTATION_CONTEXT_H_

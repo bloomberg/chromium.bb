@@ -17,14 +17,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LocalCurrentGraphicsContext_h
-#define LocalCurrentGraphicsContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_LOCAL_CURRENT_GRAPHICS_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_LOCAL_CURRENT_GRAPHICS_CONTEXT_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/mac/GraphicsContextCanvas.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/mac/graphics_context_canvas.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 OBJC_CLASS NSGraphicsContext;
 
@@ -54,4 +54,4 @@ class PLATFORM_EXPORT LocalCurrentGraphicsContext {
 };
 }
 
-#endif  // LocalCurrentGraphicsContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_LOCAL_CURRENT_GRAPHICS_CONTEXT_H_

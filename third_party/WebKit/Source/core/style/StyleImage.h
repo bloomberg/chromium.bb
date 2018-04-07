@@ -21,12 +21,12 @@
  *
  */
 
-#ifndef StyleImage_h
-#define StyleImage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_IMAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_IMAGE_H_
 
-#include "core/CoreExport.h"
-#include "platform/graphics/Image.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

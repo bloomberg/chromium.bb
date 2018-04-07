@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/VideoFrameSubmitter.h"
+#include "third_party/blink/renderer/platform/graphics/video_frame_submitter.h"
 
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -12,10 +12,10 @@
 #include "cc/scheduler/video_frame_controller.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "media/base/video_frame.h"
-#include "public/platform/InterfaceProvider.h"
-#include "public/platform/Platform.h"
-#include "public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
 
 namespace blink {
 

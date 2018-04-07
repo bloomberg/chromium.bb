@@ -25,17 +25,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "platform/wtf/dtoa/double-conversion.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/double-conversion.h"
 
 #include <limits.h>
 #include <math.h>
 
-#include "platform/wtf/dtoa/bignum-dtoa.h"
-#include "platform/wtf/dtoa/double.h"
-#include "platform/wtf/dtoa/fast-dtoa.h"
-#include "platform/wtf/dtoa/fixed-dtoa.h"
-#include "platform/wtf/dtoa/strtod.h"
-#include "platform/wtf/dtoa/utils.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/bignum-dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/double.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/fast-dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/fixed-dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/strtod.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 
 namespace WTF {
 

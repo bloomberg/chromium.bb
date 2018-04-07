@@ -25,10 +25,10 @@
  *
  */
 
-#include "core/dom/ContextLifecycleNotifier.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_notifier.h"
 
-#include "core/dom/PausableObject.h"
-#include "platform/wtf/AutoReset.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 

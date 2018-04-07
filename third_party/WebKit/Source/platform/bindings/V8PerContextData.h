@@ -28,23 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8PerContextData_h
-#define V8PerContextData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_PER_CONTEXT_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_PER_CONTEXT_DATA_H_
 
 #include <memory>
 
 #include "gin/public/context_holder.h"
 #include "gin/public/gin_embedders.h"
-#include "platform/PlatformExport.h"
-#include "platform/bindings/ScopedPersistent.h"
-#include "platform/bindings/V0CustomElementBinding.h"
-#include "platform/bindings/V8GlobalValueMap.h"
-#include "platform/bindings/WrapperTypeInfo.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/bindings/v0_custom_element_binding.h"
+#include "third_party/blink/renderer/platform/bindings/v8_global_value_map.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -166,4 +166,4 @@ class PLATFORM_EXPORT V8PerContextData final {
 
 }  // namespace blink
 
-#endif  // V8PerContextData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_PER_CONTEXT_DATA_H_

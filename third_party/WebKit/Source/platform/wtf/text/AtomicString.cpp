@@ -21,12 +21,12 @@
  *
  */
 
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
-#include "platform/wtf/dtoa.h"
-#include "platform/wtf/text/AtomicStringTable.h"
-#include "platform/wtf/text/IntegerToStringConversion.h"
-#include "platform/wtf/text/StringImpl.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
+#include "third_party/blink/renderer/platform/wtf/text/integer_to_string_conversion.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 namespace WTF {
 

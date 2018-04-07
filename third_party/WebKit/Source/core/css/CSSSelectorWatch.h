@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSSelectorWatch_h
-#define CSSSelectorWatch_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SELECTOR_WATCH_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SELECTOR_WATCH_H_
 
-#include "core/CoreExport.h"
-#include "core/css/StyleRule.h"
-#include "core/dom/Document.h"
-#include "platform/Timer.h"
-#include "platform/wtf/HashCountedSet.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -92,4 +92,4 @@ class CORE_EXPORT CSSSelectorWatch final
 
 }  // namespace blink
 
-#endif  // CSSSelectorWatch_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SELECTOR_WATCH_H_

@@ -21,14 +21,14 @@
  *
  */
 
-#ifndef HTMLPlugInElement_h
-#define HTMLPlugInElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_PLUGIN_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_PLUGIN_ELEMENT_H_
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/CoreExport.h"
-#include "core/dom/CreateElementFlags.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "platform/bindings/SharedPersistent.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/create_element_flags.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/platform/bindings/shared_persistent.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -238,4 +238,4 @@ DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLPlugInElement);
 
 }  // namespace blink
 
-#endif  // HTMLPlugInElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_PLUGIN_ELEMENT_H_

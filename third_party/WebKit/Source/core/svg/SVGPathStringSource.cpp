@@ -18,10 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGPathStringSource.h"
+#include "third_party/blink/renderer/core/svg/svg_path_string_source.h"
 
-#include "core/svg/SVGParserUtilities.h"
-#include "platform/geometry/FloatPoint.h"
+#include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
 
 namespace blink {
 

@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSpeechRecognitionResult_h
-#define WebSpeechRecognitionResult_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNITION_RESULT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNITION_RESULT_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebPrivatePtr.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ class WebSpeechRecognitionResult {
 
 }  // namespace blink
 
-#endif  // WebSpeechRecognitionResult_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNITION_RESULT_H_

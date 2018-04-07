@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SharedWorkerRepositoryClientImpl_h
-#define SharedWorkerRepositoryClientImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_SHARED_WORKER_REPOSITORY_CLIENT_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_SHARED_WORKER_REPOSITORY_CLIENT_IMPL_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/workers/SharedWorkerRepositoryClient.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/workers/shared_worker_repository_client.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class CORE_EXPORT SharedWorkerRepositoryClientImpl final
 
 }  // namespace blink
 
-#endif  // SharedWorkerRepositoryClientImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_SHARED_WORKER_REPOSITORY_CLIENT_IMPL_H_

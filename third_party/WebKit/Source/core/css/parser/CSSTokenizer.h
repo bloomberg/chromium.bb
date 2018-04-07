@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSTokenizer_h
-#define CSSTokenizer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_TOKENIZER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_TOKENIZER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css/parser/CSSParserToken.h"
-#include "core/css/parser/CSSTokenizerInputStream.h"
-#include "core/html/parser/InputStreamPreprocessor.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/StringView.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer_input_stream.h"
+#include "third_party/blink/renderer/core/html/parser/input_stream_preprocessor.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #include <climits>
 
@@ -116,4 +116,4 @@ class CORE_EXPORT CSSTokenizer {
 
 }  // namespace blink
 
-#endif  // CSSTokenizer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_TOKENIZER_H_

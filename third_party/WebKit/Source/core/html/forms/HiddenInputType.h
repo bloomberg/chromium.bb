@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HiddenInputType_h
-#define HiddenInputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HIDDEN_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HIDDEN_INPUT_TYPE_H_
 
-#include "core/html/forms/InputType.h"
-#include "core/html/forms/InputTypeView.h"
+#include "third_party/blink/renderer/core/html/forms/input_type.h"
+#include "third_party/blink/renderer/core/html/forms/input_type_view.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class HiddenInputType final : public InputType, private InputTypeView {
 
 }  // namespace blink
 
-#endif  // HiddenInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HIDDEN_INPUT_TYPE_H_

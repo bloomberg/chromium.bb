@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebMediaPlayer.h"
+#include "third_party/blink/public/platform/web_media_player.h"
 
-#ifndef EmptyWebMediaPlayer_h
-#define EmptyWebMediaPlayer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_EMPTY_WEB_MEDIA_PLAYER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_EMPTY_WEB_MEDIA_PLAYER_H_
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class EmptyWebMediaPlayer : public WebMediaPlayer {
 
 }  // namespace blink
 
-#endif  // EmptyWebMediaPlayer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_EMPTY_WEB_MEDIA_PLAYER_H_

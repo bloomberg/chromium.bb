@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/InspectorTaskRunner.h"
+#include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 
-#include "core/inspector/ThreadDebugger.h"
-#include "platform/CrossThreadFunctional.h"
+#include "third_party/blink/renderer/core/inspector/thread_debugger.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 
 namespace blink {
 

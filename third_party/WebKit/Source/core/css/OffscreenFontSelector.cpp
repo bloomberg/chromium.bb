@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/OffscreenFontSelector.h"
+#include "third_party/blink/renderer/core/css/offscreen_font_selector.h"
 
 #include "build/build_config.h"
-#include "core/css/CSSSegmentedFontFace.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
-#include "core/loader/FrameLoader.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/FontSelectorClient.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/css/css_segmented_font_face.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

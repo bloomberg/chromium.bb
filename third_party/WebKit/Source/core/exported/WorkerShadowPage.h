@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerShadowPage_h
-#define WorkerShadowPage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WORKER_SHADOW_PAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WORKER_SHADOW_PAGE_H_
 
-#include "core/exported/WebDevToolsAgentImpl.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "public/web/WebDocumentLoader.h"
-#include "public/web/WebFrameClient.h"
-#include "public/web/WebView.h"
+#include "third_party/blink/public/web/web_document_loader.h"
+#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 
 namespace blink {
 
@@ -91,4 +91,4 @@ class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
 
 }  // namespace blink
 
-#endif  // WorkerShadowPage_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WORKER_SHADOW_PAGE_H_

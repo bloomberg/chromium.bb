@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/custom/V0CustomElementRegistrationContext.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLUnknownElement.h"
-#include "core/html/custom/V0CustomElement.h"
-#include "core/html/custom/V0CustomElementDefinition.h"
-#include "core/html/custom/V0CustomElementScheduler.h"
-#include "core/html_names.h"
-#include "core/svg/SVGUnknownElement.h"
-#include "core/svg_names.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_definition.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_scheduler.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_unknown_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/svg/svg_unknown_element.h"
+#include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 

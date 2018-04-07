@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InsertIncrementalTextCommand_h
-#define InsertIncrementalTextCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_INSERT_INCREMENTAL_TEXT_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_INSERT_INCREMENTAL_TEXT_COMMAND_H_
 
-#include "core/editing/commands/InsertTextCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/insert_text_command.h"
 
 namespace blink {
 
@@ -26,4 +26,4 @@ class CORE_EXPORT InsertIncrementalTextCommand final
 
 }  // namespace blink
 
-#endif  // InsertIncrementalTextCommand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_INSERT_INCREMENTAL_TEXT_COMMAND_H_

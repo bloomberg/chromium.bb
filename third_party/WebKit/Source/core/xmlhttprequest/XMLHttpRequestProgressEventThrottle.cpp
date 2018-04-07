@@ -25,18 +25,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xmlhttprequest/XMLHttpRequestProgressEventThrottle.h"
+#include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request_progress_event_throttle.h"
 
-#include "core/event_type_names.h"
-#include "core/events/ProgressEvent.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/probe/CoreProbes.h"
-#include "core/xmlhttprequest/XMLHttpRequest.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/core/events/progress_event.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

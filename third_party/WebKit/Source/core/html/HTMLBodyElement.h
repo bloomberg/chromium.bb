@@ -21,12 +21,12 @@
  *
  */
 
-#ifndef HTMLBodyElement_h
-#define HTMLBodyElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_BODY_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_BODY_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Document.h"
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -69,4 +69,4 @@ class CORE_EXPORT HTMLBodyElement final : public HTMLElement {
 
 }  // namespace blink
 
-#endif  // HTMLBodyElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_BODY_ELEMENT_H_

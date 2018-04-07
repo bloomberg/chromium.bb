@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/testing/WebLayerTreeViewImplForTesting.h"
+#include "third_party/blink/renderer/platform/testing/web_layer_tree_view_impl_for_testing.h"
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
@@ -11,10 +11,10 @@
 #include "cc/layers/layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebLayer.h"
-#include "public/platform/WebLayerTreeView.h"
-#include "public/platform/WebSize.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_layer.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/public/platform/web_size.h"
 
 namespace blink {
 

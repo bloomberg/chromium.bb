@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BackgroundFetchSettledFetch_h
-#define BackgroundFetchSettledFetch_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_SETTLED_FETCH_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_SETTLED_FETCH_H_
 
-#include "modules/background_fetch/BackgroundFetchFetch.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_fetch.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class BackgroundFetchSettledFetch final : public BackgroundFetchFetch {
 
 }  // namespace blink
 
-#endif  // BackgroundFetchSettledFetch_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BACKGROUND_FETCH_BACKGROUND_FETCH_SETTLED_FETCH_H_

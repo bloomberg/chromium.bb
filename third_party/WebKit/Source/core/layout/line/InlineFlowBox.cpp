@@ -18,27 +18,27 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/line/InlineFlowBox.h"
+#include "third_party/blink/renderer/core/layout/line/inline_flow_box.h"
 
 #include <math.h>
 #include <algorithm>
-#include "core/css_property_names.h"
-#include "core/dom/Document.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/api/LineLayoutAPIShim.h"
-#include "core/layout/api/LineLayoutBox.h"
-#include "core/layout/api/LineLayoutInline.h"
-#include "core/layout/api/LineLayoutListMarker.h"
-#include "core/layout/api/LineLayoutRubyBase.h"
-#include "core/layout/api/LineLayoutRubyRun.h"
-#include "core/layout/api/LineLayoutRubyText.h"
-#include "core/layout/line/GlyphOverflow.h"
-#include "core/layout/line/InlineTextBox.h"
-#include "core/layout/line/RootInlineBox.h"
-#include "core/paint/BoxPainter.h"
-#include "core/paint/InlineFlowBoxPainter.h"
-#include "core/style/ShadowList.h"
-#include "platform/fonts/Font.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_inline.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_list_marker.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_ruby_base.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_ruby_run.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_ruby_text.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/line/glyph_overflow.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
+#include "third_party/blink/renderer/core/paint/inline_flow_box_painter.h"
+#include "third_party/blink/renderer/core/style/shadow_list.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
 
 namespace blink {
 

@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/WrapContentsInDummySpanCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/wrap_contents_in_dummy_span_command.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/commands/ApplyStyleCommand.h"
-#include "core/html/HTMLSpanElement.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/editing/commands/apply_style_command.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/html/html_span_element.h"
 
 namespace blink {
 

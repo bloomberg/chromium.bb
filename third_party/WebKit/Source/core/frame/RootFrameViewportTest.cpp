@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/RootFrameViewport.h"
+#include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 
-#include "platform/geometry/DoubleRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/scroll/ScrollAlignment.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/scroll/ScrollableArea.h"
-#include "platform/scroll/ScrollbarThemeMock.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebScrollIntoViewParams.h"
-#include "public/platform/WebThread.h"
-#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/geometry/double_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_mock.h"
 
 namespace {
 blink::ScrollbarThemeMock scrollbar_theme_;

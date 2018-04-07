@@ -23,14 +23,14 @@
  * DAMAGE.
  */
 
-#ifndef DynamicsCompressorNode_h
-#define DynamicsCompressorNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DYNAMICS_COMPRESSOR_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DYNAMICS_COMPRESSOR_NODE_H_
 
-#include "base/gtest_prod_util.h"
-#include "modules/ModulesExport.h"
-#include "modules/webaudio/AudioNode.h"
-#include "modules/webaudio/AudioParam.h"
 #include <memory>
+#include "base/gtest_prod_util.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param.h"
 
 namespace blink {
 
@@ -116,4 +116,4 @@ class MODULES_EXPORT DynamicsCompressorNode final : public AudioNode {
 
 }  // namespace blink
 
-#endif  // DynamicsCompressorNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DYNAMICS_COMPRESSOR_NODE_H_

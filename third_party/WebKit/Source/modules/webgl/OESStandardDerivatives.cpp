@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webgl/OESStandardDerivatives.h"
+#include "third_party/blink/renderer/modules/webgl/oes_standard_derivatives.h"
 
 namespace blink {
 

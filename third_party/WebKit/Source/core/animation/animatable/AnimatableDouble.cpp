@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/animatable/AnimatableDouble.h"
+#include "third_party/blink/renderer/core/animation/animatable/animatable_double.h"
 
-#include "platform/animation/AnimationUtilities.h"
 #include <math.h>
+#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
 
 namespace blink {
 

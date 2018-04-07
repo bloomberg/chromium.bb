@@ -22,23 +22,23 @@
  *
  */
 
-#ifndef Element_h
-#define Element_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSSelector.h"
-#include "core/dom/ContainerNode.h"
-#include "core/dom/ElementData.h"
-#include "core/dom/WhitespaceAttacher.h"
-#include "core/html/FocusOptions.h"
-#include "core/html_names.h"
-#include "core/resize_observer/ResizeObserver.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollCustomization.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "public/platform/WebFocusType.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_selector.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/element_data.h"
+#include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
+#include "third_party/blink/renderer/core/html/focus_options.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_customization.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
 
@@ -1303,4 +1303,4 @@ inline bool IsAtShadowBoundary(const Element* element) {
 
 }  // namespace blink
 
-#endif  // Element_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_

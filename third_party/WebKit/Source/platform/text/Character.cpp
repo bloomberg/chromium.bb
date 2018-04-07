@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/text/Character.h"
+#include "third_party/blink/renderer/platform/text/character.h"
 
 #include <unicode/uobject.h>
 #include <unicode/uscript.h>
 #include <algorithm>
-#include "platform/text/ICUError.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/platform/text/icu_error.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 #if defined(USING_SYSTEM_ICU)
-#include "platform/text/CharacterPropertyDataGenerator.h"
 #include <unicode/uniset.h>
+#include "third_party/blink/renderer/platform/text/character_property_data_generator.h"
 #else
 #define MUTEX_H  // Prevent compile failure of utrie2.h on Windows
 #include <utrie2.h>

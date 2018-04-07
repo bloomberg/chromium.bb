@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlsWindowEventListener_h
-#define MediaControlsWindowEventListener_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_WINDOW_EVENT_LISTENER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_WINDOW_EVENT_LISTENER_H_
 
 #include "base/callback.h"
-#include "core/dom/events/EventListener.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class MediaControlsWindowEventListener final : public EventListener {
 
 }  // namespace blink
 
-#endif  // MediaControlsWindowEventListener_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_WINDOW_EVENT_LISTENER_H_

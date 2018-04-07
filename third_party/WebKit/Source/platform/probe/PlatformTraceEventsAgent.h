@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PlatformTraceEventsAgent_h
-#define PlatformTraceEventsAgent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PROBE_PLATFORMTRACEEVENTSAGENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PROBE_PLATFORMTRACEEVENTSAGENT_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/heap/Heap.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 

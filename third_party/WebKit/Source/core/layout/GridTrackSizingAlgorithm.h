@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GridTrackSizingAlgorithm_h
-#define GridTrackSizingAlgorithm_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_TRACK_SIZING_ALGORITHM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_TRACK_SIZING_ALGORITHM_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "core/layout/GridBaselineAlignment.h"
-#include "core/layout/LayoutBox.h"
-#include "core/style/GridPositionsResolver.h"
-#include "core/style/GridTrackSize.h"
-#include "platform/LayoutUnit.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/layout/grid_baseline_alignment.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
+#include "third_party/blink/renderer/core/style/grid_track_size.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -319,4 +319,4 @@ class GridTrackSizingAlgorithmStrategy {
 };
 }
 
-#endif  // GridTrackSizingAlgorithm_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_TRACK_SIZING_ALGORITHM_H_

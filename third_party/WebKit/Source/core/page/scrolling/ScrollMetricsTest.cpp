@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/geometry/DOMRect.h"
-#include "core/input/EventHandler.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/PaintLayerScrollableArea.h"
-#include "core/testing/sim/SimRequest.h"
-#include "core/testing/sim/SimTest.h"
-#include "platform/scroll/MainThreadScrollingReason.h"
-#include "platform/testing/HistogramTester.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/testing/UnitTestHelpers.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 #define EXPECT_WHEEL_BUCKET(reason, count)     \
   histogram_tester.ExpectBucketCount(          \

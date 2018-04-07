@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSPropertySourceData_h
-#define CSSPropertySourceData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_SOURCE_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_SOURCE_DATA_H_
 
-#include "core/css/StyleRule.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -124,4 +124,4 @@ using CSSRuleSourceDataList = HeapVector<Member<CSSRuleSourceData>>;
 
 }  // namespace blink
 
-#endif  // CSSPropertySourceData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_SOURCE_DATA_H_

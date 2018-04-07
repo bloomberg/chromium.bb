@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XMLDocument_h
-#define XMLDocument_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_XML_DOCUMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_XML_DOCUMENT_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/Document.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
 
@@ -56,4 +56,4 @@ DEFINE_DOCUMENT_TYPE_CASTS(XMLDocument);
 
 }  // namespace blink
 
-#endif  // XMLDocument_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_XML_DOCUMENT_H_

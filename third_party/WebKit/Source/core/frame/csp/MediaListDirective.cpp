@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/csp/MediaListDirective.h"
+#include "third_party/blink/renderer/core/frame/csp/media_list_directive.h"
 
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "platform/network/ContentSecurityPolicyParsers.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/ParsingUtilities.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

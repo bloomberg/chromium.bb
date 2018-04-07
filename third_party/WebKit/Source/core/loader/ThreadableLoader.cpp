@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/loader/ThreadableLoader.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/loader/DocumentThreadableLoader.h"
-#include "core/loader/ThreadableLoadingContext.h"
-#include "core/workers/WorkerGlobalScope.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/loader/document_threadable_loader.h"
+#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 
 namespace blink {
 

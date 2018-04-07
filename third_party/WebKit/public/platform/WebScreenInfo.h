@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebScreenInfo_h
-#define WebScreenInfo_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCREEN_INFO_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCREEN_INFO_H_
 
-#include "WebRect.h"
-#include "public/platform/ShapeProperties.h"
-#include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_type.h"
+#include "third_party/blink/public/platform/shape_properties.h"
+#include "third_party/blink/public/platform/web_rect.h"
 #include "ui/gfx/color_space.h"
 
 namespace blink {

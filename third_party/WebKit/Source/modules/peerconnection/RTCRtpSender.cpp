@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/peerconnection/RTCRtpSender.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "modules/mediastream/MediaStreamTrack.h"
-#include "modules/peerconnection/RTCDTMFSender.h"
-#include "modules/peerconnection/RTCErrorUtil.h"
-#include "modules/peerconnection/RTCPeerConnection.h"
-#include "modules/peerconnection/RTCRtpParameters.h"
-#include "modules/peerconnection/WebRTCStatsReportCallbackResolver.h"
-#include "platform/peerconnection/RTCVoidRequest.h"
-#include "public/platform/WebRTCDTMFSenderHandler.h"
+#include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_dtmf_sender.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_parameters.h"
+#include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 
 namespace blink {
 

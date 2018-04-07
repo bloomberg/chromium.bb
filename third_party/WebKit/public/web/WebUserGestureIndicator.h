@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebUserGestureIndicator_h
-#define WebUserGestureIndicator_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_USER_GESTURE_INDICATOR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_USER_GESTURE_INDICATOR_H_
 
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 
@@ -72,4 +72,4 @@ class WebUserGestureIndicator {
 };
 }
 
-#endif  // WebUserGestureIndicator_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_USER_GESTURE_INDICATOR_H_

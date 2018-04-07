@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/script/XMLParserScriptRunner.h"
+#include "third_party/blink/renderer/core/script/xml_parser_script_runner.h"
 
-#include "core/dom/Document.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/script/ClassicPendingScript.h"
-#include "core/script/ScriptLoader.h"
-#include "core/script/XMLParserScriptRunnerHost.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/script/classic_pending_script.h"
+#include "third_party/blink/renderer/core/script/script_loader.h"
+#include "third_party/blink/renderer/core/script/xml_parser_script_runner_host.h"
 
 namespace blink {
 

@@ -22,13 +22,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef FirstLetterPseudoElement_h
-#define FirstLetterPseudoElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_FIRST_LETTER_PSEUDO_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_FIRST_LETTER_PSEUDO_ELEMENT_H_
 
 #include "base/macros.h"
-#include "core/dom/Document.h"
-#include "core/dom/PseudoElement.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -74,4 +74,4 @@ DEFINE_ELEMENT_TYPE_CASTS(FirstLetterPseudoElement,
 
 }  // namespace blink
 
-#endif  // FirstLetterPseudoElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_FIRST_LETTER_PSEUDO_ELEMENT_H_

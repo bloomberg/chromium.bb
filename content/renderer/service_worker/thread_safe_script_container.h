@@ -12,7 +12,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerInstalledScriptsManager.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_installed_scripts_manager.h"
 
 namespace content {
 

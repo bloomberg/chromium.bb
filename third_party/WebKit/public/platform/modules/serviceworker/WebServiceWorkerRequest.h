@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebServiceWorkerRequest_h
-#define WebServiceWorkerRequest_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_REQUEST_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_REQUEST_H_
 
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebPrivatePtr.h"
-#include "public/platform/WebReferrerPolicy.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 
 #if INSIDE_BLINK
 #include <utility>
-#include "platform/network/HTTPHeaderMap.h"
-#include "platform/weborigin/Referrer.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/StringHash.h"
-#include "third_party/WebKit/public/mojom/blob/blob.mojom-blink.h"  // nogncheck
+#include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"  // nogncheck
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #endif
 
 namespace blink {
@@ -120,4 +120,4 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
 
 }  // namespace blink
 
-#endif  // WebServiceWorkerRequest_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_REQUEST_H_

@@ -12,7 +12,7 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h"
 
 namespace blink {
 class WebString;

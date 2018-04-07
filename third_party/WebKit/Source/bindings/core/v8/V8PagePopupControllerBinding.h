@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8PagePopupControllerBinding_h
-#define V8PagePopupControllerBinding_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_PAGE_POPUP_CONTROLLER_BINDING_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_PAGE_POPUP_CONTROLLER_BINDING_H_
 
-#include "platform/bindings/WrapperTypeInfo.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -26,4 +26,4 @@ class V8PagePopupControllerBinding {
 
 }  // namespace blink
 
-#endif  // V8PagePopupControllerBinding_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_PAGE_POPUP_CONTROLLER_BINDING_H_

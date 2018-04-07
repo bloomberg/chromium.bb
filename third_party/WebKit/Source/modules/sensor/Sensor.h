@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Sensor_h
-#define Sensor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_H_
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/DOMHighResTimeStamp.h"
-#include "core/dom/DOMTimeStamp.h"
-#include "core/dom/PausableObject.h"
-#include "core/frame/PlatformEventController.h"
-#include "modules/EventTargetModules.h"
-#include "modules/sensor/SensorOptions.h"
-#include "modules/sensor/SensorProxy.h"
-#include "modules/sensor/SpatialSensorOptions.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
+#include "third_party/blink/renderer/core/dom/dom_time_stamp.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/frame/platform_event_controller.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/sensor/sensor_options.h"
+#include "third_party/blink/renderer/modules/sensor/sensor_proxy.h"
+#include "third_party/blink/renderer/modules/sensor/spatial_sensor_options.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 
@@ -138,4 +138,4 @@ class Sensor : public EventTargetWithInlineData,
   if (is_null)                              \
   return (x)
 
-#endif  // Sensor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_H_

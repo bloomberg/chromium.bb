@@ -8,7 +8,7 @@
 #include "media/base/mime_util.h"
 #include "media/blink/websourcebuffer_impl.h"
 #include "media/filters/chunk_demuxer.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 using ::blink::WebString;
 using ::blink::WebMediaSource;

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PausableTask_h
-#define PausableTask_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PAUSABLE_TASK_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PAUSABLE_TASK_H_
 
 #include <memory>
 
-#include "core/CoreExport.h"
-#include "core/frame/PausableTimer.h"
-#include "platform/heap/SelfKeepAlive.h"
-#include "public/web/WebLocalFrame.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/pausable_timer.h"
+#include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 
 namespace blink {
 
@@ -47,4 +47,4 @@ class CORE_EXPORT PausableTask final
 
 }  // namespace blink
 
-#endif  // PausableTask_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PAUSABLE_TASK_H_

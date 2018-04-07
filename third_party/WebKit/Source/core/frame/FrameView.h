@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FrameView_h
-#define FrameView_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_VIEW_H_
 
-#include "core/dom/DocumentLifecycle.h"
-#include "core/frame/EmbeddedContentView.h"
-#include "core/frame/IntrinsicSizingInfo.h"
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/core/frame/embedded_content_view.h"
+#include "third_party/blink/renderer/core/frame/intrinsic_sizing_info.h"
 
 namespace blink {
 
@@ -31,4 +31,4 @@ DEFINE_TYPE_CASTS(FrameView,
 
 }  // namespace blink
 
-#endif  // FrameView_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_VIEW_H_

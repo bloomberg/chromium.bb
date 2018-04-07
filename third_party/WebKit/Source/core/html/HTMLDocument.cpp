@@ -51,12 +51,12 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#include "core/html/HTMLDocument.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
 
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/WindowProxy.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

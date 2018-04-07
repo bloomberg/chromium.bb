@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebServiceWorkerClientsInfo_h
-#define WebServiceWorkerClientsInfo_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_CLIENTS_INFO_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_CLIENTS_INFO_H_
 
-#include "public/platform/WebCallbacks.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/WebVector.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
-#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-shared.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_client.mojom-shared.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom-shared.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 #include <memory>
 
@@ -49,4 +49,4 @@ using WebServiceWorkerClientsCallbacks =
 
 }  // namespace blink
 
-#endif  // WebServiceWorkerClientsInfo_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_CLIENTS_INFO_H_

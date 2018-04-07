@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScrollManager_h
-#define ScrollManager_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_SCROLL_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_SCROLL_MANAGER_H_
 
 #include <deque>
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/page/EventWithHitTestResults.h"
-#include "platform/geometry/LayoutSize.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/Visitor.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/wtf/Allocator.h"
-#include "public/platform/WebInputEventResult.h"
+#include "third_party/blink/public/platform/web_input_event_result.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -167,4 +167,4 @@ class CORE_EXPORT ScrollManager
 
 }  // namespace blink
 
-#endif  // ScrollManager_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_SCROLL_MANAGER_H_

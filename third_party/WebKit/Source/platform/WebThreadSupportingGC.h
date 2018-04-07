@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebThreadSupportingGC_h
-#define WebThreadSupportingGC_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEB_THREAD_SUPPORTING_GC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEB_THREAD_SUPPORTING_GC_H_
 
 #include <memory>
-#include "platform/WebTaskRunner.h"
-#include "platform/heap/GCTaskRunner.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/heap/gc_task_runner.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

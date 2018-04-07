@@ -18,12 +18,12 @@
  *
  */
 
-#ifndef CSSCustomFontData_h
-#define CSSCustomFontData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CUSTOM_FONT_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CUSTOM_FONT_DATA_H_
 
-#include "core/css/CSSFontFaceSource.h"
-#include "platform/fonts/CustomFontData.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/css/css_font_face_source.h"
+#include "third_party/blink/renderer/platform/fonts/custom_font_data.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -74,4 +74,4 @@ class CSSCustomFontData final : public CustomFontData {
 
 }  // namespace blink
 
-#endif  // CSSCustomFontData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CUSTOM_FONT_DATA_H_

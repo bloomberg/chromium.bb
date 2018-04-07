@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebDragData.h"
+#include "third_party/blink/public/platform/web_drag_data.h"
 
 namespace blink {
 

@@ -25,11 +25,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Uint8ClampedArray_h
-#define Uint8ClampedArray_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_UINT8_CLAMPED_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_UINT8_CLAMPED_ARRAY_H_
 
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/typed_arrays/Uint8Array.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/uint8_array.h"
 
 namespace WTF {
 
@@ -93,4 +93,4 @@ Uint8ClampedArray::Uint8ClampedArray(scoped_refptr<ArrayBuffer> buffer,
 
 using WTF::Uint8ClampedArray;
 
-#endif  // Uint8ClampedArray_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_UINT8_CLAMPED_ARRAY_H_

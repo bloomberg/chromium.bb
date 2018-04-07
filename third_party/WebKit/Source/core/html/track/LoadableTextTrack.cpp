@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/track/LoadableTextTrack.h"
+#include "third_party/blink/renderer/core/html/track/loadable_text_track.h"
 
-#include "core/dom/ElementTraversal.h"
-#include "core/html/track/HTMLTrackElement.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/html/track/html_track_element.h"
 
 namespace blink {
 

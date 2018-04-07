@@ -26,18 +26,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/TreeScopeStyleSheetCollection.h"
+#include "third_party/blink/renderer/core/css/tree_scope_style_sheet_collection.h"
 
-#include "core/css/ActiveStyleSheets.h"
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/StyleEngine.h"
-#include "core/css/StyleRuleImport.h"
-#include "core/css/StyleSheetCandidate.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/dom/Element.h"
-#include "core/html/HTMLLinkElement.h"
-#include "core/html/HTMLStyleElement.h"
+#include "third_party/blink/renderer/core/css/active_style_sheets.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/style_rule_import.h"
+#include "third_party/blink/renderer/core/css/style_sheet_candidate.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/html_link_element.h"
+#include "third_party/blink/renderer/core/html/html_style_element.h"
 
 namespace blink {
 

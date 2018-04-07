@@ -7,7 +7,7 @@
 
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/common/origin_trials/trial_policy.h"
+#include "third_party/blink/public/common/origin_trials/trial_policy.h"
 
 namespace blink {
 class TrialTokenValidator;

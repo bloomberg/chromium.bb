@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/text/hyphenation/HyphenationMinikin.h"
+#include "third_party/blink/renderer/platform/text/hyphenation/hyphenation_minikin.h"
 
 #include <algorithm>
 #include <utility>
@@ -13,12 +13,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
-#include "platform/LayoutLocale.h"
-#include "platform/text/Character.h"
-#include "platform/text/hyphenation/HyphenatorAOSP.h"
-#include "public/platform/InterfaceProvider.h"
-#include "public/platform/Platform.h"
-#include "public/platform/modules/hyphenation/hyphenation.mojom-blink.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/modules/hyphenation/hyphenation.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/layout_locale.h"
+#include "third_party/blink/renderer/platform/text/character.h"
+#include "third_party/blink/renderer/platform/text/hyphenation/hyphenator_aosp.h"
 
 namespace blink {
 

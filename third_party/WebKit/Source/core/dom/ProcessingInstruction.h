@@ -19,13 +19,13 @@
  *
  */
 
-#ifndef ProcessingInstruction_h
-#define ProcessingInstruction_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PROCESSING_INSTRUCTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PROCESSING_INSTRUCTION_H_
 
-#include "core/css/StyleEngineContext.h"
-#include "core/dom/CharacterData.h"
-#include "core/loader/resource/TextResource.h"
-#include "platform/loader/fetch/ResourceClient.h"
+#include "third_party/blink/renderer/core/css/style_engine_context.h"
+#include "third_party/blink/renderer/core/dom/character_data.h"
+#include "third_party/blink/renderer/core/loader/resource/text_resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 
 namespace blink {
 
@@ -117,4 +117,4 @@ inline bool IsXSLStyleSheet(const Node& node) {
 
 }  // namespace blink
 
-#endif  // ProcessingInstruction_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PROCESSING_INSTRUCTION_H_

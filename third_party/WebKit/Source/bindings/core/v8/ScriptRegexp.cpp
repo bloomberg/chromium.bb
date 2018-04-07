@@ -26,12 +26,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/ScriptRegexp.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8ScriptRunner.h"
-#include "platform/bindings/ScriptForbiddenScope.h"
-#include "platform/bindings/V8PerIsolateData.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 
 namespace blink {
 

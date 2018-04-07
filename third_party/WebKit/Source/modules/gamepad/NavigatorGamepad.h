@@ -23,17 +23,17 @@
  * DAMAGE.
  */
 
-#ifndef NavigatorGamepad_h
-#define NavigatorGamepad_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_NAVIGATOR_GAMEPAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_NAVIGATOR_GAMEPAD_H_
 
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/Navigator.h"
-#include "core/frame/PlatformEventController.h"
-#include "modules/ModulesExport.h"
-#include "platform/AsyncMethodRunner.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/frame/platform_event_controller.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/async_method_runner.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -94,4 +94,4 @@ class MODULES_EXPORT NavigatorGamepad final
 
 }  // namespace blink
 
-#endif  // NavigatorGamepad_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_NAVIGATOR_GAMEPAD_H_

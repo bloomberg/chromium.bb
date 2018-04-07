@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MessageReport_h
-#define MessageReport_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_MESSAGE_REPORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_MESSAGE_REPORT_H_
 
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/frame/ReportBody.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/frame/report_body.h"
 
 namespace blink {
 
@@ -31,4 +31,4 @@ class MessageReport : public ReportBody {
 
 }  // namespace blink
 
-#endif  // MessageReport_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_MESSAGE_REPORT_H_

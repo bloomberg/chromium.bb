@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/V8InspectorString.h"
+#include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
 
-#include "core/inspector/protocol/Protocol.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Protocol.h"
 
 namespace blink {
 

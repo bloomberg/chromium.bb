@@ -26,21 +26,21 @@
  *
  */
 
-#ifndef DocumentMarkerController_h
-#define DocumentMarkerController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_DOCUMENT_MARKER_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_DOCUMENT_MARKER_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/SynchronousMutationObserver.h"
-#include "core/editing/iterators/TextIterator.h"
-#include "core/editing/markers/CompositionMarker.h"
-#include "core/editing/markers/DocumentMarker.h"
-#include "core/editing/markers/SuggestionMarker.h"
-#include "core/editing/markers/TextMatchMarker.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
+#include "third_party/blink/renderer/core/editing/markers/composition_marker.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker.h"
+#include "third_party/blink/renderer/core/editing/markers/suggestion_marker.h"
+#include "third_party/blink/renderer/core/editing/markers/text_match_marker.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -173,4 +173,4 @@ class CORE_EXPORT DocumentMarkerController final
 void showDocumentMarkers(const blink::DocumentMarkerController*);
 #endif
 
-#endif  // DocumentMarkerController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_DOCUMENT_MARKER_CONTROLLER_H_

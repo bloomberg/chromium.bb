@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/resource/MockImageResourceObserver.h"
+#include "third_party/blink/renderer/core/loader/resource/mock_image_resource_observer.h"
 
-#include "core/loader/resource/ImageResource.h"
-#include "core/loader/resource/ImageResourceContent.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 
 namespace blink {
 

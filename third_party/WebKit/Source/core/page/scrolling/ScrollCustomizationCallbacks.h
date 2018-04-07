@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScrollCustomizationCallbacks_h
-#define ScrollCustomizationCallbacks_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLL_CUSTOMIZATION_CALLBACKS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLL_CUSTOMIZATION_CALLBACKS_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/Element.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class CORE_EXPORT ScrollCustomizationCallbacks
 
 }  // namespace blink
 
-#endif  // ScrollCustomizationCallbacks_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_SCROLL_CUSTOMIZATION_CALLBACKS_H_

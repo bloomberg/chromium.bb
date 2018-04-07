@@ -23,17 +23,17 @@
  *
  */
 
-#include "core/dom/ScriptedAnimationController.h"
+#include "third_party/blink/renderer/core/dom/scripted_animation_controller.h"
 
-#include "core/css/MediaQueryListListener.h"
-#include "core/dom/Document.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/probe/CoreProbes.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/core/css/media_query_list_listener.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

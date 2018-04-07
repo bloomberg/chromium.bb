@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/ThreadedWorkletObjectProxy.h"
+#include "third_party/blink/renderer/core/workers/threaded_worklet_object_proxy.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/workers/ThreadedWorkletGlobalScope.h"
-#include "core/workers/ThreadedWorkletMessagingProxy.h"
-#include "core/workers/WorkerThread.h"
+#include "third_party/blink/renderer/core/workers/threaded_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/threaded_worklet_messaging_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
 
 namespace blink {
 

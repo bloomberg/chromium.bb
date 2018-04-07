@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebBlobInfo_h
-#define WebBlobInfo_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_BLOB_INFO_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_BLOB_INFO_H_
 
-#include "WebCommon.h"
-#include "WebPrivatePtr.h"
-#include "WebString.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 

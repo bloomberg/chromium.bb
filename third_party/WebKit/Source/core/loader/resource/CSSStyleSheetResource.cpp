@@ -24,21 +24,21 @@
     sheets and html pages from the web. It has a memory cache for these objects.
 */
 
-#include "core/loader/resource/CSSStyleSheetResource.h"
+#include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 
-#include "core/css/StyleSheetContents.h"
-#include "core/frame/WebFeature.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/MemoryCache.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/TextResourceDecoderOptions.h"
-#include "platform/network/http_names.h"
-#include "platform/network/mime/MIMETypeRegistry.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/weborigin/SecurityPolicy.h"
-#include "platform/wtf/text/TextEncoding.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 

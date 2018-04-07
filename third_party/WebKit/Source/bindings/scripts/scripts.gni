@@ -2,11 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/core/core_idl_files.gni")
-import("//third_party/WebKit/Source/modules/modules_idl_files.gni")
+import("//third_party/blink/renderer/core/core_idl_files.gni")
+import("//third_party/blink/renderer/modules/modules_idl_files.gni")
 
 bindings_scripts_dir = get_path_info(".", "abspath")
-bindings_scripts_output_dir = "$root_gen_dir/blink/bindings/scripts"
+bindings_scripts_output_dir =
+    "$root_gen_dir/third_party/blink/renderer/bindings/scripts"
 
 jinja_module_files = [
   "//third_party/jinja2/__init__.py",
@@ -117,7 +118,7 @@ template("compute_interfaces_info_individual") {
       rebase_path(invoker.component_info_file, root_build_dir),
     ]
 
-    deps = [ "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables" ] + invoker.deps
+    deps = [ "//third_party/blink/renderer/bindings/scripts:cached_lex_yacc_tables" ] + invoker.deps
   }
 }
 
@@ -135,16 +136,17 @@ template("generate_event_interfaces") {
     write_file(idl_files_list, rebase_path(invoker.sources, root_build_dir))
 
     inputs = [
-               "//third_party/WebKit/Source/bindings/scripts/utilities.py",
+               "//third_party/blink/renderer/bindings/scripts/utilities.py",
                idl_files_list,
              ] + invoker.sources
 
-    output_file = "$root_gen_dir/blink/" + invoker.output_file
+    output_file =
+        "$root_gen_dir/third_party/blink/renderer/" + invoker.output_file
     outputs = [
       output_file,
     ]
 
-    script = "//third_party/WebKit/Source/bindings/scripts/generate_event_interfaces.py"
+    script = "//third_party/blink/renderer/bindings/scripts/generate_event_interfaces.py"
     args = [
       "--event-idl-files-list",
       rebase_path(idl_files_list, root_build_dir),
@@ -175,7 +177,7 @@ template("idl_compiler") {
   # TODO(brettw): we used to add a "-S" before the script name to skip
   # "import site" to speed up startup. Figure out if we need this and do
   # something similar (not really expressible in GN now).
-  _script = "//third_party/WebKit/Source/bindings/scripts/idl_compiler.py"
+  _script = "//third_party/blink/renderer/bindings/scripts/idl_compiler.py"
   _inputs = idl_lexer_parser_files + idl_compiler_files  # to be explicit (covered by parsetab)
   _inputs += [
     "$bindings_scripts_output_dir/lextab.py",
@@ -200,16 +202,16 @@ template("idl_compiler") {
   _inputs += core_all_dependency_idl_files + modules_all_dependency_idl_files
 
   _public_deps = [
-    "//third_party/WebKit/Source/bindings/core:core_global_constructors_idls",
+    "//third_party/blink/renderer/bindings/core:core_global_constructors_idls",
 
     # FIXME: should be interfaces_info_core (w/o modules)
     # http://crbug.com/358074
-    "//third_party/WebKit/Source/bindings/modules:interfaces_info",
-    "//third_party/WebKit/Source/bindings/modules:modules_core_global_constructors_idls",
-    "//third_party/WebKit/Source/bindings/modules:modules_global_constructors_idls",
-    "//third_party/WebKit/Source/bindings/scripts:cached_jinja_templates",
-    "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables",
-    "//third_party/WebKit/Source/core:generated_testing_idls",
+    "//third_party/blink/renderer/bindings/modules:interfaces_info",
+    "//third_party/blink/renderer/bindings/modules:modules_core_global_constructors_idls",
+    "//third_party/blink/renderer/bindings/modules:modules_global_constructors_idls",
+    "//third_party/blink/renderer/bindings/scripts:cached_jinja_templates",
+    "//third_party/blink/renderer/bindings/scripts:cached_lex_yacc_tables",
+    "//third_party/blink/renderer/core:generated_testing_idls",
   ]
 
   # Spawning a python process per IDL file is slow. Use a single action
@@ -272,10 +274,10 @@ template("idl_compiler") {
 #   non_dict_output_dir = the directory to put the non-dict output files.
 #   target_component = component to generate code for
 template("idl_impl") {
-  dictionary_impl_output_dir = "$root_gen_dir/blink/"
+  dictionary_impl_output_dir = "$root_gen_dir/third_party/blink/renderer/"
 
   action(target_name) {
-    script = "//third_party/WebKit/Source/bindings/scripts/idl_compiler.py"
+    script = "//third_party/blink/renderer/bindings/scripts/idl_compiler.py"
     idl_files_list = "$target_gen_dir/${target_name}_file_list.tmp"
     write_file(idl_files_list, rebase_path(invoker.dict_idls, root_build_dir))
 
@@ -291,9 +293,9 @@ template("idl_impl") {
 
     # Derive the names of the generated dictionary impl files. Contrary to
     # generated interfaces, callbacks and unions, these files go to
-    # $root_gen_dir/blink/{core,modules}/<module name>/<IDLName>.{cpp,h}.
+    # $root_gen_dir/third_party/blink/renderer/{core,modules}/<module name>/<IDLName>.{cpp,h}.
     foreach(dict_idl, invoker.dict_idls) {
-      rel_path = rebase_path(dict_idl, "//third_party/WebKit/Source")
+      rel_path = rebase_path(dict_idl, "//third_party/blink/renderer")
       impl_dir = get_path_info(rel_path, "dir")
       idl_name = get_path_info(rel_path, "name")
       if (snake_case_source_files) {
@@ -331,11 +333,11 @@ template("idl_impl") {
     deps = [
       # FIXME: should be interfaces_info_core (w/o modules)
       # http://crbug.com/358074
-      "//third_party/WebKit/Source/bindings/core:interfaces_info_individual_core",
-      "//third_party/WebKit/Source/bindings/modules:interfaces_info",
-      "//third_party/WebKit/Source/bindings/modules:interfaces_info_individual_modules",
-      "//third_party/WebKit/Source/bindings/scripts:cached_jinja_templates",
-      "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables",
+      "//third_party/blink/renderer/bindings/core:interfaces_info_individual_core",
+      "//third_party/blink/renderer/bindings/modules:interfaces_info",
+      "//third_party/blink/renderer/bindings/modules:interfaces_info_individual_modules",
+      "//third_party/blink/renderer/bindings/scripts:cached_jinja_templates",
+      "//third_party/blink/renderer/bindings/scripts:cached_lex_yacc_tables",
     ]
   }
 }
@@ -348,7 +350,7 @@ template("idl_impl") {
 #   outputs = a name of file to write to.
 template("aggregate_generated_bindings") {
   action(target_name) {
-    script = "//third_party/WebKit/Source/bindings/scripts/aggregate_generated_bindings.py"
+    script = "//third_party/blink/renderer/bindings/scripts/aggregate_generated_bindings.py"
 
     inputs = invoker.sources
     outputs = invoker.outputs
@@ -378,8 +380,7 @@ template("aggregate_generated_bindings") {
 #
 template("compute_global_objects") {
   action(target_name) {
-    script =
-        "//third_party/WebKit/Source/bindings/scripts/compute_global_objects.py"
+    script = "//third_party/blink/renderer/bindings/scripts/compute_global_objects.py"
 
     # Write the file list to a unique temp file to avoid blowing out the
     # command line length limit.
@@ -387,7 +388,7 @@ template("compute_global_objects") {
     write_file(idl_files_list, rebase_path(invoker.sources, root_build_dir))
 
     inputs = [
-               "//third_party/WebKit/Source/bindings/scripts/utilities.py",
+               "//third_party/blink/renderer/bindings/scripts/utilities.py",
                idl_files_list,
              ] + invoker.sources_generated + invoker.sources
 
@@ -423,7 +424,7 @@ template("compute_global_objects") {
 #
 template("generate_global_constructors") {
   action(target_name) {
-    script = "//third_party/WebKit/Source/bindings/scripts/generate_global_constructors.py"
+    script = "//third_party/blink/renderer/bindings/scripts/generate_global_constructors.py"
 
     # Write the file list to a unique temp file to avoid blowing out the
     # command line length limit.
@@ -431,7 +432,7 @@ template("generate_global_constructors") {
     write_file(idl_files_list, rebase_path(invoker.sources, root_build_dir))
 
     inputs = [
-               "//third_party/WebKit/Source/bindings/scripts/utilities.py",
+               "//third_party/blink/renderer/bindings/scripts/utilities.py",
                idl_files_list,
                invoker.global_objects_file,
              ] + invoker.sources
@@ -481,7 +482,7 @@ template("generate_global_constructors") {
 #
 template("generate_origin_trial_features") {
   action(target_name) {
-    script = "//third_party/WebKit/Source/bindings/scripts/generate_origin_trial_features.py"
+    script = "//third_party/blink/renderer/bindings/scripts/generate_origin_trial_features.py"
 
     # Write the file list to a unique temp file to avoid blowing out the
     # command line length limit.
@@ -489,9 +490,9 @@ template("generate_origin_trial_features") {
     write_file(idl_files_list, rebase_path(invoker.sources, root_build_dir))
 
     inputs = [
-               "//third_party/WebKit/Source/bindings/scripts/utilities.py",
-               "//third_party/WebKit/Source/bindings/templates/origin_trial_features_for_${invoker.component}.cc.tmpl",
-               "//third_party/WebKit/Source/bindings/templates/origin_trial_features_for_${invoker.component}.h.tmpl",
+               "//third_party/blink/renderer/bindings/scripts/utilities.py",
+               "//third_party/blink/renderer/bindings/templates/origin_trial_features_for_${invoker.component}.cc.tmpl",
+               "//third_party/blink/renderer/bindings/templates/origin_trial_features_for_${invoker.component}.h.tmpl",
                idl_files_list,
              ] + invoker.sources
 
@@ -522,7 +523,7 @@ template("generate_origin_trial_features") {
     # above in the idl_compiler template.
     # http://crbug.com/358074
     deps = invoker.deps +
-           [ "//third_party/WebKit/Source/bindings/modules:interfaces_info" ]
+           [ "//third_party/blink/renderer/bindings/modules:interfaces_info" ]
   }
 }
 

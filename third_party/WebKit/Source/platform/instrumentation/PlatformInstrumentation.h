@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PlatformInstrumentation_h
-#define PlatformInstrumentation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_PLATFORM_INSTRUMENTATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_PLATFORM_INSTRUMENTATION_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -69,4 +69,4 @@ inline void PlatformInstrumentation::DidDecodeLazyPixelRef() {
 
 }  // namespace blink
 
-#endif  // PlatformInstrumentation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTRUMENTATION_PLATFORM_INSTRUMENTATION_H_

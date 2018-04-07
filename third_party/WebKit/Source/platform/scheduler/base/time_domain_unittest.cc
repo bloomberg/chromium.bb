@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/base/time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
 
 #include <memory>
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
-#include "platform/scheduler/base/task_queue_impl.h"
-#include "platform/scheduler/base/task_queue_manager.h"
-#include "platform/scheduler/base/work_queue.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 
 using testing::_;
 using testing::AnyNumber;

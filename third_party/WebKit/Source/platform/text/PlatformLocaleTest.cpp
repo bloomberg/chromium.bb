@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/text/PlatformLocale.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StackUtil_h
-#define StackUtil_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_STACK_UTIL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_STACK_UTIL_H_
 
 #include <stddef.h>
 #include <stdint.h>
 #include "build/build_config.h"
-#include "platform/wtf/WTFExport.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -45,4 +45,4 @@ inline bool MayNotBeMainThread() {
 
 }  // namespace WTF
 
-#endif  // StackUtil_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_STACK_UTIL_H_

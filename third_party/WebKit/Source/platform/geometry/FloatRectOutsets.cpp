@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/geometry/FloatRectOutsets.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect_outsets.h"
 
 #include <algorithm>
 

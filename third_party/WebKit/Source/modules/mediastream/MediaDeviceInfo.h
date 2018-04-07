@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaDeviceInfo_h
-#define MediaDeviceInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_DEVICE_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_DEVICE_INFO_H_
 
-#include "modules/ModulesExport.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/mediastream/media_devices.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom-blink.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 using blink::mojom::blink::MediaDeviceType;
 
@@ -74,4 +74,4 @@ using MediaDeviceInfoVector = HeapVector<Member<MediaDeviceInfo>>;
 
 }  // namespace blink
 
-#endif  // MediaDeviceInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_DEVICE_INFO_H_

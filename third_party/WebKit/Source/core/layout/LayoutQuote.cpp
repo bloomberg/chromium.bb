@@ -19,13 +19,13 @@
  *
  */
 
-#include "core/layout/LayoutQuote.h"
+#include "third_party/blink/renderer/core/layout/layout_quote.h"
 
-#include "core/dom/PseudoElement.h"
-#include "core/layout/LayoutTextFragment.h"
-#include "core/layout/LayoutView.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 #include <algorithm>
 

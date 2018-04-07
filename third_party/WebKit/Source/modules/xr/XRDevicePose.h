@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef XRDevicePose_h
-#define XRDevicePose_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_DEVICE_POSE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_DEVICE_POSE_H_
 
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/transforms/TransformationMatrix.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
 

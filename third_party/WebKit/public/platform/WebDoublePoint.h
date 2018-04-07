@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebDoublePoint_h
-#define WebDoublePoint_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DOUBLE_POINT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DOUBLE_POINT_H_
 
-#include "WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 #if INSIDE_BLINK
-#include "platform/geometry/DoublePoint.h"
+#include "third_party/blink/renderer/platform/geometry/double_point.h"
 #endif
 
 namespace blink {

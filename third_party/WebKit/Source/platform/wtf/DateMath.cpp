@@ -69,7 +69,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/DateMath.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
 
 #include <limits.h>
 #include <math.h>
@@ -78,13 +78,13 @@
 #include <algorithm>
 #include <limits>
 #include "build/build_config.h"
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/StringExtras.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/string_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

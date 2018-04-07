@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebWorkerFetchContext_h
-#define WebWorkerFetchContext_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_WORKER_FETCH_CONTEXT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_WORKER_FETCH_CONTEXT_H_
 
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "public/platform/WebApplicationCacheHost.h"
-#include "public/platform/WebDocumentSubresourceFilter.h"
-#include "public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_application_cache_host.h"
+#include "third_party/blink/public/platform/web_document_subresource_filter.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 namespace base {
 class WaitableEvent;
@@ -97,4 +97,4 @@ class WebWorkerFetchContext {
 
 }  // namespace blink
 
-#endif  // WebWorkerFetchContext_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_WORKER_FETCH_CONTEXT_H_

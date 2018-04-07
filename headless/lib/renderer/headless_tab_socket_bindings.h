@@ -10,7 +10,7 @@
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "headless/lib/tab_socket.mojom.h"
-#include "third_party/WebKit/public/web/WebScriptExecutionCallback.h"
+#include "third_party/blink/public/web/web_script_execution_callback.h"
 
 namespace headless {
 class HeadlessRenderFrameControllerImpl;

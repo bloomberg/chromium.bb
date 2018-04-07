@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/SizesCalcParser.h"
+#include "third_party/blink/renderer/core/css/parser/sizes_calc_parser.h"
 
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/MediaValuesCached.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css/parser/CSSTokenizer.h"
-#include "core/media_type_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/media_values_cached.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/core/media_type_names.h"
 
 namespace blink {
 

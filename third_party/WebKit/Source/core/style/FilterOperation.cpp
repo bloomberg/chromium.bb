@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/style/FilterOperation.h"
+#include "third_party/blink/renderer/core/style/filter_operation.h"
 
-#include "core/svg/SVGResource.h"
-#include "platform/LengthFunctions.h"
-#include "platform/animation/AnimationUtilities.h"
-#include "platform/graphics/filters/FEDropShadow.h"
-#include "platform/graphics/filters/FEGaussianBlur.h"
-#include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/FilterEffect.h"
+#include "third_party/blink/renderer/core/svg/svg_resource.h"
+#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_drop_shadow.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_gaussian_blur.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
 
 namespace blink {
 

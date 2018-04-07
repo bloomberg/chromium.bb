@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/presentation/PresentationConnectionAvailableEvent.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_connection_available_event.h"
 
-#include "modules/presentation/PresentationConnectionAvailableEventInit.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_connection_available_event_init.h"
 
 namespace blink {
 

@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextFieldInputType_h
-#define TextFieldInputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_TEXT_FIELD_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_TEXT_FIELD_INPUT_TYPE_H_
 
-#include "core/html/forms/InputType.h"
-#include "core/html/forms/InputTypeView.h"
-#include "core/html/forms/SpinButtonElement.h"
+#include "third_party/blink/renderer/core/html/forms/input_type.h"
+#include "third_party/blink/renderer/core/html/forms/input_type_view.h"
+#include "third_party/blink/renderer/core/html/forms/spin_button_element.h"
 
 namespace blink {
 
@@ -105,4 +105,4 @@ class TextFieldInputType : public InputType,
 
 }  // namespace blink
 
-#endif  // TextFieldInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_TEXT_FIELD_INPUT_TYPE_H_

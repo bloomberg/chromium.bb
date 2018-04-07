@@ -22,19 +22,19 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/FloatingObjects.h"
+#include "third_party/blink/renderer/core/layout/floating_objects.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutView.h"
-#include "core/layout/api/LineLayoutBlockFlow.h"
-#include "core/layout/shapes/ShapeOutsideInfo.h"
-#include "core/paint/PaintLayer.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
 

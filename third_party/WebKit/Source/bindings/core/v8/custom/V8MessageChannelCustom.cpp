@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8MessageChannel.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_message_channel.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8MessagePort.h"
-#include "core/messaging/MessageChannel.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/bindings/V8PrivateProperty.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_message_port.h"
+#include "third_party/blink/renderer/core/messaging/message_channel.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
 namespace blink {
 

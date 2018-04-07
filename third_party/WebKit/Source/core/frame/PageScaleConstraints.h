@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PageScaleConstraints_h
-#define PageScaleConstraints_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PAGE_SCALE_CONSTRAINTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PAGE_SCALE_CONSTRAINTS_H_
 
-#include "core/CoreExport.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ struct CORE_EXPORT PageScaleConstraints {
 
 }  // namespace blink
 
-#endif  // PageScaleConstraints_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PAGE_SCALE_CONSTRAINTS_H_

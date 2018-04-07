@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/image-decoders/webp/WEBPImageDecoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/webp/webp_image_decoder.h"
 
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkData.h"

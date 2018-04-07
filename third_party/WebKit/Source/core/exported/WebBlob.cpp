@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebBlob.h"
+#include "third_party/blink/public/web/web_blob.h"
 
 #include <memory>
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8Blob.h"
-#include "core/fileapi/Blob.h"
-#include "platform/FileMetadata.h"
-#include "platform/blob/BlobData.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
 
 namespace blink {
 

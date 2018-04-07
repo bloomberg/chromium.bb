@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/LayoutTheme.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLElement.h"
-#include "core/page/FocusController.h"
-#include "core/page/Page.h"
-#include "core/style/ComputedStyle.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/graphics/Color.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/timing/PerformanceLongTaskTiming.h"
+#include "third_party/blink/renderer/core/timing/performance_long_task_timing.h"
 
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/frame/DOMWindow.h"
-#include "core/timing/SubTaskAttribution.h"
-#include "core/timing/TaskAttributionTiming.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/frame/dom_window.h"
+#include "third_party/blink/renderer/core/timing/sub_task_attribution.h"
+#include "third_party/blink/renderer/core/timing/task_attribution_timing.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

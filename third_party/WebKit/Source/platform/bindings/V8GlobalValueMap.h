@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8GlobalValueMap_h
-#define V8GlobalValueMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_GLOBAL_VALUE_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_GLOBAL_VALUE_MAP_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
 
@@ -115,4 +115,4 @@ class V8GlobalValueMap : public v8::GlobalValueMap<
 
 }  // namespace blink
 
-#endif  // V8GlobalValueMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_GLOBAL_VALUE_MAP_H_

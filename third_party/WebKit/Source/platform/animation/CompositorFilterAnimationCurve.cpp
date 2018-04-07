@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/animation/CompositorFilterAnimationCurve.h"
+#include "third_party/blink/renderer/platform/animation/compositor_filter_animation_curve.h"
 
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/timing_function.h"
 #include "cc/paint/filter_operations.h"
-#include "platform/graphics/CompositorFilterOperations.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
 
 namespace blink {
 

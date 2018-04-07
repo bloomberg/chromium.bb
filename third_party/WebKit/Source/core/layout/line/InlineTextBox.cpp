@@ -21,25 +21,25 @@
  *
  */
 
-#include "core/layout/line/InlineTextBox.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 
-#include "core/dom/Document.h"
-#include "core/editing/FrameSelection.h"
-#include "core/frame/LocalFrame.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/api/LineLayoutBR.h"
-#include "core/layout/api/LineLayoutBox.h"
-#include "core/layout/api/LineLayoutRubyRun.h"
-#include "core/layout/api/LineLayoutRubyText.h"
-#include "core/layout/line/AbstractInlineTextBox.h"
-#include "core/layout/line/EllipsisBox.h"
-#include "core/paint/InlineTextBoxPainter.h"
-#include "core/paint/PaintInfo.h"
-#include "platform/fonts/CharacterRange.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_br.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_ruby_run.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_ruby_text.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/line/abstract_inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/line/ellipsis_box.h"
+#include "third_party/blink/renderer/core/paint/inline_text_box_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/fonts/character_range.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 #include <algorithm>
 

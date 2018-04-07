@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebDevToolsAgentImpl_h
-#define WebDevToolsAgentImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_DEV_TOOLS_AGENT_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_DEV_TOOLS_AGENT_IMPL_H_
 
 #include <memory>
 
-#include "core/CoreExport.h"
-#include "core/inspector/InspectorLayerTreeAgent.h"
-#include "core/inspector/InspectorPageAgent.h"
-#include "core/inspector/InspectorTracingAgent.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/WebSize.h"
-#include "public/platform/WebThread.h"
-#include "public/web/devtools_agent.mojom-blink.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/inspector/InspectorLayerTreeAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorPageAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTracingAgent.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

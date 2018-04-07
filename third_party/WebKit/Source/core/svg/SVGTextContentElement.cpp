@@ -18,21 +18,21 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGTextContentElement.h"
+#include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/css_property_names.h"
-#include "core/css_value_keywords.h"
-#include "core/editing/FrameSelection.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/UseCounter.h"
-#include "core/layout/api/LineLayoutItem.h"
-#include "core/layout/svg/SVGTextQuery.h"
-#include "core/svg/SVGPointTearOff.h"
-#include "core/svg/SVGRectTearOff.h"
-#include "core/svg_names.h"
-#include "core/xml_names.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_text_query.h"
+#include "third_party/blink/renderer/core/svg/svg_point_tear_off.h"
+#include "third_party/blink/renderer/core/svg/svg_rect_tear_off.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/core/xml_names.h"
 
 namespace blink {
 

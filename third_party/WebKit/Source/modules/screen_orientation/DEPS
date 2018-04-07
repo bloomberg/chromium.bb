@@ -1,9 +1,9 @@
 include_rules = [
     "+services/device/public/mojom/screen_orientation.mojom-blink.h",
-    "-modules",
-    "+modules/EventTargetModules.h",
-    "+modules/ModulesExport.h",
-    "+modules/screen_orientation",
+    "-third_party/blink/renderer/modules",
+    "+third_party/blink/renderer/modules/event_target_modules.h",
+    "+third_party/blink/renderer/modules/modules_export.h",
+    "+third_party/blink/renderer/modules/screen_orientation",
     "+mojo/public/cpp/bindings/associated_interface_ptr.h",
     "+services/device/public/mojom/constants.mojom-blink.h",
 ]

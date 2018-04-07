@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FilePathConversion_h
-#define FilePathConversion_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_FILE_PATH_CONVERSION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_FILE_PATH_CONVERSION_H_
 
-#include "WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace base {
 class FilePath;
@@ -21,4 +21,4 @@ BLINK_PLATFORM_EXPORT WebString FilePathToWebString(const base::FilePath&);
 
 }  // namespace blink
 
-#endif  // FilePathConversion_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_FILE_PATH_CONVERSION_H_

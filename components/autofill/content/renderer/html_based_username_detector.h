@@ -8,8 +8,8 @@
 #include <map>
 
 #include "components/autofill/core/common/password_form.h"
-#include "third_party/WebKit/public/web/WebFormControlElement.h"
-#include "third_party/WebKit/public/web/WebInputElement.h"
+#include "third_party/blink/public/web/web_form_control_element.h"
+#include "third_party/blink/public/web/web_input_element.h"
 
 namespace autofill {
 

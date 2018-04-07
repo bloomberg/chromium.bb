@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HarfBuzzFontCache_h
-#define HarfBuzzFontCache_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARF_BUZZ_FONT_CACHE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARF_BUZZ_FONT_CACHE_H_
 
 #include <memory>
-#include "platform/fonts/FontMetrics.h"
-#include "platform/fonts/UnicodeRangeSet.h"
-#include "platform/fonts/opentype/OpenTypeVerticalData.h"
-#include "platform/fonts/shaping/HarfBuzzFace.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/fonts/font_metrics.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/open_type_vertical_data.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_face.h"
+#include "third_party/blink/renderer/platform/fonts/unicode_range_set.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 struct hb_font_t;
 struct hb_face_t;

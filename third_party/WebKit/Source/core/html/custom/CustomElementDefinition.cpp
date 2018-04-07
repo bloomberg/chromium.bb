@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/custom/CustomElementDefinition.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/css/CSSStyleSheet.h"
-#include "core/dom/Attr.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/custom/CustomElement.h"
-#include "core/html/custom/CustomElementAdoptedCallbackReaction.h"
-#include "core/html/custom/CustomElementAttributeChangedCallbackReaction.h"
-#include "core/html/custom/CustomElementConnectedCallbackReaction.h"
-#include "core/html/custom/CustomElementDisconnectedCallbackReaction.h"
-#include "core/html/custom/CustomElementReaction.h"
-#include "core/html/custom/CustomElementReactionStack.h"
-#include "core/html/custom/CustomElementUpgradeReaction.h"
-#include "core/html_element_factory.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/dom/attr.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_adopted_callback_reaction.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_attribute_changed_callback_reaction.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_connected_callback_reaction.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_disconnected_callback_reaction.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction_stack.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_upgrade_reaction.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html_element_factory.h"
 
 namespace blink {
 

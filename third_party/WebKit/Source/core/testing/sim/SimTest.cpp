@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/testing/sim/SimTest.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 
-#include "core/dom/Document.h"
-#include "core/exported/WebViewImpl.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/scroll/ScrollbarTheme.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/WebCache.h"
+#include "third_party/blink/public/platform/web_cache.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 

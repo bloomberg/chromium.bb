@@ -28,21 +28,21 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/RuleSet.h"
+#include "third_party/blink/renderer/core/css/rule_set.h"
 
-#include "core/css/CSSFontSelector.h"
-#include "core/css/CSSSelector.h"
-#include "core/css/CSSSelectorList.h"
-#include "core/css/SelectorFilter.h"
-#include "core/css/StyleRuleImport.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/html/track/TextTrackCue.h"
-#include "core/html_names.h"
-#include "platform/heap/HeapTerminatedArrayBuilder.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/weborigin/SecurityOrigin.h"
+#include "third_party/blink/renderer/core/css/css_font_selector.h"
+#include "third_party/blink/renderer/core/css/css_selector.h"
+#include "third_party/blink/renderer/core/css/css_selector_list.h"
+#include "third_party/blink/renderer/core/css/selector_filter.h"
+#include "third_party/blink/renderer/core/css/style_rule_import.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/html/track/text_track_cue.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/heap/heap_terminated_array_builder.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
-#include "platform/wtf/TerminatedArrayBuilder.h"
+#include "third_party/blink/renderer/platform/wtf/terminated_array_builder.h"
 
 namespace blink {
 

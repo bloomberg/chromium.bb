@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlDivElement_h
-#define MediaControlDivElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_DIV_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_DIV_ELEMENT_H_
 
-#include "core/html/HTMLDivElement.h"
-#include "modules/media_controls/elements/MediaControlElementBase.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_element_base.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ class MODULES_EXPORT MediaControlDivElement : public HTMLDivElement,
 
 }  // namespace blink
 
-#endif  // MediaControlDivElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_DIV_ELEMENT_H_

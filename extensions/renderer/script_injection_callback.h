@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "third_party/WebKit/public/web/WebScriptExecutionCallback.h"
+#include "third_party/blink/public/web/web_script_execution_callback.h"
 #include "v8/include/v8.h"
 
 namespace extensions {

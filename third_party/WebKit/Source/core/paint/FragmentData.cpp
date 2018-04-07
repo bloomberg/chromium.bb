@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/FragmentData.h"
-#include "core/paint/PaintLayer.h"
+#include "third_party/blink/renderer/core/paint/fragment_data.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 #include "base/debug/stack_trace.h"
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSContentDistributionValue_h
-#define CSSContentDistributionValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CONTENT_DISTRIBUTION_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CONTENT_DISTRIBUTION_VALUE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSValue.h"
-#include "core/css/CSSValuePair.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
 
 namespace blink {
 namespace cssvalue {
@@ -52,4 +52,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSContentDistributionValue,
 }  // namespace cssvalue
 }  // namespace blink
 
-#endif  // CSSContentDistributionValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CONTENT_DISTRIBUTION_VALUE_H_

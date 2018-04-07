@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StyleBuildingUtils_h
-#define StyleBuildingUtils_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_STYLE_BUILDING_UTILS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_STYLE_BUILDING_UTILS_H_
 
-#include "core/style/BorderImageLength.h"
-#include "core/style/BorderImageLengthBox.h"
-#include "platform/Length.h"
-#include "platform/LengthBox.h"
+#include "third_party/blink/renderer/core/style/border_image_length.h"
+#include "third_party/blink/renderer/core/style/border_image_length_box.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/length_box.h"
 
 namespace blink {
 namespace StyleBuildingUtils {
@@ -30,4 +30,4 @@ inline bool lengthMatchesAllSides(const LengthBox& lengthBox,
 }  // namespace StyleBuildingUtils
 }  // namespace blink
 
-#endif  // StyleBuildingUtils_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTIES_STYLE_BUILDING_UTILS_H_

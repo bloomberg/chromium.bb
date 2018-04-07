@@ -11,8 +11,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/renderer/storage_util.h"
 #include "storage/common/database/database_identifier.h"
-#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/sqlite/sqlite3.h"
 
 using blink::WebSecurityOrigin;

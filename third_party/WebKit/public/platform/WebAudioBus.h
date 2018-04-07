@@ -22,10 +22,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebAudioBus_h
-#define WebAudioBus_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_AUDIO_BUS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_AUDIO_BUS_H_
 
-#include "WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 #if INSIDE_BLINK
 template <typename T>
@@ -79,4 +79,4 @@ class BLINK_PLATFORM_EXPORT WebAudioBus {
 
 }  // namespace blink
 
-#endif  // WebAudioBus_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_AUDIO_BUS_H_

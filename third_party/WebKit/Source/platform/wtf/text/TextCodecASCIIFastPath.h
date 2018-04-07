@@ -24,10 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextCodecASCIIFastPath_h
-#define TextCodecASCIIFastPath_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_CODEC_ASCII_FAST_PATH_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_CODEC_ASCII_FAST_PATH_H_
 
-#include "platform/wtf/text/ASCIIFastPath.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_fast_path.h"
 
 namespace WTF {
 
@@ -74,4 +74,4 @@ inline void CopyASCIIMachineWord(UChar* destination, const uint8_t* source) {
 
 }  // namespace WTF
 
-#endif  // TextCodecASCIIFastPath_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_CODEC_ASCII_FAST_PATH_H_

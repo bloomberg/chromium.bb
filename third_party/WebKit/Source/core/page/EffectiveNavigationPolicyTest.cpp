@@ -29,11 +29,11 @@
  */
 
 #include "build/build_config.h"
-#include "core/page/CreateWindow.h"
-#include "public/platform/WebInputEvent.h"
-#include "public/platform/WebMouseEvent.h"
-#include "public/web/WebWindowFeatures.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/web/web_window_features.h"
+#include "third_party/blink/renderer/core/page/create_window.h"
 
 namespace blink {
 

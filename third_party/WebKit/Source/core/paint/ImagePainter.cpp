@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ImagePainter.h"
+#include "third_party/blink/renderer/core/paint/image_painter.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/editing/FrameSelection.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/HTMLAreaElement.h"
-#include "core/html/HTMLImageElement.h"
-#include "core/layout/LayoutImage.h"
-#include "core/layout/LayoutReplaced.h"
-#include "core/layout/TextRunConstructor.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "core/paint/PaintInfo.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/graphics/Path.h"
-#include "platform/graphics/ScopedInterpolationQuality.h"
-#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/html_area_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/core/layout/layout_replaced.h"
+#include "third_party/blink/renderer/core/layout/text_run_constructor.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
 
 namespace blink {
 

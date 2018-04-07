@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/blink/key_system_config_selector.h"
 #include "media/blink/media_blink_export.h"
-#include "third_party/WebKit/public/platform/WebEncryptedMediaClient.h"
+#include "third_party/blink/public/platform/web_encrypted_media_client.h"
 
 namespace blink {
 

@@ -27,14 +27,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Atomics_h
-#define Atomics_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ATOMICS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ATOMICS_H_
 
 #include <stdint.h>
 #include "build/build_config.h"
-#include "platform/wtf/AddressSanitizer.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/CPU.h"
+#include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/cpu.h"
 
 #if defined(COMPILER_MSVC)
 #include <windows.h>
@@ -399,4 +399,4 @@ using WTF::NoBarrierStore;
 using WTF::AsanUnsafeAcquireLoad;
 using WTF::AsanUnsafeReleaseStore;
 
-#endif  // Atomics_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ATOMICS_H_

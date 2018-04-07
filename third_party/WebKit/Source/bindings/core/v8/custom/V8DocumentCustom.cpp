@@ -28,25 +28,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8Document.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_document.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8EventTarget.h"
-#include "bindings/core/v8/V8HTMLAllCollection.h"
-#include "bindings/core/v8/V8HTMLCollection.h"
-#include "bindings/core/v8/V8Node.h"
-#include "bindings/core/v8/V8Window.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLAllCollection.h"
-#include "core/html/HTMLCollection.h"
-#include "core/html/HTMLIFrameElement.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_html_all_collection.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_html_collection.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_all_collection.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

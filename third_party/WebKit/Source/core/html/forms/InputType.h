@@ -30,15 +30,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InputType_h
-#define InputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_INPUT_TYPE_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/frame/WebFeatureForward.h"
-#include "core/html/forms/ColorChooserClient.h"
-#include "core/html/forms/StepRange.h"
-#include "core/html/forms/TextControlElement.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/web_feature_forward.h"
+#include "third_party/blink/renderer/core/html/forms/color_chooser_client.h"
+#include "third_party/blink/renderer/core/html/forms/step_range.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 
 namespace blink {
 

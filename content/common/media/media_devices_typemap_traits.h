@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_MEDIA_MEDIA_DEVICES_TYPEMAP_TRAITS_H_
 
 #include "content/common/media/media_devices.h"
-#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h"
 
 namespace mojo {
 

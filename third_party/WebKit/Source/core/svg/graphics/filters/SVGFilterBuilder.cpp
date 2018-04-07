@@ -17,19 +17,19 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/graphics/filters/SVGFilterBuilder.h"
+#include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/layout/LayoutObject.h"
-#include "core/svg/SVGFilterElement.h"
-#include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
-#include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/PaintFilterEffect.h"
-#include "platform/graphics/filters/SourceAlpha.h"
-#include "platform/graphics/filters/SourceGraphic.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/svg/svg_filter_element.h"
+#include "third_party/blink/renderer/core/svg/svg_filter_primitive_standard_attributes.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_effect.h"
+#include "third_party/blink/renderer/platform/graphics/filters/source_alpha.h"
+#include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
 
 namespace blink {
 

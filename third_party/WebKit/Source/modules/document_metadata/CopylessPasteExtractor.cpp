@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/document_metadata/CopylessPasteExtractor.h"
+#include "third_party/blink/renderer/modules/document_metadata/copyless_paste_extractor.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
-#include "core/dom/ElementTraversal.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/HTMLElement.h"
-#include "core/html_names.h"
-#include "platform/Histogram.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/json/JSONParser.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/modules/document_metadata/copyless_paste.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/document_metadata/copyless_paste.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/json/json_parser.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

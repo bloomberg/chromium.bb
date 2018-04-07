@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/bluetooth/BluetoothDevice.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_device.h"
 
 #include <memory>
 #include <utility>
 
-#include "bindings/core/v8/CallbackPromiseAdapter.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/UseCounter.h"
-#include "modules/bluetooth/Bluetooth.h"
-#include "modules/bluetooth/BluetoothAttributeInstanceMap.h"
-#include "modules/bluetooth/BluetoothError.h"
-#include "modules/bluetooth/BluetoothRemoteGATTServer.h"
+#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_attribute_instance_map.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_error.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_server.h"
 
 namespace blink {
 

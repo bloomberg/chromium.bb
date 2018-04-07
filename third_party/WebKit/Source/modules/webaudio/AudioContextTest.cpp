@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webaudio/AudioContext.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 
 #include <memory>
 
-#include "core/dom/Document.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "public/platform/WebAudioDevice.h"
-#include "public/platform/WebAudioLatencyHint.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_audio_device.h"
+#include "third_party/blink/public/platform/web_audio_latency_hint.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 namespace blink {
 

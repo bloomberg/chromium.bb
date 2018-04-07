@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ScriptSourceCode.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 
-#include "core/loader/resource/ScriptResource.h"
+#include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 
 namespace blink {
 

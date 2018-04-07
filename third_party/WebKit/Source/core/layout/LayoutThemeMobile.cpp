@@ -23,14 +23,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutThemeMobile.h"
+#include "third_party/blink/renderer/core/layout/layout_theme_mobile.h"
 
 #include "build/build_config.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/DataResourceHelper.h"
-#include "platform/LayoutTestSupport.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThemeEngine.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/data_resource_helper.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
 
 namespace blink {
 

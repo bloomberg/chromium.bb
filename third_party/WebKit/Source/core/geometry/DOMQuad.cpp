@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/geometry/DOMQuad.h"
+#include "third_party/blink/renderer/core/geometry/dom_quad.h"
 
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/geometry/DOMPoint.h"
-#include "core/geometry/DOMQuadInit.h"
-#include "core/geometry/DOMRect.h"
-#include "core/geometry/DOMRectInit.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/geometry/dom_point.h"
+#include "third_party/blink/renderer/core/geometry/dom_quad_init.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect_init.h"
 
 namespace blink {
 

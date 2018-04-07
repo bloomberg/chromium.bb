@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/mediasource/HTMLVideoElementMediaSource.h"
+#include "third_party/blink/renderer/modules/mediasource/html_video_element_media_source.h"
 
-#include "core/html/media/HTMLVideoElement.h"
-#include "modules/mediasource/VideoPlaybackQuality.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/modules/mediasource/video_playback_quality.h"
 
 namespace blink {
 

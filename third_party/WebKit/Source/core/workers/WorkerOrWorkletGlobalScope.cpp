@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/WorkerOrWorkletGlobalScope.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 
-#include "bindings/core/v8/V8AbstractEventListener.h"
-#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/frame/Deprecation.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/loader/WorkerFetchContext.h"
-#include "core/loader/modulescript/ModuleScriptFetchRequest.h"
-#include "core/probe/CoreProbes.h"
-#include "core/script/Modulator.h"
-#include "core/workers/MainThreadWorkletGlobalScope.h"
-#include "core/workers/WorkerReportingProxy.h"
-#include "core/workers/WorkerThread.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/wtf/Functional.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
+#include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

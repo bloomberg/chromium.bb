@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextOffsetMapping_h
-#define TextOffsetMapping_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_TEXT_OFFSET_MAPPING_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_TEXT_OFFSET_MAPPING_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/Forward.h"
-#include "core/editing/iterators/TextIteratorBehavior.h"
-#include "platform/heap/Member.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator_behavior.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class CORE_EXPORT TextOffsetMapping final {
 
 }  // namespace blink
 
-#endif  // TextOffsetMapping_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_TEXT_OFFSET_MAPPING_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/modules/v8/V8ExtendableMessageEvent.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_extendable_message_event.h"
 
-#include "bindings/modules/v8/V8ExtendableMessageEventInit.h"
-#include "platform/bindings/V8PrivateProperty.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_extendable_message_event_init.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
 namespace blink {
 

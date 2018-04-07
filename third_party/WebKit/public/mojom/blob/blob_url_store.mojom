@@ -5,7 +5,7 @@ module blink.mojom;
 
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
-import "third_party/WebKit/public/mojom/blob/blob.mojom";
+import "third_party/blink/public/mojom/blob/blob.mojom";
 import "url/mojom/url.mojom";
 
 // This interface is implemented by the browser to give renderers the ability to

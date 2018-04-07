@@ -24,37 +24,37 @@
  *
  */
 
-#ifndef LayoutObject_h
-#define LayoutObject_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_OBJECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_OBJECT_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/Document.h"
-#include "core/dom/DocumentLifecycle.h"
-#include "core/dom/Element.h"
-#include "core/editing/Forward.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutObjectChildList.h"
-#include "core/layout/MapCoordinatesFlags.h"
-#include "core/layout/SubtreeLayoutScope.h"
-#include "core/layout/api/HitTestAction.h"
-#include "core/layout/api/SelectionState.h"
-#include "core/loader/resource/ImageResourceObserver.h"
-#include "core/paint/FragmentData.h"
-#include "core/paint/LayerHitTestRects.h"
-#include "core/paint/PaintPhase.h"
-#include "core/paint/compositing/CompositingState.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/StyleDifference.h"
-#include "platform/geometry/FloatQuad.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/geometry/TransformState.h"
-#include "platform/graphics/CompositingReasons.h"
-#include "platform/graphics/PaintInvalidationReason.h"
-#include "platform/graphics/paint/DisplayItemClient.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/AutoReset.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/api/hit_test_action.h"
+#include "third_party/blink/renderer/core/layout/api/selection_state.h"
+#include "third_party/blink/renderer/core/layout/layout_object_child_list.h"
+#include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
+#include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
+#include "third_party/blink/renderer/core/paint/compositing/compositing_state.h"
+#include "third_party/blink/renderer/core/paint/fragment_data.h"
+#include "third_party/blink/renderer/core/paint/layer_hit_test_rects.h"
+#include "third_party/blink/renderer/core/paint/paint_phase.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/style_difference.h"
+#include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/geometry/transform_state.h"
+#include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
+#include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 
@@ -2826,4 +2826,4 @@ CORE_EXPORT void showLayoutTree(const blink::LayoutObject* object1,
 
 #endif
 
-#endif  // LayoutObject_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_OBJECT_H_

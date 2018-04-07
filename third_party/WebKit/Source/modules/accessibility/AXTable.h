@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXTable_h
-#define AXTable_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_TABLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_TABLE_H_
 
 #include "base/macros.h"
-#include "modules/ModulesExport.h"
-#include "modules/accessibility/AXLayoutObject.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -100,4 +100,4 @@ DEFINE_AX_OBJECT_TYPE_CASTS(AXTable, IsAXTable());
 
 }  // namespace blink
 
-#endif  // AXTable_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_TABLE_H_

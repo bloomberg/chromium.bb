@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextBufferBase_h
-#define TextBufferBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_BUFFER_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_BUFFER_BASE_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class CORE_EXPORT TextBufferBase {
 
 }  // namespace blink
 
-#endif  // TextBufferBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_BUFFER_BASE_H_

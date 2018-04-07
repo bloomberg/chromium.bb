@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/DateTimeChooserClient.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
 
 namespace blink {
 

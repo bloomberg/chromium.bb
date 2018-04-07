@@ -20,11 +20,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef FEBlend_h
-#define FEBlend_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_BLEND_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_BLEND_H_
 
-#include "platform/graphics/filters/FilterEffect.h"
-#include "public/platform/WebBlendMode.h"
+#include "third_party/blink/public/platform/web_blend_mode.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
 
 namespace blink {
 
@@ -47,4 +47,4 @@ class PLATFORM_EXPORT FEBlend final : public FilterEffect {
 
 }  // namespace blink
 
-#endif  // FEBlend_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_BLEND_H_

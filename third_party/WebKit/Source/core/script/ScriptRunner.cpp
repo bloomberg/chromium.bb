@@ -23,18 +23,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/script/ScriptRunner.h"
+#include "third_party/blink/renderer/core/script/script_runner.h"
 
 #include <algorithm>
-#include "bindings/core/v8/ScriptStreamer.h"
-#include "core/dom/Document.h"
-#include "core/script/ScriptLoader.h"
-#include "platform/heap/Handle.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/script/script_loader.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
 
 namespace blink {
 

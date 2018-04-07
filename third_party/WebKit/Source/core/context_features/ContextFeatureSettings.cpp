@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/context_features/ContextFeatureSettings.h"
+#include "third_party/blink/renderer/core/context_features/context_feature_settings.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
 namespace blink {
 

@@ -20,12 +20,12 @@
  *
  */
 
-#ifndef HTMLMarqueeElement_h
-#define HTMLMarqueeElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_MARQUEE_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_MARQUEE_ELEMENT_H_
 
-#include "core/animation/Animation.h"
-#include "core/animation/KeyframeEffectModel.h"
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -108,4 +108,4 @@ class HTMLMarqueeElement final : public HTMLElement {
 
 }  // namespace blink
 
-#endif  // HTMLMarqueeElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_MARQUEE_ELEMENT_H_

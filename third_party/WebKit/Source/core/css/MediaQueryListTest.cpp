@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/MediaQueryList.h"
+#include "third_party/blink/renderer/core/css/media_query_list.h"
 
-#include "core/css/MediaList.h"
-#include "core/css/MediaQueryListListener.h"
-#include "core/css/MediaQueryMatcher.h"
-#include "core/dom/Document.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/media_list.h"
+#include "third_party/blink/renderer/core/css/media_query_list_listener.h"
+#include "third_party/blink/renderer/core/css/media_query_matcher.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
 

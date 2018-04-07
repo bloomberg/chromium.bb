@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/NavigatorLanguage.h"
+#include "third_party/blink/renderer/core/frame/navigator_language.h"
 
-#include "platform/Language.h"
+#include "third_party/blink/renderer/platform/language.h"
 
 namespace blink {
 

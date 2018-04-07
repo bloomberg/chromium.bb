@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebIconSizesParser_h
-#define WebIconSizesParser_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_ICON_SIZES_PARSER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_ICON_SIZES_PARSER_H_
 
-#include "WebCommon.h"
-#include "WebVector.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 

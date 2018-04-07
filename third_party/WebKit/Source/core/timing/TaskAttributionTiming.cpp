@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/timing/TaskAttributionTiming.h"
+#include "third_party/blink/renderer/core/timing/task_attribution_timing.h"
 
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/frame/DOMWindow.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/frame/dom_window.h"
 
 namespace blink {
 

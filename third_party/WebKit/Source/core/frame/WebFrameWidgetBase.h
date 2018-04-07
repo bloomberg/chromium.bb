@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebFrameWidgetBase_h
-#define WebFrameWidgetBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_FRAME_WIDGET_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_FRAME_WIDGET_BASE_H_
 
-#include "core/CoreExport.h"
-#include "core/clipboard/DataObject.h"
-#include "core/dom/UserGestureIndicator.h"
-#include "platform/graphics/paint/PaintImage.h"
-#include "platform/heap/Member.h"
-#include "public/platform/WebCoalescedInputEvent.h"
-#include "public/platform/WebDragData.h"
-#include "public/platform/WebGestureCurveTarget.h"
-#include "public/platform/WebGestureDevice.h"
-#include "public/web/WebFrameWidget.h"
+#include "third_party/blink/public/platform/web_coalesced_input_event.h"
+#include "third_party/blink/public/platform/web_drag_data.h"
+#include "third_party/blink/public/platform/web_gesture_curve_target.h"
+#include "third_party/blink/public/platform/web_gesture_device.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
+#include "third_party/blink/renderer/core/clipboard/data_object.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
 

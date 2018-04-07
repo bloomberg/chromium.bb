@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/StyleRule.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/css/parser/CSSLazyParsingState.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/page/Page.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/heap/Heap.h"
-#include "platform/testing/HistogramTester.h"
-#include "platform/wtf/text/WTFString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/parser/css_lazy_parsing_state.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

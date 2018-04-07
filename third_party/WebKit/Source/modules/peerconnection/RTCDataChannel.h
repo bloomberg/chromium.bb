@@ -22,20 +22,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCDataChannel_h
-#define RTCDataChannel_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DATA_CHANNEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DATA_CHANNEL_H_
 
 #include <memory>
 #include "base/gtest_prod_util.h"
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/PausableObject.h"
-#include "core/typed_arrays/ArrayBufferViewHelpers.h"
-#include "modules/EventTargetModules.h"
-#include "platform/Timer.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Compiler.h"
-#include "public/platform/WebRTCDataChannelHandler.h"
-#include "public/platform/WebRTCDataChannelHandlerClient.h"
+#include "third_party/blink/public/platform/web_rtc_data_channel_handler.h"
+#include "third_party/blink/public/platform/web_rtc_data_channel_handler_client.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 
@@ -148,4 +148,4 @@ class MODULES_EXPORT RTCDataChannel final
 
 }  // namespace blink
 
-#endif  // RTCDataChannel_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DATA_CHANNEL_H_

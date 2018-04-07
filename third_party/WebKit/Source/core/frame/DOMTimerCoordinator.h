@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DOMTimerCoordinator_h
-#define DOMTimerCoordinator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_TIMER_COORDINATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_TIMER_COORDINATOR_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class DOMTimerCoordinator {
 
 }  // namespace blink
 
-#endif  // DOMTimerCoordinator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DOM_TIMER_COORDINATOR_H_

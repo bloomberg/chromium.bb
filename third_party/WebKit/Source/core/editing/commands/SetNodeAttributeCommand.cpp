@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/SetNodeAttributeCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/set_node_attribute_command.h"
 
-#include "core/dom/Element.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

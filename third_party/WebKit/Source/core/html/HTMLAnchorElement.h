@@ -21,16 +21,16 @@
  *
  */
 
-#ifndef HTMLAnchorElement_h
-#define HTMLAnchorElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_ANCHOR_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_ANCHOR_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Document.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/RelList.h"
-#include "core/html_names.h"
-#include "core/url/DOMURLUtils.h"
-#include "platform/LinkHash.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/rel_list.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/url/dom_url_utils.h"
+#include "third_party/blink/renderer/platform/link_hash.h"
 
 namespace blink {
 
@@ -139,4 +139,4 @@ bool IsLinkClick(Event*);
 
 }  // namespace blink
 
-#endif  // HTMLAnchorElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_ANCHOR_ELEMENT_H_

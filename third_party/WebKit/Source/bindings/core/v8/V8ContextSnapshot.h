@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8ContextSnapshot_h
-#define V8ContextSnapshot_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_CONTEXT_SNAPSHOT_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_CONTEXT_SNAPSHOT_H_
 
-#include "core/CoreExport.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -75,4 +75,4 @@ class CORE_EXPORT V8ContextSnapshot {
 
 }  // namespace blink
 
-#endif  // V8ContextSnapshot_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_CONTEXT_SNAPSHOT_H_

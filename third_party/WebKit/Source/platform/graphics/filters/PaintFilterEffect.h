@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintFilterEffect_h
-#define PaintFilterEffect_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_PAINT_FILTER_EFFECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_PAINT_FILTER_EFFECT_H_
 
-#include "platform/graphics/filters/FilterEffect.h"
-#include "platform/graphics/paint/PaintFlags.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 
 namespace blink {
 
@@ -30,4 +30,4 @@ class PLATFORM_EXPORT PaintFilterEffect : public FilterEffect {
 
 }  // namespace blink
 
-#endif  // PaintFilterEffect_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_PAINT_FILTER_EFFECT_H_

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/ChromeClient.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 
-#include "core/dom/Document.h"
-#include "core/html/HTMLElement.h"
-#include "core/html_names.h"
-#include "core/layout/HitTestResult.h"
-#include "core/loader/EmptyClients.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
 
 namespace blink {
 

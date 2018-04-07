@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RemoteFrame_h
-#define RemoteFrame_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_H_
 
-#include "core/CoreExport.h"
-#include "core/execution_context/RemoteSecurityContext.h"
-#include "core/frame/Frame.h"
-#include "core/frame/RemoteFrameView.h"
-#include "public/platform/WebFocusType.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/execution_context/remote_security_context.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ DEFINE_TYPE_CASTS(RemoteFrame,
 
 }  // namespace blink
 
-#endif  // RemoteFrame_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_H_

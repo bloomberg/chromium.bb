@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/HighContrastImageClassifier.h"
+#include "third_party/blink/renderer/platform/graphics/high_contrast_image_classifier.h"
 
 #include "base/rand_util.h"
-#include "platform/graphics/highcontrast/highcontrast_classifier.h"
-#include "third_party/WebKit/Source/platform/geometry/IntRect.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/highcontrast/highcontrast_classifier.h"
 #include "third_party/skia/include/utils/SkNullCanvas.h"
 
 namespace {

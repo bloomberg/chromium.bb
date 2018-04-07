@@ -21,14 +21,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef FEConvolveMatrix_h
-#define FEConvolveMatrix_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_CONVOLVE_MATRIX_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_CONVOLVE_MATRIX_H_
 
-#include "platform/geometry/IntPoint.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/FilterEffect.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -85,4 +85,4 @@ class PLATFORM_EXPORT FEConvolveMatrix final : public FilterEffect {
 
 }  // namespace blink
 
-#endif  // FEConvolveMatrix_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_CONVOLVE_MATRIX_H_

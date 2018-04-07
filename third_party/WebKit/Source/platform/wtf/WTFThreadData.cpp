@@ -24,11 +24,11 @@
  *
  */
 
-#include "platform/wtf/WTFThreadData.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_thread_data.h"
 
-#include "platform/wtf/StackUtil.h"
-#include "platform/wtf/text/AtomicStringTable.h"
-#include "platform/wtf/text/TextCodecICU.h"
+#include "third_party/blink/renderer/platform/wtf/stack_util.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec_icu.h"
 
 namespace WTF {
 

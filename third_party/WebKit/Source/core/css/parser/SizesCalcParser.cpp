@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/SizesCalcParser.h"
+#include "third_party/blink/renderer/core/css/parser/sizes_calc_parser.h"
 
-#include "core/css/MediaValues.h"
-#include "core/css/parser/CSSParserToken.h"
+#include "third_party/blink/renderer/core/css/media_values.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 
 namespace blink {
 

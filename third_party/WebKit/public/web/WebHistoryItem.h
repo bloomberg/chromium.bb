@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebHistoryItem_h
-#define WebHistoryItem_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_HISTORY_ITEM_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_HISTORY_ITEM_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebHistoryScrollRestorationType.h"
-#include "public/platform/WebPrivatePtr.h"
-#include "public/platform/WebReferrerPolicy.h"
-#include "public/platform/WebScrollAnchorData.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_history_scroll_restoration_type.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
+#include "third_party/blink/public/platform/web_scroll_anchor_data.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 

@@ -21,25 +21,25 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/HTMLFrameElementBase.h"
+#include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 
-#include "bindings/core/v8/BindingSecurity.h"
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ScriptEventListener.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/Attribute.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/RemoteFrame.h"
-#include "core/frame/RemoteFrameView.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html_names.h"
-#include "core/loader/FrameLoader.h"
-#include "core/page/FocusController.h"
-#include "core/page/Page.h"
+#include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/attribute.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/remote_frame.h"
+#include "third_party/blink/renderer/core/frame/remote_frame_view.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
 

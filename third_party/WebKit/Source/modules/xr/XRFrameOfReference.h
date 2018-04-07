@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef XRFrameOfReference_h
-#define XRFrameOfReference_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_FRAME_OF_REFERENCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_FRAME_OF_REFERENCE_H_
 
-#include "modules/xr/XRCoordinateSystem.h"
-#include "platform/transforms/TransformationMatrix.h"
+#include "third_party/blink/renderer/modules/xr/xr_coordinate_system.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InputDeviceInfo_h
-#define InputDeviceInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_INPUT_DEVICE_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_INPUT_DEVICE_INFO_H_
 
-#include "modules/mediastream/MediaDeviceInfo.h"
-#include "public/platform/WebMediaStreamSource.h"
+#include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/renderer/modules/mediastream/media_device_info.h"
 
 namespace blink {
 
@@ -36,4 +36,4 @@ class InputDeviceInfo final : public MediaDeviceInfo {
 
 }  // namespace blink
 
-#endif  // InputDeviceInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_INPUT_DEVICE_INFO_H_

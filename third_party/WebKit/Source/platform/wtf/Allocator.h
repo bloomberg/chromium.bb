@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WTF_Allocator_h
-#define WTF_Allocator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALLOCATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ALLOCATOR_H_
 
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/TypeTraits.h"
-#include "platform/wtf/allocator/Partitions.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 namespace WTF {
 

@@ -26,15 +26,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InspectorDOMStorageAgent_h
-#define InspectorDOMStorageAgent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_INSPECTORDOMSTORAGEAGENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_INSPECTORDOMSTORAGEAGENT_H_
 
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/protocol/DOMStorage.h"
-#include "modules/ModulesExport.h"
-#include "modules/storage/StorageArea.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/protocol/DOMStorage.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/storage/storage_area.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

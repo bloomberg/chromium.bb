@@ -23,14 +23,14 @@
  * SUCH DAMAGE.
  */
 
-#ifndef TypeAhead_h
-#define TypeAhead_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_TYPE_AHEAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_TYPE_AHEAD_H_
 
-#include "core/CoreExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class TypeAhead {
 
 }  // namespace blink
 
-#endif  // TypeAhead_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_TYPE_AHEAD_H_

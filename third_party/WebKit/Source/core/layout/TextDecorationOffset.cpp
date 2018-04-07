@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style_ license that can be
 // found in the LICENSE file.
 
-#include "core/layout/TextDecorationOffset.h"
+#include "third_party/blink/renderer/core/layout/text_decoration_offset.h"
 
-#include "core/layout/line/InlineTextBox.h"
-#include "core/layout/line/RootInlineBox.h"
-#include "platform/fonts/FontMetrics.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/platform/fonts/font_metrics.h"
 
 namespace blink {
 

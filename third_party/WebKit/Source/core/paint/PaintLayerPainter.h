@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintLayerPainter_h
-#define PaintLayerPainter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_PAINTER_H_
 
-#include "core/CoreExport.h"
-#include "core/paint/PaintLayerFragment.h"
-#include "core/paint/PaintLayerPaintingInfo.h"
-#include "core/paint/PaintResult.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_fragment.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_painting_info.h"
+#include "third_party/blink/renderer/core/paint/paint_result.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -158,4 +158,4 @@ class CORE_EXPORT PaintLayerPainter {
 
 }  // namespace blink
 
-#endif  // PaintLayerPainter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_PAINTER_H_

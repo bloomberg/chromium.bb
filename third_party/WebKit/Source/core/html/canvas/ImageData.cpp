@@ -26,14 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/canvas/ImageData.h"
+#include "third_party/blink/renderer/core/html/canvas/image_data.h"
 
-#include "bindings/core/v8/V8Uint8ClampedArray.h"
-#include "core/dom/DOMException.h"
-#include "core/imagebitmap/ImageBitmap.h"
-#include "core/imagebitmap/ImageBitmapOptions.h"
-#include "platform/graphics/ColorBehavior.h"
-#include "platform/wtf/ByteSwap.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_uint8_clamped_array.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
+#include "third_party/blink/renderer/platform/graphics/color_behavior.h"
+#include "third_party/blink/renderer/platform/wtf/byte_swap.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkSwizzle.h"
 #include "v8/include/v8.h"

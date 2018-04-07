@@ -19,9 +19,9 @@
 #include "extensions/renderer/injection_host.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/scripts_run_info.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebScriptSource.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_script_source.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 

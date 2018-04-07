@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/FrameCaret.h"
+#include "third_party/blink/renderer/core/editing/frame_caret.h"
 
-#include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/commands/TypingCommand.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutTheme.h"
-#include "core/page/FocusController.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/scheduler/test/fake_task_runner.h"
+#include "third_party/blink/renderer/core/editing/commands/typing_command.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 
 namespace blink {
 

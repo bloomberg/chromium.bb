@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/TextOffsetMapping.h"
+#include "third_party/blink/renderer/core/editing/text_offset_mapping.h"
 
-#include "core/dom/Node.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/Position.h"
-#include "core/editing/iterators/CharacterIterator.h"
-#include "core/editing/iterators/TextIterator.h"
-#include "core/layout/LayoutBlock.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/iterators/character_iterator.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
 
 namespace blink {
 

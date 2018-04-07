@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/transform.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/transform.h"
 
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/parser/CSSParserLocalContext.h"
-#include "core/css/parser/CSSParserTokenRange.h"
-#include "core/css/properties/CSSParsingUtils.h"
-#include "core/css/properties/ComputedStyleUtils.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutObject.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 namespace CSSLonghand {

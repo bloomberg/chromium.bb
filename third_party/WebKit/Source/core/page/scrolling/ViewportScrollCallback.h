@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ViewportScrollCallback_h
-#define ViewportScrollCallback_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_VIEWPORT_SCROLL_CALLBACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_VIEWPORT_SCROLL_CALLBACK_H_
 
-#include "core/page/scrolling/ScrollStateCallback.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollTypes.h"
+#include "third_party/blink/renderer/core/page/scrolling/scroll_state_callback.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ class ViewportScrollCallback : public ScrollStateCallback {
 
 }  // namespace blink
 
-#endif  // ViewportScrollCallback_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_VIEWPORT_SCROLL_CALLBACK_H_

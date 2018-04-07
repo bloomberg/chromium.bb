@@ -8,7 +8,7 @@
 #include "content/public/common/manifest.h"
 
 #include "mojo/public/cpp/bindings/struct_traits.h"
-#include "third_party/WebKit/public/platform/modules/manifest/manifest.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/manifest/manifest.mojom-shared.h"
 
 namespace mojo {
 namespace internal {

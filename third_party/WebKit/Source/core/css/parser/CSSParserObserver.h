@@ -22,10 +22,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSParserObserver_h
-#define CSSParserObserver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_OBSERVER_H_
 
-#include "core/css/CSSPropertySourceData.h"
+#include "third_party/blink/renderer/core/css/css_property_source_data.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class CSSParserObserver {
 
 }  // namespace blink
 
-#endif  // CSSParserObserver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_OBSERVER_H_

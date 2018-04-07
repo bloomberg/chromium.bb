@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/filesystem/LocalFileSystem.h"
+#include "third_party/blink/renderer/modules/filesystem/local_file_system.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fileapi/FileError.h"
-#include "core/frame/LocalFrame.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "modules/filesystem/FileSystemClient.h"
-#include "platform/AsyncFileSystemCallbacks.h"
-#include "platform/ContentSettingCallbacks.h"
-#include "platform/wtf/Functional.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebFileSystem.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_file_system.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_client.h"
+#include "third_party/blink/renderer/platform/async_file_system_callbacks.h"
+#include "third_party/blink/renderer/platform/content_setting_callbacks.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

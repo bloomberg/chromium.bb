@@ -19,15 +19,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef StyleRule_h
-#define StyleRule_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_RULE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_RULE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/CSSSelectorList.h"
-#include "core/css/MediaList.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_selector_list.h"
+#include "third_party/blink/renderer/core/css/media_list.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -340,4 +340,4 @@ DEFINE_STYLE_RULE_TYPE_CASTS(Charset);
 
 }  // namespace blink
 
-#endif  // StyleRule_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_RULE_H_

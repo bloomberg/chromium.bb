@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef CollectionType_h
-#define CollectionType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_COLLECTION_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_COLLECTION_TYPE_H_
 
 namespace blink {
 

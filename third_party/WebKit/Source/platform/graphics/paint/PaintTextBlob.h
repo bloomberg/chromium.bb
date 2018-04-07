@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintTextBlob_h
-#define PaintTextBlob_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_TEXT_BLOB_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_TEXT_BLOB_H_
 
 #include "cc/paint/paint_text_blob.h"
 #include "cc/paint/paint_text_blob_builder.h"
@@ -13,4 +13,4 @@ using cc::PaintTextBlob;
 using cc::PaintTextBlobBuilder;
 }  // namespace blink
 
-#endif  // PaintTextBlob_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_TEXT_BLOB_H_

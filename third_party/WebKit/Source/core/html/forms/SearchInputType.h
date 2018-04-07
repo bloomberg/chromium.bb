@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SearchInputType_h
-#define SearchInputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_SEARCH_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_SEARCH_INPUT_TYPE_H_
 
-#include "core/html/forms/BaseTextInputType.h"
-#include "platform/Timer.h"
+#include "third_party/blink/renderer/core/html/forms/base_text_input_type.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class SearchInputType final : public BaseTextInputType {
 
 }  // namespace blink
 
-#endif  // SearchInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_SEARCH_INPUT_TYPE_H_

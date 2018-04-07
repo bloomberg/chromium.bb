@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebArrayBufferConverter_h
-#define WebArrayBufferConverter_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ARRAY_BUFFER_CONVERTER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ARRAY_BUFFER_CONVERTER_H_
 
-#include "public/web/WebArrayBuffer.h"
+#include "third_party/blink/public/web/web_array_buffer.h"
 
 namespace v8 {
 class Isolate;
@@ -54,4 +54,4 @@ class WebArrayBufferConverter {
 
 }  // namespace blink
 
-#endif  // WebArrayBufferConverter_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ARRAY_BUFFER_CONVERTER_H_

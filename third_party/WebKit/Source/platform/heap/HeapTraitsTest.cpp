@@ -4,10 +4,10 @@
 
 #include <type_traits>
 #include <utility>
-#include "platform/heap/GarbageCollected.h"
-#include "platform/heap/HeapTraits.h"
-#include "platform/heap/Member.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/heap_traits.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 // No gtest tests; only static_assert checks.
 

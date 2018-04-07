@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WindowProxyManager_h
-#define WindowProxyManager_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WINDOW_PROXY_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WINDOW_PROXY_MANAGER_H_
 
 #include <utility>
 
-#include "bindings/core/v8/LocalWindowProxy.h"
-#include "bindings/core/v8/RemoteWindowProxy.h"
-#include "core/CoreExport.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/RemoteFrame.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/local_window_proxy.h"
+#include "third_party/blink/renderer/bindings/core/v8/remote_window_proxy.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/remote_frame.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -126,4 +126,4 @@ class RemoteWindowProxyManager
 
 }  // namespace blink
 
-#endif  // WindowProxyManager_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_WINDOW_PROXY_MANAGER_H_

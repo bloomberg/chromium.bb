@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InternalsServiceWorker_h
-#define InternalsServiceWorker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_TESTING_INTERNALS_SERVICE_WORKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_TESTING_INTERNALS_SERVICE_WORKER_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -25,4 +25,4 @@ class InternalsServiceWorker {
 
 }  // namespace blink
 
-#endif  // InternalsServiceWorker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_TESTING_INTERNALS_SERVICE_WORKER_H_

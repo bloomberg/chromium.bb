@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/ColorBehavior.h"
+#include "third_party/blink/renderer/platform/graphics/color_behavior.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "platform/graphics/BitmapImageMetrics.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image_metrics.h"
 #include "third_party/skia/include/core/SkICC.h"
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/skia_color_space_util.h"

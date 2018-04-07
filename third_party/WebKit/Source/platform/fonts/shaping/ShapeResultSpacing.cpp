@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/shaping/ShapeResultSpacing.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
 
-#include "platform/fonts/FontDescription.h"
-#include "platform/text/TextRun.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
 
 namespace blink {
 

@@ -20,19 +20,19 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/HTMLFontElement.h"
+#include "third_party/blink/renderer/core/html/html_font_element.h"
 
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/CSSValuePool.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css_property_names.h"
-#include "core/css_value_keywords.h"
-#include "core/dom/Document.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html_names.h"
-#include "platform/wtf/text/ParsingUtilities.h"
-#include "platform/wtf/text/StringToNumber.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/css_value_pool.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 
 namespace blink {
 

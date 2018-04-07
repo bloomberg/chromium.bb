@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ListItemPainter.h"
+#include "third_party/blink/renderer/core/paint/list_item_painter.h"
 
-#include "core/layout/LayoutListItem.h"
-#include "core/paint/BlockPainter.h"
-#include "platform/geometry/LayoutPoint.h"
+#include "third_party/blink/renderer/core/layout/layout_list_item.h"
+#include "third_party/blink/renderer/core/paint/block_painter.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
 
 namespace blink {
 

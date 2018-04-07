@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/SVGPathSegInterpolationFunctions.h"
+#include "third_party/blink/renderer/core/animation/svg_path_seg_interpolation_functions.h"
 
 #include <memory>
 

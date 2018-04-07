@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SerializedColorParams_h
-#define SerializedColorParams_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_SERIALIZED_COLOR_PARAMS_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_SERIALIZED_COLOR_PARAMS_H_
 
-#include "core/html/canvas/ImageData.h"
-#include "platform/graphics/CanvasColorParams.h"
+#include "third_party/blink/renderer/core/html/canvas/image_data.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 
 namespace blink {
 

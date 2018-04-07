@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/SVGNumberOptionalNumberInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/svg_number_optional_number_interpolation_type.h"
 
-#include "core/animation/InterpolationEnvironment.h"
-#include "core/svg/SVGNumberOptionalNumber.h"
 #include <memory>
+#include "third_party/blink/renderer/core/animation/interpolation_environment.h"
+#include "third_party/blink/renderer/core/svg/svg_number_optional_number.h"
 
 namespace blink {
 

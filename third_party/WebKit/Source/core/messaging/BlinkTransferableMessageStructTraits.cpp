@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/messaging/BlinkTransferableMessageStructTraits.h"
-#include "core/imagebitmap/ImageBitmap.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message_struct_traits.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace mojo {

@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSParserFastPaths.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_fast_paths.h"
 
 #include "build/build_config.h"
-#include "core/css/CSSColorValue.h"
-#include "core/css/CSSFunctionValue.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSInheritedValue.h"
-#include "core/css/CSSInitialValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSUnsetValue.h"
-#include "core/css/StyleColor.h"
-#include "core/css/parser/CSSParserIdioms.h"
-#include "core/css/parser/CSSPropertyParser.h"
-#include "core/css/properties/css_property.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/style_property_shorthand.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/text/StringToNumber.h"
+#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_function_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_inherited_value.h"
+#include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_unset_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/style_color.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/style_property_shorthand.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 
 namespace blink {
 

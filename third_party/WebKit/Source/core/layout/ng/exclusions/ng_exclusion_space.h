@@ -5,14 +5,14 @@
 #ifndef NGExclusionSpace_h
 #define NGExclusionSpace_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/exclusions/ng_layout_opportunity.h"
-#include "core/layout/ng/geometry/ng_bfc_offset.h"
-#include "core/layout/ng/geometry/ng_bfc_rect.h"
-#include "core/layout/ng/ng_exclusion.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/LayoutUnit.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_layout_opportunity.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_exclusion.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

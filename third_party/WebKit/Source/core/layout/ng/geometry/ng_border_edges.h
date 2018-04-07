@@ -5,8 +5,8 @@
 #ifndef NGBorderEdges_h
 #define NGBorderEdges_h
 
-#include "core/CoreExport.h"
-#include "platform/text/WritingMode.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
 

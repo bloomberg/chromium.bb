@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/page/PagePopupSupplement.h"
+#include "third_party/blink/renderer/core/page/page_popup_supplement.h"
 
-#include "core/page/PagePopupController.h"
+#include "third_party/blink/renderer/core/page/page_popup_controller.h"
 
 namespace blink {
 

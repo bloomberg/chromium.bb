@@ -23,18 +23,18 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLDialogElement.h"
+#include "third_party/blink/renderer/core/html/html_dialog_element.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/AXObjectCache.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/FlatTreeTraversal.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/UseCounter.h"
-#include "core/fullscreen/Fullscreen.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/forms/HTMLFormControlElement.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 
 namespace blink {
 

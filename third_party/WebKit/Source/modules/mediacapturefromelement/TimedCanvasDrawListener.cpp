@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediacapturefromelement/TimedCanvasDrawListener.h"
+#include "third_party/blink/renderer/modules/mediacapturefromelement/timed_canvas_draw_listener.h"
 
 #include <memory>
-#include "core/execution_context/ExecutionContext.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {

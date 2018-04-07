@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/animation/TimingFunction.h"
+#include "third_party/blink/renderer/platform/animation/timing_function.h"
 
 #include <sstream>
 #include <string>
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "platform/wtf/text/WTFString.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 // Macro is only used to allow the use of streams.
 // Can be removed if a pretty failure message isn't needed.

@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/presentation/PresentationReceiver.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_receiver.h"
 
 #include <memory>
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/frame/LocalFrame.h"
-#include "core/testing/DummyPageHolder.h"
-#include "modules/presentation/MockWebPresentationClient.h"
-#include "modules/presentation/PresentationConnection.h"
-#include "modules/presentation/PresentationConnectionList.h"
-#include "platform/testing/URLTestHelpers.h"
-#include "public/platform/modules/presentation/WebPresentationClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/modules/presentation/web_presentation_client.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/modules/presentation/mock_web_presentation_client.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_connection.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_connection_list.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "v8/include/v8.h"
 
 namespace blink {

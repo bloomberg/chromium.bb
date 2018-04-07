@@ -25,7 +25,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/iterators/BitStack.h"
+#include "third_party/blink/renderer/core/editing/iterators/bit_stack.h"
 
 namespace blink {
 static const unsigned kBitsInWord = sizeof(unsigned) * 8;

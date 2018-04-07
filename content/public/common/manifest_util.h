@@ -8,8 +8,8 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebDisplayMode.h"
-#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_lock_type.h"
+#include "third_party/blink/public/platform/web_display_mode.h"
 
 namespace content {
 

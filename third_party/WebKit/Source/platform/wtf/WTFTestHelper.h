@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WTF_WTFTestHelper_h
-#define WTF_WTFTestHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_WTF_TEST_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_WTF_TEST_HELPER_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/HashFunctions.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/RefCounted.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace WTF {
 
@@ -247,4 +247,4 @@ class LivenessCounter {
 
 }  // namespace WTF
 
-#endif  // WTF_WTFTestHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_WTF_TEST_HELPER_H_

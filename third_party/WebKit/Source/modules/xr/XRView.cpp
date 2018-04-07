@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/xr/XRView.h"
+#include "third_party/blink/renderer/modules/xr/xr_view.h"
 
-#include "modules/xr/XRPresentationFrame.h"
-#include "modules/xr/XRSession.h"
-#include "platform/geometry/FloatPoint3D.h"
+#include "third_party/blink/renderer/modules/xr/xr_presentation_frame.h"
+#include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 
 namespace blink {
 

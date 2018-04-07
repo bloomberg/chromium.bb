@@ -24,7 +24,7 @@
  *
  */
 
-#include "core/geometry/DOMRectList.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect_list.h"
 
 namespace blink {
 

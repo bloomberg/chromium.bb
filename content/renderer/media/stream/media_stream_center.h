@@ -10,9 +10,9 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebMediaStream.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_media_stream_center.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace blink {
 class WebAudioSourceProvider;

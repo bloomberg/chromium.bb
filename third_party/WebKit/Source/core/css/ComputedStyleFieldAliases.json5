@@ -8,13 +8,13 @@
             "name": "<length>",
             "field_template": "external",
             "type_name": "Length",
-            "include_paths": ["platform/Length.h"]
+            "include_paths": ["platform/length.h"]
         },
         {
             "name": "<color>",
             "field_template": "external",
             "type_name": "Color",
-            "include_paths": ["platform/graphics/Color.h"],
+            "include_paths": ["platform/graphics/color.h"],
         }
     ]
 }

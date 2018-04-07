@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "third_party/WebKit/public/web/WebSpeechRecognitionHandle.h"
-#include "third_party/WebKit/public/web/WebSpeechRecognizer.h"
+#include "third_party/blink/public/web/web_speech_recognition_handle.h"
+#include "third_party/blink/public/web/web_speech_recognizer.h"
 
 namespace content {
 struct SpeechRecognitionError;

@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/DocumentTimeline.h"
+#include "third_party/blink/renderer/core/animation/document_timeline.h"
 
 #include <algorithm>
-#include "core/animation/Animation.h"
-#include "core/animation/AnimationClock.h"
-#include "core/animation/AnimationEffect.h"
-#include "core/animation/DocumentTimelineOptions.h"
-#include "core/animation/ElementAnimations.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/page/Page.h"
-#include "platform/animation/CompositorAnimationTimeline.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCompositorSupport.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_compositor_support.h"
+#include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/animation/animation_clock.h"
+#include "third_party/blink/renderer/core/animation/animation_effect.h"
+#include "third_party/blink/renderer/core/animation/document_timeline_options.h"
+#include "third_party/blink/renderer/core/animation/element_animations.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 

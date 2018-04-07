@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webmidi/MIDIOutputMap.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_output_map.h"
 
-#include "bindings/modules/v8/V8MIDIOutput.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_midi_output.h"
 
 namespace blink {
 

@@ -18,12 +18,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/CSSValueList.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
 
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/parser/CSSParser.h"
-#include "platform/wtf/SizeAssertions.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/platform/wtf/size_assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

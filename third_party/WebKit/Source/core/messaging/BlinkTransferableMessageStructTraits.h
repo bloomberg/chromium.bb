@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BlinkTransferableMessageStructTraits_h
-#define BlinkTransferableMessageStructTraits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_TRANSFERABLE_MESSAGE_STRUCT_TRAITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_TRANSFERABLE_MESSAGE_STRUCT_TRAITS_H_
 
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/CoreExport.h"
-#include "core/messaging/BlinkCloneableMessageStructTraits.h"
-#include "core/messaging/BlinkTransferableMessage.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
-#include "third_party/WebKit/public/common/message_port/message_port_channel.h"
-#include "third_party/WebKit/public/mojom/message_port/message_port.mojom-blink.h"
+#include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/mojom/message_port/message_port.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/messaging/blink_cloneable_message_struct_traits.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 
 namespace mojo {
 
@@ -68,4 +68,4 @@ class CORE_EXPORT
 
 }  // namespace mojo
 
-#endif  // BlinkTransferableMessageStructTraits_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_TRANSFERABLE_MESSAGE_STRUCT_TRAITS_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/DocumentLoadTiming.h"
+#include "third_party/blink/renderer/core/loader/document_load_timing.h"
 
-#include "core/loader/DocumentLoader.h"
-#include "core/testing/DummyPageHolder.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 namespace blink {
 

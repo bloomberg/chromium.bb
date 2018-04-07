@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RotationViewportAnchor_h
-#define RotationViewportAnchor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_ROTATION_VIEWPORT_ANCHOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_ROTATION_VIEWPORT_ANCHOR_H_
 
-#include "core/CoreExport.h"
-#include "platform/geometry/FloatSize.h"
-#include "platform/geometry/IntPoint.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class CORE_EXPORT RotationViewportAnchor {
 
 }  // namespace blink
 
-#endif  // RotationViewportAnchor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_ROTATION_VIEWPORT_ANCHOR_H_

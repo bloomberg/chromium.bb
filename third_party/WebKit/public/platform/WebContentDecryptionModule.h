@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebContentDecryptionModule_h
-#define WebContentDecryptionModule_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_DECRYPTION_MODULE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_DECRYPTION_MODULE_H_
 
 #include <memory>
 
-#include "public/platform/WebContentDecryptionModuleResult.h"
-#include "public/platform/WebContentDecryptionModuleSession.h"
+#include "third_party/blink/public/platform/web_content_decryption_module_result.h"
+#include "third_party/blink/public/platform/web_content_decryption_module_session.h"
 
 namespace blink {
 
@@ -56,4 +56,4 @@ class BLINK_PLATFORM_EXPORT WebContentDecryptionModule {
 
 }  // namespace blink
 
-#endif  // WebContentDecryptionModule_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_DECRYPTION_MODULE_H_

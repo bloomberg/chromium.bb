@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/finder/FindInPageCoordinates.h"
+#include "third_party/blink/renderer/core/editing/finder/find_in_page_coordinates.h"
 
-#include "core/dom/Node.h"
-#include "core/dom/Range.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutEmbeddedContent.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutView.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatQuad.h"
-#include "platform/geometry/IntPoint.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
 
 namespace blink {
 

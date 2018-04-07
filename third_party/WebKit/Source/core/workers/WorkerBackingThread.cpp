@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/WorkerBackingThread.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 
 #include <memory>
 
 #include "base/location.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8ContextSnapshot.h"
-#include "bindings/core/v8/V8GCController.h"
-#include "bindings/core/v8/V8IdleTaskRunner.h"
-#include "bindings/core/v8/V8Initializer.h"
-#include "core/inspector/WorkerThreadDebugger.h"
-#include "core/workers/WorkerBackingThreadStartupData.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebThreadSupportingGC.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/runtime_enabled_features.h"
-#include "public/platform/Platform.h"
-#include "public/web/WebKit.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_context_snapshot.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_idle_task_runner.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
+#include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 
 namespace blink {
 

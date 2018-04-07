@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GranularityStrategy_h
-#define GranularityStrategy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_GRANULARITY_STRATEGY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_GRANULARITY_STRATEGY_H_
 
-#include "core/editing/Forward.h"
-#include "core/editing/SelectionStrategy.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/selection_strategy.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -126,4 +126,4 @@ class DirectionGranularityStrategy final : public GranularityStrategy {
 
 }  // namespace blink
 
-#endif  // GranularityStrategy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_GRANULARITY_STRATEGY_H_

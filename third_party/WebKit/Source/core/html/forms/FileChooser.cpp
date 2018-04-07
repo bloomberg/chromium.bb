@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/FileChooser.h"
+#include "third_party/blink/renderer/core/html/forms/file_chooser.h"
 
 namespace blink {
 

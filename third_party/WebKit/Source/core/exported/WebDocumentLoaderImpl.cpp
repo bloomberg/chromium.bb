@@ -28,23 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/exported/WebDocumentLoaderImpl.h"
+#include "third_party/blink/renderer/core/exported/web_document_loader_impl.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/loader/SubresourceFilter.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/mhtml/ArchiveResource.h"
-#include "platform/mhtml/MHTMLArchive.h"
-#include "public/platform/WebDocumentSubresourceFilter.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLError.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_network_provider.h"
+#include "third_party/blink/public/platform/web_document_subresource_filter.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/loader/subresource_filter.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
+#include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
 
 namespace blink {
 

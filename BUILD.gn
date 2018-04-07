@@ -169,8 +169,8 @@ group("gn_all") {
       "//mojo:mojo_unittests",
       "//mojo/common:mojo_common_unittests",
       "//net:net_perftests",
-      "//third_party/WebKit/Source/controller:webkit_unit_tests",
-      "//third_party/WebKit/Source/platform/wtf:wtf_unittests",
+      "//third_party/blink/renderer/controller:webkit_unit_tests",
+      "//third_party/blink/renderer/platform/wtf:wtf_unittests",
       "//ui/gl:gl_unittests",
       "//url/ipc:url_ipc_unittests",
     ]
@@ -203,11 +203,11 @@ group("gn_all") {
       "//media/capture:capture_unittests",
       "//media/cast:cast_unittests",
       "//storage:storage_unittests",
-      "//third_party/WebKit/Source/platform:blink_platform_unittests",
-      "//third_party/WebKit/Source/platform/heap:blink_heap_unittests",
       "//third_party/angle/src/tests:angle_end2end_tests",
       "//third_party/angle/src/tests:angle_unittests",
       "//third_party/angle/src/tests:angle_white_box_tests",
+      "//third_party/blink/renderer/platform:blink_platform_unittests",
+      "//third_party/blink/renderer/platform/heap:blink_heap_unittests",
       "//third_party/catapult/telemetry:bitmaptools($host_toolchain)",
       "//third_party/smhasher:pmurhash",
       "//tools/imagediff($host_toolchain)",
@@ -856,7 +856,7 @@ if (!is_ios) {
 
     deps = [
       ":webkit_layout_tests",
-      "//third_party/WebKit/public:all_blink",
+      "//third_party/blink/public:all_blink",
     ]
   }
 
@@ -902,8 +902,8 @@ if (!is_ios) {
       "//services/shape_detection/public/mojom:mojom_js_data_deps",
       "//services/device/public/mojom:mojom_js_data_deps",
       "//services/device/public/mojom:generic_sensor_js_data_deps",
-      "//third_party/WebKit/public:blink_devtools_frontend_resources_files",
-      "//third_party/WebKit/public:mojo_bindings_js_data_deps",
+      "//third_party/blink/public:blink_devtools_frontend_resources_files",
+      "//third_party/blink/public:mojo_bindings_js_data_deps",
       "//third_party/mesa:osmesa",
       "//tools/imagediff",
     ]
@@ -997,7 +997,7 @@ if (!is_ios) {
       "//third_party/WebKit/LayoutTests/SlowTests",
       "//third_party/WebKit/LayoutTests/TestExpectations",
       "//third_party/WebKit/LayoutTests/VirtualTestSuites",
-      "//third_party/WebKit/Source/bindings/scripts/",
+      "//third_party/blink/renderer/bindings/scripts/",
       "//third_party/WebKit/Tools/Scripts/",
       "//third_party/blink/tools/",
       "//third_party/catapult/common/py_utils/",

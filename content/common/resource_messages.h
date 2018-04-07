@@ -22,7 +22,7 @@
 #include "net/http/http_response_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/network_param_ipc_traits.h"
-#include "third_party/WebKit/public/platform/WebMixedContentContextType.h"
+#include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 
 #ifndef INTERNAL_CONTENT_COMMON_RESOURCE_MESSAGES_H_
 #define INTERNAL_CONTENT_COMMON_RESOURCE_MESSAGES_H_

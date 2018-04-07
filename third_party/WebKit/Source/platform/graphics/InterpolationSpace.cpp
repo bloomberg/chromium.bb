@@ -30,7 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/InterpolationSpace.h"
+#include "third_party/blink/renderer/platform/graphics/interpolation_space.h"
 
 #include "third_party/skia/include/core/SkColorFilter.h"
 

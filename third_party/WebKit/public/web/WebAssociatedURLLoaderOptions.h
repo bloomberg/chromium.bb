@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebAssociatedURLLoaderOptions_h
-#define WebAssociatedURLLoaderOptions_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ASSOCIATED_URL_LOADER_OPTIONS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ASSOCIATED_URL_LOADER_OPTIONS_H_
 
 #include "services/network/public/mojom/cors.mojom-shared.h"
 

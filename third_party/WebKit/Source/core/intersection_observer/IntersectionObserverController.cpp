@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/intersection_observer/IntersectionObserverController.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 

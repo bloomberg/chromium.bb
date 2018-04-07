@@ -29,22 +29,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/commands/StyleCommands.h"
+#include "third_party/blink/renderer/core/editing/commands/style_commands.h"
 
-#include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/CSSValueList.h"
-#include "core/editing/EditingStyleUtilities.h"
-#include "core/editing/EditingTriState.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/Editor.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/WritingDirection.h"
-#include "core/editing/commands/ApplyStyleCommand.h"
-#include "core/html/HTMLFontElement.h"
+#include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/editing/commands/apply_style_command.h"
+#include "third_party/blink/renderer/core/editing/editing_style_utilities.h"
+#include "third_party/blink/renderer/core/editing/editing_tri_state.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/editing/writing_direction.h"
+#include "third_party/blink/renderer/core/html/html_font_element.h"
 
 namespace blink {
 

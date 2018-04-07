@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/forms/HTMLFormControlElement.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/layout/LayoutObject.h"
-#include "core/loader/EmptyClients.h"
-#include "core/page/ScopedPagePauser.h"
-#include "core/page/ValidationMessageClient.h"
-#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
+#include "third_party/blink/renderer/core/page/validation_message_client.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

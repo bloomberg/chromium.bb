@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SpellChecker_h
-#define SpellChecker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_SPELL_CHECKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_SPELL_CHECKER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/editing/Forward.h"
-#include "core/editing/markers/DocumentMarker.h"
-#include "core/editing/spellcheck/TextChecking.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/text_checking.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -123,4 +123,4 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
 
 }  // namespace blink
 
-#endif  // SpellChecker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_SPELL_CHECKER_H_

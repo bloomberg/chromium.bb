@@ -23,21 +23,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/fileapi/File.h"
+#include "third_party/blink/renderer/core/fileapi/file.h"
 
 #include <memory>
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/fileapi/FilePropertyBag.h"
-#include "core/frame/UseCounter.h"
-#include "platform/FileMetadata.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/blob/BlobData.h"
-#include "platform/network/mime/MIMETypeRegistry.h"
-#include "platform/wtf/DateMath.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebFileUtilities.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_file_utilities.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/fileapi/file_property_bag.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

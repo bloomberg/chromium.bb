@@ -18,27 +18,27 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#import "core/paint/ThemePainterMac.h"
+#import "third_party/blink/renderer/core/paint/theme_painter_mac.h"
 
 #import <AvailabilityMacros.h>
 #import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 #import <math.h>
-#import "core/frame/LocalFrameView.h"
-#import "core/layout/LayoutProgress.h"
-#import "core/layout/LayoutThemeMac.h"
-#import "core/layout/LayoutView.h"
-#import "core/paint/PaintInfo.h"
-#import "platform/geometry/FloatRoundedRect.h"
-#import "platform/graphics/BitmapImage.h"
-#import "platform/graphics/GraphicsContextStateSaver.h"
-#import "platform/graphics/Image.h"
-#import "platform/graphics/paint/PaintCanvas.h"
-#import "platform/mac/BlockExceptions.h"
-#import "platform/mac/ColorMac.h"
-#import "platform/mac/LocalCurrentGraphicsContext.h"
-#import "platform/mac/ThemeMac.h"
-#import "platform/mac/WebCoreNSCellExtras.h"
+#import "third_party/blink/renderer/core/frame/local_frame_view.h"
+#import "third_party/blink/renderer/core/layout/layout_progress.h"
+#import "third_party/blink/renderer/core/layout/layout_theme_mac.h"
+#import "third_party/blink/renderer/core/layout/layout_view.h"
+#import "third_party/blink/renderer/core/paint/paint_info.h"
+#import "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
+#import "third_party/blink/renderer/platform/graphics/bitmap_image.h"
+#import "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#import "third_party/blink/renderer/platform/graphics/image.h"
+#import "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#import "third_party/blink/renderer/platform/mac/block_exceptions.h"
+#import "third_party/blink/renderer/platform/mac/color_mac.h"
+#import "third_party/blink/renderer/platform/mac/local_current_graphics_context.h"
+#import "third_party/blink/renderer/platform/mac/theme_mac.h"
+#import "third_party/blink/renderer/platform/mac/web_core_ns_cell_extras.h"
 
 // The methods in this file are specific to the Mac OS X platform.
 

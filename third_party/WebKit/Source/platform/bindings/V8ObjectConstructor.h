@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8ObjectConstructor_h
-#define V8ObjectConstructor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_OBJECT_CONSTRUCTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_OBJECT_CONSTRUCTOR_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -96,4 +96,4 @@ class PLATFORM_EXPORT V8ObjectConstructor {
 
 }  // namespace blink
 
-#endif  // V8ObjectConstructor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_OBJECT_CONSTRUCTOR_H_

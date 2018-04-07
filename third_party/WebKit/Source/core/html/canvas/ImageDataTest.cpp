@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/canvas/ImageData.h"
+#include "third_party/blink/renderer/core/html/canvas/image_data.h"
 
-#include "core/dom/ExceptionCode.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/ColorCorrectionTestUtils.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "platform/wtf/ByteSwap.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/color_correction_test_utils.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/byte_swap.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
 
 namespace blink {

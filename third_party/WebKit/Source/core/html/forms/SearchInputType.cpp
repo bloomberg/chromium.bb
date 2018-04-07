@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/SearchInputType.h"
+#include "third_party/blink/renderer/core/html/forms/search_input_type.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/events/KeyboardEvent.h"
-#include "core/frame/WebFeature.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/forms/TextControlInnerElements.h"
-#include "core/html/shadow/ShadowElementNames.h"
-#include "core/html_names.h"
-#include "core/input_type_names.h"
-#include "core/layout/LayoutSearchField.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_inner_elements.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/layout/layout_search_field.h"
 
 namespace blink {
 

@@ -23,8 +23,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebRenderingStats_h
-#define WebRenderingStats_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RENDERING_STATS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RENDERING_STATS_H_
 
 namespace blink {
 
@@ -34,4 +34,4 @@ struct WebRenderingStats {
 
 }  // namespace blink
 
-#endif  // WebRenderingStats_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RENDERING_STATS_H_

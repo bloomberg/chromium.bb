@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/events/PointerEventFactory.h"
+#include "third_party/blink/renderer/core/events/pointer_event_factory.h"
 
 #include <gtest/gtest.h>
 #include <climits>
-#include "core/frame/LocalFrameView.h"
-#include "core/page/Page.h"
-#include "public/platform/WebPointerProperties.h"
+#include "third_party/blink/public/platform/web_pointer_properties.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
 

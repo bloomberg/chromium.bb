@@ -1,12 +1,12 @@
 // Copyright (c) 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef SmoothScrollSequencer_h
-#define SmoothScrollSequencer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SMOOTH_SCROLL_SEQUENCER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SMOOTH_SCROLL_SEQUENCER_H_
 
 #include <utility>
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollTypes.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ class PLATFORM_EXPORT SmoothScrollSequencer final
 
 }  // namespace blink
 
-#endif  // SmoothScrollSequencer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SMOOTH_SCROLL_SEQUENCER_H_

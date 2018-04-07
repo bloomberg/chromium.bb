@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCDTMFSender_h
-#define RTCDTMFSender_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DTMF_SENDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DTMF_SENDER_H_
 
-#include "core/dom/ContextLifecycleObserver.h"
-#include "modules/EventTargetModules.h"
-#include "platform/Timer.h"
-#include "public/platform/WebRTCDTMFSenderHandlerClient.h"
 #include <memory>
+#include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler_client.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -100,4 +100,4 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // RTCDTMFSender_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DTMF_SENDER_H_

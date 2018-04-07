@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/MutationObserver.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer.h"
 
-#include "core/dom/MutationObserverInit.h"
-#include "core/dom/MutationObserverRegistration.h"
-#include "core/html/HTMLDocument.h"
-#include "core/html/HTMLElement.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer_init.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 

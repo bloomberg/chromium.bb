@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AnimationWorkletProxyClient_h
-#define AnimationWorkletProxyClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ANIMATION_WORKLET_PROXY_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ANIMATION_WORKLET_PROXY_CLIENT_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/workers/WorkerClients.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/workers/worker_clients.h"
 
 namespace blink {
 
@@ -33,4 +33,4 @@ CORE_EXPORT void ProvideAnimationWorkletProxyClientTo(
 
 }  // namespace blink
 
-#endif  // AnimationWorkletProxyClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ANIMATION_WORKLET_PROXY_CLIENT_H_

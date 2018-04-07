@@ -11,8 +11,8 @@
 #include "extensions/common/dom_action_types.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/renderer/activity_log_converter_strategy.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 using blink::WebString;
 using blink::WebURL;

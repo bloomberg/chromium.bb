@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WTF_ContainerTypeOperations_h
-#define WTF_ContainerTypeOperations_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_EXPERIMENTAL_CONTAINER_TYPE_OPERATIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_EXPERIMENTAL_CONTAINER_TYPE_OPERATIONS_H_
 
 // *****************************************************************************
 // EXPERIMENTAL: DO NOT USE IN PRODUCTION CODE YET!
@@ -617,4 +617,4 @@ bool GenericContainerTypeOperations<T>::Equal(const T& stored_value,
 }  // namespace experimental
 }  // namespace WTF
 
-#endif  // WTF_ContainerTypeOperations_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_EXPERIMENTAL_CONTAINER_TYPE_OPERATIONS_H_

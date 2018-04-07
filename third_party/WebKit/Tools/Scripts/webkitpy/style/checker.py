@@ -129,12 +129,12 @@ _PATH_RULES_SPECIFIER = [
         # Conforming to style significantly increases the complexity of the code
         # generator and decreases *its* readability, which is of more concern
         # than style of the machine-generated code itself.
-        'Source/bindings/tests/results'],
+        'renderer/bindings/tests/results'],
      ['-']),
 
     ([  # Due to historical reasons scheduler uses Chromium style instead of
         # Blink style.
-        'Source/platform/scheduler',
+        'renderer/platform/scheduler',
         'public/platform/scheduler'],
      ['-readability/control_flow'])
 ]

@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimatableDouble_h
-#define AnimatableDouble_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_ANIMATABLE_DOUBLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_ANIMATABLE_DOUBLE_H_
 
-#include "core/CoreExport.h"
-#include "core/animation/animatable/AnimatableValue.h"
+#include "third_party/blink/renderer/core/animation/animatable/animatable_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableDouble, IsDouble());
 
 }  // namespace blink
 
-#endif  // AnimatableDouble_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_ANIMATABLE_ANIMATABLE_DOUBLE_H_

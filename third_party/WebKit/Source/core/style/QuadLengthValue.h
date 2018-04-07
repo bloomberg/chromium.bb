@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef QuadLengthValue_h
-#define QuadLengthValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_QUAD_LENGTH_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_QUAD_LENGTH_VALUE_H_
 
 #include <memory>
-#include "platform/Length.h"
+#include "third_party/blink/renderer/platform/length.h"
 
 namespace blink {
 
@@ -41,4 +41,4 @@ struct QuadLengthValue {
 
 }  // namespace blink
 
-#endif  // QuadLengthValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_QUAD_LENGTH_VALUE_H_

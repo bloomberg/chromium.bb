@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/child/worker_metrics_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_metrics_helper.h"
 
-#include "platform/scheduler/child/process_state.h"
+#include "third_party/blink/renderer/platform/scheduler/child/process_state.h"
 
 namespace blink {
 namespace scheduler {

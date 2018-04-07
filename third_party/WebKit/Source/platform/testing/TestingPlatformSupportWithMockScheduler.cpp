@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 #include "base/bind.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
-#include "platform/WaitableEvent.h"
-#include "platform/scheduler/base/real_time_domain.h"
-#include "platform/scheduler/main_thread/main_thread_scheduler.h"
-#include "platform/wtf/ThreadSpecific.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/scheduler/child/webthread_base.h"
+#include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
+#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

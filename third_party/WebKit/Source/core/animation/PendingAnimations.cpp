@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/PendingAnimations.h"
+#include "third_party/blink/renderer/core/animation/pending_animations.h"
 
-#include "core/animation/DocumentTimeline.h"
-#include "core/animation/KeyframeEffect.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/page/Page.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "third_party/blink/renderer/core/animation/document_timeline.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 

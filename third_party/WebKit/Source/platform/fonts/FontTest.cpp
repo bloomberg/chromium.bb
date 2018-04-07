@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/Font.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
 
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/testing/FontTestHelpers.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/text/TextRun.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/testing/font_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
 
 using blink::test::CreateTestFont;
 

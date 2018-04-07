@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/DistanceEffect.h"
+#include "third_party/blink/renderer/platform/audio/distance_effect.h"
 
 #include <math.h>
 #include <algorithm>
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

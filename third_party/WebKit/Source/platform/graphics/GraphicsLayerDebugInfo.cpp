@@ -17,10 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/graphics/GraphicsLayerDebugInfo.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer_debug_info.h"
 
 #include "base/trace_event/trace_event_argument.h"
-#include "platform/scroll/MainThreadScrollingReason.h"
+#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 
 namespace blink {
 

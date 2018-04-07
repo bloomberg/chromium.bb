@@ -23,10 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/indexeddb/IDBCursorWithValue.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_cursor_with_value.h"
 
-#include "modules/indexeddb/IDBKey.h"
 #include <memory>
+#include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 
 using blink::WebIDBCursor;
 

@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebView_h
-#define WebView_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_H_
 
-#include "WebWidget.h"
-#include "public/platform/WebColor.h"
-#include "public/platform/WebDisplayMode.h"
-#include "public/platform/WebDragOperation.h"
-#include "public/platform/WebFocusType.h"
-#include "public/platform/WebString.h"
-#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-shared.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
+#include "third_party/blink/public/platform/web_color.h"
+#include "third_party/blink/public/platform/web_display_mode.h"
+#include "third_party/blink/public/platform/web_drag_operation.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_widget.h"
 
 namespace blink {
 

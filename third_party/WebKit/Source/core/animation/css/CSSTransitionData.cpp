@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/css/CSSTransitionData.h"
+#include "third_party/blink/renderer/core/animation/css/css_transition_data.h"
 
-#include "core/animation/Timing.h"
+#include "third_party/blink/renderer/core/animation/timing.h"
 
 namespace blink {
 

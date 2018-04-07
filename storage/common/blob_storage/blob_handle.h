@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "storage/common/storage_common_export.h"
-#include "third_party/WebKit/public/mojom/blob/blob.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 namespace storage {
 

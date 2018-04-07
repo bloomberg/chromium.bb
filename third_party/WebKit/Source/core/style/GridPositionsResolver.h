@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GridPositionsResolver_h
-#define GridPositionsResolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_POSITIONS_RESOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_POSITIONS_RESOLVER_H_
 
 #include "base/macros.h"
-#include "core/style/GridPosition.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/style/grid_position.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ class GridPositionsResolver {
 
 }  // namespace blink
 
-#endif  // GridPositionsResolver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_POSITIONS_RESOLVER_H_

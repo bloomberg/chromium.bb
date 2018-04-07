@@ -28,29 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8GCController.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 
 #include <algorithm>
 #include <unordered_map>
 #include <unordered_set>
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8AbstractEventListener.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8Node.h"
-#include "bindings/core/v8/V8ScriptRunner.h"
-#include "core/dom/Attr.h"
-#include "core/dom/Element.h"
-#include "core/dom/Node.h"
-#include "core/html/imports/HTMLImportsController.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "platform/Histogram.h"
-#include "platform/bindings/ScriptWrappableMarkingVisitor.h"
-#include "platform/bindings/WrapperTypeInfo.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/allocator/Partitions.h"
-#include "public/platform/BlameContext.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/blame_context.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_abstract_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
+#include "third_party/blink/renderer/core/dom/attr.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 namespace blink {
 

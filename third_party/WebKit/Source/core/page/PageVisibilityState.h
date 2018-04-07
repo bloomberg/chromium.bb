@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PageVisibilityState_h
-#define PageVisibilityState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_VISIBILITY_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_VISIBILITY_STATE_H_
 
-#include "core/CoreExport.h"
-#include "platform/wtf/text/WTFString.h"
-#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

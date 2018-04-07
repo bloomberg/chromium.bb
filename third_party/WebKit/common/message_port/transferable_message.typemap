@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//third_party/WebKit/public/mojom/message_port/message_port.mojom"
+mojom = "//third_party/blink/public/mojom/message_port/message_port.mojom"
 public_headers = [
-  "//third_party/WebKit/public/common/message_port/transferable_message.h",
-  "//third_party/WebKit/public/common/message_port/message_port_channel.h",
+  "//third_party/blink/public/common/message_port/transferable_message.h",
+  "//third_party/blink/public/common/message_port/message_port_channel.h",
 ]
-traits_headers = [ "//third_party/WebKit/common/message_port/transferable_message_struct_traits.h" ]
+traits_headers = [ "//third_party/blink/common/message_port/transferable_message_struct_traits.h" ]
 
 deps = [
   "//skia/public/interfaces",

@@ -6,8 +6,8 @@
 
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/v8_helpers.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebSelector.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_selector.h"
 
 namespace extensions {
 

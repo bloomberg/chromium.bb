@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/instrumentation/resource_coordinator/RendererResourceCoordinator.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 
-#include "platform/heap/ThreadState.h"
-#include "public/platform/Platform.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
 
 namespace blink {
 

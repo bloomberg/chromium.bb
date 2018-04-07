@@ -29,12 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebElementCollection.h"
+#include "third_party/blink/public/web/web_element_collection.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/Element.h"
-#include "core/html/HTMLCollection.h"
-#include "public/web/WebElement.h"
+#include "third_party/blink/public/web/web_element.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
 
 namespace blink {
 

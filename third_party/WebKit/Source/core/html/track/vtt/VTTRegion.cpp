@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/track/vtt/VTTRegion.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_region.h"
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/DOMTokenList.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/geometry/DOMRect.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/html/track/vtt/VTTParser.h"
-#include "core/html/track/vtt/VTTScanner.h"
-#include "platform/wtf/MathExtras.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_parser.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_scanner.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 #define VTT_LOG_LEVEL 3
 

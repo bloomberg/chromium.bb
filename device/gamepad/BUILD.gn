@@ -91,7 +91,7 @@ component("gamepad") {
     "//device/gamepad/public/cpp:shared_with_blink",
     "//device/gamepad/public/mojom",
     "//mojo/public/cpp/system",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
   ]
 
   defines = [ "DEVICE_GAMEPAD_IMPLEMENTATION" ]
@@ -139,7 +139,7 @@ static_library("test_helpers") {
     ":gamepad",
     "//base",
     "//device/gamepad/public/cpp:shared_with_blink",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
   ]
 }
 

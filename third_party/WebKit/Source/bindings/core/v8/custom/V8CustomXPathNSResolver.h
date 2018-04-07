@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8CustomXPathNSResolver_h
-#define V8CustomXPathNSResolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_CUSTOM_V8_CUSTOM_XPATH_NS_RESOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_CUSTOM_V8_CUSTOM_XPATH_NS_RESOLVER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/xml/XPathNSResolver.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/xml/xpath_ns_resolver.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -60,4 +60,4 @@ class V8CustomXPathNSResolver final : public XPathNSResolver {
 
 }  // namespace blink
 
-#endif  // V8CustomXPathNSResolver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_CUSTOM_V8_CUSTOM_XPATH_NS_RESOLVER_H_

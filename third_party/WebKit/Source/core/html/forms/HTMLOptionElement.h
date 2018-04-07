@@ -22,11 +22,11 @@
  *
  */
 
-#ifndef HTMLOptionElement_h
-#define HTMLOptionElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_OPTION_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_OPTION_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -121,4 +121,4 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
 
 }  // namespace blink
 
-#endif  // HTMLOptionElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_OPTION_ELEMENT_H_

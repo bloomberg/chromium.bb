@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IntrinsicSizingInfo_h
-#define IntrinsicSizingInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_INTRINSIC_SIZING_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_INTRINSIC_SIZING_INFO_H_
 
-#include "platform/geometry/FloatSize.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
 
 namespace blink {
 
@@ -26,4 +26,4 @@ struct IntrinsicSizingInfo {
 
 }  // namespace blink
 
-#endif  // IntrinsicSizingInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_INTRINSIC_SIZING_INFO_H_

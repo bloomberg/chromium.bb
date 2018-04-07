@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMWindowSpeechSynthesis_h
-#define DOMWindowSpeechSynthesis_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_DOM_WINDOW_SPEECH_SYNTHESIS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_DOM_WINDOW_SPEECH_SYNTHESIS_H_
 
-#include "modules/ModulesExport.h"
-#include "modules/speech/SpeechSynthesis.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/speech/speech_synthesis.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ class MODULES_EXPORT DOMWindowSpeechSynthesis final
 
 }  // namespace blink
 
-#endif  // DOMWindowSpeechSynthesis_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_DOM_WINDOW_SPEECH_SYNTHESIS_H_

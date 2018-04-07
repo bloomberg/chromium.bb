@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/custom/V0CustomElementMicrotaskQueueBase.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_queue_base.h"
 
-#include "core/html/custom/V0CustomElementProcessingStack.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
 
 namespace blink {
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ConstantSourceNode_h
-#define ConstantSourceNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_CONSTANT_SOURCE_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_CONSTANT_SOURCE_NODE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/webaudio/AudioParam.h"
-#include "modules/webaudio/AudioScheduledSourceNode.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/wtf/Threading.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_scheduled_source_node.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class ConstantSourceNode final : public AudioScheduledSourceNode {
 
 }  // namespace blink
 
-#endif  // ConstantSourceNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_CONSTANT_SOURCE_NODE_H_

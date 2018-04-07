@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/LayoutSubtreeRootList.h"
+#include "third_party/blink/renderer/core/frame/layout_subtree_root_list.h"
 
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 

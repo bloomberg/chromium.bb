@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/blob/BlobData.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
 
 #include <memory>
 #include <utility>
@@ -37,22 +37,22 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/Histogram.h"
-#include "platform/UUID.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/blob/BlobBytesProvider.h"
-#include "platform/blob/BlobRegistry.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/text/LineEnding.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/TextEncoding.h"
-#include "public/platform/FilePathConversion.h"
-#include "public/platform/InterfaceProvider.h"
-#include "public/platform/Platform.h"
-#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/blob/blob_bytes_provider.h"
+#include "third_party/blink/renderer/platform/blob/blob_registry.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/text/line_ending.h"
+#include "third_party/blink/renderer/platform/uuid.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

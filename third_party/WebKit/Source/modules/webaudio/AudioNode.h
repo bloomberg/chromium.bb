@@ -23,18 +23,18 @@
  * DAMAGE.
  */
 
-#ifndef AudioNode_h
-#define AudioNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_NODE_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "modules/EventTargetModules.h"
-#include "modules/ModulesExport.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 // Higher values produce more debugging output.
 #define DEBUG_AUDIONODE_REFERENCES 0
@@ -384,4 +384,4 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
 
 }  // namespace blink
 
-#endif  // AudioNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_NODE_H_

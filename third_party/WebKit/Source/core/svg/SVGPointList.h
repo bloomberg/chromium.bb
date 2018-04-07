@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGPointList_h
-#define SVGPointList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_POINT_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_POINT_LIST_H_
 
-#include "core/svg/SVGParsingError.h"
-#include "core/svg/SVGPoint.h"
-#include "core/svg/properties/SVGListPropertyHelper.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_list_property_helper.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
+#include "third_party/blink/renderer/core/svg/svg_point.h"
 
 namespace blink {
 
@@ -77,4 +77,4 @@ DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGPointList);
 
 }  // namespace blink
 
-#endif  // SVGPointList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_POINT_LIST_H_

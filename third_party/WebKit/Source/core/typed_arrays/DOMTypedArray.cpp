@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/typed_arrays/DOMTypedArray.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 
-#include "bindings/core/v8/V8ArrayBuffer.h"
-#include "bindings/core/v8/V8Float32Array.h"
-#include "bindings/core/v8/V8Float64Array.h"
-#include "bindings/core/v8/V8Int16Array.h"
-#include "bindings/core/v8/V8Int32Array.h"
-#include "bindings/core/v8/V8Int8Array.h"
-#include "bindings/core/v8/V8Uint16Array.h"
-#include "bindings/core/v8/V8Uint32Array.h"
-#include "bindings/core/v8/V8Uint8Array.h"
-#include "bindings/core/v8/V8Uint8ClampedArray.h"
-#include "platform/bindings/DOMDataStore.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_float32_array.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_float64_array.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_int16_array.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_int32_array.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_int8_array.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_uint16_array.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_uint32_array.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_uint8_array.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_uint8_clamped_array.h"
+#include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 
 namespace blink {
 

@@ -5,8 +5,8 @@
 // This header defines macros to export component's symbols.
 // See "platform/PlatformExport.h" for details.
 
-#ifndef CoreExport_h
-#define CoreExport_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CORE_EXPORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CORE_EXPORT_H_
 
 #include "build/build_config.h"
 
@@ -69,4 +69,4 @@
 
 #endif  // BLINK_CORE_IMPLEMENTATION
 
-#endif  // CoreExport_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CORE_EXPORT_H_

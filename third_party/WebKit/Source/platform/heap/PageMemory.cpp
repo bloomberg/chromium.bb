@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/heap/PageMemory.h"
+#include "third_party/blink/renderer/platform/heap/page_memory.h"
 
 #include "base/allocator/partition_allocator/oom.h"
-#include "platform/heap/Heap.h"
-#include "platform/wtf/AddressSanitizer.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Atomics.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/atomics.h"
 
 namespace blink {
 

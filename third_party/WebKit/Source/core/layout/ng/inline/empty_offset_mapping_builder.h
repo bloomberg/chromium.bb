@@ -5,7 +5,7 @@
 #ifndef EmptyOffsetMappingBuilder_h
 #define EmptyOffsetMappingBuilder_h
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

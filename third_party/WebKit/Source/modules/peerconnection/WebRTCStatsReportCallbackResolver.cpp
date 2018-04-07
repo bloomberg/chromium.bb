@@ -1,6 +1,6 @@
-#include "modules/peerconnection/WebRTCStatsReportCallbackResolver.h"
+#include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
 
-#include "core/execution_context/ExecutionContext.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
 namespace blink {
 

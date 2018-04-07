@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/speech/SpeechRecognitionResultList.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_result_list.h"
 
 namespace blink {
 

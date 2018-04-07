@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SparseHeapBitmap_h
-#define SparseHeapBitmap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_SPARSE_HEAP_BITMAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_SPARSE_HEAP_BITMAP_H_
 
 #include <bitset>
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "platform/heap/BlinkGC.h"
-#include "platform/heap/HeapPage.h"
-#include "platform/wtf/Alignment.h"
+#include "third_party/blink/renderer/platform/heap/blink_gc.h"
+#include "third_party/blink/renderer/platform/heap/heap_page.h"
+#include "third_party/blink/renderer/platform/wtf/alignment.h"
 
 namespace blink {
 
@@ -134,4 +134,4 @@ class PLATFORM_EXPORT SparseHeapBitmap {
 
 }  // namespace blink
 
-#endif  // SparseHeapBitmap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_SPARSE_HEAP_BITMAP_H_

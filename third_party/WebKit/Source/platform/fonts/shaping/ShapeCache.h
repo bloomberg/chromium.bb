@@ -24,16 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ShapeCache_h
-#define ShapeCache_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_CACHE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_CACHE_H_
 
 #include "base/memory/weak_ptr.h"
-#include "platform/fonts/shaping/ShapeResult.h"
-#include "platform/text/TextRun.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashFunctions.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/HashTableDeletedValueType.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
 
 namespace blink {
 
@@ -249,4 +249,4 @@ inline bool operator==(const ShapeCache::SmallStringKey& a,
 
 }  // namespace blink
 
-#endif  // ShapeCache_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_CACHE_H_

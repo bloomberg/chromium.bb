@@ -27,11 +27,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/geometry/FloatPolygon.h"
-#include "platform/geometry/FloatShapeHelpers.h"
+#include "third_party/blink/renderer/platform/geometry/float_polygon.h"
+#include "third_party/blink/renderer/platform/geometry/float_shape_helpers.h"
 
 #include <memory>
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

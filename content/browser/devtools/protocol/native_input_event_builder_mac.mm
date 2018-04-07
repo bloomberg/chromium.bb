@@ -5,7 +5,7 @@
 #include <Cocoa/Cocoa.h>
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/devtools/protocol/native_input_event_builder.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 
 namespace content {
 namespace protocol {

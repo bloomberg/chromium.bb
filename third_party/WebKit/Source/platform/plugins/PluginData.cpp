@@ -21,12 +21,12 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "platform/plugins/PluginData.h"
+#include "third_party/blink/renderer/platform/plugins/plugin_data.h"
 
-#include "platform/plugins/PluginListBuilder.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebSecurityOrigin.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/renderer/platform/plugins/plugin_list_builder.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

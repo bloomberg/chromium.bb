@@ -19,9 +19,9 @@
  *
  */
 
-#include "platform/transforms/TranslateTransformOperation.h"
+#include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
 
-#include "platform/animation/AnimationUtilities.h"
+#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
 
 namespace blink {
 

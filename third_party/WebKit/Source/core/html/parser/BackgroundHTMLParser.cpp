@@ -23,24 +23,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/BackgroundHTMLParser.h"
+#include "third_party/blink/renderer/core/html/parser/background_html_parser.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/single_thread_task_runner.h"
-#include "core/html/parser/HTMLDocumentParser.h"
-#include "core/html/parser/TextResourceDecoder.h"
-#include "core/html/parser/XSSAuditor.h"
-#include "core/html_names.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/Histogram.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/TextPosition.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/html/parser/html_document_parser.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/core/html/parser/xss_auditor.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

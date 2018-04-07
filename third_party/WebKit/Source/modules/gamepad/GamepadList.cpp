@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-#include "modules/gamepad/GamepadList.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad_list.h"
 
 namespace blink {
 

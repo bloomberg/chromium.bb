@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSParser.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
 
 #include <memory>
-#include "core/css/CSSColorValue.h"
-#include "core/css/CSSKeyframeRule.h"
-#include "core/css/StyleColor.h"
-#include "core/css/StyleRule.h"
-#include "core/css/StyleSheetContents.h"
-#include "core/css/parser/CSSParserFastPaths.h"
-#include "core/css/parser/CSSParserImpl.h"
-#include "core/css/parser/CSSPropertyParser.h"
-#include "core/css/parser/CSSSelectorParser.h"
-#include "core/css/parser/CSSSupportsParser.h"
-#include "core/css/parser/CSSTokenizer.h"
-#include "core/css/parser/CSSVariableParser.h"
-#include "core/layout/LayoutTheme.h"
+#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_fast_paths.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_impl.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_selector_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_supports_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/core/css/parser/css_variable_parser.h"
+#include "third_party/blink/renderer/core/css/style_color.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
 
 namespace blink {
 

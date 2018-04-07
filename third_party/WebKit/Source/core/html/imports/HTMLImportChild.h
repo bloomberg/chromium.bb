@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLImportChild_h
-#define HTMLImportChild_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_HTML_IMPORT_CHILD_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_HTML_IMPORT_CHILD_H_
 
-#include "core/html/imports/HTMLImport.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/core/html/imports/html_import.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -95,4 +95,4 @@ inline HTMLImportChild* ToHTMLImportChild(HTMLImport* import) {
 
 }  // namespace blink
 
-#endif  // HTMLImportChild_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_IMPORTS_HTML_IMPORT_CHILD_H_

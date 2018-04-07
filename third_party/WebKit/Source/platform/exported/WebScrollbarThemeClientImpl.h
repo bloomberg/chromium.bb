@@ -23,14 +23,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebScrollbarThemeClientImpl_h
-#define WebScrollbarThemeClientImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WEB_SCROLLBAR_THEME_CLIENT_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WEB_SCROLLBAR_THEME_CLIENT_IMPL_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/scroll/ScrollbarThemeClient.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
-#include "public/platform/WebScrollbar.h"
+#include "third_party/blink/public/platform/web_scrollbar.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_client.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -86,4 +86,4 @@ class PLATFORM_EXPORT WebScrollbarThemeClientImpl
 
 }  // namespace blink
 
-#endif  // WebScrollbarThemeClientImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WEB_SCROLLBAR_THEME_CLIENT_IMPL_H_

@@ -24,10 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/image-decoders/ImageFrame.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_frame.h"
 
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/image-decoders/ImageDecoder.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 
 namespace blink {
 

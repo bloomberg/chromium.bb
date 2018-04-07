@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VideoTrack_h
-#define VideoTrack_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VIDEO_TRACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VIDEO_TRACK_H_
 
-#include "core/CoreExport.h"
-#include "core/html/track/TrackBase.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/track/track_base.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ DEFINE_TRACK_TYPE_CASTS(VideoTrack, WebMediaPlayer::kVideoTrack);
 
 }  // namespace blink
 
-#endif  // VideoTrack_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VIDEO_TRACK_H_

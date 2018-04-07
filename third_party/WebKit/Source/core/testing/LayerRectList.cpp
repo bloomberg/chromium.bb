@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/testing/LayerRectList.h"
+#include "third_party/blink/renderer/core/testing/layer_rect_list.h"
 
-#include "core/dom/Node.h"
-#include "core/geometry/DOMRectReadOnly.h"
-#include "core/testing/LayerRect.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
+#include "third_party/blink/renderer/core/testing/layer_rect.h"
 
 namespace blink {
 

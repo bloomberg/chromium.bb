@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlAnimationEventListener_h
-#define MediaControlAnimationEventListener_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_ANIMATION_EVENT_LISTENER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_ANIMATION_EVENT_LISTENER_H_
 
-#include "core/dom/events/EventListener.h"
-#include "modules/ModulesExport.h"
-#include "platform/heap/GarbageCollected.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ class MODULES_EXPORT MediaControlAnimationEventListener final
 
 }  // namespace blink
 
-#endif  // MediaControlAnimationEventListener_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_ANIMATION_EVENT_LISTENER_H_

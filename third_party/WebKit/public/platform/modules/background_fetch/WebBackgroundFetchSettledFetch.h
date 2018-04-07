@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebBackgroundFetchSettledFetch_h
-#define WebBackgroundFetchSettledFetch_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_BACKGROUND_FETCH_WEB_BACKGROUND_FETCH_SETTLED_FETCH_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_BACKGROUND_FETCH_WEB_BACKGROUND_FETCH_SETTLED_FETCH_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 
@@ -24,4 +24,4 @@ struct WebBackgroundFetchSettledFetch {
 
 }  // namespace blink
 
-#endif  // WebBackgroundFetchSettledFetch_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_BACKGROUND_FETCH_WEB_BACKGROUND_FETCH_SETTLED_FETCH_H_

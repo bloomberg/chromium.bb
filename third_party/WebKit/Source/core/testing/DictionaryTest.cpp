@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/testing/DictionaryTest.h"
+#include "third_party/blink/renderer/core/testing/dictionary_test.h"
 
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/testing/InternalDictionary.h"
-#include "core/testing/InternalDictionaryDerived.h"
-#include "core/testing/InternalDictionaryDerivedDerived.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/testing/internal_dictionary.h"
+#include "third_party/blink/renderer/core/testing/internal_dictionary_derived.h"
+#include "third_party/blink/renderer/core/testing/internal_dictionary_derived_derived.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

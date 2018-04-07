@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SensorReadingRemapper_h
-#define SensorReadingRemapper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_READING_REMAPPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_READING_REMAPPER_H_
 
-#include "platform/wtf/Allocator.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/mojom/sensor.mojom-blink.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -28,4 +28,4 @@ class SensorReadingRemapper {
 
 }  // namespace blink
 
-#endif  // SensorReadingRemapper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SENSOR_SENSOR_READING_REMAPPER_H_

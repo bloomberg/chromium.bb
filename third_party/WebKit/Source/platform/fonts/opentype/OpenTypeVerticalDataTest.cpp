@@ -23,8 +23,8 @@
  */
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/fonts/opentype/OpenTypeTypes.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/open_type_types.h"
 
 namespace blink {
 

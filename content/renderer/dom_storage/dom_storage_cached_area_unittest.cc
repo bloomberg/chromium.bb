@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/dom_storage/dom_storage_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/scheduler/test/fake_renderer_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
 
 namespace content {
 

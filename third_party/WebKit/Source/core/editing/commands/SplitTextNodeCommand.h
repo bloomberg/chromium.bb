@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SplitTextNodeCommand_h
-#define SplitTextNodeCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SPLIT_TEXT_NODE_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SPLIT_TEXT_NODE_COMMAND_H_
 
-#include "core/editing/commands/EditCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/edit_command.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ class CORE_EXPORT SplitTextNodeCommand final : public SimpleEditCommand {
 
 }  // namespace blink
 
-#endif  // SplitTextNodeCommand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SPLIT_TEXT_NODE_COMMAND_H_

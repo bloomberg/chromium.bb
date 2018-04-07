@@ -13,7 +13,7 @@
 #include "content/renderer/indexed_db/indexed_db_dispatcher.h"
 #include "content/renderer/indexed_db/indexed_db_key_builders.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBValue.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 
 using blink::WebBlobInfo;
 using blink::WebData;

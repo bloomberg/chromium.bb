@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef ResolutionUnits_h
-#define ResolutionUnits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_RESOLUTION_UNITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_RESOLUTION_UNITS_H_
 
 namespace blink {
 

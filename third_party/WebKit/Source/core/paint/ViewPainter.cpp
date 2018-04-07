@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/ViewPainter.h"
+#include "third_party/blink/renderer/core/paint/view_painter.h"
 
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/Settings.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/BackgroundImageGeometry.h"
-#include "core/paint/BlockPainter.h"
-#include "core/paint/BoxModelObjectPainter.h"
-#include "core/paint/BoxPainter.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/ScrollRecorder.h"
-#include "core/paint/compositing/CompositedLayerMapping.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/background_image_geometry.h"
+#include "third_party/blink/renderer/core/paint/block_painter.h"
+#include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/scroll_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "third_party/WebKit/public/platform/WebCallbacks.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
 
 // A ScopedWebCallbacks is a move-only scoper which helps manage the lifetime of
 // a blink::WebCallbacks object. This is particularly useful when you're

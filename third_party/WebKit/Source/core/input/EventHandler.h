@@ -23,34 +23,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EventHandler_h
-#define EventHandler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_EVENT_HANDLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_EVENT_HANDLER_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/dom/UserGestureIndicator.h"
-#include "core/events/TextEventInputType.h"
-#include "core/input/GestureManager.h"
-#include "core/input/KeyboardEventManager.h"
-#include "core/input/MouseEventManager.h"
-#include "core/input/MouseWheelEventManager.h"
-#include "core/input/PointerEventManager.h"
-#include "core/input/ScrollManager.h"
-#include "core/layout/HitTestRequest.h"
-#include "core/page/DragActions.h"
-#include "core/page/EventWithHitTestResults.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/Cursor.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashTraits.h"
-#include "public/platform/WebInputEvent.h"
-#include "public/platform/WebInputEventResult.h"
-#include "public/platform/WebMenuSourceType.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_input_event_result.h"
+#include "third_party/blink/public/platform/web_menu_source_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/events/text_event_input_type.h"
+#include "third_party/blink/renderer/core/input/gesture_manager.h"
+#include "third_party/blink/renderer/core/input/keyboard_event_manager.h"
+#include "third_party/blink/renderer/core/input/mouse_event_manager.h"
+#include "third_party/blink/renderer/core/input/mouse_wheel_event_manager.h"
+#include "third_party/blink/renderer/core/input/pointer_event_manager.h"
+#include "third_party/blink/renderer/core/input/scroll_manager.h"
+#include "third_party/blink/renderer/core/layout/hit_test_request.h"
+#include "third_party/blink/renderer/core/page/drag_actions.h"
+#include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/cursor.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 
 namespace blink {
 
@@ -439,4 +439,4 @@ class CORE_EXPORT EventHandler final
 
 }  // namespace blink
 
-#endif  // EventHandler_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_EVENT_HANDLER_H_

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/gpu/SharedGpuContext.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 
 #include <memory>
 
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "platform/graphics/Canvas2DLayerBridge.h"
-#include "platform/graphics/CanvasResourceProvider.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/test/FakeGLES2Interface.h"
-#include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
+#include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 using testing::Test;

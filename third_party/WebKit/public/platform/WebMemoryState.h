@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebMemoryState_h
-#define WebMemoryState_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEMORY_STATE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEMORY_STATE_H_
 
 namespace blink {
 

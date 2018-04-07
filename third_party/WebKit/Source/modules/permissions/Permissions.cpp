@@ -2,33 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/permissions/Permissions.h"
+#include "third_party/blink/renderer/modules/permissions/permissions.h"
 
 #include <memory>
 #include <utility>
 
-#include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/modules/v8/V8ClipboardPermissionDescriptor.h"
-#include "bindings/modules/v8/V8MidiPermissionDescriptor.h"
-#include "bindings/modules/v8/V8PermissionDescriptor.h"
-#include "bindings/modules/v8/V8PushPermissionDescriptor.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/Frame.h"
-#include "core/frame/LocalFrame.h"
-#include "core/origin_trials/origin_trials.h"
-#include "modules/permissions/PermissionDescriptor.h"
-#include "modules/permissions/PermissionStatus.h"
-#include "modules/permissions/PermissionUtils.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/NotFound.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_clipboard_permission_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_midi_permission_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_permission_descriptor.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_push_permission_descriptor.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/modules/permissions/permission_descriptor.h"
+#include "third_party/blink/renderer/modules/permissions/permission_status.h"
+#include "third_party/blink/renderer/modules/permissions/permission_utils.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/not_found.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

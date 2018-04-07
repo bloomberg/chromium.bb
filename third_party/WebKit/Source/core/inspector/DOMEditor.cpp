@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/inspector/DOMEditor.h"
+#include "third_party/blink/renderer/core/inspector/dom_editor.h"
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/Node.h"
-#include "core/dom/Text.h"
-#include "core/editing/serializers/Serialization.h"
-#include "core/inspector/DOMPatchSupport.h"
-#include "core/inspector/InspectorHistory.h"
-#include "core/inspector/protocol/Protocol.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/serializers/serialization.h"
+#include "third_party/blink/renderer/core/inspector/dom_patch_support.h"
+#include "third_party/blink/renderer/core/inspector/inspector_history.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Protocol.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PluginScriptForbiddenScope_h
-#define PluginScriptForbiddenScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_SCRIPT_FORBIDDEN_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_SCRIPT_FORBIDDEN_SCOPE_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ class PLATFORM_EXPORT PluginScriptForbiddenScope final {
 
 }  // namespace blink
 
-#endif  // PluginScriptForbiddenScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_SCRIPT_FORBIDDEN_SCOPE_H_

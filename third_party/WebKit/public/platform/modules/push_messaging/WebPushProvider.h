@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPushProvider_h
-#define WebPushProvider_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PUSH_MESSAGING_WEB_PUSH_PROVIDER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PUSH_MESSAGING_WEB_PUSH_PROVIDER_H_
 
-#include "public/platform/WebCallbacks.h"
-#include "public/platform/modules/push_messaging/WebPushSubscription.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
 
 #include <memory>
 
@@ -45,4 +45,4 @@ class WebPushProvider {
 
 }  // namespace blink
 
-#endif  // WebPushProvider_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PUSH_MESSAGING_WEB_PUSH_PROVIDER_H_

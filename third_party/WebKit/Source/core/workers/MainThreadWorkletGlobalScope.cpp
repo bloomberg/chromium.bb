@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/MainThreadWorkletGlobalScope.h"
+#include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/dom/Document.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/FrameConsole.h"
-#include "core/frame/LocalFrame.h"
-#include "core/inspector/MainThreadDebugger.h"
-#include "core/probe/CoreProbes.h"
-#include "core/workers/GlobalScopeCreationParams.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 
 namespace blink {
 

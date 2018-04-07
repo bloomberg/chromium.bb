@@ -23,17 +23,17 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/AudioNode.h"
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/webaudio/AudioNodeInput.h"
-#include "modules/webaudio/AudioNodeOptions.h"
-#include "modules/webaudio/AudioNodeOutput.h"
-#include "modules/webaudio/AudioParam.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "platform/InstanceCounters.h"
-#include "platform/wtf/Atomics.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_options.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/wtf/atomics.h"
 
 #if DEBUG_AUDIONODE_REFERENCES
 #include <stdio.h>

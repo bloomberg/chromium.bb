@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/string_data_view.h"
-#include "third_party/WebKit/Source/platform/wtf/text/StringUTF8Adaptor.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace mojo {
 namespace {

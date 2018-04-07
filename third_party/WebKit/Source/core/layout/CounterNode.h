@@ -19,11 +19,11 @@
  *
 */
 
-#ifndef CounterNode_h
-#define CounterNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_COUNTER_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_COUNTER_NODE_H_
 
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 // This implements a counter tree that is used for finding parents in counters()
 // lookup, and for propagating count changes when nodes are added or removed.
@@ -112,4 +112,4 @@ class CounterNode : public RefCounted<CounterNode> {
 void showCounterTree(const blink::CounterNode*);
 #endif
 
-#endif  // CounterNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_COUNTER_NODE_H_

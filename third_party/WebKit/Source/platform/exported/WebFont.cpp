@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebFont.h"
+#include "third_party/blink/public/platform/web_font.h"
 
-#include "platform/fonts/Font.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/graphics/paint/PaintRecordBuilder.h"
-#include "platform/text/TextRun.h"
-#include "public/platform/WebFloatPoint.h"
-#include "public/platform/WebFloatRect.h"
-#include "public/platform/WebFontDescription.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebTextRun.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_float_rect.h"
+#include "third_party/blink/public/platform/web_font_description.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_text_run.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
 
 namespace blink {
 

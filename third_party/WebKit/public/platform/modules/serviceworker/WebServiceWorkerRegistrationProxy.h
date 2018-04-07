@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebServiceWorkerRegistrationProxy_h
-#define WebServiceWorkerRegistrationProxy_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_REGISTRATION_PROXY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_REGISTRATION_PROXY_H_
 
-#include "public/platform/modules/serviceworker/WebServiceWorker.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker.h"
 
 #include <memory>
 
@@ -31,4 +31,4 @@ class WebServiceWorkerRegistrationProxy {
 
 }  // namespace blink
 
-#endif  // WebServiceWorkerRegistrationProxy_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_REGISTRATION_PROXY_H_

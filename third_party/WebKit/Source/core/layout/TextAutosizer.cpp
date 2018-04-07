@@ -28,31 +28,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/TextAutosizer.h"
+#include "third_party/blink/renderer/core/layout/text_autosizer.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/Settings.h"
-#include "core/frame/VisualViewport.h"
-#include "core/html/forms/HTMLTextAreaElement.h"
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutListItem.h"
-#include "core/layout/LayoutListMarker.h"
-#include "core/layout/LayoutMultiColumnFlowThread.h"
-#include "core/layout/LayoutRubyRun.h"
-#include "core/layout/LayoutTable.h"
-#include "core/layout/LayoutTableCell.h"
-#include "core/layout/LayoutView.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "platform/geometry/IntRect.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
+#include "third_party/blink/renderer/core/layout/layout_ruby_run.h"
+#include "third_party/blink/renderer/core/layout/layout_table.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 
 namespace blink {
 

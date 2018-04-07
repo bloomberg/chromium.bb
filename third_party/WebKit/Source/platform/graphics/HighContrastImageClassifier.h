@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HighContrastImageClassifier_h
-#define HighContrastImageClassifier_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_HIGH_CONTRAST_IMAGE_CLASSIFIER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_HIGH_CONTRAST_IMAGE_CLASSIFIER_H_
 
 #include <vector>
 
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/Image.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
 
 namespace blink {
 
@@ -93,4 +93,4 @@ class PLATFORM_EXPORT HighContrastImageClassifier {
 
 }  // namespace blink
 
-#endif  // HighContrastImageClassifier_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_HIGH_CONTRAST_IMAGE_CLASSIFIER_H_

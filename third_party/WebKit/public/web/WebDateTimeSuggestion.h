@@ -23,11 +23,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef WebDateTimeSuggestion_h
-#define WebDateTimeSuggestion_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DATE_TIME_SUGGESTION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DATE_TIME_SUGGESTION_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 

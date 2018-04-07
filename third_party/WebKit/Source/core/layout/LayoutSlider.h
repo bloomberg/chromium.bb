@@ -18,11 +18,11 @@
  *
  */
 
-#ifndef LayoutSlider_h
-#define LayoutSlider_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SLIDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SLIDER_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutFlexibleBox.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSlider, IsSlider());
 
 }  // namespace blink
 
-#endif  // LayoutSlider_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SLIDER_H_

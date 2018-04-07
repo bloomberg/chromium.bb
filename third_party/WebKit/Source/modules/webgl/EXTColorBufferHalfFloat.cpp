@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webgl/EXTColorBufferHalfFloat.h"
+#include "third_party/blink/renderer/modules/webgl/ext_color_buffer_half_float.h"
 
 namespace blink {
 

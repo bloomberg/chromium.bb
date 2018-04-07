@@ -25,11 +25,11 @@
  *
  */
 
-#ifndef ComputedStyleConstants_h
-#define ComputedStyleConstants_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COMPUTED_STYLE_CONSTANTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COMPUTED_STYLE_CONSTANTS_H_
 
 #include <cstddef>
-#include "core/computed_style_base_constants.h"
+#include "third_party/blink/renderer/core/computed_style_base_constants.h"
 
 namespace blink {
 
@@ -261,4 +261,4 @@ enum class LineLogicalSide {
 
 }  // namespace blink
 
-#endif  // ComputedStyleConstants_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COMPUTED_STYLE_CONSTANTS_H_

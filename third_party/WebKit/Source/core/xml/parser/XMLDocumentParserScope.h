@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XMLDocumentParserScope_h
-#define XMLDocumentParserScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_PARSER_XML_DOCUMENT_PARSER_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_PARSER_XML_DOCUMENT_PARSER_SCOPE_H_
 
 #include <libxml/xmlerror.h>
 #include "base/macros.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class XMLDocumentParserScope {
 
 }  // namespace blink
 
-#endif  // XMLDocumentParserScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_PARSER_XML_DOCUMENT_PARSER_SCOPE_H_

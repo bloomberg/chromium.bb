@@ -20,20 +20,20 @@
  *
  */
 
-#ifndef WTFString_h
-#define WTFString_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_WTF_STRING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_WTF_STRING_H_
 
 // This file would be called String.h, but that conflicts with <string.h>
 // on systems without case-sensitive file systems.
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/HashTableDeletedValueType.h"
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/text/ASCIIFastPath.h"
-#include "platform/wtf/text/StringImpl.h"
-#include "platform/wtf/text/StringView.h"
 #include <iosfwd>
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/hash_table_deleted_value_type.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_fast_path.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 #ifdef __OBJC__
 #include <objc/objc.h>
@@ -671,5 +671,5 @@ using WTF::Equal;
 using WTF::Find;
 using WTF::IsSpaceOrNewline;
 
-#include "platform/wtf/text/AtomicString.h"
-#endif  // WTFString_h
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_WTF_STRING_H_

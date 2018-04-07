@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGLImageConversionSSE_h
-#define WebGLImageConversionSSE_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CPU_X86_WEBGL_IMAGE_CONVERSION_SSE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CPU_X86_WEBGL_IMAGE_CONVERSION_SSE_H_
 
 #include "build/build_config.h"
 
@@ -197,4 +197,4 @@ ALWAYS_INLINE void PackOneRowOfRGBA8LittleToRGBA8(const uint8_t* source,
 
 #endif  // ARCH_CPU_X86_FAMILY
 
-#endif  // WebGLImageConversionSSE_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CPU_X86_WEBGL_IMAGE_CONVERSION_SSE_H_

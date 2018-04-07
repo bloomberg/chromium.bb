@@ -28,31 +28,31 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/frame/Frame.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
 
 #include <memory>
 
-#include "bindings/core/v8/WindowProxyManager.h"
-#include "core/dom/DocumentType.h"
-#include "core/dom/UserGestureIndicator.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLFrameElementBase.h"
-#include "core/input/EventHandler.h"
-#include "core/layout/LayoutEmbeddedContent.h"
-#include "core/loader/EmptyClients.h"
-#include "core/loader/NavigationScheduler.h"
-#include "core/page/FocusController.h"
-#include "core/page/Page.h"
-#include "core/probe/CoreProbes.h"
-#include "platform/InstanceCounters.h"
-#include "platform/feature_policy/FeaturePolicy.h"
-#include "platform/loader/fetch/ResourceError.h"
-#include "platform/wtf/Assertions.h"
-#include "public/web/WebFrameClient.h"
-#include "public/web/WebRemoteFrameClient.h"
+#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_remote_frame_client.h"
+#include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
+#include "third_party/blink/renderer/core/dom/document_type.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_frame_element_base.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

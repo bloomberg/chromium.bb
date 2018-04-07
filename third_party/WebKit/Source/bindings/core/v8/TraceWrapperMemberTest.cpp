@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
-#include "core/testing/DeathAwareScriptWrappable.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/testing/death_aware_script_wrappable.h"
 
 namespace blink {
 

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockImageResourceObserver_h
-#define MockImageResourceObserver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_MOCK_IMAGE_RESOURCE_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_MOCK_IMAGE_RESOURCE_OBSERVER_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/loader/resource/ImageResource.h"
-#include "core/loader/resource/ImageResourceContent.h"
-#include "core/loader/resource/ImageResourceObserver.h"
-#include "platform/loader/fetch/ResourceStatus.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_status.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ class MockImageResourceObserver final : public ImageResourceObserver {
 
 }  // namespace blink
 
-#endif  // MockImageResourceObserver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_MOCK_IMAGE_RESOURCE_OBSERVER_H_

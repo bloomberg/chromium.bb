@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebDisplayMode.h"
+#include "third_party/blink/public/platform/web_display_mode.h"
 
 using IconPurpose = content::Manifest::Icon::IconPurpose;
 

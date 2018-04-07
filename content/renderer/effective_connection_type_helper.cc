@@ -4,7 +4,7 @@
 
 #include "content/renderer/effective_connection_type_helper.h"
 
-#include "third_party/WebKit/public/common/client_hints/client_hints.h"
+#include "third_party/blink/public/common/client_hints/client_hints.h"
 
 namespace content {
 

@@ -42,12 +42,12 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef PaintLayerPaintingInfo_h
-#define PaintLayerPaintingInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_PAINTING_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_PAINTING_INFO_H_
 
-#include "core/paint/PaintPhase.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/paint/paint_phase.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -105,4 +105,4 @@ struct PaintLayerPaintingInfo {
 
 }  // namespace blink
 
-#endif  // PaintLayerPaintingInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_PAINTING_INFO_H_

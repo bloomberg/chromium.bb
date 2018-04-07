@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TimeZoneMonitorClient_h
-#define TimeZoneMonitorClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_TIME_ZONE_MONITOR_TIME_ZONE_MONITOR_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_TIME_ZONE_MONITOR_TIME_ZONE_MONITOR_CLIENT_H_
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/time_zone_monitor.mojom-blink.h"
@@ -28,4 +28,4 @@ class TimeZoneMonitorClient final
 
 }  // namespace blink
 
-#endif  // TimeZoneMonitorClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_TIME_ZONE_MONITOR_TIME_ZONE_MONITOR_CLIENT_H_

@@ -29,20 +29,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8Binding_h
-#define V8Binding_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_BINDING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_BINDING_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/bindings/DOMDataStore.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/StringResource.h"
-#include "platform/bindings/V8BindingMacros.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/bindings/V8ValueCache.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/StringView.h"
+#include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/string_resource.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/bindings/v8_value_cache.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -371,4 +371,4 @@ PLATFORM_EXPORT v8::Local<v8::Value> FreezeV8Object(v8::Local<v8::Value>,
 
 }  // namespace blink
 
-#endif  // V8Binding_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_V8_BINDING_H_

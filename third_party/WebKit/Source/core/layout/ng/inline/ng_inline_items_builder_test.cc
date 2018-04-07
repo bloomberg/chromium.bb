@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/inline/ng_inline_items_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_items_builder.h"
 
-#include "core/layout/LayoutInline.h"
-#include "core/layout/ng/inline/ng_offset_mapping_builder.h"
-#include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping_builder.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

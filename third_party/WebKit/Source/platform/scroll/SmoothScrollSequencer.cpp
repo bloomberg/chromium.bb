@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scroll/SmoothScrollSequencer.h"
+#include "third_party/blink/renderer/platform/scroll/smooth_scroll_sequencer.h"
 
-#include "platform/scroll/ProgrammaticScrollAnimator.h"
-#include "platform/scroll/ScrollableArea.h"
+#include "third_party/blink/renderer/platform/scroll/programmatic_scroll_animator.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 
 namespace blink {
 

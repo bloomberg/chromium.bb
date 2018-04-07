@@ -88,7 +88,7 @@
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_http_job.h"
 #include "services/network/public/cpp/features.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_switches.h"
 #include "url/gurl.h"

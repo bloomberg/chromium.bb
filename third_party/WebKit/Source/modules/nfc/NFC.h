@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NFC_h
-#define NFC_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/modules/v8/string_or_array_buffer_or_nfc_message.h"
-#include "bindings/modules/v8/v8_message_callback.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/page/PageVisibilityObserver.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/HashMap.h"
 #include "services/device/public/mojom/nfc.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/modules/v8/string_or_array_buffer_or_nfc_message.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_message_callback.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -96,4 +96,4 @@ class NFC final : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // NFC_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NFC_H_

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FontFaceSetWorker_h
-#define FontFaceSetWorker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_SET_WORKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_SET_WORKER_H_
 
 #include "base/macros.h"
-#include "bindings/core/v8/Iterable.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/css/FontFace.h"
-#include "core/css/FontFaceSet.h"
-#include "core/css/OffscreenFontSelector.h"
-#include "core/dom/PausableObject.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/AsyncMethodRunner.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/bindings/core/v8/iterable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/css/font_face.h"
+#include "third_party/blink/renderer/core/css/font_face_set.h"
+#include "third_party/blink/renderer/core/css/offscreen_font_selector.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/async_method_runner.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -76,4 +76,4 @@ class CORE_EXPORT FontFaceSetWorker final
 
 }  // namespace blink
 
-#endif  // FontFaceSetWorker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_SET_WORKER_H_

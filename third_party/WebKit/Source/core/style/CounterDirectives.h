@@ -22,19 +22,19 @@
  *
  */
 
-#ifndef CounterDirectives_h
-#define CounterDirectives_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COUNTER_DIRECTIVES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COUNTER_DIRECTIVES_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/CheckedNumeric.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
 
@@ -115,4 +115,4 @@ class CounterDirectiveMap : public HashMap<AtomicString, CounterDirectives> {
 
 }  // namespace blink
 
-#endif  // CounterDirectives_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COUNTER_DIRECTIVES_H_

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/network/WebSocketHandshakeRequest.h"
+#include "third_party/blink/renderer/platform/network/web_socket_handshake_request.h"
 
 namespace blink {
 

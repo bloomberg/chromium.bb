@@ -26,16 +26,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InspectorDatabaseAgent_h
-#define InspectorDatabaseAgent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_INSPECTORDATABASEAGENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_INSPECTORDATABASEAGENT_H_
 
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/protocol/Database.h"
-#include "modules/ModulesExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Database.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

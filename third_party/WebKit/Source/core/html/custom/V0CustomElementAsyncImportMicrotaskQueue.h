@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V0CustomElementAsyncImportMicrotaskQueue_h
-#define V0CustomElementAsyncImportMicrotaskQueue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_ASYNC_IMPORT_MICROTASK_QUEUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_ASYNC_IMPORT_MICROTASK_QUEUE_H_
 
-#include "core/html/custom/V0CustomElementMicrotaskQueueBase.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_queue_base.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ class V0CustomElementAsyncImportMicrotaskQueue
 
 }  // namespace blink
 
-#endif  // V0CustomElementAsyncImportMicrotaskQueue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_ASYNC_IMPORT_MICROTASK_QUEUE_H_

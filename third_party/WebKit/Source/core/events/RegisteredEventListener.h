@@ -22,13 +22,13 @@
  *
  */
 
-#ifndef RegisteredEventListener_h
-#define RegisteredEventListener_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_REGISTERED_EVENT_LISTENER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_REGISTERED_EVENT_LISTENER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/events/AddEventListenerOptionsResolved.h"
-#include "core/dom/events/EventListener.h"
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -127,4 +127,4 @@ class RegisteredEventListener {
 
 WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::RegisteredEventListener);
 
-#endif  // RegisteredEventListener_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_REGISTERED_EVENT_LISTENER_H_

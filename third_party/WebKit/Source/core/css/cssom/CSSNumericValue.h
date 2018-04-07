@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSNumericValue_h
-#define CSSNumericValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_NUMERIC_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_NUMERIC_VALUE_H_
 
 #include "base/macros.h"
-#include "bindings/core/v8/double_or_css_numeric_value.h"
-#include "core/CoreExport.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/cssom/CSSNumericSumValue.h"
-#include "core/css/cssom/CSSNumericType.h"
-#include "core/css/cssom/CSSNumericValueType.h"
-#include "core/css/cssom/CSSStyleValue.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/double_or_css_numeric_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_numeric_sum_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_numeric_type.h"
+#include "third_party/blink/renderer/core/css/cssom/css_numeric_value_type.h"
+#include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -89,4 +89,4 @@ CSSNumericValueVector CSSNumberishesToNumericValues(
 
 }  // namespace blink
 
-#endif  // CSSNumericValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_NUMERIC_VALUE_H_

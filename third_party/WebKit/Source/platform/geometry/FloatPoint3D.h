@@ -20,11 +20,11 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef FloatPoint3D_h
-#define FloatPoint3D_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_FLOAT_POINT_3D_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_FLOAT_POINT_3D_H_
 
-#include "platform/geometry/FloatPoint.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/skia/include/core/SkPoint3.h"
 
 namespace blink {
@@ -162,4 +162,4 @@ TextStream& operator<<(TextStream&, const FloatPoint3D&);
 
 }  // namespace blink
 
-#endif  // FloatPoint3D_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_FLOAT_POINT_3D_H_

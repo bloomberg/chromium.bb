@@ -10,9 +10,9 @@
 
 #include "base/macros.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
-#include "third_party/WebKit/public/mojom/use_counter/css_property_id.mojom.h"
-#include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
-#include "third_party/WebKit/public/platform/web_feature.mojom-shared.h"
+#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
+#include "third_party/blink/public/platform/web_feature.mojom-shared.h"
+#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 
 namespace base {
 class Timer;

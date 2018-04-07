@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RangeBoundaryPoint_h
-#define RangeBoundaryPoint_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_RANGE_BOUNDARY_POINT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_RANGE_BOUNDARY_POINT_H_
 
-#include "core/dom/Node.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/editing/Position.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/editing/position.h"
 
 namespace blink {
 

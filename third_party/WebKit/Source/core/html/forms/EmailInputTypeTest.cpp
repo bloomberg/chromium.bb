@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/forms/EmailInputType.h"
+#include "third_party/blink/renderer/core/html/forms/email_input_type.h"
 
-#include "bindings/core/v8/ScriptRegexp.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
 
 namespace blink {
 

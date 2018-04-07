@@ -10,9 +10,9 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
-#include "public/platform/WebThread.h"
-#include "public/platform/scheduler/web_main_thread_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
+#include "third_party/blink/public/platform/web_thread.h"
 
 namespace blink {
 namespace scheduler {

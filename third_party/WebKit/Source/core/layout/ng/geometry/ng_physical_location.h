@@ -5,9 +5,9 @@
 #ifndef NGPhysicalLocation_h
 #define NGPhysicalLocation_h
 
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
-#include "platform/LayoutUnit.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
 
 namespace blink {
 

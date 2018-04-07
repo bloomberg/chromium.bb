@@ -27,11 +27,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/FontMetrics.h"
+#include "third_party/blink/renderer/platform/fonts/font_metrics.h"
 
 #include "build/build_config.h"
-#include "platform/fonts/FontPlatformData.h"
-#include "platform/fonts/VDMXParser.h"
+#include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
+#include "third_party/blink/renderer/platform/fonts/vdmx_parser.h"
 
 #include <SkPaint.h>
 #include <SkTypeface.h>

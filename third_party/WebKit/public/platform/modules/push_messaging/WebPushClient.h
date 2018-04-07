@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPushClient_h
-#define WebPushClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PUSH_MESSAGING_WEB_PUSH_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PUSH_MESSAGING_WEB_PUSH_CLIENT_H_
 
-#include "public/platform/WebCallbacks.h"
-#include "public/platform/modules/push_messaging/WebPushError.h"
-#include "public/platform/modules/push_messaging/WebPushProvider.h"
 #include <memory>
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_error.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_provider.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
 
 namespace blink {
 
@@ -29,4 +29,4 @@ class WebPushClient {
 
 }  // namespace blink
 
-#endif  // WebPushClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PUSH_MESSAGING_WEB_PUSH_CLIENT_H_

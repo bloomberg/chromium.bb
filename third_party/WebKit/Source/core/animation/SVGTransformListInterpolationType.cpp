@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/SVGTransformListInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/svg_transform_list_interpolation_type.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/animation/InterpolableValue.h"
-#include "core/animation/NonInterpolableValue.h"
-#include "core/animation/SVGInterpolationEnvironment.h"
-#include "core/animation/StringKeyframe.h"
-#include "core/svg/SVGTransform.h"
-#include "core/svg/SVGTransformList.h"
+#include "third_party/blink/renderer/core/animation/interpolable_value.h"
+#include "third_party/blink/renderer/core/animation/non_interpolable_value.h"
+#include "third_party/blink/renderer/core/animation/string_keyframe.h"
+#include "third_party/blink/renderer/core/animation/svg_interpolation_environment.h"
+#include "third_party/blink/renderer/core/svg/svg_transform.h"
+#include "third_party/blink/renderer/core/svg/svg_transform_list.h"
 
 namespace blink {
 

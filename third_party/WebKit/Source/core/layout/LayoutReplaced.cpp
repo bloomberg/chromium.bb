@@ -21,23 +21,23 @@
  *
  */
 
-#include "core/layout/LayoutReplaced.h"
+#include "third_party/blink/renderer/core/layout/layout_replaced.h"
 
-#include "core/editing/PositionWithAffinity.h"
-#include "core/layout/LayoutAnalyzer.h"
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/LayoutImage.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutVideo.h"
-#include "core/layout/api/LineLayoutBlockFlow.h"
-#include "core/layout/ng/geometry/ng_logical_offset.h"
-#include "core/layout/ng/geometry/ng_logical_size.h"
-#include "core/layout/ng/ng_physical_box_fragment.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/ReplacedPainter.h"
-#include "core/paint/ng/ng_paint_fragment.h"
-#include "platform/LengthFunctions.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_video.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/replaced_painter.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
 
 namespace blink {
 

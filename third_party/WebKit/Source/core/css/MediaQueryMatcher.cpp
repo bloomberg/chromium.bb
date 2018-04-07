@@ -17,18 +17,18 @@
  *  Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/MediaQueryMatcher.h"
+#include "third_party/blink/renderer/core/css/media_query_matcher.h"
 
-#include "core/css/MediaList.h"
-#include "core/css/MediaQueryEvaluator.h"
-#include "core/css/MediaQueryList.h"
-#include "core/css/MediaQueryListEvent.h"
-#include "core/css/MediaQueryListListener.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/css/media_list.h"
+#include "third_party/blink/renderer/core/css/media_query_evaluator.h"
+#include "third_party/blink/renderer/core/css/media_query_list.h"
+#include "third_party/blink/renderer/core/css/media_query_list_event.h"
+#include "third_party/blink/renderer/core/css/media_query_list_listener.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

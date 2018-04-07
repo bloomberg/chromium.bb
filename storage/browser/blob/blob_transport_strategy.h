@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "storage/browser/blob/blob_memory_controller.h"
 #include "storage/browser/storage_browser_export.h"
-#include "third_party/WebKit/public/mojom/blob/blob_registry.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob_registry.mojom.h"
 
 namespace storage {
 

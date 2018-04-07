@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef JPEGImageDecoder_h
-#define JPEGImageDecoder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_JPEG_JPEG_IMAGE_DECODER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_JPEG_JPEG_IMAGE_DECODER_H_
 
-#include "platform/image-decoders/ImageDecoder.h"
 #include <memory>
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 
 namespace blink {
 

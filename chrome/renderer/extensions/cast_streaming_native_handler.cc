@@ -39,11 +39,11 @@
 #include "media/base/limits.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
-#include "third_party/WebKit/public/platform/WebMediaStream.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebDOMMediaStreamTrack.h"
-#include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_dom_media_stream_track.h"
+#include "third_party/blink/public/web/web_media_stream_registry.h"
 #include "url/gurl.h"
 
 using content::V8ValueConverter;

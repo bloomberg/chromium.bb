@@ -27,11 +27,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BoxShape_h
-#define BoxShape_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_BOX_SHAPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_BOX_SHAPE_H_
 
-#include "core/layout/shapes/Shape.h"
-#include "platform/geometry/FloatRoundedRect.h"
+#include "third_party/blink/renderer/core/layout/shapes/shape.h"
+#include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class BoxShape final : public Shape {
 
 }  // namespace blink
 
-#endif  // BoxShape_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_BOX_SHAPE_H_

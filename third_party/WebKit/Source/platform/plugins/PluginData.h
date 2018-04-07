@@ -18,15 +18,15 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef PluginData_h
-#define PluginData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_DATA_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

@@ -2,29 +2,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("websockets") {
   sources = [
-    "CloseEvent.cpp",
-    "CloseEvent.h",
-    "DOMWebSocket.cpp",
-    "DOMWebSocket.h",
-    "DocumentWebSocketChannel.cpp",
-    "DocumentWebSocketChannel.h",
-    "InspectorWebSocketEvents.cpp",
-    "InspectorWebSocketEvents.h",
-    "WebPepperSocketChannelClientProxy.h",
-    "WebPepperSocketImpl.cpp",
-    "WebPepperSocketImpl.h",
-    "WebSocketChannel.cpp",
-    "WebSocketChannel.h",
-    "WebSocketChannelClient.h",
-    "WebSocketHandle.h",
-    "WebSocketHandleClient.h",
-    "WebSocketHandleImpl.cpp",
-    "WebSocketHandleImpl.h",
-    "WorkerWebSocketChannel.cpp",
-    "WorkerWebSocketChannel.h",
+    "close_event.cc",
+    "close_event.h",
+    "document_web_socket_channel.cc",
+    "document_web_socket_channel.h",
+    "dom_web_socket.cc",
+    "dom_web_socket.h",
+    "inspector_web_socket_events.cc",
+    "inspector_web_socket_events.h",
+    "web_pepper_socket_channel_client_proxy.h",
+    "web_pepper_socket_impl.cc",
+    "web_pepper_socket_impl.h",
+    "web_socket_channel.cc",
+    "web_socket_channel.h",
+    "web_socket_channel_client.h",
+    "web_socket_handle.h",
+    "web_socket_handle_client.h",
+    "web_socket_handle_impl.cc",
+    "web_socket_handle_impl.h",
+    "worker_web_socket_channel.cc",
+    "worker_web_socket_channel.h",
   ]
 }

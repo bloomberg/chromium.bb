@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLContextGroup_h
-#define WebGLContextGroup_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_CONTEXT_GROUP_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_CONTEXT_GROUP_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/webgl/WebGLRenderingContextBase.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class WebGLContextGroup final : public GarbageCollected<WebGLContextGroup>,
 
 }  // namespace blink
 
-#endif  // WebGLContextGroup_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_CONTEXT_GROUP_H_

@@ -22,12 +22,12 @@
  *
  */
 
-#ifndef ClipboardEvent_h
-#define ClipboardEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_CLIPBOARD_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_CLIPBOARD_EVENT_H_
 
-#include "core/clipboard/DataTransfer.h"
-#include "core/dom/events/Event.h"
-#include "core/events/ClipboardEventInit.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/clipboard_event_init.h"
 
 namespace blink {
 
@@ -64,4 +64,4 @@ class ClipboardEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // ClipboardEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_CLIPBOARD_EVENT_H_

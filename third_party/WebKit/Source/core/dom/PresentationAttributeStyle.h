@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PresentationAttributeStyle_h
-#define PresentationAttributeStyle_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PRESENTATION_ATTRIBUTE_STYLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PRESENTATION_ATTRIBUTE_STYLE_H_
 
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ CSSPropertyValueSet* ComputePresentationAttributeStyle(Element&);
 
 }  // namespace blink
 
-#endif  // PresentationAttributeStyle_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PRESENTATION_ATTRIBUTE_STYLE_H_

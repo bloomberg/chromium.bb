@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/inspector/InspectorDOMDebuggerAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorDOMDebuggerAgent.h"
 
-#include "bindings/core/v8/ScriptEventListener.h"
-#include "bindings/core/v8/V8EventTarget.h"
-#include "bindings/core/v8/V8Node.h"
-#include "core/dom/DOMNodeIds.h"
-#include "core/dom/Element.h"
-#include "core/dom/Node.h"
-#include "core/dom/events/Event.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/ResolveNode.h"
-#include "core/inspector/V8InspectorString.h"
-#include "core/probe/CoreProbes.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/inspector/InspectorDOMAgent.h"
+#include "third_party/blink/renderer/core/inspector/resolve_node.h"
+#include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 
 namespace {
 

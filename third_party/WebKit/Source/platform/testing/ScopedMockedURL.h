@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScopedMockedURL_h
-#define ScopedMockedURL_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_SCOPED_MOCKED_URL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_SCOPED_MOCKED_URL_H_
 
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLResponse.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_response.h"
 
 namespace blink {
 

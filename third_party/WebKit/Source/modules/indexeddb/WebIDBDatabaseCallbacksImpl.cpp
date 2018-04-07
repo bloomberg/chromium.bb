@@ -23,21 +23,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks_impl.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/dom/DOMException.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 
-#include "core/dom/DOMException.h"
-#include "modules/indexeddb/IDBDatabaseCallbacks.h"
-#include "modules/indexeddb/IDBKeyRange.h"
-#include "modules/indexeddb/IDBObservation.h"
-#include "modules/indexeddb/IDBValue.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/indexeddb/WebIDBDatabaseError.h"
-#include "public/platform/modules/indexeddb/WebIDBObservation.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_observation.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_observation.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 
 namespace blink {
 

@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/ImageFrameGenerator.h"
+#include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
 
 #include <memory>
 #include <utility>
 
 #include "SkData.h"
-#include "platform/graphics/ImageDecodingStore.h"
-#include "platform/image-decoders/ImageDecoder.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/skia/include/core/SkYUVSizeInfo.h"
 
 namespace blink {

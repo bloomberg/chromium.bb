@@ -11,7 +11,7 @@
 #include "base/callback_helpers.h"
 #include "chrome/browser/android/vr/vr_shell_delegate.h"
 
-#include "third_party/WebKit/public/platform/WebMouseEvent.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
 
 using base::android::JavaParamRef;
 

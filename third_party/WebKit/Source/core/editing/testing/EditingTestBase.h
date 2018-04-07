@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EditingTestBase_h
-#define EditingTestBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_TESTING_EDITING_TEST_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_TESTING_EDITING_TEST_BASE_H_
 
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
-#include "core/editing/Forward.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class EditingTestBase : public PageTestBase {
 
 }  // namespace blink
 
-#endif  // EditingTestBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_TESTING_EDITING_TEST_BASE_H_

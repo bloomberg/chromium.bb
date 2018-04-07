@@ -24,17 +24,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EventPath_h
-#define EventPath_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_PATH_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_PATH_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/events/NodeEventContext.h"
-#include "core/dom/events/TreeScopeEventContext.h"
-#include "core/dom/events/WindowEventContext.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/node_event_context.h"
+#include "third_party/blink/renderer/core/dom/events/tree_scope_event_context.h"
+#include "third_party/blink/renderer/core/dom/events/window_event_context.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

@@ -15,7 +15,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/platform_notification_service.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

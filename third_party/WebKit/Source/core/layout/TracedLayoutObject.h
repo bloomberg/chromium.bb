@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TracedLayoutObject_h
-#define TracedLayoutObject_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TRACED_LAYOUT_OBJECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TRACED_LAYOUT_OBJECT_H_
 
-#include "platform/instrumentation/tracing/TracedValue.h"
 #include <memory>
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 
 namespace blink {
 
@@ -20,4 +20,4 @@ class TracedLayoutObject {
 
 }  // namespace blink
 
-#endif  // TracedLayoutObject_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TRACED_LAYOUT_OBJECT_H_

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/network/HTTPHeaderMap.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
 
 #include <memory>
 

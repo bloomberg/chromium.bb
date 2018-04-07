@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "content/public/browser/quota_permission_context.h"
-#include "third_party/WebKit/public/mojom/quota/quota_dispatcher_host.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_dispatcher_host.mojom.h"
 
 namespace storage {
 class QuotaManager;

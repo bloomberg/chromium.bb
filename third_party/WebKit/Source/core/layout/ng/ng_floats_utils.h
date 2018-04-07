@@ -6,9 +6,9 @@
 #define NGFloatsUtils_h
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "platform/LayoutUnit.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

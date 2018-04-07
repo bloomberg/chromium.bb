@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/vr/VRFrameData.h"
+#include "third_party/blink/renderer/modules/vr/vr_frame_data.h"
 
-#include "modules/vr/VREyeParameters.h"
-#include "modules/vr/VRPose.h"
+#include "third_party/blink/renderer/modules/vr/vr_eye_parameters.h"
+#include "third_party/blink/renderer/modules/vr/vr_pose.h"
 
 #include <cmath>
 

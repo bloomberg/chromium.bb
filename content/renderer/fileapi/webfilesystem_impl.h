@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/renderer/worker_thread.h"
-#include "third_party/WebKit/public/platform/WebFileSystem.h"
+#include "third_party/blink/public/platform/web_file_system.h"
 
 namespace base {
 class SingleThreadTaskRunner;

@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OESVertexArrayObject_h
-#define OESVertexArrayObject_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_OES_VERTEX_ARRAY_OBJECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_OES_VERTEX_ARRAY_OBJECT_H_
 
-#include "modules/webgl/WebGLExtension.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_extension.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ class OESVertexArrayObject final : public WebGLExtension {
 
 }  // namespace blink
 
-#endif  // OESVertexArrayObject_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_OES_VERTEX_ARRAY_OBJECT_H_

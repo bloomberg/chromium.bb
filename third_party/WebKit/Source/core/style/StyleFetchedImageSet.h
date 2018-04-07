@@ -23,13 +23,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StyleFetchedImageSet_h
-#define StyleFetchedImageSet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_FETCHED_IMAGE_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_FETCHED_IMAGE_SET_H_
 
-#include "core/loader/resource/ImageResourceObserver.h"
-#include "core/style/StyleImage.h"
-#include "platform/geometry/LayoutSize.h"
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -103,4 +103,4 @@ DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImageSet, IsImageResourceSet());
 
 }  // namespace blink
 
-#endif  // StyleFetchedImageSet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_FETCHED_IMAGE_SET_H_

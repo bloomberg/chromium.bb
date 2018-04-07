@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLOutputElement_h
-#define HTMLOutputElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_OUTPUT_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_OUTPUT_ELEMENT_H_
 
-#include "core/dom/DOMTokenList.h"
-#include "core/html/forms/HTMLFormControlElement.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement {
 
 }  // namespace blink
 
-#endif  // HTMLOutputElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_OUTPUT_ELEMENT_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextIteratorTextNodeHandler_h
-#define TextIteratorTextNodeHandler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_ITERATOR_TEXT_NODE_HANDLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_ITERATOR_TEXT_NODE_HANDLER_H_
 
-#include "core/dom/Text.h"
-#include "core/editing/iterators/TextIteratorBehavior.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator_behavior.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -111,4 +111,4 @@ class TextIteratorTextNodeHandler {
 
 }  // namespace blink
 
-#endif  // TextIteratorTextNodeHandler_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_ITERATOR_TEXT_NODE_HANDLER_H_

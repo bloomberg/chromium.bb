@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSLazyParsingState.h"
-#include "core/css/parser/CSSLazyPropertyParserImpl.h"
-#include "core/css/parser/CSSParserTokenStream.h"
-#include "core/dom/Document.h"
-#include "core/frame/UseCounter.h"
-#include "platform/Histogram.h"
+#include "third_party/blink/renderer/core/css/parser/css_lazy_parsing_state.h"
+#include "third_party/blink/renderer/core/css/parser/css_lazy_property_parser_impl.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_stream.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
 

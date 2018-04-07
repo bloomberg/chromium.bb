@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/ReadableStreamBytesConsumer.h"
+#include "third_party/blink/renderer/core/fetch/readable_stream_bytes_consumer.h"
 
 #include <string.h>
 
 #include <algorithm>
 
-#include "bindings/core/v8/ScriptFunction.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8IteratorResultValue.h"
-#include "bindings/core/v8/V8Uint8Array.h"
-#include "core/streams/ReadableStreamOperations.h"
-#include "platform/bindings/ScopedPersistent.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8BindingMacros.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_uint8_array.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
+#include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {

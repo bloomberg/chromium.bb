@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ImageBitmapFactories_h
-#define ImageBitmapFactories_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_IMAGEBITMAP_IMAGE_BITMAP_FACTORIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_IMAGEBITMAP_IMAGE_BITMAP_FACTORIES_H_
 
 #include <memory>
 #include "base/single_thread_task_runner.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/image_bitmap_source.h"
-#include "core/fileapi/FileReaderLoader.h"
-#include "core/fileapi/FileReaderLoaderClient.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/imagebitmap/ImageBitmapOptions.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/Supplementable.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/geometry/IntRect.h"
+#include "third_party/blink/renderer/bindings/core/v8/image_bitmap_source.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
+#include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkImage;
@@ -165,4 +165,4 @@ class ImageBitmapFactories final
 
 }  // namespace blink
 
-#endif  // ImageBitmapFactories_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_IMAGEBITMAP_IMAGE_BITMAP_FACTORIES_H_

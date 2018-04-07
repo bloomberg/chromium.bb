@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockScriptElementBase_h
-#define MockScriptElementBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_MOCK_SCRIPT_ELEMENT_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_MOCK_SCRIPT_ELEMENT_BASE_H_
 
-#include "bindings/core/v8/html_script_element_or_svg_script_element.h"
-#include "core/dom/Document.h"
-#include "core/script/ScriptElementBase.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/renderer/bindings/core/v8/html_script_element_or_svg_script_element.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/script/script_element_base.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ class MockScriptElementBase
 
 }  // namespace blink
 
-#endif  // MockScriptElementBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_MOCK_SCRIPT_ELEMENT_BASE_H_

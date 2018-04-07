@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGStringList_h
-#define SVGStringList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_STRING_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_STRING_LIST_H_
 
-#include "core/svg/SVGParsingError.h"
-#include "core/svg/SVGString.h"
-#include "core/svg/properties/SVGPropertyHelper.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property_helper.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
+#include "third_party/blink/renderer/core/svg/svg_string.h"
 
 namespace blink {
 
@@ -103,4 +103,4 @@ class SVGStringList final : public SVGPropertyHelper<SVGStringList> {
 
 }  // namespace blink
 
-#endif  // SVGStringList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_STRING_LIST_H_

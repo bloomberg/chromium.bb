@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/canvas/imagebitmap/ImageBitmapRenderingContextBase.h"
+#include "third_party/blink/renderer/modules/canvas/imagebitmap/image_bitmap_rendering_context_base.h"
 
-#include "bindings/modules/v8/rendering_context.h"
-#include "core/imagebitmap/ImageBitmap.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/gpu/ImageLayerBridge.h"
+#include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/image_layer_bridge.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 

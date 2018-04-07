@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/resource/TextResource.h"
+#include "third_party/blink/renderer/core/loader/resource/text_resource.h"
 
-#include "core/html/parser/TextResourceDecoder.h"
-#include "platform/SharedBuffer.h"
-#include "platform/loader/fetch/TextResourceDecoderOptions.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

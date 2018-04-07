@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlFullscreenButtonElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_fullscreen_button_element.h"
 
-#include "core/dom/events/Event.h"
-#include "core/frame/Settings.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/input_type_names.h"
-#include "modules/media_controls/MediaControlsImpl.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 
 namespace blink {
 

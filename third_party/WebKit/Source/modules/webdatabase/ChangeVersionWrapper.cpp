@@ -25,10 +25,10 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "modules/webdatabase/ChangeVersionWrapper.h"
+#include "third_party/blink/renderer/modules/webdatabase/change_version_wrapper.h"
 
-#include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/SQLError.h"
+#include "third_party/blink/renderer/modules/webdatabase/database.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_error.h"
 
 namespace blink {
 

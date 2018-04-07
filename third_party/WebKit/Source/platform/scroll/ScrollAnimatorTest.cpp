@@ -25,19 +25,19 @@
 
 // Tests for the ScrollAnimator class.
 
-#include "platform/scroll/ScrollAnimator.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_animator.h"
 
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/scroll/ScrollAnimatorBase.h"
-#include "platform/scroll/ScrollableArea.h"
-#include "platform/scroll/ScrollbarTheme.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
-#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
 namespace blink {
 

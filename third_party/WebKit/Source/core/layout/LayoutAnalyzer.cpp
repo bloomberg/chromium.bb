@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/LayoutAnalyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 
 #include <memory>
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutText.h"
-#include "platform/instrumentation/tracing/TracedValue.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 
 namespace blink {
 

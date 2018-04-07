@@ -24,15 +24,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SelectionEditor_h
-#define SelectionEditor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_EDITOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_EDITOR_H_
 
 #include "base/macros.h"
-#include "core/dom/SynchronousMutationObserver.h"
-#include "core/dom/events/EventDispatchResult.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/VisibleSelection.h"
+#include "third_party/blink/renderer/core/dom/events/event_dispatch_result.h"
+#include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
 
 namespace blink {
 
@@ -119,4 +119,4 @@ class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>,
 
 }  // namespace blink
 
-#endif  // SelectionEditor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_EDITOR_H_

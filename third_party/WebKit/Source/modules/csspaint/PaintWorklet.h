@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintWorklet_h
-#define PaintWorklet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_H_
 
-#include "core/workers/Worklet.h"
-#include "modules/ModulesExport.h"
-#include "modules/csspaint/DocumentPaintDefinition.h"
-#include "modules/csspaint/PaintWorkletGlobalScopeProxy.h"
-#include "modules/csspaint/PaintWorkletPendingGeneratorRegistry.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/workers/worklet.h"
+#include "third_party/blink/renderer/modules/csspaint/document_paint_definition.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope_proxy.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_worklet_pending_generator_registry.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -85,4 +85,4 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
 
 }  // namespace blink
 
-#endif  // PaintWorklet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CSSPAINT_PAINT_WORKLET_H_

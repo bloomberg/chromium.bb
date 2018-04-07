@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGLFenceSync_h
-#define WebGLFenceSync_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_FENCE_SYNC_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_FENCE_SYNC_H_
 
-#include "modules/webgl/WebGLSync.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_sync.h"
 
 namespace blink {
 
@@ -25,4 +25,4 @@ class WebGLFenceSync : public WebGLSync {
 
 }  // namespace blink
 
-#endif  // WebGLFenceSync_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_FENCE_SYNC_H_

@@ -26,17 +26,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/line/LineBoxList.h"
+#include "third_party/blink/renderer/core/layout/line/line_box_list.h"
 
-#include "core/layout/HitTestResult.h"
-#include "core/layout/api/LineLayoutBox.h"
-#include "core/layout/api/LineLayoutBoxModel.h"
-#include "core/layout/api/LineLayoutInline.h"
-#include "core/layout/api/LineLayoutItem.h"
-#include "core/layout/line/InlineTextBox.h"
-#include "core/layout/line/RootInlineBox.h"
-#include "core/paint/InlinePainter.h"
-#include "core/paint/PaintInfo.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_box_model.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_inline.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/paint/inline_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
 
 namespace blink {
 #if DCHECK_IS_ON()

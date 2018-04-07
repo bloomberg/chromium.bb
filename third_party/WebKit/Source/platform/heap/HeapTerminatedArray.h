@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HeapTerminatedArray_h
-#define HeapTerminatedArray_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_TERMINATED_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_TERMINATED_ARRAY_H_
 
-#include "platform/heap/Heap.h"
-#include "platform/wtf/ConstructTraits.h"
-#include "platform/wtf/TerminatedArray.h"
-#include "platform/wtf/TerminatedArrayBuilder.h"
-#include "platform/wtf/allocator/Partitions.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/construct_traits.h"
+#include "third_party/blink/renderer/platform/wtf/terminated_array.h"
+#include "third_party/blink/renderer/platform/wtf/terminated_array_builder.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ class HeapTerminatedArray : public TerminatedArray<T> {
 
 }  // namespace blink
 
-#endif  // HeapTerminatedArray_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_HEAP_TERMINATED_ARRAY_H_

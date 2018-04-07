@@ -24,7 +24,7 @@
  *
  */
 
-#include "core/workers/WorkerNavigator.h"
+#include "third_party/blink/renderer/core/workers/worker_navigator.h"
 
 namespace blink {
 

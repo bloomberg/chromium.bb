@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ReadableStreamBytesConsumer_h
-#define ReadableStreamBytesConsumer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_READABLE_STREAM_BYTES_CONSUMER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_READABLE_STREAM_BYTES_CONSUMER_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/CoreExport.h"
-#include "core/fetch/BytesConsumer.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class CORE_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
 
 }  // namespace blink
 
-#endif  // ReadableStreamBytesConsumer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_READABLE_STREAM_BYTES_CONSUMER_H_

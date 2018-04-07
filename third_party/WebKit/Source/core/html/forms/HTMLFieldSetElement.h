@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef HTMLFieldSetElement_h
-#define HTMLFieldSetElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_FIELD_SET_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_FIELD_SET_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/html/forms/HTMLFormControlElement.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
 
 }  // namespace blink
 
-#endif  // HTMLFieldSetElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_FIELD_SET_ELEMENT_H_

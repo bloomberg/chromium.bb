@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SuggestionMarker_h
-#define SuggestionMarker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_SUGGESTION_MARKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_SUGGESTION_MARKER_H_
 
-#include "core/editing/markers/StyleableMarker.h"
+#include "third_party/blink/renderer/core/editing/markers/styleable_marker.h"
 
 namespace blink {
 

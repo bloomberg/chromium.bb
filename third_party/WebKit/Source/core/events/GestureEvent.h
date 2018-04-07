@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GestureEvent_h
-#define GestureEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_GESTURE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_GESTURE_EVENT_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/events/EventDispatcher.h"
-#include "core/events/UIEventWithKeyState.h"
-#include "public/platform/WebGestureEvent.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
+#include "third_party/blink/renderer/core/events/ui_event_with_key_state.h"
 
 namespace blink {
 
@@ -56,4 +56,4 @@ DEFINE_EVENT_TYPE_CASTS(GestureEvent);
 
 }  // namespace blink
 
-#endif  // GestureEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_GESTURE_EVENT_H_

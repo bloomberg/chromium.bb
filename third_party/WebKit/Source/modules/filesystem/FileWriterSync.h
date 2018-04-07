@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FileWriterSync_h
-#define FileWriterSync_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_SYNC_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_SYNC_H_
 
-#include "core/fileapi/FileError.h"
-#include "modules/filesystem/FileWriterBase.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebFileWriterClient.h"
+#include "third_party/blink/public/platform/web_file_writer_client.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/modules/filesystem/file_writer_base.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class FileWriterSync final : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // FileWriterSync_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_SYNC_H_

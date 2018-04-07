@@ -19,13 +19,13 @@
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "platform/scheduler/base/enqueue_order.h"
-#include "platform/scheduler/base/graceful_queue_shutdown_helper.h"
-#include "platform/scheduler/base/moveable_auto_lock.h"
-#include "platform/scheduler/base/sequenced_task_source.h"
-#include "platform/scheduler/base/task_queue_impl.h"
-#include "platform/scheduler/base/task_queue_manager.h"
-#include "platform/scheduler/base/task_queue_selector.h"
+#include "third_party/blink/renderer/platform/scheduler/base/enqueue_order.h"
+#include "third_party/blink/renderer/platform/scheduler/base/graceful_queue_shutdown_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/base/moveable_auto_lock.h"
+#include "third_party/blink/renderer/platform/scheduler/base/sequenced_task_source.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 
 namespace base {
 namespace debug {

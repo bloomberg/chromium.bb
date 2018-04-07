@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/ImageDecodingStore.h"
+#include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
 
-#include "platform/graphics/ImageFrameGenerator.h"
-#include "platform/graphics/test/MockImageDecoder.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
+#include "third_party/blink/renderer/platform/graphics/test/mock_image_decoder.h"
 
 namespace blink {
 

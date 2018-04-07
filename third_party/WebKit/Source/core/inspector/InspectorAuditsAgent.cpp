@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/InspectorAuditsAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorAuditsAgent.h"
 
-#include "core/inspector/InspectorNetworkAgent.h"
-#include "platform/graphics/ImageDataBuffer.h"
-#include "platform/wtf/text/Base64.h"
-#include "public/platform/WebData.h"
-#include "public/platform/WebImage.h"
-#include "public/platform/WebSize.h"
+#include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_image.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/core/inspector/InspectorNetworkAgent.h"
+#include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
 namespace blink {
 

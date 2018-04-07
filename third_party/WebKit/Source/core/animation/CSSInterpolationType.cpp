@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_type.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/animation/CSSInterpolationEnvironment.h"
-#include "core/animation/StringKeyframe.h"
-#include "core/css/CSSCustomPropertyDeclaration.h"
-#include "core/css/CSSValue.h"
-#include "core/css/CSSVariableReferenceValue.h"
-#include "core/css/ComputedStyleCSSValueMapping.h"
-#include "core/css/PropertyRegistration.h"
-#include "core/css/parser/CSSTokenizer.h"
-#include "core/css/properties/css_property.h"
-#include "core/css/resolver/CSSVariableResolver.h"
-#include "core/css/resolver/StyleBuilder.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/DataEquivalency.h"
-#include "core/style_property_shorthand.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_environment.h"
+#include "third_party/blink/renderer/core/animation/string_keyframe.h"
+#include "third_party/blink/renderer/core/css/computed_style_css_value_mapping.h"
+#include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/property_registration.h"
+#include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
+#include "third_party/blink/renderer/core/css/resolver/style_builder.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/data_equivalency.h"
+#include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
 

@@ -22,12 +22,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCStatsResponseBase_h
-#define RTCStatsResponseBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_RESPONSE_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_RESPONSE_BASE_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/Forward.h"
-#include "public/platform/WebRTCLegacyStats.h"
+#include "third_party/blink/public/platform/web_rtc_legacy_stats.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ class RTCStatsResponseBase : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // RTCStatsResponseBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_STATS_RESPONSE_BASE_H_

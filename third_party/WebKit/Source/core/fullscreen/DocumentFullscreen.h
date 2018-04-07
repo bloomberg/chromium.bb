@@ -23,11 +23,11 @@
  * DAMAGE.
  */
 
-#ifndef DocumentFullscreen_h
-#define DocumentFullscreen_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FULLSCREEN_DOCUMENT_FULLSCREEN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FULLSCREEN_DOCUMENT_FULLSCREEN_H_
 
-#include "core/dom/events/EventTarget.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ class DocumentFullscreen {
 
 }  // namespace blink
 
-#endif  // DocumentFullscreen_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FULLSCREEN_DOCUMENT_FULLSCREEN_H_

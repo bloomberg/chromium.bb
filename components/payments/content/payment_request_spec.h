@@ -16,7 +16,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_options_provider.h"
-#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
+#include "third_party/blink/public/platform/modules/payments/payment_request.mojom.h"
 #include "url/gurl.h"
 
 namespace payments {

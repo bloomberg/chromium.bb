@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FramePainter_h
-#define FramePainter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FRAME_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FRAME_PAINTER_H_
 
 #include "base/macros.h"
-#include "core/paint/PaintPhase.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/paint/paint_phase.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class FramePainter {
 
 }  // namespace blink
 
-#endif  // FramePainter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_FRAME_PAINTER_H_

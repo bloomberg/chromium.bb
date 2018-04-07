@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/netinfo/NetworkInformation.h"
+#include "third_party/blink/renderer/modules/netinfo/network_information.h"
 
 #include <algorithm>
 
-#include "core/dom/events/Event.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/EventTargetModules.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

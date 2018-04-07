@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ProcessMetrics_h
-#define ProcessMetrics_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_PROCESS_METRICS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_PROCESS_METRICS_H_
 
 #include "base/process/process_metrics.h"
 
@@ -17,4 +17,4 @@ size_t GetMallocUsage() {
 
 }  // namespace WTF
 
-#endif  // ProcessMetrics_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_PROCESS_METRICS_H_

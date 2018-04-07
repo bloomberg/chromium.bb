@@ -23,15 +23,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSImageSetValue_h
-#define CSSImageSetValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IMAGE_SET_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IMAGE_SET_VALUE_H_
 
-#include "core/css/CSSValueList.h"
-#include "core/css/parser/CSSParserMode.h"
-#include "platform/CrossOriginAttributeValue.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/weborigin/Referrer.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
+#include "third_party/blink/renderer/platform/cross_origin_attribute_value.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -91,4 +91,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSImageSetValue, IsImageSetValue());
 
 }  // namespace blink
 
-#endif  // CSSImageSetValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IMAGE_SET_VALUE_H_

@@ -23,12 +23,12 @@
  * DAMAGE.
  */
 
-#ifndef AudioResamplerKernel_h
-#define AudioResamplerKernel_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_RESAMPLER_KERNEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_RESAMPLER_KERNEL_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/audio/AudioArray.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -84,4 +84,4 @@ class PLATFORM_EXPORT AudioResamplerKernel {
 
 }  // namespace blink
 
-#endif  // AudioResamplerKernel_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_RESAMPLER_KERNEL_H_

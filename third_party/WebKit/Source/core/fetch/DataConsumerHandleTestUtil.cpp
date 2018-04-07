@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/DataConsumerHandleTestUtil.h"
+#include "third_party/blink/renderer/core/fetch/data_consumer_handle_test_util.h"
 
 #include <memory>
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
 
 namespace blink {
 

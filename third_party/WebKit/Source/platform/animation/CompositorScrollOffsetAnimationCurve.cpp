@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/animation/CompositorScrollOffsetAnimationCurve.h"
-#include "platform/animation/TimingFunction.h"
+#include "third_party/blink/renderer/platform/animation/compositor_scroll_offset_animation_curve.h"
+#include "third_party/blink/renderer/platform/animation/timing_function.h"
 
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/timing_function.h"

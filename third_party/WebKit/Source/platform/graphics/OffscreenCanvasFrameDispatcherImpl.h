@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef OffscreenCanvasFrameDispatcherImpl_h
-#define OffscreenCanvasFrameDispatcherImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_FRAME_DISPATCHER_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_FRAME_DISPATCHER_IMPL_H_
 
 #include <memory>
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
-#include "platform/graphics/OffscreenCanvasResourceProvider.h"
-#include "platform/wtf/Compiler.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
+#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_frame_dispatcher.h"
+#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_resource_provider.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 
@@ -108,4 +108,4 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl
 
 }  // namespace blink
 
-#endif  // OffscreenCanvasFrameDispatcherImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_OFFSCREEN_CANVAS_FRAME_DISPATCHER_IMPL_H_

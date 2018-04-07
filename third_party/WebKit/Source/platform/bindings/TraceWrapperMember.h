@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TraceWrapperMember_h
-#define TraceWrapperMember_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_MEMBER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_MEMBER_H_
 
-#include "platform/bindings/ScriptWrappableMarkingVisitor.h"
-#include "platform/bindings/TraceWrapperBase.h"
-#include "platform/heap/HeapAllocator.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_base.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
 
@@ -117,4 +117,4 @@ void swap(HeapVector<TraceWrapperMember<T>>& a, HeapVector<Member<T>>& b) {
 
 }  // namespace blink
 
-#endif  // TraceWrapperMember_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_TRACE_WRAPPER_MEMBER_H_

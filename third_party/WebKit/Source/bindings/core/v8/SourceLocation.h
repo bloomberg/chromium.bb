@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SourceLocation_h
-#define SourceLocation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SOURCE_LOCATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SOURCE_LOCATION_H_
 
 #include <v8-inspector-protocol.h>
 #include <memory>
-#include "core/CoreExport.h"
-#include "platform/CrossThreadCopier.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -89,4 +89,4 @@ class CORE_EXPORT SourceLocation {
 
 }  // namespace blink
 
-#endif  // SourceLocation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SOURCE_LOCATION_H_

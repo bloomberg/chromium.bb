@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMediaStreamSource_h
-#define WebMediaStreamSource_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_SOURCE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_SOURCE_H_
 
-#include "WebCommon.h"
-#include "WebMediaStreamTrack.h"
-#include "WebVector.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
-#include "WebPrivatePtr.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
 #if INSIDE_BLINK
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #endif
 
 namespace blink {
@@ -155,4 +155,4 @@ class WebMediaStreamSource {
 
 }  // namespace blink
 
-#endif  // WebMediaStreamSource_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_STREAM_SOURCE_H_

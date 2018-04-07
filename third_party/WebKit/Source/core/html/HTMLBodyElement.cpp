@@ -22,21 +22,21 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/HTMLBodyElement.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
 
-#include "bindings/core/v8/ScriptEventListener.h"
-#include "core/css/CSSImageValue.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/StyleChangeReason.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css_value_keywords.h"
-#include "core/dom/Attribute.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLFrameElementBase.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
+#include "third_party/blink/renderer/core/css/css_image_value.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/dom/attribute.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_frame_element_base.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

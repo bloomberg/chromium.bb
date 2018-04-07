@@ -24,11 +24,11 @@
  *
  */
 
-#ifndef WorkerEventQueue_h
-#define WorkerEventQueue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_EVENT_QUEUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_EVENT_QUEUE_H_
 
-#include "core/dom/events/EventQueue.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ class WorkerEventQueue final : public EventQueue {
 
 }  // namespace blink
 
-#endif  // WorkerEventQueue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_EVENT_QUEUE_H_

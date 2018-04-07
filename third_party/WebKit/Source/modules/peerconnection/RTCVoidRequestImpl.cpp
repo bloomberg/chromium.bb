@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/peerconnection/RTCVoidRequestImpl.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_void_request_impl.h"
 
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/peerconnection/RTCErrorUtil.h"
-#include "modules/peerconnection/RTCPeerConnection.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
 
 namespace blink {
 

@@ -23,12 +23,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/bindings/V8ValueCache.h"
+#include "third_party/blink/renderer/platform/bindings/v8_value_cache.h"
 
 #include <utility>
-#include "platform/bindings/RuntimeCallStats.h"
-#include "platform/bindings/V8Binding.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 

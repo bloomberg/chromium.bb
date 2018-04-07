@@ -22,19 +22,19 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPaintContext_h
-#define SVGPaintContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_PAINT_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_PAINT_CONTEXT_H_
 
-#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
-#include "core/paint/ClipPathClipper.h"
-#include "core/paint/ObjectPaintProperties.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/SVGFilterPainter.h"
-#include "core/paint/TransformRecorder.h"
-#include "platform/graphics/paint/CompositingRecorder.h"
-#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
-#include "platform/transforms/AffineTransform.h"
 #include <memory>
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
+#include "third_party/blink/renderer/core/paint/clip_path_clipper.h"
+#include "third_party/blink/renderer/core/paint/object_paint_properties.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/svg_filter_painter.h"
+#include "third_party/blink/renderer/core/paint/transform_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/compositing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
 namespace blink {
 
@@ -147,4 +147,4 @@ class SVGPaintContext {
 
 }  // namespace blink
 
-#endif  // SVGPaintContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_PAINT_CONTEXT_H_

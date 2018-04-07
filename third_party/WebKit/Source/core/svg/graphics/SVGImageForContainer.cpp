@@ -17,11 +17,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/graphics/SVGImageForContainer.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/FloatSize.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImage.h"
 

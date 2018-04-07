@@ -27,14 +27,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DecodeEscapeSequences_h
-#define DecodeEscapeSequences_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_DECODE_ESCAPE_SEQUENCES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_DECODE_ESCAPE_SEQUENCES_H_
 
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 
@@ -187,4 +187,4 @@ String DecodeEscapeSequences(const String& string,
 
 }  // namespace blink
 
-#endif  // DecodeEscapeSequences_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_DECODE_ESCAPE_SEQUENCES_H_

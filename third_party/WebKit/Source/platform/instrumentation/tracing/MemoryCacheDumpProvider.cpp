@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/instrumentation/tracing/MemoryCacheDumpProvider.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/memory_cache_dump_provider.h"
 
 namespace blink {
 

@@ -13,7 +13,7 @@
 
 #include "base/callback.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
-#include "third_party/WebKit/public/web/WebAssociatedURLLoaderClient.h"
+#include "third_party/blink/public/web/web_associated_url_loader_client.h"
 
 namespace blink {
 class WebAssociatedURLLoader;

@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/FetchRequestData.h"
+#include "third_party/blink/renderer/core/fetch/fetch_request_data.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fetch/BlobBytesConsumer.h"
-#include "core/fetch/BodyStreamBuffer.h"
-#include "core/fetch/BytesConsumer.h"
-#include "core/fetch/FetchHeaderList.h"
-#include "core/fetch/FormDataBytesConsumer.h"
-#include "core/loader/ThreadableLoader.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/ResourceRequest.h"
-#include "platform/network/http_names.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
+#include "third_party/blink/renderer/core/fetch/bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/fetch_header_list.h"
+#include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
+#include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
 
 namespace blink {
 

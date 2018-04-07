@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMediaPlayerClient_h
-#define WebMediaPlayerClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_CLIENT_H_
 
-#include "WebCommon.h"
-#include "WebLocalizedString.h"
-#include "WebMediaPlayer.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_localized_string.h"
+#include "third_party/blink/public/platform/web_media_player.h"
 #include "ui/gfx/color_space.h"
 
 namespace blink {

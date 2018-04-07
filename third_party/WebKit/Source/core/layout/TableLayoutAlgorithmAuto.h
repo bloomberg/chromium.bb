@@ -18,13 +18,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef TableLayoutAlgorithmAuto_h
-#define TableLayoutAlgorithmAuto_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TABLE_LAYOUT_ALGORITHM_AUTO_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TABLE_LAYOUT_ALGORITHM_AUTO_H_
 
-#include "core/layout/TableLayoutAlgorithm.h"
-#include "platform/LayoutUnit.h"
-#include "platform/Length.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/layout/table_layout_algorithm.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

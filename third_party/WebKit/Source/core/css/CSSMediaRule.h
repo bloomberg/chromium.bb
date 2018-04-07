@@ -20,11 +20,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSMediaRule_h
-#define CSSMediaRule_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_MEDIA_RULE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_MEDIA_RULE_H_
 
-#include "core/css/CSSConditionRule.h"
-#include "core/css/MediaList.h"
+#include "third_party/blink/renderer/core/css/css_condition_rule.h"
+#include "third_party/blink/renderer/core/css/media_list.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ DEFINE_CSS_RULE_TYPE_CASTS(CSSMediaRule, kMediaRule);
 
 }  // namespace blink
 
-#endif  // CSSMediaRule_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_MEDIA_RULE_H_

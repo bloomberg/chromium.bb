@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PODFreeListArena_h
-#define PODFreeListArena_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_FREE_LIST_ARENA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_FREE_LIST_ARENA_H_
 
-#include "platform/PODArena.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/platform/pod_arena.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 

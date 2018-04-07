@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/url/URLSearchParams.h"
+#include "third_party/blink/renderer/core/url/url_search_params.h"
 
 #include <gtest/gtest.h>
 

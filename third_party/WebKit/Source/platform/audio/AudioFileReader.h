@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AudioFileReader_h
-#define AudioFileReader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_FILE_READER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_FILE_READER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ PLATFORM_EXPORT void WriteBusToAudioFile(AudioBus* bus,
 
 }  // namespace blink
 
-#endif  // AudioFileReader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_FILE_READER_H_

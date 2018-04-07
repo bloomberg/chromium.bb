@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/peerconnection/RTCSessionDescriptionRequestImpl.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_request_impl.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "modules/peerconnection/RTCPeerConnection.h"
-#include "modules/peerconnection/RTCSessionDescription.h"
-#include "public/platform/WebRTCSessionDescription.h"
+#include "third_party/blink/public/platform/web_rtc_session_description.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_session_description.h"
 
 namespace blink {
 

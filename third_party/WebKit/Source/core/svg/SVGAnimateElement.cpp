@@ -20,21 +20,21 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGAnimateElement.h"
+#include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 
-#include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/StyleChangeReason.h"
-#include "core/dom/Document.h"
-#include "core/dom/QualifiedName.h"
-#include "core/svg/SVGAnimatedColor.h"
-#include "core/svg/SVGLength.h"
-#include "core/svg/SVGLengthList.h"
-#include "core/svg/SVGNumber.h"
-#include "core/svg/SVGString.h"
-#include "core/svg/properties/SVGAnimatedProperty.h"
-#include "core/svg/properties/SVGProperty.h"
-#include "core/xlink_names.h"
+#include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_color.h"
+#include "third_party/blink/renderer/core/svg/svg_length.h"
+#include "third_party/blink/renderer/core/svg/svg_length_list.h"
+#include "third_party/blink/renderer/core/svg/svg_number.h"
+#include "third_party/blink/renderer/core/svg/svg_string.h"
+#include "third_party/blink/renderer/core/xlink_names.h"
 
 namespace blink {
 

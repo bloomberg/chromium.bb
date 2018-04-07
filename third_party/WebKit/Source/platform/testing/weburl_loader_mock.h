@@ -8,9 +8,9 @@
 #include <memory>
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "platform/wtf/Optional.h"
-#include "public/platform/WebURLError.h"
-#include "public/platform/WebURLLoader.h"
+#include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/public/platform/web_url_loader.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

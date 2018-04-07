@@ -28,15 +28,15 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SelectorFilter_h
-#define SelectorFilter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_SELECTOR_FILTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_SELECTOR_FILTER_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/dom/Element.h"
-#include "platform/wtf/BloomFilter.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/wtf/bloom_filter.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

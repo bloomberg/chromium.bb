@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CustomElementDescriptorHash_h
-#define CustomElementDescriptorHash_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_DESCRIPTOR_HASH_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_DESCRIPTOR_HASH_H_
 
-#include "core/html/custom/CustomElementDescriptor.h"
-#include "platform/wtf/HashFunctions.h"
-#include "platform/wtf/HashTraits.h"
-#include "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_descriptor.h"
+#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ struct DefaultHash<blink::CustomElementDescriptor> {
 
 }  // namespace WTF
 
-#endif  // CustomElementDescriptorHash_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_DESCRIPTOR_HASH_H_

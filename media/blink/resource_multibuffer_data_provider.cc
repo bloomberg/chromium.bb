@@ -22,10 +22,10 @@
 #include "media/blink/url_index.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/platform/WebURLError.h"
-#include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/web/WebAssociatedURLLoader.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/web/web_associated_url_loader.h"
 
 using blink::WebAssociatedURLLoader;
 using blink::WebString;

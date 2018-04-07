@@ -6,7 +6,7 @@ module content.history.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "third_party/WebKit/public/platform/referrer.mojom";
+import "third_party/blink/public/platform/referrer.mojom";
 import "url/mojom/url.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 

@@ -24,18 +24,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ShadowRoot_h
-#define ShadowRoot_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SHADOW_ROOT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SHADOW_ROOT_H_
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/CoreExport.h"
-#include "core/css/StyleSheetList.h"
-#include "core/dom/ContainerNode.h"
-#include "core/dom/DocumentFragment.h"
-#include "core/dom/Element.h"
-#include "core/dom/TreeScope.h"
-#include "platform/bindings/ScriptWrappableVisitor.h"
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/style_sheet_list.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -240,4 +240,4 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&, const ShadowRootType&);
 
 }  // namespace blink
 
-#endif  // ShadowRoot_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SHADOW_ROOT_H_

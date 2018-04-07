@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaErrorState_h
-#define MediaErrorState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_ERROR_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_ERROR_STATE_H_
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/modules/v8/dom_exception_or_overconstrained_error.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/modules/v8/dom_exception_or_overconstrained_error.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class MediaErrorState {
 
 }  // namespace blink
 
-#endif  // MediaErrorState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_ERROR_STATE_H_

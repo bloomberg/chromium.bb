@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FakeGLES2Interface_h
-#define FakeGLES2Interface_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_FAKE_GLES2_INTERFACE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_FAKE_GLES2_INTERFACE_H_
 
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 
@@ -21,4 +21,4 @@ class FakeGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
   bool context_lost_ = false;
 };
 
-#endif  // FakeGLES2Interface_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_FAKE_GLES2_INTERFACE_H_

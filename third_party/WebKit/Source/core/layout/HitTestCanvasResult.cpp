@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/HitTestCanvasResult.h"
+#include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 
 namespace blink {
 

@@ -1,6 +1,6 @@
 include_rules = [
-    "-modules",
-    "+modules/EventModules.h",
-    "+modules/background_sync",
-    "+modules/serviceworkers",
+    "-third_party/blink/renderer/modules",
+    "+third_party/blink/renderer/modules/event_modules.h",
+    "+third_party/blink/renderer/modules/background_sync",
+    "+third_party/blink/renderer/modules/serviceworkers",
 ]

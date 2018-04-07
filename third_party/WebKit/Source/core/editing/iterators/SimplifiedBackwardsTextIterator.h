@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SimplifiedBackwardsTextIterator_h
-#define SimplifiedBackwardsTextIterator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_SIMPLIFIED_BACKWARDS_TEXT_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_SIMPLIFIED_BACKWARDS_TEXT_ITERATOR_H_
 
-#include "core/editing/Forward.h"
-#include "core/editing/iterators/BackwardsTextBuffer.h"
-#include "core/editing/iterators/FullyClippedStateStack.h"
-#include "core/editing/iterators/TextIteratorBehavior.h"
-#include "core/editing/iterators/TextIteratorTextState.h"
-#include "platform/heap/Heap.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/iterators/backwards_text_buffer.h"
+#include "third_party/blink/renderer/core/editing/iterators/fully_clipped_state_stack.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator_behavior.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator_text_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -134,4 +134,4 @@ using SimplifiedBackwardsTextIterator =
 
 }  // namespace blink
 
-#endif  // SimplifiedBackwardsTextIterator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_SIMPLIFIED_BACKWARDS_TEXT_ITERATOR_H_

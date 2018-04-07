@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/SharedBuffer.h"
-#include "platform/heap/Handle.h"
-#include "platform/mhtml/ArchiveResource.h"
-#include "platform/mhtml/MHTMLParser.h"
-#include "platform/testing/BlinkFuzzerTestSupport.h"
 #include <stddef.h>
 #include <stdint.h>
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
+#include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
 
 namespace blink {
 

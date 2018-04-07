@@ -6,7 +6,7 @@ module content.mojom;
 
 import "content/common/shared_worker/shared_worker_client.mojom";
 import "content/common/shared_worker/shared_worker_info.mojom";
-import "third_party/WebKit/public/mojom/shared_worker/shared_worker_creation_context_type.mojom";
+import "third_party/blink/public/mojom/shared_worker/shared_worker_creation_context_type.mojom";
 
 // This interface is exposed to enable a client to create and connect to a
 // shared worker.

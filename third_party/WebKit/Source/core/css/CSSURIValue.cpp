@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSURIValue.h"
+#include "third_party/blink/renderer/core/css/css_uri_value.h"
 
-#include "core/css/CSSMarkup.h"
-#include "core/dom/Document.h"
-#include "core/svg/SVGResource.h"
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/core/css/css_markup.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/svg/svg_resource.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

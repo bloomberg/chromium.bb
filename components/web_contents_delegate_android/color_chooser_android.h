@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "content/public/browser/color_chooser.h"
-#include "third_party/WebKit/public/mojom/color_chooser/color_chooser.mojom.h"
+#include "third_party/blink/public/mojom/color_chooser/color_chooser.mojom.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;

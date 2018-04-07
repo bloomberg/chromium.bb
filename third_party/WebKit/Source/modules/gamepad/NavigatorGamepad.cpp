@@ -23,18 +23,18 @@
  * DAMAGE.
  */
 
-#include "modules/gamepad/NavigatorGamepad.h"
+#include "third_party/blink/renderer/modules/gamepad/navigator_gamepad.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Navigator.h"
-#include "core/page/Page.h"
 #include "device/gamepad/public/cpp/gamepad.h"
-#include "modules/gamepad/GamepadDispatcher.h"
-#include "modules/gamepad/GamepadEvent.h"
-#include "modules/gamepad/GamepadList.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad_dispatcher.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad_event.h"
+#include "third_party/blink/renderer/modules/gamepad/gamepad_list.h"
 
 namespace {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DeprecatedScheduleStyleRecalcDuringLayout_h
-#define DeprecatedScheduleStyleRecalcDuringLayout_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DEPRECATED_SCHEDULE_STYLE_RECALC_DURING_LAYOUT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_DEPRECATED_SCHEDULE_STYLE_RECALC_DURING_LAYOUT_H_
 
 #include "base/macros.h"
-#include "core/dom/DocumentLifecycle.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

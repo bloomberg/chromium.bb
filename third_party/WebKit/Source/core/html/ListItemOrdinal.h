@@ -25,11 +25,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ListItemOrdinal_h
-#define ListItemOrdinal_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LIST_ITEM_ORDINAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LIST_ITEM_ORDINAL_H_
 
-#include "platform/heap/Persistent.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -113,4 +113,4 @@ class ListItemOrdinal {
 
 }  // namespace blink
 
-#endif  // ListItemOrdinal_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LIST_ITEM_ORDINAL_H_

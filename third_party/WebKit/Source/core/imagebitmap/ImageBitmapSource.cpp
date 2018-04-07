@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/imagebitmap/ImageBitmapSource.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
 
-#include "core/dom/DOMException.h"
-#include "core/imagebitmap/ImageBitmap.h"
-#include "core/imagebitmap/ImageBitmapOptions.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_options.h"
 
 namespace blink {
 

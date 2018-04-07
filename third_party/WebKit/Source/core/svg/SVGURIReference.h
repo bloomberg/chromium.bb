@@ -18,14 +18,14 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGURIReference_h
-#define SVGURIReference_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_URI_REFERENCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_URI_REFERENCE_H_
 
 #include <memory>
 #include "base/callback.h"
-#include "core/CoreExport.h"
-#include "core/svg/SVGAnimatedHref.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_href.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -108,4 +108,4 @@ class SVGURLReferenceResolver {
 
 }  // namespace blink
 
-#endif  // SVGURIReference_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_URI_REFERENCE_H_

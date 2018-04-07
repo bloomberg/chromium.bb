@@ -59,7 +59,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/renderer_preferences.h"
 #include "extensions/browser/view_type_utils.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/keyboard/keyboard_controller.h"

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/renderer/queueing_time_estimator.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/queueing_time_estimator.h"
 
 #include "base/memory/ptr_util.h"
-#include "platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 
 #include <algorithm>
 #include <map>

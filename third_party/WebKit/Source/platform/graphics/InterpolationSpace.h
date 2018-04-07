@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InterpolationSpace_h
-#define InterpolationSpace_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_INTERPOLATION_SPACE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_INTERPOLATION_SPACE_H_
 
-#include "platform/graphics/Color.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkColorFilter;
@@ -61,4 +61,4 @@ sk_sp<SkColorFilter> CreateInterpolationSpaceFilter(
 
 }  // namespace blink
 
-#endif  // InterpolationSpace_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_INTERPOLATION_SPACE_H_

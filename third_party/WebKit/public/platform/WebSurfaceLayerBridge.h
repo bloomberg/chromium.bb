@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebSurfaceLayerBridge_h
-#define WebSurfaceLayerBridge_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SURFACE_LAYER_BRIDGE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SURFACE_LAYER_BRIDGE_H_
 
-#include "WebCommon.h"
-#include "WebLayer.h"
-#include "WebLayerTreeView.h"
 #include "components/viz/common/surfaces/surface_id.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_layer.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
 
 namespace blink {
 
@@ -39,4 +39,4 @@ class BLINK_PLATFORM_EXPORT WebSurfaceLayerBridge {
 
 }  // namespace blink
 
-#endif  // WebSurfaceLayerBridge_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SURFACE_LAYER_BRIDGE_H_

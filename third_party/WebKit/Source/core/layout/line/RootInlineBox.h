@@ -18,15 +18,15 @@
  *
  */
 
-#ifndef RootInlineBox_h
-#define RootInlineBox_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_ROOT_INLINE_BOX_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_ROOT_INLINE_BOX_H_
 
 #include <memory>
 
-#include "core/layout/api/LineLayoutItem.h"
-#include "core/layout/api/SelectionState.h"
-#include "core/layout/line/InlineFlowBox.h"
-#include "platform/text/BidiContext.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/core/layout/api/selection_state.h"
+#include "third_party/blink/renderer/core/layout/line/inline_flow_box.h"
+#include "third_party/blink/renderer/platform/text/bidi_context.h"
 
 namespace blink {
 
@@ -236,4 +236,4 @@ class RootInlineBox : public InlineFlowBox {
 
 }  // namespace blink
 
-#endif  // RootInlineBox_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_ROOT_INLINE_BOX_H_

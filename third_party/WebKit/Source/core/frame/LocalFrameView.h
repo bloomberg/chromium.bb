@@ -23,46 +23,46 @@
    Boston, MA 02110-1301, USA.
 */
 
-#ifndef LocalFrameView_h
-#define LocalFrameView_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_VIEW_H_
 
 #include <memory>
 #include <utility>
 
-#include "core/CoreExport.h"
-#include "core/dom/DocumentLifecycle.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/FrameViewAutoSizeInfo.h"
-#include "core/frame/LayoutSubtreeRootList.h"
-#include "core/frame/RootFrameViewport.h"
-#include "core/layout/MapCoordinatesFlags.h"
-#include "core/layout/ScrollAnchor.h"
-#include "core/paint/FirstMeaningfulPaintDetector.h"
-#include "core/paint/ObjectPaintProperties.h"
-#include "core/paint/PaintInvalidationCapableScrollableArea.h"
-#include "core/paint/PaintPhase.h"
-#include "core/paint/ScrollbarManager.h"
-#include "core/paint/compositing/PaintLayerCompositor.h"
-#include "platform/PlatformFrameView.h"
-#include "platform/UkmTimeAggregator.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/Color.h"
-#include "platform/graphics/CompositorElementId.h"
-#include "platform/graphics/GraphicsLayerClient.h"
-#include "platform/graphics/paint/PropertyTreeState.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/scroll/Scrollbar.h"
-#include "platform/scroll/SmoothScrollSequencer.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/AutoReset.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/ShapeProperties.h"
-#include "public/platform/WebDisplayMode.h"
-#include "public/platform/WebRect.h"
+#include "third_party/blink/public/platform/shape_properties.h"
+#include "third_party/blink/public/platform/web_display_mode.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/core/frame/frame_view.h"
+#include "third_party/blink/renderer/core/frame/frame_view_auto_size_info.h"
+#include "third_party/blink/renderer/core/frame/layout_subtree_root_list.h"
+#include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
+#include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
+#include "third_party/blink/renderer/core/layout/scroll_anchor.h"
+#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
+#include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
+#include "third_party/blink/renderer/core/paint/object_paint_properties.h"
+#include "third_party/blink/renderer/core/paint/paint_invalidation_capable_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/paint_phase.h"
+#include "third_party/blink/renderer/core/paint/scrollbar_manager.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
+#include "third_party/blink/renderer/platform/platform_frame_view.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar.h"
+#include "third_party/blink/renderer/platform/scroll/smooth_scroll_sequencer.h"
+#include "third_party/blink/renderer/platform/ukm_time_aggregator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -1395,4 +1395,4 @@ DEFINE_TYPE_CASTS(LocalFrameView,
 
 }  // namespace blink
 
-#endif  // LocalFrameView_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_VIEW_H_

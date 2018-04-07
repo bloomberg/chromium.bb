@@ -22,10 +22,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/geometry/FloatBoxTestHelpers.h"
+#include "third_party/blink/renderer/platform/geometry/float_box_test_helpers.h"
 
-#include "platform/geometry/FloatBox.h"
-#include "platform/geometry/GeometryTestHelpers.h"
+#include "third_party/blink/renderer/platform/geometry/float_box.h"
+#include "third_party/blink/renderer/platform/geometry/geometry_test_helpers.h"
 
 const static float kTestEpsilon = 1e-6;
 

@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SubtreeLayoutScope_h
-#define SubtreeLayoutScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SUBTREE_LAYOUT_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SUBTREE_LAYOUT_SCOPE_H_
 
-#include "core/inspector/InspectorTraceEvents.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 // This is the way to mark a subtree as needing layout during layout,
 // e.g. for the purposes of doing a multipass layout.

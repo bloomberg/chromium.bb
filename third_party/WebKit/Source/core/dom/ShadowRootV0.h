@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ShadowRootV0_h
-#define ShadowRootV0_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SHADOW_ROOT_V0_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SHADOW_ROOT_V0_H_
 
-#include "core/css/SelectRuleFeatureSet.h"
-#include "core/dom/V0InsertionPoint.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/css/select_rule_feature_set.h"
+#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

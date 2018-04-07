@@ -27,23 +27,23 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/resolver/CSSToStyleMap.h"
+#include "third_party/blink/renderer/core/css/resolver/css_to_style_map.h"
 
-#include "core/animation/css/CSSAnimationData.h"
-#include "core/css/CSSBorderImageSliceValue.h"
-#include "core/css/CSSCustomIdentValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/CSSQuadValue.h"
-#include "core/css/CSSTimingFunctionValue.h"
-#include "core/css/CSSValuePair.h"
-#include "core/css/resolver/StyleBuilderConverter.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include "core/css_value_keywords.h"
-#include "core/frame/Deprecation.h"
-#include "core/style/BorderImageLengthBox.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/FillLayer.h"
+#include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
+#include "third_party/blink/renderer/core/css/css_border_image_slice_value.h"
+#include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
+#include "third_party/blink/renderer/core/css/css_quad_value.h"
+#include "third_party/blink/renderer/core/css/css_timing_function_value.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
+#include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/style/border_image_length_box.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/fill_layer.h"
 
 namespace blink {
 

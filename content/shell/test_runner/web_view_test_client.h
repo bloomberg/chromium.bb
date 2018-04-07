@@ -6,7 +6,7 @@
 #define CONTENT_SHELL_TEST_RUNNER_WEB_VIEW_TEST_CLIENT_H_
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/web/WebViewClient.h"
+#include "third_party/blink/public/web/web_view_client.h"
 
 namespace blink {
 class WebView;

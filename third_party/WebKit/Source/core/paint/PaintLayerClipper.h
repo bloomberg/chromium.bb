@@ -42,15 +42,15 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef PaintLayerClipper_h
-#define PaintLayerClipper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_CLIPPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_CLIPPER_H_
 
-#include "core/CoreExport.h"
-#include "core/paint/ClipRectsCache.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/paint/clip_rects_cache.h"
 
-#include "platform/scroll/ScrollTypes.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

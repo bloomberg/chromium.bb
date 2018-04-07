@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebNotificationManager_h
-#define WebNotificationManager_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_MANAGER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_MANAGER_H_
 
-#include "public/platform/WebCallbacks.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/notifications/WebNotificationData.h"
-#include "public/platform/modules/notifications/WebNotificationResources.h"
-#include <memory>
 #include <stdint.h>
+#include <memory>
+#include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_resources.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ class WebNotificationManager {
 
 }  // namespace blink
 
-#endif  // WebNotificationManager_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_NOTIFICATIONS_WEB_NOTIFICATION_MANAGER_H_

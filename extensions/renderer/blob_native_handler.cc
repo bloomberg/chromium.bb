@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "extensions/renderer/script_context.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebBlob.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_blob.h"
 
 namespace {
 

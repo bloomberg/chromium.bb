@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebDragData.h"
+#include "third_party/blink/public/platform/web_drag_data.h"
 
-#include "core/clipboard/DataObject.h"
-#include "public/platform/WebVector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/core/clipboard/data_object.h"
 
 namespace blink {
 

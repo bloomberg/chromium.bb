@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SpellingMarkerListImpl_h
-#define SpellingMarkerListImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_SPELLING_MARKER_LIST_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_SPELLING_MARKER_LIST_IMPL_H_
 
-#include "core/editing/markers/SpellCheckMarkerListImpl.h"
+#include "third_party/blink/renderer/core/editing/markers/spell_check_marker_list_impl.h"
 
 namespace blink {
 
@@ -23,4 +23,4 @@ class CORE_EXPORT SpellingMarkerListImpl final
 
 }  // namespace blink
 
-#endif  // SpellingMarkerListImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_SPELLING_MARKER_LIST_IMPL_H_

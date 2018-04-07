@@ -14,7 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/html_based_username_detector_vocabulary.h"
-#include "third_party/WebKit/public/web/WebFormElement.h"
+#include "third_party/blink/public/web/web_form_element.h"
 
 using blink::WebFormControlElement;
 using blink::WebFormElement;

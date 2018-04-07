@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RemotePlayback_h
-#define RemotePlayback_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_REMOTEPLAYBACK_REMOTE_PLAYBACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_REMOTEPLAYBACK_REMOTE_PLAYBACK_H_
 
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/ModulesExport.h"
-#include "modules/presentation/PresentationAvailabilityObserver.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebCallbacks.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/modules/presentation/presentation.mojom-blink.h"
-#include "public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h"
-#include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
-#include "public/platform/modules/remoteplayback/WebRemotePlaybackState.h"
+#include "third_party/blink/public/platform/modules/presentation/presentation.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_availability.h"
+#include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"
+#include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_state.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability_observer.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -170,4 +170,4 @@ class MODULES_EXPORT RemotePlayback final
 
 }  // namespace blink
 
-#endif  // RemotePlayback_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_REMOTEPLAYBACK_REMOTE_PLAYBACK_H_

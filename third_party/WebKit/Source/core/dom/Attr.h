@@ -23,13 +23,13 @@
  *
  */
 
-#ifndef Attr_h
-#define Attr_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ATTR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ATTR_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Node.h"
-#include "core/dom/QualifiedName.h"
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -95,4 +95,4 @@ DEFINE_NODE_TYPE_CASTS(Attr, IsAttributeNode());
 
 }  // namespace blink
 
-#endif  // Attr_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ATTR_H_

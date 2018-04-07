@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VRDisplayEvent_h
-#define VRDisplayEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_DISPLAY_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_DISPLAY_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/vr/VRDisplay.h"
-#include "modules/vr/VRDisplayEventInit.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/vr/vr_display.h"
+#include "third_party/blink/renderer/modules/vr/vr_display_event_init.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class VRDisplayEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // VRDisplayEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_VR_VR_DISPLAY_EVENT_H_

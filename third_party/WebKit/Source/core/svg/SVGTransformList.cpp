@@ -21,18 +21,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGTransformList.h"
+#include "third_party/blink/renderer/core/svg/svg_transform_list.h"
 
-#include "core/css/CSSFunctionValue.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSValueList.h"
-#include "core/svg/SVGParserUtilities.h"
-#include "core/svg/SVGTransformDistance.h"
-#include "core/svg_names.h"
-#include "platform/wtf/text/ParsingUtilities.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/css/css_function_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
+#include "third_party/blink/renderer/core/svg/svg_transform_distance.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

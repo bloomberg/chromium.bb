@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/DOMStringMap.h"
+#include "third_party/blink/renderer/core/dom/dom_string_map.h"
 
 namespace blink {
 

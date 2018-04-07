@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ServiceWorkerGlobalScopePush_h
-#define ServiceWorkerGlobalScopePush_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_SERVICE_WORKER_GLOBAL_SCOPE_PUSH_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_SERVICE_WORKER_GLOBAL_SCOPE_PUSH_H_
 
-#include "core/dom/events/EventTarget.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
 
 namespace blink {
 
@@ -16,4 +16,4 @@ class ServiceWorkerGlobalScopePush {
 
 }  // namespace blink
 
-#endif  // ServiceWorkerGlobalScopePush_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PUSH_MESSAGING_SERVICE_WORKER_GLOBAL_SCOPE_PUSH_H_

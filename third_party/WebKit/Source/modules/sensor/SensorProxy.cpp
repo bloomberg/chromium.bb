@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/sensor/SensorProxy.h"
+#include "third_party/blink/renderer/modules/sensor/sensor_proxy.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/FocusController.h"
-#include "modules/sensor/SensorProviderProxy.h"
-#include "modules/sensor/SensorReadingRemapper.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/mojo/MojoHelper.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebScreenInfo.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
-#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/modules/sensor/sensor_provider_proxy.h"
+#include "third_party/blink/renderer/modules/sensor/sensor_reading_remapper.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 
 namespace blink {
 

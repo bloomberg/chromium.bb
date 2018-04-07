@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//third_party/WebKit/public/platform/modules/cache_storage/cache_storage.mojom"
+mojom = "//third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom"
 public_headers = [
   "//content/common/cache_storage/cache_storage_types.h",
   "//content/common/service_worker/service_worker_types.h",

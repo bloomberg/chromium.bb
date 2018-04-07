@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AnimationWorkletGlobalScope_h
-#define AnimationWorkletGlobalScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_GLOBAL_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_GLOBAL_SCOPE_H_
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/workers/ThreadedWorkletGlobalScope.h"
-#include "modules/ModulesExport.h"
-#include "modules/animationworklet/Animator.h"
-#include "modules/animationworklet/AnimatorDefinition.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/graphics/CompositorAnimatorsState.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/workers/threaded_worklet_global_scope.h"
+#include "third_party/blink/renderer/modules/animationworklet/animator.h"
+#include "third_party/blink/renderer/modules/animationworklet/animator_definition.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_animators_state.h"
 
 namespace blink {
 
@@ -76,4 +76,4 @@ DEFINE_TYPE_CASTS(AnimationWorkletGlobalScope,
 
 }  // namespace blink
 
-#endif  // AnimationWorkletGlobalScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_GLOBAL_SCOPE_H_

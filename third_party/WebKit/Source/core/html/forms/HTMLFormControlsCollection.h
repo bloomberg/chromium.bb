@@ -22,13 +22,13 @@
  *
  */
 
-#ifndef HTMLFormControlsCollection_h
-#define HTMLFormControlsCollection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_FORM_CONTROLS_COLLECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_FORM_CONTROLS_COLLECTION_H_
 
-#include "core/html/HTMLCollection.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/forms/ListedElement.h"
-#include "core/html/forms/RadioNodeList.h"
+#include "third_party/blink/renderer/core/html/forms/listed_element.h"
+#include "third_party/blink/renderer/core/html/forms/radio_node_list.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -77,4 +77,4 @@ DEFINE_TYPE_CASTS(HTMLFormControlsCollection,
 
 }  // namespace blink
 
-#endif  // HTMLFormControlsCollection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_HTML_FORM_CONTROLS_COLLECTION_H_

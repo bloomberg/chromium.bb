@@ -2,18 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("clipboard") {
   sources = [
-    "Clipboard.cpp",
-    "Clipboard.h",
-    "ClipboardPromise.cpp",
-    "ClipboardPromise.h",
-    "NavigatorClipboard.cpp",
-    "NavigatorClipboard.h",
+    "clipboard.cc",
+    "clipboard.h",
+    "clipboard_promise.cc",
+    "clipboard_promise.h",
+    "navigator_clipboard.cc",
+    "navigator_clipboard.h",
   ]
   deps = [
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
   ]
 }

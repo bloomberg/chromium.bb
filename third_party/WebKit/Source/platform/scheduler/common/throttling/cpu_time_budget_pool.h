@@ -5,14 +5,14 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_COMMON_THROTTLING_CPU_TIME_BUDGET_POOL_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_COMMON_THROTTLING_CPU_TIME_BUDGET_POOL_H_
 
-#include "platform/scheduler/common/throttling/budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "platform/scheduler/base/lazy_now.h"
-#include "platform/scheduler/util/tracing_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/base/lazy_now.h"
+#include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 
 namespace blink {
 namespace scheduler {

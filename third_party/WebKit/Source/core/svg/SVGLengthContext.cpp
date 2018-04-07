@@ -20,18 +20,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGLengthContext.h"
+#include "third_party/blink/renderer/core/svg/svg_length_context.h"
 
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSResolutionUnits.h"
-#include "core/css/CSSToLengthConversionData.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutObject.h"
-#include "core/style/ComputedStyle.h"
-#include "core/svg/SVGSVGElement.h"
-#include "platform/LengthFunctions.h"
-#include "platform/fonts/FontMetrics.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_resolution_units.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/svg/svg_svg_element.h"
+#include "third_party/blink/renderer/platform/fonts/font_metrics.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
 
 namespace blink {
 

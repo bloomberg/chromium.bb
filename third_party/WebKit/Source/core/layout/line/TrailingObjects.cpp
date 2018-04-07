@@ -22,11 +22,11 @@
  *
  */
 
-#include "core/layout/line/TrailingObjects.h"
+#include "third_party/blink/renderer/core/layout/line/trailing_objects.h"
 
-#include "core/layout/api/LineLayoutItem.h"
-#include "core/layout/line/BreakingContextInlineHeaders.h"
-#include "core/layout/line/InlineIterator.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/core/layout/line/breaking_context_inline_headers.h"
+#include "third_party/blink/renderer/core/layout/line/inline_iterator.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StyleAutoColor_h
-#define StyleAutoColor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_AUTO_COLOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_AUTO_COLOR_H_
 
-#include "core/css/StyleColor.h"
-#include "platform/graphics/Color.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/css/style_color.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ inline bool operator!=(const StyleAutoColor& a, const StyleAutoColor& b) {
 
 }  // namespace blink
 
-#endif  // StyleAutoColor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_AUTO_COLOR_H_

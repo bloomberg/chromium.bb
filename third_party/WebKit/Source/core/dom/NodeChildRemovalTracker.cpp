@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/NodeChildRemovalTracker.h"
+#include "third_party/blink/renderer/core/dom/node_child_removal_tracker.h"
 
 namespace blink {
 

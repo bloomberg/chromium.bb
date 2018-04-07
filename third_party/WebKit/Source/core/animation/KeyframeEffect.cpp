@@ -28,24 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/KeyframeEffect.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
-#include "core/animation/EffectInput.h"
-#include "core/animation/ElementAnimations.h"
-#include "core/animation/KeyframeEffectModel.h"
-#include "core/animation/KeyframeEffectOptions.h"
-#include "core/animation/SampledEffect.h"
-#include "core/animation/TimingInput.h"
-#include "core/dom/Element.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/frame/UseCounter.h"
-#include "core/paint/PaintLayer.h"
-#include "core/style/ComputedStyle.h"
-#include "core/svg/SVGElement.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/animation/effect_input.h"
+#include "third_party/blink/renderer/core/animation/element_animations.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_options.h"
+#include "third_party/blink/renderer/core/animation/sampled_effect.h"
+#include "third_party/blink/renderer/core/animation/timing_input.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

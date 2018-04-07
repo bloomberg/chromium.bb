@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/web/WebMetaElement.h"
+#include "third_party/blink/public/web/web_meta_element.h"
 
-#include "core/html/HTMLMetaElement.h"
-#include "core/html_names.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/core/html/html_meta_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

@@ -19,7 +19,7 @@
  *
  */
 
-#include "core/style/CounterDirectives.h"
+#include "third_party/blink/renderer/core/style/counter_directives.h"
 
 #include <memory>
 

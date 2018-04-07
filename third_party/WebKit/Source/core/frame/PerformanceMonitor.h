@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PerformanceMonitor_h
-#define PerformanceMonitor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PERFORMANCEMONITOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PERFORMANCEMONITOR_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/timing/SubTaskAttribution.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/scheduler/base/task_time_observer.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/timing/sub_task_attribution.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_time_observer.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -169,4 +169,4 @@ class CORE_EXPORT PerformanceMonitor final
 
 }  // namespace blink
 
-#endif  // PerformanceMonitor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PERFORMANCEMONITOR_H_

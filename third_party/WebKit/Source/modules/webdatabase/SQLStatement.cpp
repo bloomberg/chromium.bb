@@ -26,19 +26,19 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/SQLStatement.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_statement.h"
 
-#include "bindings/modules/v8/V8SQLStatementCallback.h"
-#include "bindings/modules/v8/V8SQLStatementErrorCallback.h"
-#include "core/probe/CoreProbes.h"
-#include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/DatabaseManager.h"
-#include "modules/webdatabase/SQLError.h"
-#include "modules/webdatabase/SQLStatementBackend.h"
-#include "modules/webdatabase/SQLTransaction.h"
-#include "modules/webdatabase/sqlite/SQLiteDatabase.h"
-#include "modules/webdatabase/sqlite/SQLiteStatement.h"
-#include "platform/wtf/text/CString.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_sql_statement_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_sql_statement_error_callback.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/modules/webdatabase/database.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_manager.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_error.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_statement_backend.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_database.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_statement.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 namespace blink {
 

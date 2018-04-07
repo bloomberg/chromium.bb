@@ -9,10 +9,10 @@
 
 #include "base/containers/span.h"
 #include "base/macros.h"
-#include "third_party/WebKit/common/common_export.h"
-#include "third_party/WebKit/public/common/message_port/cloneable_message.h"
-#include "third_party/WebKit/public/common/message_port/message_port_channel.h"
-#include "third_party/WebKit/public/mojom/array_buffer/array_buffer_contents.mojom.h"
+#include "third_party/blink/common/common_export.h"
+#include "third_party/blink/public/common/message_port/cloneable_message.h"
+#include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/mojom/array_buffer/array_buffer_contents.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {

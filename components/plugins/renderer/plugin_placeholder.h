@@ -11,8 +11,8 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "gin/handle.h"
 #include "gin/wrappable.h"
-#include "third_party/WebKit/public/web/WebKit.h"
-#include "third_party/WebKit/public/web/WebPluginParams.h"
+#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/web/web_plugin_params.h"
 
 namespace plugins {
 

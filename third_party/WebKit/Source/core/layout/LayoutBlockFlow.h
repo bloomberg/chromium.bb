@@ -33,18 +33,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutBlockFlow_h
-#define LayoutBlockFlow_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BLOCK_FLOW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BLOCK_FLOW_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/layout/FloatingObjects.h"
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/api/LineLayoutItem.h"
-#include "core/layout/line/LineBoxList.h"
-#include "core/layout/line/RootInlineBox.h"
-#include "core/layout/line/TrailingObjects.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/core/layout/floating_objects.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/line/line_box_list.h"
+#include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/layout/line/trailing_objects.h"
 
 namespace blink {
 
@@ -1054,4 +1054,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBlockFlow, IsLayoutBlockFlow());
 
 }  // namespace blink
 
-#endif  // LayoutBlockFlow_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BLOCK_FLOW_H_

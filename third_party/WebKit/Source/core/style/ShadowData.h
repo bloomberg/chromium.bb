@@ -23,13 +23,13 @@
  *
  */
 
-#ifndef ShadowData_h
-#define ShadowData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_SHADOW_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_SHADOW_DATA_H_
 
-#include "core/css/StyleColor.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatRectOutsets.h"
-#include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/blink/renderer/core/css/style_color.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect_outsets.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 
 namespace blink {
 
@@ -91,4 +91,4 @@ class ShadowData {
 
 }  // namespace blink
 
-#endif  // ShadowData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_SHADOW_DATA_H_

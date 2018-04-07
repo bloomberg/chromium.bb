@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/layout_ng_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 
-#include "core/layout/LayoutAnalyzer.h"
-#include "core/layout/ng/inline/ng_inline_fragment_traversal.h"
-#include "core/layout/ng/inline/ng_inline_node_data.h"
-#include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_length_utils.h"
-#include "core/layout/ng/ng_out_of_flow_layout_part.h"
-#include "core/paint/PaintLayer.h"
+#include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
 

@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TransitionEvent_h
-#define TransitionEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TRANSITION_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TRANSITION_EVENT_H_
 
-#include "core/dom/events/Event.h"
-#include "core/events/TransitionEventInit.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/transition_event_init.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class TransitionEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // TransitionEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_TRANSITION_EVENT_H_

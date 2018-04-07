@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UnicodeUtilities_h
-#define UnicodeUtilities_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_UNICODE_UTILITIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_UNICODE_UTILITIES_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/Unicode.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ PLATFORM_EXPORT bool CheckKanaStringsEqual(const UChar* first_data,
 
 }  // namespace blink
 
-#endif  // UnicodeUtilities_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_UNICODE_UTILITIES_H_

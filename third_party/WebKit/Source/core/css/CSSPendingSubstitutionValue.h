@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSPendingSubstitutionValue_h
-#define CSSPendingSubstitutionValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PENDING_SUBSTITUTION_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PENDING_SUBSTITUTION_VALUE_H_
 
-#include "core/css/CSSValue.h"
-#include "core/css/CSSVariableReferenceValue.h"
-#include "core/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSPendingSubstitutionValue,
 
 }  // namespace blink
 
-#endif  // CSSPendingSubstitutionValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PENDING_SUBSTITUTION_VALUE_H_

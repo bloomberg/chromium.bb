@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/encryptedmedia/MediaKeysController.h"
+#include "third_party/blink/renderer/modules/encryptedmedia/media_keys_controller.h"
 
-#include "core/frame/WebLocalFrameImpl.h"
-#include "public/platform/WebContentDecryptionModule.h"
-#include "public/web/WebFrameClient.h"
+#include "third_party/blink/public/platform/web_content_decryption_module.h"
+#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 
 namespace blink {
 

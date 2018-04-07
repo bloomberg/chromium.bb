@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/text/TextEncodingDetector.h"
+#include "third_party/blink/renderer/platform/text/text_encoding_detector.h"
 
 #include "build/build_config.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/ced/src/compact_enc_det/compact_enc_det.h"
 
 // third_party/ced/src/util/encodings/encodings.h, which is included

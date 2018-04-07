@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/child/worker_scheduler_proxy.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_proxy.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
-#include "platform/WaitableEvent.h"
-#include "platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
-#include "platform/scheduler/main_thread/frame_scheduler_impl.h"
-#include "platform/scheduler/main_thread/main_thread_scheduler.h"
-#include "platform/scheduler/main_thread/page_scheduler_impl.h"
-#include "platform/scheduler/test/task_queue_manager_for_test.h"
-#include "platform/scheduler/worker/worker_thread_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/scheduler/child/webthread_impl_for_worker_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
 
 namespace blink {
 namespace scheduler {

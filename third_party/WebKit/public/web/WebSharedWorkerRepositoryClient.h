@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSharedWorkerRepositoryClient_h
-#define WebSharedWorkerRepositoryClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SHARED_WORKER_REPOSITORY_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SHARED_WORKER_REPOSITORY_CLIENT_H_
 
 #include <memory>
-#include "third_party/WebKit/public/mojom/net/ip_address_space.mojom-shared.h"
-#include "third_party/WebKit/public/mojom/shared_worker/shared_worker_creation_context_type.mojom-shared.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-shared.h"
+#include "third_party/blink/public/mojom/shared_worker/shared_worker_creation_context_type.mojom-shared.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class WebSharedWorkerRepositoryClient {
 
 }  // namespace blink
 
-#endif  // WebSharedWorkerRepositoryClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SHARED_WORKER_REPOSITORY_CLIENT_H_

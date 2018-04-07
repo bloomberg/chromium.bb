@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/SQLResultSetRowList.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_result_set_row_list.h"
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/ToV8ForCore.h"
-#include "bindings/modules/v8/ToV8ForModules.h"
-#include "core/dom/ExceptionCode.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/modules/v8/to_v8_for_modules.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
 
 namespace blink {
 

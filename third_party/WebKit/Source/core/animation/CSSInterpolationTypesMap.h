@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSInterpolationTypesMap_h
-#define CSSInterpolationTypesMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_INTERPOLATION_TYPES_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_INTERPOLATION_TYPES_MAP_H_
 
-#include "core/CoreExport.h"
-#include "core/animation/CSSInterpolationType.h"
-#include "core/animation/InterpolationTypesMap.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/interpolation_types_map.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -34,4 +34,4 @@ class CORE_EXPORT CSSInterpolationTypesMap : public InterpolationTypesMap {
 
 }  // namespace blink
 
-#endif  // CSSInterpolationTypesMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_INTERPOLATION_TYPES_MAP_H_

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/StaticBitmapImage.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "platform/graphics/AcceleratedStaticBitmapImage.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/ImageObserver.h"
-#include "platform/graphics/UnacceleratedStaticBitmapImage.h"
-#include "platform/graphics/paint/PaintImage.h"
-#include "platform/wtf/CheckedNumeric.h"
-#include "platform/wtf/typed_arrays/ArrayBufferContents.h"
 #include "skia/ext/texture_handle.h"
+#include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/image_observer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPaint.h"

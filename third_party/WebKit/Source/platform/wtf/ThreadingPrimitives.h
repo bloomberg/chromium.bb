@@ -28,16 +28,16 @@
  *
  */
 
-#ifndef ThreadingPrimitives_h
-#define ThreadingPrimitives_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREADING_PRIMITIVES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREADING_PRIMITIVES_H_
 
 #include "base/macros.h"
 #include "base/thread_annotations.h"
 #include "build/build_config.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Locker.h"
-#include "platform/wtf/WTFExport.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/locker.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -188,4 +188,4 @@ using WTF::ThreadCondition;
 using WTF::AbsoluteTimeToWaitTimeoutInterval;
 #endif
 
-#endif  // ThreadingPrimitives_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREADING_PRIMITIVES_H_

@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#ifndef AudioSummingJunction_h
-#define AudioSummingJunction_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_SUMMING_JUNCTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_SUMMING_JUNCTION_H_
 
-#include "platform/audio/AudioBus.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -94,4 +94,4 @@ class AudioSummingJunction {
 
 }  // namespace blink
 
-#endif  // AudioSummingJunction_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_SUMMING_JUNCTION_H_

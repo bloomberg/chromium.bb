@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/serviceworkers/RespondWithObserver.h"
+#include "third_party/blink/renderer/modules/serviceworkers/respond_with_observer.h"
 
 #include <v8.h>
 
-#include "bindings/core/v8/ScriptFunction.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/serviceworkers/WaitUntilObserver.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/serviceworkers/wait_until_observer.h"
 
 using blink::mojom::ServiceWorkerResponseError;
 

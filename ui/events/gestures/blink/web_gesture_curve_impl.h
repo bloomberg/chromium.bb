@@ -11,8 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebGestureCurve.h"
-#include "third_party/WebKit/public/platform/WebGestureDevice.h"
+#include "third_party/blink/public/platform/web_gesture_curve.h"
+#include "third_party/blink/public/platform/web_gesture_device.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace ui {

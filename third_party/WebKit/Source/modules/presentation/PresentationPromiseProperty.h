@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PresentationPromiseProperty_h
-#define PresentationPromiseProperty_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_PROMISE_PROPERTY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_PROMISE_PROPERTY_H_
 
-#include "bindings/core/v8/ScriptPromiseProperty.h"
-#include "core/dom/DOMException.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 
 namespace blink {
 
@@ -20,4 +20,4 @@ using PresentationAvailabilityProperty =
 
 }  // namespace blink
 
-#endif  // PresentationPromiseProperty_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_PROMISE_PROPERTY_H_

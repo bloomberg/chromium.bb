@@ -5,7 +5,7 @@
         "output": "inspector/protocol",
         "namespace": ["blink", "protocol"],
         "export_macro": "CORE_EXPORT",
-        "export_header": "core/CoreExport.h",
+        "export_header": "core/core_export.h",
         "options": [
             {
                 "domain": "Accessibility"
@@ -127,8 +127,8 @@
     "lib": {
         "package": "core/inspector/protocol",
         "output": "inspector/protocol",
-        "string_header": "core/inspector/V8InspectorString.h",
+        "string_header": "core/inspector/v8_inspector_string.h",
         "export_macro": "CORE_EXPORT",
-        "export_header": "core/CoreExport.h"
+        "export_header": "core/core_export.h"
     }
 }

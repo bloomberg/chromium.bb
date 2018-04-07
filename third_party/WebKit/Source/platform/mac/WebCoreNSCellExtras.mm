@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#import "platform/mac/WebCoreNSCellExtras.h"
+#import "third_party/blink/renderer/platform/mac/web_core_ns_cell_extras.h"
 
 @interface NSCell (LionSDKDeclarations)
 - (void)drawFocusRingMaskWithFrame:(NSRect)cellFrame

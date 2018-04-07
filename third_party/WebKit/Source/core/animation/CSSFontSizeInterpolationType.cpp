@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSFontSizeInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_font_size_interpolation_type.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/animation/LengthInterpolationFunctions.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/LengthFunctions.h"
-#include "platform/fonts/FontDescription.h"
+#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
 
 namespace blink {
 

@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/SVGInteger.h"
+#include "third_party/blink/renderer/core/svg/svg_integer.h"
 
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/svg/SVGAnimationElement.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 
 namespace blink {
 

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/background_fetch/ServiceWorkerRegistrationBackgroundFetch.h"
+#include "third_party/blink/renderer/modules/background_fetch/service_worker_registration_background_fetch.h"
 
-#include "modules/background_fetch/BackgroundFetchManager.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_manager.h"
 
 namespace blink {
 

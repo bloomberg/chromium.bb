@@ -23,18 +23,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XSSAuditor_h
-#define XSSAuditor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_XSS_AUDITOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_XSS_AUDITOR_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/html/parser/HTMLToken.h"
-#include "platform/network/HTTPParsers.h"
-#include "platform/text/SuffixTree.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/core/html/parser/html_token.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/text/suffix_tree.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 

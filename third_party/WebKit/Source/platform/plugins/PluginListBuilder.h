@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PluginListBuilder_h
-#define PluginListBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_LIST_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLUGINS_PLUGIN_LIST_BUILDER_H_
 
-#include "platform/plugins/PluginData.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebPluginListBuilder.h"
+#include "third_party/blink/public/platform/web_plugin_list_builder.h"
+#include "third_party/blink/renderer/platform/plugins/plugin_data.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

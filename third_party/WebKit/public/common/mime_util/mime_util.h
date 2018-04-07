@@ -6,7 +6,7 @@
 #define THIRD_PARTY_WEBKIT_PUBLIC_COMMON_MIME_UTIL_MIME_UTIL_H__
 
 #include <string>
-#include "third_party/WebKit/common/common_export.h"
+#include "third_party/blink/common/common_export.h"
 
 namespace blink {
 

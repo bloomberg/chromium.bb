@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebContextFeatures_h
-#define WebContextFeatures_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_CONTEXT_FEATURES_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_CONTEXT_FEATURES_H_
 
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -29,4 +29,4 @@ class WebContextFeatures {
 
 }  // namespace blink
 
-#endif  // WebContextFeatures_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_CONTEXT_FEATURES_H_

@@ -16,7 +16,7 @@
 #include "components/payments/core/journey_logger.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
+#include "third_party/blink/public/platform/modules/payments/payment_request.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

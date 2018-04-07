@@ -22,14 +22,14 @@
  *
  */
 
-#ifndef KeyboardEvent_h
-#define KeyboardEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_KEYBOARD_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_KEYBOARD_EVENT_H_
 
-#include "core/CoreExport.h"
-#include "core/events/KeyboardEventInit.h"
-#include "core/events/UIEventWithKeyState.h"
-#include "public/platform/WebKeyboardEvent.h"
 #include <memory>
+#include "third_party/blink/public/platform/web_keyboard_event.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/events/keyboard_event_init.h"
+#include "third_party/blink/renderer/core/events/ui_event_with_key_state.h"
 
 namespace blink {
 
@@ -108,4 +108,4 @@ DEFINE_EVENT_TYPE_CASTS(KeyboardEvent);
 
 }  // namespace blink
 
-#endif  // KeyboardEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_KEYBOARD_EVENT_H_

@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSpeechSynthesizerClientImpl_h
-#define WebSpeechSynthesizerClientImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WEB_SPEECH_SYNTHESIZER_CLIENT_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WEB_SPEECH_SYNTHESIZER_CLIENT_IMPL_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/speech/PlatformSpeechSynthesizer.h"
-#include "public/platform/WebSpeechSynthesisUtterance.h"
-#include "public/platform/WebSpeechSynthesisVoice.h"
-#include "public/platform/WebSpeechSynthesizerClient.h"
+#include "third_party/blink/public/platform/web_speech_synthesis_utterance.h"
+#include "third_party/blink/public/platform/web_speech_synthesis_voice.h"
+#include "third_party/blink/public/platform/web_speech_synthesizer_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/speech/platform_speech_synthesizer.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ class WebSpeechSynthesizerClientImpl final
 
 }  // namespace blink
 
-#endif  // WebSpeechSynthesizerClientImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_EXPORTED_WEB_SPEECH_SYNTHESIZER_CLIENT_IMPL_H_

@@ -24,10 +24,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XPathUtil_h
-#define XPathUtil_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_UTIL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_UTIL_H_
 
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ bool IsValidContextNode(Node*);
 }  // namespace XPath
 
 }  // namespace blink
-#endif  // XPathUtil_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_UTIL_H_

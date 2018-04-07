@@ -6,7 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_ARRAY_TRAITS_WTF_VECTOR_H_
 
 #include "mojo/public/cpp/bindings/array_traits.h"
-#include "third_party/WebKit/Source/platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace mojo {
 

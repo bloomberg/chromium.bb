@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ImageElementBase_h
-#define ImageElementBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_IMAGE_ELEMENT_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_IMAGE_ELEMENT_BASE_H_
 
-#include "core/CoreExport.h"
-#include "core/html/canvas/CanvasImageSource.h"
-#include "core/imagebitmap/ImageBitmapSource.h"
-#include "platform/graphics/Image.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class CORE_EXPORT ImageElementBase : public CanvasImageSource,
 
 }  // namespace blink
 
-#endif  // ImageElementBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_IMAGE_ELEMENT_BASE_H_

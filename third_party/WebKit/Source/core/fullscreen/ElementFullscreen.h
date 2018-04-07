@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ElementFullscreen_h
-#define ElementFullscreen_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FULLSCREEN_ELEMENT_FULLSCREEN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FULLSCREEN_ELEMENT_FULLSCREEN_H_
 
-#include "core/dom/events/EventTarget.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -29,4 +29,4 @@ class ElementFullscreen {
 
 }  // namespace blink
 
-#endif  // ElementFullscreen_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FULLSCREEN_ELEMENT_FULLSCREEN_H_

@@ -2,15 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
 blink_modules_sources("encoding") {
   sources = [
-    "Encoding.cpp",
-    "Encoding.h",
-    "TextDecoder.cpp",
-    "TextDecoder.h",
-    "TextEncoder.cpp",
-    "TextEncoder.h",
+    "encoding.cc",
+    "encoding.h",
+    "text_decoder.cc",
+    "text_decoder.h",
+    "text_encoder.cc",
+    "text_encoder.h",
   ]
 }

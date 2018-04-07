@@ -18,12 +18,12 @@
  *
  */
 
-#ifndef WTF_Noncopyable_h
-#define WTF_Noncopyable_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_NONCOPYABLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_NONCOPYABLE_H_
 
 #define WTF_MAKE_NONCOPYABLE(ClassName) \
  private:                               \
   ClassName(const ClassName&) = delete; \
   ClassName& operator=(const ClassName&) = delete
 
-#endif  // WTF_Noncopyable_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_NONCOPYABLE_H_

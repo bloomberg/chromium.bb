@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef USBConnectionEvent_h
-#define USBConnectionEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_CONNECTION_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_CONNECTION_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -34,4 +34,4 @@ class USBConnectionEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // USBConnectionEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_CONNECTION_EVENT_H_

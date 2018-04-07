@@ -25,7 +25,7 @@
 #include "content/public/common/browser_controls_state.h"
 #include "jni/OverlayPanelContent_jni.h"
 #include "net/url_request/url_fetcher_impl.h"
-#include "third_party/WebKit/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/android/view_android.h"
 
 using base::android::JavaParamRef;

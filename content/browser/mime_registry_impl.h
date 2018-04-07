@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "third_party/WebKit/public/platform/mime_registry.mojom.h"
+#include "third_party/blink/public/platform/mime_registry.mojom.h"
 
 namespace content {
 

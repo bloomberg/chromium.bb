@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/FocusController.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
 
 #include <memory>
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/ShadowRootInit.h"
-#include "core/html/HTMLElement.h"
-#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/shadow_root_init.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

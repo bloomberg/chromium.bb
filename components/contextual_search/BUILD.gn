@@ -56,7 +56,7 @@ static_library("renderer") {
     "//gin",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//third_party/WebKit/public:blink_headers",
+    "//third_party/blink/public:blink_headers",
     "//v8",
   ]
 }

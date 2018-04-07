@@ -10,10 +10,10 @@
 #include "content/common/date_time_suggestion.h"
 #include "content/common/view_messages.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/public/web/WebDateTimeChooserCompletion.h"
-#include "third_party/WebKit/public/web/WebDateTimeChooserParams.h"
-#include "third_party/WebKit/public/web/WebDateTimeInputType.h"
-#include "third_party/WebKit/public/web/WebDateTimeSuggestion.h"
+#include "third_party/blink/public/web/web_date_time_chooser_completion.h"
+#include "third_party/blink/public/web/web_date_time_chooser_params.h"
+#include "third_party/blink/public/web/web_date_time_input_type.h"
+#include "third_party/blink/public/web/web_date_time_suggestion.h"
 #include "ui/base/ime/text_input_type.h"
 
 using blink::WebString;

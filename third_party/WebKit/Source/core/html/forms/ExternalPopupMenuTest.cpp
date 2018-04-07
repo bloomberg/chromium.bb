@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/forms/ExternalPopupMenu.h"
+#include "third_party/blink/renderer/core/html/forms/external_popup_menu.h"
 
 #include <memory>
-#include "core/frame/FrameTestHelpers.h"
-#include "core/frame/VisualViewport.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/html/forms/HTMLSelectElement.h"
-#include "core/html/forms/PopupMenu.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutMenuList.h"
-#include "core/page/Page.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/testing/URLTestHelpers.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebURLLoaderMockFactory.h"
-#include "public/web/WebExternalPopupMenu.h"
-#include "public/web/WebPopupMenuInfo.h"
-#include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/public/web/web_external_popup_menu.h"
+#include "third_party/blink/public/web/web_popup_menu_info.h"
+#include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html/forms/popup_menu.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_menu_list.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
 namespace blink {
 

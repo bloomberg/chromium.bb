@@ -20,10 +20,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef FESpecularLighting_h
-#define FESpecularLighting_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_SPECULAR_LIGHTING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_SPECULAR_LIGHTING_H_
 
-#include "platform/graphics/filters/FELighting.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_lighting.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ class PLATFORM_EXPORT FESpecularLighting final : public FELighting {
 
 }  // namespace blink
 
-#endif  // FESpecularLighting_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_SPECULAR_LIGHTING_H_

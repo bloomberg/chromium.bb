@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/FilterInterpolationFunctions.h"
+#include "third_party/blink/renderer/core/animation/filter_interpolation_functions.h"
 
-#include "core/animation/LengthInterpolationFunctions.h"
-#include "core/animation/ShadowInterpolationFunctions.h"
-#include "core/css/CSSFunctionValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/resolver/FilterOperationResolver.h"
-#include "core/css/resolver/StyleResolverState.h"
-#include "core/style/FilterOperations.h"
-#include "core/style/ShadowData.h"
 #include <memory>
+#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/shadow_interpolation_functions.h"
+#include "third_party/blink/renderer/core/css/css_function_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/resolver/filter_operation_resolver.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/style/filter_operations.h"
+#include "third_party/blink/renderer/core/style/shadow_data.h"
 
 namespace blink {
 

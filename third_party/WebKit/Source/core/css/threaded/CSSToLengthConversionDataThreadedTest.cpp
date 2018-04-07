@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSToLengthConversionData.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 
-#include "core/css/threaded/MultiThreadedTestUtil.h"
-#include "platform/Length.h"
-#include "platform/fonts/Font.h"
-#include "platform/fonts/FontDescription.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/threaded/multi_threaded_test_util.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/length.h"
 
 namespace blink {
 

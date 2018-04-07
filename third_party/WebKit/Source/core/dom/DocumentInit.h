@@ -27,16 +27,16 @@
  *
  */
 
-#ifndef DocumentInit_h
-#define DocumentInit_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_INIT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_INIT_H_
 
-#include "core/CoreExport.h"
-#include "core/execution_context/SecurityContext.h"
-#include "core/frame/SandboxFlags.h"
-#include "core/html/custom/V0CustomElementRegistrationContext.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "public/platform/WebInsecureRequestPolicy.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -123,4 +123,4 @@ class CORE_EXPORT DocumentInit final {
 
 }  // namespace blink
 
-#endif  // DocumentInit_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_INIT_H_

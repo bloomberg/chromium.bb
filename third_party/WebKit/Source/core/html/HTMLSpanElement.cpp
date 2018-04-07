@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLSpanElement.h"
+#include "third_party/blink/renderer/core/html/html_span_element.h"
 
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

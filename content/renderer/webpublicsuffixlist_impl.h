@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "base/compiler_specific.h"
-#include "third_party/WebKit/public/platform/WebPublicSuffixList.h"
+#include "third_party/blink/public/platform/web_public_suffix_list.h"
 
 namespace content {
 

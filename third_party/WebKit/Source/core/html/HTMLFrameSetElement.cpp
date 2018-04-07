@@ -21,21 +21,21 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/HTMLFrameSetElement.h"
+#include "third_party/blink/renderer/core/html/html_frame_set_element.h"
 
-#include "bindings/core/v8/ScriptEventListener.h"
-#include "core/css/StyleChangeReason.h"
-#include "core/css_property_names.h"
-#include "core/dom/Document.h"
-#include "core/dom/events/Event.h"
-#include "core/events/MouseEvent.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLCollection.h"
-#include "core/html/HTMLFrameElement.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutFrameSet.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
+#include "third_party/blink/renderer/core/html/html_frame_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_frame_set.h"
 
 namespace blink {
 

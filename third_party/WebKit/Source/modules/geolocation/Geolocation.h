@@ -24,24 +24,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Geolocation_h
-#define Geolocation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_H_
 
-#include "bindings/modules/v8/v8_position_callback.h"
-#include "bindings/modules/v8/v8_position_error_callback.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/page/PageVisibilityObserver.h"
-#include "modules/ModulesExport.h"
-#include "modules/geolocation/GeoNotifier.h"
-#include "modules/geolocation/GeolocationWatchers.h"
-#include "modules/geolocation/Geoposition.h"
-#include "modules/geolocation/PositionError.h"
-#include "modules/geolocation/PositionOptions.h"
-#include "platform/Timer.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/modules/geolocation/geolocation_service.mojom-blink.h"
 #include "services/device/public/mojom/geolocation.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/geolocation/geolocation_service.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_position_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_position_error_callback.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
+#include "third_party/blink/renderer/modules/geolocation/geo_notifier.h"
+#include "third_party/blink/renderer/modules/geolocation/geolocation_watchers.h"
+#include "third_party/blink/renderer/modules/geolocation/geoposition.h"
+#include "third_party/blink/renderer/modules/geolocation/position_error.h"
+#include "third_party/blink/renderer/modules/geolocation/position_options.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -227,4 +227,4 @@ class MODULES_EXPORT Geolocation final
 
 }  // namespace blink
 
-#endif  // Geolocation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_GEOLOCATION_H_

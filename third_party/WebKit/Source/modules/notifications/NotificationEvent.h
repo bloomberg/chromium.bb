@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NotificationEvent_h
-#define NotificationEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/ModulesExport.h"
-#include "modules/notifications/Notification.h"
-#include "modules/serviceworkers/ExtendableEvent.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/notifications/notification.h"
+#include "third_party/blink/renderer/modules/serviceworkers/extendable_event.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
 
 }  // namespace blink
 
-#endif  // NotificationEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_EVENT_H_

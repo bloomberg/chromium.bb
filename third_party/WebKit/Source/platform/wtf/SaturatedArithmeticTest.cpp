@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "platform/wtf/SaturatedArithmetic.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 
 namespace WTF {
 

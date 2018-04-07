@@ -25,7 +25,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/transforms/Matrix3DTransformOperation.h"
+#include "third_party/blink/renderer/platform/transforms/matrix_3d_transform_operation.h"
 
 #include <algorithm>
 

@@ -17,20 +17,20 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/svg/SVGTextLayoutEngine.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_text_layout_engine.h"
 
-#include "core/layout/api/LineLayoutAPIShim.h"
-#include "core/layout/api/LineLayoutSVGTextPath.h"
-#include "core/layout/svg/LayoutSVGInlineText.h"
-#include "core/layout/svg/SVGTextChunkBuilder.h"
-#include "core/layout/svg/SVGTextLayoutEngineBaseline.h"
-#include "core/layout/svg/SVGTextLayoutEngineSpacing.h"
-#include "core/layout/svg/line/SVGInlineFlowBox.h"
-#include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGLengthContext.h"
-#include "core/svg/SVGTextContentElement.h"
-#include "platform/wtf/AutoReset.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_svg_text_path.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
+#include "third_party/blink/renderer/core/layout/svg/line/svg_inline_flow_box.h"
+#include "third_party/blink/renderer/core/layout/svg/line/svg_inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_text_chunk_builder.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_text_layout_engine_baseline.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_text_layout_engine_spacing.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_length_context.h"
+#include "third_party/blink/renderer/core/svg/svg_text_content_element.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 

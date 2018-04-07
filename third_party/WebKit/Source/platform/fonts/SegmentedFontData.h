@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SegmentedFontData_h
-#define SegmentedFontData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SEGMENTED_FONT_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SEGMENTED_FONT_DATA_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/fonts/FontData.h"
-#include "platform/fonts/FontDataForRangeSet.h"
+#include "third_party/blink/renderer/platform/fonts/font_data.h"
+#include "third_party/blink/renderer/platform/fonts/font_data_for_range_set.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 class SimpleFontData;
 
@@ -65,4 +65,4 @@ DEFINE_FONT_DATA_TYPE_CASTS(SegmentedFontData, true);
 
 }  // namespace blink
 
-#endif  // SegmentedFontData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SEGMENTED_FONT_DATA_H_

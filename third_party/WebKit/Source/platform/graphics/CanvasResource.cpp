@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/CanvasResource.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
-#include "platform/graphics/CanvasResourceProvider.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/gpu/SharedGpuContext.h"
-#include "public/platform/Platform.h"
 #include "skia/ext/texture_handle.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/color_space.h"
 

@@ -24,9 +24,9 @@
  *
  */
 
-#include "core/frame/PausableTimer.h"
+#include "third_party/blink/renderer/core/frame/pausable_timer.h"
 
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
 
 namespace blink {
 

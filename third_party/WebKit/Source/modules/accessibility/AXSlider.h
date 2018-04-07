@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXSlider_h
-#define AXSlider_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_SLIDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_SLIDER_H_
 
 #include "base/macros.h"
-#include "modules/accessibility/AXLayoutObject.h"
-#include "modules/accessibility/AXMockObject.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_mock_object.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ class AXSliderThumb final : public AXMockObject {
 
 }  // namespace blink
 
-#endif  // AXSlider_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_SLIDER_H_

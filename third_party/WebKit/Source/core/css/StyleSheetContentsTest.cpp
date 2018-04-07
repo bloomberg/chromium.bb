@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/StyleSheetContents.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 
-#include "core/css/CSSTestHelper.h"
-#include "core/css/parser/CSSParser.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_test_helper.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
 
 namespace blink {
 

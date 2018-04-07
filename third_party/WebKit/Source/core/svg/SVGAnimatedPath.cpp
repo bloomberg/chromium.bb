@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/SVGAnimatedPath.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_path.h"
 
-#include "core/css/CSSIdentifierValue.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
 
 namespace blink {
 

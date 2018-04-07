@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/crypto/CryptoHistograms.h"
+#include "third_party/blink/renderer/modules/crypto/crypto_histograms.h"
 
-#include "core/frame/UseCounter.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCryptoAlgorithm.h"
-#include "public/platform/WebCryptoAlgorithmParams.h"
-#include "public/platform/WebCryptoKeyAlgorithm.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_crypto_algorithm.h"
+#include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
+#include "third_party/blink/public/platform/web_crypto_key_algorithm.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 
 namespace blink {
 

@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGIntegerOptionalInteger_h
-#define SVGIntegerOptionalInteger_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_INTEGER_OPTIONAL_INTEGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_INTEGER_OPTIONAL_INTEGER_H_
 
-#include "core/svg/SVGInteger.h"
-#include "core/svg/SVGParsingError.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/svg/svg_integer.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -87,4 +87,4 @@ DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGIntegerOptionalInteger);
 
 }  // namespace blink
 
-#endif  // SVGIntegerOptionalInteger_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_INTEGER_OPTIONAL_INTEGER_H_

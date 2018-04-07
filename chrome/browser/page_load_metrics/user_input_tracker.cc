@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 
 namespace page_load_metrics {
 

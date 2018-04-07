@@ -20,12 +20,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/InlineCSSStyleDeclaration.h"
+#include "third_party/blink/renderer/core/css/inline_css_style_declaration.h"
 
-#include "core/css/StyleAttributeMutationScope.h"
-#include "core/css/StyleChangeReason.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
+#include "third_party/blink/renderer/core/css/style_attribute_mutation_scope.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 
 namespace blink {
 

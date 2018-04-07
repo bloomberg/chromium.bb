@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CachingWordShapeIterator_h
-#define CachingWordShapeIterator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_CACHING_WORD_SHAPE_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_CACHING_WORD_SHAPE_ITERATOR_H_
 
-#include "platform/fonts/Font.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/fonts/shaping/CachingWordShapeIterator.h"
-#include "platform/fonts/shaping/ShapeCache.h"
-#include "platform/fonts/shaping/ShapeResultSpacing.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shape_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_cache.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
 
@@ -215,4 +215,4 @@ class PLATFORM_EXPORT CachingWordShapeIterator final {
 
 }  // namespace blink
 
-#endif  // CachingWordShapeIterator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_CACHING_WORD_SHAPE_ITERATOR_H_

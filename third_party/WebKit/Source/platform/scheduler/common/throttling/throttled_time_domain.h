@@ -6,7 +6,7 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_COMMON_THROTTLING_THROTTLED_TIME_DOMAIN_H_
 
 #include "base/macros.h"
-#include "platform/scheduler/base/real_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
 
 namespace blink {
 namespace scheduler {

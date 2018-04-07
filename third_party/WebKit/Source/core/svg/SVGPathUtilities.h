@@ -17,12 +17,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPathUtilities_h
-#define SVGPathUtilities_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_UTILITIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_UTILITIES_H_
 
-#include "core/CoreExport.h"
-#include "core/svg/SVGParsingError.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -41,4 +41,4 @@ String BuildStringFromByteStream(const SVGPathByteStream&);
 
 }  // namespace blink
 
-#endif  // SVGPathUtilities_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_UTILITIES_H_

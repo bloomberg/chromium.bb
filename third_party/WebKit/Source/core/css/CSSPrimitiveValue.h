@@ -19,18 +19,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSPrimitiveValue_h
-#define CSSPrimitiveValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PRIMITIVE_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PRIMITIVE_VALUE_H_
 
-#include "core/CoreExport.h"
-#include "core/css/CSSValue.h"
-#include "core/css_property_names.h"
-#include "core/css_value_keywords.h"
-#include "platform/wtf/BitVector.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/StringView.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 namespace blink {
 
@@ -343,4 +343,4 @@ template <>
 double CSSPrimitiveValue::ComputeLength(const CSSToLengthConversionData&) const;
 }  // namespace blink
 
-#endif  // CSSPrimitiveValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PRIMITIVE_VALUE_H_

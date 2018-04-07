@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InitializeV8ExtrasBinding_h
-#define InitializeV8ExtrasBinding_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_INITIALIZE_V8_EXTRAS_BINDING_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_INITIALIZE_V8_EXTRAS_BINDING_H_
 
-#include "core/CoreExport.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 
@@ -28,4 +28,4 @@ void CORE_EXPORT InitializeV8ExtrasBinding(ScriptState*);
 
 }  // namespace blink
 
-#endif  // InitializeV8ExtrasBinding_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_INITIALIZE_V8_EXTRAS_BINDING_H_

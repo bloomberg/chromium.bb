@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/SVGAngleInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/svg_angle_interpolation_type.h"
 
-#include "core/animation/InterpolationEnvironment.h"
-#include "core/animation/StringKeyframe.h"
-#include "core/svg/SVGAngle.h"
+#include "third_party/blink/renderer/core/animation/interpolation_environment.h"
+#include "third_party/blink/renderer/core/animation/string_keyframe.h"
+#include "third_party/blink/renderer/core/svg/svg_angle.h"
 
 namespace blink {
 

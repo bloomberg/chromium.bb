@@ -23,16 +23,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ColorChooserUIController_h
-#define ColorChooserUIController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_COLOR_CHOOSER_UI_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_COLOR_CHOOSER_UI_CONTROLLER_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/html/forms/ColorChooser.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "platform/heap/Handle.h"
-#include "platform/text/PlatformLocale.h"
-#include "third_party/WebKit/public/mojom/color_chooser/color_chooser.mojom-blink.h"
+#include "third_party/blink/public/mojom/color_chooser/color_chooser.mojom-blink.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/color_chooser.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 
@@ -83,4 +83,4 @@ class CORE_EXPORT ColorChooserUIController
 
 }  // namespace blink
 
-#endif  // ColorChooserUIController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_COLOR_CHOOSER_UI_CONTROLLER_H_

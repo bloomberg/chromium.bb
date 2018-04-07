@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Crypto_h
-#define Crypto_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_CRYPTO_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_CRYPTO_H_
 
-#include "modules/crypto/SubtleCrypto.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/crypto/subtle_crypto.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ class Crypto final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // Crypto_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_CRYPTO_H_

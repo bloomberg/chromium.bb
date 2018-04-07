@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/typed_arrays/ArrayBufferBuilder.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_builder.h"
 
-#include "platform/wtf/Assertions.h"
 #include <limits>
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace WTF {
 

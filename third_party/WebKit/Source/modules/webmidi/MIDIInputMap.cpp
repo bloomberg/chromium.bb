@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webmidi/MIDIInputMap.h"
+#include "third_party/blink/renderer/modules/webmidi/midi_input_map.h"
 
-#include "bindings/modules/v8/V8MIDIInput.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_midi_input.h"
 
 namespace blink {
 

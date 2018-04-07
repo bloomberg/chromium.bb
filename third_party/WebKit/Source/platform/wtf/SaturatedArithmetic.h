@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SaturatedArithmetic_h
-#define SaturatedArithmetic_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SATURATED_ARITHMETIC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SATURATED_ARITHMETIC_H_
 
 #include "base/compiler_specific.h"
 #include "base/numerics/clamped_math.h"
@@ -44,7 +44,7 @@
 
 // If we're building ARM 32-bit on GCC we replace the C++ versions with some
 // native ARM assembly for speed.
-#include "platform/wtf/SaturatedArithmeticARM.h"
+#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic_arm.h"
 
 #else
 
@@ -104,4 +104,4 @@ using WTF::ClampSub;
 using WTF::MakeClampedNum;
 using WTF::SaturatedSet;
 
-#endif  // SaturatedArithmetic_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_SATURATED_ARITHMETIC_H_

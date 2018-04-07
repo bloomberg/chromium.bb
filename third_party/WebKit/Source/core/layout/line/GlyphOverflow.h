@@ -22,12 +22,12 @@
  *
  */
 
-#ifndef GlyphOverflow_h
-#define GlyphOverflow_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_GLYPH_OVERFLOW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_GLYPH_OVERFLOW_H_
 
 #include <algorithm>
-#include "platform/geometry/FloatRect.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -76,4 +76,4 @@ struct GlyphOverflow {
 
 }  // namespace blink
 
-#endif  // GlyphOverflow_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_GLYPH_OVERFLOW_H_

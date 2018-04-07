@@ -17,8 +17,8 @@
  * USA
  */
 
-#ifndef ExceptionCode_h
-#define ExceptionCode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EXCEPTION_CODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EXCEPTION_CODE_H_
 
 namespace blink {
 
@@ -105,4 +105,4 @@ enum V8ErrorType {
 
 }  // namespace blink
 
-#endif  // ExceptionCode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EXCEPTION_CODE_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/main_thread/main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler.h"
 
 #include <memory>
 #include "base/bind.h"
@@ -19,22 +19,22 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
-#include "platform/instrumentation/resource_coordinator/BlinkResourceCoordinatorBase.h"
-#include "platform/instrumentation/resource_coordinator/RendererResourceCoordinator.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/scheduler/base/real_time_domain.h"
-#include "platform/scheduler/base/task_queue_impl.h"
-#include "platform/scheduler/base/task_queue_selector.h"
-#include "platform/scheduler/base/virtual_time_domain.h"
-#include "platform/scheduler/child/features.h"
-#include "platform/scheduler/child/process_state.h"
-#include "platform/scheduler/common/throttling/task_queue_throttler.h"
-#include "platform/scheduler/main_thread/page_scheduler_impl.h"
-#include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
-#include "platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
-#include "public/platform/Platform.h"
-#include "public/platform/scheduler/renderer_process_type.h"
-#include "third_party/WebKit/public/common/page/launching_process_state.h"
+#include "third_party/blink/public/common/page/launching_process_state.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/renderer_process_type.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/blink_resource_coordinator_base.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
+#include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/child/features.h"
+#include "third_party/blink/renderer/platform/scheduler/child/process_state.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 
 namespace blink {
 namespace scheduler {

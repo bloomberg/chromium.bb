@@ -18,29 +18,29 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#import "core/layout/LayoutThemeMac.h"
+#import "third_party/blink/renderer/core/layout/layout_theme_mac.h"
 
 #import <AvailabilityMacros.h>
 #import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 #import <math.h>
-#import "core/css_value_keywords.h"
-#import "core/fileapi/FileList.h"
-#import "core/html_names.h"
-#import "core/layout/LayoutProgress.h"
-#import "core/layout/LayoutView.h"
-#import "core/style/ShadowList.h"
-#import "platform/DataResourceHelper.h"
-#import "platform/LayoutTestSupport.h"
-#import "platform/Theme.h"
-#import "platform/graphics/BitmapImage.h"
-#import "platform/mac/ColorMac.h"
-#import "platform/mac/ThemeMac.h"
-#import "platform/mac/VersionUtilMac.h"
-#import "platform/mac/WebCoreNSCellExtras.h"
-#import "platform/runtime_enabled_features.h"
-#import "platform/text/PlatformLocale.h"
-#import "platform/text/StringTruncator.h"
+#import "third_party/blink/renderer/core/css_value_keywords.h"
+#import "third_party/blink/renderer/core/fileapi/file_list.h"
+#import "third_party/blink/renderer/core/html_names.h"
+#import "third_party/blink/renderer/core/layout/layout_progress.h"
+#import "third_party/blink/renderer/core/layout/layout_view.h"
+#import "third_party/blink/renderer/core/style/shadow_list.h"
+#import "third_party/blink/renderer/platform/data_resource_helper.h"
+#import "third_party/blink/renderer/platform/graphics/bitmap_image.h"
+#import "third_party/blink/renderer/platform/layout_test_support.h"
+#import "third_party/blink/renderer/platform/mac/color_mac.h"
+#import "third_party/blink/renderer/platform/mac/theme_mac.h"
+#import "third_party/blink/renderer/platform/mac/version_util_mac.h"
+#import "third_party/blink/renderer/platform/mac/web_core_ns_cell_extras.h"
+#import "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#import "third_party/blink/renderer/platform/text/platform_locale.h"
+#import "third_party/blink/renderer/platform/text/string_truncator.h"
+#import "third_party/blink/renderer/platform/theme.h"
 
 // The methods in this file are specific to the Mac OS X platform.
 

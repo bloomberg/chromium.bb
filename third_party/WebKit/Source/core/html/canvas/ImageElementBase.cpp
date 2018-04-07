@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/canvas/ImageElementBase.h"
+#include "third_party/blink/renderer/core/html/canvas/image_element_base.h"
 
-#include "core/dom/DOMException.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/UseCounter.h"
-#include "core/imagebitmap/ImageBitmap.h"
-#include "core/layout/LayoutObject.h"
-#include "core/loader/ImageLoader.h"
-#include "core/svg/graphics/SVGImageForContainer.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/loader/image_loader.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
 
 namespace blink {
 

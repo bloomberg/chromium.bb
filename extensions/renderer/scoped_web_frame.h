@@ -6,9 +6,9 @@
 #define EXTENSIONS_RENDERER_SCOPED_WEB_FRAME_H_
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/web/WebFrameClient.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_view.h"
 
 namespace extensions {
 

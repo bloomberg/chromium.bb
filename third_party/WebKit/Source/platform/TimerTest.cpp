@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/Timer.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 #include <memory>
 #include <queue>
 #include "base/message_loop/message_loop.h"
-#include "platform/scheduler/base/task_queue_impl.h"
-#include "platform/scheduler/child/task_runner_impl.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/scheduler/main_thread/main_thread_scheduler.h"
-#include "platform/scheduler/renderer/main_thread_task_queue.h"
-#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/child/task_runner_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/main_thread_task_queue.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 using testing::ElementsAre;
 

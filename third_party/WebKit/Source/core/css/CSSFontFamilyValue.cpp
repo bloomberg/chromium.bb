@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSFontFamilyValue.h"
+#include "third_party/blink/renderer/core/css/css_font_family_value.h"
 
-#include "core/css/CSSMarkup.h"
-#include "core/css/CSSValuePool.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/css/css_markup.h"
+#include "third_party/blink/renderer/core/css/css_value_pool.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

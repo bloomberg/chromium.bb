@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorElementId_h
-#define CompositorElementId_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_ELEMENT_ID_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_ELEMENT_ID_H_
 
 #include "cc/trees/element_id.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/HashFunctions.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/HashTraits.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
 
 namespace blink {
 
@@ -84,4 +84,4 @@ using CompositorElementIdSet = HashSet<CompositorElementId,
 
 }  // namespace blink
 
-#endif  // CompositorElementId_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_ELEMENT_ID_H_

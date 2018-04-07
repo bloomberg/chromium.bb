@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ParentNode_h
-#define ParentNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PARENT_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PARENT_NODE_H_
 
-#include "core/dom/ContainerNode.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/html/HTMLCollection.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -87,4 +87,4 @@ class ParentNode {
 
 }  // namespace blink
 
-#endif  // ParentNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PARENT_NODE_H_

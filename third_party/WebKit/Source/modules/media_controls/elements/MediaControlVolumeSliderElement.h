@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlVolumeSliderElement_h
-#define MediaControlVolumeSliderElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_VOLUME_SLIDER_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_VOLUME_SLIDER_ELEMENT_H_
 
-#include "modules/media_controls/elements/MediaControlSliderElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_slider_element.h"
 
 namespace blink {
 
@@ -36,4 +36,4 @@ class MediaControlVolumeSliderElement final : public MediaControlSliderElement {
 
 }  // namespace blink
 
-#endif  // MediaControlVolumeSliderElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_VOLUME_SLIDER_ELEMENT_H_

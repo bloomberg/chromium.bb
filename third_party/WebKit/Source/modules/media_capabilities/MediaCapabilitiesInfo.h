@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaCapabilitiesInfo_h
-#define MediaCapabilitiesInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CAPABILITIES_MEDIA_CAPABILITIES_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CAPABILITIES_MEDIA_CAPABILITIES_INFO_H_
 
 #include <memory>
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "public/platform/modules/media_capabilities/WebMediaCapabilitiesInfo.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -36,4 +36,4 @@ class MediaCapabilitiesInfo final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // MediaCapabilitiesInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CAPABILITIES_MEDIA_CAPABILITIES_INFO_H_

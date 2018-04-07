@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/input/TouchEventManager.h"
+#include "third_party/blink/renderer/core/input/touch_event_manager.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/dom/FlatTreeTraversal.h"
-#include "core/events/TouchEvent.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/EventHandlerRegistry.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/canvas/HTMLCanvasElement.h"
-#include "core/input/EventHandlingUtil.h"
-#include "core/input/TouchActionUtil.h"
-#include "core/layout/HitTestCanvasResult.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "platform/Histogram.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/WebCoalescedInputEvent.h"
-#include "public/platform/WebTouchEvent.h"
+#include "third_party/blink/public/platform/web_coalesced_input_event.h"
+#include "third_party/blink/public/platform/web_touch_event.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/events/touch_event.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/event_handler_registry.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/input/event_handling_util.h"
+#include "third_party/blink/renderer/core/input/touch_action_util.h"
+#include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

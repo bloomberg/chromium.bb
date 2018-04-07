@@ -24,11 +24,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XPathNSResolver_h
-#define XPathNSResolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_NS_RESOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_NS_RESOLVER_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class XPathNSResolver : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // XPathNSResolver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_NS_RESOLVER_H_

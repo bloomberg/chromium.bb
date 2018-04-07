@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebDOMFileSystem.h"
+#include "third_party/blink/public/web/web_dom_file_system.h"
 
-#include "bindings/modules/v8/V8DOMFileSystem.h"
-#include "bindings/modules/v8/V8DirectoryEntry.h"
-#include "bindings/modules/v8/V8FileEntry.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "modules/filesystem/DOMFileSystem.h"
-#include "modules/filesystem/DirectoryEntry.h"
-#include "modules/filesystem/FileEntry.h"
-#include "platform/bindings/WrapperTypeInfo.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_directory_entry.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_dom_file_system.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_file_entry.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
+#include "third_party/blink/renderer/modules/filesystem/file_entry.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "v8/include/v8.h"
 
 namespace blink {

@@ -5,7 +5,7 @@
 #ifndef UI_BASE_MOJO_CLIPBOARD_STRUCT_TRAITS_H_
 #define UI_BASE_MOJO_CLIPBOARD_STRUCT_TRAITS_H_
 
-#include "third_party/WebKit/public/mojom/clipboard/clipboard.mojom-shared.h"
+#include "third_party/blink/public/mojom/clipboard/clipboard.mojom-shared.h"
 #include "ui/base/clipboard/clipboard_types.h"
 
 namespace mojo {

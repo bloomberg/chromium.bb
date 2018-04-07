@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "third_party/WebKit/public/platform/WebCryptoKey.h"
+#include "third_party/blink/public/platform/web_crypto_key.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 
 // Blink keys (blink::WebCryptoKey) have an associated key handle

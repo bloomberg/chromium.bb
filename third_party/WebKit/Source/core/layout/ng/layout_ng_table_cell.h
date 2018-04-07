@@ -5,9 +5,9 @@
 #ifndef LayoutNGTableCell_h
 #define LayoutNGTableCell_h
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutTableCell.h"
-#include "core/layout/ng/layout_ng_mixin.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
 
 namespace blink {
 

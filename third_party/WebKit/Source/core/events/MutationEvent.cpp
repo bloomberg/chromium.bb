@@ -20,7 +20,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/events/MutationEvent.h"
+#include "third_party/blink/renderer/core/events/mutation_event.h"
 
 namespace blink {
 

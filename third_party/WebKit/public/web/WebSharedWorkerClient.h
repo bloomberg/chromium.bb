@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSharedWorkerClient_h
-#define WebSharedWorkerClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SHARED_WORKER_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SHARED_WORKER_CLIENT_H_
 
-#include "public/platform/WebContentSettingsClient.h"
-#include "public/platform/WebWorkerFetchContext.h"
-#include "public/platform/web_feature.mojom-shared.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
+#include "third_party/blink/public/platform/web_feature.mojom-shared.h"
+#include "third_party/blink/public/platform/web_worker_fetch_context.h"
 
 namespace blink {
 

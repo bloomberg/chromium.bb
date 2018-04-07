@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/image-encoders/ImageEncoder.h"
+#include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
 
 namespace blink {
 

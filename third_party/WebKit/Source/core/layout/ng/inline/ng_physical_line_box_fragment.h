@@ -5,10 +5,10 @@
 #ifndef NGPhysicalLineBoxFragment_h
 #define NGPhysicalLineBoxFragment_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/inline/ng_line_height_metrics.h"
-#include "core/layout/ng/ng_physical_container_fragment.h"
-#include "platform/fonts/FontBaseline.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_height_metrics.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
+#include "third_party/blink/renderer/platform/fonts/font_baseline.h"
 
 namespace blink {
 

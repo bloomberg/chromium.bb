@@ -18,13 +18,13 @@
  *
  */
 
-#include "modules/accessibility/AXProgressIndicator.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_progress_indicator.h"
 
-#include "core/dom/AccessibleNode.h"
-#include "core/html/HTMLProgressElement.h"
-#include "core/layout/LayoutProgress.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/core/dom/accessible_node.h"
+#include "third_party/blink/renderer/core/html/html_progress_element.h"
+#include "third_party/blink/renderer/core/layout/layout_progress.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

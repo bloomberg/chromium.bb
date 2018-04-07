@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/HTMLSourceTracker.h"
+#include "third_party/blink/renderer/core/html/parser/html_source_tracker.h"
 
-#include "core/html/parser/HTMLTokenizer.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

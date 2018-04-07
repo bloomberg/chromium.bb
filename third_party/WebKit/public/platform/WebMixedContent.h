@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMixedContent_h
-#define WebMixedContent_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MIXED_CONTENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MIXED_CONTENT_H_
 
-#include "public/platform/WebMixedContentContextType.h"
-#include "public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_mixed_content_context_type.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class WebMixedContent {
 
 }  // namespace blink
 
-#endif  // WebMixedContent_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MIXED_CONTENT_H_

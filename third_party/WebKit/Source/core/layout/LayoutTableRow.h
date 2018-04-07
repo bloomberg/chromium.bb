@@ -23,11 +23,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LayoutTableRow_h
-#define LayoutTableRow_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_ROW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_ROW_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutTableSection.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_table_section.h"
 
 namespace blink {
 
@@ -181,4 +181,4 @@ inline LayoutTableRow* LayoutTableSection::LastRow() const {
 
 }  // namespace blink
 
-#endif  // LayoutTableRow_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_ROW_H_

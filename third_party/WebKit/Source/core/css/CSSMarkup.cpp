@@ -26,12 +26,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/CSSMarkup.h"
+#include "third_party/blink/renderer/core/css/css_markup.h"
 
-#include "core/css/parser/CSSParserIdioms.h"
-#include "platform/wtf/HexNumber.h"
-#include "platform/wtf/text/StringBuffer.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_idioms.h"
+#include "third_party/blink/renderer/platform/wtf/hex_number.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

@@ -6,7 +6,7 @@
 #define CONTENT_SHELL_TEST_RUNNER_MOCK_WEB_THEME_ENGINE_H_
 
 #include "build/build_config.h"
-#include "third_party/WebKit/public/platform/WebThemeEngine.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
 
 namespace test_runner {
 

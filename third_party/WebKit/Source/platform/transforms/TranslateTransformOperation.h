@@ -22,12 +22,12 @@
  *
  */
 
-#ifndef TranslateTransformOperation_h
-#define TranslateTransformOperation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSLATE_TRANSFORM_OPERATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSLATE_TRANSFORM_OPERATION_H_
 
-#include "platform/Length.h"
-#include "platform/LengthFunctions.h"
-#include "platform/transforms/TransformOperation.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operation.h"
 
 namespace blink {
 
@@ -119,4 +119,4 @@ DEFINE_TRANSFORM_TYPE_CASTS(TranslateTransformOperation);
 
 }  // namespace blink
 
-#endif  // TranslateTransformOperation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSLATE_TRANSFORM_OPERATION_H_

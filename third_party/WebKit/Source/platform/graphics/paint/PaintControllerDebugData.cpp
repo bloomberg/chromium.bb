@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/PaintController.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 
-#include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 
 #if DCHECK_IS_ON()
 

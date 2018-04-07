@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/background_fetch/BackgroundFetchClickEvent.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_click_event.h"
 
-#include "modules/background_fetch/BackgroundFetchClickEventInit.h"
-#include "modules/event_modules_names.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_click_event_init.h"
+#include "third_party/blink/renderer/modules/event_modules_names.h"
 
 namespace blink {
 

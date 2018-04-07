@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BackgroundBleedAvoidance_h
-#define BackgroundBleedAvoidance_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_BACKGROUND_BLEED_AVOIDANCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_BACKGROUND_BLEED_AVOIDANCE_H_
 
 namespace blink {
 
@@ -21,4 +21,4 @@ inline bool BleedAvoidanceIsClipping(BackgroundBleedAvoidance bleed_avoidance) {
 
 }  // namespace blink
 
-#endif  // BackgroundBleedAvoidance_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_BACKGROUND_BLEED_AVOIDANCE_H_

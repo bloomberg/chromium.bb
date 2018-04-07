@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/SubresourceFilter.h"
+#include "third_party/blink/renderer/core/loader/subresource_filter.h"
 
 #include <utility>
 
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/workers/WorkerOrWorkletGlobalScope.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

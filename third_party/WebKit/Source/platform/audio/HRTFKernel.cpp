@@ -26,14 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/HRTFKernel.h"
+#include "third_party/blink/renderer/platform/audio/hrtf_kernel.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
-#include "platform/audio/AudioChannel.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/audio/audio_channel.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

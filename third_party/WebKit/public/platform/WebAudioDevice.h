@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebAudioDevice_h
-#define WebAudioDevice_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_AUDIO_DEVICE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_AUDIO_DEVICE_H_
 
-#include "WebCommon.h"
-#include "WebVector.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -64,4 +64,4 @@ class WebAudioDevice {
 
 }  // namespace blink
 
-#endif  // WebAudioDevice_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_AUDIO_DEVICE_H_

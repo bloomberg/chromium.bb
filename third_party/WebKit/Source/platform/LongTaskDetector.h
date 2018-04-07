@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LongTaskDetector_h
-#define LongTaskDetector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LONG_TASK_DETECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LONG_TASK_DETECTOR_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/scheduler/base/task_time_observer.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_time_observer.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ class PLATFORM_EXPORT LongTaskDetector final
 
 }  // namespace blink
 
-#endif  // LongTaskDetector_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LONG_TASK_DETECTOR_H_

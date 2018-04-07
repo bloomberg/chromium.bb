@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FakeBlobURLStore_h
-#define FakeBlobURLStore_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_TESTING_FAKE_BLOB_URL_STORE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_TESTING_FAKE_BLOB_URL_STORE_H_
 
-#include "third_party/WebKit/public/mojom/blob/blob_url_store.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "platform/weborigin/KURLHash.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -32,4 +32,4 @@ class FakeBlobURLStore : public mojom::blink::BlobURLStore {
 
 }  // namespace blink
 
-#endif  // FakeBlobURLStore_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_TESTING_FAKE_BLOB_URL_STORE_H_

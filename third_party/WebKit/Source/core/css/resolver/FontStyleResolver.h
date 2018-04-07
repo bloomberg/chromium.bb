@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FontStyleResolver_h
-#define FontStyleResolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_FONT_STYLE_RESOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_FONT_STYLE_RESOLVER_H_
 
-#include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/CSSValueIDMappings.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontSelector.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_value_id_mappings.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_selector.h"
 
 namespace blink {
 

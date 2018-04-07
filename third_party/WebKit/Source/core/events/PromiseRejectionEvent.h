@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PromiseRejectionEvent_h
-#define PromiseRejectionEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_PROMISE_REJECTION_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_PROMISE_REJECTION_EVENT_H_
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/CoreExport.h"
-#include "core/dom/events/Event.h"
-#include "core/events/PromiseRejectionEventInit.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/promise_rejection_event_init.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ class CORE_EXPORT PromiseRejectionEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // PromiseRejectionEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_PROMISE_REJECTION_EVENT_H_

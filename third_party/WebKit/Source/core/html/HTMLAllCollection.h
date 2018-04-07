@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLAllCollection_h
-#define HTMLAllCollection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_ALL_COLLECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_ALL_COLLECTION_H_
 
-#include "core/html/HTMLCollection.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ DEFINE_TYPE_CASTS(HTMLAllCollection,
 
 }  // namespace blink
 
-#endif  // HTMLAllCollection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_ALL_COLLECTION_H_

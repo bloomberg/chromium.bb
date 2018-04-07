@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef URLConversion_h
-#define URLConversion_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_URL_CONVERSION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_URL_CONVERSION_H_
 
-#include "WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 class GURL;
 

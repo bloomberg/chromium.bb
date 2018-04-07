@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/HRTFElevation.h"
+#include "third_party/blink/renderer/platform/audio/hrtf_elevation.h"
 
 #include <math.h>
 #include <algorithm>
@@ -34,10 +34,10 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/HRTFPanner.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/hrtf_panner.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 

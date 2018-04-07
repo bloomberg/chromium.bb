@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ResourceProgressEvent_h
-#define ResourceProgressEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_RESOURCE_PROGRESS_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_RESOURCE_PROGRESS_EVENT_H_
 
-#include "core/CoreExport.h"
-#include "core/events/ProgressEvent.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/events/progress_event.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class CORE_EXPORT ResourceProgressEvent final : public ProgressEvent {
 
 }  // namespace blink
 
-#endif  // ResourceProgressEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_RESOURCE_PROGRESS_EVENT_H_

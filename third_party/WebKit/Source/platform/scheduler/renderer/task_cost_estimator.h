@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "cc/base/rolling_time_delta_history.h"
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace base {
 class TickClock;

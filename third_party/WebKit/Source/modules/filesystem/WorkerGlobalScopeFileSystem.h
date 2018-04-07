@@ -24,11 +24,11 @@
  *
  */
 
-#ifndef WorkerGlobalScopeFileSystem_h
-#define WorkerGlobalScopeFileSystem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_WORKER_GLOBAL_SCOPE_FILE_SYSTEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_WORKER_GLOBAL_SCOPE_FILE_SYSTEM_H_
 
-#include "modules/filesystem/DOMFileSystemSync.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system_sync.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ class WorkerGlobalScopeFileSystem {
 
 }  // namespace blink
 
-#endif  // WorkerGlobalScopeFileSystem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_WORKER_GLOBAL_SCOPE_FILE_SYSTEM_H_

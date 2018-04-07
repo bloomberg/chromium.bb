@@ -24,7 +24,7 @@
 #include "chrome/browser/vr/ui_scene_creator.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
 
 using ::testing::_;
 using ::testing::InSequence;

@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DatabaseClient_h
-#define DatabaseClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_CLIENT_H_
 
-#include "core/page/Page.h"
-#include "modules/ModulesExport.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -79,4 +79,4 @@ MODULES_EXPORT void ProvideDatabaseClientTo(Page&, DatabaseClient*);
 
 }  // namespace blink
 
-#endif  // DatabaseClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_CLIENT_H_

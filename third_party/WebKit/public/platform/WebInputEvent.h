@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebInputEvent_h
-#define WebInputEvent_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_INPUT_EVENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_INPUT_EVENT_H_
 
-#include "WebCommon.h"
-#include "WebPointerProperties.h"
-#include "WebRect.h"
-#include "WebTouchPoint.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_pointer_properties.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_touch_point.h"
 
 #include <string.h>
 

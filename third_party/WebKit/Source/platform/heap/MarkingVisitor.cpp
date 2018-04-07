@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/heap/MarkingVisitor.h"
+#include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 
-#include "platform/heap/Heap.h"
-#include "platform/heap/ThreadState.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
 
 namespace blink {
 

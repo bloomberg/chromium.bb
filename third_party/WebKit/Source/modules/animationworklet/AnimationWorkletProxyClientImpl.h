@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AnimationWorkletProxyClientImpl_h
-#define AnimationWorkletProxyClientImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_PROXY_CLIENT_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_PROXY_CLIENT_IMPL_H_
 
-#include "core/dom/AnimationWorkletProxyClient.h"
-#include "modules/ModulesExport.h"
-#include "modules/animationworklet/AnimationWorkletGlobalScope.h"
-#include "platform/graphics/CompositorAnimator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
+#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_global_scope.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_animator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class MODULES_EXPORT AnimationWorkletProxyClientImpl final
 
 }  // namespace blink
 
-#endif  // AnimationWorkletProxyClientImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ANIMATIONWORKLET_ANIMATION_WORKLET_PROXY_CLIENT_IMPL_H_

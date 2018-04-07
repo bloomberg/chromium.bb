@@ -35,7 +35,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "services/service_manager/embedder/switches.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/blink/public/web/web_frame.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN)

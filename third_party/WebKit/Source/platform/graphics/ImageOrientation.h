@@ -23,11 +23,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ImageOrientation_h
-#define ImageOrientation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_ORIENTATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_ORIENTATION_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -99,4 +99,4 @@ class PLATFORM_EXPORT ImageOrientation final {
 
 }  // namespace blink
 
-#endif  // ImageOrientation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_IMAGE_ORIENTATION_H_

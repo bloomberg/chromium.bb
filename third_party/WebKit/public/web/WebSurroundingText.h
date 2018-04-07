@@ -22,13 +22,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSurroundingText_h
-#define WebSurroundingText_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SURROUNDING_TEXT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SURROUNDING_TEXT_H_
 
 #if INSIDE_BLINK
-#include "core/editing/Forward.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
 #endif
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 

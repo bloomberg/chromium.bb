@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/csspaint/PaintWorklet.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_worklet.h"
 
 #include <memory>
-#include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8GCController.h"
-#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/frame/LocalFrame.h"
-#include "core/layout/LayoutView.h"
-#include "core/testing/PageTestBase.h"
-#include "modules/csspaint/CSSPaintDefinition.h"
-#include "modules/csspaint/PaintWorkletGlobalScope.h"
-#include "modules/csspaint/PaintWorkletGlobalScopeProxy.h"
-#include "platform/wtf/CryptographicallyRandomNumber.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope.h"
+#include "third_party/blink/renderer/modules/csspaint/paint_worklet_global_scope_proxy.h"
+#include "third_party/blink/renderer/platform/wtf/cryptographically_random_number.h"
 
 namespace blink {
 class TestPaintWorklet : public PaintWorklet {

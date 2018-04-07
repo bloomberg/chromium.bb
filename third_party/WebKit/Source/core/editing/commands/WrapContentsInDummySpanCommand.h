@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WrapContentsInDummySpanCommand_h
-#define WrapContentsInDummySpanCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_WRAP_CONTENTS_IN_DUMMY_SPAN_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_WRAP_CONTENTS_IN_DUMMY_SPAN_COMMAND_H_
 
-#include "core/editing/commands/EditCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/edit_command.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ class WrapContentsInDummySpanCommand final : public SimpleEditCommand {
 
 }  // namespace blink
 
-#endif  // WrapContentsInDummySpanCommand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_WRAP_CONTENTS_IN_DUMMY_SPAN_COMMAND_H_

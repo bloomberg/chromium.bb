@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/HTMLFrameElement.h"
+#include "third_party/blink/renderer/core/html/html_frame_element.h"
 
-#include "core/dom/Document.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
 

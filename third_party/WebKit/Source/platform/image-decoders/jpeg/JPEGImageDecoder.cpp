@@ -35,11 +35,11 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#include "platform/image-decoders/jpeg/JPEGImageDecoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/jpeg/jpeg_image_decoder.h"
 
 #include <memory>
 #include "build/build_config.h"
-#include "platform/instrumentation/PlatformInstrumentation.h"
+#include "third_party/blink/renderer/platform/instrumentation/platform_instrumentation.h"
 
 extern "C" {
 #include <stdio.h>  // jpeglib.h needs stdio FILE.

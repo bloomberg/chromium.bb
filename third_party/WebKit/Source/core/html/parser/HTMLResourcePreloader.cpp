@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/HTMLResourcePreloader.h"
+#include "third_party/blink/renderer/core/html/parser/html_resource_preloader.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/Settings.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/resource/CSSStyleSheetResource.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
 #include <memory>
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 namespace blink {
 

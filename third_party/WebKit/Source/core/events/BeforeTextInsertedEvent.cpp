@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/events/BeforeTextInsertedEvent.h"
+#include "third_party/blink/renderer/core/events/before_text_inserted_event.h"
 
 namespace blink {
 

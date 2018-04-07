@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebScriptController.h"
+#include "third_party/blink/public/web/web_script_controller.h"
 
-#include "bindings/core/v8/ScriptController.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 
 namespace blink {
 

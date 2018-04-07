@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "third_party/WebKit/public/platform/WebSecurityStyle.h"
+#include "third_party/blink/public/platform/web_security_style.h"
 
 namespace content {
 struct SecurityStyleExplanations;

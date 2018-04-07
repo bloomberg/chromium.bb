@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "controller/DevToolsFrontendImpl.h"
+#include "third_party/blink/renderer/controller/dev_tools_frontend_impl.h"
 
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8DevToolsHost.h"
-#include "core/exported/WebViewImpl.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/inspector/DevToolsHost.h"
-#include "core/page/Page.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dev_tools_host.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/inspector/dev_tools_host.h"
+#include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
 

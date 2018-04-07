@@ -29,24 +29,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Performance_h
-#define Performance_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/DOMHighResTimeStamp.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/loader/FrameLoaderTypes.h"
-#include "core/timing/PerformanceEntry.h"
-#include "core/timing/PerformanceNavigationTiming.h"
-#include "core/timing/PerformancePaintTiming.h"
-#include "core/timing/SubTaskAttribution.h"
-#include "platform/Timer.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/LinkedHashSet.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebResourceTimingInfo.h"
+#include "third_party/blink/public/platform/web_resource_timing_info.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/timing/performance_entry.h"
+#include "third_party/blink/renderer/core/timing/performance_navigation_timing.h"
+#include "third_party/blink/renderer/core/timing/performance_paint_timing.h"
+#include "third_party/blink/renderer/core/timing/sub_task_attribution.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -265,4 +265,4 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
 }  // namespace blink
 
-#endif  // Performance_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_H_

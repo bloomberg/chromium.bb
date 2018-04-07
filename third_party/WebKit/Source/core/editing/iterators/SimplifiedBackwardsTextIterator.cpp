@@ -25,16 +25,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/iterators/SimplifiedBackwardsTextIterator.h"
+#include "third_party/blink/renderer/core/editing/iterators/simplified_backwards_text_iterator.h"
 
-#include "core/dom/FirstLetterPseudoElement.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/Position.h"
-#include "core/editing/VisibleUnits.h"
-#include "core/editing/iterators/TextIterator.h"
-#include "core/html/forms/HTMLFormControlElement.h"
-#include "core/layout/LayoutTextFragment.h"
+#include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 
 namespace blink {
 

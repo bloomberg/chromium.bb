@@ -25,10 +25,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutSVGRect_h
-#define LayoutSVGRect_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RECT_H_
 
-#include "core/layout/svg/LayoutSVGShape.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_shape.h"
 
 namespace blink {
 

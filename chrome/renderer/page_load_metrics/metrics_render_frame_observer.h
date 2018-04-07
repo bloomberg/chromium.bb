@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/renderer/render_frame_observer.h"
-#include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
+#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 
 namespace base {
 class Timer;

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebServiceWorkerCacheStorage_h
-#define WebServiceWorkerCacheStorage_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_CACHE_STORAGE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_CACHE_STORAGE_H_
 
-#include "public/platform/WebCallbacks.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/cache_storage/cache_storage.mojom-shared.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
+#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 #include <memory>
 
@@ -56,4 +56,4 @@ class WebServiceWorkerCacheStorage {
 
 }  // namespace blink
 
-#endif  // WebServiceWorkerCacheStorage_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_CACHE_STORAGE_H_

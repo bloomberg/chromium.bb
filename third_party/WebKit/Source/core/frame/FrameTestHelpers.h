@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FrameTestHelpers_h
-#define FrameTestHelpers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_TEST_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_TEST_HELPERS_H_
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -37,24 +37,24 @@
 #include <string>
 
 #include "base/macros.h"
-#include "core/exported/WebViewImpl.h"
-#include "core/frame/Settings.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/scroll/ScrollbarTheme.h"
-#include "platform/testing/UseMockScrollbarSettings.h"
-#include "platform/testing/WebLayerTreeViewImplForTesting.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebMouseEvent.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
-#include "public/web/WebFrameClient.h"
-#include "public/web/WebFrameOwnerProperties.h"
-#include "public/web/WebHistoryItem.h"
-#include "public/web/WebRemoteFrameClient.h"
-#include "public/web/WebSettings.h"
-#include "public/web/WebViewClient.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_frame_owner_properties.h"
+#include "third_party/blink/public/web/web_history_item.h"
+#include "third_party/blink/public/web/web_remote_frame_client.h"
+#include "third_party/blink/public/web/web_settings.h"
+#include "third_party/blink/public/web/web_view_client.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
+#include "third_party/blink/renderer/platform/testing/use_mock_scrollbar_settings.h"
+#include "third_party/blink/renderer/platform/testing/web_layer_tree_view_impl_for_testing.h"
 
 #define EXPECT_FLOAT_POINT_EQ(expected, actual)    \
   do {                                             \
@@ -370,4 +370,4 @@ class TestWebRemoteFrameClient : public WebRemoteFrameClient {
 }  // namespace FrameTestHelpers
 }  // namespace blink
 
-#endif  // FrameTestHelpers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_TEST_HELPERS_H_

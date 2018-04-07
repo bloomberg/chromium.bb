@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebRTCStatsReportCallbackResolver_h
-#define WebRTCStatsReportCallbackResolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_WEB_RTC_STATS_REPORT_CALLBACK_RESOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_WEB_RTC_STATS_REPORT_CALLBACK_RESOLVER_H_
 
 #include <memory>
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "modules/peerconnection/RTCStatsReport.h"
-#include "public/platform/WebRTCStats.h"
+#include "third_party/blink/public/platform/web_rtc_stats.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_stats_report.h"
 
 namespace blink {
 
@@ -30,4 +30,4 @@ class WebRTCStatsReportCallbackResolver : public WebRTCStatsReportCallback {
 
 }  // namespace blink
 
-#endif  // WebRTCStatsReportCallbackResolver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_WEB_RTC_STATS_REPORT_CALLBACK_RESOLVER_H_

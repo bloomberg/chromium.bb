@@ -24,25 +24,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/text/TextEncodingRegistry.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
 
 #include <memory>
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/Atomics.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/StringExtras.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/TextCodecICU.h"
-#include "platform/wtf/text/TextCodecLatin1.h"
-#include "platform/wtf/text/TextCodecReplacement.h"
-#include "platform/wtf/text/TextCodecUTF16.h"
-#include "platform/wtf/text/TextCodecUTF8.h"
-#include "platform/wtf/text/TextCodecUserDefined.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/atomics.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/string_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec_icu.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec_latin1.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec_replacement.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec_user_defined.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec_utf16.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec_utf8.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace WTF {
 

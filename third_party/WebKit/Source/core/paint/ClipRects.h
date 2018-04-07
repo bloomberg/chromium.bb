@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ClipRects_h
-#define ClipRects_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_CLIP_RECTS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_CLIP_RECTS_H_
 
-#include "core/paint/ClipRect.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/core/paint/clip_rect.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -100,4 +100,4 @@ class ClipRects : public RefCounted<ClipRects> {
 
 }  // namespace blink
 
-#endif  // ClipRects_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_CLIP_RECTS_H_

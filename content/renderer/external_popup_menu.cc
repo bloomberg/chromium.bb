@@ -10,8 +10,8 @@
 #include "content/common/frame_messages.h"
 #include "content/renderer/menu_item_builder.h"
 #include "content/renderer/render_frame_impl.h"
-#include "third_party/WebKit/public/platform/WebRect.h"
-#include "third_party/WebKit/public/web/WebExternalPopupMenuClient.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/web/web_external_popup_menu_client.h"
 
 namespace content {
 

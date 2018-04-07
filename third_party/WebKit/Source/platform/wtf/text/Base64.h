@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Base64_h
-#define Base64_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_BASE64_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_BASE64_H_
 
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -126,4 +126,4 @@ using WTF::kBase64ValidatePadding;
 using WTF::Base64Encode;
 using WTF::Base64Decode;
 
-#endif  // Base64_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_BASE64_H_

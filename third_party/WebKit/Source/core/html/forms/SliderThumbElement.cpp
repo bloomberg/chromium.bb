@@ -29,22 +29,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/SliderThumbElement.h"
+#include "third_party/blink/renderer/core/html/forms/slider_thumb_element.h"
 
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/events/Event.h"
-#include "core/events/MouseEvent.h"
-#include "core/events/TouchEvent.h"
-#include "core/frame/EventHandlerRegistry.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/forms/StepRange.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/shadow/ShadowElementNames.h"
-#include "core/input/EventHandler.h"
-#include "core/layout/LayoutSliderContainer.h"
-#include "core/layout/LayoutSliderThumb.h"
-#include "core/layout/LayoutTheme.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/events/touch_event.h"
+#include "third_party/blink/renderer/core/frame/event_handler_registry.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/step_range.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/layout/layout_slider_container.h"
+#include "third_party/blink/renderer/core/layout/layout_slider_thumb.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
 
 namespace blink {
 

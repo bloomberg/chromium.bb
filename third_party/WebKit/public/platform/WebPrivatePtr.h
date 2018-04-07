@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebPrivatePtr_h
-#define WebPrivatePtr_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PRIVATE_PTR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PRIVATE_PTR_H_
 
-#include "WebCommon.h"
 #include "base/logging.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 #if INSIDE_BLINK
 #include "base/memory/scoped_refptr.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/TypeTraits.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 #endif
 
 namespace WTF {
@@ -347,4 +347,4 @@ class WebPrivatePtr {
 
 }  // namespace blink
 
-#endif  // WebPrivatePtr_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PRIVATE_PTR_H_

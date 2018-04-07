@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PlatformChromeClient_h
-#define PlatformChromeClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLATFORM_CHROME_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLATFORM_CHROME_CLIENT_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/PlatformFrameView.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/platform_frame_view.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ class PLATFORM_EXPORT PlatformChromeClient
 
 }  // namespace blink
 
-#endif  // PlatformChromeClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PLATFORM_CHROME_CLIENT_H_

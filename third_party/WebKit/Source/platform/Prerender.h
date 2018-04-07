@@ -29,17 +29,17 @@
  *
  */
 
-#ifndef Prerender_h
-#define Prerender_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PRERENDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PRERENDER_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/PlatformExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/Referrer.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -104,4 +104,4 @@ class PLATFORM_EXPORT Prerender final
 
 }  // namespace blink
 
-#endif  // Prerender_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_PRERENDER_H_

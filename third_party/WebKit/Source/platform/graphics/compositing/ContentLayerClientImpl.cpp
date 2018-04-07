@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/compositing/ContentLayerClientImpl.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/content_layer_client_impl.h"
 
 #include <memory>
 #include "cc/paint/paint_op_buffer.h"
-#include "platform/geometry/GeometryAsJSON.h"
-#include "platform/graphics/LoggingCanvas.h"
-#include "platform/graphics/compositing/PaintChunksToCcLayer.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
-#include "platform/graphics/paint/PaintArtifact.h"
-#include "platform/graphics/paint/PaintChunk.h"
-#include "platform/graphics/paint/RasterInvalidationTracking.h"
-#include "platform/json/JSONValues.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
+#include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
+#include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

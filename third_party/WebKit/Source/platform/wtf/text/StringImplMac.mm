@@ -18,11 +18,11 @@
  *
  */
 
-#include "platform/wtf/text/StringImpl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 #import <CoreFoundation/CFBase.h>
 #import <Foundation/NSObject.h>
-#include "platform/wtf/RetainPtr.h"
+#include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 
 namespace WTF {
 

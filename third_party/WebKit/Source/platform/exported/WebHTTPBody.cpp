@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebHTTPBody.h"
+#include "third_party/blink/public/platform/web_http_body.h"
 
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "platform/FileMetadata.h"
-#include "platform/SharedBuffer.h"
-#include "platform/network/EncodedFormData.h"
-#include "platform/network/FormDataEncoder.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/network/form_data_encoder.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
 
 namespace blink {
 

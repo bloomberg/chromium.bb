@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/frame/SmartClip.h"
+#include "third_party/blink/renderer/core/frame/smart_clip.h"
 
-#include "core/dom/ContainerNode.h"
-#include "core/dom/Document.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/layout/LayoutObject.h"
-#include "core/page/Page.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

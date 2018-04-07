@@ -19,14 +19,14 @@
  *
  */
 
-#ifndef TypeTraits_h
-#define TypeTraits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPE_TRAITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPE_TRAITS_H_
 
 #include <cstddef>
 #include <type_traits>
 #include <utility>
 #include "build/build_config.h"
-#include "platform/wtf/Compiler.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace WTF {
 
@@ -266,4 +266,4 @@ class IsPointerToGarbageCollectedType<T*, false> {
 
 using WTF::IsGarbageCollectedType;
 
-#endif  // TypeTraits_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPE_TRAITS_H_

@@ -26,14 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Screen_h
-#define Screen_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SCREEN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SCREEN_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "platform/Supplementable.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // Screen_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SCREEN_H_

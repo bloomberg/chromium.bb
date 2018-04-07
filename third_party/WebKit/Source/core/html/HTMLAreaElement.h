@@ -20,14 +20,14 @@
  *
  */
 
-#ifndef HTMLAreaElement_h
-#define HTMLAreaElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_AREA_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_AREA_ELEMENT_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/html/HTMLAnchorElement.h"
-#include "platform/geometry/LayoutRect.h"
-#include "public/platform/WebFocusType.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/html_anchor_element.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 namespace blink {
 
@@ -79,4 +79,4 @@ class CORE_EXPORT HTMLAreaElement final : public HTMLAnchorElement {
 
 }  // namespace blink
 
-#endif  // HTMLAreaElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_AREA_ELEMENT_H_

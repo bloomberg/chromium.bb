@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MarkingVisitor_h
-#define MarkingVisitor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MARKING_VISITOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MARKING_VISITOR_H_
 
-#include "platform/heap/Heap.h"
-#include "platform/heap/HeapPage.h"
-#include "platform/heap/Visitor.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_page.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
 
 namespace blink {
 
@@ -172,4 +172,4 @@ inline void MarkingVisitor::MarkHeader(HeapObjectHeader* header,
 
 }  // namespace blink
 
-#endif  // MarkingVisitor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MARKING_VISITOR_H_

@@ -27,18 +27,18 @@
  *
  */
 
-#ifndef Fullscreen_h
-#define Fullscreen_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FULLSCREEN_FULLSCREEN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FULLSCREEN_FULLSCREEN_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "platform/Supplementable.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -154,4 +154,4 @@ inline bool Fullscreen::IsFullscreenElement(const Element& element) {
 
 }  // namespace blink
 
-#endif  // Fullscreen_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FULLSCREEN_FULLSCREEN_H_

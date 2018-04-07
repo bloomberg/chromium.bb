@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGAnimatedPath_h
-#define SVGAnimatedPath_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_PATH_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_PATH_H_
 
-#include "core/svg/SVGPath.h"
-#include "core/svg/properties/SVGAnimatedProperty.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_animated_property.h"
+#include "third_party/blink/renderer/core/svg/svg_path.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ class SVGAnimatedPath final : public GarbageCollectedFinalized<SVGAnimatedPath>,
 
 }  // namespace blink
 
-#endif  // SVGAnimatedPath_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_PATH_H_

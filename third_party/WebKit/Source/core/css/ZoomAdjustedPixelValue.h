@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ZoomAdjustedPixelValue_h
-#define ZoomAdjustedPixelValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_ZOOM_ADJUSTED_PIXEL_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_ZOOM_ADJUSTED_PIXEL_VALUE_H_
 
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/layout/AdjustForAbsoluteZoom.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 
 namespace blink {
 
@@ -21,4 +21,4 @@ inline CSSPrimitiveValue* ZoomAdjustedPixelValue(double value,
 
 }  // namespace blink
 
-#endif  // ZoomAdjustedPixelValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_ZOOM_ADJUSTED_PIXEL_VALUE_H_

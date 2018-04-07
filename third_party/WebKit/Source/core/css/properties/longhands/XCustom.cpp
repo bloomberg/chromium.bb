@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/x.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/x.h"
 
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/ComputedStyleUtils.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 
 namespace blink {
 namespace CSSLonghand {

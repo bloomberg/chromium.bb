@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LoggingCanvas_h
-#define LoggingCanvas_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_LOGGING_CANVAS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_LOGGING_CANVAS_H_
 
-#include "platform/graphics/InterceptingCanvas.h"
-#include "platform/json/JSONValues.h"
 #include <memory>
+#include "third_party/blink/renderer/platform/graphics/intercepting_canvas.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
 
 namespace blink {
 
@@ -128,4 +128,4 @@ PLATFORM_EXPORT void ShowSkPicture(const SkPicture&);
 
 }  // namespace blink
 
-#endif  // LoggingCanvas_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_LOGGING_CANVAS_H_

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorKeyframeModel_h
-#define CompositorKeyframeModel_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_KEYFRAME_MODEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_KEYFRAME_MODEL_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
 #include "cc/animation/keyframe_model.h"
-#include "platform/PlatformExport.h"
-#include "platform/animation/CompositorTargetProperty.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/animation/compositor_target_property.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace cc {
 class KeyframeModel;
@@ -86,4 +86,4 @@ class PLATFORM_EXPORT CompositorKeyframeModel {
 
 }  // namespace blink
 
-#endif  // CompositorKeyframeModel_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_KEYFRAME_MODEL_H_

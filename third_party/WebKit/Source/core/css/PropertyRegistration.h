@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PropertyRegistration_h
-#define PropertyRegistration_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTY_REGISTRATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTY_REGISTRATION_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/animation/CSSInterpolationType.h"
-#include "core/animation/InterpolationTypesMap.h"
-#include "core/css/CSSSyntaxDescriptor.h"
-#include "core/css/CSSValue.h"
-#include "core/css/CSSVariableData.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/animation/css_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/interpolation_types_map.h"
+#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/css_variable_data.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class CORE_EXPORT PropertyRegistration
 
 }  // namespace blink
 
-#endif  // PropertyRegistration_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PROPERTY_REGISTRATION_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EventDispatchResult_h
-#define EventDispatchResult_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_DISPATCH_RESULT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_DISPATCH_RESULT_H_
 
 namespace blink {
 
@@ -28,4 +28,4 @@ enum class DispatchEventResult {
 
 }  // namespace blink
 
-#endif  // EventDispatchResult_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_DISPATCH_RESULT_H_

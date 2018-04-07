@@ -22,17 +22,17 @@
  *
  */
 
-#ifndef NinePieceImage_h
-#define NinePieceImage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_NINE_PIECE_IMAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_NINE_PIECE_IMAGE_H_
 
-#include "core/CoreExport.h"
-#include "core/style/BorderImageLengthBox.h"
-#include "core/style/DataRef.h"
-#include "core/style/StyleImage.h"
-#include "platform/LayoutUnit.h"
-#include "platform/LengthBox.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/style/border_image_length_box.h"
+#include "third_party/blink/renderer/core/style/data_ref.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/length_box.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -166,4 +166,4 @@ class CORE_EXPORT NinePieceImage {
 
 }  // namespace blink
 
-#endif  // NinePieceImage_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_NINE_PIECE_IMAGE_H_

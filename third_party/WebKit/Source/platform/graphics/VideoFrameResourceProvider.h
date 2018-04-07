@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VideoFrameResourceProvider_h
-#define VideoFrameResourceProvider_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_VIDEO_FRAME_RESOURCE_PROVIDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_VIDEO_FRAME_RESOURCE_PROVIDER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/video_resource_updater.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "media/base/video_frame.h"
-#include "platform/PlatformExport.h"
-#include "public/platform/WebVideoFrameSubmitter.h"
+#include "third_party/blink/public/platform/web_video_frame_submitter.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace gpu {
 class GpuMemoryBufferManager;
@@ -65,4 +65,4 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
 
 }  // namespace blink
 
-#endif  // VideoFrameResourceProvider_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_VIDEO_FRAME_RESOURCE_PROVIDER_H_

@@ -23,13 +23,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebScrollbarThemePainter_h
-#define WebScrollbarThemePainter_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLLBAR_THEME_PAINTER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLLBAR_THEME_PAINTER_H_
 
-#include "public/platform/WebCanvas.h"
-#include "public/platform/WebPrivatePtr.h"
-#include "public/platform/WebRect.h"
-#include "public/platform/WebSize.h"
+#include "third_party/blink/public/platform/web_canvas.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_size.h"
 
 namespace blink {
 

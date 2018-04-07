@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/geometry/DOMRectReadOnly.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/geometry/DOMRectInit.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect_init.h"
 
 namespace blink {
 

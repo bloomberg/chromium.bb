@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLSourceElement_h
-#define HTMLSourceElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_SOURCE_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_SOURCE_ELEMENT_H_
 
-#include "core/css/MediaQueryListListener.h"
-#include "core/html/HTMLElement.h"
-#include "platform/Timer.h"
-#include "platform/WebTaskRunner.h"
+#include "third_party/blink/renderer/core/css/media_query_list_listener.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class HTMLSourceElement final : public HTMLElement {
 
 }  // namespace blink
 
-#endif  // HTMLSourceElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_SOURCE_ELEMENT_H_

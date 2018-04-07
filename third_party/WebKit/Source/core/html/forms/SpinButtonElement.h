@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SpinButtonElement_h
-#define SpinButtonElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_SPIN_BUTTON_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_SPIN_BUTTON_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/page/PopupOpeningObserver.h"
-#include "platform/Timer.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/page/popup_opening_observer.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 

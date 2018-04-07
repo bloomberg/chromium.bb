@@ -19,14 +19,14 @@
  *
  */
 
-#ifndef IntegerToStringConversion_h
-#define IntegerToStringConversion_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_INTEGER_TO_STRING_CONVERSION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_INTEGER_TO_STRING_CONVERSION_H_
 
-#include "base/numerics/safe_conversions.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/text/Unicode.h"
 #include <limits>
 #include <type_traits>
+#include "base/numerics/safe_conversions.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace WTF {
 
@@ -79,4 +79,4 @@ class IntegerToStringConverter {
 
 }  // namespace WTF
 
-#endif  // IntegerToStringConversion_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_INTEGER_TO_STRING_CONVERSION_H_

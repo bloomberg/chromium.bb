@@ -22,11 +22,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "platform/SharedBuffer.h"
-#include "platform/image-decoders/ImageDecoder.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

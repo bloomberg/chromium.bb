@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPointerEvent_h
-#define WebPointerEvent_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_POINTER_EVENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_POINTER_EVENT_H_
 
-#include "WebInputEvent.h"
-#include "WebMouseEvent.h"
-#include "WebPointerProperties.h"
-#include "WebTouchEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "third_party/blink/public/platform/web_pointer_properties.h"
+#include "third_party/blink/public/platform/web_touch_event.h"
 
 namespace blink {
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PasswordCredential_h
-#define PasswordCredential_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_PASSWORD_CREDENTIAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_PASSWORD_CREDENTIAL_H_
 
-#include "modules/ModulesExport.h"
-#include "modules/credentialmanager/Credential.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/weborigin/KURL.h"
+#include "third_party/blink/renderer/modules/credentialmanager/credential.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class MODULES_EXPORT PasswordCredential final : public Credential {
 
 }  // namespace blink
 
-#endif  // PasswordCredential_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_PASSWORD_CREDENTIAL_H_

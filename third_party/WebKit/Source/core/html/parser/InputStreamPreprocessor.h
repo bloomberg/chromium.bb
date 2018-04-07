@@ -25,12 +25,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InputStreamPreprocessor_h
-#define InputStreamPreprocessor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_INPUT_STREAM_PREPROCESSOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_INPUT_STREAM_PREPROCESSOR_H_
 
 #include "base/macros.h"
-#include "platform/text/SegmentedString.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/text/segmented_string.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -135,4 +135,4 @@ class InputStreamPreprocessor {
 
 }  // namespace blink
 
-#endif  // InputStreamPreprocessor_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_INPUT_STREAM_PREPROCESSOR_H_

@@ -6,7 +6,7 @@
 #define CONTENT_PUBLIC_COMMON_PREVIEWS_STATE_H_
 
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 
 #define STATIC_ASSERT_PREVIEWS_ENUM(a, b)                   \
   static_assert(static_cast<int>(a) == static_cast<int>(b), \

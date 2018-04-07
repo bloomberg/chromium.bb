@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/StringHasher.h"
+#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

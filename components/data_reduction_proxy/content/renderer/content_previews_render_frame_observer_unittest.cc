@@ -7,7 +7,7 @@
 #include "base/test/gtest_util.h"
 #include "content/public/common/previews_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/blink/public/platform/web_url_response.h"
 
 namespace data_reduction_proxy {
 class ContentPreviewsRenderFrameObserverTest {

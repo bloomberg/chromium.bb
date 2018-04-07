@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ppapi/c/pp_errors.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/blink/public/web/web_view.h"
 
 using ppapi::thunk::PPB_Flash_MessageLoop_API;
 

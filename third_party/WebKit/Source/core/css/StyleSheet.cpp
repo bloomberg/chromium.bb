@@ -17,7 +17,7 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  */
-#include "core/css/StyleSheet.h"
+#include "third_party/blink/renderer/core/css/style_sheet.h"
 
 namespace blink {
 

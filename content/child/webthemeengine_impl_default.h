@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "build/build_config.h"
-#include "third_party/WebKit/public/platform/WebThemeEngine.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
 
 namespace content {
 

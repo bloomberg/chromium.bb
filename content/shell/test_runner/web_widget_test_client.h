@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/WebKit/public/web/WebWidgetClient.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 
 namespace test_runner {
 

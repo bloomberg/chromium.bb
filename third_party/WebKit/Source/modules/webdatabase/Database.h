@@ -23,21 +23,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Database_h
-#define Database_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_H_
 
 #include "base/single_thread_task_runner.h"
-#include "bindings/modules/v8/v8_database_callback.h"
-#include "modules/webdatabase/DatabaseBasicTypes.h"
-#include "modules/webdatabase/DatabaseError.h"
-#include "modules/webdatabase/SQLTransaction.h"
-#include "modules/webdatabase/SQLTransactionBackend.h"
-#include "modules/webdatabase/sqlite/SQLiteDatabase.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_database_callback.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_basic_types.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_error.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction_backend.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_database.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -216,4 +216,4 @@ class Database final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // Database_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InternalsRTCPeerConnection_h
-#define InternalsRTCPeerConnection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_TESTING_INTERNALS_RTC_PEER_CONNECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_TESTING_INTERNALS_RTC_PEER_CONNECTION_H_
 
-#include "modules/peerconnection/RTCPeerConnection.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -22,4 +22,4 @@ class InternalsRTCPeerConnection {
 
 }  // namespace blink
 
-#endif  // InternalsRTCPeerConnection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_TESTING_INTERNALS_RTC_PEER_CONNECTION_H_

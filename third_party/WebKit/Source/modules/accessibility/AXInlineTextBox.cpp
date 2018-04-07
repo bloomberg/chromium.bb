@@ -26,15 +26,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/accessibility/AXInlineTextBox.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_inline_text_box.h"
 
-#include "core/dom/Range.h"
-#include "core/layout/LayoutText.h"
-#include "core/layout/api/LineLayoutAPIShim.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/accessibility/AXPosition.h"
-#include "modules/accessibility/AXRange.h"
-#include "platform/LayoutUnit.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_position.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_range.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
 
 namespace blink {
 

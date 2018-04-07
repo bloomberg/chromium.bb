@@ -4,4 +4,4 @@
 
 # Make the files absolute so they can be imported to anywhere.
 bindings_modules_v8_custom_files =
-    get_path_info([ "V8ExtendableMessageEventCustom.cpp" ], "abspath")
+    get_path_info([ "v8_extendable_message_event_custom.cc" ], "abspath")

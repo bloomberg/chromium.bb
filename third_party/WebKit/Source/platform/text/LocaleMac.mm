@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/text/LocaleMac.h"
+#include "third_party/blink/renderer/platform/text/locale_mac.h"
 
 #import <Foundation/NSDateFormatter.h>
 #import <Foundation/NSLocale.h>
 #include <memory>
 #include "base/memory/ptr_util.h"
-#include "platform/Language.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/wtf/DateMath.h"
-#include "platform/wtf/RetainPtr.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
+#include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/testing/FontTestHelpers.h"
+#include "third_party/blink/renderer/platform/testing/font_test_helpers.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/SharedBuffer.h"
-#include "platform/fonts/Font.h"
-#include "platform/fonts/FontCustomPlatformData.h"
-#include "platform/fonts/FontSelector.h"
-#include "platform/testing/UnitTestHelpers.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/font_custom_platform_data.h"
+#include "third_party/blink/renderer/platform/fonts/font_selector.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 namespace test {

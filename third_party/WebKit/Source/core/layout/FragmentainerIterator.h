@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FragmentainerIterator_h
-#define FragmentainerIterator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FRAGMENTAINER_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FRAGMENTAINER_ITERATOR_H_
 
-#include "core/layout/MultiColumnFragmentainerGroup.h"
-#include "platform/geometry/LayoutRect.h"
+#include "third_party/blink/renderer/core/layout/multi_column_fragmentainer_group.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 namespace blink {
 
@@ -70,4 +70,4 @@ class FragmentainerIterator {
 
 }  // namespace blink
 
-#endif  // FragmentainerIterator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FRAGMENTAINER_ITERATOR_H_

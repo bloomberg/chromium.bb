@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/filesystem/DirectoryReaderSync.h"
+#include "third_party/blink/renderer/modules/filesystem/directory_reader_sync.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "modules/filesystem/DirectoryEntry.h"
-#include "modules/filesystem/DirectoryEntrySync.h"
-#include "modules/filesystem/EntrySync.h"
-#include "modules/filesystem/FileEntrySync.h"
-#include "modules/filesystem/FileSystemCallbacks.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
+#include "third_party/blink/renderer/modules/filesystem/directory_entry_sync.h"
+#include "third_party/blink/renderer/modules/filesystem/entry_sync.h"
+#include "third_party/blink/renderer/modules/filesystem/file_entry_sync.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 
 namespace blink {
 

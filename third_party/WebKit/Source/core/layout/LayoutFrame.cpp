@@ -21,13 +21,13 @@
  *
  */
 
-#include "core/layout/LayoutFrame.h"
+#include "third_party/blink/renderer/core/layout/layout_frame.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/HTMLFrameElement.h"
-#include "core/input/EventHandler.h"
-#include "core/style/CursorData.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/html_frame_element.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/style/cursor_data.h"
 
 namespace blink {
 

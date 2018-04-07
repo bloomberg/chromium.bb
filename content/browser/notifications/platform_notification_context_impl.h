@@ -21,7 +21,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/platform_notification_context.h"
-#include "third_party/WebKit/public/platform/modules/notifications/notification_service.mojom.h"
+#include "third_party/blink/public/platform/modules/notifications/notification_service.mojom.h"
 
 class GURL;
 

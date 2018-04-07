@@ -29,11 +29,11 @@
  *
  */
 
-#include "platform/Prerender.h"
+#include "third_party/blink/renderer/platform/prerender.h"
 
-#include "platform/PrerenderClient.h"
-#include "public/platform/WebPrerender.h"
-#include "public/platform/WebPrerenderingSupport.h"
+#include "third_party/blink/public/platform/web_prerender.h"
+#include "third_party/blink/public/platform/web_prerendering_support.h"
+#include "third_party/blink/renderer/platform/prerender_client.h"
 
 namespace blink {
 

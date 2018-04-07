@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/CompactHTMLToken.h"
+#include "third_party/blink/renderer/core/html/parser/compact_html_token.h"
 
-#include "core/dom/QualifiedName.h"
-#include "core/html/parser/HTMLParserIdioms.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 
 namespace blink {
 

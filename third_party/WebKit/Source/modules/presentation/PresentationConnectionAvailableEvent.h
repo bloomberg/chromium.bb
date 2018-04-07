@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PresentationConnectionAvailableEvent_h
-#define PresentationConnectionAvailableEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONNECTION_AVAILABLE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONNECTION_AVAILABLE_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/presentation/PresentationConnection.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_connection.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ DEFINE_TYPE_CASTS(PresentationConnectionAvailableEvent,
 
 }  // namespace blink
 
-#endif  // PresentationConnectionAvailableEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONNECTION_AVAILABLE_EVENT_H_

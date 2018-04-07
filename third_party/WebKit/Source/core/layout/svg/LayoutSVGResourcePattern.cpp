@@ -19,22 +19,22 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/svg/LayoutSVGResourcePattern.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_pattern.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/layout/svg/SVGResources.h"
-#include "core/layout/svg/SVGResourcesCache.h"
-#include "core/paint/SVGPaintContext.h"
-#include "core/paint/TransformRecorder.h"
-#include "core/svg/SVGFitToViewBox.h"
-#include "core/svg/SVGPatternElement.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/paint/PaintRecordBuilder.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
+#include "third_party/blink/renderer/core/paint/transform_recorder.h"
+#include "third_party/blink/renderer/core/svg/svg_fit_to_view_box.h"
+#include "third_party/blink/renderer/core/svg/svg_pattern_element.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 
 namespace blink {
 

@@ -24,12 +24,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMURLUtilsReadOnly_h
-#define DOMURLUtilsReadOnly_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_URL_DOM_URL_UTILS_READ_ONLY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_URL_DOM_URL_UTILS_READ_ONLY_H_
 
-#include "core/CoreExport.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -74,4 +74,4 @@ class CORE_EXPORT DOMURLUtilsReadOnly {
 
 }  // namespace blink
 
-#endif  // DOMURLUtilsReadOnly_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_URL_DOM_URL_UTILS_READ_ONLY_H_

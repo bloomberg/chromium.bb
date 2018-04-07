@@ -18,24 +18,24 @@
  *
  */
 
-#include "platform/fonts/FontPlatformData.h"
+#include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
 
 #include "SkTypeface.h"
 #include "build/build_config.h"
 #include "hb-ot.h"
 #include "hb.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/shaping/HarfBuzzFace.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/text/Character.h"
-#include "platform/wtf/ByteSwap.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/Platform.h"
-#include "public/platform/linux/WebSandboxSupport.h"
+#include "third_party/blink/public/platform/linux/web_sandbox_support.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_face.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/text/character.h"
+#include "third_party/blink/renderer/platform/wtf/byte_swap.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #if defined(OS_MACOSX)
 #include "third_party/skia/include/ports/SkTypeface_mac.h"

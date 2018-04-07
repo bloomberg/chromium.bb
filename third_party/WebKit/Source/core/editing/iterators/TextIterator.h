@@ -23,18 +23,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextIterator_h
-#define TextIterator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_ITERATOR_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Range.h"
-#include "core/editing/Forward.h"
-#include "core/editing/finder/FindOptions.h"
-#include "core/editing/iterators/FullyClippedStateStack.h"
-#include "core/editing/iterators/TextIteratorBehavior.h"
-#include "core/editing/iterators/TextIteratorTextNodeHandler.h"
-#include "core/editing/iterators/TextIteratorTextState.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/finder/find_options.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/iterators/fully_clipped_state_stack.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator_behavior.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator_text_node_handler.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator_text_state.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -252,4 +252,4 @@ using TextIteratorInFlatTree = TextIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 }  // namespace blink
 
-#endif  // TextIterator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_TEXT_ITERATOR_H_

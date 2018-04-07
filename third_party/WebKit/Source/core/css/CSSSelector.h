@@ -20,16 +20,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSSelector_h
-#define CSSSelector_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SELECTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SELECTOR_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/parser/CSSParserMode.h"
-#include "core/dom/QualifiedName.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 class CSSSelectorList;
@@ -576,4 +576,4 @@ inline bool CSSSelector::IsIdClassOrAttributeSelector() const {
 
 }  // namespace blink
 
-#endif  // CSSSelector_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_SELECTOR_H_

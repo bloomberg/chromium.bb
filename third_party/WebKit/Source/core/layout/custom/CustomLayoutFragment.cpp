@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/custom/CustomLayoutFragment.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"
 
-#include "core/layout/custom/CustomLayoutFragmentRequest.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment_request.h"
 
 namespace blink {
 

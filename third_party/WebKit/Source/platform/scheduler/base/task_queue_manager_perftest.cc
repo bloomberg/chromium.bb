@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/base/task_queue_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
 
 #include <stddef.h>
 #include <memory>
@@ -15,15 +15,15 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
-#include "platform/scheduler/base/task_queue_impl.h"
-#include "platform/scheduler/base/task_queue_selector.h"
-#include "platform/scheduler/base/test_task_time_observer.h"
-#include "platform/scheduler/base/virtual_time_domain.h"
-#include "platform/scheduler/base/work_queue_sets.h"
-#include "platform/scheduler/test/task_queue_manager_for_test.h"
-#include "platform/scheduler/test/test_task_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test_task_time_observer.h"
+#include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
+#include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/test/test_task_queue.h"
 
 namespace blink {
 namespace scheduler {

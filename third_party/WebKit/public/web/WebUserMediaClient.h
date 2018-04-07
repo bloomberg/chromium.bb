@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebUserMediaClient_h
-#define WebUserMediaClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_USER_MEDIA_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_USER_MEDIA_CLIENT_H_
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class WebUserMediaClient {
 
 }  // namespace blink
 
-#endif  // WebUserMediaClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_USER_MEDIA_CLIENT_H_

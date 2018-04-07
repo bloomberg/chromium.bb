@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebViewClient_h
-#define WebViewClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_VIEW_CLIENT_H_
 
-#include "WebAXEnums.h"
-#include "WebFrame.h"
-#include "WebPopupType.h"
-#include "WebTextDirection.h"
-#include "WebWidgetClient.h"
 #include "base/strings/string_piece.h"
-#include "public/platform/WebString.h"
-#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-shared.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_ax_enums.h"
+#include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/public/web/web_popup_type.h"
+#include "third_party/blink/public/web/web_text_direction.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 
 namespace blink {
 

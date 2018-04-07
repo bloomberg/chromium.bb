@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebInputElement.h"
+#include "third_party/blink/public/web/web_input_element.h"
 
-#include "core/dom/ShadowRoot.h"
-#include "core/html/forms/HTMLDataListElement.h"
-#include "core/html/forms/HTMLDataListOptionsCollection.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/forms/TextControlInnerElements.h"
-#include "core/html/shadow/ShadowElementNames.h"
-#include "core/html_names.h"
-#include "core/input_type_names.h"
-#include "public/platform/WebString.h"
-#include "public/web/WebElementCollection.h"
-#include "public/web/WebOptionElement.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_element_collection.h"
+#include "third_party/blink/public/web/web_option_element.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_data_list_options_collection.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_inner_elements.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
 
 namespace blink {
 

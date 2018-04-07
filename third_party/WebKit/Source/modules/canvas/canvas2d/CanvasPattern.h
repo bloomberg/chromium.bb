@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CanvasPattern_h
-#define CanvasPattern_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_PATTERN_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_PATTERN_H_
 
-#include "core/svg/SVGMatrixTearOff.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/graphics/Pattern.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/svg/svg_matrix_tear_off.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/graphics/pattern.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class CanvasPattern final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // CanvasPattern_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_PATTERN_H_

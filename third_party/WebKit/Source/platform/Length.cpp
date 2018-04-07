@@ -23,12 +23,12 @@
  *
  */
 
-#include "platform/Length.h"
+#include "third_party/blink/renderer/platform/length.h"
 
 #include "base/macros.h"
-#include "platform/CalculationValue.h"
-#include "platform/animation/AnimationUtilities.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
+#include "third_party/blink/renderer/platform/calculation_value.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 

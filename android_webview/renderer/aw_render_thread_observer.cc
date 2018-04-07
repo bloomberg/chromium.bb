@@ -6,8 +6,8 @@
 
 #include "android_webview/common/render_view_messages.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/WebKit/public/platform/WebCache.h"
-#include "third_party/WebKit/public/platform/WebNetworkStateNotifier.h"
+#include "third_party/blink/public/platform/web_cache.h"
+#include "third_party/blink/public/platform/web_network_state_notifier.h"
 
 namespace android_webview {
 

@@ -28,10 +28,10 @@
  * SUCH DAMAGE.
  */
 
-#include "platform/graphics/filters/Filter.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter.h"
 
-#include "platform/graphics/filters/FilterEffect.h"
-#include "platform/graphics/filters/SourceGraphic.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
+#include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorMutator_h
-#define CompositorMutator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_MUTATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_MUTATOR_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/graphics/CompositorAnimatorsState.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_animators_state.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -23,4 +23,4 @@ class PLATFORM_EXPORT CompositorMutator {
 
 }  // namespace blink
 
-#endif  // CompositorMutator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITOR_MUTATOR_H_

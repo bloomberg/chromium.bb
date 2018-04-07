@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "content/public/renderer/associated_resource_fetcher.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/web/WebAssociatedURLLoaderOptions.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/web_associated_url_loader_options.h"
 
 class GURL;
 

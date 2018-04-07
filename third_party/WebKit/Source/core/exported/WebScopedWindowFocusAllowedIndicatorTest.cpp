@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebScopedWindowFocusAllowedIndicator.h"
+#include "third_party/blink/public/web/web_scoped_window_focus_allowed_indicator.h"
 
-#include "core/dom/Document.h"
-#include "public/web/WebDocument.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
 

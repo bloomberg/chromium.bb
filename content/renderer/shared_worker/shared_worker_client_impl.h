@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "content/common/shared_worker/shared_worker_client.mojom.h"
-#include "third_party/WebKit/public/web/WebSharedWorkerConnectListener.h"
+#include "third_party/blink/public/web/web_shared_worker_connect_listener.h"
 
 namespace content {
 

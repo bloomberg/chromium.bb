@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PageMemory_h
-#define PageMemory_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_PAGE_MEMORY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_PAGE_MEMORY_H_
 
-#include "platform/heap/Heap.h"
-#include "platform/heap/HeapPage.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/allocator/Partitions.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_page.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 

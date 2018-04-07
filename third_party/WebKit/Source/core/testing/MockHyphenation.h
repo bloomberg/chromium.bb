@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockHyphenation_h
-#define MockHyphenation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_MOCK_HYPHENATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_MOCK_HYPHENATION_H_
 
-#include "platform/text/Hyphenation.h"
+#include "third_party/blink/renderer/platform/text/hyphenation.h"
 
 namespace blink {
 
@@ -17,4 +17,4 @@ class MockHyphenation : public Hyphenation {
 
 }  // namespace blink
 
-#endif  // MockHyphenation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_MOCK_HYPHENATION_H_

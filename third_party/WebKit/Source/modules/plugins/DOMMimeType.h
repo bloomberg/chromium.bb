@@ -17,15 +17,15 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef DOMMimeType_h
-#define DOMMimeType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PLUGINS_DOM_MIME_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PLUGINS_DOM_MIME_TYPE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/plugins/PluginData.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/plugins/plugin_data.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class DOMMimeType final : public ScriptWrappable, public ContextClient {
 
 }  // namespace blink
 
-#endif  // DOMMimeType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PLUGINS_DOM_MIME_TYPE_H_

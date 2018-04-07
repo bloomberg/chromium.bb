@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webusb/USBConnectionEvent.h"
+#include "third_party/blink/renderer/modules/webusb/usb_connection_event.h"
 
-#include "modules/webusb/USBConnectionEventInit.h"
-#include "modules/webusb/USBDevice.h"
+#include "third_party/blink/renderer/modules/webusb/usb_connection_event_init.h"
+#include "third_party/blink/renderer/modules/webusb/usb_device.h"
 
 namespace blink {
 

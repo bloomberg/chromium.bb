@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/track/vtt/VTTElement.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_element.h"
 
-#include "core/css/StyleChangeReason.h"
-#include "core/dom/Document.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
 

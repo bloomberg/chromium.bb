@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebRTCDTMFSenderHandler.h"
-#include "third_party/WebKit/public/platform/WebRTCDTMFSenderHandlerClient.h"
+#include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
+#include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler_client.h"
 #include "third_party/webrtc/api/dtmfsenderinterface.h"
 
 namespace content {

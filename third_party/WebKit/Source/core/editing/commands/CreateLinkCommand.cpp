@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/CreateLinkCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/create_link_command.h"
 
-#include "core/dom/Text.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/VisibleSelection.h"
-#include "core/html/HTMLAnchorElement.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
+#include "third_party/blink/renderer/core/html/html_anchor_element.h"
 
 namespace blink {
 

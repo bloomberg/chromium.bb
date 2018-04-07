@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebDeviceOrientationListener_h
-#define WebDeviceOrientationListener_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_DEVICE_ORIENTATION_WEB_DEVICE_ORIENTATION_LISTENER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_DEVICE_ORIENTATION_WEB_DEVICE_ORIENTATION_LISTENER_H_
 
-#include "public/platform/WebPlatformEventListener.h"
+#include "third_party/blink/public/platform/web_platform_event_listener.h"
 
 namespace device {
 class OrientationData;
@@ -49,4 +49,4 @@ class WebDeviceOrientationListener : public WebPlatformEventListener {
 
 }  // namespace blink
 
-#endif  // WebDeviceOrientationListener_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_DEVICE_ORIENTATION_WEB_DEVICE_ORIENTATION_LISTENER_H_

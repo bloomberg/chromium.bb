@@ -28,24 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/probe/CoreProbes.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/CoreProbeSink.h"
-#include "core/dom/events/Event.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/inspector/InspectorCSSAgent.h"
-#include "core/inspector/InspectorDOMDebuggerAgent.h"
-#include "core/inspector/InspectorNetworkAgent.h"
-#include "core/inspector/InspectorPageAgent.h"
-#include "core/inspector/InspectorSession.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/inspector/MainThreadDebugger.h"
-#include "core/inspector/ThreadDebugger.h"
-#include "core/page/Page.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/loader/fetch/FetchInitiatorInfo.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/CoreProbeSink.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/inspector/InspectorCSSAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorDOMDebuggerAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorNetworkAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorPageAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/inspector/inspector_session.h"
+#include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
+#include "third_party/blink/renderer/core/inspector/thread_debugger.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_info.h"
 
 namespace blink {
 namespace probe {

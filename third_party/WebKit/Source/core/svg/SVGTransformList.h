@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGTransformList_h
-#define SVGTransformList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_TRANSFORM_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_TRANSFORM_LIST_H_
 
-#include "core/svg/SVGParsingError.h"
-#include "core/svg/SVGTransform.h"
-#include "core/svg/properties/SVGListPropertyHelper.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_list_property_helper.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
+#include "third_party/blink/renderer/core/svg/svg_transform.h"
 
 namespace blink {
 
@@ -89,4 +89,4 @@ SVGTransformType ParseTransformType(const String&);
 
 }  // namespace blink
 
-#endif  // SVGTransformList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_TRANSFORM_LIST_H_

@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebImageGenerator.h"
+#include "third_party/blink/public/platform/web_image_generator.h"
 
 #include <utility>
-#include "platform/graphics/DecodingImageGenerator.h"
+#include "third_party/blink/renderer/platform/graphics/decoding_image_generator.h"
 
 namespace blink {
 

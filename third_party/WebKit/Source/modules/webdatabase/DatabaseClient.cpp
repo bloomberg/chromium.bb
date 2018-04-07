@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/DatabaseClient.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_client.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/ContentSettingsClient.h"
-#include "core/frame/LocalFrame.h"
-#include "core/page/Page.h"
-#include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/InspectorDatabaseAgent.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/content_settings_client.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/modules/webdatabase/InspectorDatabaseAgent.h"
+#include "third_party/blink/renderer/modules/webdatabase/database.h"
 
 namespace blink {
 

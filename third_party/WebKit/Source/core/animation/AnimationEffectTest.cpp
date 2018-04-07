@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/AnimationEffect.h"
+#include "third_party/blink/renderer/core/animation/animation_effect.h"
 
-#include "core/animation/AnimationEffectOwner.h"
-#include "core/animation/ComputedEffectTiming.h"
-#include "core/animation/OptionalEffectTiming.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/animation/animation_effect_owner.h"
+#include "third_party/blink/renderer/core/animation/computed_effect_timing.h"
+#include "third_party/blink/renderer/core/animation/optional_effect_timing.h"
 
 namespace blink {
 

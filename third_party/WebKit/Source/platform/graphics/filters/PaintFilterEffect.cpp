@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/filters/PaintFilterEffect.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_effect.h"
 
-#include "platform/graphics/filters/Filter.h"
-#include "platform/text/TextStream.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
 #include "third_party/skia/include/effects/SkPaintImageFilter.h"
 
 namespace blink {

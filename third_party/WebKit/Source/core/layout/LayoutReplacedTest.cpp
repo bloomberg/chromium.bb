@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/LayoutReplaced.h"
+#include "third_party/blink/renderer/core/layout/layout_replaced.h"
 
 #include "build/build_config.h"
-#include "core/testing/CoreUnitTestHelper.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
 

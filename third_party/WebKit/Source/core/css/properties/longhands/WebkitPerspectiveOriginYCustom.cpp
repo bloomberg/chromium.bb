@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/webkit_perspective_origin_y.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/webkit_perspective_origin_y.h"
 
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/properties/CSSParsingUtils.h"
-#include "core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
 
 namespace blink {
 namespace CSSLonghand {

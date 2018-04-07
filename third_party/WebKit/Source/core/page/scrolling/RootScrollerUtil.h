@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RootScrollerUtil_h
-#define RootScrollerUtil_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_ROOT_SCROLLER_UTIL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_ROOT_SCROLLER_UTIL_H_
 
 namespace blink {
 
@@ -39,4 +39,4 @@ bool IsGlobal(const Element*);
 
 }  // namespace blink
 
-#endif  // RootScrollerUtil_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_ROOT_SCROLLER_UTIL_H_

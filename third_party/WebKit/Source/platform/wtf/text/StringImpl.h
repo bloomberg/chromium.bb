@@ -21,8 +21,8 @@
  *
  */
 
-#ifndef StringImpl_h
-#define StringImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_STRING_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_STRING_IMPL_H_
 
 #include <limits.h>
 #include <string.h>
@@ -30,18 +30,18 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/StringHasher.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/text/ASCIIFastPath.h"
-#include "platform/wtf/text/NumberParsingOptions.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
+#include "third_party/blink/renderer/platform/wtf/text/ascii_fast_path.h"
+#include "third_party/blink/renderer/platform/wtf/text/number_parsing_options.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 #if DCHECK_IS_ON()
-#include "platform/wtf/ThreadRestrictionVerifier.h"
+#include "third_party/blink/renderer/platform/wtf/thread_restriction_verifier.h"
 #endif
 
 #if defined(OS_MACOSX)

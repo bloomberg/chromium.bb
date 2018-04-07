@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/DatabaseAuthorizer.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_authorizer.h"
 
 #include "third_party/sqlite/sqlite3.h"
 

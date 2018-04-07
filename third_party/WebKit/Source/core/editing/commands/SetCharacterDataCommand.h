@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SetCharacterDataCommand_h
-#define SetCharacterDataCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SET_CHARACTER_DATA_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SET_CHARACTER_DATA_COMMAND_H_
 
-#include "core/editing/commands/EditCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/edit_command.h"
 
 namespace blink {
 
@@ -39,4 +39,4 @@ class CORE_EXPORT SetCharacterDataCommand final : public SimpleEditCommand {
 
 }  // namespace blink
 
-#endif  // SetCharacterDataCommand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SET_CHARACTER_DATA_COMMAND_H_

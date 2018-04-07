@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/wtf/typed_arrays/ArrayPiece.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_piece.h"
 
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/typed_arrays/ArrayBuffer.h"
-#include "platform/wtf/typed_arrays/ArrayBufferView.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_view.h"
 
 namespace WTF {
 

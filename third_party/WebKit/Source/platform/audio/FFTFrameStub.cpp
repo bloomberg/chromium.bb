@@ -30,7 +30,7 @@
 #if !defined(OS_MACOSX) && !defined(WTF_USE_WEBAUDIO_FFMPEG) && \
     !defined(WTF_USE_WEBAUDIO_OPENMAX_DL_FFT)
 
-#include "platform/audio/FFTFrame.h"
+#include "third_party/blink/renderer/platform/audio/fft_frame.h"
 
 namespace blink {
 

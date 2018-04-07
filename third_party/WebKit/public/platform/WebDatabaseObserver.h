@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebDatabaseObserver_h
-#define WebDatabaseObserver_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DATABASE_OBSERVER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DATABASE_OBSERVER_H_
 
 namespace blink {
 
@@ -82,4 +82,4 @@ class WebDatabaseObserver {
 
 }  // namespace blink
 
-#endif  // WebDatabaseObserver_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DATABASE_OBSERVER_H_

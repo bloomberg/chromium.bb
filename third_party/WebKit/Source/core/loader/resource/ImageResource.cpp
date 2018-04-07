@@ -21,33 +21,33 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "core/loader/resource/ImageResource.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource.h"
 
 #include <stdint.h>
 #include <v8.h>
 #include <memory>
 
-#include "core/loader/resource/ImageResourceContent.h"
-#include "core/loader/resource/ImageResourceInfo.h"
-#include "platform/Histogram.h"
-#include "platform/InstanceCounters.h"
-#include "platform/SharedBuffer.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/MemoryCache.h"
-#include "platform/loader/fetch/ResourceClient.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/ResourceLoader.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/loader/fetch/ResourceLoadingLog.h"
-#include "platform/loader/fetch/fetch_initiator_type_names.h"
-#include "platform/network/HTTPParsers.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityViolationReportingPolicy.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_info.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "v8/include/v8.h"
 
 namespace blink {

@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/HTMLNoScriptElement.h"
+#include "third_party/blink/renderer/core/html/html_no_script_element.h"
 
-#include "bindings/core/v8/ScriptController.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

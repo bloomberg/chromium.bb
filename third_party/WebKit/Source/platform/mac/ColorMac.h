@@ -26,10 +26,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ColorMac_h
-#define ColorMac_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_COLOR_MAC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_COLOR_MAC_H_
 
-#include "platform/graphics/Color.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 
 OBJC_CLASS NSColor;
 

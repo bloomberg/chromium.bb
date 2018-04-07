@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ScriptModule.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
 
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8BindingForTesting.h"
-#include "core/frame/LocalFrame.h"
-#include "core/script/ScriptModuleResolver.h"
-#include "core/testing/DummyModulator.h"
-#include "platform/bindings/V8Binding.h"
-#include "platform/bindings/V8PerContextData.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/script/script_module_resolver.h"
+#include "third_party/blink/renderer/core/testing/dummy_modulator.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "v8/include/v8.h"
 
 namespace blink {

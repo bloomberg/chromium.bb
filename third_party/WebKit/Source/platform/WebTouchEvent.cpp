@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebTouchEvent.h"
+#include "third_party/blink/public/platform/web_touch_event.h"
 
 namespace blink {
 

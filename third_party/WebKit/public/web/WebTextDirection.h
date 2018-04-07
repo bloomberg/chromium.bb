@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebTextDirection_h
-#define WebTextDirection_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_TEXT_DIRECTION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_TEXT_DIRECTION_H_
 
 #if INSIDE_BLINK
-#include "platform/text/TextDirection.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
 #endif
 
 namespace blink {

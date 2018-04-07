@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FrameCaret_h
-#define FrameCaret_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FRAME_CARET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FRAME_CARET_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/editing/Forward.h"
-#include "platform/Timer.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/PaintInvalidationReason.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/heap/Member.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -115,4 +115,4 @@ class CORE_EXPORT FrameCaret final
 
 }  // namespace blink
 
-#endif  // FrameCaret_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FRAME_CARET_H_

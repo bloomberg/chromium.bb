@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/Element.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/geometry/DOMRect.h"
-#include "core/html/HTMLHtmlElement.h"
-#include "core/layout/LayoutBoxModelObject.h"
-#include "core/paint/PaintLayer.h"
-#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 
 namespace blink {
 

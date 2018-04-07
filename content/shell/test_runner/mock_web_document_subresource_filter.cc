@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/strings/string_util.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_url.h"
 #include "url/gurl.h"
 
 namespace test_runner {

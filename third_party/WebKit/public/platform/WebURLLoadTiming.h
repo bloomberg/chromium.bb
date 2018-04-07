@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebURLLoadTiming_h
-#define WebURLLoadTiming_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_LOAD_TIMING_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_LOAD_TIMING_H_
 
-#include "WebCommon.h"
-#include "WebPrivatePtr.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
 
 #if INSIDE_BLINK
 #include "base/memory/scoped_refptr.h"

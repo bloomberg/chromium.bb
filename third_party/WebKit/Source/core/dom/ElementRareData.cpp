@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/ElementRareData.h"
+#include "third_party/blink/renderer/core/dom/element_rare_data.h"
 
-#include "core/css/cssom/InlineStylePropertyMap.h"
-#include "core/resize_observer/ResizeObservation.h"
-#include "core/resize_observer/ResizeObserver.h"
-#include "core/style/ComputedStyle.h"
-#include "third_party/WebKit/Source/core/dom/AXObjectCache.h"
+#include "third_party/blink/renderer/core/css/cssom/inline_style_property_map.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
+#include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 

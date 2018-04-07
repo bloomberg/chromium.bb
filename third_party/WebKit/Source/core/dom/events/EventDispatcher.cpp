@@ -25,25 +25,25 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/dom/events/EventDispatcher.h"
+#include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/AXObjectCache.h"
-#include "core/dom/ContainerNode.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/events/ScopedEventQueue.h"
-#include "core/dom/events/WindowEventContext.h"
-#include "core/events/MouseEvent.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLElement.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "platform/EventDispatchForbiddenScope.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
+#include "third_party/blink/renderer/core/dom/events/window_event_context.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/platform/event_dispatch_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 

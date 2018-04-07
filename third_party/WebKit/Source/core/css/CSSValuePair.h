@@ -18,12 +18,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef CSSValuePair_h
-#define CSSValuePair_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_PAIR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_PAIR_H_
 
-#include "core/CoreExport.h"
-#include "core/css/CSSValue.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSValuePair, IsValuePair());
 
 }  // namespace blink
 
-#endif  // CSSValuePair_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_PAIR_H_

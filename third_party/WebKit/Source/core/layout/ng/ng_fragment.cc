@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 
-#include "core/layout/ng/geometry/ng_border_edges.h"
-#include "core/layout/ng/geometry/ng_logical_size.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TimingInput_h
-#define TimingInput_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_TIMING_INPUT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_TIMING_INPUT_H_
 
-#include "core/CoreExport.h"
-#include "core/animation/Timing.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/animation/timing.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

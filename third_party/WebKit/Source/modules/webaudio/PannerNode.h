@@ -23,19 +23,19 @@
  * DAMAGE.
  */
 
-#ifndef PannerNode_h
-#define PannerNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_PANNER_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_PANNER_NODE_H_
 
 #include <memory>
-#include "modules/webaudio/AudioListener.h"
-#include "modules/webaudio/AudioNode.h"
-#include "modules/webaudio/AudioParam.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/Cone.h"
-#include "platform/audio/DistanceEffect.h"
-#include "platform/audio/Panner.h"
-#include "platform/geometry/FloatPoint3D.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_listener.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/cone.h"
+#include "third_party/blink/renderer/platform/audio/distance_effect.h"
+#include "third_party/blink/renderer/platform/audio/panner.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -258,4 +258,4 @@ class PannerNode final : public AudioNode {
 
 }  // namespace blink
 
-#endif  // PannerNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_PANNER_NODE_H_

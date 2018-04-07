@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/filesystem/EntryBase.h"
+#include "third_party/blink/renderer/modules/filesystem/entry_base.h"
 
-#include "modules/filesystem/DOMFilePath.h"
-#include "modules/filesystem/DOMFileSystemBase.h"
-#include "platform/weborigin/SecurityOrigin.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_path.h"
+#include "third_party/blink/renderer/modules/filesystem/dom_file_system_base.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

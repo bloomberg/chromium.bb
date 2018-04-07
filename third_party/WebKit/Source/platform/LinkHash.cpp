@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/LinkHash.h"
+#include "third_party/blink/renderer/platform/link_hash.h"
 
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/StringUTF8Adaptor.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "url/url_util.h"
 
 namespace blink {

@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Metadata_h
-#define Metadata_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_METADATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_METADATA_H_
 
-#include "platform/FileMetadata.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/file_metadata.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ class Metadata final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // Metadata_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_METADATA_H_

@@ -28,37 +28,37 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LocalFrameClient_h
-#define LocalFrameClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_CLIENT_H_
 
 #include <memory>
 
-#include "core/CoreExport.h"
-#include "core/dom/Document.h"
-#include "core/dom/IconURL.h"
-#include "core/frame/FrameClient.h"
-#include "core/frame/FrameTypes.h"
-#include "core/html/LinkResource.h"
-#include "core/loader/FrameLoadRequest.h"
-#include "core/loader/FrameLoaderTypes.h"
-#include "core/loader/NavigationPolicy.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ResourceLoadPriority.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/network/ContentSecurityPolicyParsers.h"
-#include "platform/weborigin/Referrer.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebContentSecurityPolicyStruct.h"
-#include "public/platform/WebEffectiveConnectionType.h"
-#include "public/platform/WebInsecureRequestPolicy.h"
-#include "public/platform/WebLoadingBehaviorFlag.h"
-#include "public/platform/WebScopedVirtualTimePauser.h"
-#include "public/platform/WebSuddenTerminationDisablerType.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/web/WebGlobalObjectReusePolicy.h"
-#include "public/web/WebTriggeringEventInfo.h"
-#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/platform/web_content_security_policy_struct.h"
+#include "third_party/blink/public/platform/web_effective_connection_type.h"
+#include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
+#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/web_global_object_reuse_policy.h"
+#include "third_party/blink/public/web/web_triggering_event_info.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/icon_url.h"
+#include "third_party/blink/renderer/core/frame/frame_client.h"
+#include "third_party/blink/renderer/core/frame/frame_types.h"
+#include "third_party/blink/renderer/core/html/link_resource.h"
+#include "third_party/blink/renderer/core/loader/frame_load_request.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
+#include "third_party/blink/renderer/core/loader/navigation_policy.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
 namespace service_manager {
@@ -406,4 +406,4 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
 }  // namespace blink
 
-#endif  // LocalFrameClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_CLIENT_H_

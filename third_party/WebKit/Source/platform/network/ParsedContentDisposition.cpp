@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/network/ParsedContentDisposition.h"
+#include "third_party/blink/renderer/platform/network/parsed_content_disposition.h"
 
-#include "platform/network/HeaderFieldTokenizer.h"
+#include "third_party/blink/renderer/platform/network/header_field_tokenizer.h"
 
 namespace blink {
 

@@ -41,19 +41,19 @@
  * version of this file under any of the LGPL, the MPL or the GPL.
  */
 
-#ifndef PaintLayerScrollableArea_h
-#define PaintLayerScrollableArea_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_SCROLLABLE_AREA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_LAYER_SCROLLABLE_AREA_H_
 
 #include <memory>
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/layout/ScrollAnchor.h"
-#include "core/page/scrolling/StickyPositionScrollingConstraints.h"
-#include "core/paint/PaintInvalidationCapableScrollableArea.h"
-#include "core/paint/PaintLayerFragment.h"
-#include "core/paint/ScrollbarManager.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollTypes.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/scroll_anchor.h"
+#include "third_party/blink/renderer/core/page/scrolling/sticky_position_scrolling_constraints.h"
+#include "third_party/blink/renderer/core/paint/paint_invalidation_capable_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_fragment.h"
+#include "third_party/blink/renderer/core/paint/scrollbar_manager.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 
 namespace blink {
 

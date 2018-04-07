@@ -6,9 +6,9 @@
 #define CONTENT_RENDERER_MEDIA_WEBRTC_RTC_CERTIFICATE_GENERATOR_H_
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebRTCCertificate.h"
-#include "third_party/WebKit/public/platform/WebRTCCertificateGenerator.h"
-#include "third_party/WebKit/public/platform/WebRTCKeyParams.h"
+#include "third_party/blink/public/platform/web_rtc_certificate.h"
+#include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
+#include "third_party/blink/public/platform/web_rtc_key_params.h"
 #include "third_party/webrtc/api/optional.h"
 
 namespace content {

@@ -27,15 +27,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StyledMarkupSerializer_h
-#define StyledMarkupSerializer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_STYLED_MARKUP_SERIALIZER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_STYLED_MARKUP_SERIALIZER_H_
 
-#include "core/dom/NodeTraversal.h"
-#include "core/editing/EditingStrategy.h"
-#include "core/editing/EditingStyle.h"
-#include "core/editing/Position.h"
-#include "core/editing/serializers/StyledMarkupAccumulator.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/editing/editing_strategy.h"
+#include "third_party/blink/renderer/core/editing/editing_style.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/serializers/styled_markup_accumulator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ extern template class StyledMarkupSerializer<EditingInFlatTreeStrategy>;
 
 }  // namespace blink
 
-#endif  // StyledMarkupSerializer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_STYLED_MARKUP_SERIALIZER_H_

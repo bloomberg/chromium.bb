@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/custom/V0CustomElementAsyncImportMicrotaskQueue.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_async_import_microtask_queue.h"
 
-#include "core/html/custom/V0CustomElementMicrotaskImportStep.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_import_step.h"
 
 namespace blink {
 

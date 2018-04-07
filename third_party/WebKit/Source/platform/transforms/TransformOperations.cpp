@@ -19,15 +19,15 @@
  *
  */
 
-#include "platform/transforms/TransformOperations.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operations.h"
 
-#include "platform/animation/AnimationUtilities.h"
-#include "platform/geometry/FloatBox.h"
-#include "platform/transforms/IdentityTransformOperation.h"
-#include "platform/transforms/InterpolatedTransformOperation.h"
-#include "platform/transforms/Matrix3DTransformOperation.h"
-#include "platform/transforms/RotateTransformOperation.h"
 #include <algorithm>
+#include "third_party/blink/renderer/platform/animation/animation_utilities.h"
+#include "third_party/blink/renderer/platform/geometry/float_box.h"
+#include "third_party/blink/renderer/platform/transforms/identity_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/interpolated_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/matrix_3d_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/rotate_transform_operation.h"
 
 namespace blink {
 

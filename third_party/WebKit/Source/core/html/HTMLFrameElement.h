@@ -21,12 +21,12 @@
  *
  */
 
-#ifndef HTMLFrameElement_h
-#define HTMLFrameElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/html/HTMLFrameElementBase.h"
-#include "third_party/WebKit/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class CORE_EXPORT HTMLFrameElement final : public HTMLFrameElementBase {
 
 }  // namespace blink
 
-#endif  // HTMLFrameElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_FRAME_ELEMENT_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ResourcePreloader_h
-#define ResourcePreloader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_RESOURCE_PRELOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_RESOURCE_PRELOADER_H_
 
-#include "core/CoreExport.h"
-#include "core/html/parser/PreloadRequest.h"
 #include <memory>
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/parser/preload_request.h"
 
 namespace blink {
 

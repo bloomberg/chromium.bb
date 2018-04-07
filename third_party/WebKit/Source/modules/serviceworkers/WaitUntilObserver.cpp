@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/serviceworkers/WaitUntilObserver.h"
+#include "third_party/blink/renderer/modules/serviceworkers/wait_until_observer.h"
 
-#include "bindings/core/v8/ScriptFunction.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/bindings/Microtask.h"
-#include "platform/wtf/Assertions.h"
-#include "public/platform/Platform.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "v8/include/v8.h"
 
 namespace blink {

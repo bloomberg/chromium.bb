@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef Text_h
-#define Text_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TEXT_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/CharacterData.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/character_data.h"
 
 namespace blink {
 
@@ -91,4 +91,4 @@ DEFINE_NODE_TYPE_CASTS(Text, IsTextNode());
 
 }  // namespace blink
 
-#endif  // Text_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TEXT_H_

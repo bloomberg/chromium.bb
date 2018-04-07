@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/indexeddb/IDBValue.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "platform/blob/BlobData.h"
-#include "public/platform/WebBlobInfo.h"
-#include "public/platform/modules/indexeddb/WebIDBValue.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "v8/include/v8.h"
 
 namespace blink {

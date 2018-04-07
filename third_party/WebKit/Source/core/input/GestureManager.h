@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GestureManager_h
-#define GestureManager_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_GESTURE_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_GESTURE_MANAGER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/frame/LocalFrame.h"
-#include "core/layout/HitTestRequest.h"
-#include "core/page/EventWithHitTestResults.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/WebInputEventResult.h"
+#include "third_party/blink/public/platform/web_input_event_result.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/hit_test_request.h"
+#include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -91,4 +91,4 @@ class CORE_EXPORT GestureManager
 
 }  // namespace blink
 
-#endif  // GestureManager_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INPUT_GESTURE_MANAGER_H_

@@ -24,11 +24,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLUniformLocation_h
-#define WebGLUniformLocation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_UNIFORM_LOCATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_UNIFORM_LOCATION_H_
 
-#include "modules/webgl/WebGLProgram.h"
-#include "platform/bindings/ScriptWrappable.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_program.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ class WebGLUniformLocation final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // WebGLUniformLocation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_UNIFORM_LOCATION_H_

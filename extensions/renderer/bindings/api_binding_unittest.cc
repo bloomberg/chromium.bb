@@ -26,7 +26,7 @@
 #include "gin/public/context_holder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
+#include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "v8/include/v8.h"
 
 namespace extensions {

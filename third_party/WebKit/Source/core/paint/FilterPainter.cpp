@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/FilterPainter.h"
+#include "third_party/blink/renderer/core/paint/filter_painter.h"
 
 #include <memory>
 #include <utility>
 
-#include "core/paint/FilterEffectBuilder.h"
-#include "core/paint/LayerClipRecorder.h"
-#include "core/paint/PaintLayer.h"
-#include "platform/graphics/CompositorFilterOperations.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/filters/FilterEffect.h"
-#include "platform/graphics/paint/FilterDisplayItem.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/core/paint/filter_effect_builder.h"
+#include "third_party/blink/renderer/core/paint/layer_clip_recorder.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/filter_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

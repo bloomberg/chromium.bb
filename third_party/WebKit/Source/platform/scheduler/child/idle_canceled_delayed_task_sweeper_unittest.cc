@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
+#include "third_party/blink/renderer/platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
-#include "platform/scheduler/base/lazy_now.h"
-#include "platform/scheduler/base/task_queue.h"
-#include "platform/scheduler/child/idle_helper.h"
-#include "platform/scheduler/child/scheduler_helper.h"
-#include "platform/scheduler/renderer/main_thread_scheduler_helper.h"
-#include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/scheduler/base/lazy_now.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/child/idle_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/child/scheduler_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/main_thread_scheduler_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
 
 namespace blink {
 namespace scheduler {

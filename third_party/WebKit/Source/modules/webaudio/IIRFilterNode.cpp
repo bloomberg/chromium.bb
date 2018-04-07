@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webaudio/IIRFilterNode.h"
+#include "third_party/blink/renderer/modules/webaudio/iir_filter_node.h"
 
 #include <memory>
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "modules/webaudio/IIRFilterOptions.h"
-#include "platform/Histogram.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/modules/webaudio/iir_filter_options.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
 

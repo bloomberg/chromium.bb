@@ -20,14 +20,14 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef ImageResourceObserver_h
-#define ImageResourceObserver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_IMAGE_RESOURCE_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_IMAGE_RESOURCE_OBSERVER_H_
 
-#include "core/CoreExport.h"
-#include "core/style/StyleImage.h"
-#include "platform/graphics/ImageAnimationPolicy.h"
-#include "platform/loader/fetch/ResourcePriority.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/style/style_image.h"
+#include "third_party/blink/renderer/platform/graphics/image_animation_policy.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_priority.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

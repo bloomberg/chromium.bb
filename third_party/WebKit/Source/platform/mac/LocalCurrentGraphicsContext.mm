@@ -17,13 +17,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/mac/LocalCurrentGraphicsContext.h"
+#include "third_party/blink/renderer/platform/mac/local_current_graphics_context.h"
 
 #include <AppKit/NSGraphicsContext.h>
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/mac/ThemeMac.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/mac/theme_mac.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
 namespace blink {

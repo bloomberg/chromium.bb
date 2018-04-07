@@ -21,12 +21,12 @@
  *
  */
 
-#ifndef DocumentFragment_h
-#define DocumentFragment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_FRAGMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_FRAGMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/ContainerNode.h"
-#include "core/dom/ParserContentPolicy.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/container_node.h"
+#include "third_party/blink/renderer/core/dom/parser_content_policy.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ DEFINE_NODE_TYPE_CASTS(DocumentFragment, IsDocumentFragment());
 
 }  // namespace blink
 
-#endif  // DocumentFragment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_FRAGMENT_H_

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DedicatedWorker_h
-#define DedicatedWorker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/CoreExport.h"
-#include "core/dom/PausableObject.h"
-#include "core/dom/events/EventListener.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/messaging/MessagePort.h"
-#include "core/workers/AbstractWorker.h"
-#include "core/workers/WorkerOptions.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
+#include "third_party/blink/renderer/core/workers/abstract_worker.h"
+#include "third_party/blink/renderer/core/workers/worker_options.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace v8_inspector {
 struct V8StackTraceId;
@@ -101,4 +101,4 @@ class CORE_EXPORT DedicatedWorker final
 
 }  // namespace blink
 
-#endif  // DedicatedWorker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_H_

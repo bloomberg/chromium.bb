@@ -20,12 +20,12 @@
  *
  */
 
-#ifndef HTMLDocument_h
-#define HTMLDocument_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_DOCUMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_DOCUMENT_H_
 
-#include "core/dom/Document.h"
-#include "platform/loader/fetch/ResourceClient.h"
-#include "platform/wtf/HashCountedSet.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
+#include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
 
 namespace blink {
 
@@ -66,4 +66,4 @@ DEFINE_DOCUMENT_TYPE_CASTS(HTMLDocument);
 
 }  // namespace blink
 
-#endif  // HTMLDocument_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_DOCUMENT_H_

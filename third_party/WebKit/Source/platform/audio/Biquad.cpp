@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/Biquad.h"
+#include "third_party/blink/renderer/platform/audio/biquad.h"
 
 #include "build/build_config.h"
-#include "platform/audio/AudioUtilities.h"
-#include "platform/audio/DenormalDisabler.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/audio/denormal_disabler.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 #include <algorithm>
 #include <complex>

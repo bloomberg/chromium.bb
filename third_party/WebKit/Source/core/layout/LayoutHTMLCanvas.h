@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutHTMLCanvas_h
-#define LayoutHTMLCanvas_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_HTML_CANVAS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_HTML_CANVAS_H_
 
-#include "core/layout/LayoutReplaced.h"
+#include "third_party/blink/renderer/core/layout/layout_replaced.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutHTMLCanvas, IsCanvas());
 
 }  // namespace blink
 
-#endif  // LayoutHTMLCanvas_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_HTML_CANVAS_H_

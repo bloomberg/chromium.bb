@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/budget/WorkerNavigatorBudget.h"
+#include "third_party/blink/renderer/modules/budget/worker_navigator_budget.h"
 
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerNavigator.h"
-#include "core/workers/WorkerThread.h"
-#include "modules/budget/BudgetService.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_navigator.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/modules/budget/budget_service.h"
 
 namespace blink {
 

@@ -26,17 +26,17 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/ShadowTreeStyleSheetCollection.h"
+#include "third_party/blink/renderer/core/css/shadow_tree_style_sheet_collection.h"
 
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/StyleChangeReason.h"
-#include "core/css/StyleEngine.h"
-#include "core/css/StyleSheetCandidate.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/dom/Element.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/html/HTMLStyleElement.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/css/style_sheet_candidate.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/html_style_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

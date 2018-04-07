@@ -23,8 +23,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IndexedDB_h
-#define IndexedDB_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_INDEXED_DB_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_INDEXED_DB_H_
 
 namespace blink {
 
@@ -36,4 +36,4 @@ enum CursorType { kCursorKeyAndValue = 0, kCursorKeyOnly };
 
 }  // namespace blink
 
-#endif  // IndexedDB_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_INDEXED_DB_H_

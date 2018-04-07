@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/mediarecorder/BlobEvent.h"
+#include "third_party/blink/renderer/modules/mediarecorder/blob_event.h"
 
-#include "modules/mediarecorder/BlobEventInit.h"
-#include "platform/wtf/dtoa/double.h"
+#include "third_party/blink/renderer/modules/mediarecorder/blob_event_init.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/double.h"
 
 namespace blink {
 

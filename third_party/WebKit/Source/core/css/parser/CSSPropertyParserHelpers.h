@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSPropertyParserHelpers_h
-#define CSSPropertyParserHelpers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PROPERTY_PARSER_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PROPERTY_PARSER_HELPERS_H_
 
-#include "core/css/CSSCustomIdentValue.h"
-#include "core/css/CSSFunctionValue.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/parser/CSSParserMode.h"
-#include "core/css/parser/CSSParserTokenRange.h"
-#include "core/frame/WebFeatureForward.h"
-#include "platform/Length.h"  // For ValueRange
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
+#include "third_party/blink/renderer/core/css/css_function_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_mode.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/core/frame/web_feature_forward.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/length.h"  // For ValueRange
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -202,4 +202,4 @@ CSSValue* ConsumeFilterFunctionList(CSSParserTokenRange&,
 
 }  // namespace blink
 
-#endif  // CSSPropertyParserHelpers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PROPERTY_PARSER_HELPERS_H_

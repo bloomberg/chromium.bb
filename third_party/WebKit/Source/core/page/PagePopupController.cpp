@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/page/PagePopupController.h"
+#include "third_party/blink/renderer/core/page/page_popup_controller.h"
 
-#include "core/page/PagePopup.h"
-#include "core/page/PagePopupClient.h"
-#include "platform/text/PlatformLocale.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/page/page_popup.h"
+#include "third_party/blink/renderer/core/page/page_popup_client.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 

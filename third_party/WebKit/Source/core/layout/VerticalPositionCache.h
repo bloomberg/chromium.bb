@@ -23,14 +23,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef VerticalPositionCache_h
-#define VerticalPositionCache_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_VERTICAL_POSITION_CACHE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_VERTICAL_POSITION_CACHE_H_
 
 #include "base/macros.h"
-#include "core/layout/api/LineLayoutItem.h"
-#include "platform/fonts/FontBaseline.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/platform/fonts/font_baseline.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class VerticalPositionCache {
 
 }  // namespace blink
 
-#endif  // VerticalPositionCache_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_VERTICAL_POSITION_CACHE_H_

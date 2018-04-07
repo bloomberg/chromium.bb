@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScriptModuleResolver_h
-#define ScriptModuleResolver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_MODULE_RESOLVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_MODULE_RESOLVER_H_
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class CORE_EXPORT ScriptModuleResolver
 
 }  // namespace blink
 
-#endif  // ScriptModuleResolver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_MODULE_RESOLVER_H_

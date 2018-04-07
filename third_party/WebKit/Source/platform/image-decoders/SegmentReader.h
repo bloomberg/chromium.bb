@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SegmentReader_h
-#define SegmentReader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_SEGMENT_READER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_SEGMENT_READER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/SharedBuffer.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 class SkData;
 class SkROBuffer;
@@ -49,4 +49,4 @@ class PLATFORM_EXPORT SegmentReader
 };
 
 }  // namespace blink
-#endif  // SegmentReader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_SEGMENT_READER_H_

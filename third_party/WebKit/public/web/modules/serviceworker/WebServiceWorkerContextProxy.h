@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerContextProxy_h
-#define WebServiceWorkerContextProxy_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_CONTEXT_PROXY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_CONTEXT_PROXY_H_
 
-#include "public/platform/modules/serviceworker/WebServiceWorker.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
-#include "third_party/WebKit/public/common/message_port/transferable_message.h"
+#include "third_party/blink/public/common/message_port/transferable_message.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_registration.h"
 
 #include <memory>
 
@@ -138,4 +138,4 @@ class WebServiceWorkerContextProxy {
 
 }  // namespace blink
 
-#endif  // WebServiceWorkerContextProxy_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_CONTEXT_PROXY_H_

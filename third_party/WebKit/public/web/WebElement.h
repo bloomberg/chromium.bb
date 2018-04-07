@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebElement_h
-#define WebElement_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ELEMENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ELEMENT_H_
 
-#include "public/platform/WebImage.h"
-#include "WebNode.h"
+#include "third_party/blink/public/platform/web_image.h"
+#include "third_party/blink/public/web/web_node.h"
 
 namespace blink {
 

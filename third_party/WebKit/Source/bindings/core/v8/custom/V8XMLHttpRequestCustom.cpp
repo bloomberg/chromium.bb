@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8XMLHttpRequest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_xml_http_request.h"
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8ArrayBuffer.h"
-#include "bindings/core/v8/V8ArrayBufferView.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8Blob.h"
-#include "bindings/core/v8/V8Document.h"
-#include "bindings/core/v8/V8FormData.h"
-#include "bindings/core/v8/V8HTMLDocument.h"
-#include "core/dom/Document.h"
-#include "core/probe/CoreProbes.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/xmlhttprequest/XMLHttpRequest.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer_view.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_document.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_form_data.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_html_document.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request.h"
 #include "v8/include/v8.h"
 
 namespace blink {

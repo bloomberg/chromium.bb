@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlElementBase_h
-#define MediaControlElementBase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_ELEMENT_BASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_ELEMENT_BASE_H_
 
-#include "core/dom/Element.h"
-#include "modules/ModulesExport.h"
-#include "modules/media_controls/elements/MediaControlElementType.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/heap/Visitor.h"
-#include "public/platform/WebLocalizedString.h"
+#include "third_party/blink/public/platform/web_localized_string.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_element_type.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
 
 namespace blink {
 
@@ -86,4 +86,4 @@ class MODULES_EXPORT MediaControlElementBase : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // MediaControlElementBase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_ELEMENT_BASE_H_

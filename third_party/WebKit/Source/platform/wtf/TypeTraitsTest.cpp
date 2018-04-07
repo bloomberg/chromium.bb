@@ -19,7 +19,7 @@
  *
  */
 
-#include "platform/wtf/TypeTraits.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 #include "base/macros.h"
 #include "build/build_config.h"

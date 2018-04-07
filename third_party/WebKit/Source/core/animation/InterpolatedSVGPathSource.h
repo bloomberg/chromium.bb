@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InterpolatedSVGPathSource_h
-#define InterpolatedSVGPathSource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATED_SVG_PATH_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATED_SVG_PATH_SOURCE_H_
 
 #include "base/macros.h"
-#include "core/animation/SVGPathSegInterpolationFunctions.h"
-#include "core/svg/SVGPathData.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/animation/svg_path_seg_interpolation_functions.h"
+#include "third_party/blink/renderer/core/svg/svg_path_data.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ PathSegmentData InterpolatedSVGPathSource::ParseSegment() {
 
 }  // namespace blink
 
-#endif  // InterpolatedSVGPathSource_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_INTERPOLATED_SVG_PATH_SOURCE_H_

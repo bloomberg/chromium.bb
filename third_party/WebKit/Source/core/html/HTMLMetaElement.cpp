@@ -20,21 +20,21 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/HTMLMetaElement.h"
+#include "third_party/blink/renderer/core/html/html_meta_element.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/frame/Settings.h"
-#include "core/html/HTMLHeadElement.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html_names.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/loader/HttpEquiv.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "platform/wtf/text/StringToNumber.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/html_head_element.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/http_equiv.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 
 namespace blink {
 

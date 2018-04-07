@@ -23,17 +23,17 @@
  * DAMAGE.
  */
 
-#include "platform/graphics/GraphicsContext.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 #include <memory>
-#include "platform/graphics/BitmapImage.h"
-#include "platform/graphics/Path.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/testing/FontTestHelpers.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/text/TextRun.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/testing/font_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkShader.h"

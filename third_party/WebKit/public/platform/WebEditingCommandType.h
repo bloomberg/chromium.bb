@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebEditingCommandType_h
-#define WebEditingCommandType_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_EDITING_COMMAND_TYPE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_EDITING_COMMAND_TYPE_H_
 
 namespace blink {
 
@@ -206,4 +206,4 @@ enum class WebEditingCommandType {
 
 }  // namespace blink
 
-#endif  // WebEditingCommandType_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_EDITING_COMMAND_TYPE_H_

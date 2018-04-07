@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SequenceTest_h
-#define SequenceTest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_SEQUENCE_TEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_SEQUENCE_TEST_H_
 
-#include "bindings/core/v8/double_or_double_sequence.h"
-#include "core/dom/Element.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/double_or_double_sequence.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class SequenceTest final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // SequenceTest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_SEQUENCE_TEST_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DraggedIsolatedFileSystem_h
-#define DraggedIsolatedFileSystem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_DRAGGED_ISOLATED_FILE_SYSTEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_DRAGGED_ISOLATED_FILE_SYSTEM_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -32,4 +32,4 @@ class CORE_EXPORT DraggedIsolatedFileSystem {
 
 }  // namespace blink
 
-#endif  // DraggedIsolatedFileSystem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_DRAGGED_ISOLATED_FILE_SYSTEM_H_

@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/events/PageTransitionEvent.h"
+#include "third_party/blink/renderer/core/events/page_transition_event.h"
 
 namespace blink {
 

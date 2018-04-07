@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be found
 // in the LICENSE file.
 
-#include "core/frame/WebViewFrameWidget.h"
+#include "third_party/blink/renderer/core/frame/web_view_frame_widget.h"
 
-#include "core/exported/WebViewImpl.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "platform/exported/WebActiveGestureAnimation.h"
-#include "third_party/WebKit/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/platform/exported/web_active_gesture_animation.h"
 
 namespace blink {
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebTouchEvent_h
-#define WebTouchEvent_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TOUCH_EVENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TOUCH_EVENT_H_
 
-#include "WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 
 namespace blink {
 
@@ -74,4 +74,4 @@ class WebTouchEvent : public WebInputEvent {
 
 }  // namespace blink
 
-#endif  // WebTouchEvent_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TOUCH_EVENT_H_

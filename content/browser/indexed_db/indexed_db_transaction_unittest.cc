@@ -23,7 +23,7 @@
 #include "content/browser/indexed_db/mock_indexed_db_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 
 namespace content {
 namespace indexed_db_transaction_unittest {

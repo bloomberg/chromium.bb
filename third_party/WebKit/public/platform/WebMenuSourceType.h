@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebMenuSourceType_h
-#define WebMenuSourceType_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MENU_SOURCE_TYPE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MENU_SOURCE_TYPE_H_
 
 namespace blink {
 

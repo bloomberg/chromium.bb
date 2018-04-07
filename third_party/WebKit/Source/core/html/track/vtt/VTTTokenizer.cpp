@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/track/vtt/VTTTokenizer.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_tokenizer.h"
 
-#include "core/html/parser/HTMLEntityParser.h"
-#include "core/html/parser/MarkupTokenizerInlines.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/html/parser/html_entity_parser.h"
+#include "third_party/blink/renderer/core/html/parser/markup_tokenizer_inlines.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

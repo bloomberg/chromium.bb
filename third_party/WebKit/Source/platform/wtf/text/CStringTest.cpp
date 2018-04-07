@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/text/CString.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include <sstream>

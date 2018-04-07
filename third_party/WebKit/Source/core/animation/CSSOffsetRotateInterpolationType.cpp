@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSOffsetRotateInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_offset_rotate_interpolation_type.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/css/resolver/StyleBuilderConverter.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/StyleOffsetRotation.h"
+#include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/style_offset_rotation.h"
 
 namespace blink {
 

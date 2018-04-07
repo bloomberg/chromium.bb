@@ -26,11 +26,11 @@
  *
  */
 
-#ifndef ThemePainterDefault_h
-#define ThemePainterDefault_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_THEME_PAINTER_DEFAULT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_THEME_PAINTER_DEFAULT_H_
 
-#include "core/paint/ThemePainter.h"
-#include "public/platform/WebThemeEngine.h"
+#include "third_party/blink/public/platform/web_theme_engine.h"
+#include "third_party/blink/renderer/core/paint/theme_painter.h"
 
 namespace blink {
 

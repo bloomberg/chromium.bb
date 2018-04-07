@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/image-decoders/ImageDecoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 
 #include <memory>
-#include "platform/image-decoders/ImageFrame.h"
-#include "platform/wtf/Vector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_frame.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/LayoutTextControl.h"
+#include "third_party/blink/renderer/core/layout/layout_text_control.h"
 
 #include "build/build_config.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/testing/CoreUnitTestHelper.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
 

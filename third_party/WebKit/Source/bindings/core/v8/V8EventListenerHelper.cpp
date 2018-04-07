@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8EventListenerHelper.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener_helper.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8ErrorHandler.h"
-#include "bindings/core/v8/V8EventListener.h"
-#include "bindings/core/v8/V8Window.h"
-#include "bindings/core/v8/V8WorkerOrWorkletEventListener.h"
-#include "platform/bindings/V8PrivateProperty.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_error_handler.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_listener.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_worker_or_worklet_event_listener.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
 namespace blink {
 namespace {

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/CSSParserFastPaths.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_fast_paths.h"
 
-#include "platform/testing/BlinkFuzzerTestSupport.h"
-#include "platform/testing/FuzzedDataProvider.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
+#include "third_party/blink/renderer/platform/testing/fuzzed_data_provider.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static blink::BlinkFuzzerTestSupport test_support =

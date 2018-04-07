@@ -17,11 +17,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGFEPointLightElement.h"
+#include "third_party/blink/renderer/core/svg/svg_fe_point_light_element.h"
 
-#include "core/svg_names.h"
-#include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/PointLightSource.h"
+#include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/graphics/filters/point_light_source.h"
 
 namespace blink {
 

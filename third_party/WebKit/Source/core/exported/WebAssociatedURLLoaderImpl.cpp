@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/exported/WebAssociatedURLLoaderImpl.h"
+#include "third_party/blink/renderer/core/exported/web_associated_url_loader_impl.h"
 
 #include <limits>
 #include <memory>
@@ -36,30 +36,30 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/Document.h"
-#include "core/loader/DocumentThreadableLoader.h"
-#include "core/loader/DocumentThreadableLoaderClient.h"
-#include "core/loader/ThreadableLoadingContext.h"
-#include "platform/Timer.h"
-#include "platform/exported/WrappedResourceRequest.h"
-#include "platform/exported/WrappedResourceResponse.h"
-#include "platform/loader/fetch/FetchUtils.h"
-#include "platform/loader/fetch/ResourceError.h"
-#include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/network/HTTPParsers.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebCORS.h"
-#include "public/platform/WebHTTPHeaderVisitor.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURLError.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/web/WebAssociatedURLLoaderClient.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_cors.h"
+#include "third_party/blink/public/platform/web_http_header_visitor.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/web_associated_url_loader_client.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/loader/document_threadable_loader.h"
+#include "third_party/blink/renderer/core/loader/document_threadable_loader_client.h"
+#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
+#include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/xr/XRFrameRequestCallbackCollection.h"
+#include "third_party/blink/renderer/modules/xr/xr_frame_request_callback_collection.h"
 
-#include "bindings/modules/v8/v8_xr_frame_request_callback.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/probe/CoreProbes.h"
-#include "modules/xr/XRPresentationFrame.h"
-#include "modules/xr/XRSession.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_xr_frame_request_callback.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/modules/xr/xr_presentation_frame.h"
+#include "third_party/blink/renderer/modules/xr/xr_session.h"
 
 namespace blink {
 

@@ -2,31 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_block_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
-#include "core/layout/LayoutObject.h"
-#include "core/layout/ng/inline/ng_inline_node.h"
-#include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "core/layout/ng/list/ng_list_layout_algorithm.h"
-#include "core/layout/ng/ng_block_child_iterator.h"
-#include "core/layout/ng/ng_box_fragment.h"
-#include "core/layout/ng/ng_constraint_space.h"
-#include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_floats_utils.h"
-#include "core/layout/ng/ng_fragment_builder.h"
-#include "core/layout/ng/ng_fragmentation_utils.h"
-#include "core/layout/ng/ng_layout_result.h"
-#include "core/layout/ng/ng_length_utils.h"
-#include "core/layout/ng/ng_out_of_flow_layout_part.h"
-#include "core/layout/ng/ng_positioned_float.h"
-#include "core/layout/ng/ng_space_utils.h"
-#include "core/layout/ng/ng_unpositioned_float.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/list/ng_list_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_child_iterator.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 namespace {

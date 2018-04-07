@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FullscreenController_h
-#define FullscreenController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FULLSCREEN_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FULLSCREEN_CONTROLLER_H_
 
 #include <memory>
 
-#include "core/CoreExport.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/Color.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 
 namespace blink {
 

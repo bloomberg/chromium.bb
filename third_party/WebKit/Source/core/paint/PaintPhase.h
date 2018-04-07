@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef PaintPhase_h
-#define PaintPhase_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_PHASE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_PHASE_H_
 
 namespace blink {
 
@@ -135,4 +135,4 @@ typedef unsigned GlobalPaintFlags;
 
 }  // namespace blink
 
-#endif  // PaintPhase_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_PHASE_H_

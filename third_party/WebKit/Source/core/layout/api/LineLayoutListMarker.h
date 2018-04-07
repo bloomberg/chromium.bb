@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LineLayoutListMarker_h
-#define LineLayoutListMarker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_LIST_MARKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_LIST_MARKER_H_
 
-#include "core/layout/LayoutListMarker.h"
-#include "core/layout/api/LineLayoutBox.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class LineLayoutListMarker : public LineLayoutBox {
 
 }  // namespace blink
 
-#endif  // LineLayoutListMarker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_LIST_MARKER_H_

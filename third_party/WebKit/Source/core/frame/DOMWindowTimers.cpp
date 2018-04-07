@@ -30,16 +30,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/frame/DOMWindowTimers.h"
+#include "third_party/blink/renderer/core/frame/dom_window_timers.h"
 
-#include "bindings/core/v8/V8GCForContextDispose.h"
-#include "core/dom/Document.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/DOMTimer.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/weborigin/SecurityViolationReportingPolicy.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/dom_timer.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 
 namespace blink {
 

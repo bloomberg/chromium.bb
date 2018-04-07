@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef InstallationServiceImpl_h
-#define InstallationServiceImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INSTALLATION_INSTALLATION_SERVICE_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INSTALLATION_INSTALLATION_SERVICE_IMPL_H_
 
-#include "modules/ModulesExport.h"
-#include "platform/heap/Persistent.h"
-#include "public/platform/modules/installation/installation.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/installation/installation.mojom-blink.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
@@ -28,4 +28,4 @@ class MODULES_EXPORT InstallationServiceImpl final
 
 }  // namespace blink
 
-#endif  // InstallationServiceImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INSTALLATION_INSTALLATION_SERVICE_IMPL_H_

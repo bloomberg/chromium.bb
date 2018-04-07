@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PerformanceServerTiming_h
-#define PerformanceServerTiming_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_SERVER_TIMING_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_SERVER_TIMING_H_
 
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebResourceTimingInfo.h"
-#include "public/platform/WebVector.h"
+#include "third_party/blink/public/platform/web_resource_timing_info.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -45,4 +45,4 @@ class CORE_EXPORT PerformanceServerTiming final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // PerformanceServerTiming_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_SERVER_TIMING_H_

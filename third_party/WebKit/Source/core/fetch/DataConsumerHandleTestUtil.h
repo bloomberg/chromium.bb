@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DataConsumerHandleTestUtil_h
-#define DataConsumerHandleTestUtil_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_DATA_CONSUMER_HANDLE_TEST_UTIL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_DATA_CONSUMER_HANDLE_TEST_UTIL_H_
 
 #include <memory>
 
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "core/testing/NullExecutionContext.h"
 #include "gin/public/isolate_holder.h"
-#include "platform/WaitableEvent.h"
-#include "platform/WebThreadSupportingGC.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/Locker.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebDataConsumerHandle.h"
-#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/web_data_consumer_handle.h"
+#include "third_party/blink/renderer/core/testing/null_execution_context.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
+#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/locker.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -429,4 +429,4 @@ class DataConsumerHandleTestUtil {
 
 }  // namespace blink
 
-#endif  // DataConsumerHandleTestUtil_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_DATA_CONSUMER_HANDLE_TEST_UTIL_H_

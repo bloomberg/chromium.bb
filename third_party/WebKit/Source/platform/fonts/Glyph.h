@@ -27,8 +27,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Glyph_h
-#define Glyph_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_GLYPH_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_GLYPH_H_
 
 namespace blink {
 
@@ -36,4 +36,4 @@ typedef unsigned short Glyph;
 
 }  // namespace blink
 
-#endif  // Glyph_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_GLYPH_H_

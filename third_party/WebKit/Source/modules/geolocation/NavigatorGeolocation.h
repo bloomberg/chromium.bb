@@ -17,13 +17,13 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef NavigatorGeolocation_h
-#define NavigatorGeolocation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_NAVIGATOR_GEOLOCATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_NAVIGATOR_GEOLOCATION_H_
 
-#include "core/frame/Navigator.h"
-#include "platform/Supplementable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class NavigatorGeolocation final
 
 }  // namespace blink
 
-#endif  // NavigatorGeolocation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_GEOLOCATION_NAVIGATOR_GEOLOCATION_H_

@@ -23,15 +23,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PODIntervalTree_h
-#define PODIntervalTree_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_INTERVAL_TREE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_INTERVAL_TREE_H_
 
-#include "platform/PODArena.h"
-#include "platform/PODInterval.h"
-#include "platform/PODRedBlackTree.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/pod_arena.h"
+#include "third_party/blink/renderer/platform/pod_interval.h"
+#include "third_party/blink/renderer/platform/pod_red_black_tree.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -255,4 +255,4 @@ struct ValueToString<PODInterval<T, UserData>> {
 
 }  // namespace blink
 
-#endif  // PODIntervalTree_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_INTERVAL_TREE_H_

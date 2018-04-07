@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SVGImagePainter_h
-#define SVGImagePainter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_IMAGE_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_IMAGE_PAINTER_H_
 
-#include "platform/geometry/FloatSize.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -32,4 +32,4 @@ class SVGImagePainter {
 
 }  // namespace blink
 
-#endif  // SVGImagePainter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_IMAGE_PAINTER_H_

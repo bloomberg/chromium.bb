@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MailboxTextureHolder_h
-#define MailboxTextureHolder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_MAILBOX_TEXTURE_HOLDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_MAILBOX_TEXTURE_HOLDER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "platform/PlatformExport.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/TextureHolder.h"
-#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/texture_holder.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace blink {
@@ -60,4 +60,4 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
 
 }  // namespace blink
 
-#endif  // MailboxTextureHolder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_MAILBOX_TEXTURE_HOLDER_H_

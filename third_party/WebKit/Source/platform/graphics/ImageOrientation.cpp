@@ -24,9 +24,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/ImageOrientation.h"
+#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 
-#include "platform/transforms/AffineTransform.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
 namespace blink {
 

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/canvas/CanvasDrawListener.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_draw_listener.h"
 
-#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {

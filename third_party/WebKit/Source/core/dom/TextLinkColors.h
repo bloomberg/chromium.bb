@@ -27,12 +27,12 @@
  *
  */
 
-#ifndef TextLinkColors_h
-#define TextLinkColors_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TEXT_LINK_COLORS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TEXT_LINK_COLORS_H_
 
 #include "base/macros.h"
-#include "platform/graphics/Color.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

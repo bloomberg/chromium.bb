@@ -24,13 +24,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLElementStack_h
-#define HTMLElementStack_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_ELEMENT_STACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_ELEMENT_STACK_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/html/parser/HTMLStackItem.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/html/parser/html_stack_item.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -196,4 +196,4 @@ WILL_NOT_BE_EAGERLY_TRACED_CLASS(HTMLElementStack::ElementRecord);
 
 }  // namespace blink
 
-#endif  // HTMLElementStack_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_ELEMENT_STACK_H_

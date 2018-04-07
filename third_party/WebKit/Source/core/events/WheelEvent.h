@@ -23,14 +23,14 @@
  *
  */
 
-#ifndef WheelEvent_h
-#define WheelEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_WHEEL_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_WHEEL_EVENT_H_
 
-#include "core/CoreExport.h"
-#include "core/events/MouseEvent.h"
-#include "core/events/WheelEventInit.h"
-#include "platform/geometry/FloatPoint.h"
-#include "public/platform/WebMouseWheelEvent.h"
+#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/events/wheel_event_init.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
 
 namespace blink {
 
@@ -95,4 +95,4 @@ DEFINE_EVENT_TYPE_CASTS(WheelEvent);
 
 }  // namespace blink
 
-#endif  // WheelEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_WHEEL_EVENT_H_

@@ -5,7 +5,7 @@
 #include "content/renderer/file_info_util.h"
 
 #include "base/logging.h"
-#include "third_party/WebKit/public/platform/WebFileInfo.h"
+#include "third_party/blink/public/platform/web_file_info.h"
 
 namespace content {
 

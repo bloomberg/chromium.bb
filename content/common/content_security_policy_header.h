@@ -8,7 +8,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebContentSecurityPolicy.h"
+#include "third_party/blink/public/platform/web_content_security_policy.h"
 
 namespace content {
 

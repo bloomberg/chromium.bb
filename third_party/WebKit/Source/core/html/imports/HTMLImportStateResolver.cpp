@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/imports/HTMLImportStateResolver.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_state_resolver.h"
 
-#include "core/html/imports/HTMLImport.h"
-#include "core/html/imports/HTMLImportChild.h"
-#include "core/html/imports/HTMLImportLoader.h"
+#include "third_party/blink/renderer/core/html/imports/html_import.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_child.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
 
 namespace blink {
 

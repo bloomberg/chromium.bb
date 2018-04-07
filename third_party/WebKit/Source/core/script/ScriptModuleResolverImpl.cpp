@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/script/ScriptModuleResolverImpl.h"
+#include "third_party/blink/renderer/core/script/script_module_resolver_impl.h"
 
-#include "bindings/core/v8/ScriptModule.h"
-#include "core/script/Modulator.h"
-#include "core/script/ModuleScript.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/core/script/module_script.h"
 
 namespace blink {
 

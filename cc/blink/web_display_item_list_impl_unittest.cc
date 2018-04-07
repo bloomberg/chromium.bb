@@ -7,7 +7,7 @@
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebFloatPoint.h"
+#include "third_party/blink/public/platform/web_float_point.h"
 
 namespace cc_blink {
 namespace {

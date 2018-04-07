@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/canvas/offscreencanvas/OffscreenCanvasModule.h"
+#include "third_party/blink/renderer/modules/canvas/offscreencanvas/offscreen_canvas_module.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "core/offscreencanvas/OffscreenCanvas.h"
-#include "modules/canvas/htmlcanvas/CanvasContextCreationAttributesHelpers.h"
-#include "modules/canvas/htmlcanvas/CanvasContextCreationAttributesModule.h"
-#include "modules/canvas/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
+#include "third_party/blink/renderer/modules/canvas/htmlcanvas/canvas_context_creation_attributes_helpers.h"
+#include "third_party/blink/renderer/modules/canvas/htmlcanvas/canvas_context_creation_attributes_module.h"
+#include "third_party/blink/renderer/modules/canvas/offscreencanvas2d/offscreen_canvas_rendering_context_2d.h"
 
 namespace blink {
 

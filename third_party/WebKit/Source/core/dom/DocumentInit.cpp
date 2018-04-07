@@ -27,15 +27,15 @@
  *
  */
 
-#include "core/dom/DocumentInit.h"
+#include "third_party/blink/renderer/core/dom/document_init.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/custom/V0CustomElementRegistrationContext.h"
-#include "core/html/imports/HTMLImportsController.h"
-#include "core/loader/DocumentLoader.h"
-#include "platform/network/NetworkUtils.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
 
 namespace blink {
 

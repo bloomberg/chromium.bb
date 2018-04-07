@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorTransformAnimationCurve_h
-#define CompositorTransformAnimationCurve_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_TRANSFORM_ANIMATION_CURVE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_TRANSFORM_ANIMATION_CURVE_H_
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "platform/PlatformExport.h"
-#include "platform/animation/CompositorAnimationCurve.h"
-#include "platform/animation/CompositorTransformKeyframe.h"
-#include "platform/animation/TimingFunction.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/animation/compositor_animation_curve.h"
+#include "third_party/blink/renderer/platform/animation/compositor_transform_keyframe.h"
+#include "third_party/blink/renderer/platform/animation/timing_function.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace cc {
 class KeyframedTransformAnimationCurve;
@@ -51,4 +51,4 @@ class PLATFORM_EXPORT CompositorTransformAnimationCurve
 
 }  // namespace blink
 
-#endif  // CompositorTransformAnimationCurve_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_COMPOSITOR_TRANSFORM_ANIMATION_CURVE_H_

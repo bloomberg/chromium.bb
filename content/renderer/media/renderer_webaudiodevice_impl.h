@@ -13,8 +13,8 @@
 #include "content/common/content_export.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_sink.h"
-#include "third_party/WebKit/public/platform/WebAudioDevice.h"
-#include "third_party/WebKit/public/platform/WebAudioLatencyHint.h"
+#include "third_party/blink/public/platform/web_audio_device.h"
+#include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "url/origin.h"
 
 namespace base {

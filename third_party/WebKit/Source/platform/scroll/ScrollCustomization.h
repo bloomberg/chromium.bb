@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScrollCustomization_h
-#define ScrollCustomization_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_CUSTOMIZATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_CUSTOMIZATION_H_
 
 #include <stdint.h>
 
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 namespace ScrollCustomization {
@@ -30,4 +30,4 @@ PLATFORM_EXPORT ScrollDirection GetScrollDirectionFromDeltas(double delta_x,
 }  // namespace ScrollCustomization
 }  // namespace blink
 
-#endif  // ScrollCustomization_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLL_CUSTOMIZATION_H_

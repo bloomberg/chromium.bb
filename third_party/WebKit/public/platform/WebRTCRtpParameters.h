@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebRTCRtpParameters_h
-#define WebRTCRtpParameters_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_PARAMETERS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_PARAMETERS_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "WebCommon.h"
-#include "WebString.h"
-#include "WebVector.h"
 #include "base/optional.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -187,4 +187,4 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpParameters {
 
 }  // namespace blink
 
-#endif  // WebRTCRtpParameters_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_PARAMETERS_H_

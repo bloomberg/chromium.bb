@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webgl/WebGLTimerQueryEXT.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_timer_query_ext.h"
 
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "modules/webgl/WebGLRenderingContextBase.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 
 namespace blink {
 

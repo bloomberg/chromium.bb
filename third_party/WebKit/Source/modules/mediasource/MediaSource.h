@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaSource_h
-#define MediaSource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_MEDIA_SOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_MEDIA_SOURCE_H_
 
 #include <memory>
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/fileapi/URLRegistry.h"
-#include "core/html/TimeRanges.h"
-#include "core/html/media/HTMLMediaSource.h"
-#include "modules/EventTargetModules.h"
-#include "modules/mediasource/SourceBuffer.h"
-#include "modules/mediasource/SourceBufferList.h"
-#include "public/platform/WebMediaSource.h"
+#include "third_party/blink/public/platform/web_media_source.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/fileapi/url_registry.h"
+#include "third_party/blink/renderer/core/html/media/html_media_source.h"
+#include "third_party/blink/renderer/core/html/time_ranges.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/mediasource/source_buffer.h"
+#include "third_party/blink/renderer/modules/mediasource/source_buffer_list.h"
 
 namespace blink {
 
@@ -158,4 +158,4 @@ class MediaSource final : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // MediaSource_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_MEDIA_SOURCE_H_

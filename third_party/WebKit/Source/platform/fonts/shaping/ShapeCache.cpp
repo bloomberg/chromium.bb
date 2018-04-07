@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/shaping/ShapeCache.h"
-#include "platform/wtf/StringHasher.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_cache.h"
+#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
 
 namespace blink {
 

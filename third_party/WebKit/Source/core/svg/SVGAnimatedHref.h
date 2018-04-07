@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SVGAnimatedHref_h
-#define SVGAnimatedHref_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_HREF_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_HREF_H_
 
-#include "core/svg/SVGAnimatedString.h"
+#include "third_party/blink/renderer/core/svg/svg_animated_string.h"
 
 namespace blink {
 
@@ -49,4 +49,4 @@ class SVGAnimatedHref final : public SVGAnimatedString {
 
 }  // namespace blink
 
-#endif  // SVGAnimatedHref_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ANIMATED_HREF_H_

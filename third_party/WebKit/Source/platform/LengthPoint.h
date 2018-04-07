@@ -27,11 +27,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LengthPoint_h
-#define LengthPoint_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LENGTH_POINT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LENGTH_POINT_H_
 
-#include "platform/Length.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -63,4 +63,4 @@ struct LengthPoint {
 
 }  // namespace blink
 
-#endif  // LengthPoint_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LENGTH_POINT_H_

@@ -29,14 +29,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/mediastream/MediaStreamComponent.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 
-#include "platform/UUID.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/mediastream/MediaStreamCenter.h"
-#include "platform/mediastream/MediaStreamSource.h"
-#include "public/platform/WebAudioSourceProvider.h"
-#include "public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/web_audio_source_provider.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
+#include "third_party/blink/renderer/platform/uuid.h"
 
 namespace blink {
 

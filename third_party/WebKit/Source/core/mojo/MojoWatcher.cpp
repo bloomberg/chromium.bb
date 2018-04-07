@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/mojo/MojoWatcher.h"
+#include "third_party/blink/renderer/core/mojo/mojo_watcher.h"
 
-#include "bindings/core/v8/v8_mojo_watch_callback.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/mojo/MojoHandleSignals.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/bindings/ScriptState.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_mojo_watch_callback.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/mojo/mojo_handle_signals.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 

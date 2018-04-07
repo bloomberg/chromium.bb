@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/mhtml/ArchiveResource.h"
+#include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 
 namespace blink {
 

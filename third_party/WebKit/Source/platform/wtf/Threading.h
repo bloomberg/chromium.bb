@@ -27,15 +27,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Threading_h
-#define Threading_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREADING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREADING_H_
 
 #include <stdint.h>
 
 #include "build/build_config.h"
-#include "platform/wtf/Atomics.h"
-#include "platform/wtf/TypeTraits.h"
-#include "platform/wtf/WTFExport.h"
+#include "third_party/blink/renderer/platform/wtf/atomics.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -65,4 +65,4 @@ WTF_EXPORT void WillCreateThread();
 using WTF::ThreadIdentifier;
 using WTF::CurrentThread;
 
-#endif  // Threading_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_THREADING_H_

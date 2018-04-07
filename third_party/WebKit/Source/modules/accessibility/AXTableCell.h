@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AXTableCell_h
-#define AXTableCell_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_TABLE_CELL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_TABLE_CELL_H_
 
 #include "base/macros.h"
-#include "modules/accessibility/AXLayoutObject.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
 
 namespace blink {
 
@@ -82,4 +82,4 @@ DEFINE_AX_OBJECT_TYPE_CASTS(AXTableCell, IsTableCell());
 
 }  // namespace blink
 
-#endif  // AXTableCell_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_TABLE_CELL_H_

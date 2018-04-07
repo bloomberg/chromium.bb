@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/HitTestingTransformState.h"
+#include "third_party/blink/renderer/core/layout/hit_testing_transform_state.h"
 
-#include "platform/geometry/LayoutRect.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
 namespace blink {
 

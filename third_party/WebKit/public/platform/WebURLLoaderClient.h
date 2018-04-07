@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebURLLoaderClient_h
-#define WebURLLoaderClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_LOADER_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_LOADER_CLIENT_H_
 
 #include <memory>
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebDataConsumerHandle.h"
-#include "public/platform/WebReferrerPolicy.h"
-#include "public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_data_consumer_handle.h"
+#include "third_party/blink/public/platform/web_referrer_policy.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 
 namespace blink {
 

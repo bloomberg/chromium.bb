@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RelList_h
-#define RelList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_REL_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_REL_LIST_H_
 
-#include "core/dom/DOMTokenList.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
 
 namespace blink {
 
@@ -20,4 +20,4 @@ class RelList final : public DOMTokenList {
 
 }  // namespace blink
 
-#endif  // RelList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_REL_LIST_H_

@@ -29,14 +29,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/commands/MoveCommands.h"
+#include "third_party/blink/renderer/core/editing/commands/move_commands.h"
 
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/Editor.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionModifier.h"
-#include "core/frame/LocalFrame.h"
-#include "core/layout/LayoutBox.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/selection_modifier.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 
 namespace blink {
 

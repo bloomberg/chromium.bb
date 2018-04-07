@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGLImageConversionMSA_h
-#define WebGLImageConversionMSA_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CPU_MIPS_WEBGL_IMAGE_CONVERSION_MSA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CPU_MIPS_WEBGL_IMAGE_CONVERSION_MSA_H_
 
 #if HAVE_MIPS_MSA_INTRINSICS
 
-#include "platform/cpu/mips/CommonMacrosMSA.h"
+#include "third_party/blink/renderer/platform/cpu/mips/common_macros_msa.h"
 
 namespace blink {
 
@@ -1151,4 +1151,4 @@ ALWAYS_INLINE void packOneRowOfRGBA8LittleToRA8MSA(const uint8_t*& source,
 
 #endif  // HAVE_MIPS_MSA_INTRINSICS
 
-#endif  // WebGLImageConversionMSA_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CPU_MIPS_WEBGL_IMAGE_CONVERSION_MSA_H_

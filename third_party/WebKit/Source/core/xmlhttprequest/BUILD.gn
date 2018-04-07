@@ -2,16 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/core/core.gni")
+import("//third_party/blink/renderer/core/core.gni")
 
 blink_core_sources("xmlhttprequest") {
   sources = [
-    "XMLHttpRequest.cpp",
-    "XMLHttpRequest.h",
-    "XMLHttpRequestEventTarget.h",
-    "XMLHttpRequestProgressEventThrottle.cpp",
-    "XMLHttpRequestProgressEventThrottle.h",
-    "XMLHttpRequestUpload.cpp",
-    "XMLHttpRequestUpload.h",
+    "xml_http_request.cc",
+    "xml_http_request.h",
+    "xml_http_request_event_target.h",
+    "xml_http_request_progress_event_throttle.cc",
+    "xml_http_request_progress_event_throttle.h",
+    "xml_http_request_upload.cc",
+    "xml_http_request_upload.h",
   ]
 }

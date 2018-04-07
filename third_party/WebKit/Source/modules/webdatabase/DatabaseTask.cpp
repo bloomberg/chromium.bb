@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/DatabaseTask.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_task.h"
 
-#include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/DatabaseContext.h"
-#include "modules/webdatabase/DatabaseThread.h"
-#include "modules/webdatabase/StorageLog.h"
+#include "third_party/blink/renderer/modules/webdatabase/database.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_context.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_thread.h"
+#include "third_party/blink/renderer/modules/webdatabase/storage_log.h"
 
 namespace blink {
 

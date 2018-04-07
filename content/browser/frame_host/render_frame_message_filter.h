@@ -18,7 +18,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "third_party/WebKit/public/web/WebTreeScopeType.h"
+#include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)

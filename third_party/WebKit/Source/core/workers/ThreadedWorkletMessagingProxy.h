@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ThreadedWorkletMessagingProxy_h
-#define ThreadedWorkletMessagingProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_THREADED_WORKLET_MESSAGING_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_THREADED_WORKLET_MESSAGING_PROXY_H_
 
-#include "core/CoreExport.h"
-#include "core/workers/ThreadedMessagingProxyBase.h"
-#include "core/workers/WorkletGlobalScopeProxy.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/workers/threaded_messaging_proxy_base.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope_proxy.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
 
 }  // namespace blink
 
-#endif  // ThreadedWorkletMessagingProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_THREADED_WORKLET_MESSAGING_PROXY_H_

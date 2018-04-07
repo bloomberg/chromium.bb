@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSSegmentedFontFace.h"
+#include "third_party/blink/renderer/core/css/css_segmented_font_face.h"
 
-#include "core/css/CSSFontFace.h"
-#include "core/css/CSSFontSelector.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontFaceCreationParams.h"
-#include "platform/fonts/SegmentedFontData.h"
-#include "platform/fonts/SimpleFontData.h"
+#include "third_party/blink/renderer/core/css/css_font_face.h"
+#include "third_party/blink/renderer/core/css/css_font_selector.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_face_creation_params.h"
+#include "third_party/blink/renderer/platform/fonts/segmented_font_data.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 
 namespace blink {
 

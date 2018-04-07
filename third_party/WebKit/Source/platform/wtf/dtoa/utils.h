@@ -29,7 +29,7 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_WTF_DTOA_UTILS_H_
 
 #include <string.h>
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #define UNIMPLEMENTED NOTREACHED
 #define UNREACHABLE NOTREACHED

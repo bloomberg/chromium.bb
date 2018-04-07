@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/DisplayItemClient.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 
-#include "platform/testing/FakeDisplayItemClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
 
 namespace blink {
 namespace {

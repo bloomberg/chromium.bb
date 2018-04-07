@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/filters/FEBoxReflect.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_box_reflect.h"
 
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/filters/PaintFilterBuilder.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

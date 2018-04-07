@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BlobURL_h
-#define BlobURL_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_BLOB_URL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_BLOB_URL_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -61,4 +61,4 @@ class PLATFORM_EXPORT BlobURL {
 
 }  // namespace blink
 
-#endif  // BlobURL_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BLOB_BLOB_URL_H_

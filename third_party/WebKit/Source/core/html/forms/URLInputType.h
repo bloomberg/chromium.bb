@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef URLInputType_h
-#define URLInputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_URL_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_URL_INPUT_TYPE_H_
 
-#include "core/html/forms/BaseTextInputType.h"
+#include "third_party/blink/renderer/core/html/forms/base_text_input_type.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class URLInputType final : public BaseTextInputType {
 
 }  // namespace blink
 
-#endif  // URLInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_URL_INPUT_TYPE_H_

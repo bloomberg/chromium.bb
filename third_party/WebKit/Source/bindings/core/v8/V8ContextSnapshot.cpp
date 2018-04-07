@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/V8ContextSnapshot.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_context_snapshot.h"
 
 #include <array>
 #include <cstring>
 
-#include "bindings/core/v8/GeneratedCodeHelper.h"
-#include "bindings/core/v8/V8Document.h"
-#include "bindings/core/v8/V8EventTarget.h"
-#include "bindings/core/v8/V8HTMLDocument.h"
-#include "bindings/core/v8/V8Initializer.h"
-#include "bindings/core/v8/V8Node.h"
-#include "bindings/core/v8/V8Window.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/OriginTrialFeatures.h"
-#include "platform/bindings/V8ObjectConstructor.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/bindings/V8PrivateProperty.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_document.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_html_document.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/origin_trial_features.h"
+#include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "v8/include/v8.h"
 
 namespace blink {

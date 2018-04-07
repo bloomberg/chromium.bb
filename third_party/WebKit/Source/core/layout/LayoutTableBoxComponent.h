@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayoutTableBoxComponent_h
-#define LayoutTableBoxComponent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_BOX_COMPONENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_BOX_COMPONENT_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutTable.h"
-#include "core/paint/PaintResult.h"
-#include "platform/graphics/paint/CullRect.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_table.h"
+#include "third_party/blink/renderer/core/paint/paint_result.h"
+#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 
 namespace blink {
 
@@ -102,4 +102,4 @@ class CORE_EXPORT LayoutTableBoxComponent : public LayoutBox {
 
 }  // namespace blink
 
-#endif  // LayoutTableBoxComponent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_BOX_COMPONENT_H_

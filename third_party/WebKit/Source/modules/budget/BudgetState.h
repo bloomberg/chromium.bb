@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BudgetState_h
-#define BudgetState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BUDGET_BUDGET_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BUDGET_BUDGET_STATE_H_
 
-#include "core/dom/DOMTimeStamp.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/GarbageCollected.h"
+#include "third_party/blink/renderer/core/dom/dom_time_stamp.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -36,4 +36,4 @@ class BudgetState final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // BudgetState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BUDGET_BUDGET_STATE_H_

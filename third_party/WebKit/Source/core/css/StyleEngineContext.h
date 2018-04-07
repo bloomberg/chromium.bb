@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StyleEngineContext_h
-#define StyleEngineContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_ENGINE_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_ENGINE_CONTEXT_H_
 
-#include "core/dom/Document.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
 

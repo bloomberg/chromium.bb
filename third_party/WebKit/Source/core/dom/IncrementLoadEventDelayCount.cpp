@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/IncrementLoadEventDelayCount.h"
+#include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/dom/Document.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
 

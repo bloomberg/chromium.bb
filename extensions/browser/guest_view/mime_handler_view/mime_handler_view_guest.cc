@@ -27,7 +27,7 @@
 #include "extensions/common/guest_view/extensions_guest_view_messages.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
 
 using content::WebContents;
 using guest_view::GuestViewBase;

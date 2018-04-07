@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ContentLayerClientImpl_h
-#define ContentLayerClientImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_CONTENT_LAYER_CLIENT_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_CONTENT_LAYER_CLIENT_IMPL_H_
 
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer.h"
-#include "platform/PlatformExport.h"
-#include "platform/graphics/GraphicsLayerClient.h"
-#include "platform/graphics/compositing/CompositedLayerRasterInvalidator.h"
-#include "platform/graphics/paint/PaintChunk.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/composited_layer_raster_invalidator.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -87,4 +87,4 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
 
 }  // namespace blink
 
-#endif  // ContentLayerClientImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_CONTENT_LAYER_CLIENT_IMPL_H_

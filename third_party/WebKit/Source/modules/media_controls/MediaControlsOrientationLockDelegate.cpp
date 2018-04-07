@@ -2,34 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_orientation_lock_delegate.h"
 
 #include <memory>
 
 #include "build/build_config.h"
-#include "core/dom/events/Event.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/Screen.h"
-#include "core/frame/ScreenOrientationController.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/page/ChromeClient.h"
-#include "modules/device_orientation/DeviceOrientationData.h"
-#include "modules/device_orientation/DeviceOrientationEvent.h"
-#include "modules/screen_orientation/ScreenOrientation.h"
-#include "modules/screen_orientation/ScreenScreenOrientation.h"
-#include "platform/Histogram.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/MathExtras.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebScreenInfo.h"
-#include "public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
+#include "third_party/blink/public/platform/modules/screen_orientation/web_lock_orientation_callback.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/screen.h"
+#include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_data.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_orientation_event.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
+#include "third_party/blink/renderer/modules/screen_orientation/screen_screen_orientation.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 #if defined(OS_ANDROID)
-#include "platform/mojo/MojoHelper.h"
-#include "public/platform/Platform.h"
 #include "services/device/public/mojom/constants.mojom-blink.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
 #endif  // defined(OS_ANDROID)
 
 #undef atan2  // to use std::atan2 instead of wtf_atan2

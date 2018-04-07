@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DOMMatrix_h
-#define DOMMatrix_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_GEOMETRY_DOM_MATRIX_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_GEOMETRY_DOM_MATRIX_H_
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/string_or_unrestricted_double_sequence.h"
-#include "core/geometry/DOMMatrix2DInit.h"
-#include "core/geometry/DOMMatrixInit.h"
-#include "core/geometry/DOMMatrixReadOnly.h"
-#include "core/typed_arrays/ArrayBufferViewHelpers.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_unrestricted_double_sequence.h"
+#include "third_party/blink/renderer/core/geometry/dom_matrix_2d_init.h"
+#include "third_party/blink/renderer/core/geometry/dom_matrix_init.h"
+#include "third_party/blink/renderer/core/geometry/dom_matrix_read_only.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 
 namespace blink {
 

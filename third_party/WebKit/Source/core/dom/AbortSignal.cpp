@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/AbortSignal.h"
+#include "third_party/blink/renderer/core/dom/abort_signal.h"
 
 #include <utility>
 
 #include "base/callback.h"
-#include "core/dom/events/Event.h"
-#include "core/event_target_names.h"
-#include "core/event_type_names.h"
-#include "platform/heap/Visitor.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/event_target_names.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

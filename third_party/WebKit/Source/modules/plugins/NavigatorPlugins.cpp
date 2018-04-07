@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/plugins/NavigatorPlugins.h"
+#include "third_party/blink/renderer/modules/plugins/navigator_plugins.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Navigator.h"
-#include "core/frame/Settings.h"
-#include "modules/plugins/DOMMimeTypeArray.h"
-#include "modules/plugins/DOMPluginArray.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/modules/plugins/dom_mime_type_array.h"
+#include "third_party/blink/renderer/modules/plugins/dom_plugin_array.h"
 
 namespace blink {
 

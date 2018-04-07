@@ -20,7 +20,7 @@
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/render_thread_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/scheduler/test/mock_renderer_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/test/mock_renderer_scheduler.h"
 
 using blink::WebInputEvent;
 using blink::WebMouseEvent;

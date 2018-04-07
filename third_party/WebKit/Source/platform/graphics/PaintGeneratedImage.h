@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintGeneratedImage_h
-#define PaintGeneratedImage_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_GENERATED_IMAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_GENERATED_IMAGE_H_
 
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/GeneratedImage.h"
-#include "platform/graphics/paint/PaintRecord.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/generated_image.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
@@ -38,4 +38,4 @@ class PLATFORM_EXPORT PaintGeneratedImage : public GeneratedImage {
 
 }  // namespace blink
 
-#endif  // PaintGeneratedImage_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_GENERATED_IMAGE_H_

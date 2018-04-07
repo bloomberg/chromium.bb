@@ -23,14 +23,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/ColorChooserUIController.h"
+#include "third_party/blink/renderer/core/html/forms/color_chooser_ui_controller.h"
 
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/html/forms/ColorChooserClient.h"
-#include "platform/graphics/Color.h"
-#include "public/platform/WebColor.h"
-#include "public/web/WebFrameClient.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/web_color.h"
+#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/html/forms/color_chooser_client.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
 
 namespace blink {
 

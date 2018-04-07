@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGamepadListener_h
-#define WebGamepadListener_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GAMEPAD_LISTENER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GAMEPAD_LISTENER_H_
 
-#include "WebPlatformEventListener.h"
+#include "third_party/blink/public/platform/web_platform_event_listener.h"
 
 namespace device {
 class Gamepad;

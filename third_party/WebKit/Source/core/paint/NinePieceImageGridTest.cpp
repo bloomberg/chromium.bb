@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/NinePieceImageGrid.h"
+#include "third_party/blink/renderer/core/paint/nine_piece_image_grid.h"
 
-#include "core/css/CSSGradientValue.h"
-#include "core/style/NinePieceImage.h"
-#include "core/style/StyleGeneratedImage.h"
-#include "core/testing/CoreUnitTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_gradient_value.h"
+#include "third_party/blink/renderer/core/style/nine_piece_image.h"
+#include "third_party/blink/renderer/core/style/style_generated_image.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
 namespace {

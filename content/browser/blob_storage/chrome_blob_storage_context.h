@@ -17,7 +17,7 @@
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/browser/blob/blob_data_handle.h"
-#include "third_party/WebKit/public/mojom/blob/blob_url_store.mojom.h"
+#include "third_party/blink/public/mojom/blob/blob_url_store.mojom.h"
 
 namespace base {
 class FilePath;

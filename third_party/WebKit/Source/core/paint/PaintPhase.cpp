@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/PaintPhase.h"
+#include "third_party/blink/renderer/core/paint/paint_phase.h"
 
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

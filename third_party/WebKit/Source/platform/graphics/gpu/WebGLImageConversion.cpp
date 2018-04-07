@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/gpu/WebGLImageConversion.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/webgl_image_conversion.h"
 
 #include <memory>
 #include "build/build_config.h"
-#include "platform/graphics/ImageObserver.h"
-#include "platform/graphics/cpu/arm/WebGLImageConversionNEON.h"
-#include "platform/graphics/cpu/mips/WebGLImageConversionMSA.h"
-#include "platform/graphics/cpu/x86/WebGLImageConversionSSE.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/image-decoders/ImageDecoder.h"
-#include "platform/wtf/CheckedNumeric.h"
+#include "third_party/blink/renderer/platform/graphics/cpu/arm/webgl_image_conversion_neon.h"
+#include "third_party/blink/renderer/platform/graphics/cpu/mips/webgl_image_conversion_msa.h"
+#include "third_party/blink/renderer/platform/graphics/cpu/x86/webgl_image_conversion_sse.h"
+#include "third_party/blink/renderer/platform/graphics/image_observer.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/skia/include/core/SkImage.h"
 
 namespace blink {

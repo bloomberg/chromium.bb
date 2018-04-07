@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V0CustomElementRegistrationContext_h
-#define V0CustomElementRegistrationContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_REGISTRATION_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_REGISTRATION_CONTEXT_H_
 
-#include "core/dom/QualifiedName.h"
-#include "core/html/custom/V0CustomElementDescriptor.h"
-#include "core/html/custom/V0CustomElementRegistry.h"
-#include "core/html/custom/V0CustomElementUpgradeCandidateMap.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_descriptor.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_registry.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_upgrade_candidate_map.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -89,4 +89,4 @@ class V0CustomElementRegistrationContext final
 
 }  // namespace blink
 
-#endif  // V0CustomElementRegistrationContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_REGISTRATION_CONTEXT_H_

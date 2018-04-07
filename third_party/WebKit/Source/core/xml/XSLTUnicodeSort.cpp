@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/XSLTUnicodeSort.h"
+#include "third_party/blink/renderer/core/xml/xslt_unicode_sort.h"
 
 #include <libxslt/templates.h>
 #include <libxslt/xsltutils.h>
-#include "platform/wtf/text/Collator.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/text/collator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

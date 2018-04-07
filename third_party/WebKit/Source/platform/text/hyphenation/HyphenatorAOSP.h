@@ -16,8 +16,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef HyphenatorAOSP_h
-#define HyphenatorAOSP_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_HYPHENATION_HYPHENATOR_AOSP_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_HYPHENATION_HYPHENATOR_AOSP_H_
 
 /**
  * An implementation of Liang's hyphenation algorithm.
@@ -87,4 +87,4 @@ class Hyphenator {
 
 }  // namespace android
 
-#endif  // HyphenatorAOSP_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_HYPHENATION_HYPHENATOR_AOSP_H_

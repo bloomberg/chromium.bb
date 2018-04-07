@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/text/TextCodecICU.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec_icu.h"
 
 #include <memory>
 
@@ -32,13 +32,13 @@
 #include <unicode/ucnv_cb.h>
 #include <memory>
 #include "base/memory/ptr_util.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/StringExtras.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/WTFThreadData.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/string_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_thread_data.h"
 
 namespace WTF {
 

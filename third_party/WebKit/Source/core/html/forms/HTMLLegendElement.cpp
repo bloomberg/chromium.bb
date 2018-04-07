@@ -22,13 +22,13 @@
  *
  */
 
-#include "core/html/forms/HTMLLegendElement.h"
+#include "third_party/blink/renderer/core/html/forms/html_legend_element.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/html/forms/HTMLFieldSetElement.h"
-#include "core/html/forms/HTMLFormControlElement.h"
-#include "core/html_names.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
 
 namespace blink {
 

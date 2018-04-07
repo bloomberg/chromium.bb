@@ -11,13 +11,13 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
-#include "platform/PlatformExport.h"
-#include "platform/scheduler/base/task_queue.h"
-#include "platform/scheduler/child/page_visibility_state.h"
-#include "platform/scheduler/child/worker_scheduler_proxy.h"
-#include "platform/scheduler/main_thread/frame_origin_type.h"
-#include "platform/scheduler/public/frame_scheduler.h"
-#include "platform/scheduler/util/tracing_helper.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/child/page_visibility_state.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_proxy.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_origin_type.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 
 namespace base {
 namespace trace_event {

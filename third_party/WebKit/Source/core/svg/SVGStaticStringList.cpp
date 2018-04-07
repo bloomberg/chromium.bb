@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/SVGStaticStringList.h"
+#include "third_party/blink/renderer/core/svg/svg_static_string_list.h"
 
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGStringListTearOff.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg/svg_string_list_tear_off.h"
 
 namespace blink {
 

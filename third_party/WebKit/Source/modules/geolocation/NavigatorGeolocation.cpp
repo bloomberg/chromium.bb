@@ -21,12 +21,12 @@
  *  MA  02110-1301 USA
  */
 
-#include "modules/geolocation/NavigatorGeolocation.h"
+#include "third_party/blink/renderer/modules/geolocation/navigator_geolocation.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/Navigator.h"
-#include "modules/geolocation/Geolocation.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/geolocation/geolocation.h"
 
 namespace blink {
 

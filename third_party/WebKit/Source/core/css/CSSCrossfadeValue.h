@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSCrossfadeValue_h
-#define CSSCrossfadeValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CROSSFADE_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CROSSFADE_VALUE_H_
 
-#include "core/CoreExport.h"
-#include "core/css/CSSImageGeneratorValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/loader/resource/ImageResourceContent.h"
-#include "core/loader/resource/ImageResourceObserver.h"
-#include "platform/graphics/Image.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_image_generator_value.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
+#include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
 
 namespace blink {
 
@@ -124,4 +124,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSCrossfadeValue, IsCrossfadeValue());
 }  // namespace cssvalue
 }  // namespace blink
 
-#endif  // CSSCrossfadeValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CROSSFADE_VALUE_H_

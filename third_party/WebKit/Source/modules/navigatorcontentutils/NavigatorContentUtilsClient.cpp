@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
+#include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils_client.h"
 
-#include "core/frame/WebLocalFrameImpl.h"
-#include "platform/weborigin/KURL.h"
-#include "public/web/WebFrameClient.h"
+#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

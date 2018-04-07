@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/testing/weburl_loader_mock_factory_impl.h"
+#include "third_party/blink/renderer/platform/testing/weburl_loader_mock_factory_impl.h"
 
 #include <stdint.h>
 #include <memory>
@@ -12,16 +12,16 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "platform/loader/fetch/MemoryCache.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/testing/UnitTestHelpers.h"
-#include "platform/testing/weburl_loader_mock.h"
-#include "public/platform/FilePathConversion.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURLError.h"
-#include "public/platform/WebURLRequest.h"
-#include "public/platform/WebURLResponse.h"
+#include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/weburl_loader_mock.h"
 
 namespace blink {
 

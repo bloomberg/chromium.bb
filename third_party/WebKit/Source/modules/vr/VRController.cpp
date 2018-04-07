@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/vr/VRController.h"
+#include "third_party/blink/renderer/modules/vr/vr_controller.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
-#include "modules/vr/NavigatorVR.h"
-#include "modules/vr/VRGetDevicesCallback.h"
-#include "platform/wtf/Assertions.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/vr/navigator_vr.h"
+#include "third_party/blink/renderer/modules/vr/vr_get_devices_callback.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

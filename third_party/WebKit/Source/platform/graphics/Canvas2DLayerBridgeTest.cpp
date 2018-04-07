@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-#include "platform/graphics/Canvas2DLayerBridge.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
 
 #include <utility>
 
@@ -39,24 +39,24 @@
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WaitableEvent.h"
-#include "platform/graphics/CanvasResourceHost.h"
-#include "platform/graphics/CanvasResourceProvider.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
-#include "platform/graphics/gpu/SharedGpuContext.h"
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/graphics/test/FakeGLES2Interface.h"
-#include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
 #include "skia/ext/texture_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_host.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
+#include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 

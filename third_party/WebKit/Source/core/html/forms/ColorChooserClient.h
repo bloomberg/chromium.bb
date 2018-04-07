@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ColorChooserClient_h
-#define ColorChooserClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_COLOR_CHOOSER_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_COLOR_CHOOSER_CLIENT_H_
 
-#include "core/CoreExport.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/Color.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
-#include "third_party/WebKit/public/mojom/color_chooser/color_chooser.mojom-blink.h"
+#include "third_party/blink/public/mojom/color_chooser/color_chooser.mojom-blink.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class CORE_EXPORT ColorChooserClient : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // ColorChooserClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_COLOR_CHOOSER_CLIENT_H_

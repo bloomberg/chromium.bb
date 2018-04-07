@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FileSystemType_h
-#define FileSystemType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FILE_SYSTEM_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FILE_SYSTEM_TYPE_H_
 
 namespace blink {
 
@@ -53,4 +53,4 @@ enum FileSystemType {
 
 }  // namespace blink
 
-#endif  // FileSystemType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FILE_SYSTEM_TYPE_H_

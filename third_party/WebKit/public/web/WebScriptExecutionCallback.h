@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebScriptExecutionCallback_h
-#define WebScriptExecutionCallback_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SCRIPT_EXECUTION_CALLBACK_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SCRIPT_EXECUTION_CALLBACK_H_
 
 namespace v8 {
 class Value;
@@ -30,4 +30,4 @@ class WebScriptExecutionCallback {
 
 }  // namespace blink
 
-#endif  // WebScriptExecutionCallback_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SCRIPT_EXECUTION_CALLBACK_H_

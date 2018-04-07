@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//third_party/WebKit/Source/modules/modules.gni")
-import("//third_party/WebKit/Source/bindings/scripts/scripts.gni")
-import("//third_party/WebKit/Source/build/scripts/scripts.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
+import("//third_party/blink/renderer/bindings/scripts/scripts.gni")
+import("//third_party/blink/renderer/build/scripts/scripts.gni")
 
 group("bindings_modules_generated") {
-  visibility = [ "//third_party/WebKit/*" ]
+  visibility = [ "//third_party/blink/*" ]
   public_deps = [
     ":event_modules",
     ":event_modules_names",
@@ -18,51 +18,51 @@ group("bindings_modules_generated") {
 
 generate_event_interfaces("modules_bindings_generated_event_interfaces") {
   sources = [
-    "//third_party/WebKit/Source/modules/app_banner/BeforeInstallPromptEvent.idl",
-    "//third_party/WebKit/Source/modules/background_fetch/BackgroundFetchClickEvent.idl",
-    "//third_party/WebKit/Source/modules/background_fetch/BackgroundFetchEvent.idl",
-    "//third_party/WebKit/Source/modules/background_fetch/BackgroundFetchFailEvent.idl",
-    "//third_party/WebKit/Source/modules/background_fetch/BackgroundFetchedEvent.idl",
-    "//third_party/WebKit/Source/modules/background_sync/SyncEvent.idl",
-    "//third_party/WebKit/Source/modules/cookie_store/CookieChangeEvent.idl",
-    "//third_party/WebKit/Source/modules/device_orientation/DeviceMotionEvent.idl",
-    "//third_party/WebKit/Source/modules/device_orientation/DeviceOrientationEvent.idl",
-    "//third_party/WebKit/Source/modules/encryptedmedia/MediaEncryptedEvent.idl",
-    "//third_party/WebKit/Source/modules/encryptedmedia/MediaKeyMessageEvent.idl",
-    "//third_party/WebKit/Source/modules/gamepad/GamepadEvent.idl",
-    "//third_party/WebKit/Source/modules/indexeddb/IDBVersionChangeEvent.idl",
-    "//third_party/WebKit/Source/modules/mediarecorder/BlobEvent.idl",
-    "//third_party/WebKit/Source/modules/mediastream/MediaStreamEvent.idl",
-    "//third_party/WebKit/Source/modules/mediastream/MediaStreamTrackEvent.idl",
-    "//third_party/WebKit/Source/modules/notifications/NotificationEvent.idl",
-    "//third_party/WebKit/Source/modules/payments/AbortPaymentEvent.idl",
-    "//third_party/WebKit/Source/modules/payments/CanMakePaymentEvent.idl",
-    "//third_party/WebKit/Source/modules/payments/PaymentRequestEvent.idl",
-    "//third_party/WebKit/Source/modules/payments/PaymentRequestUpdateEvent.idl",
-    "//third_party/WebKit/Source/modules/peerconnection/RTCDTMFToneChangeEvent.idl",
-    "//third_party/WebKit/Source/modules/peerconnection/RTCDataChannelEvent.idl",
-    "//third_party/WebKit/Source/modules/peerconnection/RTCPeerConnectionIceEvent.idl",
-    "//third_party/WebKit/Source/modules/presentation/PresentationConnectionAvailableEvent.idl",
-    "//third_party/WebKit/Source/modules/presentation/PresentationConnectionCloseEvent.idl",
-    "//third_party/WebKit/Source/modules/push_messaging/PushEvent.idl",
-    "//third_party/WebKit/Source/modules/sensor/SensorErrorEvent.idl",
-    "//third_party/WebKit/Source/modules/serviceworkers/ExtendableEvent.idl",
-    "//third_party/WebKit/Source/modules/serviceworkers/ExtendableMessageEvent.idl",
-    "//third_party/WebKit/Source/modules/serviceworkers/FetchEvent.idl",
-    "//third_party/WebKit/Source/modules/serviceworkers/InstallEvent.idl",
-    "//third_party/WebKit/Source/modules/speech/SpeechRecognitionError.idl",
-    "//third_party/WebKit/Source/modules/speech/SpeechRecognitionEvent.idl",
-    "//third_party/WebKit/Source/modules/speech/SpeechSynthesisEvent.idl",
-    "//third_party/WebKit/Source/modules/storage/StorageEvent.idl",
-    "//third_party/WebKit/Source/modules/vr/VRDisplayEvent.idl",
-    "//third_party/WebKit/Source/modules/webaudio/AudioProcessingEvent.idl",
-    "//third_party/WebKit/Source/modules/webaudio/OfflineAudioCompletionEvent.idl",
-    "//third_party/WebKit/Source/modules/webgl/WebGLContextEvent.idl",
-    "//third_party/WebKit/Source/modules/webmidi/MIDIConnectionEvent.idl",
-    "//third_party/WebKit/Source/modules/webmidi/MIDIMessageEvent.idl",
-    "//third_party/WebKit/Source/modules/websockets/CloseEvent.idl",
-    "//third_party/WebKit/Source/modules/xr/XRInputSourceEvent.idl",
-    "//third_party/WebKit/Source/modules/xr/XRSessionEvent.idl",
+    "//third_party/blink/renderer/modules/app_banner/before_install_prompt_event.idl",
+    "//third_party/blink/renderer/modules/background_fetch/background_fetch_click_event.idl",
+    "//third_party/blink/renderer/modules/background_fetch/background_fetch_event.idl",
+    "//third_party/blink/renderer/modules/background_fetch/background_fetch_fail_event.idl",
+    "//third_party/blink/renderer/modules/background_fetch/background_fetched_event.idl",
+    "//third_party/blink/renderer/modules/background_sync/sync_event.idl",
+    "//third_party/blink/renderer/modules/cookie_store/cookie_change_event.idl",
+    "//third_party/blink/renderer/modules/device_orientation/device_motion_event.idl",
+    "//third_party/blink/renderer/modules/device_orientation/device_orientation_event.idl",
+    "//third_party/blink/renderer/modules/encryptedmedia/media_encrypted_event.idl",
+    "//third_party/blink/renderer/modules/encryptedmedia/media_key_message_event.idl",
+    "//third_party/blink/renderer/modules/gamepad/gamepad_event.idl",
+    "//third_party/blink/renderer/modules/indexeddb/idb_version_change_event.idl",
+    "//third_party/blink/renderer/modules/mediarecorder/blob_event.idl",
+    "//third_party/blink/renderer/modules/mediastream/media_stream_event.idl",
+    "//third_party/blink/renderer/modules/mediastream/media_stream_track_event.idl",
+    "//third_party/blink/renderer/modules/notifications/notification_event.idl",
+    "//third_party/blink/renderer/modules/payments/abort_payment_event.idl",
+    "//third_party/blink/renderer/modules/payments/can_make_payment_event.idl",
+    "//third_party/blink/renderer/modules/payments/payment_request_event.idl",
+    "//third_party/blink/renderer/modules/payments/payment_request_update_event.idl",
+    "//third_party/blink/renderer/modules/peerconnection/rtc_data_channel_event.idl",
+    "//third_party/blink/renderer/modules/peerconnection/rtc_dtmf_tone_change_event.idl",
+    "//third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.idl",
+    "//third_party/blink/renderer/modules/presentation/presentation_connection_available_event.idl",
+    "//third_party/blink/renderer/modules/presentation/presentation_connection_close_event.idl",
+    "//third_party/blink/renderer/modules/push_messaging/push_event.idl",
+    "//third_party/blink/renderer/modules/sensor/sensor_error_event.idl",
+    "//third_party/blink/renderer/modules/serviceworkers/extendable_event.idl",
+    "//third_party/blink/renderer/modules/serviceworkers/extendable_message_event.idl",
+    "//third_party/blink/renderer/modules/serviceworkers/fetch_event.idl",
+    "//third_party/blink/renderer/modules/serviceworkers/install_event.idl",
+    "//third_party/blink/renderer/modules/speech/speech_recognition_error.idl",
+    "//third_party/blink/renderer/modules/speech/speech_recognition_event.idl",
+    "//third_party/blink/renderer/modules/speech/speech_synthesis_event.idl",
+    "//third_party/blink/renderer/modules/storage/storage_event.idl",
+    "//third_party/blink/renderer/modules/vr/vr_display_event.idl",
+    "//third_party/blink/renderer/modules/webaudio/audio_processing_event.idl",
+    "//third_party/blink/renderer/modules/webaudio/offline_audio_completion_event.idl",
+    "//third_party/blink/renderer/modules/webgl/webgl_context_event.idl",
+    "//third_party/blink/renderer/modules/webmidi/midi_connection_event.idl",
+    "//third_party/blink/renderer/modules/webmidi/midi_message_event.idl",
+    "//third_party/blink/renderer/modules/websockets/close_event.idl",
+    "//third_party/blink/renderer/modules/xr/xr_input_source_event.idl",
+    "//third_party/blink/renderer/modules/xr/xr_session_event.idl",
   ]
   output_file = "event_modules_names.json5"
   suffix = "Modules"
@@ -70,19 +70,21 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
 
 make_event_factory("event_modules") {
   visibility = [ ":*" ]
-  in_files = [ "$root_gen_dir/blink/event_modules_names.json5" ]
+  in_files =
+      [ "$root_gen_dir/third_party/blink/renderer/event_modules_names.json5" ]
   outputs = [
     "$blink_modules_output_dir/event_modules_factory.cc",
   ]
-  deps = make_core_generated_deps + [ "//third_party/WebKit/Source/bindings/modules:modules_bindings_generated_event_interfaces" ]
+  deps = make_core_generated_deps + [ "//third_party/blink/renderer/bindings/modules:modules_bindings_generated_event_interfaces" ]
   deps += [ "//media/midi:mojo_blink" ]
 }
 
 make_names("event_modules_names") {
   visibility = [ ":*" ]
-  in_files = [ "$root_gen_dir/blink/event_modules_names.json5" ]
+  in_files =
+      [ "$root_gen_dir/third_party/blink/renderer/event_modules_names.json5" ]
   output_dir = blink_modules_output_dir
-  deps = make_core_generated_deps + [ "//third_party/WebKit/Source/bindings/modules:modules_bindings_generated_event_interfaces" ]
+  deps = make_core_generated_deps + [ "//third_party/blink/renderer/bindings/modules:modules_bindings_generated_event_interfaces" ]
 }
 
 make_names("event_target_modules_names") {
@@ -132,7 +134,7 @@ action("interfaces_info") {
 
   public_deps = [
     ":interfaces_info_individual_modules",
-    "//third_party/WebKit/Source/bindings/core:interfaces_info_individual_core",
+    "//third_party/blink/renderer/bindings/core:interfaces_info_individual_core",
   ]
 }
 
@@ -141,7 +143,7 @@ compute_global_objects("modules_global_objects") {
   sources_generated = [ "$bindings_core_output_dir/GlobalObjectsCore.pickle" ]
   output_file = "$bindings_modules_output_dir/GlobalObjectsModules.pickle"
   deps = [
-    "//third_party/WebKit/Source/bindings/core:core_global_objects",
+    "//third_party/blink/renderer/bindings/core:core_global_objects",
   ]
 }
 
@@ -173,25 +175,25 @@ generate_global_constructors("modules_global_constructors_idls") {
 
 # Compile the sources produced above. This will get linked into "modules".
 source_set("generated") {
-  visibility = [ "//third_party/WebKit/Source/modules:*" ]
+  visibility = [ "//third_party/blink/renderer/modules:*" ]
 
   sources = get_target_outputs(":event_modules") +
             get_target_outputs(":event_modules_names") +
             get_target_outputs(":event_target_modules_names")
 
   configs += [
-    "//third_party/WebKit/Source:config",
-    "//third_party/WebKit/Source/modules:modules_implementation",
-    "//third_party/WebKit/Source:non_test_config",
-    "//third_party/WebKit/Source:inside_blink",
+    "//third_party/blink/renderer:config",
+    "//third_party/blink/renderer/modules:modules_implementation",
+    "//third_party/blink/renderer:non_test_config",
+    "//third_party/blink/renderer:inside_blink",
   ]
 
   deps = [
     ":event_modules",
     ":event_modules_names",
     ":event_target_modules_names",
-    "//third_party/WebKit/Source/core",
-    "//third_party/WebKit/Source/platform/wtf",
+    "//third_party/blink/renderer/core",
+    "//third_party/blink/renderer/platform/wtf",
     "//v8",
   ]
 }

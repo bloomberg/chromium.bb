@@ -13,9 +13,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebFileError.h"
-#include "third_party/WebKit/public/platform/WebFileWriterClient.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_file_error.h"
+#include "third_party/blink/public/platform/web_file_writer_client.h"
+#include "third_party/blink/public/platform/web_url.h"
 #include "url/gurl.h"
 
 namespace content {

@@ -23,8 +23,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGestureDevice_h
-#define WebGestureDevice_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GESTURE_DEVICE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GESTURE_DEVICE_H_
 
 namespace blink {
 
@@ -39,4 +39,4 @@ enum WebGestureDevice {
 
 }  // namespace blink
 
-#endif  // WebGestureDevice_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_GESTURE_DEVICE_H_

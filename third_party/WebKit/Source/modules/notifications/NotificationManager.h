@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NotificationManager_h
-#define NotificationManager_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_MANAGER_H_
 
-#include "bindings/modules/v8/v8_notification_permission_callback.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/notifications/notification_service.mojom-blink.h"
-#include "public/platform/modules/permissions/permission.mojom-blink.h"
-#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationManager.h"
+#include "third_party/blink/public/platform/modules/notifications/notification_service.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_manager.h"
+#include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_notification_permission_callback.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -93,4 +93,4 @@ class NotificationManager final
 
 }  // namespace blink
 
-#endif  // NotificationManager_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_MANAGER_H_

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/custom/LayoutWorkletGlobalScope.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope.h"
 
-#include "bindings/core/v8/V8ObjectParser.h"
-#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
-#include "core/css_property_names.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/LocalFrame.h"
-#include "core/inspector/MainThreadDebugger.h"
-#include "core/layout/custom/CSSLayoutDefinition.h"
-#include "core/layout/custom/DocumentLayoutDefinition.h"
-#include "core/layout/custom/LayoutWorklet.h"
-#include "core/origin_trials/OriginTrialContext.h"
-#include "core/workers/GlobalScopeCreationParams.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_parser.h"
+#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
+#include "third_party/blink/renderer/core/layout/custom/css_layout_definition.h"
+#include "third_party/blink/renderer/core/layout/custom/document_layout_definition.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_worklet.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 
 namespace blink {
 

@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webgl/WebGLDebugRendererInfo.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_debug_renderer_info.h"
 
 namespace blink {
 

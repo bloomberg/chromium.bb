@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CharacterNames_h
-#define CharacterNames_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_CHARACTER_NAMES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_CHARACTER_NAMES_H_
 
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
 namespace WTF {
 namespace Unicode {
@@ -235,4 +235,4 @@ using WTF::Unicode::kZeroWidthSpaceCharacter;
 using WTF::Unicode::kZeroWidthNoBreakSpaceCharacter;
 using WTF::Unicode::kMaxCodepoint;
 
-#endif  // CharacterNames_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_CHARACTER_NAMES_H_

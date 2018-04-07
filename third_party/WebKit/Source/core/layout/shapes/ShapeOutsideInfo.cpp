@@ -27,17 +27,17 @@
  * SUCH DAMAGE.
  */
 
-#include "core/layout/shapes/ShapeOutsideInfo.h"
+#include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 
 #include <memory>
-#include "core/inspector/ConsoleMessage.h"
-#include "core/layout/FloatingObjects.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutImage.h"
-#include "core/layout/api/LineLayoutBlockFlow.h"
-#include "platform/LengthFunctions.h"
-#include "platform/wtf/AutoReset.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/floating_objects.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
 
 namespace blink {
 

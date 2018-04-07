@@ -38,7 +38,7 @@
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 using blink::WebFrame;
 using blink::WebHistoryItem;

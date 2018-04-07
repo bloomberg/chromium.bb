@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/FileUploadControlPainter.h"
+#include "third_party/blink/renderer/core/paint/file_upload_control_painter.h"
 
-#include "core/layout/LayoutButton.h"
-#include "core/layout/LayoutFileUploadControl.h"
-#include "core/layout/TextRunConstructor.h"
-#include "core/paint/PaintInfo.h"
-#include "platform/graphics/paint/ClipRecorder.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/layout/layout_button.h"
+#include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
+#include "third_party/blink/renderer/core/layout/text_run_constructor.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/graphics/paint/clip_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/serializers/HTMLInterchange.h"
+#include "third_party/blink/renderer/core/editing/serializers/html_interchange.h"
 
-#include "core/dom/Text.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutText.h"
-#include "platform/wtf/text/CharacterNames.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

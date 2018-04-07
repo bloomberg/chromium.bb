@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ThreadableLoaderClient_h
-#define ThreadableLoaderClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_THREADABLE_LOADER_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_THREADABLE_LOADER_CLIENT_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/blob/BlobData.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebDataConsumerHandle.h"
+#include "third_party/blink/public/platform/web_data_consumer_handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ class CORE_EXPORT ThreadableLoaderClient {
 
 }  // namespace blink
 
-#endif  // ThreadableLoaderClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_THREADABLE_LOADER_CLIENT_H_

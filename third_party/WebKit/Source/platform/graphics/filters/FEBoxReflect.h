@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FEBoxReflect_h
-#define FEBoxReflect_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_BOX_REFLECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_BOX_REFLECT_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/graphics/BoxReflection.h"
-#include "platform/graphics/filters/FilterEffect.h"
+#include "third_party/blink/renderer/platform/graphics/box_reflection.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -34,4 +34,4 @@ class PLATFORM_EXPORT FEBoxReflect final : public FilterEffect {
 
 }  // namespace blink
 
-#endif  // FEBoxReflect_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_FILTERS_FE_BOX_REFLECT_H_

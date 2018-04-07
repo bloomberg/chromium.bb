@@ -17,9 +17,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/LayoutTableCaption.h"
+#include "third_party/blink/renderer/core/layout/layout_table_caption.h"
 
-#include "core/layout/LayoutTable.h"
+#include "third_party/blink/renderer/core/layout/layout_table.h"
 
 namespace blink {
 

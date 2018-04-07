@@ -18,12 +18,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef EditingBehavior_h
-#define EditingBehavior_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_BEHAVIOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_BEHAVIOR_H_
 
-#include "core/CoreExport.h"
-#include "core/editing/EditingBehaviorTypes.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/editing_behavior_types.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 class KeyboardEvent;
@@ -133,4 +133,4 @@ class CORE_EXPORT EditingBehavior {
 
 }  // namespace blink
 
-#endif  // EditingBehavior_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_EDITING_BEHAVIOR_H_

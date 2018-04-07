@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/ElementAnimation.h"
+#include "third_party/blink/renderer/core/animation/element_animation.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/animation/Animation.h"
-#include "core/animation/DocumentTimeline.h"
-#include "core/animation/EffectInput.h"
-#include "core/animation/EffectModel.h"
-#include "core/animation/KeyframeEffect.h"
-#include "core/animation/KeyframeEffectModel.h"
-#include "core/animation/Timing.h"
-#include "core/animation/TimingInput.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/animation/animation.h"
+#include "third_party/blink/renderer/core/animation/document_timeline.h"
+#include "third_party/blink/renderer/core/animation/effect_input.h"
+#include "third_party/blink/renderer/core/animation/effect_model.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/animation/timing.h"
+#include "third_party/blink/renderer/core/animation/timing_input.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

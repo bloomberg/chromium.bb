@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintInvalidationCapableScrollableArea_h
-#define PaintInvalidationCapableScrollableArea_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_INVALIDATION_CAPABLE_SCROLLABLE_AREA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_INVALIDATION_CAPABLE_SCROLLABLE_AREA_H_
 
-#include "core/CoreExport.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/scroll/ScrollableArea.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class CORE_EXPORT PaintInvalidationCapableScrollableArea
 
 }  // namespace blink
 
-#endif  // PaintInvalidationCapableScrollableArea_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_INVALIDATION_CAPABLE_SCROLLABLE_AREA_H_

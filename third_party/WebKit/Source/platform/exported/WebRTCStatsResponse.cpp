@@ -22,10 +22,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebRTCStatsResponse.h"
+#include "third_party/blink/public/platform/web_rtc_stats_response.h"
 
-#include "platform/peerconnection/RTCStatsResponseBase.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats_response_base.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

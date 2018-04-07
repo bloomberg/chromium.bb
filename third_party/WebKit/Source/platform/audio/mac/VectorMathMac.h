@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VectorMathMac_h
-#define VectorMathMac_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_MAC_VECTOR_MATH_MAC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_MAC_VECTOR_MATH_MAC_H_
 
 #include <Accelerate/Accelerate.h>
 
 #include "build/build_config.h"
-#include "platform/audio/AudioArray.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
 
 namespace blink {
 namespace VectorMath {
@@ -147,4 +147,4 @@ static ALWAYS_INLINE void Zvmul(const float* real1p,
 }  // namespace VectorMath
 }  // namespace blink
 
-#endif  // VectorMathMac_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_MAC_VECTOR_MATH_MAC_H_

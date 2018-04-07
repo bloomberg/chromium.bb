@@ -25,11 +25,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MarkupTokenizerInlines_h
-#define MarkupTokenizerInlines_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_MARKUP_TOKENIZER_INLINES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_MARKUP_TOKENIZER_INLINES_H_
 
 #include "build/build_config.h"
-#include "platform/text/SegmentedString.h"
+#include "third_party/blink/renderer/platform/text/segmented_string.h"
 
 namespace blink {
 
@@ -111,4 +111,4 @@ inline void AdvanceStringAndASSERT(SegmentedString& source,
 
 }  // namespace blink
 
-#endif  // MarkupTokenizerInlines_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_MARKUP_TOKENIZER_INLINES_H_

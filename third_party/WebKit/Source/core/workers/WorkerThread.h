@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef WorkerThread_h
-#define WorkerThread_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_THREAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_THREAD_H_
 
 #include <memory>
 
@@ -33,23 +33,23 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/unguessable_token.h"
-#include "core/CoreExport.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/loader/ThreadableLoadingContext.h"
-#include "core/workers/ParentFrameTaskRunners.h"
-#include "core/workers/WorkerBackingThreadStartupData.h"
-#include "core/workers/WorkerInspectorProxy.h"
-#include "core/workers/WorkerThreadLifecycleContext.h"
-#include "core/workers/WorkerThreadLifecycleObserver.h"
-#include "platform/WaitableEvent.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/scheduler/child/worker_global_scope_scheduler.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/Optional.h"
-#include "public/platform/WebThread.h"
-#include "public/platform/WebThreadType.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/public/platform/web_thread_type.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
+#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
+#include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_context.h"
+#include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_global_scope_scheduler.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -341,4 +341,4 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
 }  // namespace blink
 
-#endif  // WorkerThread_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_THREAD_H_

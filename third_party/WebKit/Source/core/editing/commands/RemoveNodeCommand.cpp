@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/RemoveNodeCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/remove_node_command.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Node.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/commands/EditingState.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/editing/commands/editing_state.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

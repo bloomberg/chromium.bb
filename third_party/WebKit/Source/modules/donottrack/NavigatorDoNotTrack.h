@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NavigatorDoNotTrack_h
-#define NavigatorDoNotTrack_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DONOTTRACK_NAVIGATOR_DO_NOT_TRACK_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_DONOTTRACK_NAVIGATOR_DO_NOT_TRACK_H_
 
-#include "core/frame/Navigator.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class NavigatorDoNotTrack final : public GarbageCollected<NavigatorDoNotTrack>,
 
 }  // namespace blink
 
-#endif  // NavigatorDoNotTrack_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_DONOTTRACK_NAVIGATOR_DO_NOT_TRACK_H_

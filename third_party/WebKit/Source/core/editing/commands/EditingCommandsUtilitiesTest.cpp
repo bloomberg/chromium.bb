@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/commands/EditingCommandsUtilities.h"
+#include "third_party/blink/renderer/core/editing/commands/editing_commands_utilities.h"
 
-#include "core/dom/StaticNodeList.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/html/HTMLHeadElement.h"
+#include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/html/html_head_element.h"
 
 namespace blink {
 

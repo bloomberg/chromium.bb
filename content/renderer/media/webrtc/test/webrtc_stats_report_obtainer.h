@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "third_party/WebKit/public/platform/WebRTCStats.h"
+#include "third_party/blink/public/platform/web_rtc_stats.h"
 
 namespace content {
 

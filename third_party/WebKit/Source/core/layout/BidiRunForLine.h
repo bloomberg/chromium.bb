@@ -21,12 +21,12 @@
  *
  */
 
-#ifndef BidiRunForLine_h
-#define BidiRunForLine_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_BIDI_RUN_FOR_LINE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_BIDI_RUN_FOR_LINE_H_
 
-#include "core/layout/api/LineLayoutInline.h"
-#include "core/layout/line/TrailingObjects.h"
-#include "platform/text/BidiResolver.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_inline.h"
+#include "third_party/blink/renderer/core/layout/line/trailing_objects.h"
+#include "third_party/blink/renderer/platform/text/bidi_resolver.h"
 
 namespace blink {
 
@@ -43,4 +43,4 @@ void ConstructBidiRunsForLine(InlineBidiResolver&,
 
 }  // namespace blink
 
-#endif  // BidiRunForLine_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_BIDI_RUN_FOR_LINE_H_

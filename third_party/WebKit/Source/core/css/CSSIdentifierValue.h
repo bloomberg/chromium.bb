@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSIdentifierValue_h
-#define CSSIdentifierValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IDENTIFIER_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IDENTIFIER_VALUE_H_
 
-#include "core/css/CSSValue.h"
-#include "core/css/CSSValueIDMappings.h"
-#include "core/css_value_keywords.h"
-#include "platform/wtf/TypeTraits.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/css_value_id_mappings.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/platform/wtf/type_traits.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSIdentifierValue, IsIdentifierValue());
 
 }  // namespace blink
 
-#endif  // CSSIdentifierValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IDENTIFIER_VALUE_H_

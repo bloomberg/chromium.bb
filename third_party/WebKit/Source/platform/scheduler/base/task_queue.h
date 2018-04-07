@@ -13,9 +13,9 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
-#include "platform/PlatformExport.h"
-#include "platform/scheduler/base/graceful_queue_shutdown_helper.h"
-#include "platform/scheduler/base/moveable_auto_lock.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/base/graceful_queue_shutdown_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/base/moveable_auto_lock.h"
 
 namespace base {
 namespace trace_event {

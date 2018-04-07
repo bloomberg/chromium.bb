@@ -4,7 +4,7 @@
 
 module blink.mojom;
 
-import "third_party/WebKit/public/mojom/blob/blob.mojom";
+import "third_party/blink/public/mojom/blob/blob.mojom";
 
 // Struct wrapping a Blob interface pointer.
 // TODO(mek): Once https://crbug.com/696107 is implemented all usage of this

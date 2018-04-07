@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayoutWorkletGlobalScopeProxy_h
-#define LayoutWorkletGlobalScopeProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_LAYOUT_WORKLET_GLOBAL_SCOPE_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_LAYOUT_WORKLET_GLOBAL_SCOPE_PROXY_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/custom/LayoutWorkletGlobalScope.h"
-#include "core/workers/MainThreadWorkletReportingProxy.h"
-#include "core/workers/WorkletGlobalScopeProxy.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/custom/layout_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/main_thread_worklet_reporting_proxy.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope_proxy.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class CORE_EXPORT LayoutWorkletGlobalScopeProxy
 
 }  // namespace blink
 
-#endif  // LayoutWorkletGlobalScopeProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_LAYOUT_WORKLET_GLOBAL_SCOPE_PROXY_H_

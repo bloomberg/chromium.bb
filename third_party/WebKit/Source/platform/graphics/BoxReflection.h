@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BoxReflection_h
-#define BoxReflection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_BOX_REFLECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_BOX_REFLECTION_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/paint/PaintRecord.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkMatrix;
@@ -75,4 +75,4 @@ inline bool operator!=(const BoxReflection& a, const BoxReflection& b) {
 
 }  // namespace blink
 
-#endif  // BoxReflection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_BOX_REFLECTION_H_

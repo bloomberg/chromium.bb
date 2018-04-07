@@ -23,10 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef EXTColorBufferHalfFloat_h
-#define EXTColorBufferHalfFloat_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_EXT_COLOR_BUFFER_HALF_FLOAT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_EXT_COLOR_BUFFER_HALF_FLOAT_H_
 
-#include "modules/webgl/WebGLExtension.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_extension.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class EXTColorBufferHalfFloat final : public WebGLExtension {
 
 }  // namespace blink
 
-#endif  // EXTColorBufferHalfFloat_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_EXT_COLOR_BUFFER_HALF_FLOAT_H_

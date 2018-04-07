@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/AnimationEffect.h"
-#include "core/animation/TimingCalculations.h"
+#include "third_party/blink/renderer/core/animation/animation_effect.h"
+#include "third_party/blink/renderer/core/animation/timing_calculations.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

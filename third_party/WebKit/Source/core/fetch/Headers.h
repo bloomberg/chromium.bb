@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Headers_h
-#define Headers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_HEADERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_HEADERS_H_
 
-#include "bindings/core/v8/Iterable.h"
-#include "core/CoreExport.h"
-#include "core/fetch/FetchHeaderList.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/bindings/core/v8/iterable.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/fetch/fetch_header_list.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class CORE_EXPORT Headers final : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // Headers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_HEADERS_H_

@@ -20,10 +20,10 @@
  *
  */
 
-#include "platform/text/BidiContext.h"
+#include "third_party/blink/renderer/platform/text/bidi_context.h"
 
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

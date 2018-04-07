@@ -19,7 +19,7 @@
 #include "content/renderer/pepper/pepper_device_enumeration_host_helper.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "ppapi/c/pp_instance.h"
-#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h"
 
 namespace content {
 class MediaStreamDeviceObserver;

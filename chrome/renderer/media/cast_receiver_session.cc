@@ -14,9 +14,9 @@
 #include "media/base/audio_capturer_source.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video_capturer_source.h"
-#include "third_party/WebKit/public/platform/WebMediaStream.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 
 // This is a render thread object.
 class CastReceiverSession::AudioCapturerSource :

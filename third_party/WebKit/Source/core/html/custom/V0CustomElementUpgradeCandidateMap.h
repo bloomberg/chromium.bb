@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V0CustomElementUpgradeCandidateMap_h
-#define V0CustomElementUpgradeCandidateMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_UPGRADE_CANDIDATE_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_UPGRADE_CANDIDATE_MAP_H_
 
 #include "base/macros.h"
-#include "core/html/custom/V0CustomElementDescriptor.h"
-#include "core/html/custom/V0CustomElementDescriptorHash.h"
-#include "core/html/custom/V0CustomElementObserver.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/LinkedHashSet.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_descriptor.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_descriptor_hash.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_observer.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 
 namespace blink {
 
@@ -73,4 +73,4 @@ class V0CustomElementUpgradeCandidateMap final
 
 }  // namespace blink
 
-#endif  // V0CustomElementUpgradeCandidateMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_V0_CUSTOM_ELEMENT_UPGRADE_CANDIDATE_MAP_H_

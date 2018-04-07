@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/loader/cors/CORS.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors.h"
 
 #include <string>
 
-#include "platform/loader/cors/CORSErrorString.h"
-#include "platform/network/HTTPHeaderMap.h"
-#include "platform/network/http_names.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SchemeRegistry.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/ThreadSpecific.h"
-#include "platform/wtf/text/AtomicString.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/preflight_cache.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors_error_string.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "url/gurl.h"
 
 namespace blink {

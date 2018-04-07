@@ -25,25 +25,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GraphicsContext_h
-#define GraphicsContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_CONTEXT_H_
 
 #include <memory>
-#include "platform/PlatformExport.h"
-#include "platform/fonts/Font.h"
-#include "platform/graphics/DashArray.h"
-#include "platform/graphics/DrawLooperBuilder.h"
-#include "platform/graphics/GraphicsContextState.h"
-#include "platform/graphics/HighContrastImageClassifier.h"
-#include "platform/graphics/HighContrastSettings.h"
-#include "platform/graphics/ImageOrientation.h"
-#include "platform/graphics/paint/PaintFilter.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/paint/PaintRecorder.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/graphics/dash_array.h"
+#include "third_party/blink/renderer/platform/graphics/draw_looper_builder.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context_state.h"
+#include "third_party/blink/renderer/platform/graphics/high_contrast_image_classifier.h"
+#include "third_party/blink/renderer/platform/graphics/high_contrast_settings.h"
+#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_filter.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/skia/include/core/SkClipOp.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -503,4 +503,4 @@ class PLATFORM_EXPORT GraphicsContext {
 
 }  // namespace blink
 
-#endif  // GraphicsContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GRAPHICS_CONTEXT_H_

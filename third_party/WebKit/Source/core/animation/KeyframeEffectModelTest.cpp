@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/KeyframeEffectModel.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 
-#include "core/animation/AnimationTestHelper.h"
-#include "core/animation/CSSDefaultInterpolationType.h"
-#include "core/animation/InvalidatableInterpolation.h"
-#include "core/animation/StringKeyframe.h"
-#include "core/animation/animatable/AnimatableDouble.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/dom/Element.h"
-#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/animation/animatable/animatable_double.h"
+#include "third_party/blink/renderer/core/animation/animation_test_helper.h"
+#include "third_party/blink/renderer/core/animation/css_default_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
+#include "third_party/blink/renderer/core/animation/string_keyframe.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

@@ -18,10 +18,10 @@
 #include "content/shell/test_runner/test_runner.h"
 #include "content/shell/test_runner/text_input_controller.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
-#include "third_party/WebKit/public/platform/WebCache.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebKit.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/blink/public/platform/web_cache.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/web/web_view.h"
 
 namespace test_runner {
 

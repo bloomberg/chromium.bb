@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StereoPannerNode_h
-#define StereoPannerNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_STEREO_PANNER_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_STEREO_PANNER_NODE_H_
 
-#include "base/gtest_prod_util.h"
-#include "modules/webaudio/AudioNode.h"
-#include "modules/webaudio/AudioParam.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/StereoPanner.h"
 #include <memory>
+#include "base/gtest_prod_util.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/stereo_panner.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ class StereoPannerNode final : public AudioNode {
 
 }  // namespace blink
 
-#endif  // StereoPannerNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_STEREO_PANNER_NODE_H_

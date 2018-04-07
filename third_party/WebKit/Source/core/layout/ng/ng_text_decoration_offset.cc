@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/ng_text_decoration_offset.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_text_decoration_offset.h"
 
-#include "core/layout/line/RootInlineBox.h"
-#include "core/layout/ng/inline/ng_baseline.h"
-#include "core/layout/ng/inline/ng_physical_text_fragment.h"
-#include "core/layout/ng/ng_physical_box_fragment.h"
-#include "platform/fonts/FontMetrics.h"
+#include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_baseline.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/platform/fonts/font_metrics.h"
 
 namespace blink {
 

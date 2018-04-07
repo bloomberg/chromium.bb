@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/imports/HTMLImportsController.h"
+#include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/imports/HTMLImportChild.h"
-#include "core/html/imports/HTMLImportChildClient.h"
-#include "core/html/imports/HTMLImportLoader.h"
-#include "core/html/imports/HTMLImportTreeRoot.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_child.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_child_client.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
+#include "third_party/blink/renderer/core/html/imports/html_import_tree_root.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 namespace blink {
 

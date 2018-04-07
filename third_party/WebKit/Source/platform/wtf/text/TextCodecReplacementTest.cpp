@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/wtf/text/TextCodecReplacement.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec_replacement.h"
 
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/TextCodec.h"
-#include "platform/wtf/text/TextEncoding.h"
-#include "platform/wtf/text/TextEncodingRegistry.h"
-#include "platform/wtf/text/WTFString.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_codec.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace WTF {
 

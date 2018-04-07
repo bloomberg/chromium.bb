@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/WindowProxyManager.h"
+#include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/V8PerIsolateData.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 
 namespace blink {
 

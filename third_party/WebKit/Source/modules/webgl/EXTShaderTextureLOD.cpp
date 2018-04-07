@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webgl/EXTShaderTextureLOD.h"
+#include "third_party/blink/renderer/modules/webgl/ext_shader_texture_lod.h"
 
 namespace blink {
 

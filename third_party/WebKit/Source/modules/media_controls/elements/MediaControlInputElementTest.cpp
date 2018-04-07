@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlInputElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_input_element.h"
 
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/media/HTMLVideoElement.h"
-#include "core/html_names.h"
-#include "core/input_type_names.h"
-#include "core/testing/PageTestBase.h"
-#include "modules/media_controls/MediaControlsImpl.h"
-#include "platform/testing/HistogramTester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 
 namespace blink {
 

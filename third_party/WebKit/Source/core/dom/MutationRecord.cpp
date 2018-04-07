@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/MutationRecord.h"
+#include "third_party/blink/renderer/core/dom/mutation_record.h"
 
-#include "core/dom/Node.h"
-#include "core/dom/NodeList.h"
-#include "core/dom/QualifiedName.h"
-#include "core/dom/StaticNodeList.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/node_list.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 

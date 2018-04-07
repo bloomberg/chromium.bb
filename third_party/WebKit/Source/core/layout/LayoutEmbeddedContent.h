@@ -20,11 +20,11 @@
  *
  */
 
-#ifndef LayoutEmbeddedContent_h
-#define LayoutEmbeddedContent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_EMBEDDED_CONTENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_EMBEDDED_CONTENT_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutReplaced.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_replaced.h"
 
 namespace blink {
 
@@ -96,4 +96,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutEmbeddedContent,
 
 }  // namespace blink
 
-#endif  // LayoutEmbeddedContent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_EMBEDDED_CONTENT_H_

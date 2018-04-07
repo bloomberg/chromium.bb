@@ -26,9 +26,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "platform/graphics/StrokeData.h"
 #include <memory>
-#include "platform/graphics/paint/PaintFlags.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/graphics/stroke_data.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
 
 namespace blink {

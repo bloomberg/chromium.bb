@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/loader/fetch/CachedMetadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
 
-#include "platform/loader/fetch/CachedMetadataHandler.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 
 namespace blink {
 

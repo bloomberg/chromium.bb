@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "media/filters/source_buffer_parse_warnings.h"
-#include "third_party/WebKit/public/platform/WebSourceBuffer.h"
+#include "third_party/blink/public/platform/web_source_buffer.h"
 
 namespace media {
 class ChunkDemuxer;

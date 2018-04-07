@@ -20,21 +20,21 @@
  *
  */
 
-#ifndef RuleSet_h
-#define RuleSet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RULE_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RULE_SET_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css/CSSKeyframesRule.h"
-#include "core/css/MediaQueryEvaluator.h"
-#include "core/css/RuleFeatureSet.h"
-#include "core/css/StyleRule.h"
-#include "core/css/resolver/MediaQueryResult.h"
-#include "platform/heap/HeapLinkedStack.h"
-#include "platform/heap/HeapTerminatedArray.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/TerminatedArray.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
+#include "third_party/blink/renderer/core/css/media_query_evaluator.h"
+#include "third_party/blink/renderer/core/css/resolver/media_query_result.h"
+#include "third_party/blink/renderer/core/css/rule_feature_set.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/platform/heap/heap_linked_stack.h"
+#include "third_party/blink/renderer/platform/heap/heap_terminated_array.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/terminated_array.h"
 
 namespace blink {
 
@@ -342,4 +342,4 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
 
 }  // namespace blink
 
-#endif  // RuleSet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RULE_SET_H_

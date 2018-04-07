@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/custom/CustomElement.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/QualifiedName.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLUnknownElement.h"
-#include "core/html/custom/CEReactionsScope.h"
-#include "core/html/custom/CustomElementDefinition.h"
-#include "core/html/custom/CustomElementReactionStack.h"
-#include "core/html/custom/CustomElementRegistry.h"
-#include "core/html/custom/V0CustomElement.h"
-#include "core/html/custom/V0CustomElementRegistrationContext.h"
-#include "core/html_element_factory.h"
-#include "core/html_element_type_helpers.h"
-#include "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction_stack.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_unknown_element.h"
+#include "third_party/blink/renderer/core/html_element_factory.h"
+#include "third_party/blink/renderer/core/html_element_type_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
 

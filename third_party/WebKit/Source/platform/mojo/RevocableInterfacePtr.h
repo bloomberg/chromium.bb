@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RevocableInterfacePtr_h
-#define RevocableInterfacePtr_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_REVOCABLE_INTERFACE_PTR_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_REVOCABLE_INTERFACE_PTR_H_
 
 #include <stdint.h>
 
@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/interface_ptr_state.h"
-#include "platform/mojo/InterfaceInvalidator.h"
+#include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
 
 namespace blink {
 
@@ -234,4 +234,4 @@ mojo::InterfaceRequest<Interface> MakeRequest(
 
 }  // namespace blink
 
-#endif  // RevocableInterfacePtr_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_REVOCABLE_INTERFACE_PTR_H_

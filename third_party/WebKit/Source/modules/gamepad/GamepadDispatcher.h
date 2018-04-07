@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GamepadDispatcher_h
-#define GamepadDispatcher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_DISPATCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_GAMEPAD_GAMEPAD_DISPATCHER_H_
 
-#include "core/frame/PlatformEventDispatcher.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/gamepad/public/mojom/gamepad.mojom-blink.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/WebGamepadListener.h"
+#include "third_party/blink/public/platform/web_gamepad_listener.h"
+#include "third_party/blink/renderer/core/frame/platform_event_dispatcher.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

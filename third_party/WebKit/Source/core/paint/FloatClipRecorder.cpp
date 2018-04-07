@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/FloatClipRecorder.h"
+#include "third_party/blink/renderer/core/paint/float_clip_recorder.h"
 
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/FloatClipDisplayItem.h"
-#include "platform/graphics/paint/PaintController.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/float_clip_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 
 namespace blink {
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/PropertyHandle.h"
+#include "third_party/blink/renderer/core/animation/property_handle.h"
 
-#include "core/svg_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 

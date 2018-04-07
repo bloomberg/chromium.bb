@@ -17,22 +17,22 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/svg/SVGResources.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 
 #include <memory>
 #include <utility>
 
-#include "core/layout/svg/LayoutSVGResourceClipper.h"
-#include "core/layout/svg/LayoutSVGResourceFilter.h"
-#include "core/layout/svg/LayoutSVGResourceMarker.h"
-#include "core/layout/svg/LayoutSVGResourceMasker.h"
-#include "core/layout/svg/LayoutSVGResourcePaintServer.h"
-#include "core/style/ComputedStyle.h"
-#include "core/svg/SVGPatternElement.h"
-#include "core/svg/SVGResource.h"
-#include "core/svg/SVGTreeScopeResources.h"
-#include "core/svg/SVGURIReference.h"
-#include "core/svg_names.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_clipper.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_filter.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_marker.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/svg/svg_pattern_element.h"
+#include "third_party/blink/renderer/core/svg/svg_resource.h"
+#include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
+#include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
+#include "third_party/blink/renderer/core/svg_names.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

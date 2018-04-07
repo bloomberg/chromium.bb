@@ -27,10 +27,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/line/LineWidth.h"
+#include "third_party/blink/renderer/core/layout/line/line_width.h"
 
-#include "core/layout/api/LineLayoutRubyRun.h"
-#include "core/layout/shapes/ShapeOutsideInfo.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_ruby_run.h"
+#include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 
 namespace blink {
 

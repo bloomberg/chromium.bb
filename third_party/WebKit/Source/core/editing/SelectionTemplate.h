@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SelectionTemplate_h
-#define SelectionTemplate_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_TEMPLATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_TEMPLATE_H_
 
 #include <iosfwd>
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/editing/Forward.h"
-#include "core/editing/Position.h"
-#include "core/editing/SelectionType.h"
-#include "core/editing/TextAffinity.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/selection_type.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -168,4 +168,4 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&, const SelectionInFlatTree&);
 
 }  // namespace blink
 
-#endif  // SelectionTemplate_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SELECTION_TEMPLATE_H_

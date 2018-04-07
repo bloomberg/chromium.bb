@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WorkerGlobalScopeCrypto_h
-#define WorkerGlobalScopeCrypto_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_WORKER_GLOBAL_SCOPE_CRYPTO_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_WORKER_GLOBAL_SCOPE_CRYPTO_H_
 
-#include "core/workers/WorkerGlobalScope.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -62,4 +62,4 @@ class WorkerGlobalScopeCrypto final
 
 }  // namespace blink
 
-#endif  // WorkerGlobalScopeCrypto_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CRYPTO_WORKER_GLOBAL_SCOPE_CRYPTO_H_

@@ -29,11 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CollectionItemsCache_h
-#define CollectionItemsCache_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_COLLECTION_ITEMS_CACHE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_COLLECTION_ITEMS_CACHE_H_
 
-#include "core/dom/CollectionIndexCache.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/dom/collection_index_cache.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -109,4 +109,4 @@ inline NodeType* CollectionItemsCache<Collection, NodeType>::NodeAt(
 
 }  // namespace blink
 
-#endif  // CollectionItemsCache_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_COLLECTION_ITEMS_CACHE_H_

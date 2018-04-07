@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/shadow/DetailsMarkerControl.h"
+#include "third_party/blink/renderer/core/html/shadow/details_marker_control.h"
 
-#include "core/html/HTMLSummaryElement.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutDetailsMarker.h"
+#include "third_party/blink/renderer/core/html/html_summary_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_details_marker.h"
 
 namespace blink {
 

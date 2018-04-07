@@ -9,9 +9,9 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebScopedVirtualTimePauser.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

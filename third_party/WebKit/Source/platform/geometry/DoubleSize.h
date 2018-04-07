@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DoubleSize_h
-#define DoubleSize_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_DOUBLE_SIZE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_DOUBLE_SIZE_H_
 
 #include <iosfwd>
-#include "platform/geometry/FloatSize.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -104,4 +104,4 @@ PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const DoubleSize&);
 
 }  // namespace blink
 
-#endif  // DoubleSize_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_DOUBLE_SIZE_H_

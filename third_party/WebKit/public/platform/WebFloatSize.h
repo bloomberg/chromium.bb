@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFloatSize_h
-#define WebFloatSize_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FLOAT_SIZE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FLOAT_SIZE_H_
 
-#include "WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 #if INSIDE_BLINK
-#include "platform/geometry/FloatSize.h"
+#include "third_party/blink/renderer/platform/geometry/float_size.h"
 #else
 #include <ui/gfx/geometry/size_f.h>
 #include <ui/gfx/geometry/vector2d_f.h>

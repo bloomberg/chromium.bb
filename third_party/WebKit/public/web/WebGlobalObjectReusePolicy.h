@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGlobalObjectReusePolicy_h
-#define WebGlobalObjectReusePolicy_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_GLOBAL_OBJECT_REUSE_POLICY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_GLOBAL_OBJECT_REUSE_POLICY_H_
 
 namespace blink {
 

@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/common/associated_interface_registry_impl.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/WebKit/public/platform/InterfaceRegistry.h"
+#include "third_party/blink/public/platform/interface_registry.h"
 
 namespace content {
 

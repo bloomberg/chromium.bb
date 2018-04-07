@@ -25,13 +25,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef EventDispatcher_h
-#define EventDispatcher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_DISPATCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_DISPATCHER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/events/EventDispatchResult.h"
-#include "core/dom/events/SimulatedClickOptions.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/dom/events/event_dispatch_result.h"
+#include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

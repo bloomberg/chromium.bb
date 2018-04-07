@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebRenderTheme_h
-#define WebRenderTheme_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_RENDER_THEME_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_RENDER_THEME_H_
 
 #include "base/time/time.h"
-#include "public/platform/WebColor.h"
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_color.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 

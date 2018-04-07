@@ -28,30 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/heap/Heap.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 #include <algorithm>
 #include <limits>
 #include <memory>
 
 #include "base/trace_event/process_memory_dump.h"
-#include "platform/Histogram.h"
-#include "platform/bindings/ScriptForbiddenScope.h"
-#include "platform/heap/BlinkGCMemoryDumpProvider.h"
-#include "platform/heap/HeapCompact.h"
-#include "platform/heap/MarkingVisitor.h"
-#include "platform/heap/PageMemory.h"
-#include "platform/heap/PagePool.h"
-#include "platform/heap/SafePoint.h"
-#include "platform/heap/ThreadState.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
-#include "platform/instrumentation/tracing/web_process_memory_dump.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/LeakAnnotations.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/allocator/Partitions.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
+#include "third_party/blink/renderer/platform/heap/heap_compact.h"
+#include "third_party/blink/renderer/platform/heap/marking_visitor.h"
+#include "third_party/blink/renderer/platform/heap/page_memory.h"
+#include "third_party/blink/renderer/platform/heap/page_pool.h"
+#include "third_party/blink/renderer/platform/heap/safe_point.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

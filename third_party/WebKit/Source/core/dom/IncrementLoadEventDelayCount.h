@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IncrementLoadEventDelayCount_h
-#define IncrementLoadEventDelayCount_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_INCREMENT_LOAD_EVENT_DELAY_COUNT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_INCREMENT_LOAD_EVENT_DELAY_COUNT_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

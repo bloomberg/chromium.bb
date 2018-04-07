@@ -5,8 +5,8 @@
 #ifndef BLINK_MODULES_BATTERY_BATTERY_STATUS_H_
 #define BLINK_MODULES_BATTERY_BATTERY_STATUS_H_
 
-#include "modules/ModulesExport.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #include <cmath>
 #include <limits>

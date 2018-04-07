@@ -27,7 +27,7 @@
  *
  */
 
-#include "core/html/forms/ColorChooserClient.h"
+#include "third_party/blink/renderer/core/html/forms/color_chooser_client.h"
 
 namespace blink {
 

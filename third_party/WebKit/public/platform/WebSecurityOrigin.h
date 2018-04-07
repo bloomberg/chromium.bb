@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSecurityOrigin_h
-#define WebSecurityOrigin_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SECURITY_ORIGIN_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SECURITY_ORIGIN_H_
 
-#include "third_party/WebKit/public/platform/WebCommon.h"
-#include "third_party/WebKit/public/platform/WebPrivatePtr.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "url/origin.h"
 
 #if INSIDE_BLINK

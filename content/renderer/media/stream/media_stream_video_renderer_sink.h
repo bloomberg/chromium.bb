@@ -12,7 +12,7 @@
 #include "content/common/media/video_capture.h"
 #include "content/public/renderer/media_stream_video_renderer.h"
 #include "content/public/renderer/media_stream_video_sink.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {

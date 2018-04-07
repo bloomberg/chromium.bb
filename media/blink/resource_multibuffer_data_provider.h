@@ -15,9 +15,9 @@
 #include "media/blink/media_blink_export.h"
 #include "media/blink/multibuffer.h"
 #include "media/blink/url_index.h"
-#include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "third_party/WebKit/public/web/WebAssociatedURLLoaderClient.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/public/web/web_associated_url_loader_client.h"
+#include "third_party/blink/public/web/web_frame.h"
 #include "url/gurl.h"
 
 namespace blink {

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "platform/scheduler/base/lazy_now.h"
+#include "third_party/blink/renderer/platform/scheduler/base/lazy_now.h"
 
 namespace base {
 namespace trace_event {

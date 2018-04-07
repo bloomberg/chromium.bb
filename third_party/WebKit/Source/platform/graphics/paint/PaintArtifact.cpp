@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/PaintArtifact.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 
 #include "cc/paint/display_item_list.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/compositing/PaintChunksToCcLayer.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
-#include "platform/graphics/paint/GeometryMapper.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "public/platform/WebDisplayItemList.h"
+#include "third_party/blink/public/platform/web_display_item_list.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
 namespace blink {

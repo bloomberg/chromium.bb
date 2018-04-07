@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ColorInputType_h
-#define ColorInputType_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_COLOR_INPUT_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_COLOR_INPUT_TYPE_H_
 
-#include "core/html/forms/ColorChooserClient.h"
-#include "core/html/forms/InputType.h"
-#include "core/html/forms/KeyboardClickableInputTypeView.h"
+#include "third_party/blink/renderer/core/html/forms/color_chooser_client.h"
+#include "third_party/blink/renderer/core/html/forms/input_type.h"
+#include "third_party/blink/renderer/core/html/forms/keyboard_clickable_input_type_view.h"
 
 namespace blink {
 
@@ -88,4 +88,4 @@ class ColorInputType final : public InputType,
 
 }  // namespace blink
 
-#endif  // ColorInputType_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_COLOR_INPUT_TYPE_H_

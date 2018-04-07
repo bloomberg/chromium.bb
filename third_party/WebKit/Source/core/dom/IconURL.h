@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IconURL_h
-#define IconURL_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ICON_URL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ICON_URL_H_
 
-#include "platform/geometry/IntSize.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ bool operator==(const IconURL&, const IconURL&);
 
 }  // namespace blink
 
-#endif  // IconURL_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ICON_URL_H_

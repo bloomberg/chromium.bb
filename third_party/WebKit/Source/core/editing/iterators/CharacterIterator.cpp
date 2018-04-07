@@ -25,9 +25,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/iterators/CharacterIterator.h"
+#include "third_party/blink/renderer/core/editing/iterators/character_iterator.h"
 
-#include "core/editing/EphemeralRange.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 
 namespace blink {
 

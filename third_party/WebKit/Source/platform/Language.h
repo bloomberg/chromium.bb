@@ -23,12 +23,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Language_h
-#define Language_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LANGUAGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LANGUAGE_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

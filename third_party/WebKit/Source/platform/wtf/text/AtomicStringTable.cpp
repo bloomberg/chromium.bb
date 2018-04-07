@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/wtf/text/AtomicStringTable.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
 
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/UTF8.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/utf8.h"
 
 namespace WTF {
 

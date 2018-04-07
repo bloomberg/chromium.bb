@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/custom/V0CustomElement.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/custom/V0CustomElementMicrotaskRunQueue.h"
-#include "core/html/custom/V0CustomElementObserver.h"
-#include "core/html/custom/V0CustomElementScheduler.h"
-#include "core/html_names.h"
-#include "core/mathml_names.h"
-#include "core/svg_names.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_microtask_run_queue.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_observer.h"
+#include "third_party/blink/renderer/core/html/custom/v0_custom_element_scheduler.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/mathml_names.h"
+#include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 

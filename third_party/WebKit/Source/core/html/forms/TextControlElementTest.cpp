@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/forms/TextControlElement.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/Position.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/forms/HTMLTextAreaElement.h"
-#include "core/loader/EmptyClients.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 

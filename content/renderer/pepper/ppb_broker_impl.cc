@@ -16,8 +16,8 @@
 #include "content/renderer/render_view_impl.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/platform_file.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_plugin_container.h"
 
 using ppapi::PlatformFileToInt;
 using ppapi::thunk::PPB_Broker_API;

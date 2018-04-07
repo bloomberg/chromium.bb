@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Report_h
-#define Report_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REPORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REPORT_H_
 
-#include "core/frame/ReportBody.h"
+#include "third_party/blink/renderer/core/frame/report_body.h"
 
 namespace blink {
 
@@ -35,4 +35,4 @@ class CORE_EXPORT Report : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // Report_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REPORT_H_

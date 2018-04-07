@@ -70,9 +70,9 @@ include_rules = [
 
 
   # QuotaStatusCode required by AwQuotaManagerBridge.
-  "+third_party/WebKit/public/mojom/quota",
+  "+third_party/blink/public/mojom/quota",
   # POD structure required by the find-in-page IPC messages.
-  "+third_party/WebKit/public/web/WebFindOptions.h",
+  "+third_party/blink/public/web/web_find_options.h",
   # Interface required for in-process input event handling.
-  "+third_party/WebKit/public/web/WebCompositorInputHandler.h"
+  "+third_party/blink/public/web/WebCompositorInputHandler.h"
 ]

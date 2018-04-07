@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BidiTestHarness_h
-#define BidiTestHarness_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_TEST_HARNESS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_TEST_HARNESS_H_
 
 #include <istream>
 #include <map>
@@ -411,4 +411,4 @@ void CharacterHarness<Runner>::Parse(std::istream& bidi_test_file) {
 
 }  // namespace bidi_test
 
-#endif  // BidiTestHarness_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_TEST_HARNESS_H_

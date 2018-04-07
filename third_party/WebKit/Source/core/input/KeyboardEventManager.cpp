@@ -2,31 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/input/KeyboardEventManager.h"
+#include "third_party/blink/renderer/core/input/keyboard_event_manager.h"
 
 #include <memory>
 
 #include "build/build_config.h"
-#include "core/dom/Element.h"
-#include "core/dom/UserGestureIndicator.h"
-#include "core/editing/Editor.h"
-#include "core/events/KeyboardEvent.h"
-#include "core/frame/LocalFrameClient.h"
-#include "core/html/HTMLDialogElement.h"
-#include "core/input/EventHandler.h"
-#include "core/input/EventHandlingUtil.h"
-#include "core/input/InputDeviceCapabilities.h"
-#include "core/input/ScrollManager.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutTextControlSingleLine.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/FocusController.h"
-#include "core/page/Page.h"
-#include "core/page/SpatialNavigation.h"
-#include "platform/KeyboardCodes.h"
-#include "platform/WindowsKeyboardCodes.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/html/html_dialog_element.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/input/event_handling_util.h"
+#include "third_party/blink/renderer/core/input/input_device_capabilities.h"
+#include "third_party/blink/renderer/core/input/scroll_manager.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_text_control_single_line.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/spatial_navigation.h"
+#include "third_party/blink/renderer/platform/keyboard_codes.h"
+#include "third_party/blink/renderer/platform/windows_keyboard_codes.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

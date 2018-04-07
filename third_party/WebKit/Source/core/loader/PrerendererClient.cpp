@@ -29,13 +29,13 @@
  *
  */
 
-#include "core/loader/PrerendererClient.h"
+#include "third_party/blink/renderer/core/loader/prerenderer_client.h"
 
-#include "core/exported/WebViewImpl.h"
-#include "core/page/Page.h"
-#include "platform/Prerender.h"
-#include "public/platform/WebPrerender.h"
-#include "public/web/WebPrerendererClient.h"
+#include "third_party/blink/public/platform/web_prerender.h"
+#include "third_party/blink/public/web/web_prerenderer_client.h"
+#include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/prerender.h"
 
 namespace blink {
 

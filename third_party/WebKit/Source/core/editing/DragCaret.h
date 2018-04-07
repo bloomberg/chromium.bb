@@ -24,16 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DragCaret_h
-#define DragCaret_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_DRAG_CARET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_DRAG_CARET_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/dom/SynchronousMutationObserver.h"
-#include "core/editing/CaretDisplayItemClient.h"
-#include "core/editing/PositionWithAffinity.h"
-#include "platform/graphics/PaintInvalidationReason.h"
+#include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
+#include "third_party/blink/renderer/core/editing/caret_display_item_client.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 
 namespace blink {
 
@@ -84,4 +84,4 @@ class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
 
 }  // namespace blink
 
-#endif  // DragCaret_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_DRAG_CARET_H_

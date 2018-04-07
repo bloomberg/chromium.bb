@@ -16,10 +16,10 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/modules/cache_storage/cache_storage.mojom.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCache.h"
-#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
+#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache_storage.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace content {
 struct ServiceWorkerResponse;

@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ScrollAnchor.h"
+#include "third_party/blink/renderer/core/layout/scroll_anchor.h"
 
 #include <algorithm>
 #include <memory>
 
-#include "core/css/CSSMarkup.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/NthIndexCache.h"
-#include "core/dom/StaticNodeList.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/UseCounter.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutTable.h"
-#include "core/layout/line/InlineTextBox.h"
-#include "core/paint/PaintLayer.h"
-#include "core/paint/PaintLayerScrollableArea.h"
-#include "platform/Histogram.h"
+#include "third_party/blink/renderer/core/css/css_markup.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/nth_index_cache.h"
+#include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_table.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 
 namespace blink {
 

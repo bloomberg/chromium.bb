@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LineLayoutRubyText_h
-#define LineLayoutRubyText_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_RUBY_TEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_RUBY_TEXT_H_
 
-#include "core/layout/LayoutRubyText.h"
-#include "core/layout/api/LineLayoutBlockFlow.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_ruby_text.h"
 
 namespace blink {
 
@@ -34,4 +34,4 @@ class LineLayoutRubyText : public LineLayoutBlockFlow {
 
 }  // namespace blink
 
-#endif  // LineLayoutRubyText_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_RUBY_TEXT_H_

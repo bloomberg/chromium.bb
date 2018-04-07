@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef VisiblePosition_h
-#define VisiblePosition_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_VISIBLE_POSITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_VISIBLE_POSITION_H_
 
-#include "core/CoreExport.h"
-#include "core/editing/PositionWithAffinity.h"
-#include "core/editing/TextAffinity.h"
-#include "platform/heap/Handle.h"
 #include <iosfwd>
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -148,4 +148,4 @@ void showTree(const blink::VisiblePosition*);
 void showTree(const blink::VisiblePosition&);
 #endif
 
-#endif  // VisiblePosition_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_VISIBLE_POSITION_H_

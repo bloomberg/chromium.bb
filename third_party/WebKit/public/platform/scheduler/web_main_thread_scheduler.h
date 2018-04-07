@@ -14,12 +14,12 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebInputEventResult.h"
-#include "public/platform/WebScopedVirtualTimePauser.h"
-#include "public/platform/scheduler/single_thread_idle_task_runner.h"
-#include "public/platform/scheduler/web_render_widget_scheduling_state.h"
-#include "public/platform/scheduler/web_thread_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/single_thread_idle_task_runner.h"
+#include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
+#include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_input_event_result.h"
+#include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
 #include "v8/include/v8.h"
 
 namespace base {

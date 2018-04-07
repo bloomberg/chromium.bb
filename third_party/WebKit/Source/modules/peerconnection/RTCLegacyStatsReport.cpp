@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/peerconnection/RTCLegacyStatsReport.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_legacy_stats_report.h"
 
 namespace blink {
 

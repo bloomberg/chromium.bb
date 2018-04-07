@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/custom/CustomElementTestHelpers.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_test_helpers.h"
 
 namespace blink {
 

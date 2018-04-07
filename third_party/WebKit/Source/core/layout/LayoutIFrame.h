@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutIFrame_h
-#define LayoutIFrame_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_IFRAME_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_IFRAME_H_
 
-#include "core/layout/LayoutEmbeddedContent.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutIFrame, IsLayoutIFrame());
 
 }  // namespace blink
 
-#endif  // LayoutIFrame_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_IFRAME_H_

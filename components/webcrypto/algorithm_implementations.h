@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "third_party/WebKit/public/platform/WebCrypto.h"
+#include "third_party/blink/public/platform/web_crypto.h"
 
 // The definitions for these functions live in the algorithms/ directory.
 namespace webcrypto {

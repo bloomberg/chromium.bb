@@ -1,9 +1,9 @@
-#ifndef GpuMemoryBufferImageCopy_h
-#define GpuMemoryBufferImageCopy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_MEMORY_BUFFER_IMAGE_COPY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_MEMORY_BUFFER_IMAGE_COPY_H_
 
 #include <memory>
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace blink {
@@ -35,4 +35,4 @@ class PLATFORM_EXPORT GpuMemoryBufferImageCopy {
 
 }  // namespace blink
 
-#endif  // GpuMemoryBufferImageCopy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_MEMORY_BUFFER_IMAGE_COPY_H_

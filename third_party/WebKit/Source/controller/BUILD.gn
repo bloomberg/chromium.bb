@@ -5,42 +5,42 @@
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
-import("//third_party/WebKit/Source/bindings/bindings.gni")
-import("//third_party/WebKit/Source/config.gni")
-import("//third_party/WebKit/Source/core/core.gni")
-import("//third_party/WebKit/Source/modules/modules.gni")
+import("//third_party/blink/renderer/bindings/bindings.gni")
+import("//third_party/blink/renderer/config.gni")
+import("//third_party/blink/renderer/core/core.gni")
+import("//third_party/blink/renderer/modules/modules.gni")
 
-visibility = [ "//third_party/WebKit/*" ]
+visibility = [ "//third_party/blink/*" ]
 
 component("controller") {
   output_name = "blink_controller"
 
   deps = [
     "//skia",
-    "//third_party/WebKit/Source/core",
-    "//third_party/WebKit/Source/modules",
-    "//third_party/WebKit/Source/platform",
+    "//third_party/blink/renderer/core",
+    "//third_party/blink/renderer/modules",
+    "//third_party/blink/renderer/platform",
     "//v8",
   ]
 
   configs += [
     "//build/config/compiler:wexit_time_destructors",
-    "//third_party/WebKit/Source:config",
-    "//third_party/WebKit/Source:inside_blink",
-    "//third_party/WebKit/Source:non_test_config",
-    "//third_party/WebKit/Source/core:blink_core_pch",
+    "//third_party/blink/renderer:config",
+    "//third_party/blink/renderer:inside_blink",
+    "//third_party/blink/renderer:non_test_config",
+    "//third_party/blink/renderer/core:blink_core_pch",
   ]
 
   defines = [ "BLINK_CONTROLLER_IMPLEMENTATION=1" ]
 
   sources = [
-    "BlinkInitializer.cpp",
-    "BlinkInitializer.h",
-    "ControllerExport.h",
-    "DevToolsFrontendImpl.cpp",
-    "DevToolsFrontendImpl.h",
-    "OomInterventionImpl.cpp",
-    "OomInterventionImpl.h",
+    "blink_initializer.cc",
+    "blink_initializer.h",
+    "controller_export.h",
+    "dev_tools_frontend_impl.cc",
+    "dev_tools_frontend_impl.h",
+    "oom_intervention_impl.cc",
+    "oom_intervention_impl.h",
   ]
 
   if (is_mac) {
@@ -89,8 +89,8 @@ jumbo_source_set("webkit_unit_tests_sources") {
   testonly = true
 
   sources = [
-    "OomInterventionImplTest.cpp",
-    "tests/RunAllTests.cpp",
+    "oom_intervention_impl_test.cc",
+    "tests/run_all_tests.cc",
   ]
   sources += bindings_unittest_files
 
@@ -104,13 +104,13 @@ jumbo_source_set("webkit_unit_tests_sources") {
     "//gpu:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/WebKit/Source/core:unit_tests",
-    "//third_party/WebKit/Source/modules:unit_tests",
-    "//third_party/WebKit/Source/modules/exported:test_support",
-    "//third_party/WebKit/Source/platform",
-    "//third_party/WebKit/Source/platform:test_support",
-    "//third_party/WebKit/Source/platform:unit_tests",
-    "//third_party/WebKit/Source/platform/wtf",
+    "//third_party/blink/renderer/core:unit_tests",
+    "//third_party/blink/renderer/modules:unit_tests",
+    "//third_party/blink/renderer/modules/exported:test_support",
+    "//third_party/blink/renderer/platform",
+    "//third_party/blink/renderer/platform:test_support",
+    "//third_party/blink/renderer/platform:unit_tests",
+    "//third_party/blink/renderer/platform/wtf",
     "//third_party/libwebp",
     "//third_party/zlib",
     "//url",
@@ -118,8 +118,8 @@ jumbo_source_set("webkit_unit_tests_sources") {
   ]
 
   configs += [
-    "//third_party/WebKit/Source:config",
-    "//third_party/WebKit/Source:inside_blink",
-    "//third_party/WebKit/Source/core:blink_core_pch",
+    "//third_party/blink/renderer:config",
+    "//third_party/blink/renderer:inside_blink",
+    "//third_party/blink/renderer/core:blink_core_pch",
   ]
 }

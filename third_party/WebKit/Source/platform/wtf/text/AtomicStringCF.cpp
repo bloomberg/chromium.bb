@@ -23,15 +23,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 #include "build/build_config.h"
-#include "platform/wtf/text/AtomicStringTable.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
 
 #if defined(OS_MACOSX)
 
-#include "platform/wtf/text/CString.h"
 #include <CoreFoundation/CoreFoundation.h>
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 
 namespace WTF {
 

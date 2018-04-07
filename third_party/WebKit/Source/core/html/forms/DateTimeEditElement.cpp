@@ -23,22 +23,22 @@
  * SUCH DAMAGE.
  */
 
-#include "core/html/forms/DateTimeEditElement.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_edit_element.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/css/StyleChangeReason.h"
-#include "core/dom/Document.h"
-#include "core/dom/Text.h"
-#include "core/events/MouseEvent.h"
-#include "core/html/forms/DateTimeFieldElements.h"
-#include "core/html/forms/DateTimeFieldsState.h"
-#include "core/html/shadow/ShadowElementNames.h"
-#include "core/html_names.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/text/DateTimeFormat.h"
-#include "platform/text/PlatformLocale.h"
-#include "platform/wtf/DateMath.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/css/style_change_reason.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_field_elements.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_fields_state.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/text/date_time_format.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
+#include "third_party/blink/renderer/platform/wtf/date_math.h"
 
 namespace blink {
 

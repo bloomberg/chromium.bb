@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AccessibilityTest_h
-#define AccessibilityTest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_TESTING_ACCESSIBILITY_TEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_TESTING_ACCESSIBILITY_TEST_H_
 
 #include <ostream>
 #include <sstream>
 #include <string>
 
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ class AccessibilityTest : public RenderingTest {
 
 }  // namespace blink
 
-#endif  // AccessibilityTest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_TESTING_ACCESSIBILITY_TEST_H_

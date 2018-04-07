@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/filters/DistantLightSource.h"
+#include "third_party/blink/renderer/platform/graphics/filters/distant_light_source.h"
 
-#include "platform/text/TextStream.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
 
 namespace blink {
 

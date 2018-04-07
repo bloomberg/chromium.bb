@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AdTracker_h
-#define AdTracker_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_ADTRACKER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_ADTRACKER_H_
 
 #include "base/macros.h"
-#include "core/frame/LocalFrame.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -90,4 +90,4 @@ class CORE_EXPORT AdTracker final
 
 }  // namespace blink
 
-#endif  // AdTracker_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_ADTRACKER_H_

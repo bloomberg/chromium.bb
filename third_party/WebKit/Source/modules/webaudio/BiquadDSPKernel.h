@@ -23,12 +23,12 @@
  * DAMAGE.
  */
 
-#ifndef BiquadDSPKernel_h
-#define BiquadDSPKernel_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_BIQUAD_DSP_KERNEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_BIQUAD_DSP_KERNEL_H_
 
-#include "modules/webaudio/BiquadProcessor.h"
-#include "platform/audio/AudioDSPKernel.h"
-#include "platform/audio/Biquad.h"
+#include "third_party/blink/renderer/modules/webaudio/biquad_processor.h"
+#include "third_party/blink/renderer/platform/audio/audio_dsp_kernel.h"
+#include "third_party/blink/renderer/platform/audio/biquad.h"
 
 namespace blink {
 
@@ -90,4 +90,4 @@ class BiquadDSPKernel final : public AudioDSPKernel {
 
 }  // namespace blink
 
-#endif  // BiquadDSPKernel_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_BIQUAD_DSP_KERNEL_H_

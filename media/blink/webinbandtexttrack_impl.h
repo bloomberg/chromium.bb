@@ -6,8 +6,8 @@
 #define MEDIA_BLINK_WEBINBANDTEXTTRACK_IMPL_H_
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/WebInbandTextTrack.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_inband_text_track.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace media {
 

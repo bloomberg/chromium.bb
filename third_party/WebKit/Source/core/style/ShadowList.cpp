@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/style/ShadowList.h"
+#include "third_party/blink/renderer/core/style/shadow_list.h"
 
-#include "platform/geometry/FloatRect.h"
 #include <memory>
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 
 namespace blink {
 

@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_PAGE_PASSWORDS_ANALYSER_H_
 #define COMPONENTS_AUTOFILL_CONTENT_RENDERER_PAGE_PASSWORDS_ANALYSER_H_
 
-#include "third_party/WebKit/public/web/WebConsoleMessage.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/web/web_console_message.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace autofill {
 

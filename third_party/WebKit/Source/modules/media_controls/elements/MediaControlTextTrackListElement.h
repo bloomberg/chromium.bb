@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlTextTrackListElement_h
-#define MediaControlTextTrackListElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_TEXT_TRACK_LIST_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_TEXT_TRACK_LIST_ELEMENT_H_
 
-#include "modules/media_controls/elements/MediaControlDivElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_div_element.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class MediaControlTextTrackListElement final : public MediaControlDivElement {
 
 }  // namespace blink
 
-#endif  // MediaControlTextTrackListElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_TEXT_TRACK_LIST_ELEMENT_H_

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/clipboard/ClipboardMimeTypes.h"
+#include "third_party/blink/renderer/platform/clipboard/clipboard_mime_types.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/loader/AllowedByNosniff.h"
+#include "third_party/blink/renderer/core/loader/allowed_by_nosniff.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/UseCounter.h"
-#include "core/testing/DummyPageHolder.h"
-#include "platform/loader/fetch/ResourceResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
 namespace blink {
 

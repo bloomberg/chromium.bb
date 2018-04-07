@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerOrWorkletGlobalScope_h
-#define WorkerOrWorkletGlobalScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_OR_WORKLET_GLOBAL_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_OR_WORKLET_GLOBAL_SCOPE_H_
 
-#include "bindings/core/v8/V8CacheOptions.h"
-#include "core/dom/events/EventTarget.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/execution_context/SecurityContext.h"
-#include "core/frame/WebFeatureForward.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/workers/WorkerClients.h"
-#include "core/workers/WorkerEventQueue.h"
-#include "platform/wtf/BitVector.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/web_feature_forward.h"
+#include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/core/workers/worker_event_queue.h"
+#include "third_party/blink/renderer/platform/wtf/bit_vector.h"
 
 namespace blink {
 
@@ -140,4 +140,4 @@ DEFINE_TYPE_CASTS(
 
 }  // namespace blink
 
-#endif  // WorkerOrWorkletGlobalScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_OR_WORKLET_GLOBAL_SCOPE_H_

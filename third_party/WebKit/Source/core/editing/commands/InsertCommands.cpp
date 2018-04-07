@@ -29,18 +29,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/commands/InsertCommands.h"
+#include "third_party/blink/renderer/core/editing/commands/insert_commands.h"
 
-#include "core/dom/DocumentFragment.h"
-#include "core/editing/Editor.h"
-#include "core/editing/commands/InsertListCommand.h"
-#include "core/editing/commands/ReplaceSelectionCommand.h"
-#include "core/editing/commands/TypingCommand.h"
-#include "core/editing/serializers/Serialization.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/HTMLHRElement.h"
-#include "core/html/HTMLImageElement.h"
-#include "core/input/EventHandler.h"
+#include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/editing/commands/insert_list_command.h"
+#include "third_party/blink/renderer/core/editing/commands/replace_selection_command.h"
+#include "third_party/blink/renderer/core/editing/commands/typing_command.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/editing/serializers/serialization.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/html_hr_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
 
 namespace blink {
 

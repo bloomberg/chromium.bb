@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/serviceworkers/testing/InternalsServiceWorker.h"
+#include "third_party/blink/renderer/modules/serviceworkers/testing/internals_service_worker.h"
 
-#include "modules/serviceworkers/ServiceWorker.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker.h"
 
 namespace blink {
 

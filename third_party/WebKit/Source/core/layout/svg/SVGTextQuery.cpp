@@ -17,18 +17,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/svg/SVGTextQuery.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_text_query.h"
 
 #include <algorithm>
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/api/LineLayoutSVGInlineText.h"
-#include "core/layout/line/InlineFlowBox.h"
-#include "core/layout/svg/LayoutSVGInlineText.h"
-#include "core/layout/svg/SVGTextFragment.h"
-#include "core/layout/svg/SVGTextMetrics.h"
-#include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_svg_inline_text.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/line/inline_flow_box.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
+#include "third_party/blink/renderer/core/layout/svg/line/svg_inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_text_metrics.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

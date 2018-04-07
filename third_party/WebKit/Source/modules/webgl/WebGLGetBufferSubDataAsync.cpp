@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webgl/WebGLGetBufferSubDataAsync.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_get_buffer_sub_data_async.h"
 
-#include "core/dom/DOMException.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "modules/webgl/WebGL2RenderingContextBase.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context_base.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSPositionAxisListInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_position_axis_list_interpolation_type.h"
 
-#include "core/animation/LengthInterpolationFunctions.h"
-#include "core/animation/ListInterpolationFunctions.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/CSSValuePair.h"
+#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/list_interpolation_functions.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
 
 namespace blink {
 

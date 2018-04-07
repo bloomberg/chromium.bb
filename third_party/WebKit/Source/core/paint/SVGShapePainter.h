@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SVGShapePainter_h
-#define SVGShapePainter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_SHAPE_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_SHAPE_PAINTER_H_
 
-#include "platform/graphics/paint/PaintFlags.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/skia/include/core/SkPath.h"
 
 namespace blink {
@@ -42,4 +42,4 @@ class SVGShapePainter {
 
 }  // namespace blink
 
-#endif  // SVGShapePainter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_SVG_SHAPE_PAINTER_H_

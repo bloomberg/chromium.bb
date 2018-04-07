@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/testing/StaticSelection.h"
+#include "third_party/blink/renderer/core/testing/static_selection.h"
 
-#include "core/editing/SelectionTemplate.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
 
 namespace blink {
 

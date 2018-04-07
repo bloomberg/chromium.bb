@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NavigatorNetworkInformation_h
-#define NavigatorNetworkInformation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NETINFO_NAVIGATOR_NETWORK_INFORMATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_NETINFO_NAVIGATOR_NETWORK_INFORMATION_H_
 
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/frame/Navigator.h"
-#include "platform/Supplementable.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class NavigatorNetworkInformation final
 
 }  // namespace blink
 
-#endif  // NavigatorNetworkInformation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_NETINFO_NAVIGATOR_NETWORK_INFORMATION_H_

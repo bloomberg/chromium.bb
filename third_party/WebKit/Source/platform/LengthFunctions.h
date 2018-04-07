@@ -21,10 +21,10 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef LengthFunctions_h
-#define LengthFunctions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LENGTH_FUNCTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LENGTH_FUNCTIONS_H_
 
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ PLATFORM_EXPORT FloatPoint FloatPointForLengthPoint(const LengthPoint&,
 
 }  // namespace blink
 
-#endif  // LengthFunctions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LENGTH_FUNCTIONS_H_

@@ -25,15 +25,15 @@
  *
  */
 
-#ifndef LayoutTreeBuilder_h
-#define LayoutTreeBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_LAYOUT_TREE_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_LAYOUT_TREE_BUILDER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "core/dom/Document.h"
-#include "core/dom/LayoutTreeBuilderTraversal.h"
-#include "core/dom/Node.h"
-#include "core/dom/Text.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 

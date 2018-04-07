@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSImageListInterpolationType.h"
+#include "third_party/blink/renderer/core/animation/css_image_list_interpolation_type.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/animation/CSSImageInterpolationType.h"
-#include "core/animation/ImageListPropertyFunctions.h"
-#include "core/animation/ListInterpolationFunctions.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSValueList.h"
-#include "core/css/resolver/StyleResolverState.h"
+#include "third_party/blink/renderer/core/animation/css_image_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/image_list_property_functions.h"
+#include "third_party/blink/renderer/core/animation/list_interpolation_functions.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 
 namespace blink {
 

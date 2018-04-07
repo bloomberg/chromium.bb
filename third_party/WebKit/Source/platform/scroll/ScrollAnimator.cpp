@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/scroll/ScrollAnimator.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_animator.h"
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
-#include "platform/animation/CompositorKeyframeModel.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/scroll/MainThreadScrollingReason.h"
-#include "platform/scroll/ScrollableArea.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCompositorSupport.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_compositor_support.h"
+#include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/DedicatedWorkerMessagingProxy.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
 
 #include <memory>
-#include "bindings/core/v8/V8CacheOptions.h"
-#include "core/dom/Document.h"
-#include "core/events/ErrorEvent.h"
-#include "core/events/MessageEvent.h"
-#include "core/fetch/Request.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/inspector/ThreadDebugger.h"
-#include "core/workers/DedicatedWorker.h"
-#include "core/workers/DedicatedWorkerObjectProxy.h"
-#include "core/workers/DedicatedWorkerThread.h"
-#include "core/workers/WorkerInspectorProxy.h"
-#include "core/workers/WorkerOptions.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/wtf/WTF.h"
-#include "public/platform/TaskType.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/events/error_event.h"
+#include "third_party/blink/renderer/core/events/message_event.h"
+#include "third_party/blink/renderer/core/fetch/request.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/inspector/thread_debugger.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker_thread.h"
+#include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_options.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScrollbarTestSuite_h
-#define ScrollbarTestSuite_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLLBAR_TEST_SUITE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCROLL_SCROLLBAR_TEST_SUITE_H_
 
 #include <memory>
-#include "platform/PlatformChromeClient.h"
-#include "platform/heap/GarbageCollected.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/scroll/ScrollableArea.h"
-#include "platform/scroll/Scrollbar.h"
-#include "platform/scroll/ScrollbarThemeMock.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
-#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/platform_chrome_client.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_mock.h"
 
 namespace blink {
 

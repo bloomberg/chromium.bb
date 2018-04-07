@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlOverlayPlayButtonElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_overlay_play_button_element.h"
 
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/events/Event.h"
-#include "core/events/MouseEvent.h"
-#include "core/geometry/DOMRect.h"
-#include "core/html/HTMLStyleElement.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/media/HTMLMediaSource.h"
-#include "core/input_type_names.h"
-#include "modules/media_controls/MediaControlsImpl.h"
-#include "modules/media_controls/MediaControlsResourceLoader.h"
-#include "modules/media_controls/elements/MediaControlElementsHelper.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebSize.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/html/html_style_element.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/html_media_source.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace {
 

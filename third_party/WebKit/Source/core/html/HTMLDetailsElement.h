@@ -18,11 +18,11 @@
  *
  */
 
-#ifndef HTMLDetailsElement_h
-#define HTMLDetailsElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_DETAILS_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_DETAILS_ELEMENT_H_
 
-#include "core/html/HTMLElement.h"
-#include "platform/WebTaskRunner.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
 
 namespace blink {
 
@@ -56,4 +56,4 @@ class HTMLDetailsElement final : public HTMLElement {
 
 }  // namespace blink
 
-#endif  // HTMLDetailsElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_DETAILS_ELEMENT_H_

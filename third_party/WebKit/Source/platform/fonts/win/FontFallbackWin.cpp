@@ -29,17 +29,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/win/FontFallbackWin.h"
+#include "third_party/blink/renderer/platform/fonts/win/font_fallback_win.h"
 
 #include <unicode/uchar.h>
 #include <limits>
 #include "SkFontMgr.h"
 #include "SkTypeface.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/text/ICUError.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/text/icu_error.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

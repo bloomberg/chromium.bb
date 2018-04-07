@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/bindings/WrapperCreationSecurityCheck.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_creation_security_check.h"
 
-#include "platform/bindings/WrapperTypeInfo.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 
 namespace blink {
 

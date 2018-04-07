@@ -23,11 +23,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_range.h"
 
-#include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBKeyRange.h"
-#include "public/platform/modules/indexeddb/WebIDBKey.h"
+#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 
 namespace blink {
 

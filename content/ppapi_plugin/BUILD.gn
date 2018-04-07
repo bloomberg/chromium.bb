@@ -64,7 +64,7 @@ source_set("ppapi_plugin_sources") {
     "//sandbox",
     "//services/service_manager/public/mojom",
     "//skia",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//third_party/icu",
     "//ui/base",
     "//ui/gfx",

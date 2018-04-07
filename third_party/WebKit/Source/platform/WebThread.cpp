@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/web_thread.h"
 
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

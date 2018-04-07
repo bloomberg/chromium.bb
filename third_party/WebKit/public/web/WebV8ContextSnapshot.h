@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebV8ContextSnapshot_h
-#define WebV8ContextSnapshot_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_V8_CONTEXT_SNAPSHOT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_V8_CONTEXT_SNAPSHOT_H_
 
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -20,4 +20,4 @@ class BLINK_EXPORT WebV8ContextSnapshot {
 
 }  // namespace blink
 
-#endif  // WebV8ContextSnapshot_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_V8_CONTEXT_SNAPSHOT_H_

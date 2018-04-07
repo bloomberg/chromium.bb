@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/custom/CustomElementReactionQueue.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction_queue.h"
 
-#include "core/dom/Element.h"
-#include "core/html/custom/CustomElementReaction.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 

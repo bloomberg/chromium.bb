@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "content/renderer/appcache/web_application_cache_host_impl.h"
-#include "third_party/WebKit/public/web/WebConsoleMessage.h"
+#include "third_party/blink/public/web/web_console_message.h"
 
 using blink::WebApplicationCacheHost;
 using blink::WebConsoleMessage;

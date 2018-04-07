@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/forms/PickerIndicatorElement.h"
+#include "third_party/blink/renderer/core/html/forms/picker_indicator_element.h"
 
-#include "core/dom/events/Event.h"
-#include "core/events/KeyboardEvent.h"
-#include "core/frame/Settings.h"
-#include "core/html/shadow/ShadowElementNames.h"
-#include "core/layout/LayoutDetailsMarker.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "platform/LayoutTestSupport.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
+#include "third_party/blink/renderer/core/layout/layout_details_marker.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
 
 namespace blink {
 

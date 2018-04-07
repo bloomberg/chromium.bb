@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/network/HTTPParsers.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
 
 #include <string>
 
 #include "base/logging.h"
-#include "platform/loader/fetch/ResourceResponse.h"
-#include "platform/testing/BlinkFuzzerTestSupport.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   static blink::BlinkFuzzerTestSupport test_support;

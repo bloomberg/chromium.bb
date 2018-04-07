@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPushSubscription_h
-#define WebPushSubscription_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PUSH_MESSAGING_WEB_PUSH_SUBSCRIPTION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PUSH_MESSAGING_WEB_PUSH_SUBSCRIPTION_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebVector.h"
-#include "public/platform/modules/push_messaging/WebPushSubscriptionOptions.h"
+#include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -33,4 +33,4 @@ struct WebPushSubscription {
 
 }  // namespace blink
 
-#endif  // WebPushSubscription_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_PUSH_MESSAGING_WEB_PUSH_SUBSCRIPTION_H_

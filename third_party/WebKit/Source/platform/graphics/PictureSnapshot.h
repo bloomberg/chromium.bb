@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PictureSnapshot_h
-#define PictureSnapshot_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PICTURE_SNAPSHOT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PICTURE_SNAPSHOT_H_
 
 #include <memory>
 
-#include "platform/PlatformExport.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/json/JSONValues.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -78,4 +78,4 @@ class PLATFORM_EXPORT PictureSnapshot : public RefCounted<PictureSnapshot> {
 
 }  // namespace blink
 
-#endif  // PictureSnapshot_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PICTURE_SNAPSHOT_H_

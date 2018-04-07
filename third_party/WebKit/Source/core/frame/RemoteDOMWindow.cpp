@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/RemoteDOMWindow.h"
+#include "third_party/blink/renderer/core/frame/remote_dom_window.h"
 
-#include "core/dom/Document.h"
-#include "core/frame/RemoteFrameClient.h"
-#include "platform/weborigin/SecurityOrigin.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/remote_frame_client.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

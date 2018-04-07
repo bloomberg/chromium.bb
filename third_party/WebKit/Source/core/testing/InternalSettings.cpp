@@ -24,15 +24,15 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/testing/InternalSettings.h"
+#include "third_party/blink/renderer/core/testing/internal_settings.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/frame/Settings.h"
-#include "core/page/Page.h"
-#include "platform/Supplementable.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/text/LocaleToScriptMapping.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/text/locale_to_script_mapping.h"
 
 #define InternalSettingsGuardForSettingsReturn(returnValue)             \
   if (!settings()) {                                                    \

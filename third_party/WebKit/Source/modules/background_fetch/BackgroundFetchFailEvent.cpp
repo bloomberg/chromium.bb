@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/background_fetch/BackgroundFetchFailEvent.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_fail_event.h"
 
-#include "core/fetch/Request.h"
-#include "core/fetch/Response.h"
-#include "modules/background_fetch/BackgroundFetchFailEventInit.h"
-#include "modules/background_fetch/BackgroundFetchSettledFetch.h"
-#include "modules/event_modules_names.h"
-#include "public/platform/modules/background_fetch/WebBackgroundFetchSettledFetch.h"
+#include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_settled_fetch.h"
+#include "third_party/blink/renderer/core/fetch/request.h"
+#include "third_party/blink/renderer/core/fetch/response.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_fail_event_init.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_settled_fetch.h"
+#include "third_party/blink/renderer/modules/event_modules_names.h"
 
 namespace blink {
 

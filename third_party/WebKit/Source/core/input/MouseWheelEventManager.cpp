@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/input/MouseWheelEventManager.h"
+#include "third_party/blink/renderer/core/input/mouse_wheel_event_manager.h"
 
 #include "build/build_config.h"
-#include "core/dom/Document.h"
-#include "core/events/WheelEvent.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/input/EventHandler.h"
-#include "core/input/EventHandlingUtil.h"
-#include "core/layout/HitTestRequest.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutView.h"
-#include "public/platform/WebMouseWheelEvent.h"
+#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/events/wheel_event.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/input/event_handling_util.h"
+#include "third_party/blink/renderer/core/layout/hit_test_request.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 
 namespace blink {
 MouseWheelEventManager::MouseWheelEventManager(LocalFrame& frame)

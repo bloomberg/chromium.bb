@@ -24,14 +24,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_Assertions_h
-#define WTF_Assertions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ASSERTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ASSERTIONS_H_
 
 #include <stdarg.h>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "platform/wtf/WTFExport.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 // New code shouldn't use this function. This function will be deprecated.
 void vprintf_stderr_common(const char* format, va_list args);
@@ -159,4 +159,4 @@ void vprintf_stderr_common(const char* format, va_list args);
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enum: " #a)
 
-#endif  // WTF_Assertions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_ASSERTIONS_H_

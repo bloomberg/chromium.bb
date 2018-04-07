@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/loader/fetch/FetchContext.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 
-#include "platform/PlatformProbeSink.h"
-#include "platform/probe/PlatformTraceEventsAgent.h"
+#include "third_party/blink/renderer/platform/PlatformProbeSink.h"
+#include "third_party/blink/renderer/platform/probe/PlatformTraceEventsAgent.h"
 
 namespace blink {
 

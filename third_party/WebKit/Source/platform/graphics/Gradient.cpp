@@ -25,13 +25,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/Gradient.h"
+#include "third_party/blink/renderer/platform/graphics/gradient.h"
 
 #include <algorithm>
-#include "platform/geometry/FloatRect.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/PaintShader.h"
-#include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_shader.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkShader.h"

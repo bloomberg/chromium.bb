@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/gpu/Extensions3DUtil.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 

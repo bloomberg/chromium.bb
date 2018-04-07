@@ -17,7 +17,7 @@
  *  Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/MediaQueryListListener.h"
+#include "third_party/blink/renderer/core/css/media_query_list_listener.h"
 
 namespace blink {
 

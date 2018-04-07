@@ -17,11 +17,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGTransformDistance_h
-#define SVGTransformDistance_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_TRANSFORM_DISTANCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_TRANSFORM_DISTANCE_H_
 
-#include "core/svg/SVGTransform.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/svg/svg_transform.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class SVGTransformDistance {
 };
 }  // namespace blink
 
-#endif  // SVGTransformDistance_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_TRANSFORM_DISTANCE_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebClientHintsType_h
-#define WebClientHintsType_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CLIENT_HINTS_TYPE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CLIENT_HINTS_TYPE_H_
 
-#include "public/platform/web_client_hints_types.mojom-shared.h"
+#include "third_party/blink/public/platform/web_client_hints_types.mojom-shared.h"
 
 namespace blink {
 
@@ -27,4 +27,4 @@ struct WebEnabledClientHints {
 
 }  // namespace blink
 
-#endif  // WebClientHintsType_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CLIENT_HINTS_TYPE_H_

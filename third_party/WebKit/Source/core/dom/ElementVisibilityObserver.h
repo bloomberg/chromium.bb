@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ElementVisibilityObserver_h
-#define ElementVisibilityObserver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_VISIBILITY_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_VISIBILITY_OBSERVER_H_
 
 #include <limits>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/intersection_observer/IntersectionObserver.h"
-#include "platform/heap/Heap.h"
-#include "platform/heap/Member.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
 
@@ -59,4 +59,4 @@ class CORE_EXPORT ElementVisibilityObserver final
 
 }  // namespace blink
 
-#endif  // ElementVisibilityObserver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_VISIBILITY_OBSERVER_H_

@@ -28,7 +28,7 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_WTF_DTOA_BIGNUM_DTOA_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_WTF_DTOA_BIGNUM_DTOA_H_
 
-#include "platform/wtf/dtoa/utils.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 
 namespace WTF {
 

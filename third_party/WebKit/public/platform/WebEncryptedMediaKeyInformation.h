@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebEncryptedMediaKeyInformation_h
-#define WebEncryptedMediaKeyInformation_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_ENCRYPTED_MEDIA_KEY_INFORMATION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_ENCRYPTED_MEDIA_KEY_INFORMATION_H_
 
-#include "WebCommon.h"
-#include "public/platform/WebData.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_data.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class BLINK_PLATFORM_EXPORT WebEncryptedMediaKeyInformation {
 
 }  // namespace blink
 
-#endif  // WebEncryptedMediaKeyInformation_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_ENCRYPTED_MEDIA_KEY_INFORMATION_H_

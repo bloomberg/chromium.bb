@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebURLLoaderTestDelegate.h"
+#include "third_party/blink/public/platform/web_url_loader_test_delegate.h"
 
-#include "public/platform/WebURLError.h"
-#include "public/platform/WebURLLoader.h"
-#include "public/platform/WebURLLoaderClient.h"
-#include "public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_url_error.h"
+#include "third_party/blink/public/platform/web_url_loader.h"
+#include "third_party/blink/public/platform/web_url_loader_client.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 
 namespace blink {
 

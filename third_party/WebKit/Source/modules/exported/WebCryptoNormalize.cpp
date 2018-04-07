@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebCryptoNormalize.h"
+#include "third_party/blink/public/web/web_crypto_normalize.h"
 
-#include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "modules/crypto/CryptoResultImpl.h"
-#include "modules/crypto/NormalizeAlgorithm.h"
-#include "platform/CryptoResult.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/modules/crypto/crypto_result_impl.h"
+#include "third_party/blink/renderer/modules/crypto/normalize_algorithm.h"
+#include "third_party/blink/renderer/platform/crypto_result.h"
 #include "v8/include/v8.h"
 
 namespace blink {

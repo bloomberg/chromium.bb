@@ -23,19 +23,19 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PODArena_h
-#define PODArena_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_ARENA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_ARENA_H_
 
 #include <stdint.h>
 #include <memory>
 #include <utility>
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/allocator/Partitions.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -193,4 +193,4 @@ class PODArena final : public RefCounted<PODArena> {
 
 }  // namespace blink
 
-#endif  // PODArena_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_POD_ARENA_H_

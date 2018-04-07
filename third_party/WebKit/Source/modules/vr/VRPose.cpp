@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/vr/VRPose.h"
+#include "third_party/blink/renderer/modules/vr/vr_pose.h"
 
 namespace blink {
 

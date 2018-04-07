@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/scheduler/web_render_widget_scheduling_state.h"
+#include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 
-#include "platform/scheduler/renderer/render_widget_signals.h"
+#include "third_party/blink/renderer/platform/scheduler/renderer/render_widget_signals.h"
 
 namespace blink {
 namespace scheduler {

@@ -23,24 +23,24 @@
  * DAMAGE.
  */
 
-#include "platform/audio/VectorMath.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
 
 #include <cmath>
 
 #include "build/build_config.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/CPU.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/cpu.h"
 
 #if defined(OS_MACOSX)
-#include "platform/audio/mac/VectorMathMac.h"
+#include "third_party/blink/renderer/platform/audio/mac/vector_math_mac.h"
 #elif WTF_CPU_ARM_NEON
-#include "platform/audio/cpu/arm/VectorMathNEON.h"
+#include "third_party/blink/renderer/platform/audio/cpu/arm/vector_math_neon.h"
 #elif HAVE_MIPS_MSA_INTRINSICS
-#include "platform/audio/cpu/mips/VectorMathMSA.h"
+#include "third_party/blink/renderer/platform/audio/cpu/mips/vector_math_msa.h"
 #elif defined(ARCH_CPU_X86_FAMILY)
-#include "platform/audio/cpu/x86/VectorMathX86.h"
+#include "third_party/blink/renderer/platform/audio/cpu/x86/vector_math_x8_6.h"
 #else
-#include "platform/audio/VectorMathScalar.h"
+#include "third_party/blink/renderer/platform/audio/vector_math_scalar.h"
 #endif
 
 namespace blink {

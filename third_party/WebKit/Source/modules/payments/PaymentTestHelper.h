@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaymentTestHelper_h
-#define PaymentTestHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_TEST_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_TEST_HELPER_H_
 
-#include "bindings/core/v8/ScriptFunction.h"
-#include "bindings/core/v8/V8DOMException.h"
-#include "modules/payments/PaymentDetailsInit.h"
-#include "modules/payments/PaymentDetailsUpdate.h"
-#include "modules/payments/PaymentItem.h"
-#include "modules/payments/PaymentShippingOption.h"
-#include "platform/heap/HeapAllocator.h"
-#include "platform/heap/Persistent.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/payments/payment_request.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/platform/modules/payments/payment_request.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
+#include "third_party/blink/renderer/modules/payments/payment_details_init.h"
+#include "third_party/blink/renderer/modules/payments/payment_details_update.h"
+#include "third_party/blink/renderer/modules/payments/payment_item.h"
+#include "third_party/blink/renderer/modules/payments/payment_shipping_option.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -115,4 +115,4 @@ class PaymentRequestMockFunctionScope {
 
 }  // namespace blink
 
-#endif  // PaymentTestHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PAYMENTS_PAYMENT_TEST_HELPER_H_

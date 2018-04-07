@@ -29,10 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/filters/SpotLightSource.h"
+#include "third_party/blink/renderer/platform/graphics/filters/spot_light_source.h"
 
-#include "platform/text/TextStream.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/HTMLIFrameElementSandbox.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element_sandbox.h"
 
-#include "core/html/HTMLIFrameElement.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element.h"
 
 namespace blink {
 

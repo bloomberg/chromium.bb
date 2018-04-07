@@ -26,10 +26,10 @@
  *
  */
 
-#include "core/layout/LayoutImageResourceStyleImage.h"
+#include "third_party/blink/renderer/core/layout/layout_image_resource_style_image.h"
 
-#include "core/layout/LayoutReplaced.h"
-#include "core/style/StyleFetchedImage.h"
+#include "third_party/blink/renderer/core/layout/layout_replaced.h"
+#include "third_party/blink/renderer/core/style/style_fetched_image.h"
 
 namespace blink {
 

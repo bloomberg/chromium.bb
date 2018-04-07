@@ -24,14 +24,14 @@
  *
  */
 
-#include "core/frame/SandboxFlags.h"
+#include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 
-#include "core/html/HTMLIFrameElement.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "third_party/WebKit/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

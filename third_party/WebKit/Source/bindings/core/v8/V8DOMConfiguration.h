@@ -26,14 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8DOMConfiguration_h
-#define V8DOMConfiguration_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_DOM_CONFIGURATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_DOM_CONFIGURATION_H_
 
-#include "bindings/core/v8/GeneratedCodeHelper.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/CoreExport.h"
-#include "platform/bindings/V8DOMWrapper.h"
-#include "platform/bindings/V8PrivateProperty.h"
+#include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -354,4 +354,4 @@ class CORE_EXPORT V8DOMConfiguration final {
 
 }  // namespace blink
 
-#endif  // V8DOMConfiguration_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_V8_DOM_CONFIGURATION_H_

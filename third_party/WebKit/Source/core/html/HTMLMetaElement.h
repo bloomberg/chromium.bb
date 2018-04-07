@@ -20,13 +20,13 @@
  *
  */
 
-#ifndef HTMLMetaElement_h
-#define HTMLMetaElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_META_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_META_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/ViewportDescription.h"
-#include "core/html/HTMLElement.h"
-#include "platform/wtf/text/TextEncoding.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/viewport_description.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
 
@@ -116,4 +116,4 @@ class CORE_EXPORT HTMLMetaElement final : public HTMLElement {
 
 }  // namespace blink
 
-#endif  // HTMLMetaElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_META_ELEMENT_H_

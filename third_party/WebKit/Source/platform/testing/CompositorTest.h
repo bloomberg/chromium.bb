@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CompositorTest_h
-#define CompositorTest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_COMPOSITOR_TEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_COMPOSITOR_TEST_H_
 
 #include "base/memory/scoped_refptr.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "platform/wtf/Noncopyable.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -29,4 +29,4 @@ class CompositorTest : public testing::Test {
 
 }  // namespace blink
 
-#endif  // CompositorTest_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_COMPOSITOR_TEST_H_

@@ -24,11 +24,11 @@
  *
  */
 
-#ifndef SandboxFlags_h
-#define SandboxFlags_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SANDBOX_FLAGS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_SANDBOX_FLAGS_H_
 
-#include "core/dom/SpaceSplitString.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/dom/space_split_string.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

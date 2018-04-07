@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/testing/GCObservation.h"
+#include "third_party/blink/renderer/core/testing/gc_observation.h"
 
 namespace blink {
 

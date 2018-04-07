@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontFace_h
-#define FontFace_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_H_
 
 #include "base/macros.h"
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseProperty.h"
-#include "core/css/CSSValue.h"
-#include "core/css/parser/at_rule_descriptors.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/DOMException.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/fonts/FontSelectionTypes.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/parser/at_rule_descriptors.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -183,4 +183,4 @@ using FontFaceArray = HeapVector<Member<FontFace>>;
 
 }  // namespace blink
 
-#endif  // FontFace_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_H_

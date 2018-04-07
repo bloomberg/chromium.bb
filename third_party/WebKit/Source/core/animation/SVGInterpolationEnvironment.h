@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SVGInterpolationEnvironment_h
-#define SVGInterpolationEnvironment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SVG_INTERPOLATION_ENVIRONMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SVG_INTERPOLATION_ENVIRONMENT_H_
 
-#include "core/animation/InterpolationEnvironment.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/animation/interpolation_environment.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -51,4 +51,4 @@ DEFINE_TYPE_CASTS(SVGInterpolationEnvironment,
 
 }  // namespace blink
 
-#endif  // SVGInterpolationEnvironment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SVG_INTERPOLATION_ENVIRONMENT_H_

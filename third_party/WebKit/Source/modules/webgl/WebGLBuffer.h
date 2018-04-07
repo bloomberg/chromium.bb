@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebGLBuffer_h
-#define WebGLBuffer_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_BUFFER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_BUFFER_H_
 
-#include "modules/webgl/WebGLSharedPlatform3DObject.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_shared_platform_3d_object.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class WebGLBuffer final : public WebGLSharedPlatform3DObject {
 
 }  // namespace blink
 
-#endif  // WebGLBuffer_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_BUFFER_H_

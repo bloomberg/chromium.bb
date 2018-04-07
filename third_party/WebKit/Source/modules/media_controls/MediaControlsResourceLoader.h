@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlsResourceLoader_h
-#define MediaControlsResourceLoader_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_RESOURCE_LOADER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_RESOURCE_LOADER_H_
 
-#include "core/css/CSSDefaultStyleSheets.h"
+#include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
 
 namespace blink {
 
@@ -58,4 +58,4 @@ class MediaControlsResourceLoader
 
 }  // namespace blink
 
-#endif  // MediaControlsResourceLoader_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_MEDIA_CONTROLS_RESOURCE_LOADER_H_

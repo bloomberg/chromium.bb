@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSTestHelper.h"
-#include "core/css/RuleSet.h"
+#include "third_party/blink/renderer/core/css/css_test_helper.h"
+#include "third_party/blink/renderer/core/css/rule_set.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

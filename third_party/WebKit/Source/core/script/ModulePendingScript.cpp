@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/script/ModulePendingScript.h"
+#include "third_party/blink/renderer/core/script/module_pending_script.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/script/ScriptLoader.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/script/script_loader.h"
 
 namespace blink {
 

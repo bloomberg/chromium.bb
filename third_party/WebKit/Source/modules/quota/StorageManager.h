@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StorageManager_h
-#define StorageManager_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_STORAGE_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_STORAGE_MANAGER_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Heap.h"
-#include "public/platform/modules/permissions/permission.mojom-blink.h"
-#include "third_party/WebKit/public/mojom/quota/quota_dispatcher_host.mojom-blink.h"
+#include "third_party/blink/public/mojom/quota/quota_dispatcher_host.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ class StorageManager final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // StorageManager_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_QUOTA_STORAGE_MANAGER_H_

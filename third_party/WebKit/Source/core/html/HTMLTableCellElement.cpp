@@ -22,18 +22,18 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/HTMLTableCellElement.h"
+#include "third_party/blink/renderer/core/html/html_table_cell_element.h"
 
-#include "core/css_property_names.h"
-#include "core/css_value_keywords.h"
-#include "core/dom/Attribute.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLTableElement.h"
-#include "core/html/TableConstants.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutTableCell.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/dom/attribute.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_table_element.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/table_constants.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 
 namespace blink {
 

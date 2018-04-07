@@ -19,7 +19,7 @@
  *
  */
 
-#include "platform/text/TextBreakIterator.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 
 #include <unicode/rbbi.h>
 #include <unicode/ubrk.h>
@@ -30,13 +30,13 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "platform/text/ICUError.h"
-#include "platform/text/TextBreakIteratorInternalICU.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/ThreadSpecific.h"
-#include "platform/wtf/ThreadingPrimitives.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/text/icu_error.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator_internal_icu.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 

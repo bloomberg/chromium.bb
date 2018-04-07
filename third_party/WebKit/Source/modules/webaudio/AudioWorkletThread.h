@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AudioWorkletThread_h
-#define AudioWorkletThread_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_THREAD_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_THREAD_H_
 
-#include "core/workers/WorkerThread.h"
-#include "core/workers/WorkletThreadHolder.h"
-#include "modules/ModulesExport.h"
 #include <memory>
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/core/workers/worklet_thread_holder.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
 
 }  // namespace blink
 
-#endif  // AudioWorkletThread_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_THREAD_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/EditingStrategy.h"
+#include "third_party/blink/renderer/core/editing/editing_strategy.h"
 
-#include "core/editing/EditingUtilities.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 

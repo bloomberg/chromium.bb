@@ -25,34 +25,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLCanvasElement_h
-#define HTMLCanvasElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_HTML_CANVAS_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_HTML_CANVAS_ELEMENT_H_
 
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/v8_blob_callback.h"
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/Document.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/canvas/CanvasDrawListener.h"
-#include "core/html/canvas/CanvasImageSource.h"
-#include "core/html/canvas/CanvasRenderingContextHost.h"
-#include "core/imagebitmap/ImageBitmapSource.h"
-#include "core/page/PageVisibilityObserver.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "platform/bindings/ScriptWrappableVisitor.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/CanvasResourceHost.h"
-#include "platform/graphics/CanvasResourceProvider.h"
-#include "platform/graphics/GraphicsTypes.h"
-#include "platform/graphics/GraphicsTypes3D.h"
-#include "platform/graphics/OffscreenCanvasPlaceholder.h"
-#include "platform/graphics/SurfaceLayerBridge.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_blob_callback.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_draw_listener.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_image_source.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
+#include "third_party/blink/renderer/core/page/page_visibility_observer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_host.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types_3d.h"
+#include "third_party/blink/renderer/platform/graphics/offscreen_canvas_placeholder.h"
+#include "third_party/blink/renderer/platform/graphics/surface_layer_bridge.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 #define CanvasDefaultInterpolationQuality kInterpolationLow
 
@@ -385,4 +385,4 @@ class CORE_EXPORT HTMLCanvasElement final
 
 }  // namespace blink
 
-#endif  // HTMLCanvasElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_HTML_CANVAS_ELEMENT_H_

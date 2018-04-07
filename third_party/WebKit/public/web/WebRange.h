@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebRange_h
-#define WebRange_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_RANGE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_RANGE_H_
 
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 #if INSIDE_BLINK
-#include "core/editing/Forward.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
 #endif
 
 namespace blink {

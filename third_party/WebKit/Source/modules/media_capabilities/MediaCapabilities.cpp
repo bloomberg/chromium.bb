@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_capabilities/MediaCapabilities.h"
+#include "third_party/blink/renderer/modules/media_capabilities/media_capabilities.h"
 
 #include <memory>
 
-#include "bindings/core/v8/CallbackPromiseAdapter.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "modules/media_capabilities/MediaCapabilitiesInfo.h"
-#include "modules/media_capabilities/MediaConfiguration.h"
-#include "modules/media_capabilities/MediaDecodingConfiguration.h"
-#include "modules/media_capabilities/MediaEncodingConfiguration.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8ThrowException.h"
-#include "platform/network/ParsedContentType.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebMediaRecorderHandler.h"
-#include "public/platform/modules/media_capabilities/WebMediaCapabilitiesClient.h"
-#include "public/platform/modules/media_capabilities/WebMediaCapabilitiesInfo.h"
-#include "public/platform/modules/media_capabilities/WebMediaConfiguration.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_client.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
+#include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_media_recorder_handler.h"
+#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_info.h"
+#include "third_party/blink/renderer/modules/media_capabilities/media_configuration.h"
+#include "third_party/blink/renderer/modules/media_capabilities/media_decoding_configuration.h"
+#include "third_party/blink/renderer/modules/media_capabilities/media_encoding_configuration.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/WorkletAnimationController.h"
+#include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
 
-#include "core/animation/WorkletAnimationBase.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/animation/worklet_animation_base.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

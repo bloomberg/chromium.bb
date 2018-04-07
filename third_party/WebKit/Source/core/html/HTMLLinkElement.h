@@ -21,23 +21,23 @@
  *
  */
 
-#ifndef HTMLLinkElement_h
-#define HTMLLinkElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_LINK_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_LINK_ELEMENT_H_
 
 #include <memory>
 #include "base/single_thread_task_runner.h"
-#include "core/CoreExport.h"
-#include "core/dom/CreateElementFlags.h"
-#include "core/dom/DOMTokenList.h"
-#include "core/dom/IncrementLoadEventDelayCount.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/LinkRelAttribute.h"
-#include "core/html/LinkResource.h"
-#include "core/html/LinkStyle.h"
-#include "core/html/RelList.h"
-#include "core/loader/LinkLoader.h"
-#include "core/loader/LinkLoaderClient.h"
-#include "platform/bindings/TraceWrapperMember.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/create_element_flags.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
+#include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/link_rel_attribute.h"
+#include "third_party/blink/renderer/core/html/link_resource.h"
+#include "third_party/blink/renderer/core/html/link_style.h"
+#include "third_party/blink/renderer/core/html/rel_list.h"
+#include "third_party/blink/renderer/core/loader/link_loader.h"
+#include "third_party/blink/renderer/core/loader/link_loader_client.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -168,4 +168,4 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
 
 }  // namespace blink
 
-#endif  // HTMLLinkElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_LINK_ELEMENT_H_

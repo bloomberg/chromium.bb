@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebMemoryCoordinator_h
-#define WebMemoryCoordinator_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEMORY_COORDINATOR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEMORY_COORDINATOR_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebMemoryPressureLevel.h"
-#include "public/platform/WebMemoryState.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_memory_pressure_level.h"
+#include "third_party/blink/public/platform/web_memory_state.h"
 
 namespace blink {
 

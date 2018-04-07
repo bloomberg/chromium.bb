@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/testing/wtf/ScopedMockClock.h"
+#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 
 namespace WTF {
 

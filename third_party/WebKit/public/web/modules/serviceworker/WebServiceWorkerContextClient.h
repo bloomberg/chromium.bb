@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebServiceWorkerContextClient_h
-#define WebServiceWorkerContextClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_CONTEXT_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_CONTEXT_CLIENT_H_
 
 #include <memory>
 
-#include "public/platform/WebURL.h"
-#include "public/platform/WebWorkerFetchContext.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerClientsClaimCallbacks.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerStreamHandle.h"
-#include "third_party/WebKit/public/common/message_port/transferable_message.h"
-#include "third_party/WebKit/public/mojom/service_worker/service_worker_event_status.mojom-shared.h"
-#include "third_party/WebKit/public/platform/web_feature.mojom-shared.h"
+#include "third_party/blink/public/common/message_port/transferable_message.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_clients_claim_callbacks.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_clients_info.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_skip_waiting_callbacks.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_stream_handle.h"
+#include "third_party/blink/public/platform/web_feature.mojom-shared.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -316,4 +316,4 @@ class WebServiceWorkerContextClient {
 
 }  // namespace blink
 
-#endif  // WebServiceWorkerContextClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_SERVICEWORKER_WEB_SERVICE_WORKER_CONTEXT_CLIENT_H_

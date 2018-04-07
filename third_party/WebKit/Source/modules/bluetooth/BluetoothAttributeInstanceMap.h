@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BluetoothAttributeInstanceMap_h
-#define BluetoothAttributeInstanceMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_ATTRIBUTE_INSTANCE_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_ATTRIBUTE_INSTANCE_MAP_H_
 
-#include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
-#include "modules/bluetooth/BluetoothRemoteGATTDescriptor.h"
-#include "modules/bluetooth/BluetoothRemoteGATTService.h"
-#include "platform/heap/Handle.h"
-#include "platform/heap/Heap.h"
 #include <memory>
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_characteristic.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_descriptor.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_service.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -85,4 +85,4 @@ class BluetoothAttributeInstanceMap final
 
 }  // namespace blink
 
-#endif  // BluetoothAttributeInstanceMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_ATTRIBUTE_INSTANCE_MAP_H_

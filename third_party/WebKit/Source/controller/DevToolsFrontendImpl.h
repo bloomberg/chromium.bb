@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DevToolsFrontendImpl_h
-#define DevToolsFrontendImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CONTROLLER_DEV_TOOLS_FRONTEND_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CONTROLLER_DEV_TOOLS_FRONTEND_IMPL_H_
 
 #include "base/macros.h"
-#include "core/inspector/InspectorFrontendClient.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/web/devtools_frontend.mojom-blink.h"
+#include "third_party/blink/public/web/devtools_frontend.mojom-blink.h"
+#include "third_party/blink/renderer/core/inspector/inspector_frontend_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

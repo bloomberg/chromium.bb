@@ -23,19 +23,19 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/testing/v8/WebCoreTestSupport.h"
+#include "third_party/blink/renderer/core/testing/v8/web_core_test_support.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8OriginTrialsTest.h"
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/LocalFrame.h"
-#include "core/origin_trials/origin_trials.h"
-#include "core/testing/InternalSettings.h"
-#include "core/testing/Internals.h"
-#include "core/testing/WorkerInternals.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/OriginTrialFeatures.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_origin_trials_test.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
+#include "third_party/blink/renderer/core/testing/internal_settings.h"
+#include "third_party/blink/renderer/core/testing/internals.h"
+#include "third_party/blink/renderer/core/testing/worker_internals.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/origin_trial_features.h"
 
 namespace WebCoreTestSupport {
 

@@ -27,15 +27,15 @@
  * SUCH DAMAGE.
  */
 
-#ifndef ClipPathOperation_h
-#define ClipPathOperation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CLIP_PATH_OPERATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CLIP_PATH_OPERATION_H_
 
 #include <memory>
-#include "core/style/BasicShapes.h"
-#include "core/svg/SVGResource.h"
-#include "platform/graphics/Path.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/style/basic_shapes.h"
+#include "third_party/blink/renderer/core/svg/svg_resource.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -135,4 +135,4 @@ inline bool ShapeClipPathOperation::operator==(
 
 }  // namespace blink
 
-#endif  // ClipPathOperation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_CLIP_PATH_OPERATION_H_

@@ -28,12 +28,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/VisibleUnits.h"
+#include "third_party/blink/renderer/core/editing/visible_units.h"
 
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/VisiblePosition.h"
-#include "core/layout/LayoutText.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
 
 namespace blink {
 

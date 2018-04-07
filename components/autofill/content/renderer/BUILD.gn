@@ -55,7 +55,7 @@ static_library("renderer") {
     "//net",
     "//services/service_manager/public/cpp",
     "//skia",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//third_party/re2",
     "//ui/base",
   ]
@@ -81,7 +81,7 @@ static_library("test_support") {
     "//components/autofill/content/renderer",
     "//services/service_manager/public/cpp",
     "//skia",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
   ]
 }
 

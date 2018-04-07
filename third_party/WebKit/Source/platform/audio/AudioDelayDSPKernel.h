@@ -23,11 +23,11 @@
  * DAMAGE.
  */
 
-#ifndef AudioDelayDSPKernel_h
-#define AudioDelayDSPKernel_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DELAY_DSP_KERNEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DELAY_DSP_KERNEL_H_
 
-#include "platform/audio/AudioArray.h"
-#include "platform/audio/AudioDSPKernel.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
+#include "third_party/blink/renderer/platform/audio/audio_dsp_kernel.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class PLATFORM_EXPORT AudioDelayDSPKernel : public AudioDSPKernel {
 
 }  // namespace blink
 
-#endif  // AudioDelayDSPKernel_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_DELAY_DSP_KERNEL_H_

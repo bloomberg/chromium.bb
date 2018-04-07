@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/bindings/V8DOMWrapper.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 
-#include "platform/bindings/V8Binding.h"
-#include "platform/bindings/V8ObjectConstructor.h"
-#include "platform/bindings/V8PerContextData.h"
-#include "platform/bindings/V8PerIsolateData.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 
 namespace blink {
 

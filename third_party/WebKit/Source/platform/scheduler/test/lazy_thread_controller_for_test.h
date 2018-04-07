@@ -7,7 +7,7 @@
 
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
-#include "platform/scheduler/base/thread_controller_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/thread_controller_impl.h"
 
 namespace blink {
 namespace scheduler {

@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCSessionDescriptionRequestImpl_h
-#define RTCSessionDescriptionRequestImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_SESSION_DESCRIPTION_REQUEST_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_SESSION_DESCRIPTION_REQUEST_IMPL_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/modules/v8/v8_rtc_peer_connection_error_callback.h"
-#include "bindings/modules/v8/v8_rtc_session_description_callback.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "platform/heap/Handle.h"
-#include "platform/peerconnection/RTCSessionDescriptionRequest.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_peer_connection_error_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_session_description_callback.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_request.h"
 
 namespace blink {
 
@@ -87,4 +87,4 @@ class RTCSessionDescriptionRequestImpl final
 
 }  // namespace blink
 
-#endif  // RTCSessionDescriptionRequestImpl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_SESSION_DESCRIPTION_REQUEST_IMPL_H_

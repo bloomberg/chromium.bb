@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebURLLoadTiming.h"
+#include "third_party/blink/public/platform/web_url_load_timing.h"
 
-#include "platform/loader/fetch/ResourceLoadTiming.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 
 namespace blink {
 

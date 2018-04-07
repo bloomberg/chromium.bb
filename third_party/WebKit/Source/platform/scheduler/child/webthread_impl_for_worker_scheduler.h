@@ -8,8 +8,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/threading/thread.h"
-#include "public/platform/WebPrivatePtr.h"
-#include "public/platform/scheduler/child/webthread_base.h"
+#include "third_party/blink/public/platform/scheduler/child/webthread_base.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
 
 namespace base {
 class WaitableEvent;

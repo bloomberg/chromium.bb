@@ -18,8 +18,8 @@
 #include "base/threading/thread_checker.h"
 #include "media/base/content_decryption_module.h"
 #include "media/blink/new_session_cdm_result_promise.h"
-#include "third_party/WebKit/public/platform/WebContentDecryptionModuleSession.h"
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_content_decryption_module_session.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace media {
 

@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_H_
 #define CONTENT_RENDERER_BROWSER_PLUGIN_BROWSER_PLUGIN_H_
 
-#include "third_party/WebKit/public/web/WebPlugin.h"
+#include "third_party/blink/public/web/web_plugin.h"
 
 #include <memory>
 
@@ -21,10 +21,10 @@
 #include "content/renderer/child_frame_compositor.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_view_impl.h"
-#include "third_party/WebKit/public/web/WebDragStatus.h"
-#include "third_party/WebKit/public/web/WebImeTextSpan.h"
-#include "third_party/WebKit/public/web/WebInputMethodController.h"
-#include "third_party/WebKit/public/web/WebNode.h"
+#include "third_party/blink/public/web/web_drag_status.h"
+#include "third_party/blink/public/web/web_ime_text_span.h"
+#include "third_party/blink/public/web/web_input_method_controller.h"
+#include "third_party/blink/public/web/web_node.h"
 
 #if defined(USE_AURA)
 #include "content/renderer/mus/mus_embedded_frame_delegate.h"

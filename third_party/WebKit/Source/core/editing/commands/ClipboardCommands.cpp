@@ -29,24 +29,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/commands/ClipboardCommands.h"
+#include "third_party/blink/renderer/core/editing/commands/clipboard_commands.h"
 
-#include "core/clipboard/DataTransferAccessPolicy.h"
-#include "core/clipboard/Pasteboard.h"
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/Editor.h"
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/commands/EditingCommandsUtilities.h"
-#include "core/editing/serializers/Serialization.h"
-#include "core/events/ClipboardEvent.h"
-#include "core/events/TextEvent.h"
-#include "core/frame/ContentSettingsClient.h"
-#include "core/frame/Settings.h"
-#include "core/html/HTMLImageElement.h"
-#include "core/html/forms/TextControlElement.h"
-#include "platform/PasteMode.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer_access_policy.h"
+#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
+#include "third_party/blink/renderer/core/editing/commands/editing_commands_utilities.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/serializers/serialization.h"
+#include "third_party/blink/renderer/core/events/clipboard_event.h"
+#include "third_party/blink/renderer/core/events/text_event.h"
+#include "third_party/blink/renderer/core/frame/content_settings_client.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/paste_mode.h"
 
 namespace blink {
 

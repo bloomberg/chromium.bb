@@ -28,20 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Blob_h
-#define Blob_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_BLOB_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_BLOB_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
-#include "core/CoreExport.h"
-#include "core/fileapi/URLRegistry.h"
-#include "core/imagebitmap/ImageBitmapSource.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "core/typed_arrays/DOMArrayBufferView.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/blob/BlobData.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/fileapi/url_registry.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -141,4 +141,4 @@ class CORE_EXPORT Blob : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // Blob_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_BLOB_H_

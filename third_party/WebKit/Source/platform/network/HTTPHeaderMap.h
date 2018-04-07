@@ -24,18 +24,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTTPHeaderMap_h
-#define HTTPHeaderMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_HTTP_HEADER_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_HTTP_HEADER_MAP_H_
 
 #include <memory>
 #include <utility>
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/AtomicString.h"
-#include "platform/wtf/text/AtomicStringHash.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -88,4 +88,4 @@ class PLATFORM_EXPORT HTTPHeaderMap final {
 
 }  // namespace blink
 
-#endif  // HTTPHeaderMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_HTTP_HEADER_MAP_H_

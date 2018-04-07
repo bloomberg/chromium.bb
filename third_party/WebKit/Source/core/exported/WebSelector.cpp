@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebSelector.h"
+#include "third_party/blink/public/web/web_selector.h"
 
-#include "core/css/CSSSelectorList.h"
-#include "core/css/parser/CSSParser.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/core/css/css_selector_list.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
 
 namespace blink {
 

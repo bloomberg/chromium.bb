@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/device_orientation/DeviceMotionData.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_data.h"
 
-#include "modules/device_orientation/DeviceAccelerationInit.h"
-#include "modules/device_orientation/DeviceMotionEventInit.h"
-#include "modules/device_orientation/DeviceRotationRateInit.h"
 #include "services/device/public/cpp/generic_sensor/motion_data.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_acceleration_init.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_motion_event_init.h"
+#include "third_party/blink/renderer/modules/device_orientation/device_rotation_rate_init.h"
 
 namespace blink {
 

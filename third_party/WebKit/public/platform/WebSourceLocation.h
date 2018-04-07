@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebSourceLocation_h
-#define WebSourceLocation_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SOURCE_LOCATION_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SOURCE_LOCATION_H_
 
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 

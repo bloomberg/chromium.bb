@@ -23,23 +23,23 @@
  * DAMAGE.
  */
 
-#ifndef FontFaceSetDocument_h
-#define FontFaceSetDocument_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_SET_DOCUMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_SET_DOCUMENT_H_
 
 #include "base/macros.h"
-#include "bindings/core/v8/Iterable.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/css/CSSFontSelector.h"
-#include "core/css/FontFace.h"
-#include "core/css/FontFaceSet.h"
-#include "core/css/StyleEngine.h"
-#include "core/dom/Document.h"
-#include "core/dom/PausableObject.h"
-#include "core/dom/events/EventListener.h"
-#include "core/dom/events/EventTarget.h"
-#include "platform/AsyncMethodRunner.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/bindings/core/v8/iterable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/css/css_font_selector.h"
+#include "third_party/blink/renderer/core/css/font_face.h"
+#include "third_party/blink/renderer/core/css/font_face_set.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/platform/async_method_runner.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -116,4 +116,4 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
 
 }  // namespace blink
 
-#endif  // FontFaceSetDocument_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_SET_DOCUMENT_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/nfc/NavigatorNFC.h"
+#include "third_party/blink/renderer/modules/nfc/navigator_nfc.h"
 
-#include "core/frame/Navigator.h"
-#include "modules/nfc/NFC.h"
+#include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/modules/nfc/nfc.h"
 
 namespace blink {
 

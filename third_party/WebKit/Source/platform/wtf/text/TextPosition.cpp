@@ -23,11 +23,11 @@
  * DAMAGE.
  */
 
-#include "platform/wtf/text/TextPosition.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
-#include "platform/wtf/StdLibExtras.h"
 #include <algorithm>
 #include <memory>
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace WTF {
 

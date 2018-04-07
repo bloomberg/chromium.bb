@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/fileapi/FileList.h"
+#include "third_party/blink/renderer/core/fileapi/file_list.h"
 
 namespace blink {
 

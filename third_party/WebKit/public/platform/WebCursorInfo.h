@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebCursorInfo_h
-#define WebCursorInfo_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CURSOR_INFO_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CURSOR_INFO_H_
 
-#include "WebImage.h"
-#include "WebPoint.h"
+#include "third_party/blink/public/platform/web_image.h"
+#include "third_party/blink/public/platform/web_point.h"
 
 #ifdef WIN32
 typedef struct HICON__* HICON;

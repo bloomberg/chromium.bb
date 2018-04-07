@@ -11,7 +11,7 @@
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
+#include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 
 using subresource_filter::SubresourceFilterSafeBrowsingActivationThrottle;
 using ActivationDecision = subresource_filter::ActivationDecision;

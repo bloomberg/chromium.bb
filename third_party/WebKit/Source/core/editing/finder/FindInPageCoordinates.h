@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FindInPageCoordinates_h
-#define FindInPageCoordinates_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FINDER_FIND_IN_PAGE_COORDINATES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_FINDER_FIND_IN_PAGE_COORDINATES_H_
 
-#include "core/CoreExport.h"
-#include "core/editing/Forward.h"
-#include "platform/geometry/FloatRect.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 
 namespace blink {
 class LayoutObject;

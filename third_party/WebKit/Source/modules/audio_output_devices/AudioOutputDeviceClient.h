@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AudioOutputDeviceClient_h
-#define AudioOutputDeviceClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_AUDIO_OUTPUT_DEVICES_AUDIO_OUTPUT_DEVICE_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_AUDIO_OUTPUT_DEVICES_AUDIO_OUTPUT_DEVICE_CLIENT_H_
 
-#include "core/frame/LocalFrame.h"
-#include "modules/ModulesExport.h"
-#include "platform/Supplementable.h"
-#include "public/platform/WebSetSinkIdCallbacks.h"
 #include <memory>
+#include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -41,4 +41,4 @@ MODULES_EXPORT void ProvideAudioOutputDeviceClientTo(LocalFrame&,
 
 }  // namespace blink
 
-#endif  // AudioOutputDeviceClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_AUDIO_OUTPUT_DEVICES_AUDIO_OUTPUT_DEVICE_CLIENT_H_

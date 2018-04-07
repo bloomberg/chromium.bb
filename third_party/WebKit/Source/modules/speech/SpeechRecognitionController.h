@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SpeechRecognitionController_h
-#define SpeechRecognitionController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_CONTROLLER_H_
 
 #include <memory>
 
-#include "core/frame/LocalFrame.h"
-#include "modules/speech/SpeechRecognitionClient.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/speech/speech_recognition_client.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ class SpeechRecognitionController final
 
 }  // namespace blink
 
-#endif  // SpeechRecognitionController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_CONTROLLER_H_

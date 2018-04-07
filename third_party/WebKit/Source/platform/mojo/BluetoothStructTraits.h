@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BluetoothStructTraits_h
-#define BluetoothStructTraits_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_BLUETOOTH_STRUCT_TRAITS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_BLUETOOTH_STRUCT_TRAITS_H_
 
 #include "device/bluetooth/public/mojom/uuid.mojom-blink.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace mojo {
 
@@ -34,4 +34,4 @@ struct StructTraits<bluetooth::mojom::UUIDDataView, WTF::String> {
 
 }  // namespace mojo
 
-#endif  // BluetoothStructTraits_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_BLUETOOTH_STRUCT_TRAITS_H_

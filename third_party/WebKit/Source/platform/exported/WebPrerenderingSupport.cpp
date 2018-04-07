@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebPrerenderingSupport.h"
+#include "third_party/blink/public/platform/web_prerendering_support.h"
 
 namespace blink {
 

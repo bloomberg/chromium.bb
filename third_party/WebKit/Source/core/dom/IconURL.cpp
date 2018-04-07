@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/IconURL.h"
-#include "platform/wtf/Assertions.h"
-#include "public/web/WebIconURL.h"
+#include "third_party/blink/public/web/web_icon_url.h"
+#include "third_party/blink/renderer/core/dom/icon_url.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

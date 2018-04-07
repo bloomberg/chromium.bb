@@ -8,7 +8,7 @@
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
 #include "chrome/browser/vr/vr_gl_util.h"
-#include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace vr {

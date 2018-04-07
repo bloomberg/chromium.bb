@@ -20,11 +20,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/svg/SVGMarkerElement.h"
+#include "third_party/blink/renderer/core/svg/svg_marker_element.h"
 
-#include "core/layout/svg/LayoutSVGResourceMarker.h"
-#include "core/svg/SVGAngleTearOff.h"
-#include "core/svg_names.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_marker.h"
+#include "third_party/blink/renderer/core/svg/svg_angle_tear_off.h"
+#include "third_party/blink/renderer/core/svg_names.h"
 
 namespace blink {
 

@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebHistoryItem.h"
+#include "third_party/blink/public/web/web_history_item.h"
 
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/loader/HistoryItem.h"
-#include "platform/network/EncodedFormData.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/text/StringHash.h"
-#include "public/platform/WebFloatPoint.h"
-#include "public/platform/WebHTTPBody.h"
-#include "public/platform/WebPoint.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "public/web/WebSerializedScriptValue.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_http_body.h"
+#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/loader/history_item.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 

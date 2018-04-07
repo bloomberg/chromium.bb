@@ -23,9 +23,9 @@
  * SUCH DAMAGE.
  */
 
-#include "public/web/WebDateTimeSuggestion.h"
+#include "third_party/blink/public/web/web_date_time_suggestion.h"
 
-#include "core/html/forms/DateTimeChooser.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_chooser.h"
 
 namespace blink {
 

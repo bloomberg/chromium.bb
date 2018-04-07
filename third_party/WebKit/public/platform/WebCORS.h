@@ -24,17 +24,17 @@
  *
  */
 
-#ifndef WebCORS_h
-#define WebCORS_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CORS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CORS_H_
 
 #include "base/optional.h"
-#include "public/platform/WebHTTPHeaderMap.h"
-#include "public/platform/WebHTTPHeaderSet.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/WebURLRequest.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/public/platform/web_http_header_map.h"
+#include "third_party/blink/public/platform/web_http_header_set.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 
 namespace blink {
 
@@ -82,4 +82,4 @@ BLINK_PLATFORM_EXPORT bool ContainsOnlyCORSSafelistedOrForbiddenHeaders(
 
 }  // namespace blink
 
-#endif  // WebCORS_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CORS_H_

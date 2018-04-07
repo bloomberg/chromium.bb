@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/commands/SelectionForUndoStep.h"
+#include "third_party/blink/renderer/core/editing/commands/selection_for_undo_step.h"
 
-#include "core/editing/EditingUtilities.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/TextAffinity.h"
-#include "core/editing/VisibleSelection.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
 
 namespace blink {
 

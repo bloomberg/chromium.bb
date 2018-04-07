@@ -22,13 +22,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/filters/FEBlend.h"
-#include "platform/graphics/filters/FEGaussianBlur.h"
-#include "platform/graphics/filters/FEMerge.h"
-#include "platform/graphics/filters/Filter.h"
-#include "platform/graphics/filters/PaintFilterBuilder.h"
-#include "platform/graphics/filters/SourceGraphic.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_blend.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_gaussian_blur.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_merge.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
+#include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
 
 using testing::Test;
 

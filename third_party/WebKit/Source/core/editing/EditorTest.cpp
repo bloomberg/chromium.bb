@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/Editor.h"
+#include "third_party/blink/renderer/core/editing/editor.h"
 
-#include "core/clipboard/Pasteboard.h"
-#include "core/editing/commands/EditorCommand.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/html/forms/HTMLInputElement.h"
+#include "third_party/blink/renderer/core/clipboard/pasteboard.h"
+#include "third_party/blink/renderer/core/editing/commands/editor_command.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 
 namespace blink {
 

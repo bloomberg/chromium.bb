@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/workers/WorkerModuleTreeClient.h"
+#include "third_party/blink/renderer/core/workers/worker_module_tree_client.h"
 
-#include "bindings/core/v8/ScriptValue.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/script/ModuleScript.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerReportingProxy.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 
 namespace blink {
 

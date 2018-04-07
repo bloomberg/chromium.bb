@@ -24,7 +24,7 @@
 #include "chrome/common/buildflags.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/persistent_notification_status.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/blink/public/platform/modules/permissions/permission_status.mojom.h"
 #include "ui/message_center/public/cpp/notification.h"
 
 class NotificationDelegate;

@@ -17,10 +17,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef HexNumber_h
-#define HexNumber_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HEX_NUMBER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HEX_NUMBER_H_
 
-#include "platform/wtf/text/StringConcatenate.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
 
 namespace WTF {
 
@@ -108,4 +108,4 @@ class HexNumber final {
 
 using WTF::HexNumber;
 
-#endif  // HexNumber_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_HEX_NUMBER_H_

@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLInputStream_h
-#define HTMLInputStream_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_INPUT_STREAM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_INPUT_STREAM_H_
 
 #include "base/macros.h"
-#include "core/html/parser/InputStreamPreprocessor.h"
-#include "platform/text/SegmentedString.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/html/parser/input_stream_preprocessor.h"
+#include "third_party/blink/renderer/platform/text/segmented_string.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -146,4 +146,4 @@ class InsertionPointRecord {
 
 }  // namespace blink
 
-#endif  // HTMLInputStream_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_INPUT_STREAM_H_

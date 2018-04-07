@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/animationworklet/AnimationWorkletMessagingProxy.h"
+#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_messaging_proxy.h"
 
-#include "core/workers/ThreadedWorkletObjectProxy.h"
-#include "modules/animationworklet/AnimationWorkletThread.h"
+#include "third_party/blink/renderer/core/workers/threaded_worklet_object_proxy.h"
+#include "third_party/blink/renderer/modules/animationworklet/animation_worklet_thread.h"
 
 namespace blink {
 

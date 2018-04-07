@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/resolver/StyleResolverStats.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
 
 #include <memory>
 

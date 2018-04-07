@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BorderEdge_h
-#define BorderEdge_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_BORDER_EDGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_BORDER_EDGE_H_
 
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/graphics/Color.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -56,4 +56,4 @@ struct BorderEdge {
 
 }  // namespace blink
 
-#endif  // BorderEdge_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_BORDER_EDGE_H_

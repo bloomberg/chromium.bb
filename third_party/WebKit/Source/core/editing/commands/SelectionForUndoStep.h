@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SelectionForUndoStep_h
-#define SelectionForUndoStep_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SELECTION_FOR_UNDO_STEP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SELECTION_FOR_UNDO_STEP_H_
 
 #include "base/macros.h"
-#include "core/editing/Forward.h"
-#include "core/editing/Position.h"
-#include "core/editing/TextAffinity.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/text_affinity.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -96,4 +96,4 @@ VisibleSelection CreateVisibleSelection(const SelectionForUndoStep&);
 
 }  // namespace blink
 
-#endif  // SelectionForUndoStep_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SELECTION_FOR_UNDO_STEP_H_

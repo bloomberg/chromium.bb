@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/SVGBoolean.h"
+#include "third_party/blink/renderer/core/svg/svg_boolean.h"
 
-#include "core/svg/SVGAnimationElement.h"
+#include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 
 namespace blink {
 

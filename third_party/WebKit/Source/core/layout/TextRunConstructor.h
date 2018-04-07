@@ -33,13 +33,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TextRunConstructor_h
-#define TextRunConstructor_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TEXT_RUN_CONSTRUCTOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TEXT_RUN_CONSTRUCTOR_H_
 
-#include "platform/text/TextDirection.h"
-#include "platform/text/TextRun.h"
-#include "platform/wtf/text/Unicode.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

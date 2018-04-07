@@ -25,13 +25,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/XPathPath.h"
+#include "third_party/blink/renderer/core/xml/xpath_path.h"
 
-#include "core/dom/Document.h"
-#include "core/dom/NodeTraversal.h"
-#include "core/xml/XPathPredicate.h"
-#include "core/xml/XPathStep.h"
-#include "core/xml/XPathValue.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_traversal.h"
+#include "third_party/blink/renderer/core/xml/xpath_predicate.h"
+#include "third_party/blink/renderer/core/xml/xpath_step.h"
+#include "third_party/blink/renderer/core/xml/xpath_value.h"
 
 namespace blink {
 namespace XPath {

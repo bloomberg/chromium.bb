@@ -20,18 +20,18 @@
  *
  */
 
-#ifndef RuleFeatureSet_h
-#define RuleFeatureSet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RULE_FEATURE_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RULE_FEATURE_SET_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css/CSSSelector.h"
-#include "core/css/MediaQueryEvaluator.h"
-#include "core/css/invalidation/InvalidationSet.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/AtomicStringHash.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_selector.h"
+#include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
+#include "third_party/blink/renderer/core/css/media_query_evaluator.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
 
@@ -297,4 +297,4 @@ class CORE_EXPORT RuleFeatureSet {
 
 }  // namespace blink
 
-#endif  // RuleFeatureSet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RULE_FEATURE_SET_H_

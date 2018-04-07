@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BatteryDispatcher_h
-#define BatteryDispatcher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BATTERY_BATTERY_DISPATCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BATTERY_BATTERY_DISPATCHER_H_
 
-#include "core/frame/PlatformEventDispatcher.h"
-#include "modules/ModulesExport.h"
-#include "modules/battery/BatteryManager.h"
-#include "modules/battery/battery_status.h"
 #include "services/device/public/mojom/battery_monitor.mojom-blink.h"
+#include "third_party/blink/renderer/core/frame/platform_event_dispatcher.h"
+#include "third_party/blink/renderer/modules/battery/battery_manager.h"
+#include "third_party/blink/renderer/modules/battery/battery_status.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -44,4 +44,4 @@ class MODULES_EXPORT BatteryDispatcher final
 
 }  // namespace blink
 
-#endif  // BatteryDispatcher_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BATTERY_BATTERY_DISPATCHER_H_

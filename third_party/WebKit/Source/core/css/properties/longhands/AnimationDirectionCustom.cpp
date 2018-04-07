@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/animation_direction.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/animation_direction.h"
 
-#include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/ComputedStyleUtils.h"
-#include "core/css_value_keywords.h"
-#include "core/style/ComputedStyle.h"
+#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
 namespace CSSLonghand {

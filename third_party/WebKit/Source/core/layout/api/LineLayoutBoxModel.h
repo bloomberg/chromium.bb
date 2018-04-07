@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LineLayoutBoxModel_h
-#define LineLayoutBoxModel_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_BOX_MODEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_BOX_MODEL_H_
 
-#include "core/layout/LayoutBoxModelObject.h"
-#include "core/layout/api/LineLayoutItem.h"
-#include "platform/LayoutUnit.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
 
 namespace blink {
 
@@ -134,4 +134,4 @@ inline LineLayoutBoxModel LineLayoutItem::EnclosingBoxModelObject() const {
 
 }  // namespace blink
 
-#endif  // LineLayoutBoxModel_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_API_LINE_LAYOUT_BOX_MODEL_H_

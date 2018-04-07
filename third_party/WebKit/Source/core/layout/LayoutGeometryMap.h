@@ -23,19 +23,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutGeometryMap_h
-#define LayoutGeometryMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_GEOMETRY_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_GEOMETRY_MAP_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/layout/LayoutGeometryMapStep.h"
-#include "core/layout/MapCoordinatesFlags.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatQuad.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/geometry/LayoutSize.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_geometry_map_step.h"
+#include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -126,4 +126,4 @@ class CORE_EXPORT LayoutGeometryMap {
 
 }  // namespace blink
 
-#endif  // LayoutGeometryMap_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_GEOMETRY_MAP_H_

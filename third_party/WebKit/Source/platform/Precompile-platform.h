@@ -18,4 +18,4 @@
 
 // Include Oilpan's Handle.h by default, as it is included by a significant
 // portion of platform/ source files.
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"

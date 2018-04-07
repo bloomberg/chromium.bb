@@ -18,7 +18,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "storage/browser/storage_browser_export.h"
-#include "third_party/WebKit/public/mojom/quota/quota_types.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

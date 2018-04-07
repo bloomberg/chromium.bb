@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license thaT can be
 // found in the LICENSE file.
 
-#ifndef WritingModeUtils_h
-#define WritingModeUtils_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_WRITING_MODE_UTILS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_WRITING_MODE_UTILS_H_
 
-#include "platform/text/TextDirection.h"
-#include "platform/text/WritingMode.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -309,4 +309,4 @@ class LogicalToPhysicalSetter {
 
 }  // namespace blink
 
-#endif  // WritingModeUtils_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_WRITING_MODE_UTILS_H_

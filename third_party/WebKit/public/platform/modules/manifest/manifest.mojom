@@ -6,7 +6,7 @@ module blink.mojom;
 
 import "services/device/public/mojom/screen_orientation_lock_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
-import "third_party/WebKit/public/platform/display_mode.mojom";
+import "third_party/blink/public/platform/display_mode.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
 

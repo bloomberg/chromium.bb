@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ImeTextSpan_h
-#define ImeTextSpan_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_IME_IME_TEXT_SPAN_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_IME_IME_TEXT_SPAN_H_
 
-#include "core/CoreExport.h"
-#include "platform/graphics/Color.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
 #include "services/ui/public/interfaces/ime/ime.mojom-shared.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class CORE_EXPORT ImeTextSpan {
 
 }  // namespace blink
 
-#endif  // ImeTextSpan_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_IME_IME_TEXT_SPAN_H_

@@ -26,19 +26,19 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AudioParam_h
-#define AudioParam_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_PARAM_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_PARAM_H_
 
 #include <sys/types.h>
 #include "base/memory/scoped_refptr.h"
-#include "core/typed_arrays/ArrayBufferViewHelpers.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "modules/webaudio/AudioParamTimeline.h"
-#include "modules/webaudio/AudioSummingJunction.h"
-#include "modules/webaudio/BaseAudioContext.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param_timeline.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_summing_junction.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 
@@ -273,4 +273,4 @@ class AudioParam final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // AudioParam_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_PARAM_H_

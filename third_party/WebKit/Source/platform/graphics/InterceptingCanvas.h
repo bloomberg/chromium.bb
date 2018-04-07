@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef InterceptingCanvas_h
-#define InterceptingCanvas_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_INTERCEPTING_CANVAS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_INTERCEPTING_CANVAS_H_
 
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
@@ -365,4 +365,4 @@ class InterceptingCanvas : public InterceptingCanvasBase {
 
 }  // namespace blink
 
-#endif  // InterceptingCanvas_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_INTERCEPTING_CANVAS_H_

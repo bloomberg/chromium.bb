@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/MemoryCoordinator.h"
+#include "third_party/blink/renderer/platform/memory_coordinator.h"
 
 #include "base/sys_info.h"
 #include "build/build_config.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WebTaskRunner.h"
-#include "platform/fonts/FontGlobalContext.h"
-#include "platform/graphics/ImageDecodingStore.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/allocator/Partitions.h"
-#include "public/platform/WebThread.h"
-#include "public/web/WebKit.h"
-#include "third_party/WebKit/public/common/device_memory/approximated_device_memory.h"
+#include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/fonts/font_global_context.h"
+#include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/web_task_runner.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/sys_utils.h"

@@ -20,12 +20,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef StyleAttributeMutationScope_h
-#define StyleAttributeMutationScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_ATTRIBUTE_MUTATION_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_ATTRIBUTE_MUTATION_SCOPE_H_
 
-#include "platform/heap/Member.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

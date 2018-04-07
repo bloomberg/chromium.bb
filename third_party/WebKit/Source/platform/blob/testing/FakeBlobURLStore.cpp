@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/blob/testing/FakeBlobURLStore.h"
+#include "third_party/blink/renderer/platform/blob/testing/fake_blob_url_store.h"
 
 namespace blink {
 

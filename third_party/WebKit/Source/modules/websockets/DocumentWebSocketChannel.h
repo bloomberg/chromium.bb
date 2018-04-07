@@ -28,30 +28,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DocumentWebSocketChannel_h
-#define DocumentWebSocketChannel_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_DOCUMENT_WEB_SOCKET_CHANNEL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_DOCUMENT_WEB_SOCKET_CHANNEL_H_
 
 #include <stdint.h>
 #include <memory>
 #include <utility>
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/SourceLocation.h"
-#include "core/fileapi/Blob.h"
-#include "core/fileapi/FileError.h"
-#include "core/loader/ThreadableLoadingContext.h"
-#include "modules/ModulesExport.h"
-#include "modules/websockets/WebSocketChannel.h"
-#include "modules/websockets/WebSocketHandle.h"
-#include "modules/websockets/WebSocketHandleClient.h"
-#include "platform/heap/Handle.h"
-#include "platform/scheduler/public/frame_scheduler.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Deque.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebCallbacks.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_channel.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_handle.h"
+#include "third_party/blink/renderer/modules/websockets/web_socket_handle_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -226,4 +226,4 @@ std::ostream& operator<<(std::ostream&, const DocumentWebSocketChannel*);
 
 }  // namespace blink
 
-#endif  // DocumentWebSocketChannel_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_DOCUMENT_WEB_SOCKET_CHANNEL_H_

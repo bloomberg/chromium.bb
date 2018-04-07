@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "content/shell/test_runner/test_runner_export.h"
 #include "content/shell/test_runner/web_widget_test_client.h"
-#include "third_party/WebKit/public/web/WebWidgetClient.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 
 namespace blink {
 class WebLocalFrame;

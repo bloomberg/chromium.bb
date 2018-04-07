@@ -23,20 +23,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/loader/fetch/RawResource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 
 #include <memory>
 #include "mojo/public/cpp/system/data_pipe.h"
-#include "platform/loader/fetch/FetchParameters.h"
-#include "platform/loader/fetch/MemoryCache.h"
-#include "platform/loader/fetch/ResourceClientWalker.h"
-#include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/loader/fetch/SourceKeyedCachedMetadataHandler.h"
-#include "platform/network/http_names.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client_walker.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/source_keyed_cached_metadata_handler.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
 
 namespace blink {
 

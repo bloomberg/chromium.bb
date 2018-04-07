@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/ImageDecodingStore.h"
+#include "third_party/blink/renderer/platform/graphics/image_decoding_store.h"
 
 #include <memory>
-#include "platform/graphics/ImageFrameGenerator.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/Threading.h"
+#include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 

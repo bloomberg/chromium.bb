@@ -24,11 +24,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XPathFunctions_h
-#define XPathFunctions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_FUNCTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_FUNCTIONS_H_
 
-#include "core/CoreExport.h"
-#include "core/xml/XPathExpressionNode.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/xml/xpath_expression_node.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ CORE_EXPORT Function* CreateFunction(const String& name,
 
 }  // namespace blink
 
-#endif  // XPathFunctions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_FUNCTIONS_H_

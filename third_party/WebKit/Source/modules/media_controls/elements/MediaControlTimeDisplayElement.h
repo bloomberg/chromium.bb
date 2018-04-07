@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlTimeDisplayElement_h
-#define MediaControlTimeDisplayElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_TIME_DISPLAY_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_TIME_DISPLAY_ELEMENT_H_
 
-#include "modules/ModulesExport.h"
-#include "modules/media_controls/elements/MediaControlDivElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_div_element.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -30,4 +30,4 @@ class MediaControlTimeDisplayElement : public MediaControlDivElement {
 
 }  // namespace blink
 
-#endif  // MediaControlTimeDisplayElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_TIME_DISPLAY_ELEMENT_H_

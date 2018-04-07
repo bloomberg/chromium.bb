@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef XRCanvasInputProvider_h
-#define XRCanvasInputProvider_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_CANVAS_INPUT_PROVIDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_CANVAS_INPUT_PROVIDER_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/heap/Handle.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -56,4 +56,4 @@ class XRCanvasInputProvider
 
 }  // namespace blink
 
-#endif  // XRCanvasInputProvider_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_CANVAS_INPUT_PROVIDER_H_

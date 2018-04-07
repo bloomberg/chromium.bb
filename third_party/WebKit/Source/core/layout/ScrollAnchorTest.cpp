@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ScrollAnchor.h"
+#include "third_party/blink/renderer/core/layout/scroll_anchor.h"
 
-#include "core/dom/StaticNodeList.h"
-#include "core/frame/VisualViewport.h"
-#include "core/geometry/DOMRect.h"
-#include "core/layout/LayoutBox.h"
-#include "core/page/PrintContext.h"
-#include "core/paint/PaintLayerScrollableArea.h"
-#include "core/testing/CoreUnitTestHelper.h"
-#include "platform/testing/HistogramTester.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/page/print_context.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebTaskRunner_h
-#define WebTaskRunner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEB_TASK_RUNNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEB_TASK_RUNNER_H_
 
 #include <memory>
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/RefCounted.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ PostDelayedCancellableTask(base::SequencedTaskRunner&,
 
 }  // namespace blink
 
-#endif  // WebTaskRunner_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEB_TASK_RUNNER_H_

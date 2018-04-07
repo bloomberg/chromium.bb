@@ -18,10 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/graphics/filters/SourceGraphic.h"
+#include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
 
-#include "platform/graphics/filters/Filter.h"
-#include "platform/text/TextStream.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
 
 namespace blink {
 

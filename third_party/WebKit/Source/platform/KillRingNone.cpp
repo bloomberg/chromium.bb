@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/KillRing.h"
+#include "third_party/blink/renderer/platform/kill_ring.h"
 
 namespace blink {
 

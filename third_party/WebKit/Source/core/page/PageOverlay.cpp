@@ -26,23 +26,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/page/PageOverlay.h"
+#include "third_party/blink/renderer/core/page/page_overlay.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/VisualViewport.h"
-#include "core/frame/WebFrameWidgetBase.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/page/Page.h"
-#include "core/page/scrolling/ScrollingCoordinator.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/GraphicsLayerClient.h"
-#include "platform/scroll/MainThreadScrollingReason.h"
-#include "public/platform/WebLayer.h"
+#include "third_party/blink/public/platform/web_layer.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 
 namespace blink {
 

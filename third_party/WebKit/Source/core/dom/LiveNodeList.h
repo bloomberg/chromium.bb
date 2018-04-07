@@ -21,15 +21,15 @@
  *
  */
 
-#ifndef LiveNodeList_h
-#define LiveNodeList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_LIVE_NODE_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_LIVE_NODE_LIST_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/LiveNodeListBase.h"
-#include "core/dom/NodeList.h"
-#include "core/html/CollectionItemsCache.h"
-#include "core/html/CollectionType.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/live_node_list_base.h"
+#include "third_party/blink/renderer/core/dom/node_list.h"
+#include "third_party/blink/renderer/core/html/collection_items_cache.h"
+#include "third_party/blink/renderer/core/html/collection_type.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -94,4 +94,4 @@ inline void LiveNodeList::InvalidateCacheForAttribute(
 
 }  // namespace blink
 
-#endif  // LiveNodeList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_LIVE_NODE_LIST_H_

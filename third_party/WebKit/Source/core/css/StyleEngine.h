@@ -27,30 +27,30 @@
  *
  */
 
-#ifndef StyleEngine_h
-#define StyleEngine_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_ENGINE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_ENGINE_H_
 
 #include <memory>
 #include <utility>
-#include "core/CoreExport.h"
-#include "core/css/ActiveStyleSheets.h"
-#include "core/css/CSSGlobalRuleSet.h"
-#include "core/css/DocumentStyleSheetCollection.h"
-#include "core/css/StyleEngineContext.h"
-#include "core/css/invalidation/StyleInvalidator.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/css/resolver/StyleResolverStats.h"
-#include "core/dom/Document.h"
-#include "core/dom/TreeOrderedList.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperMember.h"
-#include "platform/fonts/FontSelectorClient.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/AutoReset.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/web/WebDocument.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/active_style_sheets.h"
+#include "third_party/blink/renderer/core/css/css_global_rule_set.h"
+#include "third_party/blink/renderer/core/css/document_style_sheet_collection.h"
+#include "third_party/blink/renderer/core/css/invalidation/style_invalidator.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
+#include "third_party/blink/renderer/core/css/style_engine_context.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/tree_ordered_list.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
+#include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

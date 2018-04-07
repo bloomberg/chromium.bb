@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PNGImageDecoder_h
-#define PNGImageDecoder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_PNG_PNG_IMAGE_DECODER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_PNG_PNG_IMAGE_DECODER_H_
 
 #include <memory>
-#include "platform/image-decoders/ImageDecoder.h"
-#include "platform/image-decoders/png/PNGImageReader.h"
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/png/png_image_reader.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

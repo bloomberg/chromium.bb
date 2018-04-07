@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/heap/ProcessHeap.h"
+#include "third_party/blink/renderer/platform/heap/process_heap.h"
 
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
-#include "platform/heap/GCInfo.h"
-#include "platform/heap/Heap.h"
-#include "platform/heap/PersistentNode.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/heap/gc_info.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/persistent_node.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

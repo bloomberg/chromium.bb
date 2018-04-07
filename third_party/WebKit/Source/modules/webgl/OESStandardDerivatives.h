@@ -23,10 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OESStandardDerivatives_h
-#define OESStandardDerivatives_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_OES_STANDARD_DERIVATIVES_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_OES_STANDARD_DERIVATIVES_H_
 
-#include "modules/webgl/WebGLExtension.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_extension.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class OESStandardDerivatives final : public WebGLExtension {
 
 }  // namespace blink
 
-#endif  // OESStandardDerivatives_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_OES_STANDARD_DERIVATIVES_H_

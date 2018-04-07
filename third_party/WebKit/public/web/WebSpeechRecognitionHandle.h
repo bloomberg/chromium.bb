@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSpeechRecognitionHandle_h
-#define WebSpeechRecognitionHandle_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNITION_HANDLE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNITION_HANDLE_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebPrivatePtr.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
 
 namespace blink {
 
@@ -84,4 +84,4 @@ inline bool operator<(const WebSpeechRecognitionHandle& a,
 
 }  // namespace blink
 
-#endif  // WebSpeechRecognitionHandle_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNITION_HANDLE_H_

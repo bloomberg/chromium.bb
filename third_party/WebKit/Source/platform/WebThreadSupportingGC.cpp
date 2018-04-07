@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/WebThreadSupportingGC.h"
+#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "platform/MemoryCoordinator.h"
-#include "platform/heap/SafePoint.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/Threading.h"
+#include "third_party/blink/renderer/platform/heap/safe_point.h"
+#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 

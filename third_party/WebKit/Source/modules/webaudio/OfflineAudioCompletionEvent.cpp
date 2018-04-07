@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/OfflineAudioCompletionEvent.h"
+#include "third_party/blink/renderer/modules/webaudio/offline_audio_completion_event.h"
 
 namespace blink {
 

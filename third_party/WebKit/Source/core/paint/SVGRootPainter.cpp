@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/SVGRootPainter.h"
+#include "third_party/blink/renderer/core/paint/svg_root_painter.h"
 
-#include "core/layout/svg/LayoutSVGRoot.h"
-#include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/paint/BoxClipper.h"
-#include "core/paint/BoxPainter.h"
-#include "core/paint/ObjectPaintProperties.h"
-#include "core/paint/PaintInfo.h"
-#include "core/paint/PaintTiming.h"
-#include "core/paint/SVGPaintContext.h"
-#include "core/svg/SVGSVGElement.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/paint/box_clipper.h"
+#include "third_party/blink/renderer/core/paint/box_painter.h"
+#include "third_party/blink/renderer/core/paint/object_paint_properties.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
+#include "third_party/blink/renderer/core/paint/svg_paint_context.h"
+#include "third_party/blink/renderer/core/svg/svg_svg_element.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

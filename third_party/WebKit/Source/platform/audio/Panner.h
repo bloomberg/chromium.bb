@@ -26,14 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Panner_h
-#define Panner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_PANNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_PANNER_H_
 
 #include <memory>
-#include "platform/PlatformExport.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -85,4 +85,4 @@ class PLATFORM_EXPORT Panner {
 
 }  // namespace blink
 
-#endif  // Panner_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_PANNER_H_

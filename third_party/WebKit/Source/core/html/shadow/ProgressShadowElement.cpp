@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/shadow/ProgressShadowElement.h"
+#include "third_party/blink/renderer/core/html/shadow/progress_shadow_element.h"
 
-#include "core/html/HTMLProgressElement.h"
-#include "core/html_names.h"
-#include "core/layout/LayoutObject.h"
+#include "third_party/blink/renderer/core/html/html_progress_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 

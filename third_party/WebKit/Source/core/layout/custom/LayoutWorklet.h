@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LayoutWorklet_h
-#define LayoutWorklet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_LAYOUT_WORKLET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_LAYOUT_WORKLET_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/custom/DocumentLayoutDefinition.h"
-#include "core/layout/custom/PendingLayoutRegistry.h"
-#include "core/workers/Worklet.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/custom/document_layout_definition.h"
+#include "third_party/blink/renderer/core/layout/custom/pending_layout_registry.h"
+#include "third_party/blink/renderer/core/workers/worklet.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -69,4 +69,4 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
 
 }  // namespace blink
 
-#endif  // LayoutWorklet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_CUSTOM_LAYOUT_WORKLET_H_

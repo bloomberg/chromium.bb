@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef USBInterface_h
-#define USBInterface_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_INTERFACE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_INTERFACE_H_
 
 #include "device/usb/public/mojom/device.mojom-blink.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Heap.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class USBInterface : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // USBInterface_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBUSB_USB_INTERFACE_H_

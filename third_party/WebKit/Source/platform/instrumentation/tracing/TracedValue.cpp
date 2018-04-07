@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/instrumentation/tracing/TracedValue.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
 
 #include <memory>
 #include <string>
 
 #include "base/memory/ptr_util.h"
-#include "platform/wtf/text/StringUTF8Adaptor.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TouchAction_h
-#define TouchAction_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TOUCH_ACTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TOUCH_ACTION_H_
 
 #include "cc/input/touch_action.h"
 
@@ -14,4 +14,4 @@ using TouchAction = cc::TouchAction;
 
 }  // namespace blink
 
-#endif  // TouchAction_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TOUCH_ACTION_H_

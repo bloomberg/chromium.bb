@@ -33,7 +33,7 @@
 #include "content/renderer/renderer_main_platform_delegate.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "third_party/WebKit/public/platform/scheduler/web_main_thread_scheduler.h"
+#include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -56,7 +56,7 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop/message_pump_mac.h"
-#include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/blink/public/web/web_view.h"
 #endif  // OS_MACOSX
 
 #if BUILDFLAG(ENABLE_PLUGINS)

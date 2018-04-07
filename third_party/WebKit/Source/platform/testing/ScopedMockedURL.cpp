@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/testing/ScopedMockedURL.h"
+#include "third_party/blink/renderer/platform/testing/scoped_mocked_url.h"
 
-#include "platform/testing/URLTestHelpers.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebURLLoaderMockFactory.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
 namespace blink {
 namespace test {

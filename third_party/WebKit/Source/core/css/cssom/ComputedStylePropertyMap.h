@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ComputedStylePropertyMap_h
-#define ComputedStylePropertyMap_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_COMPUTED_STYLE_PROPERTY_MAP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_COMPUTED_STYLE_PROPERTY_MAP_H_
 
 #include "base/macros.h"
-#include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/css/CSSSelector.h"
-#include "core/css/cssom/StylePropertyMapReadOnly.h"
-#include "core/dom/Node.h"
+#include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
+#include "third_party/blink/renderer/core/css/css_selector.h"
+#include "third_party/blink/renderer/core/css/cssom/style_property_map_read_only.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 
 namespace blink {
 

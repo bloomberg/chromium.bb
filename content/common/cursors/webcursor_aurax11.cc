@@ -6,7 +6,7 @@
 
 
 #include "base/logging.h"
-#include "third_party/WebKit/public/platform/WebCursorInfo.h"
+#include "third_party/blink/public/platform/web_cursor_info.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader_x11.h"
 #include "ui/base/x/x11_util.h"

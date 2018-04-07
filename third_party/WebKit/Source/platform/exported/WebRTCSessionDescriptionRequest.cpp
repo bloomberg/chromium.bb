@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebRTCSessionDescriptionRequest.h"
+#include "third_party/blink/public/platform/web_rtc_session_description_request.h"
 
-#include "platform/peerconnection/RTCSessionDescriptionRequest.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebRTCSessionDescription.h"
+#include "third_party/blink/public/platform/web_rtc_session_description.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_request.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

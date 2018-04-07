@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSGlobalRuleSet.h"
+#include "third_party/blink/renderer/core/css/css_global_rule_set.h"
 
-#include "core/css/CSSDefaultStyleSheets.h"
-#include "core/css/CSSSelectorWatch.h"
-#include "core/css/RuleSet.h"
-#include "core/css/StyleEngine.h"
-#include "core/dom/Document.h"
+#include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
+#include "third_party/blink/renderer/core/css/css_selector_watch.h"
+#include "third_party/blink/renderer/core/css/rule_set.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
 

@@ -24,15 +24,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/loader/fetch/ResourceRequest.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 
 #include <memory>
 
-#include "platform/network/NetworkUtils.h"
-#include "platform/network/http_names.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebURLRequest.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

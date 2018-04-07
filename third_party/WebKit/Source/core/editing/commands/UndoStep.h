@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UndoStep_h
-#define UndoStep_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_UNDO_STEP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_UNDO_STEP_H_
 
-#include "core/editing/commands/SelectionForUndoStep.h"
-#include "core/events/InputEvent.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/editing/commands/selection_for_undo_step.h"
+#include "third_party/blink/renderer/core/events/input_event.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/testing/NullExecutionContext.h"
+#include "third_party/blink/renderer/core/testing/null_execution_context.h"
 
-#include "core/dom/events/Event.h"
-#include "core/frame/DOMTimer.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/dom_timer.h"
 
 namespace blink {
 

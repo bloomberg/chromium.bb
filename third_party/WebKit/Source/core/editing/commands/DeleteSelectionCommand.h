@@ -23,12 +23,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DeleteSelectionCommand_h
-#define DeleteSelectionCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_DELETE_SELECTION_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_DELETE_SELECTION_COMMAND_H_
 
-#include "core/editing/VisibleSelection.h"
-#include "core/editing/commands/CompositeEditCommand.h"
-#include "core/editing/commands/DeleteSelectionOptions.h"
+#include "third_party/blink/renderer/core/editing/commands/composite_edit_command.h"
+#include "third_party/blink/renderer/core/editing/commands/delete_selection_options.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
 
 namespace blink {
 
@@ -120,4 +120,4 @@ class CORE_EXPORT DeleteSelectionCommand final : public CompositeEditCommand {
 
 }  // namespace blink
 
-#endif  // DeleteSelectionCommand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_DELETE_SELECTION_COMMAND_H_

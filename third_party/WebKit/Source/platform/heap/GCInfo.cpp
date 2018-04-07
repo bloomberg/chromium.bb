@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/heap/GCInfo.h"
+#include "third_party/blink/renderer/platform/heap/gc_info.h"
 
-#include "platform/heap/Handle.h"
-#include "platform/heap/Heap.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 

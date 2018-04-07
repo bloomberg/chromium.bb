@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/script/WorkletModulatorImpl.h"
+#include "third_party/blink/renderer/core/script/worklet_modulator_impl.h"
 
-#include "core/loader/modulescript/WorkerOrWorkletModuleScriptFetcher.h"
-#include "core/workers/WorkletGlobalScope.h"
+#include "third_party/blink/renderer/core/loader/modulescript/worker_or_worklet_module_script_fetcher.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 
 namespace blink {
 

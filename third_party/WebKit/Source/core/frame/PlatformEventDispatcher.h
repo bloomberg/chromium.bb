@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PlatformEventDispatcher_h
-#define PlatformEventDispatcher_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PLATFORM_EVENT_DISPATCHER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PLATFORM_EVENT_DISPATCHER_H_
 
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 class PlatformEventController;
@@ -36,4 +36,4 @@ class CORE_EXPORT PlatformEventDispatcher : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // PlatformEventDispatcher_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PLATFORM_EVENT_DISPATCHER_H_

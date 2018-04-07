@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebString_h
-#define WebString_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_STRING_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_STRING_H_
 
 #include <string>
-#include "WebCommon.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/strings/latin1_string_conversions.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string16.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 #if INSIDE_BLINK
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 #endif
 
 namespace WTF {

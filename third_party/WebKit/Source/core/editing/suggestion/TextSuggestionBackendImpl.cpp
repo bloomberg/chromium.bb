@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/suggestion/TextSuggestionBackendImpl.h"
+#include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_backend_impl.h"
 
-#include "core/editing/suggestion/TextSuggestionController.h"
-#include "core/frame/LocalFrame.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
 

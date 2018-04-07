@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/frame/PageScaleConstraintsSet.h"
+#include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 
 #include <algorithm>
-#include "platform/Length.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

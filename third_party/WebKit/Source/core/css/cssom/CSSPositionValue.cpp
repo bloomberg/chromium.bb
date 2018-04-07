@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/CSSPositionValue.h"
+#include "third_party/blink/renderer/core/css/cssom/css_position_value.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSValuePair.h"
-#include "core/css/cssom/CSSMathSum.h"
-#include "core/css/cssom/CSSNumericValue.h"
-#include "core/css/cssom/CSSUnitValue.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
+#include "third_party/blink/renderer/core/css/cssom/css_math_sum.h"
+#include "third_party/blink/renderer/core/css/cssom/css_numeric_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
 
 namespace blink {
 

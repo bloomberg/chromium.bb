@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DOMHighResTimeStamp_h
-#define DOMHighResTimeStamp_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_HIGH_RES_TIME_STAMP_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_HIGH_RES_TIME_STAMP_H_
 
-#include "platform/wtf/Time.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -32,4 +32,4 @@ inline DOMHighResTimeStamp ConvertTimeDeltaToDOMHighResTimeStamp(
 
 }  // namespace blink
 
-#endif  // DOMHighResTimeStamp_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_HIGH_RES_TIME_STAMP_H_

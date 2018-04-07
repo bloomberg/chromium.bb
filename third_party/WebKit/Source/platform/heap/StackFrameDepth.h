@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StackFrameDepth_h
-#define StackFrameDepth_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_STACK_FRAME_DEPTH_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_STACK_FRAME_DEPTH_H_
 
 #include <stdint.h>
 #include <cstddef>
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -104,4 +104,4 @@ class StackFrameDepthScope {
 
 }  // namespace blink
 
-#endif  // StackFrameDepth_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_STACK_FRAME_DEPTH_H_

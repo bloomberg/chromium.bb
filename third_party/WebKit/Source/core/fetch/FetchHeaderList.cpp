@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/FetchHeaderList.h"
+#include "third_party/blink/renderer/core/fetch/fetch_header_list.h"
 
 #include <algorithm>
 #include <utility>
-#include "platform/loader/cors/CORS.h"
-#include "platform/network/HTTPParsers.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

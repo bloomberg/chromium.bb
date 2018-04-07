@@ -21,25 +21,25 @@
  *
  */
 
-#include "core/html/forms/ImageInputType.h"
+#include "third_party/blink/renderer/core/html/forms/image_input_type.h"
 
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/SyncReattachContext.h"
-#include "core/events/MouseEvent.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLImageFallbackHelper.h"
-#include "core/html/HTMLImageLoader.h"
-#include "core/html/forms/FormData.h"
-#include "core/html/forms/HTMLFormElement.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html_names.h"
-#include "core/input_type_names.h"
-#include "core/layout/AdjustForAbsoluteZoom.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutImage.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/sync_reattach_context.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/forms/form_data.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/html_image_fallback_helper.h"
+#include "third_party/blink/renderer/core/html/html_image_loader.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

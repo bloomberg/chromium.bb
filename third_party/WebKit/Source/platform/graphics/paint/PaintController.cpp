@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/paint/PaintController.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 
 #include <memory>
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/LoggingCanvas.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/AutoReset.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/auto_reset.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

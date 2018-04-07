@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebPopupMenuInfo_h
-#define WebPopupMenuInfo_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_POPUP_MENU_INFO_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_POPUP_MENU_INFO_H_
 
-#include "public/platform/WebVector.h"
-#include "WebMenuItemInfo.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_menu_item_info.h"
 
 namespace blink {
 

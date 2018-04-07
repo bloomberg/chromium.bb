@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGNumber_h
-#define SVGNumber_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_NUMBER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_NUMBER_H_
 
-#include "core/svg/SVGParsingError.h"
-#include "core/svg/properties/SVGPropertyHelper.h"
+#include "third_party/blink/renderer/core/svg/properties/svg_property_helper.h"
+#include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 
 namespace blink {
 
@@ -97,4 +97,4 @@ class SVGNumberAcceptPercentage final : public SVGNumber {
 
 }  // namespace blink
 
-#endif  // SVGNumber_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_NUMBER_H_

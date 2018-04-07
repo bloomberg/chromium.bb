@@ -23,7 +23,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     resource_coordinator::TabActivityWatcher::WebContentsData);

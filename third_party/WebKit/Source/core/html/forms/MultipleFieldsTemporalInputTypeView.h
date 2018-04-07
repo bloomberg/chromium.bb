@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MultipleFieldsTemporalInputTypeView_h
-#define MultipleFieldsTemporalInputTypeView_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_MULTIPLE_FIELDS_TEMPORAL_INPUT_TYPE_VIEW_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_MULTIPLE_FIELDS_TEMPORAL_INPUT_TYPE_VIEW_H_
 
-#include "core/html/forms/ClearButtonElement.h"
-#include "core/html/forms/DateTimeEditElement.h"
-#include "core/html/forms/InputTypeView.h"
-#include "core/html/forms/PickerIndicatorElement.h"
-#include "core/html/forms/SpinButtonElement.h"
-#include "public/platform/WebFocusType.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/renderer/core/html/forms/clear_button_element.h"
+#include "third_party/blink/renderer/core/html/forms/date_time_edit_element.h"
+#include "third_party/blink/renderer/core/html/forms/input_type_view.h"
+#include "third_party/blink/renderer/core/html/forms/picker_indicator_element.h"
+#include "third_party/blink/renderer/core/html/forms/spin_button_element.h"
 
 namespace blink {
 
@@ -138,4 +138,4 @@ class MultipleFieldsTemporalInputTypeView final
 
 }  // namespace blink
 
-#endif  // MultipleFieldsTemporalInputTypeView_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_MULTIPLE_FIELDS_TEMPORAL_INPUT_TYPE_VIEW_H_

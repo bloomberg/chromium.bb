@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BlinkGC_h
-#define BlinkGC_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_BLINK_GC_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_BLINK_GC_H_
 
 // BlinkGC.h is a file that defines common things used by Blink GC.
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 #define PRINT_HEAP_STATS 0  // Enable this macro to print heap stats to stderr.
 
@@ -135,4 +135,4 @@ class PLATFORM_EXPORT BlinkGC final {
 
 }  // namespace blink
 
-#endif  // BlinkGC_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_BLINK_GC_H_

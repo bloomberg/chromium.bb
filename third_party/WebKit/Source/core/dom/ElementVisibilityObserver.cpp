@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/ElementVisibilityObserver.h"
+#include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
 
-#include "core/dom/Element.h"
-#include "core/frame/LocalFrame.h"
-#include "core/intersection_observer/IntersectionObserverEntry.h"
-#include "platform/wtf/Functional.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

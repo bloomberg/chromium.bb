@@ -2,12 +2,12 @@
 // this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DocumentShutdownObserver_h
-#define DocumentShutdownObserver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_SHUTDOWN_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_SHUTDOWN_OBSERVER_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Document.h"
-#include "platform/LifecycleObserver.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/lifecycle_observer.h"
 
 namespace blink {
 
@@ -31,4 +31,4 @@ class CORE_EXPORT DocumentShutdownObserver
 
 }  // namespace blink
 
-#endif  // DocumentShutdownObserver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_SHUTDOWN_OBSERVER_H_

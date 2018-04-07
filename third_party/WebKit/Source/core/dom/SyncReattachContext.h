@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SyncReattachContext_h
-#define SyncReattachContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SYNC_REATTACH_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SYNC_REATTACH_CONTEXT_H_
 
-#include "core/dom/Node.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ class SyncReattachContext {
 
 }  // namespace blink
 
-#endif  // SyncReattachContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SYNC_REATTACH_CONTEXT_H_

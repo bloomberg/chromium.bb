@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/WaitableEvent.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
 
 #include <vector>
 #include "base/synchronization/waitable_event.h"
-#include "platform/heap/SafePoint.h"
-#include "platform/heap/ThreadState.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/platform/heap/safe_point.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

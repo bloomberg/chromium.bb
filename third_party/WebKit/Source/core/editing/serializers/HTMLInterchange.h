@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLInterchange_h
-#define HTMLInterchange_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_HTML_INTERCHANGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_HTML_INTERCHANGE_H_
 
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 

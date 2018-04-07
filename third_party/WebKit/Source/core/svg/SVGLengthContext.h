@@ -17,13 +17,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGLengthContext_h
-#define SVGLengthContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_LENGTH_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_LENGTH_CONTEXT_H_
 
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/svg/SVGUnitTypes.h"
-#include "platform/Length.h"
-#include "platform/geometry/FloatRect.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/svg/svg_unit_types.h"
+#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/length.h"
 
 namespace blink {
 
@@ -102,4 +102,4 @@ class SVGLengthContext {
 
 }  // namespace blink
 
-#endif  // SVGLengthContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_LENGTH_CONTEXT_H_

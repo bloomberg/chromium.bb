@@ -26,25 +26,25 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ImageData_h
-#define ImageData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_IMAGE_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_IMAGE_DATA_H_
 
-#include "bindings/core/v8/uint8_clamped_array_or_uint16_array_or_float32_array.h"
-#include "core/CoreExport.h"
-#include "core/html/canvas/CanvasRenderingContext.h"
-#include "core/html/canvas/ImageDataColorSettings.h"
-#include "core/imagebitmap/ImageBitmapSource.h"
-#include "core/typed_arrays/ArrayBufferViewHelpers.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/CanvasColorParams.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/CheckedNumeric.h"
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/uint8_clamped_array_or_uint16_array_or_float32_array.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
+#include "third_party/blink/renderer/core/html/canvas/image_data_color_settings.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 
 namespace blink {
@@ -211,4 +211,4 @@ class CORE_EXPORT ImageData final : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // ImageData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_IMAGE_DATA_H_

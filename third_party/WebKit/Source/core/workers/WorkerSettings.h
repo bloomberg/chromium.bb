@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerSettings_h
-#define WorkerSettings_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_SETTINGS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_SETTINGS_H_
 
-#include "core/CoreExport.h"
-#include "core/frame/Settings.h"
-#include "platform/fonts/GenericFontFamilySettings.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/platform/fonts/generic_font_family_settings.h"
 
 namespace blink {
 
@@ -52,4 +52,4 @@ class CORE_EXPORT WorkerSettings {
 
 }  // namespace blink
 
-#endif  // WorkerSettings_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_SETTINGS_H_

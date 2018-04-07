@@ -3,9 +3,10 @@
 # found in the LICENSE file.
 
 mojom = "//mojo/public/mojom/base/string16.mojom"
-public_headers = [ "//third_party/WebKit/Source/platform/wtf/text/WTFString.h" ]
+public_headers =
+    [ "//third_party/blink/renderer/platform/wtf/text/wtf_string.h" ]
 traits_headers =
-    [ "//third_party/WebKit/Source/platform/mojo/String16MojomTraits.h" ]
+    [ "//third_party/blink/renderer/platform/mojo/string16_mojom_traits.h" ]
 type_mappings = [
   "mojo_base.mojom.BigString16=WTF::String[nullable_is_same_type,force_serialize]",
   "mojo_base.mojom.String16=WTF::String[nullable_is_same_type,force_serialize]",

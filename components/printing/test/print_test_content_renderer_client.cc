@@ -8,7 +8,7 @@
 
 #include "components/printing/renderer/print_render_frame_helper.h"
 #include "printing/buildflags/buildflags.h"
-#include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/blink/public/web/web_element.h"
 
 namespace printing {
 

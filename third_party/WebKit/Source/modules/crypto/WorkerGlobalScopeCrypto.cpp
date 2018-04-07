@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/crypto/WorkerGlobalScopeCrypto.h"
+#include "third_party/blink/renderer/modules/crypto/worker_global_scope_crypto.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/crypto/Crypto.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/crypto/crypto.h"
 
 namespace blink {
 

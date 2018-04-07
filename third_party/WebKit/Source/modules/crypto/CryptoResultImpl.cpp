@@ -28,24 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/crypto/CryptoResultImpl.h"
+#include "third_party/blink/renderer/modules/crypto/crypto_result_impl.h"
 
-#include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/V8ArrayBuffer.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "bindings/modules/v8/V8CryptoKey.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/DOMException.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/typed_arrays/DOMArrayBuffer.h"
-#include "modules/crypto/CryptoKey.h"
-#include "modules/crypto/NormalizeAlgorithm.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/wtf/Atomics.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebCryptoAlgorithm.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_crypto_algorithm.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_crypto_key.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/crypto/crypto_key.h"
+#include "third_party/blink/renderer/modules/crypto/normalize_algorithm.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/wtf/atomics.h"
 
 namespace blink {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebTextInputMode_h
-#define WebTextInputMode_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TEXT_INPUT_MODE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TEXT_INPUT_MODE_H_
 
 namespace blink {
 
@@ -26,4 +26,4 @@ enum WebTextInputMode {
 
 }  // namespace blink
 
-#endif  // WebTextInputMode_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_TEXT_INPUT_MODE_H_

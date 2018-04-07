@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ParsingUtilities_h
-#define ParsingUtilities_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_PARSING_UTILITIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_PARSING_UTILITIES_H_
 
 namespace WTF {
 
@@ -105,4 +105,4 @@ using WTF::SkipUntil;
 using WTF::SkipWhile;
 using WTF::ReverseSkipWhile;
 
-#endif  // ParsingUtilities_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_PARSING_UTILITIES_H_

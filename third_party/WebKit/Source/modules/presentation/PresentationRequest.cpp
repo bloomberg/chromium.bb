@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/presentation/PresentationRequest.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_request.h"
 
 #include <memory>
 
-#include "bindings/core/v8/CallbackPromiseAdapter.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
-#include "core/loader/MixedContentChecker.h"
-#include "modules/EventTargetModules.h"
-#include "modules/presentation/PresentationAvailability.h"
-#include "modules/presentation/PresentationAvailabilityCallbacks.h"
-#include "modules/presentation/PresentationAvailabilityState.h"
-#include "modules/presentation/PresentationConnection.h"
-#include "modules/presentation/PresentationConnectionCallbacks.h"
-#include "modules/presentation/PresentationController.h"
-#include "modules/presentation/PresentationError.h"
+#include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability_callbacks.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_availability_state.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_connection.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_connection_callbacks.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
+#include "third_party/blink/renderer/modules/presentation/presentation_error.h"
 
 namespace blink {
 

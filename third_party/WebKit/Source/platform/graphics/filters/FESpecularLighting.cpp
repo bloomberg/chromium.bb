@@ -20,12 +20,12 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/graphics/filters/FESpecularLighting.h"
+#include "third_party/blink/renderer/platform/graphics/filters/fe_specular_lighting.h"
 
 #include <algorithm>
-#include "platform/graphics/filters/LightSource.h"
-#include "platform/text/TextStream.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/graphics/filters/light_source.h"
+#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

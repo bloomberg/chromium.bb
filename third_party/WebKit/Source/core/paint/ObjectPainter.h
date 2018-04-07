@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ObjectPainter_h
-#define ObjectPainter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_OBJECT_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_OBJECT_PAINTER_H_
 
-#include "core/paint/ObjectPainterBase.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/paint/object_painter_base.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

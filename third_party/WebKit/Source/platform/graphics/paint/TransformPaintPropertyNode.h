@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TransformPaintPropertyNode_h
-#define TransformPaintPropertyNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_TRANSFORM_PAINT_PROPERTY_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_TRANSFORM_PAINT_PROPERTY_NODE_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/geometry/FloatPoint3D.h"
-#include "platform/graphics/CompositingReasons.h"
-#include "platform/graphics/CompositorElementId.h"
-#include "platform/graphics/paint/GeometryMapperTransformCache.h"
-#include "platform/graphics/paint/PaintPropertyNode.h"
-#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
-#include "platform/runtime_enabled_features.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
+#include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper_transform_cache.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #include <iosfwd>
 
@@ -202,4 +202,4 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 
 }  // namespace blink
 
-#endif  // TransformPaintPropertyNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_TRANSFORM_PAINT_PROPERTY_NODE_H_

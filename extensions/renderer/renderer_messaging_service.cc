@@ -24,11 +24,11 @@
 #include "extensions/renderer/messaging_util.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebScopedUserGesture.h"
-#include "third_party/WebKit/public/web/WebScopedWindowFocusAllowedIndicator.h"
-#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_scoped_user_gesture.h"
+#include "third_party/blink/public/web/web_scoped_window_focus_allowed_indicator.h"
+#include "third_party/blink/public/web/web_user_gesture_indicator.h"
 #include "v8/include/v8.h"
 
 namespace extensions {

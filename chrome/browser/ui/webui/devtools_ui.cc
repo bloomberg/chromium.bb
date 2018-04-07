@@ -28,7 +28,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "third_party/WebKit/public/public_buildflags.h"
+#include "third_party/blink/public/public_buildflags.h"
 
 using content::BrowserThread;
 using content::WebContents;

@@ -8,7 +8,7 @@ import "content/common/input/synchronous_compositor.mojom";
 import "content/common/native_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "services/ui/public/interfaces/ime/ime.mojom";
-import "third_party/WebKit/public/web/selection_menu_behavior.mojom";
+import "third_party/blink/public/web/selection_menu_behavior.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/events/mojo/event_constants.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";

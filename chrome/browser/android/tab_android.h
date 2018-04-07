@@ -27,7 +27,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "third_party/WebKit/public/platform/media_download_in_product_help.mojom.h"
+#include "third_party/blink/public/platform/media_download_in_product_help.mojom.h"
 
 class GURL;
 class Profile;

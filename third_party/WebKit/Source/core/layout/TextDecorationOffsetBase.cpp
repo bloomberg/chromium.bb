@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style_ license that can be
 // found in the LICENSE file.
 
-#include "core/layout/TextDecorationOffsetBase.h"
+#include "third_party/blink/renderer/core/layout/text_decoration_offset_base.h"
 
 #include <algorithm>
-#include "core/paint/DecorationInfo.h"
-#include "platform/fonts/FontMetrics.h"
-#include "platform/fonts/FontVerticalPositionType.h"
+#include "third_party/blink/renderer/core/paint/decoration_info.h"
+#include "third_party/blink/renderer/platform/fonts/font_metrics.h"
+#include "third_party/blink/renderer/platform/fonts/font_vertical_position_type.h"
 
 namespace blink {
 

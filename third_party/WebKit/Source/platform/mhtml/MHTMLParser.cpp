@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/mhtml/MHTMLParser.h"
+#include "third_party/blink/renderer/platform/mhtml/mhtml_parser.h"
 
-#include "platform/mhtml/ArchiveResource.h"
-#include "platform/network/HTTPParsers.h"
-#include "platform/network/ParsedContentType.h"
-#include "platform/text/QuotedPrintable.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/Base64.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/StringConcatenate.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
+#include "third_party/blink/renderer/platform/network/http_parsers.h"
+#include "third_party/blink/renderer/platform/network/parsed_content_type.h"
+#include "third_party/blink/renderer/platform/text/quoted_printable.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/base64.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_concatenate.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

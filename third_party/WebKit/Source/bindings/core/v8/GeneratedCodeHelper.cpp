@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/GeneratedCodeHelper.h"
+#include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/execution_context/ExecutionContext.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerInternals_h
-#define WorkerInternals_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_WORKER_INTERNALS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_WORKER_INTERNALS_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/GarbageCollected.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -33,4 +33,4 @@ class WorkerInternals final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // WorkerInternals_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_WORKER_INTERNALS_H_

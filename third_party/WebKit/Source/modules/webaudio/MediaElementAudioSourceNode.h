@@ -23,17 +23,17 @@
  * DAMAGE.
  */
 
-#ifndef MediaElementAudioSourceNode_h
-#define MediaElementAudioSourceNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_MEDIA_ELEMENT_AUDIO_SOURCE_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_MEDIA_ELEMENT_AUDIO_SOURCE_NODE_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
-#include "modules/webaudio/AudioNode.h"
-#include "platform/audio/AudioSourceProviderClient.h"
-#include "platform/audio/MultiChannelResampler.h"
-#include "platform/wtf/ThreadingPrimitives.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+#include "third_party/blink/renderer/platform/audio/audio_source_provider_client.h"
+#include "third_party/blink/renderer/platform/audio/multi_channel_resampler.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 
@@ -154,4 +154,4 @@ class MediaElementAudioSourceNode final : public AudioNode,
 
 }  // namespace blink
 
-#endif  // MediaElementAudioSourceNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_MEDIA_ELEMENT_AUDIO_SOURCE_NODE_H_

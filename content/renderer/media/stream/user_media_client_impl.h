@@ -16,10 +16,10 @@
 #include "content/common/media/media_devices.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/media/stream/user_media_processor.h"
-#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
-#include "third_party/WebKit/public/web/WebApplyConstraintsRequest.h"
-#include "third_party/WebKit/public/web/WebUserMediaClient.h"
-#include "third_party/WebKit/public/web/WebUserMediaRequest.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h"
+#include "third_party/blink/public/web/web_apply_constraints_request.h"
+#include "third_party/blink/public/web/web_user_media_client.h"
+#include "third_party/blink/public/web/web_user_media_request.h"
 
 namespace content {
 

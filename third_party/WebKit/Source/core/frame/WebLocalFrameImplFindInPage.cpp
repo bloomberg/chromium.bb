@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/frame/WebLocalFrameImpl.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 
-#include "core/editing/finder/TextFinder.h"
-#include "public/web/WebDocument.h"
-#include "public/web/WebFindOptions.h"
-#include "public/web/WebFrameClient.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_find_options.h"
+#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 
 namespace blink {
 

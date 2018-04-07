@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FakeScrollableArea_h
-#define FakeScrollableArea_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_FAKE_SCROLLABLE_AREA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_FAKE_SCROLLABLE_AREA_H_
 
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/scroll/ScrollableArea.h"
-#include "platform/scroll/ScrollbarThemeMock.h"
-#include "public/platform/Platform.h"
-#include "public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_mock.h"
 
 namespace {
 blink::ScrollbarThemeMock scrollbar_theme_;

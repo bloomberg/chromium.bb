@@ -23,7 +23,7 @@
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "third_party/WebKit/public/platform/WebLayerTreeView.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace base {

@@ -6,8 +6,8 @@
 #define CONTENT_SHELL_RENDERER_LAYOUT_TEST_TEST_WEBSOCKET_HANDSHAKE_THROTTLE_H_
 
 #include "base/timer/timer.h"
-#include "third_party/WebKit/public/platform/WebCallbacks.h"
-#include "third_party/WebKit/public/platform/WebSocketHandshakeThrottle.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
+#include "third_party/blink/public/platform/web_socket_handshake_throttle.h"
 
 namespace blink {
 class WebLocalFrame;

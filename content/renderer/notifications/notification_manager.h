@@ -18,7 +18,7 @@
 #include "content/common/platform_notification_messages.h"
 #include "content/public/renderer/worker_thread.h"
 #include "content/renderer/notifications/notification_dispatcher.h"
-#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationManager.h"
+#include "third_party/blink/public/platform/modules/notifications/web_notification_manager.h"
 
 namespace content {
 

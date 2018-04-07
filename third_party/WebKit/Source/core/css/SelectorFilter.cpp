@@ -28,10 +28,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/SelectorFilter.h"
+#include "third_party/blink/renderer/core/css/selector_filter.h"
 
-#include "core/css/CSSSelector.h"
-#include "core/dom/Document.h"
+#include "third_party/blink/renderer/core/css/css_selector.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 
 namespace blink {
 

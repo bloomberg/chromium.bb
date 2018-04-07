@@ -5,14 +5,14 @@
 #ifndef NGLineBreaker_h
 #define NGLineBreaker_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/exclusions/ng_layout_opportunity.h"
-#include "core/layout/ng/inline/ng_inline_item_result.h"
-#include "core/layout/ng/inline/ng_inline_node.h"
-#include "platform/fonts/shaping/HarfBuzzShaper.h"
-#include "platform/fonts/shaping/ShapeResultSpacing.h"
-#include "platform/text/TextBreakIterator.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_layout_opportunity.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_shaper.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

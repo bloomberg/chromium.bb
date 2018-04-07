@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/ElementAnimation.h"
-#include "core/css/CSSStyleSheet.h"
-#include "core/css/PropertyDescriptor.h"
-#include "core/css/PropertyRegistration.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/page/Page.h"
-#include "core/testing/sim/SimCompositor.h"
-#include "core/testing/sim/SimRequest.h"
-#include "core/testing/sim/SimTest.h"
-#include "platform/testing/runtime_enabled_features_test_helpers.h"
-#include "platform/wtf/Time.h"
-#include "public/web/WebScriptSource.h"
+#include "third_party/blink/public/web/web_script_source.h"
+#include "third_party/blink/renderer/core/animation/element_animation.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/css/property_descriptor.h"
+#include "third_party/blink/renderer/core/css/property_registration.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_request.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 

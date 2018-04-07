@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/PaintPropertyTreeBuilderTest.h"
+#include "third_party/blink/renderer/core/paint/paint_property_tree_builder_test.h"
 
-#include "core/html/HTMLIFrameElement.h"
-#include "core/layout/LayoutTreeAsText.h"
-#include "core/layout/svg/LayoutSVGRoot.h"
-#include "core/paint/ObjectPaintProperties.h"
-#include "core/paint/PaintPropertyTreePrinter.h"
-#include "platform/graphics/paint/GeometryMapper.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
+#include "third_party/blink/renderer/core/paint/object_paint_properties.h"
+#include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
 namespace blink {
 

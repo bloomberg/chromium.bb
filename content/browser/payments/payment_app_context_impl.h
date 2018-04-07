@@ -15,7 +15,7 @@
 #include "content/browser/payments/payment_app_database.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
+#include "third_party/blink/public/platform/modules/payments/payment_app.mojom.h"
 
 namespace content {
 

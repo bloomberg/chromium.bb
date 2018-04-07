@@ -4,16 +4,16 @@
 // found in the LICENSE file.
 //
 
-#include "core/inspector/InspectorTracingAgent.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTracingAgent.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/InspectedFrames.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/loader/FrameLoader.h"
-#include "core/workers/WorkerInspectorProxy.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "public/platform/WebLayerTreeView.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/InspectorTraceEvents.h"
+#include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
+#include "third_party/blink/renderer/core/inspector/inspected_frames.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 

@@ -26,13 +26,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AudioSourceProvider_h
-#define AudioSourceProvider_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_SOURCE_PROVIDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_SOURCE_PROVIDER_H_
 
 #include <cstddef>
 #include "base/macros.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -60,4 +60,4 @@ class PLATFORM_EXPORT AudioSourceProvider {
 
 }  // namespace blink
 
-#endif  // AudioSourceProvider_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_AUDIO_SOURCE_PROVIDER_H_

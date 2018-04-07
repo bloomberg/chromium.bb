@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scroll/ScrollbarThemeOverlay.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_overlay.h"
 
-#include "platform/scroll/ScrollbarTestSuite.h"
-#include "platform/testing/TestingPlatformSupportWithMockScheduler.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_test_suite.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 
 namespace blink {
 

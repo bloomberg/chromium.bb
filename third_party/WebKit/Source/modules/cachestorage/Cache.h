@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Cache_h
-#define Cache_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CACHESTORAGE_CACHE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CACHESTORAGE_CACHE_H_
 
 #include <memory>
-#include "bindings/core/v8/ScriptPromise.h"
-#include "core/fetch/GlobalFetch.h"
-#include "modules/ModulesExport.h"
-#include "modules/cachestorage/CacheQueryOptions.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/core/fetch/global_fetch.h"
+#include "third_party/blink/renderer/modules/cachestorage/cache_query_options.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -104,4 +104,4 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // Cache_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CACHESTORAGE_CACHE_H_

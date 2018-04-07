@@ -28,26 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFrameWidgetImpl_h
-#define WebFrameWidgetImpl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_FRAME_WIDGET_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_FRAME_WIDGET_IMPL_H_
 
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
-#include "core/frame/WebFrameWidgetBase.h"
-#include "core/frame/WebLocalFrameImpl.h"
-#include "core/page/PageWidgetDelegate.h"
-#include "platform/graphics/CompositorMutatorImpl.h"
-#include "platform/graphics/GraphicsLayer.h"
-#include "platform/heap/Member.h"
-#include "platform/heap/SelfKeepAlive.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Optional.h"
-#include "public/platform/WebCoalescedInputEvent.h"
-#include "public/platform/WebPoint.h"
-#include "public/platform/WebSize.h"
-#include "public/web/WebInputMethodController.h"
+#include "third_party/blink/public/platform/web_coalesced_input_event.h"
+#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/web/web_input_method_controller.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/page/page_widget_delegate.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 

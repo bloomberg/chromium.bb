@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSMathSum_h
-#define CSSMathSum_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_SUM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_SUM_H_
 
 #include "base/macros.h"
-#include "core/css/cssom/CSSMathVariadic.h"
+#include "third_party/blink/renderer/core/css/cssom/css_math_variadic.h"
 
 namespace blink {
 
@@ -41,4 +41,4 @@ class CORE_EXPORT CSSMathSum final : public CSSMathVariadic {
 
 }  // namespace blink
 
-#endif  // CSSMathSum_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_SUM_H_

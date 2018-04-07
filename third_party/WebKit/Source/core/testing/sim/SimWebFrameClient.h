@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SimWebFrameClient_h
-#define SimWebFrameClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_SIM_SIM_WEB_FRAME_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_SIM_SIM_WEB_FRAME_CLIENT_H_
 
-#include "core/frame/FrameTestHelpers.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 
 namespace blink {
 

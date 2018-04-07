@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FetchHeaderList_h
-#define FetchHeaderList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FETCH_HEADER_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FETCH_HEADER_LIST_H_
 
 #include <map>
 #include <utility>
-#include "core/CoreExport.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -74,4 +74,4 @@ class CORE_EXPORT FetchHeaderList final
 
 }  // namespace blink
 
-#endif  // FetchHeaderList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_FETCH_HEADER_LIST_H_

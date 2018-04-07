@@ -22,14 +22,14 @@
  *
  */
 
-#include "core/html/forms/HTMLFormControlsCollection.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_controls_collection.h"
 
-#include "bindings/core/v8/radio_node_list_or_element.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLImageElement.h"
-#include "core/html/forms/HTMLFormElement.h"
-#include "core/html_names.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/bindings/core/v8/radio_node_list_or_element.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/html_image_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 

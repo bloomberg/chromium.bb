@@ -26,27 +26,27 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef LocalFrame_h
-#define LocalFrame_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/dom/ComputedAccessibleNode.h"
-#include "core/dom/UserGestureIndicator.h"
-#include "core/dom/WeakIdentifierMap.h"
-#include "core/editing/Forward.h"
-#include "core/frame/Frame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/loader/FrameLoader.h"
-#include "core/loader/InteractiveDetector.h"
-#include "core/page/FrameTree.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "third_party/WebKit/Source/core/dom/AXObjectCache.h"
-#include "third_party/WebKit/public/mojom/loader/prefetch_url_loader_service.mojom-blink.h"
+#include "third_party/blink/public/mojom/loader/prefetch_url_loader_service.mojom-blink.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/ax_object_cache.h"
+#include "third_party/blink/renderer/core/dom/computed_accessible_node.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/core/loader/interactive_detector.h"
+#include "third_party/blink/renderer/core/page/frame_tree.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace service_manager {
 class InterfaceProvider;
@@ -526,4 +526,4 @@ class ScopedFrameBlamer {
 
 }  // namespace blink
 
-#endif  // LocalFrame_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_FRAME_H_

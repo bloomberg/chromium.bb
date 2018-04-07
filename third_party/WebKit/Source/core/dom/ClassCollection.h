@@ -27,12 +27,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ClassCollection_h
-#define ClassCollection_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CLASS_COLLECTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CLASS_COLLECTION_H_
 
-#include "core/dom/Element.h"
-#include "core/dom/SpaceSplitString.h"
-#include "core/html/HTMLCollection.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/space_split_string.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
 
 namespace blink {
 
@@ -75,4 +75,4 @@ inline bool ClassCollection::ElementMatches(const Element& test_element) const {
 
 }  // namespace blink
 
-#endif  // ClassCollection_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CLASS_COLLECTION_H_

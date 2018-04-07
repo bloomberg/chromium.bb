@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/track/TextTrackList.h"
+#include "third_party/blink/renderer/core/html/track/text_track_list.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/events/MediaElementEventQueue.h"
-#include "core/html/media/HTMLMediaElement.h"
-#include "core/html/track/InbandTextTrack.h"
-#include "core/html/track/LoadableTextTrack.h"
-#include "core/html/track/TextTrack.h"
-#include "core/html/track/TrackEvent.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/events/media_element_event_queue.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/track/inband_text_track.h"
+#include "third_party/blink/renderer/core/html/track/loadable_text_track.h"
+#include "third_party/blink/renderer/core/html/track/text_track.h"
+#include "third_party/blink/renderer/core/html/track/track_event.h"
 
 namespace blink {
 

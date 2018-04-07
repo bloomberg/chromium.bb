@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/scrolling/ScrollState.h"
+#include "third_party/blink/renderer/core/page/scrolling/scroll_state.h"
 
 #include <memory>
-#include "core/dom/DOMNodeIds.h"
-#include "core/dom/Element.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/layout/LayoutObject.h"
-#include "platform/graphics/CompositorElementId.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 
 namespace blink {
 

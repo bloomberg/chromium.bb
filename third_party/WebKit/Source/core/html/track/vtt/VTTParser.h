@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef VTTParser_h
-#define VTTParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VTT_VTT_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_VTT_VTT_PARSER_H_
 
 #include <memory>
-#include "core/dom/DocumentFragment.h"
-#include "core/html/parser/TextResourceDecoder.h"
-#include "core/html/track/vtt/BufferedLineReader.h"
-#include "core/html/track/vtt/VTTCue.h"
-#include "core/html/track/vtt/VTTTokenizer.h"
-#include "core/html_names.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/core/html/track/vtt/buffered_line_reader.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_cue.h"
+#include "third_party/blink/renderer/core/html/track/vtt/vtt_tokenizer.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

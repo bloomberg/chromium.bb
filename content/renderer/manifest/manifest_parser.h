@@ -15,7 +15,7 @@
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "content/public/common/manifest.h"
-#include "third_party/WebKit/public/platform/modules/manifest/manifest.mojom.h"
+#include "third_party/blink/public/platform/modules/manifest/manifest.mojom.h"
 
 class GURL;
 

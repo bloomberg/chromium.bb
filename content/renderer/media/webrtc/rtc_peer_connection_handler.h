@@ -26,10 +26,10 @@
 #include "content/renderer/media/webrtc/webrtc_media_stream_adapter_map.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "ipc/ipc_platform_file.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
-#include "third_party/WebKit/public/platform/WebRTCStatsRequest.h"
-#include "third_party/WebKit/public/platform/WebRTCStatsResponse.h"
+#include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
+#include "third_party/blink/public/platform/web_rtc_stats_request.h"
+#include "third_party/blink/public/platform/web_rtc_stats_response.h"
 
 namespace blink {
 class WebLocalFrame;

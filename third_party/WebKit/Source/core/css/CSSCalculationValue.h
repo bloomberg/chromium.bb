@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CSSCalculationValue_h
-#define CSSCalculationValue_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CALCULATION_VALUE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CALCULATION_VALUE_H_
 
-#include "core/CoreExport.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSValue.h"
-#include "core/css/parser/CSSParserTokenRange.h"
-#include "platform/CalculationValue.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_value.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
+#include "third_party/blink/renderer/platform/calculation_value.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -159,4 +159,4 @@ class CORE_EXPORT CSSCalcValue : public GarbageCollected<CSSCalcValue> {
 
 }  // namespace blink
 
-#endif  // CSSCalculationValue_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CALCULATION_VALUE_H_

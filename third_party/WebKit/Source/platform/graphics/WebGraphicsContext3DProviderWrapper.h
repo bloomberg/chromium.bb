@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGraphicsContext3DProviderWrapper_h
-#define WebGraphicsContext3DProviderWrapper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_WEB_GRAPHICS_CONTEXT_3D_PROVIDER_WRAPPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_WEB_GRAPHICS_CONTEXT_3D_PROVIDER_WRAPPER_H_
 
 #include <memory>
 #include <utility>
@@ -11,9 +11,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "platform/PlatformExport.h"
-#include "platform/graphics/gpu/GraphicsContext3DUtils.h"
-#include "public/platform/WebGraphicsContext3DProvider.h"
+#include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/graphics_context_3d_utils.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ class PLATFORM_EXPORT WebGraphicsContext3DProviderWrapper {
 
 }  // namespace blink
 
-#endif  // WebGraphicsContext3DProviderWrapper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_WEB_GRAPHICS_CONTEXT_3D_PROVIDER_WRAPPER_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/credentialmanager/PasswordCredential.h"
+#include "third_party/blink/renderer/modules/credentialmanager/password_credential.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/html/forms/FormData.h"
-#include "core/html/forms/HTMLFormElement.h"
-#include "core/html/forms/ListedElement.h"
-#include "core/html_names.h"
-#include "modules/credentialmanager/PasswordCredentialData.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/html/forms/form_data.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/listed_element.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/modules/credentialmanager/password_credential_data.h"
 
 namespace blink {
 

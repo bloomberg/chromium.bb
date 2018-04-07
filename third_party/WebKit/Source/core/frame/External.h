@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef External_h
-#define External_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_EXTERNAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_EXTERNAL_H_
 
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -22,4 +22,4 @@ class External : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // External_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_EXTERNAL_H_

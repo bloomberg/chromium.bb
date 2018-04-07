@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SizeListPropertyFunctions_h
-#define SizeListPropertyFunctions_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SIZE_LIST_PROPERTY_FUNCTIONS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SIZE_LIST_PROPERTY_FUNCTIONS_H_
 
-#include "core/css_property_names.h"
-#include "core/style/FillLayer.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/style/fill_layer.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -27,4 +27,4 @@ class SizeListPropertyFunctions {
 
 }  // namespace blink
 
-#endif  // SizeListPropertyFunctions_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_SIZE_LIST_PROPERTY_FUNCTIONS_H_

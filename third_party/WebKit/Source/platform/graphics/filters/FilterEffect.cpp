@@ -21,9 +21,9 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "platform/graphics/filters/FilterEffect.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
 
-#include "platform/graphics/filters/Filter.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 

@@ -24,26 +24,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSGradientValue.h"
+#include "third_party/blink/renderer/core/css/css_gradient_value.h"
 
 #include <algorithm>
 #include <tuple>
 #include <utility>
-#include "core/css/CSSCalculationValue.h"
-#include "core/css/CSSIdentifierValue.h"
-#include "core/css/CSSToLengthConversionData.h"
-#include "core/css/CSSValuePair.h"
-#include "core/css_value_keywords.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/dom/TextLinkColors.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/ColorBlend.h"
-#include "platform/graphics/Gradient.h"
-#include "platform/graphics/GradientGeneratedImage.h"
-#include "platform/graphics/Image.h"
-#include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/css/css_calculation_value.h"
+#include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/core/css/css_value_pair.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/text_link_colors.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/color_blend.h"
+#include "third_party/blink/renderer/platform/graphics/gradient.h"
+#include "third_party/blink/renderer/platform/graphics/gradient_generated_image.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 namespace cssvalue {

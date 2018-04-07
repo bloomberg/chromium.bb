@@ -23,23 +23,23 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/indexeddb/IDBTransaction.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_transaction.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/events/EventQueue.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/indexed_db_names.h"
-#include "modules/indexeddb/IDBDatabase.h"
-#include "modules/indexeddb/IDBEventDispatcher.h"
-#include "modules/indexeddb/IDBIndex.h"
-#include "modules/indexeddb/IDBObjectStore.h"
-#include "modules/indexeddb/IDBOpenDBRequest.h"
-#include "modules/indexeddb/IDBRequestQueueItem.h"
-#include "modules/indexeddb/IDBTracing.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/bindings/V8PerIsolateData.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/events/event_queue.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/indexed_db_names.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_event_dispatcher.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_index.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_object_store.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_open_db_request.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_request_queue_item.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 
 #include <memory>
 

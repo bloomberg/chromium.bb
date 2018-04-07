@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebDisplayItemList_h
-#define WebDisplayItemList_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DISPLAY_ITEM_LIST_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DISPLAY_ITEM_LIST_H_
 
-#include "WebBlendMode.h"
-#include "WebFloatPoint.h"
-#include "WebFloatRect.h"
-#include "WebRect.h"
-#include "WebSize.h"
-#include "WebVector.h"
+#include "third_party/blink/public/platform/web_blend_mode.h"
+#include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_float_rect.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 #include "cc/paint/paint_record.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
@@ -74,4 +74,4 @@ class WebDisplayItemList {
 
 }  // namespace blink
 
-#endif  // WebDisplayItemList_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DISPLAY_ITEM_LIST_H_

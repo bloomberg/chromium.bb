@@ -18,10 +18,10 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/css/CSSPropertyValue.h"
+#include "third_party/blink/renderer/core/css/css_property_value.h"
 
-#include "core/style/ComputedStyleConstants.h"
-#include "core/style_property_shorthand.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/core/style_property_shorthand.h"
 
 namespace blink {
 

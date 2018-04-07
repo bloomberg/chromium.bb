@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SimTest_h
-#define SimTest_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_SIM_SIM_TEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_SIM_SIM_TEST_H_
 
 #include <gtest/gtest.h>
-#include "core/frame/FrameTestHelpers.h"
-#include "core/testing/sim/SimCompositor.h"
-#include "core/testing/sim/SimNetwork.h"
-#include "core/testing/sim/SimPage.h"
-#include "core/testing/sim/SimWebFrameClient.h"
-#include "core/testing/sim/SimWebViewClient.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_network.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_page.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_web_frame_client.h"
+#include "third_party/blink/renderer/core/testing/sim/sim_web_view_client.h"
 
 namespace blink {
 

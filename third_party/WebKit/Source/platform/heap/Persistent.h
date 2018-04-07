@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef Persistent_h
-#define Persistent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_PERSISTENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_PERSISTENT_H_
 
-#include "platform/heap/Heap.h"
-#include "platform/heap/Member.h"
-#include "platform/heap/PersistentNode.h"
-#include "platform/heap/Visitor.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Atomics.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/heap/persistent_node.h"
+#include "third_party/blink/renderer/platform/heap/visitor.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/atomics.h"
 
 namespace blink {
 
@@ -849,4 +849,4 @@ struct BindUnwrapTraits<blink::CrossThreadWeakPersistent<T>> {
 };
 }
 
-#endif  // Persistent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_PERSISTENT_H_

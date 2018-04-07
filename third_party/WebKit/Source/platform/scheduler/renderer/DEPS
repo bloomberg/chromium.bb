@@ -1,6 +1,6 @@
 include_rules = [
-  "+platform/scheduler/base",
-  "+platform/scheduler/child",
+  "+third_party/blink/renderer/platform/scheduler/base",
+  "+third_party/blink/renderer/platform/scheduler/child",
   "+base/metrics/single_sample_metrics.h",
   "+source/platform/scheduler/base",
   "+source/platform/scheduler/child",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/SmallCapsIterator.h"
+#include "third_party/blink/renderer/platform/fonts/small_caps_iterator.h"
 
 #include <unicode/utypes.h>
 #include <memory>

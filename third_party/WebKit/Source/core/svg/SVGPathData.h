@@ -18,11 +18,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#ifndef SVGPathData_h
-#define SVGPathData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_DATA_H_
 
-#include "platform/geometry/FloatPoint.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -97,4 +97,4 @@ struct PathSegmentData {
 
 }  // namespace blink
 
-#endif  // SVGPathData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PATH_DATA_H_

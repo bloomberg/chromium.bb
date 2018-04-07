@@ -23,14 +23,14 @@
  * SUCH DAMAGE.
  */
 
-#ifndef WebDateTimeChooserParams_h
-#define WebDateTimeChooserParams_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DATE_TIME_CHOOSER_PARAMS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DATE_TIME_CHOOSER_PARAMS_H_
 
-#include "public/platform/WebRect.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebVector.h"
-#include "WebDateTimeInputType.h"
-#include "WebDateTimeSuggestion.h"
+#include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_date_time_input_type.h"
+#include "third_party/blink/public/web/web_date_time_suggestion.h"
 
 namespace blink {
 

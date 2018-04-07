@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSConditionRule_h
-#define CSSConditionRule_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CONDITION_RULE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CONDITION_RULE_H_
 
-#include "core/css/CSSGroupingRule.h"
+#include "third_party/blink/renderer/core/css/css_grouping_rule.h"
 
 namespace blink {
 
@@ -23,4 +23,4 @@ class CSSConditionRule : public CSSGroupingRule {
 
 }  // namespace blink
 
-#endif  // CSSConditionRule_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_CONDITION_RULE_H_

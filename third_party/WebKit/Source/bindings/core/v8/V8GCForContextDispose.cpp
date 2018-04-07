@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8GCForContextDispose.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
 
 #include "build/build_config.h"
-#include "platform/Histogram.h"
-#include "platform/MemoryCoordinator.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "platform/scheduler/child/web_scheduler.h"
-#include "platform/wtf/ProcessMetrics.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/Time.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/memory_coordinator.h"
+#include "third_party/blink/renderer/platform/scheduler/child/web_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/process_metrics.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "v8/include/v8.h"
 
 size_t GetMemoryUsage() {

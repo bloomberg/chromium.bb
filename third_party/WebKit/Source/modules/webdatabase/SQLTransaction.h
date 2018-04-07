@@ -26,20 +26,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SQLTransaction_h
-#define SQLTransaction_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_TRANSACTION_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_TRANSACTION_H_
 
 #include <memory>
 
-#include "bindings/core/v8/V8VoidCallback.h"
-#include "bindings/modules/v8/V8BindingForModules.h"
-#include "bindings/modules/v8/V8SQLTransactionCallback.h"
-#include "bindings/modules/v8/V8SQLTransactionErrorCallback.h"
-#include "modules/webdatabase/SQLStatement.h"
-#include "modules/webdatabase/SQLTransactionStateMachine.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Optional.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_void_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_sql_transaction_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_sql_transaction_error_callback.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_statement.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction_state_machine.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -206,4 +206,4 @@ class SQLTransaction final : public ScriptWrappable,
 
 }  // namespace blink
 
-#endif  // SQLTransaction_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_SQL_TRANSACTION_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CredentialManagerProxy_h
-#define CredentialManagerProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_CREDENTIAL_MANAGER_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_CREDENTIAL_MANAGER_PROXY_H_
 
-#include "core/dom/Document.h"
-#include "modules/ModulesExport.h"
-#include "platform/Supplementable.h"
-#include "platform/heap/Handle.h"
-#include "public/platform/modules/credentialmanager/credential_manager.mojom-blink.h"
-#include "public/platform/modules/webauth/authenticator.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/credentialmanager/credential_manager.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/webauth/authenticator.mojom-blink.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -64,4 +64,4 @@ class MODULES_EXPORT CredentialManagerProxy
 
 }  // namespace blink
 
-#endif  // CredentialManagerProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_CREDENTIAL_MANAGER_PROXY_H_

@@ -21,15 +21,15 @@
  *
  */
 
-#ifndef MatchResult_h
-#define MatchResult_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_MATCH_RESULT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_MATCH_RESULT_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/css/RuleSet.h"
-#include "core/css/SelectorChecker.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/css/rule_set.h"
+#include "third_party/blink/renderer/core/css/selector_checker.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -268,4 +268,4 @@ inline bool operator!=(const MatchedProperties& a, const MatchedProperties& b) {
 
 }  // namespace blink
 
-#endif  // MatchResult_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_MATCH_RESULT_H_

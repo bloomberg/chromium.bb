@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebFrameSerializerCacheControlPolicy_h
-#define WebFrameSerializerCacheControlPolicy_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_SERIALIZER_CACHE_CONTROL_POLICY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_SERIALIZER_CACHE_CONTROL_POLICY_H_
 
 namespace blink {
 
@@ -22,4 +22,4 @@ enum class WebFrameSerializerCacheControlPolicy {
 
 }  // namespace blink
 
-#endif  // WebFrameSerializerCacheControlPolicy_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_SERIALIZER_CACHE_CONTROL_POLICY_H_

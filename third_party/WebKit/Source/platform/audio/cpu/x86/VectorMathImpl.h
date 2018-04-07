@@ -14,8 +14,8 @@
 #include <algorithm>
 #include <cmath>
 
-#include "platform/audio/AudioArray.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/platform/audio/audio_array.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 namespace VectorMath {

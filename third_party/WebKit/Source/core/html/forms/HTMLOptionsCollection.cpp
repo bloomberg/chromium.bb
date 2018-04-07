@@ -19,14 +19,14 @@
  *
  */
 
-#include "core/html/forms/HTMLOptionsCollection.h"
+#include "third_party/blink/renderer/core/html/forms/html_options_collection.h"
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/html_element_or_long.h"
-#include "bindings/core/v8/html_option_element_or_html_opt_group_element.h"
-#include "core/html/forms/HTMLOptionElement.h"
-#include "core/html/forms/HTMLSelectElement.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/html_element_or_long.h"
+#include "third_party/blink/renderer/bindings/core/v8/html_option_element_or_html_opt_group_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 
 namespace blink {
 

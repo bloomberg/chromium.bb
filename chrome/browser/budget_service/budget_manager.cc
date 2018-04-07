@@ -13,7 +13,7 @@
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/common/origin_util.h"
-#include "third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h"
+#include "third_party/blink/public/platform/modules/budget_service/budget_service.mojom.h"
 #include "url/origin.h"
 
 BudgetManager::BudgetManager(Profile* profile)

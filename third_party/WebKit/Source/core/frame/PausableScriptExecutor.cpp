@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/PausableScriptExecutor.h"
+#include "third_party/blink/renderer/core/frame/pausable_script_executor.h"
 
 #include <memory>
 #include <utility>
 
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8PersistentValueVector.h"
-#include "bindings/core/v8/WindowProxy.h"
-#include "core/dom/Document.h"
-#include "core/dom/UserGestureIndicator.h"
-#include "core/frame/LocalFrame.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/TaskType.h"
-#include "public/web/WebScriptExecutionCallback.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/web/web_script_execution_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_persistent_value_vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

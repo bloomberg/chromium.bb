@@ -26,8 +26,8 @@
 
 #include <memory>
 
-#include "platform/image-decoders/png/PNGImageDecoder.h"
-#include "platform/testing/BlinkFuzzerTestSupport.h"
+#include "third_party/blink/renderer/platform/image-decoders/png/png_image_decoder.h"
+#include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
 
 namespace blink {
 

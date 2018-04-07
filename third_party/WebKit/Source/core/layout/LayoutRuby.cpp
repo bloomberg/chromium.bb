@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutRuby.h"
+#include "third_party/blink/renderer/core/layout/layout_ruby.h"
 
-#include "core/frame/UseCounter.h"
-#include "core/layout/LayoutRubyRun.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/layout/layout_ruby_run.h"
 
 namespace blink {
 

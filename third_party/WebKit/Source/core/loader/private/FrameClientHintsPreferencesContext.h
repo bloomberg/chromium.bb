@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FrameClientHintsPreferencesContext_h
-#define FrameClientHintsPreferencesContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PRIVATE_FRAME_CLIENT_HINTS_PREFERENCES_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PRIVATE_FRAME_CLIENT_HINTS_PREFERENCES_CONTEXT_H_
 
-#include "core/frame/LocalFrame.h"
-#include "platform/heap/Persistent.h"
-#include "platform/loader/fetch/ClientHintsPreferences.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -28,4 +28,4 @@ class FrameClientHintsPreferencesContext final
 
 }  // namespace blink
 
-#endif  // FrameClientHintsPreferencesContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PRIVATE_FRAME_CLIENT_HINTS_PREFERENCES_CONTEXT_H_

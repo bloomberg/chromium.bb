@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSPropertyEquality_h
-#define CSSPropertyEquality_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_EQUALITY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_EQUALITY_H_
 
-#include "core/css_property_names.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -25,4 +25,4 @@ class CSSPropertyEquality {
 
 }  // namespace blink
 
-#endif  // CSSPropertyEquality_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_EQUALITY_H_

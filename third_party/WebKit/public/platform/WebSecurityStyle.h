@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebSecurityStyle_h
-#define WebSecurityStyle_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SECURITY_STYLE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SECURITY_STYLE_H_
 namespace blink {
 // This enum represents the security state of a resource.
 enum WebSecurityStyle {

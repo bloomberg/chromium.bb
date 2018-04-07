@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LinkFetchResource_h
-#define LinkFetchResource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_LINK_FETCH_RESOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_LINK_FETCH_RESOURCE_H_
 
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/ResourceClient.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 
 namespace blink {
 
@@ -34,4 +34,4 @@ class LinkFetchResource final : public Resource {
 
 }  // namespace blink
 
-#endif  // LinkFetchResource_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_LINK_FETCH_RESOURCE_H_

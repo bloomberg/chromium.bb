@@ -20,14 +20,14 @@
  *
  */
 
-#ifndef BidiContext_h
-#define BidiContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_CONTEXT_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/ThreadSafeRefCounted.h"
-#include "platform/wtf/text/Unicode.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/unicode.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 
@@ -101,4 +101,4 @@ PLATFORM_EXPORT bool operator==(const BidiContext&, const BidiContext&);
 
 }  // namespace blink
 
-#endif  // BidiContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_BIDI_CONTEXT_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebLockOrientationError_h
-#define WebLockOrientationError_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SCREEN_ORIENTATION_WEB_LOCK_ORIENTATION_ERROR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SCREEN_ORIENTATION_WEB_LOCK_ORIENTATION_ERROR_H_
 
 namespace blink {
 
@@ -20,4 +20,4 @@ enum WebLockOrientationError {
 
 }  // namespace blink
 
-#endif  // WebLockOrientationError_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_SCREEN_ORIENTATION_WEB_LOCK_ORIENTATION_ERROR_H_

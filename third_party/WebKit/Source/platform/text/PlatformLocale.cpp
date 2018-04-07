@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/text/PlatformLocale.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 #include <memory>
 
 #include "base/macros.h"
-#include "platform/text/DateTimeFormat.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "public/platform/Platform.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/text/date_time_format.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 

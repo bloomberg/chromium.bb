@@ -24,10 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Uint16Array_h
-#define Uint16Array_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_UINT16_ARRAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_UINT16_ARRAY_H_
 
-#include "platform/wtf/typed_arrays/IntegralTypedArrayBase.h"
+#include "third_party/blink/renderer/platform/wtf/typed_arrays/integral_typed_array_base.h"
 
 namespace WTF {
 
@@ -83,4 +83,4 @@ Uint16Array::Uint16Array(scoped_refptr<ArrayBuffer> buffer,
 
 using WTF::Uint16Array;
 
-#endif  // Uint16Array_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TYPED_ARRAYS_UINT16_ARRAY_H_

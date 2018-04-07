@@ -23,17 +23,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/filters/PaintFilterBuilder.h"
+#include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
 
 #include "SkBlurImageFilter.h"
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"
 #include "SkTableColorFilter.h"
-#include "platform/graphics/BoxReflection.h"
-#include "platform/graphics/filters/FilterEffect.h"
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/graphics/paint/PaintRecord.h"
-#include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/blink/renderer/platform/graphics/box_reflection.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
+#include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/skia/include/effects/SkImageSource.h"
 #include "third_party/skia/include/effects/SkOffsetImageFilter.h"
 #include "third_party/skia/include/effects/SkPictureImageFilter.h"

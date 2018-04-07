@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TransformationMatrix_h
-#define TransformationMatrix_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORMATION_MATRIX_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORMATION_MATRIX_H_
 
 #include <string.h>  // for memcpy
 #include <memory>
 #include "SkMatrix44.h"
 #include "build/build_config.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatPoint3D.h"
-#include "platform/wtf/Alignment.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
+#include "third_party/blink/renderer/platform/wtf/alignment.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -523,4 +523,4 @@ PLATFORM_EXPORT std::ostream& operator<<(std::ostream&,
 
 }  // namespace blink
 
-#endif  // TransformationMatrix_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORMATION_MATRIX_H_

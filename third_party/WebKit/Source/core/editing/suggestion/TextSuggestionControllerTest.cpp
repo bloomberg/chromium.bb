@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/suggestion/TextSuggestionController.h"
+#include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 
-#include "core/editing/EphemeralRange.h"
-#include "core/editing/FrameSelection.h"
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/VisibleSelection.h"
-#include "core/editing/markers/DocumentMarkerController.h"
-#include "core/editing/markers/SuggestionMarkerProperties.h"
-#include "core/editing/spellcheck/SpellChecker.h"
-#include "core/editing/testing/EditingTestBase.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/markers/suggestion_marker_properties.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/editing/visible_selection.h"
 
 using ui::mojom::ImeTextSpanThickness;
 

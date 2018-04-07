@@ -13,9 +13,9 @@
 #include "content/renderer/media/stream/video_track_adapter.h"
 #include "media/base/video_facing.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
-#include "third_party/WebKit/public/platform/modules/mediastream/media_devices.mojom.h"
+#include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h"
+#include "third_party/blink/public/platform/web_media_constraints.h"
+#include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/webrtc/api/optional.h"
 
 namespace content {

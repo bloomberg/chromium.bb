@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PictureInPictureWindow_h
-#define PictureInPictureWindow_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_WINDOW_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_WINDOW_H_
 
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/EventTargetModules.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -50,4 +50,4 @@ class PictureInPictureWindow : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // PictureInPictureWindow_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PICTURE_IN_PICTURE_PICTURE_IN_PICTURE_WINDOW_H_

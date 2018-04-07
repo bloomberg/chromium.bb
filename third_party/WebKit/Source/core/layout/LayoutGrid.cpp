@@ -23,22 +23,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutGrid.h"
+#include "third_party/blink/renderer/core/layout/layout_grid.h"
 
 #include <algorithm>
 #include <memory>
 #include <utility>
 
-#include "core/frame/UseCounter.h"
-#include "core/layout/GridLayoutUtils.h"
-#include "core/layout/LayoutState.h"
-#include "core/layout/TextAutosizer.h"
-#include "core/paint/GridPainter.h"
-#include "core/paint/PaintLayer.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/GridArea.h"
-#include "platform/LengthFunctions.h"
-#include "platform/text/WritingMode.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/layout/grid_layout_utils.h"
+#include "third_party/blink/renderer/core/layout/layout_state.h"
+#include "third_party/blink/renderer/core/layout/text_autosizer.h"
+#include "third_party/blink/renderer/core/paint/grid_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/grid_area.h"
+#include "third_party/blink/renderer/platform/length_functions.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
 

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/PaintControllerPaintTest.h"
+#include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 
-#include "core/editing/FrameCaret.h"
-#include "core/editing/FrameSelection.h"
-#include "core/layout/LayoutText.h"
-#include "core/layout/line/InlineTextBox.h"
-#include "core/page/FocusController.h"
-#include "core/paint/ObjectPaintProperties.h"
-#include "core/paint/PaintLayerPainter.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DrawingDisplayItem.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
+#include "third_party/blink/renderer/core/editing/frame_caret.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/paint/object_paint_properties.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
 

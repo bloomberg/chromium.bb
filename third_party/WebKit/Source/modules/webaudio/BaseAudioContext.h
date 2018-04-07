@@ -23,31 +23,31 @@
  * DAMAGE.
  */
 
-#ifndef BaseAudioContext_h
-#define BaseAudioContext_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_BASE_AUDIO_CONTEXT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_BASE_AUDIO_CONTEXT_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/modules/v8/v8_decode_error_callback.h"
-#include "bindings/modules/v8/v8_decode_success_callback.h"
-#include "core/dom/PausableObject.h"
-#include "core/dom/events/EventListener.h"
-#include "core/html/media/AutoplayPolicy.h"
-#include "core/typed_arrays/ArrayBufferViewHelpers.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "modules/EventTargetModules.h"
-#include "modules/ModulesExport.h"
-#include "modules/webaudio/AsyncAudioDecoder.h"
-#include "modules/webaudio/AudioDestinationNode.h"
-#include "modules/webaudio/DeferredTaskHandler.h"
-#include "modules/webaudio/IIRFilterNode.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_decode_error_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_decode_success_callback.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/pausable_object.h"
+#include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/webaudio/async_audio_decoder.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_destination_node.h"
+#include "third_party/blink/renderer/modules/webaudio/deferred_task_handler.h"
+#include "third_party/blink/renderer/modules/webaudio/iir_filter_node.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -536,4 +536,4 @@ class MODULES_EXPORT BaseAudioContext
 
 }  // namespace blink
 
-#endif  // BaseAudioContext_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_BASE_AUDIO_CONTEXT_H_

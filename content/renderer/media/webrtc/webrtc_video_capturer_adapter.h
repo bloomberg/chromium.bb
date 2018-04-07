@@ -16,7 +16,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_pool.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/webrtc/media/base/videocapturer.h"
 
 namespace content {

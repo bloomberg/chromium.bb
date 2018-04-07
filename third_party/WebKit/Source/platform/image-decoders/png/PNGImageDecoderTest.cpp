@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/image-decoders/png/PNGImageDecoder.h"
+#include "third_party/blink/renderer/platform/image-decoders/png/png_image_decoder.h"
 
 #include <memory>
-#include "platform/image-decoders/ImageDecoderTestHelpers.h"
-#include "platform/wtf/Time.h"
 #include "png.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 // /LayoutTests/images/resources/png-animated-idat-part-of-animation.png
 // is modified in multiple tests to simulate erroneous PNGs. As a reference,

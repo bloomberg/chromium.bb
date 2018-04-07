@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/custom/CustomElementReactionStack.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction_stack.h"
 
 #include <initializer_list>
 #include <vector>
 
 #include "base/macros.h"
-#include "core/html/custom/CustomElementReaction.h"
-#include "core/html/custom/CustomElementReactionTestHelpers.h"
-#include "core/html/custom/CustomElementTestHelpers.h"
-#include "platform/wtf/text/AtomicString.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_reaction_test_helpers.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 

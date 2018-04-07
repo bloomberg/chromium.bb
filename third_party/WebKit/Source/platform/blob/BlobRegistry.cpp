@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/blob/BlobRegistry.h"
+#include "third_party/blink/renderer/platform/blob/blob_registry.h"
 
 #include <memory>
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/blob/BlobData.h"
-#include "platform/blob/BlobURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Assertions.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/WTFString.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebBlobRegistry.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_blob_registry.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
+#include "third_party/blink/renderer/platform/blob/blob_url.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
 

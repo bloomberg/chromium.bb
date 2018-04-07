@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/parser/ResourcePreloader.h"
-#include "core/loader/NetworkHintsInterface.h"
+#include "third_party/blink/renderer/core/html/parser/resource_preloader.h"
+#include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 
 namespace blink {
 

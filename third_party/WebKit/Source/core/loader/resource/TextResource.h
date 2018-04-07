@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TextResource_h
-#define TextResource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_TEXT_RESOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_TEXT_RESOURCE_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/html/parser/TextResourceDecoder.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/loader/fetch/TextResourceDecoderOptions.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 
 namespace blink {
 
@@ -38,4 +38,4 @@ class CORE_EXPORT TextResource : public Resource {
 
 }  // namespace blink
 
-#endif  // TextResource_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_TEXT_RESOURCE_H_

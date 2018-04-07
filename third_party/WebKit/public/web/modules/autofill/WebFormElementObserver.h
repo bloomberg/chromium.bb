@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebFormElementObserver_h
-#define WebFormElementObserver_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_AUTOFILL_WEB_FORM_ELEMENT_OBSERVER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_AUTOFILL_WEB_FORM_ELEMENT_OBSERVER_H_
 
 #include <memory>
 
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 
@@ -35,4 +35,4 @@ class BLINK_EXPORT WebFormElementObserver {
 
 }  // namespace blink
 
-#endif  // WebFormElementObserver_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_AUTOFILL_WEB_FORM_ELEMENT_OBSERVER_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/push_messaging/ServiceWorkerRegistrationPush.h"
+#include "third_party/blink/renderer/modules/push_messaging/service_worker_registration_push.h"
 
-#include "modules/push_messaging/PushManager.h"
-#include "modules/serviceworkers/ServiceWorkerRegistration.h"
+#include "third_party/blink/renderer/modules/push_messaging/push_manager.h"
+#include "third_party/blink/renderer/modules/serviceworkers/service_worker_registration.h"
 
 namespace blink {
 

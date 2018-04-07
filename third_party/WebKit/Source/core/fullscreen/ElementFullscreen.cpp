@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fullscreen/ElementFullscreen.h"
+#include "third_party/blink/renderer/core/fullscreen/element_fullscreen.h"
 
-#include "core/frame/UseCounter.h"
-#include "core/fullscreen/Fullscreen.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 
 namespace blink {
 

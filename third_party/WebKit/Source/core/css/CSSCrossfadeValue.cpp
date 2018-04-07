@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSCrossfadeValue.h"
+#include "third_party/blink/renderer/core/css/css_crossfade_value.h"
 
-#include "core/css/CSSImageValue.h"
-#include "core/layout/LayoutObject.h"
-#include "core/style/StyleFetchedImage.h"
-#include "core/svg/graphics/SVGImageForContainer.h"
-#include "platform/graphics/CrossfadeGeneratedImage.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/css_image_value.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/style/style_fetched_image.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
+#include "third_party/blink/renderer/platform/graphics/crossfade_generated_image.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 namespace cssvalue {

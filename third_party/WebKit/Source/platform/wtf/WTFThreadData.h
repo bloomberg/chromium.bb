@@ -24,19 +24,19 @@
  *
  */
 
-#ifndef WTFThreadData_h
-#define WTFThreadData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_WTF_THREAD_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_WTF_THREAD_DATA_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/ThreadSpecific.h"
-#include "platform/wtf/Threading.h"
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -89,4 +89,4 @@ inline WTFThreadData& WtfThreadData() {
 using WTF::WTFThreadData;
 using WTF::WtfThreadData;
 
-#endif  // WTFThreadData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_WTF_THREAD_DATA_H_

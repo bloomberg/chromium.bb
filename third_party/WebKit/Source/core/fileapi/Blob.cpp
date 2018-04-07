@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/fileapi/Blob.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
 
 #include <memory>
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fileapi/BlobPropertyBag.h"
-#include "core/frame/UseCounter.h"
-#include "core/url/DOMURL.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/blob/BlobRegistry.h"
-#include "platform/blob/BlobURL.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fileapi/blob_property_bag.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/url/dom_url.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/blob/blob_registry.h"
+#include "third_party/blink/renderer/platform/blob/blob_url.h"
 
 namespace blink {
 

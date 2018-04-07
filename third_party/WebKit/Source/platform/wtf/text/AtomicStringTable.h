@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WTF_AtomicStringTable_h
-#define WTF_AtomicStringTable_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_ATOMIC_STRING_TABLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_ATOMIC_STRING_TABLE_H_
 
 #include "base/macros.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/WTFExport.h"
-#include "platform/wtf/WTFThreadData.h"
-#include "platform/wtf/text/StringHash.h"
-#include "platform/wtf/text/StringImpl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_thread_data.h"
 
 namespace WTF {
 

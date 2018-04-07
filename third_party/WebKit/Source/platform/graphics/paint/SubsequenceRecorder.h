@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SubsequenceRecorder_h
-#define SubsequenceRecorder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SUBSEQUENCE_RECORDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SUBSEQUENCE_RECORDER_H_
 
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/graphics/paint/PaintController.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class SubsequenceRecorder final {
 
 }  // namespace blink
 
-#endif  // SubsequenceRecorder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SUBSEQUENCE_RECORDER_H_

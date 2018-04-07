@@ -18,13 +18,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "core/dom/SpaceSplitString.h"
+#include "third_party/blink/renderer/core/dom/space_split_string.h"
 
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/AtomicStringHash.h"
-#include "platform/wtf/text/StringBuilder.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
 

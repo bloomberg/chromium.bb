@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/SQLTransactionClient.h"
+#include "third_party/blink/renderer/modules/webdatabase/sql_transaction_client.h"
 
 #include "base/location.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/DatabaseContext.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Functional.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/WebDatabaseObserver.h"
-#include "public/platform/WebSecurityOrigin.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_database_observer.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/webdatabase/database.h"
+#include "third_party/blink/renderer/modules/webdatabase/database_context.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 

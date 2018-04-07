@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/RemoteWindowProxy.h"
+#include "third_party/blink/renderer/bindings/core/v8/remote_window_proxy.h"
 
 #include <algorithm>
 #include <utility>
 
-#include "bindings/core/v8/V8Window.h"
-#include "platform/Histogram.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScriptForbiddenScope.h"
-#include "platform/bindings/V8DOMWrapper.h"
-#include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "v8/include/v8.h"
 
 namespace blink {

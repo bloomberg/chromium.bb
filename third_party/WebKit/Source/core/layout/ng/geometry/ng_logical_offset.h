@@ -5,10 +5,10 @@
 #ifndef NGLogicalOffset_h
 #define NGLogicalOffset_h
 
-#include "core/CoreExport.h"
-#include "platform/LayoutUnit.h"
-#include "platform/text/TextDirection.h"
-#include "platform/text/WritingMode.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
 
 namespace blink {
 

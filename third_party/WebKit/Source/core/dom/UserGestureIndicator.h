@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UserGestureIndicator_h
-#define UserGestureIndicator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_USER_GESTURE_INDICATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_USER_GESTURE_INDICATOR_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/dom/Document.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 

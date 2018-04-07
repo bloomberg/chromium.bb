@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/xml/DocumentXPathEvaluator.h"
+#include "third_party/blink/renderer/core/xml/document_xpath_evaluator.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/xml/XPathExpression.h"
-#include "core/xml/XPathResult.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/xml/xpath_expression.h"
+#include "third_party/blink/renderer/core/xml/xpath_result.h"
 
 namespace blink {
 

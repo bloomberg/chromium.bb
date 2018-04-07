@@ -14,12 +14,12 @@
 #include "build/build_config.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/renderer/render_frame_impl.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebVector.h"
-#include "third_party/WebKit/public/web/WebSpeechGrammar.h"
-#include "third_party/WebKit/public/web/WebSpeechRecognitionParams.h"
-#include "third_party/WebKit/public/web/WebSpeechRecognitionResult.h"
-#include "third_party/WebKit/public/web/WebSpeechRecognizerClient.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_speech_grammar.h"
+#include "third_party/blink/public/web/web_speech_recognition_params.h"
+#include "third_party/blink/public/web/web_speech_recognition_result.h"
+#include "third_party/blink/public/web/web_speech_recognizer_client.h"
 
 using blink::WebVector;
 using blink::WebString;

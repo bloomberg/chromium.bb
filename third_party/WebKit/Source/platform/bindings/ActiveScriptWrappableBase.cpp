@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/bindings/ActiveScriptWrappableBase.h"
+#include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
 
-#include "platform/bindings/DOMDataStore.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/ScriptWrappableVisitor.h"
-#include "platform/bindings/V8Binding.h"
-#include "platform/bindings/V8PerIsolateData.h"
+#include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
+#include "third_party/blink/renderer/platform/bindings/v8_binding.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 
 namespace blink {
 

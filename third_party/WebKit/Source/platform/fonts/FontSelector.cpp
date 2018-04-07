@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/FontSelector.h"
+#include "third_party/blink/renderer/platform/fonts/font_selector.h"
 
 #include "build/build_config.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/GenericFontFamilySettings.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/generic_font_family_settings.h"
 
 namespace blink {
 

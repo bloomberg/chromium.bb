@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/audio/AudioBus.h"
-#include "platform/mediastream/MediaStreamWebAudioSource.h"
-#include "public/platform/WebAudioSourceProvider.h"
 #include <memory>
+#include "third_party/blink/public/platform/web_audio_source_provider.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_web_audio_source.h"
 
 namespace blink {
 

@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/resolver/FilterOperationResolver.h"
+#include "third_party/blink/renderer/core/css/resolver/filter_operation_resolver.h"
 
-#include "core/css/parser/CSSParser.h"
-#include "core/css/parser/CSSParserContext.h"
-#include "core/css/resolver/FontStyleResolver.h"
-#include "core/css/threaded/MultiThreadedTestUtil.h"
-#include "platform/Language.h"
-#include "platform/fonts/Font.h"
-#include "platform/fonts/FontCustomPlatformData.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontSelector.h"
-#include "platform/fonts/shaping/CachingWordShapeIterator.h"
-#include "platform/fonts/shaping/HarfBuzzShaper.h"
-#include "platform/testing/FontTestHelpers.h"
-#include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
+#include "third_party/blink/renderer/core/css/resolver/font_style_resolver.h"
+#include "third_party/blink/renderer/core/css/threaded/multi_threaded_test_util.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/font_custom_platform_data.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_selector.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/caching_word_shape_iterator.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/harf_buzz_shaper.h"
+#include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/testing/font_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 using blink::test::CreateTestFont;
 

@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebHeap_h
-#define WebHeap_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_HEAP_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_HEAP_H_
 
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 

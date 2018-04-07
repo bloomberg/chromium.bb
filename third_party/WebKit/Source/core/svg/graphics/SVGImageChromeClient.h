@@ -26,14 +26,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SVGImageChromeClient_h
-#define SVGImageChromeClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_SVG_IMAGE_CHROME_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_SVG_IMAGE_CHROME_CLIENT_H_
 
-#include "base/gtest_prod_util.h"
-#include "core/CoreExport.h"
-#include "core/loader/EmptyClients.h"
-#include "platform/Timer.h"
 #include <memory>
+#include "base/gtest_prod_util.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
@@ -81,4 +81,4 @@ DEFINE_TYPE_CASTS(SVGImageChromeClient,
 
 }  // namespace blink
 
-#endif  // SVGImageChromeClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_GRAPHICS_SVG_IMAGE_CHROME_CLIENT_H_

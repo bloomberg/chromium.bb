@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/vr/VREyeParameters.h"
+#include "third_party/blink/renderer/modules/vr/vr_eye_parameters.h"
 
 namespace blink {
 

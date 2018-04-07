@@ -5,9 +5,9 @@
 #ifndef NGFragmentationUtils_h
 #define NGFragmentationUtils_h
 
-#include "core/layout/ng/ng_layout_input_node.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/LayoutUnit.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
 
 namespace blink {
 

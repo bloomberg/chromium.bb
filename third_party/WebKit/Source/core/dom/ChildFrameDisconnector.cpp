@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/ChildFrameDisconnector.h"
+#include "third_party/blink/renderer/core/dom/child_frame_disconnector.h"
 
-#include "core/dom/ShadowRoot.h"
-#include "core/html/HTMLFrameOwnerElement.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

@@ -17,12 +17,12 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "platform/wtf/HashTable.h"
+#include "third_party/blink/renderer/platform/wtf/hash_table.h"
 
 #if DUMP_HASHTABLE_STATS || DUMP_HASHTABLE_STATS_PER_TABLE
 
 #include <iomanip>
-#include "platform/wtf/ThreadingPrimitives.h"
+#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace WTF {
 

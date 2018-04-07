@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebLayerTreeViewImplForTesting_h
-#define WebLayerTreeViewImplForTesting_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_
 
 #include <memory>
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
-#include "platform/wtf/Noncopyable.h"
-#include "public/platform/WebLayerTreeView.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace cc {
 class AnimationHost;
@@ -104,4 +104,4 @@ class WebLayerTreeViewImplForTesting
 
 }  // namespace blink
 
-#endif  // WebLayerTreeViewImplForTesting_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_WEB_LAYER_TREE_VIEW_IMPL_FOR_TESTING_H_

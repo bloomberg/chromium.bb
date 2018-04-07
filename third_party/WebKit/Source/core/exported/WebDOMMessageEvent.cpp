@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebDOMMessageEvent.h"
+#include "third_party/blink/public/web/web_dom_message_event.h"
 
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/dom/Document.h"
-#include "core/events/MessageEvent.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/messaging/BlinkTransferableMessage.h"
-#include "core/messaging/MessagePort.h"
-#include "public/platform/WebString.h"
-#include "public/web/WebDocument.h"
-#include "public/web/WebFrame.h"
-#include "public/web/WebSerializedScriptValue.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_document.h"
+#include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/public/web/web_serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/events/message_event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
 
 namespace blink {
 

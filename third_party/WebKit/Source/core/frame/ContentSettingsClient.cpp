@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/ContentSettingsClient.h"
+#include "third_party/blink/renderer/core/frame/content_settings_client.h"
 
-#include "platform/ContentSettingCallbacks.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/WebContentSettingCallbacks.h"
-#include "public/platform/WebContentSettingsClient.h"
-#include "public/platform/WebSecurityOrigin.h"
-#include "public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_content_setting_callbacks.h"
+#include "third_party/blink/public/platform/web_content_settings_client.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/renderer/platform/content_setting_callbacks.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

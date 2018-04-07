@@ -24,13 +24,13 @@
  *
  */
 
-#include "core/workers/WorkerEventQueue.h"
+#include "third_party/blink/renderer/core/workers/worker_event_queue.h"
 
-#include "core/dom/events/Event.h"
-#include "core/probe/CoreProbes.h"
-#include "core/workers/WorkerOrWorkletGlobalScope.h"
-#include "core/workers/WorkerThread.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
 
 namespace blink {
 

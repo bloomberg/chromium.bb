@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/DetailsMarkerPainter.h"
+#include "third_party/blink/renderer/core/paint/details_marker_painter.h"
 
-#include "core/layout/LayoutDetailsMarker.h"
-#include "core/paint/AdjustPaintOffsetScope.h"
-#include "core/paint/BlockPainter.h"
-#include "core/paint/PaintInfo.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/graphics/Path.h"
-#include "platform/graphics/paint/DrawingRecorder.h"
+#include "third_party/blink/renderer/core/layout/layout_details_marker.h"
+#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
+#include "third_party/blink/renderer/core/paint/block_painter.h"
+#include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
 
 namespace blink {
 

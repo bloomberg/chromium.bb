@@ -11,8 +11,8 @@
 #include "extensions/renderer/bindings/argument_spec.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebSelector.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/web/web_selector.h"
 
 namespace extensions {
 

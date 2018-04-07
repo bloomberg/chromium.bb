@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BoxModelObjectPainter_h
-#define BoxModelObjectPainter_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_MODEL_OBJECT_PAINTER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_MODEL_OBJECT_PAINTER_H_
 
-#include "core/layout/BackgroundBleedAvoidance.h"
-#include "core/paint/BoxPainterBase.h"
-#include "platform/geometry/LayoutSize.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
+#include "third_party/blink/renderer/core/paint/box_painter_base.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class BoxModelObjectPainter : public BoxPainterBase {
 
 }  // namespace blink
 
-#endif  // BoxModelObjectPainter_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_MODEL_OBJECT_PAINTER_H_

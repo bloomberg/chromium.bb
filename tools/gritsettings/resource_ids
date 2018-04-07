@@ -337,13 +337,13 @@
     "messages": [24800],
   },
 
-  "third_party/WebKit/public/blink_image_resources.grd": {
+  "third_party/blink/public/blink_image_resources.grd": {
     "structures": [25300],
   },
-  "third_party/WebKit/public/blink_resources.grd": {
+  "third_party/blink/public/blink_resources.grd": {
     "includes": [25400],
   },
-  "third_party/WebKit/Source/modules/media_controls/resources/media_controls_resources.grd": {
+  "third_party/blink/renderer/modules/media_controls/resources/media_controls_resources.grd": {
     "includes": [25500],
     "structures": [25600],
   },

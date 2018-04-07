@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "content/shell/test_runner/test_runner_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/WebKit/public/platform/modules/app_banner/app_banner.mojom.h"
+#include "third_party/blink/public/platform/modules/app_banner/app_banner.mojom.h"
 
 namespace test_runner {
 

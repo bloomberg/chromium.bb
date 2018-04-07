@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CanvasAsyncBlobCreator_h
-#define CanvasAsyncBlobCreator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_CANVAS_ASYNC_BLOB_CREATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_CANVAS_ASYNC_BLOB_CREATOR_H_
 
 #include <memory>
 
 #include "base/location.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "bindings/core/v8/v8_blob_callback.h"
-#include "core/CoreExport.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "core/workers/ParentFrameTaskRunners.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/StaticBitmapImage.h"
-#include "platform/heap/Handle.h"
-#include "platform/image-encoders/ImageEncoder.h"
-#include "platform/wtf/Vector.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_blob_callback.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -146,4 +146,4 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 
 }  // namespace blink
 
-#endif  // CanvasAsyncBlobCreator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CANVAS_CANVAS_ASYNC_BLOB_CREATOR_H_

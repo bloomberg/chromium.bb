@@ -12,7 +12,7 @@
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/media/render_media_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
 namespace content {
 

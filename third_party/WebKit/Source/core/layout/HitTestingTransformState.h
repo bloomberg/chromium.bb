@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HitTestingTransformState_h
-#define HitTestingTransformState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TESTING_TRANSFORM_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TESTING_TRANSFORM_STATE_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/geometry/FloatPoint.h"
-#include "platform/geometry/FloatQuad.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/transforms/AffineTransform.h"
-#include "platform/transforms/TransformationMatrix.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
+#include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -94,4 +94,4 @@ class HitTestingTransformState : public RefCounted<HitTestingTransformState> {
 
 }  // namespace blink
 
-#endif  // HitTestingTransformState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TESTING_TRANSFORM_STATE_H_

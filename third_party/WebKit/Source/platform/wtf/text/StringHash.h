@@ -19,13 +19,13 @@
  *
  */
 
-#ifndef StringHash_h
-#define StringHash_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_STRING_HASH_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_STRING_HASH_H_
 
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashTraits.h"
-#include "platform/wtf/StringHasher.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_traits.h"
+#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace WTF {
 

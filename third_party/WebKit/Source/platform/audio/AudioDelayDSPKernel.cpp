@@ -23,11 +23,11 @@
  * DAMAGE.
  */
 
-#include "platform/audio/AudioDelayDSPKernel.h"
+#include "third_party/blink/renderer/platform/audio/audio_delay_dsp_kernel.h"
 
 #include <cmath>
-#include "platform/audio/AudioUtilities.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 

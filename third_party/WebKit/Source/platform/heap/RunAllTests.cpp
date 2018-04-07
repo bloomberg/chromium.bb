@@ -33,7 +33,7 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "content/public/test/blink_test_environment.h"
-#include "platform/heap/ThreadState.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
 
 class BlinkTestEnvironmentScope {
  public:

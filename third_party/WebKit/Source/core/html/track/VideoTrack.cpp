@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/track/VideoTrack.h"
+#include "third_party/blink/renderer/core/html/track/video_track.h"
 
-#include "core/html/media/HTMLMediaElement.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
 
 namespace blink {
 

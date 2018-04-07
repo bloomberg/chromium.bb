@@ -29,16 +29,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebPlugin_h
-#define WebPlugin_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_H_
 
-#include "WebDragStatus.h"
-#include "WebInputMethodController.h"
-#include "public/platform/WebCanvas.h"
-#include "public/platform/WebDragOperation.h"
-#include "public/platform/WebFocusType.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
+#include "third_party/blink/public/platform/web_canvas.h"
+#include "third_party/blink/public/platform/web_drag_operation.h"
+#include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/web/web_drag_status.h"
+#include "third_party/blink/public/web/web_input_method_controller.h"
 #include "v8/include/v8.h"
 
 namespace blink {

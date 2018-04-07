@@ -21,17 +21,17 @@
  *
  */
 
-#ifndef FontBuilder_h
-#define FontBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_FONT_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_FONT_BUILDER_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/css/FontSizeFunctions.h"
-#include "core/css_value_keywords.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontVariantNumeric.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/font_size_functions.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_variant_numeric.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

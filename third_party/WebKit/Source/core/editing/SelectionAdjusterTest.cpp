@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/SelectionAdjuster.h"
+#include "third_party/blink/renderer/core/editing/selection_adjuster.h"
 
-#include "core/editing/SelectionTemplate.h"
-#include "core/editing/testing/EditingTestBase.h"
-#include "core/html/forms/TextControlElement.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 
 namespace blink {
 

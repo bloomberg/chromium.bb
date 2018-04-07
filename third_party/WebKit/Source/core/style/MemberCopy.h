@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MemberCopy_h
-#define MemberCopy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_MEMBER_COPY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_MEMBER_COPY_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "core/style/ContentData.h"
-#include "core/style/DataRef.h"
-#include "core/style/StyleFilterData.h"
-#include "platform/heap/Persistent.h"
+#include "third_party/blink/renderer/core/style/content_data.h"
+#include "third_party/blink/renderer/core/style/data_ref.h"
+#include "third_party/blink/renderer/core/style/style_filter_data.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ inline Persistent<StyleFilterData> MemberCopy(
 
 }  // namespace blink
 
-#endif  // MemberCopy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_MEMBER_COPY_H_

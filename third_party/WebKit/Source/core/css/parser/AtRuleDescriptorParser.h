@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AtRuleDescriptorParser_h
-#define AtRuleDescriptorParser_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_AT_RULE_DESCRIPTOR_PARSER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_AT_RULE_DESCRIPTOR_PARSER_H_
 
-#include "core/css/CSSPropertyValue.h"
-#include "core/css/parser/at_rule_descriptors.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/css/css_property_value.h"
+#include "third_party/blink/renderer/core/css/parser/at_rule_descriptors.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -35,4 +35,4 @@ class AtRuleDescriptorParser {
 
 }  // namespace blink
 
-#endif  // AtRuleDescriptorParser_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_AT_RULE_DESCRIPTOR_PARSER_H_

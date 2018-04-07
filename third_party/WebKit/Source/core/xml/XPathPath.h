@@ -24,11 +24,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef XPathPath_h
-#define XPathPath_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_PATH_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_PATH_H_
 
-#include "core/xml/XPathExpressionNode.h"
-#include "core/xml/XPathNodeSet.h"
+#include "third_party/blink/renderer/core/xml/xpath_expression_node.h"
+#include "third_party/blink/renderer/core/xml/xpath_node_set.h"
 
 namespace blink {
 
@@ -93,4 +93,4 @@ class Path final : public Expression {
 }  // namespace XPath
 
 }  // namespace blink
-#endif  // XPathPath_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_XML_XPATH_PATH_H_

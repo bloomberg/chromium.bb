@@ -24,10 +24,10 @@
  *
  */
 
-#include "platform/LifecycleNotifier.h"
-#include "platform/LifecycleObserver.h"
-#include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/lifecycle_notifier.h"
+#include "third_party/blink/renderer/platform/lifecycle_observer.h"
 
 namespace blink {
 

@@ -26,13 +26,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LineBoxList_h
-#define LineBoxList_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_BOX_LIST_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_BOX_LIST_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/api/HitTestAction.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/api/hit_test_action.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -173,4 +173,4 @@ class InlineTextBoxList : public InlineBoxList<InlineTextBox> {};
 
 }  // namespace blink
 
-#endif  // LineBoxList_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LINE_BOX_LIST_H_

@@ -24,10 +24,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TemplateContentDocumentFragment_h
-#define TemplateContentDocumentFragment_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TEMPLATE_CONTENT_DOCUMENT_FRAGMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TEMPLATE_CONTENT_DOCUMENT_FRAGMENT_H_
 
-#include "core/dom/DocumentFragment.h"
+#include "third_party/blink/renderer/core/dom/document_fragment.h"
 
 namespace blink {
 
@@ -56,4 +56,4 @@ class TemplateContentDocumentFragment final : public DocumentFragment {
 
 }  // namespace blink
 
-#endif  // TemplateContentDocumentFragment_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_TEMPLATE_CONTENT_DOCUMENT_FRAGMENT_H_

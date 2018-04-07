@@ -7,7 +7,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "third_party/WebKit/public/web/WebSettings.h"
+#include "third_party/blink/public/web/web_settings.h"
 
 using blink::WebSettings;
 

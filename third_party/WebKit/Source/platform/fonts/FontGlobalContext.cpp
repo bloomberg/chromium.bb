@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/FontGlobalContext.h"
+#include "third_party/blink/renderer/platform/fonts/font_global_context.h"
 
-#include "platform/fonts/FontCache.h"
-#include "platform/wtf/StdLibExtras.h"
-#include "platform/wtf/ThreadSpecific.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 
 namespace blink {
 

@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebUserGestureToken.h"
+#include "third_party/blink/public/web/web_user_gesture_token.h"
 
-#include "core/dom/UserGestureIndicator.h"
-#include "core/frame/LocalFrame.h"
-#include "public/web/WebScopedUserGesture.h"
-#include "public/web/WebUserGestureIndicator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/web/web_scoped_user_gesture.h"
+#include "third_party/blink/public/web/web_user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
 

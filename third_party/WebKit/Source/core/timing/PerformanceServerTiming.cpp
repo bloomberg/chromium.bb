@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/timing/PerformanceServerTiming.h"
+#include "third_party/blink/renderer/core/timing/performance_server_timing.h"
 
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "platform/loader/fetch/ResourceTimingInfo.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

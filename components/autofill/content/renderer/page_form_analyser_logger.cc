@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace autofill {
 

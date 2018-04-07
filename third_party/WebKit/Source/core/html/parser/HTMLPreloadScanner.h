@@ -24,23 +24,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HTMLPreloadScanner_h
-#define HTMLPreloadScanner_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_PRELOAD_SCANNER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PARSER_HTML_PRELOAD_SCANNER_H_
 
 #include <memory>
 #include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "core/CoreExport.h"
-#include "core/css/MediaValuesCached.h"
-#include "core/dom/ViewportDescription.h"
-#include "core/html/parser/CSSPreloadScanner.h"
-#include "core/html/parser/CompactHTMLToken.h"
-#include "core/html/parser/HTMLToken.h"
-#include "core/html/parser/PreloadRequest.h"
-#include "platform/text/SegmentedString.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/media_values_cached.h"
+#include "third_party/blink/renderer/core/dom/viewport_description.h"
+#include "third_party/blink/renderer/core/html/parser/compact_html_token.h"
+#include "third_party/blink/renderer/core/html/parser/css_preload_scanner.h"
+#include "third_party/blink/renderer/core/html/parser/html_token.h"
+#include "third_party/blink/renderer/core/html/parser/preload_request.h"
+#include "third_party/blink/renderer/platform/text/segmented_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

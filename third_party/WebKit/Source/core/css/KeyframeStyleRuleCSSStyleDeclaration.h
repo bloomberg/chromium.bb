@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef KeyframeStyleRuleCSSStyleDeclaration_h
-#define KeyframeStyleRuleCSSStyleDeclaration_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_KEYFRAME_STYLE_RULE_CSS_STYLE_DECLARATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_KEYFRAME_STYLE_RULE_CSS_STYLE_DECLARATION_H_
 
-#include "core/css/StyleRuleCSSStyleDeclaration.h"
+#include "third_party/blink/renderer/core/css/style_rule_css_style_declaration.h"
 
 namespace blink {
 

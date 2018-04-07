@@ -368,7 +368,7 @@ test("browser_tests") {
     "//ppapi/buildflags",
     "//printing/buildflags",
     "//rlz/buildflags",
-    "//third_party/WebKit/public:buildflags",
+    "//third_party/blink/public:buildflags",
   ]
 
   data_deps = [
@@ -4450,7 +4450,7 @@ if (!is_android) {
       "//extensions/buildflags",
       "//skia",
       "//testing/gtest",
-      "//third_party/WebKit/public:blink_headers",
+      "//third_party/blink/public:blink_headers",
     ]
 
     if (enable_plugins) {
@@ -5322,7 +5322,7 @@ if (!is_android && !is_fuchsia) {
       "//crypto:platform",
       "//testing/gmock",
       "//testing/gtest",
-      "//third_party/WebKit/public:blink",
+      "//third_party/blink/public:blink",
       "//third_party/icu",
       "//third_party/leveldatabase",
     ]

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CORSErrorString_h
-#define CORSErrorString_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_CORS_CORS_ERROR_STRING_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_CORS_CORS_ERROR_STRING_H_
 
 #include "base/macros.h"
-#include "platform/PlatformExport.h"
-#include "platform/weborigin/KURL.h"
-#include "public/platform/WebURLRequest.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
+#include "third_party/blink/public/platform/web_url_request.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 
@@ -109,4 +109,4 @@ PLATFORM_EXPORT String GetErrorString(const ErrorParameter&);
 
 }  // namespace blink
 
-#endif  // CORSErrorString_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_CORS_CORS_ERROR_STRING_H_

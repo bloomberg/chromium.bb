@@ -16,7 +16,7 @@
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
 #include "storage/browser/storage_browser_export.h"
-#include "third_party/WebKit/public/mojom/quota/quota_types.mojom.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 class GURL;
 

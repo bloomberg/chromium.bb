@@ -23,14 +23,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/html/parser/HTMLViewSourceParser.h"
+#include "third_party/blink/renderer/core/html/parser/html_view_source_parser.h"
 
-#include "core/dom/DOMImplementation.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/parser/HTMLParserOptions.h"
-#include "core/html/parser/HTMLToken.h"
-#include "core/html/parser/XSSAuditorDelegate.h"
 #include <memory>
+#include "third_party/blink/renderer/core/dom/dom_implementation.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_options.h"
+#include "third_party/blink/renderer/core/html/parser/html_token.h"
+#include "third_party/blink/renderer/core/html/parser/xss_auditor_delegate.h"
 
 namespace blink {
 

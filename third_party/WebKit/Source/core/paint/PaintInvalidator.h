@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PaintInvalidator_h
-#define PaintInvalidator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_INVALIDATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_INVALIDATOR_H_
 
-#include "core/layout/LayoutObject.h"
-#include "core/paint/PaintPropertyTreeBuilder.h"
-#include "platform/geometry/LayoutRect.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -186,4 +186,4 @@ class PaintInvalidator {
 
 }  // namespace blink
 
-#endif  // PaintInvalidator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_INVALIDATOR_H_

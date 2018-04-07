@@ -24,16 +24,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/PseudoElement.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 
-#include "core/dom/ElementRareData.h"
-#include "core/dom/FirstLetterPseudoElement.h"
-#include "core/frame/UseCounter.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutQuote.h"
-#include "core/probe/CoreProbes.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/ContentData.h"
+#include "third_party/blink/renderer/core/dom/element_rare_data.h"
+#include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_quote.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/content_data.h"
 
 namespace blink {
 

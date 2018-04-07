@@ -30,13 +30,13 @@
 */
 
 #include <memory>
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/V8HTMLEmbedElement.h"
-#include "bindings/core/v8/V8HTMLObjectElement.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/UseCounter.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_html_embed_element.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_html_object_element.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

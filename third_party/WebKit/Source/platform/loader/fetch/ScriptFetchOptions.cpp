@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/loader/fetch/ScriptFetchOptions.h"
+#include "third_party/blink/renderer/platform/loader/fetch/script_fetch_options.h"
 
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

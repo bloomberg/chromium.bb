@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CrossThreadAudioWorkletProcessorInfo_h
-#define CrossThreadAudioWorkletProcessorInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_CROSS_THREAD_AUDIO_WORKLET_PROCESSOR_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_CROSS_THREAD_AUDIO_WORKLET_PROCESSOR_INFO_H_
 
-#include "modules/webaudio/AudioParamDescriptor.h"
-#include "modules/webaudio/AudioWorkletProcessorDefinition.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_param_descriptor.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_processor_definition.h"
 
 namespace blink {
 
@@ -65,4 +65,4 @@ class CrossThreadAudioWorkletProcessorInfo {
 
 }  // namespace blink
 
-#endif  // CrossThreadAudioWorkletProcessorInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_CROSS_THREAD_AUDIO_WORKLET_PROCESSOR_INFO_H_

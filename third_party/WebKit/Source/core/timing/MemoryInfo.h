@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MemoryInfo_h
-#define MemoryInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_MEMORY_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_MEMORY_INFO_H_
 
-#include "core/CoreExport.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -68,4 +68,4 @@ CORE_EXPORT size_t QuantizeMemorySize(size_t);
 
 }  // namespace blink
 
-#endif  // MemoryInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_MEMORY_INFO_H_

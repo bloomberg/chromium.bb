@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/commands/DragAndDropCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/drag_and_drop_command.h"
 
 namespace blink {
 

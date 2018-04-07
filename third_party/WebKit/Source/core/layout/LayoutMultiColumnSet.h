@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutMultiColumnSet_h
-#define LayoutMultiColumnSet_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_MULTI_COLUMN_SET_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_MULTI_COLUMN_SET_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutMultiColumnFlowThread.h"
-#include "core/layout/MultiColumnFragmentainerGroup.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
+#include "third_party/blink/renderer/core/layout/multi_column_fragmentainer_group.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -281,4 +281,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMultiColumnSet, IsLayoutMultiColumnSet());
 
 }  // namespace blink
 
-#endif  // LayoutMultiColumnSet_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_MULTI_COLUMN_SET_H_

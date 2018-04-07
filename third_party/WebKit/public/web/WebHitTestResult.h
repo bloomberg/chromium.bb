@@ -23,10 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebHitTestResult_h
-#define WebHitTestResult_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_HIT_TEST_RESULT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_HIT_TEST_RESULT_H_
 
-#include "public/platform/WebPrivatePtr.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
 
 namespace blink {
 

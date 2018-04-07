@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Position_h
-#define Position_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_POSITION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_POSITION_H_
 
-#include "core/CoreExport.h"
-#include "core/editing/EditingStrategy.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/editing/editing_strategy.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -304,4 +304,4 @@ void showTree(const blink::Position&);
 void showTree(const blink::Position*);
 #endif
 
-#endif  // Position_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_POSITION_H_

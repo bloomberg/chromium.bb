@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#ifndef AnalyserNode_h
-#define AnalyserNode_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_ANALYSER_NODE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_ANALYSER_NODE_H_
 
-#include "core/typed_arrays/ArrayBufferViewHelpers.h"
-#include "core/typed_arrays/DOMTypedArray.h"
-#include "modules/webaudio/AudioBasicInspectorNode.h"
-#include "modules/webaudio/RealtimeAnalyser.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_basic_inspector_node.h"
+#include "third_party/blink/renderer/modules/webaudio/realtime_analyser.h"
 
 namespace blink {
 
@@ -129,4 +129,4 @@ class AnalyserNode final : public AudioBasicInspectorNode {
 
 }  // namespace blink
 
-#endif  // AnalyserNode_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_ANALYSER_NODE_H_

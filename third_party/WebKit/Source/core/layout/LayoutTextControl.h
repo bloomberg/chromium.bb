@@ -20,12 +20,12 @@
  *
  */
 
-#ifndef LayoutTextControl_h
-#define LayoutTextControl_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TEXT_CONTROL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TEXT_CONTROL_H_
 
-#include "core/CoreExport.h"
-#include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutFlexibleBox.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 
 namespace blink {
 
@@ -135,4 +135,4 @@ class LayoutTextControlInnerContainer final : public LayoutFlexibleBox {
 
 }  // namespace blink
 
-#endif  // LayoutTextControl_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TEXT_CONTROL_H_

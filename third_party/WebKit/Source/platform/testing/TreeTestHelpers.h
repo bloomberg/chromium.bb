@@ -28,8 +28,8 @@
 //
 // These are **not** thread safe!
 
-#ifndef TreeTestHelpers_h
-#define TreeTestHelpers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TREE_TEST_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TREE_TEST_HELPERS_H_
 
 #include <stdint.h>
 
@@ -47,4 +47,4 @@ int32_t NextRandom(const int32_t maximum_value);
 }  // namespace TreeTestHelpers
 }  // namespace blink
 
-#endif  // TreeTestHelpers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_TREE_TEST_HELPERS_H_

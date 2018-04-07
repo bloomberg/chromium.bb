@@ -24,21 +24,21 @@
  *
  */
 
-#ifndef MessagePort_h
-#define MessagePort_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_MESSAGE_PORT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_MESSAGE_PORT_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
-#include "bindings/core/v8/ActiveScriptWrappable.h"
-#include "bindings/core/v8/serialization/SerializedScriptValue.h"
-#include "core/CoreExport.h"
-#include "core/dom/ContextLifecycleObserver.h"
-#include "core/dom/events/EventListener.h"
-#include "core/dom/events/EventTarget.h"
-#include "platform/wtf/Vector.h"
-#include "public/platform/WebVector.h"
-#include "third_party/WebKit/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/common/message_port/message_port_channel.h"
+#include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -145,4 +145,4 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
 
 }  // namespace blink
 
-#endif  // MessagePort_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_MESSAGE_PORT_H_

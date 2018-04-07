@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScriptState_h
-#define ScriptState_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCRIPT_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCRIPT_STATE_H_
 
 #include <memory>
 
-#include "platform/PlatformExport.h"
-#include "platform/bindings/ScopedPersistent.h"
-#include "platform/bindings/V8PerContextData.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -196,4 +196,4 @@ class ScriptStateProtectingContext {
 
 }  // namespace blink
 
-#endif  // ScriptState_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_SCRIPT_STATE_H_

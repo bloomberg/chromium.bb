@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/LayoutLocale.h"
+#include "third_party/blink/renderer/platform/layout_locale.h"
 
-#include "platform/Language.h"
-#include "platform/fonts/AcceptLanguagesResolver.h"
-#include "platform/fonts/FontGlobalContext.h"
-#include "platform/text/ICUError.h"
-#include "platform/text/LocaleToScriptMapping.h"
-#include "platform/wtf/HashMap.h"
-#include "platform/wtf/text/AtomicStringHash.h"
-#include "platform/wtf/text/StringHash.h"
+#include "third_party/blink/renderer/platform/fonts/accept_languages_resolver.h"
+#include "third_party/blink/renderer/platform/fonts/font_global_context.h"
+#include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/text/icu_error.h"
+#include "third_party/blink/renderer/platform/text/locale_to_script_mapping.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 #include <hb.h>
 #include <unicode/locid.h>

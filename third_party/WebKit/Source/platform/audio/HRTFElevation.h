@@ -26,16 +26,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HRTFElevation_h
-#define HRTFElevation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_HRTF_ELEVATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_HRTF_ELEVATION_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
-#include "platform/audio/HRTFKernel.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/text/CString.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/audio/hrtf_kernel.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/text/cstring.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -129,4 +129,4 @@ class PLATFORM_EXPORT HRTFElevation {
 
 }  // namespace blink
 
-#endif  // HRTFElevation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_HRTF_ELEVATION_H_

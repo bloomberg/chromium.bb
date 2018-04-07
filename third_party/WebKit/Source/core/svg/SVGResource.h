@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SVGResource_h
-#define SVGResource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_RESOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_RESOURCE_H_
 
 #include "base/macros.h"
-#include "core/svg/SVGResourceClient.h"
-#include "platform/heap/Handle.h"
-#include "platform/loader/fetch/ResourceClient.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/HashCountedSet.h"
-#include "platform/wtf/HashSet.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/svg/svg_resource_client.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -137,4 +137,4 @@ class ExternalSVGResource final : public SVGResource, private ResourceClient {
 
 }  // namespace blink
 
-#endif  // SVGResource_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_RESOURCE_H_

@@ -2,39 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerThreadTestHelper_h
-#define WorkerThreadTestHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_THREAD_TEST_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_THREAD_TEST_HELPER_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "bindings/core/v8/SourceLocation.h"
-#include "bindings/core/v8/V8CacheOptions.h"
-#include "bindings/core/v8/V8GCController.h"
-#include "core/frame/Settings.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/ParentFrameTaskRunners.h"
-#include "core/workers/WorkerBackingThread.h"
-#include "core/workers/WorkerBackingThreadStartupData.h"
-#include "core/workers/WorkerClients.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerReportingProxy.h"
-#include "core/workers/WorkerThread.h"
-#include "core/workers/WorkerThreadLifecycleObserver.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/WaitableEvent.h"
-#include "platform/WebThreadSupportingGC.h"
-#include "platform/heap/Handle.h"
-#include "platform/network/ContentSecurityPolicyParsers.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Time.h"
-#include "platform/wtf/Vector.h"
-#include "public/mojom/net/ip_address_space.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
+#include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
+#include "third_party/blink/renderer/platform/waitable_event.h"
+#include "third_party/blink/renderer/platform/web_thread_supporting_gc.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -139,4 +139,4 @@ class WorkerThreadForTest : public WorkerThread {
 
 }  // namespace blink
 
-#endif  // WorkerThreadTestHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_THREAD_TEST_HELPER_H_

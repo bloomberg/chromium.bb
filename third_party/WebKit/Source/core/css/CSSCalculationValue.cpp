@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/css/CSSCalculationValue.h"
+#include "third_party/blink/renderer/core/css/css_calculation_value.h"
 
-#include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "platform/wtf/MathExtras.h"
-#include "platform/wtf/text/StringBuilder.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 static const int maxExpressionDepth = 100;
 

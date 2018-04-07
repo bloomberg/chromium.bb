@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/IDLTypes.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 
 #include <type_traits>
-#include "bindings/core/v8/NativeValueTraitsImpl.h"
-#include "bindings/core/v8/V8Element.h"
-#include "bindings/core/v8/V8InternalDictionary.h"
-#include "bindings/core/v8/string_or_string_sequence.h"
-#include "core/dom/Element.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_string_sequence.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_internal_dictionary.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 // No gtest tests; only static_assert checks.
 

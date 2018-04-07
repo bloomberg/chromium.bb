@@ -17,16 +17,16 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/layout/line/EllipsisBox.h"
+#include "third_party/blink/renderer/core/layout/line/ellipsis_box.h"
 
-#include "core/layout/HitTestResult.h"
-#include "core/layout/TextRunConstructor.h"
-#include "core/layout/line/InlineTextBox.h"
-#include "core/layout/line/RootInlineBox.h"
-#include "core/paint/EllipsisBoxPainter.h"
-#include "core/style/ShadowList.h"
-#include "platform/fonts/Font.h"
-#include "platform/text/TextRun.h"
+#include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
+#include "third_party/blink/renderer/core/layout/text_run_constructor.h"
+#include "third_party/blink/renderer/core/paint/ellipsis_box_painter.h"
+#include "third_party/blink/renderer/core/style/shadow_list.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
 
 namespace blink {
 

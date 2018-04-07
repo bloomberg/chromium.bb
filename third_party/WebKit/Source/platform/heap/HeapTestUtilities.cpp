@@ -4,9 +4,9 @@
  * found in the LICENSE file.
  */
 
-#include "platform/heap/HeapTestUtilities.h"
+#include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 
-#include "platform/heap/Heap.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 

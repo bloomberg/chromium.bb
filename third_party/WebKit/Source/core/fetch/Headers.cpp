@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/Headers.h"
+#include "third_party/blink/renderer/core/fetch/headers.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8IteratorResultValue.h"
-#include "bindings/core/v8/byte_string_sequence_sequence_or_byte_string_byte_string_record.h"
-#include "core/dom/Iterator.h"
-#include "platform/loader/cors/CORS.h"
-#include "platform/loader/fetch/FetchUtils.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/bindings/core/v8/byte_string_sequence_sequence_or_byte_string_byte_string_record.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
+#include "third_party/blink/renderer/core/dom/iterator.h"
+#include "third_party/blink/renderer/platform/loader/cors/cors.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

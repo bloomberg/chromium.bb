@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebHTTPHeaderMap_h
-#define WebHTTPHeaderMap_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_HTTP_HEADER_MAP_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_HTTP_HEADER_MAP_H_
 
 #include <memory>
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
-#include "public/platform/WebString.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 #if INSIDE_BLINK
-#include "platform/network/HTTPHeaderMap.h"
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
 #endif
 
 namespace blink {
@@ -41,4 +41,4 @@ class BLINK_PLATFORM_EXPORT WebHTTPHeaderMap {
 
 }  // namespace blink
 
-#endif  // WebHTTPHeaderMap_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_HTTP_HEADER_MAP_H_

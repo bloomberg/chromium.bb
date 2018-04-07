@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/clipboard/ClipboardPromise.h"
+#include "third_party/blink/renderer/modules/clipboard/clipboard_promise.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/clipboard/DataObject.h"
-#include "core/clipboard/DataTransfer.h"
-#include "core/clipboard/DataTransferAccessPolicy.h"
-#include "core/clipboard/DataTransferItem.h"
-#include "core/clipboard/DataTransferItemList.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/frame/LocalFrame.h"
-#include "modules/permissions/PermissionUtils.h"
-#include "platform/clipboard/ClipboardMimeTypes.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
-#include "public/platform/modules/permissions/permission.mojom-blink.h"
-#include "third_party/WebKit/public/platform/WebClipboard.h"
+#include "third_party/blink/public/platform/modules/permissions/permission.mojom-blink.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_clipboard.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/clipboard/data_object.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer_access_policy.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer_item.h"
+#include "third_party/blink/renderer/core/clipboard/data_transfer_item_list.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/modules/permissions/permission_utils.h"
+#include "third_party/blink/renderer/platform/clipboard/clipboard_mime_types.h"
 
 // And now, a brief note about clipboard permissions.
 //

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ImageDecoderTestHelpers_h
-#define ImageDecoderTestHelpers_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_IMAGE_DECODER_TEST_HELPERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_IMAGE_DECODER_TEST_HELPERS_H_
 
 #include <memory>
-#include "platform/SharedBuffer.h"
-#include "platform/image-decoders/ImageDecoder.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
+#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 class SkBitmap;
 
@@ -119,4 +119,4 @@ void TestAlphaBlending(DecoderCreatorWithAlpha, const char*);
 
 }  // namespace blink
 
-#endif  // ImageDecoderTestHelpers_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_IMAGE_DECODERS_IMAGE_DECODER_TEST_HELPERS_H_

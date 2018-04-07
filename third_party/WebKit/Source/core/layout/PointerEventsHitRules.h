@@ -17,12 +17,12 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef PointerEventsHitRules_h
-#define PointerEventsHitRules_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_POINTER_EVENTS_HIT_RULES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_POINTER_EVENTS_HIT_RULES_H_
 
-#include "core/layout/HitTestRequest.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/layout/hit_test_request.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

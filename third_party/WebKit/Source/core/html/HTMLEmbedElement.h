@@ -20,11 +20,11 @@
  *
  */
 
-#ifndef HTMLEmbedElement_h
-#define HTMLEmbedElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_EMBED_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_EMBED_ELEMENT_H_
 
-#include "core/CoreExport.h"
-#include "core/html/HTMLPlugInElement.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/html_plugin_element.h"
 
 namespace blink {
 
@@ -67,4 +67,4 @@ class CORE_EXPORT HTMLEmbedElement final : public HTMLPlugInElement {
 
 }  // namespace blink
 
-#endif  // HTMLEmbedElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_EMBED_ELEMENT_H_

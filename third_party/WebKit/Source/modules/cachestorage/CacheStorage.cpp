@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/cachestorage/CacheStorage.h"
+#include "third_party/blink/renderer/modules/cachestorage/cache_storage.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/fetch/Request.h"
-#include "core/fetch/Response.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "modules/cachestorage/CacheStorageError.h"
-#include "platform/bindings/ScriptState.h"
-#include "platform/network/http_names.h"
-#include "public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
+#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache_storage.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fetch/request.h"
+#include "third_party/blink/renderer/core/fetch/response.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/cachestorage/cache_storage_error.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/network/http_names.h"
 
 namespace blink {
 

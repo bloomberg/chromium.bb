@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaControlElementsHelper_h
-#define MediaControlElementsHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_ELEMENTS_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_ELEMENTS_HELPER_H_
 
-#include "modules/ModulesExport.h"
-#include "modules/media_controls/elements/MediaControlElementType.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_element_type.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace WTF {
 class AtomicString;
@@ -64,4 +64,4 @@ class MediaControlElementsHelper final {
 
 }  // namespace blink
 
-#endif  // MediaControlElementsHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_ELEMENTS_HELPER_H_

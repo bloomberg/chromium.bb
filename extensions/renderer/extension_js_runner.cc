@@ -7,7 +7,7 @@
 #include "content/public/renderer/worker_thread.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_injection_callback.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 namespace extensions {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SourceBufferTrackBaseSupplement_h
-#define SourceBufferTrackBaseSupplement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_SOURCE_BUFFER_TRACK_BASE_SUPPLEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_SOURCE_BUFFER_TRACK_BASE_SUPPLEMENT_H_
 
-#include "platform/Supplementable.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 

@@ -28,18 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FlexibleBoxAlgorithm_h
-#define FlexibleBoxAlgorithm_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FLEXIBLE_BOX_ALGORITHM_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FLEXIBLE_BOX_ALGORITHM_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/layout/MinMaxSize.h"
-#include "core/layout/OrderIterator.h"
-#include "core/layout/ng/ng_layout_input_node.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/LayoutUnit.h"
-#include "platform/geometry/LayoutPoint.h"
-#include "platform/wtf/Vector.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/min_max_size.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
+#include "third_party/blink/renderer/core/layout/order_iterator.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -283,4 +283,4 @@ class FlexLayoutAlgorithm {
 
 }  // namespace blink
 
-#endif  // FlexibleBoxAlgorithm_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FLEXIBLE_BOX_ALGORITHM_H_

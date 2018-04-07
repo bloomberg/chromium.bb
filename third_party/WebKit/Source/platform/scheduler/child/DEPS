@@ -1,6 +1,6 @@
 include_rules = [
-  "+third_party/WebKit/public/platform/scheduler/base",
-  "+third_party/WebKit/source/platform/scheduler/base",
+  "+third_party/blink/public/platform/scheduler/base",
+  "+third_party/blink/source/platform/scheduler/base",
 ]
 
 specific_include_rules = {

@@ -20,18 +20,18 @@
  *
  */
 
-#ifndef LayoutBox_h
-#define LayoutBox_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BOX_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BOX_H_
 
 #include <memory>
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/layout/LayoutBoxModelObject.h"
-#include "core/layout/OverflowModel.h"
-#include "core/layout/custom/CustomLayoutChild.h"
-#include "platform/scroll/ScrollTypes.h"
-#include "platform/wtf/Compiler.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/custom/custom_layout_child.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/layout/overflow_model.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 
@@ -1758,4 +1758,4 @@ inline bool LayoutBox::IsForcedFragmentainerBreakValue(
 
 }  // namespace blink
 
-#endif  // LayoutBox_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BOX_H_

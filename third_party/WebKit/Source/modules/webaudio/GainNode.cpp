@@ -23,12 +23,12 @@
  * DAMAGE.
  */
 
-#include "modules/webaudio/GainNode.h"
-#include "modules/webaudio/AudioNodeInput.h"
-#include "modules/webaudio/AudioNodeOutput.h"
-#include "modules/webaudio/GainOptions.h"
-#include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioUtilities.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
+#include "third_party/blink/renderer/modules/webaudio/gain_node.h"
+#include "third_party/blink/renderer/modules/webaudio/gain_options.h"
+#include "third_party/blink/renderer/platform/audio/audio_bus.h"
+#include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 
 namespace blink {
 

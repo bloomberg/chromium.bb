@@ -21,11 +21,11 @@
  *
  */
 
-#ifndef LayoutTextInfo_h
-#define LayoutTextInfo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LAYOUT_TEXT_INFO_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LAYOUT_TEXT_INFO_H_
 
-#include "platform/text/TextBreakIterator.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -42,4 +42,4 @@ struct LayoutTextInfo {
 
 }  // namespace blink
 
-#endif  // LayoutTextInfo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_LAYOUT_TEXT_INFO_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/media_controls/elements/MediaControlOverlayPlayButtonElement.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_overlay_play_button_element.h"
 
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/dom/events/Event.h"
-#include "core/event_type_names.h"
-#include "core/testing/PageTestBase.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

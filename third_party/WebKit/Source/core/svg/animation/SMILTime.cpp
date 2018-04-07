@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/svg/animation/SMILTime.h"
+#include "third_party/blink/renderer/core/svg/animation/smil_time.h"
 
 #include <float.h>
 

@@ -22,19 +22,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/transforms/TransformOperations.h"
+#include "third_party/blink/renderer/platform/transforms/transform_operations.h"
 
-#include "platform/geometry/FloatBox.h"
-#include "platform/geometry/FloatBoxTestHelpers.h"
-#include "platform/transforms/IdentityTransformOperation.h"
-#include "platform/transforms/Matrix3DTransformOperation.h"
-#include "platform/transforms/MatrixTransformOperation.h"
-#include "platform/transforms/PerspectiveTransformOperation.h"
-#include "platform/transforms/RotateTransformOperation.h"
-#include "platform/transforms/ScaleTransformOperation.h"
-#include "platform/transforms/SkewTransformOperation.h"
-#include "platform/transforms/TranslateTransformOperation.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/geometry/float_box.h"
+#include "third_party/blink/renderer/platform/geometry/float_box_test_helpers.h"
+#include "third_party/blink/renderer/platform/transforms/identity_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/matrix_3d_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/matrix_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/perspective_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/rotate_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/scale_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/skew_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
 
 namespace blink {
 

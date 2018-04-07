@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/style/GridPositionsResolver.h"
+#include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
 
-#include "core/layout/LayoutBox.h"
-#include "core/style/GridArea.h"
 #include <algorithm>
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/style/grid_area.h"
 
 namespace blink {
 

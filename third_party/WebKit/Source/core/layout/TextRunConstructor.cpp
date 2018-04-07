@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/TextRunConstructor.h"
+#include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 
-#include "core/layout/LayoutText.h"
-#include "core/layout/api/LineLayoutItem.h"
-#include "core/layout/api/LineLayoutText.h"
-#include "platform/text/BidiTextRun.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
+#include "third_party/blink/renderer/core/layout/api/line_layout_text.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
+#include "third_party/blink/renderer/platform/text/bidi_text_run.h"
 
 namespace blink {
 

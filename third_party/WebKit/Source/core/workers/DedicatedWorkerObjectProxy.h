@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DedicatedWorkerObjectProxy_h
-#define DedicatedWorkerObjectProxy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_OBJECT_PROXY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_OBJECT_PROXY_H_
 
 #include <memory>
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "core/CoreExport.h"
-#include "core/messaging/MessagePort.h"
-#include "core/workers/ThreadedObjectProxyBase.h"
-#include "core/workers/WorkerReportingProxy.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/messaging/message_port.h"
+#include "third_party/blink/renderer/core/workers/threaded_object_proxy_base.h"
+#include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace v8_inspector {
 struct V8StackTraceId;
@@ -105,4 +105,4 @@ class CORE_EXPORT DedicatedWorkerObjectProxy : public ThreadedObjectProxyBase {
 
 }  // namespace blink
 
-#endif  // DedicatedWorkerObjectProxy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_OBJECT_PROXY_H_

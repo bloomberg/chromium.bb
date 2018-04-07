@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/SizesAttributeParser.h"
+#include "third_party/blink/renderer/core/css/parser/sizes_attribute_parser.h"
 
-#include "core/css/MediaValuesCached.h"
-#include "core/media_type_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/media_values_cached.h"
+#include "third_party/blink/renderer/core/media_type_names.h"
 
 namespace blink {
 

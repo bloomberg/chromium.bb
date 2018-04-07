@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FrameLifecycle_h
-#define FrameLifecycle_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_LIFECYCLE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_LIFECYCLE_H_
 
 #include "base/macros.h"
 
@@ -30,4 +30,4 @@ class FrameLifecycle {
 
 }  // namespace blink
 
-#endif  // FrameLifecycle_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_LIFECYCLE_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebContentDecryptionModuleResult_h
-#define WebContentDecryptionModuleResult_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_DECRYPTION_MODULE_RESULT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_DECRYPTION_MODULE_RESULT_H_
 
-#include "WebCommon.h"
-#include "WebContentDecryptionModuleException.h"
-#include "WebEncryptedMediaKeyInformation.h"
-#include "WebPrivatePtr.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_content_decryption_module_exception.h"
+#include "third_party/blink/public/platform/web_encrypted_media_key_information.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
 
 namespace blink {
 

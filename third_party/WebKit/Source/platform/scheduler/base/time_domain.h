@@ -11,9 +11,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "platform/scheduler/base/intrusive_heap.h"
-#include "platform/scheduler/base/lazy_now.h"
-#include "platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/intrusive_heap.h"
+#include "third_party/blink/renderer/platform/scheduler/base/lazy_now.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
 
 namespace blink {
 namespace scheduler {

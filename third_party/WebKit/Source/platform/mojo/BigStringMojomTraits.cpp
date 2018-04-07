@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/mojo/BigStringMojomTraits.h"
+#include "third_party/blink/renderer/platform/mojo/big_string_mojom_traits.h"
 
 #include <cstring>
 
 #include "base/containers/span.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
-#include "platform/wtf/text/StringUTF8Adaptor.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace mojo {
 

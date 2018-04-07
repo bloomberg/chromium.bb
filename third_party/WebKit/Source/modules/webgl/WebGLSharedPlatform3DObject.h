@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebGLSharedPlatform3DObject_h
-#define WebGLSharedPlatform3DObject_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_SHARED_PLATFORM_3D_OBJECT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_SHARED_PLATFORM_3D_OBJECT_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "modules/webgl/WebGLSharedObject.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_shared_object.h"
 
 namespace blink {
 
@@ -27,4 +27,4 @@ class WebGLSharedPlatform3DObject : public WebGLSharedObject {
 
 }  // namespace blink
 
-#endif  // WebGLSharedPlatform3DObject_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL_SHARED_PLATFORM_3D_OBJECT_H_

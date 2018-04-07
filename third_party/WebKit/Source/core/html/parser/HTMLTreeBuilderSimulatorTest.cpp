@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/parser/HTMLTreeBuilderSimulator.h"
+#include "third_party/blink/renderer/core/html/parser/html_tree_builder_simulator.h"
 
-#include "core/html/parser/CompactHTMLToken.h"
-#include "core/html/parser/HTMLToken.h"
-#include "core/html/parser/HTMLTokenizer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/html/parser/compact_html_token.h"
+#include "third_party/blink/renderer/core/html/parser/html_token.h"
+#include "third_party/blink/renderer/core/html/parser/html_tokenizer.h"
 
 namespace blink {
 

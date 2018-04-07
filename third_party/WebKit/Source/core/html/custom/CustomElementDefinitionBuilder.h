@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CustomElementDefinitionBuilder_h
-#define CustomElementDefinitionBuilder_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_DEFINITION_BUILDER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_DEFINITION_BUILDER_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/css/CSSStyleSheet.h"
-#include "core/html/custom/CustomElementDefinition.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_style_sheet.h"
+#include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ class CORE_EXPORT CustomElementDefinitionBuilder {
 
 }  // namespace blink
 
-#endif  // CustomElementDefinitionBuilder_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_CUSTOM_CUSTOM_ELEMENT_DEFINITION_BUILDER_H_

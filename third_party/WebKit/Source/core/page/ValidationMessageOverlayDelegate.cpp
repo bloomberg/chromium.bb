@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/ValidationMessageOverlayDelegate.h"
+#include "third_party/blink/renderer/core/page/validation_message_overlay_delegate.h"
 
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "core/dom/DOMTokenList.h"
-#include "core/dom/Element.h"
-#include "core/frame/Settings.h"
-#include "core/frame/VisualViewport.h"
-#include "core/layout/LayoutView.h"
-#include "core/loader/EmptyClients.h"
-#include "core/page/Page.h"
-#include "core/page/PagePopupClient.h"
-#include "platform/LayoutTestSupport.h"
-#include "platform/graphics/paint/CullRect.h"
-#include "platform/text/PlatformLocale.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_popup_client.h"
+#include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
+#include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 

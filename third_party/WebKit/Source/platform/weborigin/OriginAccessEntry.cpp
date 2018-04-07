@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/weborigin/OriginAccessEntry.h"
+#include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebPublicSuffixList.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_public_suffix_list.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
 

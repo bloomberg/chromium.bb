@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DataEquivalency_h
-#define DataEquivalency_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_DATA_EQUIVALENCY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_DATA_EQUIVALENCY_H_
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
@@ -46,4 +46,4 @@ bool DataEquivalent(const std::unique_ptr<T>& a, const std::unique_ptr<T>& b) {
 
 }  // namespace blink
 
-#endif  // DataEquivalency_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_DATA_EQUIVALENCY_H_

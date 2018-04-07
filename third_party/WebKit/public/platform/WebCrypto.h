@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebCrypto_h
-#define WebCrypto_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CRYPTO_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CRYPTO_H_
 
-#include "WebCommon.h"
-#include "WebCryptoAlgorithm.h"
-#include "WebCryptoKey.h"
-#include "WebPrivatePtr.h"
-#include "WebString.h"
-#include "WebVector.h"
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_crypto_algorithm.h"
+#include "third_party/blink/public/platform/web_crypto_key.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 #include <memory>
 
 #if INSIDE_BLINK
 #include "base/memory/scoped_refptr.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #endif
 
 namespace blink {
@@ -382,4 +382,4 @@ class WebCrypto {
 
 }  // namespace blink
 
-#endif  // WebCrypto_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CRYPTO_H_

@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CloseEvent_h
-#define CloseEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_CLOSE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_CLOSE_EVENT_H_
 
-#include "core/dom/events/Event.h"
-#include "core/event_type_names.h"
-#include "modules/EventModules.h"
-#include "modules/websockets/CloseEventInit.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/websockets/close_event_init.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -88,4 +88,4 @@ class CloseEvent final : public Event {
 
 }  // namespace blink
 
-#endif  // CloseEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_CLOSE_EVENT_H_

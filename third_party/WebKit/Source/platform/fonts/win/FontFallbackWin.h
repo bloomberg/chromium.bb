@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FontFallbackWin_h
-#define FontFallbackWin_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_WIN_FONT_FALLBACK_WIN_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_WIN_FONT_FALLBACK_WIN_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontFallbackPriority.h"
 #include <unicode/locid.h>
 #include <unicode/uscript.h>
 #include <usp10.h>
 #include <wchar.h>
 #include <windows.h>
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 class SkFontMgr;
 
@@ -58,4 +58,4 @@ PLATFORM_EXPORT const UChar* GetFallbackFamily(
 
 }  // namespace blink
 
-#endif  // FontFallbackWin_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_WIN_FONT_FALLBACK_WIN_H_

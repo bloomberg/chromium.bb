@@ -29,15 +29,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ElementData_h
-#define ElementData_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_DATA_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_DATA_H_
 
 #include "build/build_config.h"
-#include "core/dom/Attribute.h"
-#include "core/dom/AttributeCollection.h"
-#include "core/dom/SpaceSplitString.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/core/dom/attribute.h"
+#include "third_party/blink/renderer/core/dom/attribute_collection.h"
+#include "third_party/blink/renderer/core/dom/space_split_string.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -215,4 +215,4 @@ inline MutableAttributeCollection UniqueElementData::Attributes() {
 
 }  // namespace blink
 
-#endif  // ElementData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_DATA_H_

@@ -23,13 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/dom/DocumentParser.h"
+#include "third_party/blink/renderer/core/dom/document_parser.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/dom/DocumentParserClient.h"
-#include "core/html/parser/TextResourceDecoder.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_parser_client.h"
+#include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

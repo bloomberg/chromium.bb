@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebFileSystem_h
-#define WebFileSystem_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FILE_SYSTEM_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FILE_SYSTEM_H_
 
-#include "WebCommon.h"
-#include "WebFileSystemCallbacks.h"
-#include "WebFileSystemType.h"
-#include "WebURL.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_file_system_callbacks.h"
+#include "third_party/blink/public/platform/web_file_system_type.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 namespace blink {
 

@@ -22,7 +22,7 @@ source_set("lib") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//skia",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//third_party/libxml",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -54,7 +54,7 @@ source_set("tests") {
     "//services/data_decoder/public/cpp:test_support",
     "//skia",
     "//testing/gtest",
-    "//third_party/WebKit/public:blink",
+    "//third_party/blink/public:blink",
     "//tools/v8_context_snapshot",
     "//ui/gfx",
   ]

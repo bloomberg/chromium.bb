@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/shaping/ShapingLineBreaker.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shaping_line_breaker.h"
 
 #include <unicode/uscript.h>
-#include "platform/fonts/Font.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/FontTestUtilities.h"
-#include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
-#include "platform/fonts/shaping/ShapeResultTestInfo.h"
-#include "platform/text/TextBreakIterator.h"
-#include "platform/text/TextRun.h"
-#include "platform/wtf/Vector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_test_utilities.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_inline_headers.h"
+#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_test_info.h"
+#include "third_party/blink/renderer/platform/text/text_break_iterator.h"
+#include "third_party/blink/renderer/platform/text/text_run.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 

@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebURLError_h
-#define WebURLError_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_ERROR_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_ERROR_H_
 
-#include "WebURL.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
+#include "third_party/blink/public/platform/web_url.h"
 
 namespace blink {
 

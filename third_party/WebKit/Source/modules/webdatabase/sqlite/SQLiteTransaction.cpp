@@ -23,9 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/webdatabase/sqlite/SQLiteTransaction.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_transaction.h"
 
-#include "modules/webdatabase/sqlite/SQLiteDatabase.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_database.h"
 
 namespace blink {
 

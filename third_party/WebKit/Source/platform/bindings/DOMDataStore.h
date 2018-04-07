@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMDataStore_h
-#define DOMDataStore_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_DOM_DATA_STORE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_DOM_DATA_STORE_H_
 
 #include <memory>
 
-#include "platform/bindings/DOMWrapperMap.h"
-#include "platform/bindings/DOMWrapperWorld.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/ScriptWrappableMarkingVisitor.h"
-#include "platform/bindings/WrapperTypeInfo.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
-#include "platform/wtf/Optional.h"
-#include "platform/wtf/StackUtil.h"
-#include "platform/wtf/StdLibExtras.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_map.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/noncopyable.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
+#include "third_party/blink/renderer/platform/wtf/stack_util.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -212,4 +212,4 @@ DOMWrapperMap<ScriptWrappable>::PersistentValueMapTraits::DisposeWeak(
 
 }  // namespace blink
 
-#endif  // DOMDataStore_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_DOM_DATA_STORE_H_

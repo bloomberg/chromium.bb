@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/bindings/CallbackInterfaceBase.h"
+#include "third_party/blink/renderer/platform/bindings/callback_interface_base.h"
 
 namespace blink {
 

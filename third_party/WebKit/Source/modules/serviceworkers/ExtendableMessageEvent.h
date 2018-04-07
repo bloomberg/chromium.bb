@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ExtendableMessageEvent_h
-#define ExtendableMessageEvent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_EXTENDABLE_MESSAGE_EVENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_EXTENDABLE_MESSAGE_EVENT_H_
 
-#include "modules/EventModules.h"
-#include "modules/ModulesExport.h"
-#include "modules/serviceworkers/ExtendableEvent.h"
-#include "modules/serviceworkers/ExtendableMessageEventInit.h"
+#include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/serviceworkers/extendable_event.h"
+#include "third_party/blink/renderer/modules/serviceworkers/extendable_message_event_init.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
 
 }  // namespace blink
 
-#endif  // ExtendableMessageEvent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICEWORKERS_EXTENDABLE_MESSAGE_EVENT_H_

@@ -29,12 +29,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SyncCallbackHelper_h
-#define SyncCallbackHelper_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_SYNC_CALLBACK_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_SYNC_CALLBACK_HELPER_H_
 
-#include "core/fileapi/FileError.h"
-#include "modules/filesystem/FileSystemCallbacks.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -134,4 +134,4 @@ using VoidCallbacksSyncHelper = DOMFileSystemCallbacksSyncHelper<
 
 }  // namespace blink
 
-#endif  // SyncCallbackHelper_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_SYNC_CALLBACK_HELPER_H_

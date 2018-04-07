@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebViewportStyle_h
-#define WebViewportStyle_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_VIEWPORT_STYLE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_VIEWPORT_STYLE_H_
 
 namespace blink {
 
@@ -18,4 +18,4 @@ enum class WebViewportStyle {
 
 }  // namespace blink
 
-#endif  // WebViewportStyle_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_VIEWPORT_STYLE_H_

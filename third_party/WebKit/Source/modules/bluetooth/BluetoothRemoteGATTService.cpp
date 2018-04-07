@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/bluetooth/BluetoothRemoteGATTService.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_service.h"
 
 #include <utility>
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/inspector/ConsoleMessage.h"
-#include "modules/bluetooth/Bluetooth.h"
-#include "modules/bluetooth/BluetoothError.h"
-#include "modules/bluetooth/BluetoothRemoteGATTCharacteristic.h"
-#include "modules/bluetooth/BluetoothUUID.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_error.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_characteristic.h"
+#include "third_party/blink/renderer/modules/bluetooth/bluetooth_uuid.h"
 
 namespace blink {
 

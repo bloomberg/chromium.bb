@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/FontFaceSetWorker.h"
+#include "third_party/blink/renderer/core/css/font_face_set_worker.h"
 
-#include "bindings/core/v8/Dictionary.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/CSSSegmentedFontFace.h"
-#include "core/css/FontFaceCache.h"
-#include "core/css/FontFaceSetLoadEvent.h"
-#include "core/css/OffscreenFontSelector.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/css/resolver/FontStyleResolver.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/style/ComputedStyle.h"
-#include "platform/bindings/ScriptState.h"
+#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_segmented_font_face.h"
+#include "third_party/blink/renderer/core/css/font_face_cache.h"
+#include "third_party/blink/renderer/core/css/font_face_set_load_event.h"
+#include "third_party/blink/renderer/core/css/offscreen_font_selector.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/resolver/font_style_resolver.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 

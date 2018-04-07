@@ -20,13 +20,13 @@
  *
  */
 
-#ifndef HTMLStyleElement_h
-#define HTMLStyleElement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_STYLE_ELEMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_STYLE_ELEMENT_H_
 
 #include <memory>
-#include "core/css/StyleElement.h"
-#include "core/dom/IncrementLoadEventDelayCount.h"
-#include "core/html/HTMLElement.h"
+#include "third_party/blink/renderer/core/css/style_element.h"
+#include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
 
@@ -80,4 +80,4 @@ class CORE_EXPORT HTMLStyleElement final : public HTMLElement,
 
 }  // namespace blink
 
-#endif  // HTMLStyleElement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_STYLE_ELEMENT_H_

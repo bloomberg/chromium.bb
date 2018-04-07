@@ -20,7 +20,7 @@
 #include "media/base/audio_parameters.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/shared_impl/media_stream_audio_track_shared.h"
-#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/blink/public/platform/web_media_stream_track.h"
 
 namespace base {
 class SingleThreadTaskRunner;

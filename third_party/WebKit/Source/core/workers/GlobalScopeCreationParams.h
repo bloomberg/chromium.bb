@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GlobalScopeCreationParams_h
-#define GlobalScopeCreationParams_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_GLOBAL_SCOPE_CREATION_PARAMS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_GLOBAL_SCOPE_CREATION_PARAMS_H_
 
 #include <memory>
 #include "base/macros.h"
 #include "base/unguessable_token.h"
-#include "bindings/core/v8/V8CacheOptions.h"
-#include "core/CoreExport.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
-#include "core/workers/WorkerClients.h"
-#include "core/workers/WorkerOrWorkletModuleFetchCoordinator.h"
-#include "core/workers/WorkerSettings.h"
-#include "platform/network/ContentSecurityPolicyParsers.h"
-#include "platform/network/ContentSecurityPolicyResponseHeaders.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/weborigin/ReferrerPolicy.h"
-#include "platform/wtf/Forward.h"
-#include "platform/wtf/Optional.h"
-#include "public/mojom/net/ip_address_space.mojom-blink.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_module_fetch_coordinator.h"
+#include "third_party/blink/renderer/core/workers/worker_settings.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
+#include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/optional.h"
 
 namespace blink {
 
@@ -118,4 +118,4 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
 
 }  // namespace blink
 
-#endif  // GlobalScopeCreationParams_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_GLOBAL_SCOPE_CREATION_PARAMS_H_

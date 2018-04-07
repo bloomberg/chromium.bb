@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef GridLength_h
-#define GridLength_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_LENGTH_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_LENGTH_H_
 
-#include "platform/Length.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/length.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -89,4 +89,4 @@ class GridLength {
 
 }  // namespace blink
 
-#endif  // GridLength_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_LENGTH_H_

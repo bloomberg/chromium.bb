@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/CSSComputedStyleDeclaration.h"
+#include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 
-#include "core/dom/ShadowRoot.h"
-#include "core/html/HTMLElement.h"
-#include "core/testing/PageTestBase.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
 

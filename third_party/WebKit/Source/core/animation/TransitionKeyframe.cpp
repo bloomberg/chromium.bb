@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/TransitionKeyframe.h"
+#include "third_party/blink/renderer/core/animation/transition_keyframe.h"
 
-#include "bindings/core/v8/V8ObjectBuilder.h"
-#include "core/animation/CompositorAnimations.h"
-#include "core/animation/InterpolationType.h"
-#include "core/animation/PairwiseInterpolationValue.h"
-#include "core/animation/TransitionInterpolation.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/animation/compositor_animations.h"
+#include "third_party/blink/renderer/core/animation/interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/pairwise_interpolation_value.h"
+#include "third_party/blink/renderer/core/animation/transition_interpolation.h"
 
 namespace blink {
 

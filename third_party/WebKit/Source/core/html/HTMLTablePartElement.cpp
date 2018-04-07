@@ -22,19 +22,19 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "core/html/HTMLTablePartElement.h"
+#include "third_party/blink/renderer/core/html/html_table_part_element.h"
 
-#include "core/css/CSSImageValue.h"
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css_property_names.h"
-#include "core/css_value_keywords.h"
-#include "core/dom/Document.h"
-#include "core/dom/FlatTreeTraversal.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLTableElement.h"
-#include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html_names.h"
-#include "platform/weborigin/Referrer.h"
+#include "third_party/blink/renderer/core/css/css_image_value.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/html_table_element.h"
+#include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/weborigin/referrer.h"
 
 namespace blink {
 

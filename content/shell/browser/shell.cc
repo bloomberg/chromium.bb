@@ -43,7 +43,7 @@
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
 #include "media/media_buildflags.h"
-#include "third_party/WebKit/public/web/WebPresentationReceiverFlags.h"
+#include "third_party/blink/public/web/web_presentation_receiver_flags.h"
 
 namespace content {
 

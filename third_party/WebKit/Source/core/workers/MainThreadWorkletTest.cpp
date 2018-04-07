@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/frame/UseCounter.h"
-#include "core/origin_trials/OriginTrialContext.h"
-#include "core/testing/PageTestBase.h"
-#include "core/workers/GlobalScopeCreationParams.h"
-#include "core/workers/MainThreadWorkletGlobalScope.h"
-#include "core/workers/MainThreadWorkletReportingProxy.h"
-#include "core/workers/WorkletModuleResponsesMap.h"
-#include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/TaskType.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
+#include "third_party/blink/renderer/core/workers/main_thread_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/main_thread_worklet_reporting_proxy.h"
+#include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 

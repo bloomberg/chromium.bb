@@ -16,7 +16,7 @@
 #include "base/observer_list.h"
 #include "base/unguessable_token.h"
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/web/devtools_agent.mojom.h"
+#include "third_party/blink/public/web/devtools_agent.mojom.h"
 #include "url/gurl.h"
 
 namespace network {

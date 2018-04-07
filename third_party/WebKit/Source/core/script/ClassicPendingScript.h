@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ClassicPendingScript_h
-#define ClassicPendingScript_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_CLASSIC_PENDING_SCRIPT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_CLASSIC_PENDING_SCRIPT_H_
 
-#include "bindings/core/v8/ScriptSourceLocationType.h"
-#include "bindings/core/v8/ScriptStreamer.h"
-#include "core/loader/resource/ScriptResource.h"
-#include "core/script/ClassicScript.h"
-#include "core/script/PendingScript.h"
-#include "platform/MemoryCoordinator.h"
-#include "platform/loader/fetch/FetchParameters.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
+#include "third_party/blink/renderer/core/loader/resource/script_resource.h"
+#include "third_party/blink/renderer/core/script/classic_script.h"
+#include "third_party/blink/renderer/core/script/pending_script.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
+#include "third_party/blink/renderer/platform/memory_coordinator.h"
 
 namespace blink {
 

@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//third_party/WebKit/public/web/console_message.mojom"
-public_headers = [ "//third_party/WebKit/public/web/WebConsoleMessage.h" ]
+mojom = "//third_party/blink/public/web/console_message.mojom"
+public_headers = [ "//third_party/blink/public/web/web_console_message.h" ]
 traits_headers =
-    [ "//third_party/WebKit/public/web/ConsoleMessageStructTraits.h" ]
+    [ "//third_party/blink/public/web/console_message_struct_traits.h" ]
 deps = [
-  "//third_party/WebKit/public:shared_typemap_traits",
+  "//third_party/blink/public:shared_typemap_traits",
 ]
 type_mappings =
     [ "blink.mojom.ConsoleMessageLevel=::blink::WebConsoleMessage::Level" ]

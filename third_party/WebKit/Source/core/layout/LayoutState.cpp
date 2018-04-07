@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/layout/LayoutState.h"
+#include "third_party/blink/renderer/core/layout/layout_state.h"
 
-#include "core/layout/LayoutFlowThread.h"
-#include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutView.h"
+#include "third_party/blink/renderer/core/layout/layout_flow_thread.h"
+#include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 
 namespace blink {
 

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MediaStreamTrackContentHint_h
-#define MediaStreamTrackContentHint_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_TRACK_CONTENT_HINT_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASTREAM_MEDIA_STREAM_TRACK_CONTENT_HINT_H_
 
-#include "modules/mediastream/MediaStreamTrack.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 
 namespace blink {
 

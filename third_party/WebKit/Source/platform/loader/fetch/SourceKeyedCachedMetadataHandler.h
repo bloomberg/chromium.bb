@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SourceKeyedCachedMetadataHandler_h
-#define SourceKeyedCachedMetadataHandler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_SOURCE_KEYED_CACHED_METADATA_HANDLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_SOURCE_KEYED_CACHED_METADATA_HANDLER_H_
 
 #include <stdint.h>
 #include <array>
-#include "platform/loader/fetch/CachedMetadata.h"
-#include "platform/loader/fetch/CachedMetadataHandler.h"
-#include "platform/loader/fetch/Resource.h"
-#include "platform/wtf/HashMap.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -78,4 +78,4 @@ class PLATFORM_EXPORT SourceKeyedCachedMetadataHandler final
 
 }  // namespace blink
 
-#endif  // SourceKeyedCachedMetadataHandler_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_SOURCE_KEYED_CACHED_METADATA_HANDLER_H_

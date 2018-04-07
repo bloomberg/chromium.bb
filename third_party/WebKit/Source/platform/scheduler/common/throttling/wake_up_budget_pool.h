@@ -5,12 +5,12 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_COMMON_THROTTLING_WAKE_UP_BUDGET_POOL_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_COMMON_THROTTLING_WAKE_UP_BUDGET_POOL_H_
 
-#include "platform/scheduler/common/throttling/budget_pool.h"
+#include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
 
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "platform/scheduler/base/lazy_now.h"
+#include "third_party/blink/renderer/platform/scheduler/base/lazy_now.h"
 
 namespace blink {
 namespace scheduler {

@@ -23,15 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CharacterIterator_h
-#define CharacterIterator_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_CHARACTER_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_CHARACTER_ITERATOR_H_
 
-#include "core/CoreExport.h"
-#include "core/dom/Range.h"
-#include "core/editing/Forward.h"
-#include "core/editing/iterators/TextIterator.h"
-#include "core/editing/iterators/TextIteratorBehavior.h"
-#include "platform/heap/Heap.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator_behavior.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -113,4 +113,4 @@ CORE_EXPORT EphemeralRange CalculateCharacterSubrange(const EphemeralRange&,
 
 }  // namespace blink
 
-#endif  // CharacterIterator_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_ITERATORS_CHARACTER_ITERATOR_H_

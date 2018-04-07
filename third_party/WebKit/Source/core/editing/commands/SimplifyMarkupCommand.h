@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SimplifyMarkupCommand_h
-#define SimplifyMarkupCommand_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SIMPLIFY_MARKUP_COMMAND_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SIMPLIFY_MARKUP_COMMAND_H_
 
-#include "core/editing/commands/CompositeEditCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/composite_edit_command.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ class SimplifyMarkupCommand final : public CompositeEditCommand {
 
 }  // namespace blink
 
-#endif  // SimplifyMarkupCommand_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_COMMANDS_SIMPLIFY_MARKUP_COMMAND_H_

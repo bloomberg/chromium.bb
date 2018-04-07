@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8PopStateEvent.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_pop_state_event.h"
 
-#include "bindings/core/v8/V8History.h"
-#include "core/events/PopStateEvent.h"
-#include "core/frame/History.h"
-#include "platform/bindings/V8PrivateProperty.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_history.h"
+#include "third_party/blink/renderer/core/events/pop_state_event.h"
+#include "third_party/blink/renderer/core/frame/history.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
 namespace blink {
 

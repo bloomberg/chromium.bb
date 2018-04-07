@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WTF_h
-#define WTF_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_WTF_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_WTF_H_
 
-#include "platform/wtf/Compiler.h"
-#include "platform/wtf/WTFExport.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
@@ -51,4 +51,4 @@ void CallOnMainThread(MainThreadFunction*, void* context);
 
 using WTF::IsMainThread;
 
-#endif  // WTF_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_WTF_H_

@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_INPUT_WEB_TOUCH_EVENT_TRAITS_H_
 
 #include "content/common/content_export.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/blink/public/platform/web_input_event.h"
 
 namespace blink {
 class WebTouchEvent;

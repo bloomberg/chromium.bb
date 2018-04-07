@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ExternalPopupMenu_h
-#define ExternalPopupMenu_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_EXTERNAL_POPUP_MENU_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_EXTERNAL_POPUP_MENU_H_
 
 #include <memory>
-#include "core/CoreExport.h"
-#include "core/html/forms/PopupMenu.h"
-#include "platform/Timer.h"
-#include "platform/wtf/Compiler.h"
-#include "public/platform/WebCanvas.h"
-#include "public/platform/WebScrollbar.h"
-#include "public/web/WebExternalPopupMenuClient.h"
+#include "third_party/blink/public/platform/web_canvas.h"
+#include "third_party/blink/public/platform/web_scrollbar.h"
+#include "third_party/blink/public/web/web_external_popup_menu_client.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/forms/popup_menu.h"
+#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 
@@ -96,4 +96,4 @@ class CORE_EXPORT ExternalPopupMenu final : public PopupMenu,
 
 }  // namespace blink
 
-#endif  // ExternalPopupMenu_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_EXTERNAL_POPUP_MENU_H_

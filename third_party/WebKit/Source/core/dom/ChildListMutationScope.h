@@ -28,14 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ChildListMutationScope_h
-#define ChildListMutationScope_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHILD_LIST_MUTATION_SCOPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHILD_LIST_MUTATION_SCOPE_H_
 
 #include "base/macros.h"
-#include "core/dom/Document.h"
-#include "core/dom/MutationObserver.h"
-#include "core/dom/Node.h"
-#include "platform/heap/Handle.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -125,4 +125,4 @@ class ChildListMutationScope final {
 
 }  // namespace blink
 
-#endif  // ChildListMutationScope_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_CHILD_LIST_MUTATION_SCOPE_H_

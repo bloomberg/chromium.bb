@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationTranslationUtil_h
-#define AnimationTranslationUtil_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_ANIMATION_TRANSLATION_UTIL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_ANIMATION_TRANSLATION_UTIL_H_
 
-#include "platform/PlatformExport.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -44,4 +44,4 @@ PLATFORM_EXPORT void ToCompositorTransformOperations(
 
 }  // namespace blink
 
-#endif  // AnimationTranslationUtil_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_ANIMATION_TRANSLATION_UTIL_H_

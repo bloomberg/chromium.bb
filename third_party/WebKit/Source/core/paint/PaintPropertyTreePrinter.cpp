@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/paint/PaintPropertyTreePrinter.h"
+#include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/layout/LayoutEmbeddedContent.h"
-#include "core/layout/LayoutView.h"
-#include "core/paint/ObjectPaintProperties.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 
 #include <iomanip>
 #include <sstream>

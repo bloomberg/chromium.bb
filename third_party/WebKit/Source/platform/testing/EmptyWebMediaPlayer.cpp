@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/testing/EmptyWebMediaPlayer.h"
+#include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 
-#include "public/platform/WebSize.h"
-#include "public/platform/WebTimeRange.h"
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/platform/web_time_range.h"
 
 namespace blink {
 

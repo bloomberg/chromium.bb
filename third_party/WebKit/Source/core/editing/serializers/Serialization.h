@@ -23,16 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Serialization_h
-#define Serialization_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_SERIALIZATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_SERIALIZATION_H_
 
-#include "core/CoreExport.h"
-#include "core/css_property_names.h"
-#include "core/dom/ParserContentPolicy.h"
-#include "core/editing/Forward.h"
-#include "core/editing/serializers/HTMLInterchange.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css_property_names.h"
+#include "third_party/blink/renderer/core/dom/parser_content_policy.h"
+#include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/serializers/html_interchange.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -109,4 +109,4 @@ bool PropertyMissingOrEqualToNone(CSSPropertyValueSet*, CSSPropertyID);
 
 }  // namespace blink
 
-#endif  // Serialization_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SERIALIZERS_SERIALIZATION_H_

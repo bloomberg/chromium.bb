@@ -23,10 +23,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutVideo_h
-#define LayoutVideo_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_VIDEO_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_VIDEO_H_
 
-#include "core/layout/LayoutMedia.h"
+#include "third_party/blink/renderer/core/layout/layout_media.h"
 
 namespace blink {
 
@@ -89,4 +89,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutVideo, IsVideo());
 
 }  // namespace blink
 
-#endif  // LayoutVideo_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_VIDEO_H_

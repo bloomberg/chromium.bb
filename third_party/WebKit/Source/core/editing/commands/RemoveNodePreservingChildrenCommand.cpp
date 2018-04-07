@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/editing/commands/RemoveNodePreservingChildrenCommand.h"
+#include "third_party/blink/renderer/core/editing/commands/remove_node_preserving_children_command.h"
 
-#include "core/dom/Node.h"
-#include "core/editing/EditingUtilities.h"
-#include "platform/wtf/Assertions.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 

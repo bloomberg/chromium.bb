@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/time_zone_monitor/TimeZoneMonitorClient.h"
+#include "third_party/blink/renderer/modules/time_zone_monitor/time_zone_monitor_client.h"
 
-#include "bindings/core/v8/V8BindingForCore.h"
-#include "core/execution_context/ExecutionContext.h"
-#include "core/workers/WorkerBackingThread.h"
-#include "core/workers/WorkerOrWorkletGlobalScope.h"
-#include "core/workers/WorkerThread.h"
-#include "platform/CrossThreadFunctional.h"
-#include "platform/bindings/V8PerIsolateData.h"
-#include "public/platform/Platform.h"
-#include "public/platform/TaskType.h"
 #include "services/device/public/mojom/constants.mojom-blink.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
+#include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "v8/include/v8.h"
 

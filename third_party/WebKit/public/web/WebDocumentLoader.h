@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebDocumentLoader_h
-#define WebDocumentLoader_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOCUMENT_LOADER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOCUMENT_LOADER_H_
 
 #include <memory>
 
-#include "WebNavigationType.h"
-#include "WebTextDirection.h"
 #include "base/time/time.h"
-#include "public/platform/WebArchiveInfo.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebSourceLocation.h"
+#include "third_party/blink/public/platform/web_archive_info.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_source_location.h"
+#include "third_party/blink/public/web/web_navigation_type.h"
+#include "third_party/blink/public/web/web_text_direction.h"
 
 namespace blink {
 

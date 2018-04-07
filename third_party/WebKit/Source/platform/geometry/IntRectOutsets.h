@@ -27,11 +27,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef IntRectOutsets_h
-#define IntRectOutsets_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_RECT_OUTSETS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_RECT_OUTSETS_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/wtf/Allocator.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -77,4 +77,4 @@ inline void operator+=(IntRectOutsets& a, const IntRectOutsets& b) {
 
 }  // namespace blink
 
-#endif  // IntRectOutsets_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GEOMETRY_INT_RECT_OUTSETS_H_

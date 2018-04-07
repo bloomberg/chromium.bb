@@ -6,13 +6,13 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/graphics/CanvasColorParams.h"
-#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/platform/geometry/int_size.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
-#ifndef CanvasResource_h
-#define CanvasResource_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_RESOURCE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_RESOURCE_H_
 
 namespace gfx {
 
@@ -155,4 +155,4 @@ class PLATFORM_EXPORT CanvasResource_GpuMemoryBuffer final
 
 }  // namespace blink
 
-#endif  // CanvasResource_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_RESOURCE_H_

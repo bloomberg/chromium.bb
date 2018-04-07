@@ -23,14 +23,14 @@
  * DAMAGE.
  */
 
-#ifndef InspectorApplicationCacheAgent_h
-#define InspectorApplicationCacheAgent_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORAPPLICATIONCACHEAGENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORAPPLICATIONCACHEAGENT_H_
 
 #include "base/macros.h"
-#include "core/CoreExport.h"
-#include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/protocol/ApplicationCache.h"
-#include "core/loader/appcache/ApplicationCacheHost.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/inspector/InspectorBaseAgent.h"
+#include "third_party/blink/renderer/core/inspector/protocol/ApplicationCache.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host.h"
 
 namespace blink {
 
@@ -90,4 +90,4 @@ class CORE_EXPORT InspectorApplicationCacheAgent final
 
 }  // namespace blink
 
-#endif  // InspectorApplicationCacheAgent_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTORAPPLICATIONCACHEAGENT_H_

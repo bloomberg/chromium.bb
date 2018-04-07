@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebLayerStickyPositionConstraint_h
-#define WebLayerStickyPositionConstraint_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_STICKY_POSITION_CONSTRAINT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_STICKY_POSITION_CONSTRAINT_H_
 
-#include "public/platform/WebLayer.h"
-#include "public/platform/WebPoint.h"
-#include "public/platform/WebRect.h"
+#include "third_party/blink/public/platform/web_layer.h"
+#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_rect.h"
 
 namespace blink {
 
@@ -79,4 +79,4 @@ struct WebLayerStickyPositionConstraint {
 
 }  // namespace blink
 
-#endif  // WebLayerStickyPositionConstraint_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_STICKY_POSITION_CONSTRAINT_H_

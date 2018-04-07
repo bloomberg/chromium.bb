@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebScrollbarButtonsPlacement_h
-#define WebScrollbarButtonsPlacement_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLLBAR_BUTTONS_PLACEMENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLLBAR_BUTTONS_PLACEMENT_H_
 
 namespace blink {
 
@@ -18,4 +18,4 @@ enum WebScrollbarButtonsPlacement {
 
 }  // namespace blink
 
-#endif  // WebScrollbarButtonsPlacement_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCROLLBAR_BUTTONS_PLACEMENT_H_

@@ -21,23 +21,23 @@
  *
  */
 
-#include "core/html/HTMLCollection.h"
+#include "third_party/blink/renderer/core/html/html_collection.h"
 
-#include "core/dom/ClassCollection.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/dom/NodeRareData.h"
-#include "core/html/DocumentAllNameCollection.h"
-#include "core/html/DocumentNameCollection.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLObjectElement.h"
-#include "core/html/HTMLTagCollection.h"
-#include "core/html/WindowNameCollection.h"
-#include "core/html/forms/HTMLDataListOptionsCollection.h"
-#include "core/html/forms/HTMLFormControlElement.h"
-#include "core/html/forms/HTMLOptionElement.h"
-#include "core/html/forms/HTMLOptionsCollection.h"
-#include "core/html_names.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/core/dom/class_collection.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/node_rare_data.h"
+#include "third_party/blink/renderer/core/html/document_all_name_collection.h"
+#include "third_party/blink/renderer/core/html/document_name_collection.h"
+#include "third_party/blink/renderer/core/html/forms/html_data_list_options_collection.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_options_collection.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_object_element.h"
+#include "third_party/blink/renderer/core/html/html_tag_collection.h"
+#include "third_party/blink/renderer/core/html/window_name_collection.h"
+#include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 

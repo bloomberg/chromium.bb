@@ -204,10 +204,10 @@ if (!is_ios) {
 
     public_deps = [
       ":bindings",
-      "//third_party/WebKit/Source/platform:platform_export",
-      "//third_party/WebKit/Source/platform/wtf",
+      "//third_party/blink/renderer/platform:platform_export",
+      "//third_party/blink/renderer/platform/wtf",
     ]
 
-    public_configs = [ "//third_party/WebKit/Source:config" ]
+    public_configs = [ "//third_party/blink/renderer:config" ]
   }
 }

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StorageNamespaceController_h
-#define StorageNamespaceController_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_STORAGE_NAMESPACE_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_STORAGE_NAMESPACE_CONTROLLER_H_
 
 #include <memory>
 
-#include "core/page/Page.h"
-#include "modules/ModulesExport.h"
-#include "modules/storage/StorageArea.h"
-#include "platform/Supplementable.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/storage/storage_area.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 
@@ -55,4 +55,4 @@ class MODULES_EXPORT StorageNamespaceController final
 
 }  // namespace blink
 
-#endif  // StorageNamespaceController_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_STORAGE_NAMESPACE_CONTROLLER_H_

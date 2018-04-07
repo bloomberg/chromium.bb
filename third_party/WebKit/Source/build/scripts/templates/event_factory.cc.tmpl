@@ -4,16 +4,16 @@
 {{source_files_for_generated_file(template_file, input_files)}}
 
 {% if suffix == 'Modules' %}
-#include "modules/EventModulesFactory.h"
+#include "third_party/blink/renderer/modules/event_modules_factory.h"
 {% else %}
-#include "core/events/EventFactory.h"
+#include "third_party/blink/renderer/core/events/event_factory.h"
 {% endif %}
 
-#include "core/frame/Deprecation.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
 {% for header_path in include_header_paths %}
 #include "{{header_path}}"
 {% endfor %}
-#include "platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 

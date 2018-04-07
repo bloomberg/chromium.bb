@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WorkerModuleTreeClient_h
-#define WorkerModuleTreeClient_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_MODULE_TREE_CLIENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_MODULE_TREE_CLIENT_H_
 
-#include "core/script/Modulator.h"
-#include "platform/heap/GarbageCollected.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -28,4 +28,4 @@ class WorkerModuleTreeClient final : public ModuleTreeClient {
 
 }  // namespace blink
 
-#endif  // WorkerModuleTreeClient_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_WORKER_MODULE_TREE_CLIENT_H_

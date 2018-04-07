@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/MediaValuesDynamic.h"
+#include "third_party/blink/renderer/core/css/media_values_dynamic.h"
 
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSResolutionUnits.h"
-#include "core/css/CSSToLengthConversionData.h"
-#include "core/css/MediaValuesCached.h"
-#include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
+#include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_resolution_units.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
+#include "third_party/blink/renderer/core/css/media_values_cached.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 
 namespace blink {
 

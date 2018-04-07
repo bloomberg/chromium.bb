@@ -27,10 +27,10 @@
  *
  */
 
-#include "core/html/forms/TypeAhead.h"
+#include "third_party/blink/renderer/core/html/forms/type_ahead.h"
 
-#include "core/events/KeyboardEvent.h"
-#include "platform/wtf/text/CharacterNames.h"
+#include "third_party/blink/renderer/core/events/keyboard_event.h"
+#include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 
 namespace blink {
 

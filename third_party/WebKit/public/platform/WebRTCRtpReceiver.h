@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebRTCRtpReceiver_h
-#define WebRTCRtpReceiver_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_RECEIVER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_RECEIVER_H_
 
 #include <memory>
-#include "WebCommon.h"
-#include "WebRTCStats.h"
-#include "WebString.h"
-#include "WebVector.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_rtc_stats.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
@@ -37,4 +37,4 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpReceiver {
 
 }  // namespace blink
 
-#endif  // WebRTCRtpReceiver_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_RECEIVER_H_

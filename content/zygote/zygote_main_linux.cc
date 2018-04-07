@@ -49,7 +49,7 @@
 #include "services/service_manager/sandbox/linux/sandbox_debug_handling_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "services/service_manager/sandbox/sandbox.h"
-#include "third_party/WebKit/public/platform/WebFontRenderStyle.h"
+#include "third_party/blink/public/platform/web_font_render_style.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 #include "third_party/boringssl/src/include/openssl/rand.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"

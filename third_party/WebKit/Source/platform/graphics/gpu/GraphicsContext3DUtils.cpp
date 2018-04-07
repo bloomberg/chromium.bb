@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/graphics/gpu/GraphicsContext3DUtils.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/graphics_context_3d_utils.h"
 
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
 #include "skia/ext/texture_handle.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 

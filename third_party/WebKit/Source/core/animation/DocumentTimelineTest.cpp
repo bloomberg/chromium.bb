@@ -28,21 +28,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/DocumentTimeline.h"
+#include "third_party/blink/renderer/core/animation/document_timeline.h"
 
 #include <memory>
-#include "core/animation/AnimationClock.h"
-#include "core/animation/AnimationEffect.h"
-#include "core/animation/KeyframeEffect.h"
-#include "core/animation/KeyframeEffectModel.h"
-#include "core/animation/PendingAnimations.h"
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
-#include "core/dom/QualifiedName.h"
-#include "core/testing/PageTestBase.h"
-#include "platform/weborigin/KURL.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/animation/animation_clock.h"
+#include "third_party/blink/renderer/core/animation/animation_effect.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect.h"
+#include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/animation/pending_animations.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/qualified_name.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

@@ -13,7 +13,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/blink/webmediaplayer_params.h"
-#include "third_party/WebKit/public/platform/WebVideoFrameSubmitter.h"
+#include "third_party/blink/public/platform/web_video_frame_submitter.h"
 
 namespace media {
 

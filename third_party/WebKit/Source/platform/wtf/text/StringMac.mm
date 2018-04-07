@@ -18,7 +18,7 @@
  *
  */
 
-#include "platform/wtf/text/WTFString.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #include <CoreFoundation/CFString.h>
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/fonts/FontFallbackIterator.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_iterator.h"
 
-#include "platform/fonts/FontCache.h"
-#include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontFallbackList.h"
-#include "platform/fonts/SegmentedFontData.h"
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/text/ICUError.h"
+#include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_description.h"
+#include "third_party/blink/renderer/platform/fonts/font_fallback_list.h"
+#include "third_party/blink/renderer/platform/fonts/segmented_font_data.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/text/icu_error.h"
 
 namespace blink {
 

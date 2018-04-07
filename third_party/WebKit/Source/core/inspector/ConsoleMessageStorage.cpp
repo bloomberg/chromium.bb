@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/inspector/ConsoleMessageStorage.h"
+#include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 
-#include "core/inspector/ConsoleMessage.h"
-#include "core/probe/CoreProbes.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 
 namespace blink {
 

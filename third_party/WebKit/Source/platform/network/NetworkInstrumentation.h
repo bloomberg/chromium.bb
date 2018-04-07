@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NetworkInstrumentation_h
-#define NetworkInstrumentation_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_INSTRUMENTATION_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_INSTRUMENTATION_H_
 
-#include "platform/PlatformExport.h"
-#include "platform/loader/fetch/ResourceLoadPriority.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
 
@@ -40,4 +40,4 @@ void PLATFORM_EXPORT EndResourceLoad(unsigned long resource_id, RequestOutcome);
 }  // namespace network_instrumentation
 }  // namespace blink
 
-#endif  // NetworkInstrumentation_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_NETWORK_INSTRUMENTATION_H_

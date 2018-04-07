@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebEffectiveConnectionType_h
-#define WebEffectiveConnectionType_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_EFFECTIVE_CONNECTION_TYPE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_EFFECTIVE_CONNECTION_TYPE_H_
 
 namespace blink {
 
@@ -44,4 +44,4 @@ enum class WebEffectiveConnectionType {
 
 }  // namespace blink
 
-#endif  // WebEffectiveConnectionType_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_EFFECTIVE_CONNECTION_TYPE_H_

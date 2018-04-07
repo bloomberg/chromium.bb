@@ -5,10 +5,10 @@
 #ifndef NGExclusion_h
 #define NGExclusion_h
 
-#include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_bfc_rect.h"
-#include "core/style/ComputedStyleConstants.h"
-#include "platform/wtf/RefCounted.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_rect.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 

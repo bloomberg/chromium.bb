@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SecurityViolationReportingPolicy_h
-#define SecurityViolationReportingPolicy_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_SECURITY_VIOLATION_REPORTING_POLICY_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_SECURITY_VIOLATION_REPORTING_POLICY_H_
 
 namespace blink {
 
@@ -14,4 +14,4 @@ enum class SecurityViolationReportingPolicy {
 
 }  // namespace blink
 
-#endif  // SecurityViolationReportingPolicy_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_SECURITY_VIOLATION_REPORTING_POLICY_H_

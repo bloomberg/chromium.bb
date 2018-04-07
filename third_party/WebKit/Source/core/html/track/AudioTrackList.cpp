@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/html/track/AudioTrackList.h"
+#include "third_party/blink/renderer/core/html/track/audio_track_list.h"
 
 namespace blink {
 

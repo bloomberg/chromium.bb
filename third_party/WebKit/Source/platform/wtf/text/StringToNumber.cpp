@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/wtf/text/StringToNumber.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 
-#include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/dtoa.h"
-#include "platform/wtf/text/StringImpl.h"
 #include <type_traits>
+#include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 
 namespace WTF {
 

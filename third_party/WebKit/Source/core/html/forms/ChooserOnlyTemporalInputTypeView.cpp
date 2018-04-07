@@ -23,16 +23,16 @@
  * SUCH DAMAGE.
  */
 
-#include "core/html/forms/ChooserOnlyTemporalInputTypeView.h"
+#include "third_party/blink/renderer/core/html/forms/chooser_only_temporal_input_type_view.h"
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/Document.h"
-#include "core/dom/ShadowRoot.h"
-#include "core/dom/events/Event.h"
-#include "core/html/HTMLDivElement.h"
-#include "core/html/forms/HTMLInputElement.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/page.h"
 
 namespace blink {
 

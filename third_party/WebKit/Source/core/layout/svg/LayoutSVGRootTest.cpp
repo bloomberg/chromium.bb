@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/svg/LayoutSVGRoot.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 
-#include "core/layout/svg/LayoutSVGShape.h"
-#include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/testing/CoreUnitTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_shape.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
 

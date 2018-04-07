@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockPaintCanvas_h
-#define MockPaintCanvas_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_MOCK_PAINT_CANVAS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_MOCK_PAINT_CANVAS_H_
 
-#include "platform/graphics/paint/PaintCanvas.h"
-#include "platform/graphics/paint/PaintTextBlob.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_text_blob.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 
 namespace blink {
@@ -97,4 +97,4 @@ class MockPaintCanvas : public PaintCanvas {
 
 }  // namespace blink
 
-#endif  // MockPaintCanvas_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_MOCK_PAINT_CANVAS_H_

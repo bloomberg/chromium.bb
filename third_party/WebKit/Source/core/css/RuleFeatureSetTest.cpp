@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/RuleFeatureSet.h"
+#include "third_party/blink/renderer/core/css/rule_feature_set.h"
 
-#include "core/css/CSSPropertyValueSet.h"
-#include "core/css/CSSSelectorList.h"
-#include "core/css/RuleSet.h"
-#include "core/css/StyleRule.h"
-#include "core/css/invalidation/InvalidationSet.h"
-#include "core/css/parser/CSSParser.h"
-#include "core/dom/ElementTraversal.h"
-#include "core/html/HTMLBodyElement.h"
-#include "core/html/HTMLDocument.h"
-#include "core/html/HTMLElement.h"
-#include "core/html/HTMLHtmlElement.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/css/css_property_value_set.h"
+#include "third_party/blink/renderer/core/css/css_selector_list.h"
+#include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/rule_set.h"
+#include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
+#include "third_party/blink/renderer/core/html/html_document.h"
+#include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/html/html_html_element.h"
 
 namespace blink {
 

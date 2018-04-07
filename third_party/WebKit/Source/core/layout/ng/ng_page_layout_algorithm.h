@@ -5,9 +5,9 @@
 #ifndef NGPageLayoutAlgorithm_h
 #define NGPageLayoutAlgorithm_h
 
-#include "core/layout/ng/ng_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_algorithm.h"
 
-#include "core/layout/ng/ng_fragment_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 
 namespace blink {
 

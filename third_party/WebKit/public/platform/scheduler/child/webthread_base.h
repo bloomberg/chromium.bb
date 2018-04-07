@@ -12,8 +12,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebThread.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_thread.h"
 
 namespace blink {
 namespace scheduler {

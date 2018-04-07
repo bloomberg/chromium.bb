@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebArrayBuffer_h
-#define WebArrayBuffer_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ARRAY_BUFFER_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ARRAY_BUFFER_H_
 
-#include "public/platform/WebCommon.h"
-#include "public/platform/WebPrivatePtr.h"
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
 
 namespace blink {
 
@@ -71,4 +71,4 @@ class WebArrayBuffer {
 
 }  // namespace blink
 
-#endif  // WebArrayBuffer_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_ARRAY_BUFFER_H_

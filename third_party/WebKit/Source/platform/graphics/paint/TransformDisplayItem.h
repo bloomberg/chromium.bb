@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TransformDisplayItem_h
-#define TransformDisplayItem_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_TRANSFORM_DISPLAY_ITEM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_TRANSFORM_DISPLAY_ITEM_H_
 
-#include "platform/graphics/paint/DisplayItem.h"
-#include "platform/transforms/AffineTransform.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
 namespace blink {
 
@@ -57,4 +57,4 @@ class PLATFORM_EXPORT EndTransformDisplayItem final
 
 }  // namespace blink
 
-#endif  // TransformDisplayItem_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_TRANSFORM_DISPLAY_ITEM_H_

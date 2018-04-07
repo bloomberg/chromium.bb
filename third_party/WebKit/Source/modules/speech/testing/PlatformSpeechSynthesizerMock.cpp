@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "modules/speech/testing/PlatformSpeechSynthesizerMock.h"
+#include "third_party/blink/renderer/modules/speech/testing/platform_speech_synthesizer_mock.h"
 
-#include "core/execution_context/ExecutionContext.h"
-#include "platform/speech/PlatformSpeechSynthesisUtterance.h"
-#include "public/platform/TaskType.h"
+#include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/platform/speech/platform_speech_synthesis_utterance.h"
 
 namespace blink {
 

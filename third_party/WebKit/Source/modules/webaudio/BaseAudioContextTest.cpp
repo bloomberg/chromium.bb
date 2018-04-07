@@ -2,31 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/webaudio/BaseAudioContext.h"
+#include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 
 #include <memory>
 
-#include "bindings/core/v8/V8BindingForCore.h"
 #include "build/build_config.h"
-#include "core/dom/Document.h"
-#include "core/dom/UserGestureIndicator.h"
-#include "core/frame/FrameOwner.h"
-#include "core/frame/FrameTypes.h"
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
-#include "core/frame/Settings.h"
-#include "core/html/media/AutoplayPolicy.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/EmptyClients.h"
-#include "core/testing/DummyPageHolder.h"
-#include "modules/webaudio/AudioContextOptions.h"
-#include "modules/webaudio/AudioWorkletThread.h"
-#include "platform/testing/HistogramTester.h"
-#include "platform/testing/TestingPlatformSupport.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebAudioDevice.h"
-#include "public/platform/WebAudioLatencyHint.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_audio_device.h"
+#include "third_party/blink/public/platform/web_audio_latency_hint.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
+#include "third_party/blink/renderer/core/frame/frame_owner.h"
+#include "third_party/blink/renderer/core/frame/frame_types.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_context_options.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_thread.h"
+#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 
 namespace blink {
 

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/input/BoundaryEventDispatcher.h"
+#include "third_party/blink/renderer/core/input/boundary_event_dispatcher.h"
 
-#include "core/dom/FlatTreeTraversal.h"
-#include "core/dom/Node.h"
-#include "core/input/EventHandlingUtil.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/input/event_handling_util.h"
 
 namespace blink {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef XRStageBounds_h
-#define XRStageBounds_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_STAGE_BOUNDS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_STAGE_BOUNDS_H_
 
-#include "modules/xr/XRStageBoundsPoint.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
-#include "platform/wtf/Forward.h"
+#include "third_party/blink/renderer/modules/xr/xr_stage_bounds_point.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
@@ -28,4 +28,4 @@ class XRStageBounds final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // XRStageBounds_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_STAGE_BOUNDS_H_

@@ -23,14 +23,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/exported/WebActiveGestureAnimation.h"
+#include "third_party/blink/renderer/platform/exported/web_active_gesture_animation.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "public/platform/WebGestureCurve.h"
-#include "public/platform/WebGestureCurveTarget.h"
+#include "third_party/blink/public/platform/web_gesture_curve.h"
+#include "third_party/blink/public/platform/web_gesture_curve_target.h"
 
 namespace blink {
 

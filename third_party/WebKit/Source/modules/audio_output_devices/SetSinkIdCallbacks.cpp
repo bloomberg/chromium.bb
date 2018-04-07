@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/audio_output_devices/SetSinkIdCallbacks.h"
+#include "third_party/blink/renderer/modules/audio_output_devices/set_sink_id_callbacks.h"
 
-#include "bindings/core/v8/ScriptPromiseResolver.h"
-#include "core/dom/DOMException.h"
-#include "modules/audio_output_devices/HTMLMediaElementAudioOutputDevice.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/audio_output_devices/html_media_element_audio_output_device.h"
 
 namespace blink {
 

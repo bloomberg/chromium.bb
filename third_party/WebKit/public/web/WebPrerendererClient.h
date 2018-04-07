@@ -29,10 +29,10 @@
  *
  */
 
-#ifndef WebPrerendererClient_h
-#define WebPrerendererClient_h
+#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PRERENDERER_CLIENT_H_
+#define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PRERENDERER_CLIENT_H_
 
-#include "public/platform/WebCommon.h"
+#include "third_party/blink/public/platform/web_common.h"
 
 namespace blink {
 
@@ -46,4 +46,4 @@ class WebPrerendererClient {
 
 }  // namespace blink
 
-#endif  // WebPrerendererClient_h
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PRERENDERER_CLIENT_H_

@@ -23,13 +23,13 @@
  * DAMAGE.
  */
 
-#ifndef DenormalDisabler_h
-#define DenormalDisabler_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_DENORMAL_DISABLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_DENORMAL_DISABLER_H_
 
 #include <float.h>
 #include "build/build_config.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/MathExtras.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 
@@ -148,4 +148,4 @@ class DenormalDisabler {
 }  // namespace blink
 
 #undef HAVE_DENORMAL
-#endif  // DenormalDisabler_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_AUDIO_DENORMAL_DISABLER_H_

@@ -22,12 +22,12 @@
  *
  */
 
-#ifndef WordMeasurement_h
-#define WordMeasurement_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_WORD_MEASUREMENT_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_WORD_MEASUREMENT_H_
 
-#include "platform/fonts/SimpleFontData.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/HashSet.h"
+#include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -48,4 +48,4 @@ class WordMeasurement {
 
 }  // namespace blink
 
-#endif  // WordMeasurement_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_WORD_MEASUREMENT_H_

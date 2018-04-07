@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/parser/MediaQueryBlockWatcher.h"
+#include "third_party/blink/renderer/core/css/parser/media_query_block_watcher.h"
 
-#include "core/css/parser/CSSParserToken.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 
 namespace blink {
 

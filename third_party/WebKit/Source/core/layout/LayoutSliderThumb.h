@@ -29,10 +29,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LayoutSliderThumb_h
-#define LayoutSliderThumb_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SLIDER_THUMB_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SLIDER_THUMB_H_
 
-#include "core/layout/LayoutBlockFlow.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 
 namespace blink {
 
@@ -53,4 +53,4 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSliderThumb, IsSliderThumb());
 
 }  // namespace blink
 
-#endif  // LayoutSliderThumb_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_SLIDER_THUMB_H_

@@ -23,11 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef IdTargetObserver_h
-#define IdTargetObserver_h
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ID_TARGET_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ID_TARGET_OBSERVER_H_
 
-#include "platform/heap/Handle.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -54,4 +54,4 @@ class IdTargetObserver : public GarbageCollectedFinalized<IdTargetObserver> {
 
 }  // namespace blink
 
-#endif  // IdTargetObserver_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ID_TARGET_OBSERVER_H_

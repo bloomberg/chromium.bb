@@ -28,9 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/WebPerformance.h"
+#include "third_party/blink/public/web/web_performance.h"
 
-#include "core/timing/WindowPerformance.h"
+#include "third_party/blink/renderer/core/timing/window_performance.h"
 
 namespace blink {
 

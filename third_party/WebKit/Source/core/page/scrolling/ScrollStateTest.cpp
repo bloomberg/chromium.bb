@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/scrolling/ScrollState.h"
+#include "third_party/blink/renderer/core/page/scrolling/scroll_state.h"
 
 #include <memory>
-#include "core/dom/Document.h"
-#include "core/dom/Element.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 
 namespace blink {
 
