@@ -8,6 +8,10 @@
 #include "public/platform/WebScrollbar.h"
 #include "public/platform/WebString.h"
 
+#if INSIDE_BLINK
+#include "platform/scroll/ScrollTypes.h"
+#endif
+
 namespace blink {
 
 struct WebFrameOwnerProperties {
