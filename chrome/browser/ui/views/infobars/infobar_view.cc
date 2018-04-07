@@ -126,6 +126,18 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
   AddChildView(close_button_);
 }
 
+void InfoBarView::RecalculateHeight() {
+  // Ensure the infobar is tall enough to display its contents.
+  int height = 0;
+  for (int i = 0; i < child_count(); ++i) {
+    View* child = child_at(i);
+    const gfx::Insets* const margins = child->GetProperty(views::kMarginsKey);
+    const int margin_height = margins ? margins->height() : 0;
+    height = std::max(height, child->height() + margin_height);
+  }
+  SetTargetHeight(height + InfoBarContainerDelegate::kSeparatorLineHeight);
+}
+
 InfoBarView::~InfoBarView() {
   // We should have closed any open menus in PlatformSpecificHide(), then
   // subclasses' RunMenu() functions should have prevented opening any new ones
@@ -187,16 +199,7 @@ void InfoBarView::ViewHierarchyChanged(
   // Anything that needs to happen once after all subclasses add their children.
   if (details.is_add && (details.child == this)) {
     ReorderChildView(close_button_, -1);
-
-    // Ensure the infobar is tall enough to display its contents.
-    int height = 0;
-    for (int i = 0; i < child_count(); ++i) {
-      View* child = child_at(i);
-      const gfx::Insets* const margins = child->GetProperty(views::kMarginsKey);
-      const int margin_height = margins ? margins->height() : 0;
-      height = std::max(height, child->height() + margin_height);
-    }
-    SetTargetHeight(height + InfoBarContainerDelegate::kSeparatorLineHeight);
+    RecalculateHeight();
   }
 }
 
@@ -225,6 +228,9 @@ void InfoBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   // ThemeProvider wasn't available yet.  When this function is called, the view
   // has been added to a Widget, so that ThemeProvider is now present.
   OnThemeChanged();
+
+  // Native theme changes can affect font sizes.
+  RecalculateHeight();
 }
 
 void InfoBarView::ButtonPressed(views::Button* sender,
