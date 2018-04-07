@@ -371,7 +371,7 @@ String NGPhysicalFragment::DumpFragmentTree(DumpFlags flags,
 
 #ifndef NDEBUG
 void NGPhysicalFragment::ShowFragmentTree() const {
-  fprintf(stderr, "%s\n", DumpFragmentTree(DumpAll).Utf8().data());
+  LOG(INFO) << "\n" << DumpFragmentTree(DumpAll).Utf8().data();
 }
 #endif  // !NDEBUG
 
