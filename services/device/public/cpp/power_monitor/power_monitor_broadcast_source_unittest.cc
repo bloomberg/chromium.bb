@@ -19,10 +19,12 @@ class PowerMonitorBroadcastSourceTest : public testing::Test {
   ~PowerMonitorBroadcastSourceTest() override {}
 
   void SetUp() override {
-    power_monitor_source_ = new PowerMonitorBroadcastSource(
-        nullptr, base::SequencedTaskRunnerHandle::Get());
-    power_monitor_.reset(new base::PowerMonitor(
-        std::unique_ptr<base::PowerMonitorSource>(power_monitor_source_)));
+    auto power_monitor_source = std::make_unique<PowerMonitorBroadcastSource>(
+        base::SequencedTaskRunnerHandle::Get());
+    power_monitor_source_ptr_ = power_monitor_source.get();
+    power_monitor_ =
+        std::make_unique<base::PowerMonitor>(std::move(power_monitor_source));
+    power_monitor_source_ptr_->Init(nullptr);
   }
 
   void TearDown() override {
@@ -31,7 +33,7 @@ class PowerMonitorBroadcastSourceTest : public testing::Test {
   }
 
   PowerMonitorBroadcastSource::Client* client() {
-    return power_monitor_source_->client_for_testing();
+    return power_monitor_source_ptr_->client_for_testing();
   }
 
   base::PowerMonitor* monitor() { return power_monitor_.get(); }
@@ -39,7 +41,7 @@ class PowerMonitorBroadcastSourceTest : public testing::Test {
   base::MessageLoop message_loop_;
 
  private:
-  PowerMonitorBroadcastSource* power_monitor_source_;
+  PowerMonitorBroadcastSource* power_monitor_source_ptr_;
   std::unique_ptr<base::PowerMonitor> power_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerMonitorBroadcastSourceTest);

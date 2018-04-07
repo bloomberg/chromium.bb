@@ -28,9 +28,14 @@ namespace device {
 class PowerMonitorBroadcastSource : public base::PowerMonitorSource {
  public:
   PowerMonitorBroadcastSource(
-      service_manager::Connector* connector,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~PowerMonitorBroadcastSource() override;
+
+  // Completes initialization by setting up the connection with the Device
+  // Service. Split out from the constructor in order to enable the client to
+  // ensure that the process-wide PowerMonitor instance is initialized before
+  // the Mojo connection is set up.
+  void Init(service_manager::Connector* connector);
 
  private:
   friend class PowerMonitorBroadcastSourceTest;
@@ -68,7 +73,6 @@ class PowerMonitorBroadcastSource : public base::PowerMonitorSource {
   // This constructor is used by test code to mock the Client class.
   PowerMonitorBroadcastSource(
       std::unique_ptr<Client> client,
-      service_manager::Connector* connector,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   Client* client_for_testing() const { return client_.get(); }

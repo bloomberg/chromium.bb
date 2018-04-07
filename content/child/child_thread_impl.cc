@@ -521,9 +521,15 @@ void ChildThreadImpl::Init(const Options& options) {
   if (!base::PowerMonitor::Get() && service_manager_connection_) {
     auto power_monitor_source =
         std::make_unique<device::PowerMonitorBroadcastSource>(
-            GetConnector(), GetIOTaskRunner());
+            GetIOTaskRunner());
+    auto* source_ptr = power_monitor_source.get();
     power_monitor_.reset(
         new base::PowerMonitor(std::move(power_monitor_source)));
+    // The two-phase init is necessary to ensure that the process-wide
+    // PowerMonitor is set before the power monitor source receives incoming
+    // communication from the browser process (see https://crbug.com/821790 for
+    // details)
+    source_ptr->Init(GetConnector());
   }
 
 #if defined(OS_POSIX)
