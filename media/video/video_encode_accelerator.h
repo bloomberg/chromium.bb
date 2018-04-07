@@ -165,24 +165,6 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   // previous Flush() is not finished yet.
   virtual void Flush(FlushCallback flush_callback);
 
-  // Encode tasks include these methods that are used frequently during the
-  // session: Encode(), UseOutputBitstreamBuffer(),
-  // RequestEncodingParametersChange(), Client::BitstreamBufferReady().
-  // If the Client can support running these on a separate thread, it may
-  // call this method to try to set up the VEA implementation to do so.
-  //
-  // If the VEA can support this as well, return true, otherwise return false.
-  // If true is returned, the client may submit each of these calls on
-  // |encode_task_runner|, and then expect Client::BitstreamBufferReady() to be
-  // called on |encode_task_runner| as well; called on |encode_client|, instead
-  // of |client| provided to Initialize().
-  //
-  // One application of this is offloading the GPU main thread. This helps
-  // reduce latency and jitter by avoiding the wait.
-  virtual bool TryToSetupEncodeOnSeparateThread(
-      const base::WeakPtr<Client>& encode_client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& encode_task_runner);
-
  protected:
   // Do not delete directly; use Destroy() or own it with a scoped_ptr, which
   // will Destroy() it properly by default.
