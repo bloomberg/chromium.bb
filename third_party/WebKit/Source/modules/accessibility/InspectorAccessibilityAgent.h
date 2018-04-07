@@ -30,7 +30,9 @@ class MODULES_EXPORT InspectorAccessibilityAgent
 
   // Protocol methods.
   protocol::Response getPartialAXTree(
-      int dom_node_id,
+      protocol::Maybe<int> dom_node_id,
+      protocol::Maybe<int> backend_node_id,
+      protocol::Maybe<String> object_id,
       protocol::Maybe<bool> fetch_relatives,
       std::unique_ptr<protocol::Array<protocol::Accessibility::AXNode>>*)
       override;

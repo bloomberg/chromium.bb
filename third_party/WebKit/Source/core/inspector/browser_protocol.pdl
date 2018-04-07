@@ -175,8 +175,12 @@ experimental domain Accessibility
   # Fetches the accessibility node and partial accessibility tree for this DOM node, if it exists.
   experimental command getPartialAXTree
     parameters
-      # ID of node to get the partial accessibility tree for.
-      DOM.NodeId nodeId
+      # Identifier of the node to get the partial accessibility tree for.
+      optional DOM.NodeId nodeId
+      # Identifier of the backend node to get the partial accessibility tree for.
+      optional DOM.BackendNodeId backendNodeId
+      # JavaScript object id of the node wrapper to get the partial accessibility tree for.
+      optional Runtime.RemoteObjectId objectId
       # Whether to fetch this nodes ancestors, siblings and children. Defaults to true.
       optional boolean fetchRelatives
     returns
@@ -2376,7 +2380,7 @@ domain Emulation
     returns
       # Absolute timestamp at which virtual time was first enabled (milliseconds since epoch).
       Runtime.Timestamp virtualTimeBase
-      # Absolute timestamp at which virtual time was first enabled (up time in milliseconds). 
+      # Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
       number virtualTimeTicksBase
 
   # Resizes the frame/viewport of the page. Note that this does not affect the frame's container
