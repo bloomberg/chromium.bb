@@ -369,6 +369,10 @@ static bool TimeComparator(scoped_refptr<DevToolsAgentHost> host1,
 // DevToolsHttpHandler -------------------------------------------------------
 
 DevToolsHttpHandler::~DevToolsHttpHandler() {
+  // Disconnecting sessions might lead to the last minute messages generated
+  // by the targets. It is essential that this happens before we issue delete
+  // soon for the server wrapper.
+  connection_to_client_.clear();
   TerminateOnUI(std::move(thread_), std::move(server_wrapper_),
                 std::move(socket_factory_));
 }

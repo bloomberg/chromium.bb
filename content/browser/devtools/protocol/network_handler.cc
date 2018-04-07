@@ -340,7 +340,7 @@ void DeleteSelectedCookiesOnIO(net::URLRequestContextGetter* context_getter,
         cookie, std::move(once_callback));
   }
   if (!filtered_list.size())
-    std::move(callback).Run();
+    DeletedCookiesOnIO(std::move(callback), 0);
 }
 
 void DeleteCookiesOnIO(net::URLRequestContextGetter* context_getter,
