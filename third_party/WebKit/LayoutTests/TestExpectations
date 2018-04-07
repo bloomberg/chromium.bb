@@ -3984,6 +3984,9 @@ crbug.com/818154 [ Linux Debug ] virtual/gpu-rasterization/images/gif-loop-count
 # Sheriff 2018-03-05
 crbug.com/818650 [ Linux ] fast/speech/scripted/speechrecognition-restart-onend.html [ Crash Pass ]
 
+# These tests will pass once the --enable-features=SignedHTTPExchange flag is enabled by default.
+crbug.com/803774 http/tests/loading/htxg/ [ Skip ]
+
 # Sheriff 2018-03-22
 crbug.com/824775 [ Win Mac ] virtual/new-remote-playback-pipeline/media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
 crbug.com/824775 [ Win Mac ] media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]

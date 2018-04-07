@@ -84,6 +84,7 @@ application/set-registration-initiation
 application/sgml
 application/sgml-open-catalog
 application/sieve
+application/signed-exchange;v=b0	htxg
 application/slate
 application/smil		smi smil
 application/srgs		gram
