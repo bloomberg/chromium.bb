@@ -117,12 +117,13 @@ bool SiteEngagementService::IsEnabled() {
 double SiteEngagementService::GetScoreFromSettings(
     HostContentSettingsMap* settings,
     const GURL& origin) {
-  auto clock = std::make_unique<base::DefaultClock>();
-  return SiteEngagementScore(clock.get(), origin, settings).GetTotalScore();
+  return SiteEngagementScore(base::DefaultClock::GetInstance(), origin,
+                             settings)
+      .GetTotalScore();
 }
 
 SiteEngagementService::SiteEngagementService(Profile* profile)
-    : SiteEngagementService(profile, std::make_unique<base::DefaultClock>()) {
+    : SiteEngagementService(profile, base::DefaultClock::GetInstance()) {
   content::BrowserThread::PostAfterStartupTask(
       FROM_HERE,
       content::BrowserThread::GetTaskRunnerForThread(
@@ -298,8 +299,8 @@ void SiteEngagementService::SetAndroidService(
 #endif
 
 SiteEngagementService::SiteEngagementService(Profile* profile,
-                                             std::unique_ptr<base::Clock> clock)
-    : profile_(profile), clock_(std::move(clock)), weak_factory_(this) {
+                                             base::Clock* clock)
+    : profile_(profile), clock_(clock), weak_factory_(this) {
   // May be null in tests.
   history::HistoryService* history = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::IMPLICIT_ACCESS);
@@ -596,8 +597,7 @@ SiteEngagementScore SiteEngagementService::CreateEngagementScore(
   // the original profile migrated in, so all engagement scores in incognito
   // will be initialised to the values from the original profile.
   return SiteEngagementScore(
-      clock_.get(), origin,
-      HostContentSettingsMapFactory::GetForProfile(profile_));
+      clock_, origin, HostContentSettingsMapFactory::GetForProfile(profile_));
 }
 
 int SiteEngagementService::OriginsWithMaxDailyEngagement() const {

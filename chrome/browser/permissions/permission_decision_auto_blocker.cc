@@ -358,9 +358,7 @@ void PermissionDecisionAutoBlocker::RemoveCountsByUrl(
 }
 
 PermissionDecisionAutoBlocker::PermissionDecisionAutoBlocker(Profile* profile)
-    : profile_(profile),
-      clock_(new base::DefaultClock()) {
-}
+    : profile_(profile), clock_(base::DefaultClock::GetInstance()) {}
 
 PermissionDecisionAutoBlocker::~PermissionDecisionAutoBlocker() {}
 
@@ -381,7 +379,6 @@ void PermissionDecisionAutoBlocker::PlaceUnderEmbargo(
       std::string(), std::move(dict));
 }
 
-void PermissionDecisionAutoBlocker::SetClockForTesting(
-    std::unique_ptr<base::Clock> clock) {
-  clock_ = std::move(clock);
+void PermissionDecisionAutoBlocker::SetClockForTesting(base::Clock* clock) {
+  clock_ = clock;
 }

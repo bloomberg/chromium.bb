@@ -109,7 +109,7 @@ class PermissionDecisionAutoBlocker : public KeyedService {
                          ContentSettingsType permission,
                          const char* key);
 
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+  void SetClockForTesting(base::Clock* clock);
 
   // Keys used for storing count data in a website setting.
   static const char kPromptDismissCountKey[];
@@ -119,7 +119,7 @@ class PermissionDecisionAutoBlocker : public KeyedService {
 
   Profile* profile_;
 
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionDecisionAutoBlocker);
 };

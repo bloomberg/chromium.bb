@@ -217,7 +217,7 @@ class SiteEngagementService : public KeyedService,
 #endif
 
   // Only used in tests.
-  SiteEngagementService(Profile* profile, std::unique_ptr<base::Clock> clock);
+  SiteEngagementService(Profile* profile, base::Clock* clock);
 
   // Adds the specified number of points to the given origin, respecting the
   // maximum limits for the day and overall.
@@ -323,7 +323,7 @@ class SiteEngagementService : public KeyedService,
   Profile* profile_;
 
   // The clock used to vend times.
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<SiteEngagementServiceAndroid> android_service_;
