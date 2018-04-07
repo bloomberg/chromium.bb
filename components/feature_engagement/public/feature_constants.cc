@@ -39,6 +39,8 @@ const base::Feature kIPHContextualSearchPromotePanelOpenFeature{
     "IPH_ContextualSearchPromotePanelOpen", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHContextualSearchOptInFeature{
     "IPH_ContextualSearchOptIn", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHContextualSuggestionsFeature{
+    "IPH_ContextualSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_DESKTOP_IN_PRODUCT_HELP)

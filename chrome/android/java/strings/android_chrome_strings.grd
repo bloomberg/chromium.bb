@@ -2448,6 +2448,11 @@ Google may use your browsing activity, content on some sites you visit, and othe
         Refresh
       </message>
 
+      <!-- Contextual suggestions strings -->
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_IN_PRODUCT_HELP" desc="The string displayed in an in-product help bubble when contextual suggestions are displayed for the first time. The bubble points to a swipeable panel containing suggestions related to the webpage the user is currently viewing.">
+        See more like this from Google
+      </message>
+
       <!-- Toolbar button strings -->
       <message name="IDS_OPEN_TABS" desc="Text for button to enter the tab switcher and show tabs that are open on this device">
         Open tabs

@@ -1158,6 +1158,11 @@ public class BottomSheet extends FrameLayout
 
         for (BottomSheetObserver o : mObservers) o.onSheetOffsetChanged(mLastOffsetRatioSent);
 
+        if (MathUtils.areFloatsEqual(
+                    offsetWithBrowserControls, getSheetHeightForState(SHEET_STATE_PEEK))) {
+            for (BottomSheetObserver o : mObservers) o.onSheetFullyPeeked();
+        }
+
         // This ratio is relative to the peek and half positions of the sheet.
         float peekHalfRatio = MathUtils.clamp(
                 (screenRatio - getPeekRatio()) / (getHalfRatio() - getPeekRatio()), 0, 1);
