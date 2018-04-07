@@ -47,6 +47,7 @@ constexpr char kGmailArcActivity[] =
     "com.google.android.gm.ConversationListActivityGmail";
 constexpr char kKeyboardShortcutHelperInternalName[] =
     "Keyboard Shortcut Helper";
+constexpr char kSettingsInternalName[] = "Settings";
 
 }  // namespace
 
@@ -263,22 +264,28 @@ TEST_F(AppSearchProviderTest, FetchRecommendations) {
   prefs->SetLastLaunchTime(kHostedAppId, base::Time::FromInternalValue(20));
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(5));
-  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Keyboard Shortcut Helper",
-            RunQuery(""));
+  EXPECT_EQ(
+      "Hosted App,Packaged App 1,Packaged App 2,Keyboard Shortcut "
+      "Helper,Settings",
+      RunQuery(""));
 
   prefs->SetLastLaunchTime(kHostedAppId, base::Time::FromInternalValue(5));
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(20));
-  EXPECT_EQ("Packaged App 2,Packaged App 1,Hosted App,Keyboard Shortcut Helper",
-            RunQuery(""));
+  EXPECT_EQ(
+      "Packaged App 2,Packaged App 1,Hosted App,Keyboard Shortcut "
+      "Helper,Settings",
+      RunQuery(""));
 
   // Times in the future should just be handled as highest priority.
   prefs->SetLastLaunchTime(kHostedAppId,
                            kTestCurrentTime + base::TimeDelta::FromSeconds(5));
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(10));
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(5));
-  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Keyboard Shortcut Helper",
-            RunQuery(""));
+  EXPECT_EQ(
+      "Hosted App,Packaged App 1,Packaged App 2,Keyboard Shortcut "
+      "Helper,Settings",
+      RunQuery(""));
 }
 
 TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
@@ -292,8 +299,10 @@ TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
   prefs->SetLastLaunchTime(kHostedAppId, base::Time::Now());
   prefs->SetLastLaunchTime(kPackagedApp1Id, base::Time::FromInternalValue(0));
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(0));
-  EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Keyboard Shortcut Helper",
-            RunQuery(""));
+  EXPECT_EQ(
+      "Hosted App,Packaged App 1,Packaged App 2,Keyboard Shortcut "
+      "Helper,Settings",
+      RunQuery(""));
 }
 
 TEST_F(AppSearchProviderTest, FilterDuplicate) {
@@ -332,9 +341,15 @@ TEST_F(AppSearchProviderTest, FilterDuplicate) {
 
 TEST_F(AppSearchProviderTest, FetchInternalApp) {
   CreateSearch();
+
+  // Search Keyboard Shortcut Helper.
   EXPECT_EQ(kKeyboardShortcutHelperInternalName, RunQuery("Keyboard"));
   EXPECT_EQ(kKeyboardShortcutHelperInternalName, RunQuery("Shortcut"));
   EXPECT_EQ(kKeyboardShortcutHelperInternalName, RunQuery("Helper"));
+
+  // Search Settings.
+  EXPECT_EQ(kSettingsInternalName, RunQuery("Settings"));
+  EXPECT_EQ(kSettingsInternalName, RunQuery("Set"));
 }
 
 }  // namespace test

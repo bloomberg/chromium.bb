@@ -14,7 +14,6 @@
            SAME CONDITIONALS. -->
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_LIST_BROWSER" file="common/shelf/window_switcher_icon_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_LIST_INCOGNITO_BROWSER" file="common/shelf/window_switcher_icon_incognito.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_SETTINGS" file="common/shelf/settings_app_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_TASK_MANAGER" file="common/shelf/task_manager.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED" file="cros/network/status_network_failed.png" />
@@ -35,6 +34,10 @@
 
       <!-- Crostini terminal images -->
       <structure type="chrome_scaled_image" name="IDR_LOGO_CROSTINI_TERMINAL" file="cros/crostini/logo_crostini_terminal.png" />
+
+      <!-- CrOS internal apps images -->
+      <structure type="chrome_scaled_image" name="IDR_KEYBOARD_SHORTCUT_VIEWER_LOGO_192" file="cros/keyboard_shortcut_viewer_logo_192.png" />
+      <structure type="chrome_scaled_image" name="IDR_SETTINGS_LOGO_192" file="cros/settings_logo_192.png" />
 
     </structures>
   </release>

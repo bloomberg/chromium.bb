@@ -4864,9 +4864,12 @@
     Lock screen notes are automatically saved to <ph name="LOCK_SCREEN_APP_NAME">$1<ex>Lock Screen Enabled App</ex></ph>. Your most recent note will remain on the lock screen.
   </message>
 
-  <!-- Launcher Searchable Chrome OS apps -->
-  <message name="IDS_LAUNCHER_SEARCHABLE_APP_KEYBOARD_SHORTCUT_VIEWER" desc="The string can be used to search keyboard shortcut viewer app.">
+  <!-- Launcher Searchable Chrome OS internal apps -->
+  <message name="IDS_INTERNAL_APP_KEYBOARD_SHORTCUT_VIEWER" desc="The string can be used to search keyboard shortcut viewer app.">
     Keyboard Shortcut Helper
+  </message>
+  <message name="IDS_INTERNAL_APP_SETTINGS" desc="The string can be used to search Settings.">
+    Settings
   </message>
 
   <message name="IDS_CROSTINI_INSTALLER_TITLE" desc="Title of the Crostini installer, a dialog for installing the 'Terminal'.">

@@ -30,6 +30,7 @@ source_set("ksv") {
     "//ash/components/shortcut_viewer/vector_icons",
     "//ash/components/strings",
     "//ash/public/cpp",
+    "//ash/resources",
     "//cc/paint",
     "//ui/accessibility",
     "//ui/aura",
