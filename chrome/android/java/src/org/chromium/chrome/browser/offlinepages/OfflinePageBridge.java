@@ -865,7 +865,6 @@ public class OfflinePageBridge {
     @VisibleForTesting
     private native void nativePublishInternalPageByGuid(
             long nativeOfflinePageBridge, String guid, Callback<String> publishedCallback);
-
     private native void nativeSelectPageForOnlineUrl(
             long nativeOfflinePageBridge, String onlineUrl, int tabId,
             Callback<OfflinePageItem> callback);

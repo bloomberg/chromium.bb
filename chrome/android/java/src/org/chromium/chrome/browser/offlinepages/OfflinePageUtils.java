@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.components.bookmarks.BookmarkId;
+import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.ConnectionType;
@@ -347,6 +348,18 @@ public class OfflinePageUtils {
     }
 
     /**
+     * Records UMA data for publishing internal page during sharing.
+     * Most of the recording are in JNI layer, since it's a point that can be used by both ways of
+     * sharing a page.
+     * TODO(romax): See if we can merge that.
+     * @param result The result for publishing file.
+     */
+    public static void recordPublishPageResult(int result) {
+        RecordHistogram.recordEnumeratedHistogram("OfflinePages.Sharing.PublishInternalPageResult",
+                result, SavePageResult.RESULT_COUNT);
+    }
+
+    /**
      * If possible, creates the ShareParams needed to share the current offline page loaded in the
      * provided tab as a MHTML file.
      *
@@ -381,7 +394,10 @@ public class OfflinePageUtils {
         // The file access permission is needed since we may need to publish the archive file
         // if it resides in internal directory.
         offlinePageBridge.acquireFileAccessPermission(webContents, (granted) -> {
-            if (!granted) return;
+            if (!granted) {
+                recordPublishPageResult(SavePageResult.PERMISSION_DENIED);
+                return;
+            }
 
             // If the page is not in a public location, we must publish it before sharing it.
             if (offlinePageBridge.isInPrivateDirectory(offlinePath)) {
@@ -450,7 +466,7 @@ public class OfflinePageUtils {
     public static void publishThenShareInternalPage(final Activity activity,
             OfflinePageBridge offlinePageBridge, OfflinePageItem offlinePage,
             final Callback<ShareParams> shareCallback) {
-        Callback<String> publishPageCallback =
+        PublishPageCallback publishPageCallback =
                 new PublishPageCallback(activity, offlinePage, shareCallback);
         offlinePageBridge.publishInternalPageByOfflineId(
                 offlinePage.getOfflineId(), publishPageCallback);

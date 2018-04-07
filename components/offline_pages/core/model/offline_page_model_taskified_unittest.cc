@@ -69,34 +69,6 @@ const std::string kEmptyRequestOrigin("");
 const std::string kTestDigest("test digest");
 const int64_t kDownloadId = 42LL;
 
-// Class to receive the callback for page publish completion.
-// TODO(romax): Convert this to a mock callback like the other tests use.
-class PublishPageTestCallback {
- public:
-  PublishPageTestCallback()
-      : callback_called_(false), weak_ptr_factory_(this) {}
-
-  void Run(const base::FilePath& file_path, bool success) {
-    callback_called_ = true;
-    success_ = false;
-    file_path_ = file_path;
-    success_ = success;
-  }
-
-  bool callback_called() const { return callback_called_; }
-  bool success() const { return success_; };
-  const base::FilePath file_path() const { return file_path_; };
-  base::WeakPtr<PublishPageTestCallback> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
- private:
-  bool callback_called_;
-  bool success_;
-  base::FilePath file_path_;
-  base::WeakPtrFactory<PublishPageTestCallback> weak_ptr_factory_;
-};
-
 }  // namespace
 
 class OfflinePageModelTaskifiedTest : public testing::Test,
@@ -1332,16 +1304,12 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_CheckPublishInternalArchive) {
       BuildArchiver(kTestUrl2, ArchiverResult::SUCCESSFULLY_CREATED);
 
   // Publish the page from our internal store.
-  PublishPageTestCallback test_callback;
-  PublishPageCallback publish_done_callback =
-      base::BindOnce(&PublishPageTestCallback::Run, test_callback.GetWeakPtr());
+  base::MockCallback<PublishPageCallback> callback;
+  EXPECT_CALL(callback, Run(A<const base::FilePath&>(), A<SavePageResult>()));
 
   model()->PublishInternalArchive(*persistent_page, std::move(test_archiver),
-                                  std::move(publish_done_callback));
+                                  callback.Get());
   PumpLoop();
-
-  // Check that the page was published as expected.
-  ASSERT_TRUE(test_callback.callback_called());
 }
 
 // This test is disabled since it's lacking the ability of mocking store failure

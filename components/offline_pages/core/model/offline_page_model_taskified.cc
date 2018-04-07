@@ -157,6 +157,20 @@ void ReportStorageUsage(const ArchiveManager::StorageStats& storage_stats) {
   }
 }
 
+void OnUpdateFilePathDone(PublishPageCallback publish_done_callback,
+                          const base::FilePath& new_file_path,
+                          SavePageResult result,
+                          bool update_file_result) {
+  if (update_file_result) {
+    std::move(publish_done_callback).Run(new_file_path, result);
+    return;
+  }
+  // If the file path wasn't updated successfully, just invoke the callback with
+  // store failure.
+  std::move(publish_done_callback)
+      .Run(new_file_path, SavePageResult::STORE_FAILURE);
+}
+
 }  // namespace
 
 // static
@@ -569,9 +583,11 @@ void OfflinePageModelTaskified::PublishInternalArchiveDone(
     PublishPageCallback publish_done_callback,
     const OfflinePageItem& offline_page,
     PublishArchiveResult* publish_results) {
+  base::FilePath file_path = publish_results->new_file_path;
+  SavePageResult result = publish_results->move_result;
   // Call the callback with success == false if we failed to move the page.
-  if (publish_results->move_result != SavePageResult::SUCCESS) {
-    std::move(publish_done_callback).Run(publish_results->new_file_path, false);
+  if (result != SavePageResult::SUCCESS) {
+    std::move(publish_done_callback).Run(file_path, result);
     return;
   }
 
@@ -579,10 +595,9 @@ void OfflinePageModelTaskified::PublishInternalArchiveDone(
   // found in move_results.new_file_path, and with the download ID found at
   // move_results.download_id.  Return the updated offline_page to the callback.
   auto task = std::make_unique<UpdateFilePathTask>(
-      store_.get(), offline_page.offline_id, publish_results->new_file_path,
-      base::BindOnce(std::move(publish_done_callback),
-                     publish_results->new_file_path));
-
+      store_.get(), offline_page.offline_id, file_path,
+      base::BindOnce(&OnUpdateFilePathDone, std::move(publish_done_callback),
+                     file_path, result));
   task_queue_.AddTask(std::move(task));
 }
 
