@@ -47,7 +47,14 @@ base::FilePath BlinkRootFilePath() {
   base::FilePath path;
   base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
   return base::MakeAbsoluteFilePath(
-      path.Append(FILE_PATH_LITERAL("third_party/WebKit")));
+      path.Append(FILE_PATH_LITERAL("third_party/blink")));
+}
+
+base::FilePath LayoutTestsFilePath() {
+  base::FilePath path;
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  return base::MakeAbsoluteFilePath(
+      path.Append(FILE_PATH_LITERAL("third_party/WebKit/LayoutTests")));
 }
 
 }  // namespace
@@ -85,6 +92,10 @@ String BlinkRootDir() {
   return FilePathToWebString(BlinkRootFilePath());
 }
 
+String BlinkLayoutTestsDir() {
+  return FilePathToWebString(LayoutTestsFilePath());
+}
+
 String ExecutableDir() {
   base::FilePath path;
   base::PathService::Get(base::DIR_EXE, &path);
@@ -94,14 +105,14 @@ String ExecutableDir() {
 String CoreTestDataPath(const String& relative_path) {
   return FilePathToWebString(
       BlinkRootFilePath()
-          .Append(FILE_PATH_LITERAL("Source/core/testing/data"))
+          .Append(FILE_PATH_LITERAL("renderer/core/testing/data"))
           .Append(WebStringToFilePath(relative_path)));
 }
 
 String PlatformTestDataPath(const String& relative_path) {
   return FilePathToWebString(
       BlinkRootFilePath()
-          .Append(FILE_PATH_LITERAL("Source/platform/testing/data"))
+          .Append(FILE_PATH_LITERAL("renderer/platform/testing/data"))
           .Append(WebStringToFilePath(relative_path)));
 }
 

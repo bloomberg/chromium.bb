@@ -43,7 +43,7 @@ class HighContrastImageClassifierTest : public testing::Test {
 
  protected:
   scoped_refptr<BitmapImage> LoadImage(const std::string& file_name) {
-    String file_path = test::BlinkRootDir();
+    String file_path = test::BlinkLayoutTestsDir();
     file_path.append(file_name.c_str());
     scoped_refptr<SharedBuffer> image_data = test::ReadFromFile(file_path);
     EXPECT_TRUE(image_data.get() && image_data.get()->size());
@@ -66,8 +66,8 @@ TEST_F(HighContrastImageClassifierTest, FeaturesAndClassification) {
   // Color Buckets Ratio: Low
   // Decision Tree: Apply
   // Neural Network: NA
-  EXPECT_TRUE(GetFeaturesAndClassification(
-      "/LayoutTests/images/resources/grid-large.png", &features));
+  EXPECT_TRUE(GetFeaturesAndClassification("/images/resources/grid-large.png",
+                                           &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             HighContrastClassification::kApplyHighContrastFilter);
   AssertFeaturesEqual(features, {0.0f, 0.1875f, 0.0f, 0.1f});
@@ -77,8 +77,8 @@ TEST_F(HighContrastImageClassifierTest, FeaturesAndClassification) {
   // Color Buckets Ratio: Medium
   // Decision Tree: Can't Decide
   // Neural Network: Apply
-  EXPECT_TRUE(GetFeaturesAndClassification(
-      "/LayoutTests/images/resources/apng08-ref.png", &features));
+  EXPECT_TRUE(GetFeaturesAndClassification("/images/resources/apng08-ref.png",
+                                           &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             HighContrastClassification::kNotClassified);
   AssertFeaturesEqual(features, {0.0f, 0.8125f, 0.409f, 0.59f});
@@ -89,7 +89,7 @@ TEST_F(HighContrastImageClassifierTest, FeaturesAndClassification) {
   // Decision Tree: Apply
   // Neural Network: NA.
   EXPECT_TRUE(GetFeaturesAndClassification(
-      "/LayoutTests/images/resources/count-down-color-test.png", &features));
+      "/images/resources/count-down-color-test.png", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             HighContrastClassification::kApplyHighContrastFilter);
   AssertFeaturesEqual(features, {1.0f, 0.0134277f, 0.0f, 0.43f});
@@ -100,8 +100,7 @@ TEST_F(HighContrastImageClassifierTest, FeaturesAndClassification) {
   // Decision Tree: Do Not Apply
   // Neural Network: NA.
   EXPECT_FALSE(GetFeaturesAndClassification(
-      "/LayoutTests/images/resources/blue-wheel-srgb-color-profile.png",
-      &features));
+      "/images/resources/blue-wheel-srgb-color-profile.png", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             HighContrastClassification::kDoNotApplyHighContrastFilter);
   AssertFeaturesEqual(features, {1.0f, 0.03027f, 0.0f, 0.24f});
@@ -112,7 +111,7 @@ TEST_F(HighContrastImageClassifierTest, FeaturesAndClassification) {
   // Decision Tree: Can't Decide
   // Neural Network: Apply.
   EXPECT_TRUE(GetFeaturesAndClassification(
-      "/LayoutTests/images/resources/ycbcr-444-float.jpg", &features));
+      "/images/resources/ycbcr-444-float.jpg", &features));
   EXPECT_EQ(classifier()->ClassifyImageUsingDecisionTreeForTesting(features),
             HighContrastClassification::kNotClassified);
   AssertFeaturesEqual(features, {1.0f, 0.0166016f, 0.0f, 0.59f});

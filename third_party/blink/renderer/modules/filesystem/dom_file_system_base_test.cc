@@ -14,7 +14,8 @@ class DOMFileSystemBaseTest : public testing::Test {
  public:
   DOMFileSystemBaseTest() {
     file_path_ = test::BlinkRootDir();
-    file_path_.append("/Source/modules/filesystem/DOMFileSystemBaseTest.cpp");
+    file_path_.append(
+        "/renderer/modules/filesystem/dom_file_system_base_test.cc");
     GetFileMetadata(file_path_, file_metadata_);
     file_metadata_.platform_path = file_path_;
   }
@@ -30,11 +31,11 @@ TEST_F(DOMFileSystemBaseTest, externalFilesystemFilesAreUserVisible) {
 
   File* file = DOMFileSystemBase::CreateFile(file_metadata_, root_url,
                                              kFileSystemTypeExternal,
-                                             "DOMFileSystemBaseTest.cpp");
+                                             "dom_file_system_base_test.cc");
   EXPECT_TRUE(file);
   EXPECT_TRUE(file->HasBackingFile());
   EXPECT_EQ(File::kIsUserVisible, file->GetUserVisibility());
-  EXPECT_EQ("DOMFileSystemBaseTest.cpp", file->name());
+  EXPECT_EQ("dom_file_system_base_test.cc", file->name());
   EXPECT_EQ(file_path_, file->GetPath());
 }
 

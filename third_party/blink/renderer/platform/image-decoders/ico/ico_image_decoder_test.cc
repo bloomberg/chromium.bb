@@ -21,7 +21,7 @@ std::unique_ptr<ImageDecoder> CreateICODecoder() {
 
 TEST(ICOImageDecoderTests, trunctedIco) {
   const Vector<char> data =
-      ReadFile("/LayoutTests/images/resources/png-in-ico.ico")->Copy();
+      ReadFile("/images/resources/png-in-ico.ico")->Copy();
   ASSERT_FALSE(data.IsEmpty());
 
   scoped_refptr<SharedBuffer> truncated_data =
@@ -39,7 +39,7 @@ TEST(ICOImageDecoderTests, trunctedIco) {
 
 TEST(ICOImageDecoderTests, errorInPngInIco) {
   const Vector<char> data =
-      ReadFile("/LayoutTests/images/resources/png-in-ico.ico")->Copy();
+      ReadFile("/images/resources/png-in-ico.ico")->Copy();
   ASSERT_FALSE(data.IsEmpty());
 
   // Modify the file to have a broken CRC in IHDR.
@@ -66,24 +66,19 @@ TEST(ICOImageDecoderTests, errorInPngInIco) {
 }
 
 TEST(ICOImageDecoderTests, parseAndDecodeByteByByte) {
-  TestByteByByteDecode(&CreateICODecoder,
-                       "/LayoutTests/images/resources/png-in-ico.ico", 1u,
+  TestByteByByteDecode(&CreateICODecoder, "/images/resources/png-in-ico.ico",
+                       1u, kAnimationNone);
+  TestByteByByteDecode(&CreateICODecoder, "/images/resources/2entries.ico", 2u,
                        kAnimationNone);
   TestByteByByteDecode(&CreateICODecoder,
-                       "/LayoutTests/images/resources/2entries.ico", 2u,
+                       "/images/resources/greenbox-3frames.cur", 3u,
                        kAnimationNone);
   TestByteByByteDecode(&CreateICODecoder,
-                       "/LayoutTests/images/resources/greenbox-3frames.cur", 3u,
+                       "/images/resources/icon-without-and-bitmap.ico", 1u,
                        kAnimationNone);
-  TestByteByByteDecode(
-      &CreateICODecoder,
-      "/LayoutTests/images/resources/icon-without-and-bitmap.ico", 1u,
-      kAnimationNone);
-  TestByteByByteDecode(&CreateICODecoder,
-                       "/LayoutTests/images/resources/1bit.ico", 1u,
+  TestByteByByteDecode(&CreateICODecoder, "/images/resources/1bit.ico", 1u,
                        kAnimationNone);
-  TestByteByByteDecode(&CreateICODecoder,
-                       "/LayoutTests/images/resources/bug653075.ico", 2u,
+  TestByteByByteDecode(&CreateICODecoder, "/images/resources/bug653075.ico", 2u,
                        kAnimationNone);
 }
 
@@ -91,7 +86,7 @@ TEST(ICOImageDecoderTests, NullData) {
   static constexpr size_t kSizeOfBadBlock = 6 + 16 + 1;
 
   scoped_refptr<SharedBuffer> ico_file_data =
-      ReadFile("/LayoutTests/images/resources/png-in-ico.ico");
+      ReadFile("/images/resources/png-in-ico.ico");
   ASSERT_FALSE(ico_file_data->IsEmpty());
   ASSERT_LT(kSizeOfBadBlock, ico_file_data->size());
 

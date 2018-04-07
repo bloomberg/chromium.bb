@@ -49,8 +49,12 @@ void ExitRunLoop();
 void YieldCurrentThread();
 
 // Returns Blink top directory as an absolute path, e.g.
-// /src/third_party/WebKit.
+// /src/third_party/blink.
 String BlinkRootDir();
+
+// Returns Blink LayoutTests directory as an absolute path, e.g.
+// /src/third_party/WebKit/LayoutTests.
+String BlinkLayoutTestsDir();
 
 // Returns directory containing the current executable as absolute path.
 String ExecutableDir();

@@ -67,38 +67,37 @@ static void MixImages(const char* file_name,
 }
 
 TEST(DeferredImageDecoderTestWoPlatform, mixImagesGif) {
-  MixImages("/LayoutTests/images/resources/animated.gif", 818u, 1u);
+  MixImages("/images/resources/animated.gif", 818u, 1u);
 }
 
 TEST(DeferredImageDecoderTestWoPlatform, mixImagesPng) {
-  MixImages("/LayoutTests/images/resources/mu.png", 910u, 0u);
+  MixImages("/images/resources/mu.png", 910u, 0u);
 }
 
 TEST(DeferredImageDecoderTestWoPlatform, mixImagesJpg) {
-  MixImages("/LayoutTests/images/resources/2-dht.jpg", 177u, 0u);
+  MixImages("/images/resources/2-dht.jpg", 177u, 0u);
 }
 
 TEST(DeferredImageDecoderTestWoPlatform, mixImagesWebp) {
-  MixImages("/LayoutTests/images/resources/webp-animated.webp", 142u, 1u);
+  MixImages("/images/resources/webp-animated.webp", 142u, 1u);
 }
 
 TEST(DeferredImageDecoderTestWoPlatform, mixImagesBmp) {
-  MixImages("/LayoutTests/images/resources/lenna.bmp", 122u, 0u);
+  MixImages("/images/resources/lenna.bmp", 122u, 0u);
 }
 
 TEST(DeferredImageDecoderTestWoPlatform, mixImagesIco) {
-  MixImages("/LayoutTests/images/resources/wrong-frame-dimensions.ico", 1376u,
-            1u);
+  MixImages("/images/resources/wrong-frame-dimensions.ico", 1376u, 1u);
 }
 
 TEST(DeferredImageDecoderTestWoPlatform, fragmentedSignature) {
   const char* test_files[] = {
-      "/LayoutTests/images/resources/animated.gif",
-      "/LayoutTests/images/resources/mu.png",
-      "/LayoutTests/images/resources/2-dht.jpg",
-      "/LayoutTests/images/resources/webp-animated.webp",
-      "/LayoutTests/images/resources/lenna.bmp",
-      "/LayoutTests/images/resources/wrong-frame-dimensions.ico",
+      "/images/resources/animated.gif",
+      "/images/resources/mu.png",
+      "/images/resources/2-dht.jpg",
+      "/images/resources/webp-animated.webp",
+      "/images/resources/lenna.bmp",
+      "/images/resources/wrong-frame-dimensions.ico",
   };
 
   for (size_t i = 0; i < SK_ARRAY_COUNT(test_files); ++i) {
