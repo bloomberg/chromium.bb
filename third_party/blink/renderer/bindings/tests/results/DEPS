@@ -1,0 +1,7 @@
+include_rules = [
+    # Allow paths relative to blink/renderder until fixing IDL compiler.
+    "!bindings",
+    "!core",
+    "!modules",
+    "!platform",
+]
