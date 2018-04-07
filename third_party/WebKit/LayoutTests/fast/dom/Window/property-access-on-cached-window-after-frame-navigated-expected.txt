@@ -101,7 +101,6 @@ PASS oldChildWindow.onended is newChildWindow.onended
 PASS oldChildWindow.onerror is newChildWindow.onerror
 PASS oldChildWindow.onfocus is newChildWindow.onfocus
 PASS oldChildWindow.onformdata is newChildWindow.onformdata
-PASS oldChildWindow.onfreeze is newChildWindow.onfreeze
 PASS oldChildWindow.ongotpointercapture is newChildWindow.ongotpointercapture
 PASS oldChildWindow.onhashchange is newChildWindow.onhashchange
 PASS oldChildWindow.oninput is newChildWindow.oninput
@@ -146,7 +145,6 @@ PASS oldChildWindow.onratechange is newChildWindow.onratechange
 PASS oldChildWindow.onrejectionhandled is newChildWindow.onrejectionhandled
 PASS oldChildWindow.onreset is newChildWindow.onreset
 PASS oldChildWindow.onresize is newChildWindow.onresize
-PASS oldChildWindow.onresume is newChildWindow.onresume
 PASS oldChildWindow.onscroll is newChildWindow.onscroll
 PASS oldChildWindow.onsearch is newChildWindow.onsearch
 PASS oldChildWindow.onseeked is newChildWindow.onseeked

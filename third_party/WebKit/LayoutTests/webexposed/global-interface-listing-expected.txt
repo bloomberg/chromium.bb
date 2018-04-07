@@ -1517,6 +1517,7 @@ interface Document : Node
     getter onerror
     getter onfocus
     getter onformdata
+    getter onfreeze
     getter onfullscreenchange
     getter onfullscreenerror
     getter ongotpointercapture
@@ -1557,6 +1558,7 @@ interface Document : Node
     getter onreadystatechange
     getter onreset
     getter onresize
+    getter onresume
     getter onscroll
     getter onsearch
     getter onsecuritypolicyviolation
@@ -1704,6 +1706,7 @@ interface Document : Node
     setter onerror
     setter onfocus
     setter onformdata
+    setter onfreeze
     setter onfullscreenchange
     setter onfullscreenerror
     setter ongotpointercapture
@@ -1744,6 +1747,7 @@ interface Document : Node
     setter onreadystatechange
     setter onreset
     setter onresize
+    setter onresume
     setter onscroll
     setter onsearch
     setter onsecuritypolicyviolation
@@ -2270,7 +2274,6 @@ interface HTMLBodyElement : HTMLElement
     getter onblur
     getter onerror
     getter onfocus
-    getter onfreeze
     getter onhashchange
     getter onlanguagechange
     getter onload
@@ -2283,7 +2286,6 @@ interface HTMLBodyElement : HTMLElement
     getter onpopstate
     getter onrejectionhandled
     getter onresize
-    getter onresume
     getter onscroll
     getter onstorage
     getter onunhandledrejection
@@ -2301,7 +2303,6 @@ interface HTMLBodyElement : HTMLElement
     setter onblur
     setter onerror
     setter onfocus
-    setter onfreeze
     setter onhashchange
     setter onlanguagechange
     setter onload
@@ -2314,7 +2315,6 @@ interface HTMLBodyElement : HTMLElement
     setter onpopstate
     setter onrejectionhandled
     setter onresize
-    setter onresume
     setter onscroll
     setter onstorage
     setter onunhandledrejection
@@ -2719,7 +2719,6 @@ interface HTMLFrameSetElement : HTMLElement
     getter onblur
     getter onerror
     getter onfocus
-    getter onfreeze
     getter onhashchange
     getter onlanguagechange
     getter onload
@@ -2732,7 +2731,6 @@ interface HTMLFrameSetElement : HTMLElement
     getter onpopstate
     getter onrejectionhandled
     getter onresize
-    getter onresume
     getter onscroll
     getter onstorage
     getter onunhandledrejection
@@ -2746,7 +2744,6 @@ interface HTMLFrameSetElement : HTMLElement
     setter onblur
     setter onerror
     setter onfocus
-    setter onfreeze
     setter onhashchange
     setter onlanguagechange
     setter onload
@@ -2759,7 +2756,6 @@ interface HTMLFrameSetElement : HTMLElement
     setter onpopstate
     setter onrejectionhandled
     setter onresize
-    setter onresume
     setter onscroll
     setter onstorage
     setter onunhandledrejection
@@ -9336,7 +9332,6 @@ interface webkitURL
     getter onerror
     getter onfocus
     getter onformdata
-    getter onfreeze
     getter ongotpointercapture
     getter onhashchange
     getter oninput
@@ -9381,7 +9376,6 @@ interface webkitURL
     getter onrejectionhandled
     getter onreset
     getter onresize
-    getter onresume
     getter onscroll
     getter onsearch
     getter onseeked
@@ -9522,7 +9516,6 @@ interface webkitURL
     setter onerror
     setter onfocus
     setter onformdata
-    setter onfreeze
     setter ongotpointercapture
     setter onhashchange
     setter oninput
@@ -9567,7 +9560,6 @@ interface webkitURL
     setter onrejectionhandled
     setter onreset
     setter onresize
-    setter onresume
     setter onscroll
     setter onsearch
     setter onseeked
