@@ -24,7 +24,7 @@ const mojoBindingsLoaded = (async () => {
   mojo.config.autoLoadMojomDeps = false;
   const urls = [
     '/gen/mojo/public/mojom/base/time.mojom.js',
-    '/gen/third_party/WebKit/public/mojom/web_package/web_package_internals.mojom.js',
+    '/gen/third_party/blink/public/mojom/web_package/web_package_internals.mojom.js',
   ];
   await Promise.all(urls.map(loadScript));
 })();
