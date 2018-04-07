@@ -1792,7 +1792,11 @@ const char kWebXrDescription[] =
 const char kWebXrGamepadSupportName[] = "WebXR Gamepad Support";
 const char kWebXrGamepadSupportDescription[] =
     "Expose VR controllers as Gamepads for use with the WebXR Device API. Each "
-    "XRInputSource will have a corresponding Gamepad instance";
+    "XRInputSource will have a corresponding Gamepad instance.";
+
+const char kWebXrHitTestName[] = "WebXR Hit Test";
+const char kWebXrHitTestDescription[] =
+    "Enables access to raycasting against estimated XR scene geometry.";
 
 const char kWebXrOrientationSensorDeviceName[] =
     "WebXR orientation sensor device";
