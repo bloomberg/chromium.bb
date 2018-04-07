@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
@@ -295,13 +296,15 @@ void SavePageLaterCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
 void PublishPageDone(
     const ScopedJavaGlobalRef<jobject>& j_published_callback_obj,
     const base::FilePath& file_path,
-    bool success) {
-  // Create a java side OfflinePageItem for this offline_page.
+    SavePageResult result) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   base::FilePath file_path_or_empty;
-  if (success)
+  if (result != SavePageResult::SUCCESS)
     file_path_or_empty = file_path;
+
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.Sharing.PublishInternalPageResult",
+                            result, SavePageResult::RESULT_COUNT);
 
   base::android::RunCallbackAndroid(
       j_published_callback_obj,
@@ -699,7 +702,8 @@ void OfflinePageBridge::PublishInternalArchive(
     const ScopedJavaGlobalRef<jobject>& j_callback_obj,
     const OfflinePageItem* offline_page) {
   if (!offline_page) {
-    PublishPageDone(j_callback_obj, base::FilePath(), false /*success*/);
+    PublishPageDone(j_callback_obj, base::FilePath(),
+                    SavePageResult::CANCELLED);
     return;
   }
 
@@ -709,7 +713,8 @@ void OfflinePageBridge::PublishInternalArchive(
 
   // If it has already been published, bail out.
   if (!offline_page_model->IsArchiveInInternalDir(offline_page->file_path)) {
-    PublishPageDone(j_callback_obj, offline_page->file_path, true /*success*/);
+    PublishPageDone(j_callback_obj, offline_page->file_path,
+                    SavePageResult::ALREADY_EXISTS);
     return;
   }
 

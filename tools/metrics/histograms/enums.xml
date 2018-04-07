@@ -32846,6 +32846,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="13" label="Download Manager registration failed">
     Unable to add the file to the system download manager
   </int>
+  <int value="14" label="No storage permission">
+    Unable to get storage permission for publish the page.
+  </int>
 </enum>
 
 <enum name="OfflinePagesSharedPageWasOffline">

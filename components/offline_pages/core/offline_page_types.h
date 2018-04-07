@@ -45,6 +45,8 @@ enum class SavePageResult {
   FILE_MOVE_FAILED,
   // Unable to add the file to the system download manager.
   ADD_TO_DOWNLOAD_MANAGER_FAILED,
+  // Unable to get write permission on public directory.
+  PERMISSION_DENIED,
   // NOTE: always keep this entry at the end. Add new result types only
   // immediately above this line. Make sure to update the corresponding
   // histogram enum accordingly.
@@ -110,8 +112,9 @@ typedef base::OnceCallback<void(bool)> CleanupThumbnailsCallback;
 
 // Callbacks used for publishing an offline page.
 using PublishPageCallback =
-    base::OnceCallback<void(const base::FilePath&, bool)>;
+    base::OnceCallback<void(const base::FilePath&, SavePageResult)>;
 using UpdateFilePathDoneCallback = base::OnceCallback<void(bool)>;
+
 }  // namespace offline_pages
 
 #endif  // COMPONENTS_OFFLINE_PAGES_CORE_OFFLINE_PAGE_TYPES_H_

@@ -28,9 +28,9 @@ public class PublishPageCallback implements Callback<String> {
         mShareCallback = shareCallback;
     }
 
+    /** Report results of publishing. */
     @Override
     @CalledByNative
-    /** Report results of publishing. */
     public void onResult(String newFilePath) {
         OfflinePageItem page = null;
         // If the sharing failed, the file path will be empty.  We'll call the share callback
@@ -43,8 +43,6 @@ public class PublishPageCallback implements Callback<String> {
                     mPage.getAccessCount(), mPage.getLastAccessTimeMs(), mPage.getRequestOrigin());
         }
 
-        // TODO(petewil): Sharing seems out of place here. Move the call to sharing
-        // back to OfflinePageUtils.
         OfflinePageUtils.publishCompleted(page, mActivity, mShareCallback);
     }
 }
