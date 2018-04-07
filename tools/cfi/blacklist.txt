@@ -57,7 +57,7 @@ fun:*DatabaseContext*contextDestroyed*
 
 # FIXME: Cannot handle template function LifecycleObserver<>::setContext,
 # so exclude source file for now. 
-src:*LifecycleObserver.h*
+src:*lifecycle_observer.h*
 
 #############################################################################
 # Methods disabled due to perf considerations.
