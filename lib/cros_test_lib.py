@@ -1138,6 +1138,13 @@ class MockTestCase(TestCase):
     """
     return self.StartPatcher(mock.patch.object(*args, **kwargs))
 
+  def PatchDict(self, *args, **kwargs):
+    """Create and start a mock.patch.dict().
+
+    stop() will be called automatically during tearDown.
+    """
+    return self.StartPatcher(mock.patch.dict(*args, **kwargs))
+
 
 # MockTestCase must be before TempDirTestCase in this inheritance order,
 # because MockTestCase.StartPatcher() calls may be for PartialMocks, which

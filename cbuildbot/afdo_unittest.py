@@ -13,6 +13,7 @@ from chromite.cbuildbot import afdo
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import portage_util
 
 
@@ -111,7 +112,7 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
                 'rev':None,
                 'category':None}
       cpv = portage_util.CPV(version=version, **unused)
-      profile = afdo.GetCWPProfile(cpv, 'unused', 'unused', gs.GSContext())
+      profile = afdo.GetCWPProfile(cpv, 'silvermont', 'unused', gs.GSContext())
       # Expect the most recent profile on the same branch.
       self.assertEqual(profile, profiles[idx][:-3])
 
@@ -132,3 +133,28 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(
         afdo.CWPProfileToVersionTuple('R66-3325.65-1519321598.afdo.xz'),
         [66, 3325, 65, 1519321598])
+
+  def testPatchChromeEbuildAFDOFile(self):
+    before = [
+        'The following line contains the version:',
+        'AFDO_FILE["benchmark"]="chromeos-chrome-amd64-67.0.3379.0_rc-r1.afdo"',
+        'AFDO_FILE["silvermont"]="R67-3359.31-1522059092.afdo"',
+        'It should be changed.'
+    ]
+    after = [
+        'The following line contains the version:',
+        'AFDO_FILE["benchmark"]="chromeos-chrome-amd64-67.0.3388.0_rc-r1.afdo"',
+        'AFDO_FILE["silvermont"]="R67-3360.42-153456789.afdo"',
+        'It should be changed.'
+    ]
+
+    self.PatchObject(path_util, 'FromChrootPath', lambda x: x)
+
+    tf = os.path.join(self.tempdir, 'test.ebuild')
+    osutils.WriteFile(tf, '\n'.join(before))
+    afdo.PatchChromeEbuildAFDOFile(
+        tf,
+        {'benchmark': 'chromeos-chrome-amd64-67.0.3388.0_rc-r1.afdo',
+         'silvermont': 'R67-3360.42-153456789.afdo'})
+    x = osutils.ReadFile(tf).splitlines()
+    self.assertEqual(after, x)

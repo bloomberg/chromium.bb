@@ -83,31 +83,25 @@ class AFDOUpdateChromeEbuildStage(generic_stages.BuilderStage):
     gs_context = gs.GSContext()
     cpv = portage_util.BestVisible(constants.CHROME_CP,
                                    buildroot=buildroot)
-    version_number = cpv.version
 
     # We need the name of one board that has been setup in this
     # builder to find the Chrome ebuild. The chrome ebuild should be
     # the same for all the boards, so just use the first one.
     # If we don't have any boards, leave the called function to guess.
     board = self._boards[0] if self._boards else None
-    bench_profiles = {}
-    cwp_profiles = {}
-    for arch in afdo.AFDO_ARCH_GENERATORS:
-      afdo_file = afdo.GetBenchmarkProfile(cpv, arch, buildroot, gs_context)
-      if not afdo_file:
-        raise afdo.MissingAFDOData('Could not find appropriate AFDO profile')
-      state = 'current' if version_number in afdo_file else 'previous'
-      logging.info('Found %s %s AFDO profile %s', state, arch, afdo_file)
-      bench_profiles[arch] = afdo_file
+    profiles = {}
 
-      cwp_profile = afdo.GetCWPProfile(cpv, arch, buildroot, gs_context)
-      if not cwp_profile:
-        raise afdo.MissingAFDOData('Could not find appropriate cwp profile')
-      cwp_profiles[arch] = cwp_profile
+    for source, getter in afdo.PROFILE_SOURCES.iteritems():
+      profile = getter(cpv, source, buildroot, gs_context)
+      if not profile:
+        raise afdo.MissingAFDOData(
+            'Could not find appropriate profile for %s' % source)
+      logging.info('Found AFDO profile %s for %s', profile, source)
+      profiles[source] = profile
 
     # Now update the Chrome ebuild file with the AFDO profiles we found
-    # for each architecture.
-    afdo.UpdateChromeEbuildAFDOFile(board, bench_profiles, cwp_profiles)
+    # for each source.
+    afdo.UpdateChromeEbuildAFDOFile(board, profiles)
 
 
 class AFDOUpdateKernelEbuildStage(generic_stages.BuilderStage):
