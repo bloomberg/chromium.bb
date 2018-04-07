@@ -109,14 +109,12 @@ Polymer({
   },
 
   /**
-   * @param {string} label
-   * @param {string} name
    * @param {string} syncErrorLabel
    * @param {string} authErrorLabel
    * @return {string}
    * @private
    */
-  getNameDisplay_: function(label, name, syncErrorLabel, authErrorLabel) {
+  getErrorLabel_: function(syncErrorLabel, authErrorLabel) {
     if (this.syncStatus.hasError) {
       // Most of the time re-authenticate states are caused by intentional user
       // action, so they will be displayed differently as other errors.
@@ -126,9 +124,19 @@ Polymer({
           syncErrorLabel;
     }
 
-    return this.syncStatus.signedIn ?
-        loadTimeData.substituteString(label, name) :
-        name;
+    return '';
+  },
+
+  /**
+   * @param {string} label
+   * @param {string} account
+   * @return {string}
+   * @private
+   */
+  getAccountLabel_: function(label, account) {
+    return this.syncStatus.signedIn && !this.syncStatus.hasError ?
+        loadTimeData.substituteString(label, account) :
+        account;
   },
 
   /**
