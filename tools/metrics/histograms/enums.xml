@@ -47260,6 +47260,16 @@ Full version information for the fingerprint enum values:
   <int value="3" label="GET_TOAST_HISTORY_FAILED"/>
 </enum>
 
+<enum name="WindowsNotificationOnDismissedStatus">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="GET_DISMISSAL_REASON_FAILED"/>
+</enum>
+
+<enum name="WindowsNotificationOnFailedStatus">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="GET_ERROR_CODE_FAILED"/>
+</enum>
+
 <enum name="WindowsNotificationSetReadyCallbackStatus">
   <int value="0" label="SUCCESS"/>
   <int value="1" label="COM_NOT_INITIALIZED"/>

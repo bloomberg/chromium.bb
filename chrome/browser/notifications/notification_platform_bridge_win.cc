@@ -57,6 +57,8 @@ using notifications_uma::GetDisplayedStatus;
 using notifications_uma::GetNotificationLaunchIdStatus;
 using notifications_uma::HandleEventStatus;
 using notifications_uma::HistoryStatus;
+using notifications_uma::OnDismissedStatus;
+using notifications_uma::OnFailedStatus;
 using notifications_uma::SetReadyCallbackStatus;
 
 namespace {
@@ -739,13 +741,21 @@ class NotificationPlatformBridgeWinImpl
   HRESULT OnDismissed(
       winui::Notifications::IToastNotification* notification,
       winui::Notifications::IToastDismissedEventArgs* arguments) {
+    base::Optional<bool> by_user = base::nullopt;
+
     winui::Notifications::ToastDismissalReason reason;
     HRESULT hr = arguments->get_Reason(&reason);
-    DCHECK(SUCCEEDED(hr));
-    HandleEvent(
-        notification, NotificationCommon::CLOSE,
-        /*action_index=*/base::nullopt,
-        reason == winui::Notifications::ToastDismissalReason_UserCanceled);
+    if (SUCCEEDED(hr)) {
+      LogOnDismissedStatus(OnDismissedStatus::SUCCESS);
+      by_user = base::Optional<bool>(
+          reason == winui::Notifications::ToastDismissalReason_UserCanceled);
+    } else {
+      LogOnDismissedStatus(OnDismissedStatus::GET_DISMISSAL_REASON_FAILED);
+      DLOG(ERROR) << "Failed to get toast dismissal reason: " << std::hex << hr;
+    }
+
+    HandleEvent(notification, NotificationCommon::CLOSE,
+                /*action_index=*/base::nullopt, by_user);
     return S_OK;
   }
 
@@ -753,9 +763,17 @@ class NotificationPlatformBridgeWinImpl
                    winui::Notifications::IToastFailedEventArgs* arguments) {
     HRESULT error_code;
     HRESULT hr = arguments->get_ErrorCode(&error_code);
-    DCHECK(SUCCEEDED(hr));
-    LOG(ERROR) << "Failed to raise the toast notification, error code: "
-               << std::hex << error_code;
+    if (SUCCEEDED(hr)) {
+      LogOnFailedStatus(OnFailedStatus::SUCCESS);
+      DLOG(WARNING) << "Failed to raise the toast notification, error code: "
+                    << std::hex << error_code;
+    } else {
+      LogOnFailedStatus(OnFailedStatus::GET_ERROR_CODE_FAILED);
+      DLOG(ERROR) << "Failed to raise the toast notification; failed to get "
+                     "error code: "
+                  << std::hex << hr;
+    }
+
     return S_OK;
   }
 
