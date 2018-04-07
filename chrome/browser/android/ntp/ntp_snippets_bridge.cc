@@ -321,7 +321,7 @@ void NTPSnippetsBridge::FetchContextualSuggestionImage(
     const JavaParamRef<jstring>& id_within_category,
     const JavaParamRef<jobject>& j_callback) {
   ScopedJavaGlobalRef<jobject> callback(j_callback);
-  contextual_content_suggestions_service_->FetchContextualSuggestionImage(
+  contextual_content_suggestions_service_->FetchContextualSuggestionImageLegacy(
       ContentSuggestion::ID(Category::FromIDValue(j_category_id),
                             ConvertJavaStringToUTF8(env, id_within_category)),
       base::Bind(&NTPSnippetsBridge::OnImageFetched,

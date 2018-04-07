@@ -205,8 +205,8 @@ TEST_F(ContextualContentSuggestionsServiceTest,
       Category::FromKnownCategory(KnownCategories::CONTEXTUAL), kEmpty);
   EXPECT_CALL(mock_image_fetched_callback,
               Run(Property(&gfx::Image::IsEmpty, true)));
-  source()->FetchContextualSuggestionImage(id,
-                                           mock_image_fetched_callback.Get());
+  source()->FetchContextualSuggestionImageLegacy(
+      id, mock_image_fetched_callback.Get());
   // TODO(gaschler): Verify with a mock that the image fetcher is not called if
   // the id is unknown.
   base::RunLoop().RunUntilIdle();
@@ -235,8 +235,8 @@ TEST_F(ContextualContentSuggestionsServiceTest,
   base::MockCallback<ImageFetchedCallback> mock_image_fetched_callback;
   EXPECT_CALL(mock_image_fetched_callback,
               Run(Property(&gfx::Image::IsEmpty, false)));
-  source()->FetchContextualSuggestionImage(suggestions[0].id(),
-                                           mock_image_fetched_callback.Get());
+  source()->FetchContextualSuggestionImageLegacy(
+      suggestions[0].id(), mock_image_fetched_callback.Get());
   base::RunLoop().RunUntilIdle();
 }
 

@@ -5,26 +5,26 @@
 #ifndef CHROME_BROWSER_ANDROID_CONTEXTUAL_SUGGESTIONS_CONTEXTUAL_SUGGESTIONS_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_CONTEXTUAL_SUGGESTIONS_CONTEXTUAL_SUGGESTIONS_BRIDGE_H_
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/weak_ptr.h"
-#include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
+#include "components/ntp_snippets/contextual/contextual_content_suggestions_service_proxy.h"
 
 namespace gfx {
 class Image;
 }  // namespace gfx
 
-namespace ntp_snippets {
-class ContentSuggestionsService;
-}  // namespace ntp_snippets
-
 namespace contextual_suggestions {
+
+class ContextualContentSuggestionsServiceProxy;
 
 // Class implementing native side of ContextualSuggestionsBrigde.java.
 class ContextualSuggestionsBridge {
  public:
   ContextualSuggestionsBridge(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& j_profile);
+      std::unique_ptr<ContextualContentSuggestionsServiceProxy> service_proxy);
 
   // Deletes the bridge.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -73,11 +73,9 @@ class ContextualSuggestionsBridge {
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> j_callback,
                       const gfx::Image& image);
 
-  // Content suggestions service is necessary for the favicon fetching.
-  ntp_snippets::ContentSuggestionsService* content_suggestions_service_;
-  // Contextual content suggestions service used for fetching suggestions.
-  ntp_snippets::ContextualContentSuggestionsService*
-      contextual_content_suggestions_service_;
+  // Proxy to contextual content suggestions service used for fetching
+  // suggestions and images.
+  std::unique_ptr<ContextualContentSuggestionsServiceProxy> service_proxy_;
 
   base::WeakPtrFactory<ContextualSuggestionsBridge> weak_ptr_factory_;
 
