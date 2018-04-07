@@ -1865,18 +1865,8 @@
         },
       },
       'WebKit Mac10.12': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': '8086:0a2e',
-              'hidpi': '0',
-              'os': 'Mac-10.12.6',
-            },
-          ],
-        },
+        # TODO(dpranke): Remove this builder, it is now redundant
+        # w/ Mac10.13 Tests on chromium.mac
       },
       'WebKit Win x64 Builder': {
         # TODO(dpranke): Remove this builder, it is now redundant
