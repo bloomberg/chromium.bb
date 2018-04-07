@@ -216,6 +216,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     #     ['win', 'nvidia', 'no_passthrough'], bug=679696)
 
     # Win10 / NVIDIA Quadro P400 / D3D9 failures
+    self.Flaky('conformance/canvas/canvas-test.html',
+        ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=829389)
     self.Fail('conformance/canvas/drawingbuffer-static-canvas-test.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=680754)
     self.Fail('conformance/canvas/' +
@@ -223,6 +225,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=680754)
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=750896)
+    self.Flaky('conformance/glsl/misc/shader-with-non-reserved-words.html',
+        ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=829389)
     self.Flaky('conformance/glsl/variables/gl-frontfacing.html',
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=825416)
     self.Fail('conformance/ogles/GL/atan/atan_001_to_008.html',
@@ -233,6 +237,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=750896)
     self.Flaky('conformance/textures/video/*',
         ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=750896)
+
+    self.Flaky('conformance/uniforms/uniform-samplers-test.html',
+        ['win10', ('nvidia', 0x1cb3), 'passthrough', 'd3d9'], bug=829389)
 
     # Win10 / NVIDIA Quadro P400 failures
     self.Flaky('conformance/textures/image_bitmap_from_video/' +
