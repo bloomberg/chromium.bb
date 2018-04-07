@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_USB_WEB_USB_CHOOSER_SERVICE_DESKTOP_H_
 #define CHROME_BROWSER_USB_WEB_USB_CHOOSER_SERVICE_DESKTOP_H_
 
-#include <vector>
-
 #include "base/macros.h"
 #include "chrome/browser/usb/web_usb_chooser_service.h"
 #include "components/bubble/bubble_reference.h"
@@ -23,7 +21,7 @@ class WebUsbChooserServiceDesktop : public WebUsbChooserService {
   void ShowChooser(std::unique_ptr<UsbChooserController> controller) override;
 
  private:
-  std::vector<BubbleReference> bubbles_;
+  BubbleReference bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUsbChooserServiceDesktop);
 };
