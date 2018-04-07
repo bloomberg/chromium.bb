@@ -891,12 +891,22 @@ static void init_buffer_indices(AV1_COMP *cpi) {
 }
 
 void init_seq_coding_tools(SequenceHeader *seq, const AV1EncoderConfig *oxcf) {
-  seq->still_picture = 0;
+  seq->still_picture = (oxcf->limit == 1);
+  seq->reduced_still_picture_hdr = seq->still_picture;
   seq->force_screen_content_tools = 2;
   seq->force_integer_mv = 2;
-  seq->order_hint_bits_minus1 = DEFAULT_EXPLICIT_ORDER_HINT_BITS - 1;
-  seq->enable_dual_filter = oxcf->enable_dual_filter;
   seq->enable_order_hint = oxcf->enable_order_hint;
+  seq->frame_id_numbers_present_flag = oxcf->large_scale_tile;
+  if (seq->still_picture && seq->reduced_still_picture_hdr) {
+    seq->enable_order_hint = 0;
+    seq->frame_id_numbers_present_flag = 0;
+    seq->force_screen_content_tools = 2;
+    seq->force_integer_mv = 2;
+  }
+  seq->order_hint_bits_minus1 =
+      seq->enable_order_hint ? DEFAULT_EXPLICIT_ORDER_HINT_BITS - 1 : -1;
+
+  seq->enable_dual_filter = oxcf->enable_dual_filter;
   seq->enable_jnt_comp = oxcf->enable_jnt_comp;
   seq->enable_jnt_comp &= seq->enable_order_hint;
   seq->enable_ref_frame_mvs = oxcf->enable_ref_frame_mvs;

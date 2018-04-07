@@ -234,6 +234,8 @@ typedef struct AV1EncoderConfig {
    */
   unsigned int frame_parallel_decoding_mode;
 
+  unsigned int limit;
+
   int arnr_max_frames;
   int arnr_strength;
 

@@ -150,19 +150,32 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 
   // Still picture or not
   seq_params->still_picture = aom_rb_read_bit(rb);
+  seq_params->reduced_still_picture_hdr = aom_rb_read_bit(rb);
+  // Video must have reduced_still_picture_hdr = 0
+  if (!cm->seq_params.still_picture &&
+      cm->seq_params.reduced_still_picture_hdr) {
+    return AOM_CODEC_UNSUP_BITSTREAM;
+  }
 
-  uint8_t operating_points_minus1_cnt = aom_rb_read_literal(rb, 5);
-  pbi->common.enhancement_layers_cnt = operating_points_minus1_cnt + 1;
-  int i;
-  for (i = 0; i < operating_points_minus1_cnt + 1; i++) {
-    seq_params->operating_point_idc[i] = aom_rb_read_literal(rb, 12);
-    seq_params->level[i] = aom_rb_read_literal(rb, 4);
-    seq_params->decoder_rate_model_param_present_flag[i] =
-        aom_rb_read_literal(rb, 1);
-    if (seq_params->decoder_rate_model_param_present_flag[i]) {
-      seq_params->decode_to_display_rate_ratio[i] = aom_rb_read_literal(rb, 12);
-      seq_params->initial_display_delay[i] = aom_rb_read_literal(rb, 24);
-      seq_params->extra_frame_buffers[i] = aom_rb_read_literal(rb, 4);
+  if (seq_params->reduced_still_picture_hdr) {
+    pbi->common.enhancement_layers_cnt = 1;
+    seq_params->operating_point_idc[0] = 0;
+    seq_params->level[0] = 0;
+    seq_params->decoder_rate_model_param_present_flag[0] = 0;
+  } else {
+    uint8_t operating_points_minus1_cnt = aom_rb_read_literal(rb, 5);
+    pbi->common.enhancement_layers_cnt = operating_points_minus1_cnt + 1;
+    for (int i = 0; i < operating_points_minus1_cnt + 1; i++) {
+      seq_params->operating_point_idc[i] = aom_rb_read_literal(rb, 12);
+      seq_params->level[i] = aom_rb_read_literal(rb, 4);
+      seq_params->decoder_rate_model_param_present_flag[i] =
+          aom_rb_read_literal(rb, 1);
+      if (seq_params->decoder_rate_model_param_present_flag[i]) {
+        seq_params->decode_to_display_rate_ratio[i] =
+            aom_rb_read_literal(rb, 12);
+        seq_params->initial_display_delay[i] = aom_rb_read_literal(rb, 24);
+        seq_params->extra_frame_buffers[i] = aom_rb_read_literal(rb, 4);
+      }
     }
   }
   // This decoder supports all levels.  Choose the first operating point
@@ -172,7 +185,10 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 
   av1_read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
 
-  av1_read_timing_info_header(cm, rb);
+  if (!seq_params->reduced_still_picture_hdr)
+    av1_read_timing_info_header(cm, rb);
+  else
+    cm->timing_info_present = 0;
 
   cm->film_grain_params_present = aom_rb_read_bit(rb);
 

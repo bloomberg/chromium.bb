@@ -650,6 +650,13 @@ static aom_codec_err_t set_encoder_config(
       cfg->g_error_resilient | extra_cfg->error_resilient_mode;
   oxcf->s_frame_mode = extra_cfg->s_frame_mode;
   oxcf->frame_parallel_decoding_mode = extra_cfg->frame_parallel_decoding_mode;
+  if (cfg->g_pass == AOM_RC_LAST_PASS) {
+    const size_t packet_sz = sizeof(FIRSTPASS_STATS);
+    const int n_packets = (int)(cfg->rc_twopass_stats_in.sz / packet_sz);
+    oxcf->limit = n_packets - 1;
+  } else {
+    oxcf->limit = cfg->g_limit;
+  }
 
   oxcf->aq_mode = extra_cfg->aq_mode;
   oxcf->deltaq_mode = extra_cfg->deltaq_mode;
@@ -1698,6 +1705,7 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
 
         320,         // g_width
         240,         // g_height
+        0,           // g_limit
         0,           // g_forced_max_frame_width
         0,           // g_forced_max_frame_height
         AOM_BITS_8,  // g_bit_depth

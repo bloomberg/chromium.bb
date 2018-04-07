@@ -2282,7 +2282,11 @@ void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   seq_params->max_frame_width = max_frame_width;
   seq_params->max_frame_height = max_frame_height;
 
-  seq_params->frame_id_numbers_present_flag = aom_rb_read_bit(rb);
+  if (seq_params->reduced_still_picture_hdr) {
+    seq_params->frame_id_numbers_present_flag = 0;
+  } else {
+    seq_params->frame_id_numbers_present_flag = aom_rb_read_bit(rb);
+  }
   if (seq_params->frame_id_numbers_present_flag) {
     // We must always have delta_frame_id_length < frame_id_length,
     // in order for a frame to be referenced with a unique delta.
@@ -2300,35 +2304,48 @@ void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   seq_params->enable_filter_intra = aom_rb_read_bit(rb);
   seq_params->enable_intra_edge_filter = aom_rb_read_bit(rb);
 
-  seq_params->enable_interintra_compound = aom_rb_read_bit(rb);
-  seq_params->enable_masked_compound = aom_rb_read_bit(rb);
-  seq_params->enable_warped_motion = aom_rb_read_bit(rb);
-  seq_params->enable_dual_filter = aom_rb_read_bit(rb);
-
-  seq_params->enable_order_hint = aom_rb_read_bit(rb);
-  seq_params->enable_jnt_comp =
-      seq_params->enable_order_hint ? aom_rb_read_bit(rb) : 0;
-  seq_params->enable_ref_frame_mvs =
-      seq_params->enable_order_hint ? aom_rb_read_bit(rb) : 0;
-
-  if (aom_rb_read_bit(rb)) {
+  if (seq_params->reduced_still_picture_hdr) {
+    seq_params->enable_interintra_compound = 0;
+    seq_params->enable_masked_compound = 0;
+    seq_params->enable_warped_motion = 0;
+    seq_params->enable_dual_filter = 0;
+    seq_params->enable_order_hint = 0;
+    seq_params->enable_jnt_comp = 0;
+    seq_params->enable_ref_frame_mvs = 0;
     seq_params->force_screen_content_tools = 2;
-  } else {
-    seq_params->force_screen_content_tools = aom_rb_read_bit(rb);
-  }
-
-  if (seq_params->force_screen_content_tools > 0) {
-    if (aom_rb_read_bit(rb)) {
-      seq_params->force_integer_mv = 2;
-    } else {
-      seq_params->force_integer_mv = aom_rb_read_bit(rb);
-    }
-  } else {
     seq_params->force_integer_mv = 2;
+    seq_params->order_hint_bits_minus1 = -1;
+  } else {
+    seq_params->enable_interintra_compound = aom_rb_read_bit(rb);
+    seq_params->enable_masked_compound = aom_rb_read_bit(rb);
+    seq_params->enable_warped_motion = aom_rb_read_bit(rb);
+    seq_params->enable_dual_filter = aom_rb_read_bit(rb);
+
+    seq_params->enable_order_hint = aom_rb_read_bit(rb);
+    seq_params->enable_jnt_comp =
+        seq_params->enable_order_hint ? aom_rb_read_bit(rb) : 0;
+    seq_params->enable_ref_frame_mvs =
+        seq_params->enable_order_hint ? aom_rb_read_bit(rb) : 0;
+
+    if (aom_rb_read_bit(rb)) {
+      seq_params->force_screen_content_tools = 2;
+    } else {
+      seq_params->force_screen_content_tools = aom_rb_read_bit(rb);
+    }
+
+    if (seq_params->force_screen_content_tools > 0) {
+      if (aom_rb_read_bit(rb)) {
+        seq_params->force_integer_mv = 2;
+      } else {
+        seq_params->force_integer_mv = aom_rb_read_bit(rb);
+      }
+    } else {
+      seq_params->force_integer_mv = 2;
+    }
+    seq_params->order_hint_bits_minus1 =
+        seq_params->enable_order_hint ? aom_rb_read_literal(rb, 3) : -1;
   }
 
-  seq_params->order_hint_bits_minus1 =
-      seq_params->enable_order_hint ? aom_rb_read_literal(rb, 3) : -1;
   seq_params->enable_superres = aom_rb_read_bit(rb);
   seq_params->enable_cdef = aom_rb_read_bit(rb);
   seq_params->enable_restoration = aom_rb_read_bit(rb);
@@ -2541,64 +2558,72 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   // NOTE: By default all coded frames to be used as a reference
   cm->is_reference_frame = 1;
 
-  cm->show_existing_frame = aom_rb_read_bit(rb);
-  cm->reset_decoder_state = 0;
+  if (!cm->seq_params.reduced_still_picture_hdr) {
+    cm->show_existing_frame = aom_rb_read_bit(rb);
+    cm->reset_decoder_state = 0;
 
-  if (cm->show_existing_frame) {
-    // Show an existing frame directly.
-    const int existing_frame_idx = aom_rb_read_literal(rb, 3);
-    const int frame_to_show = cm->ref_frame_map[existing_frame_idx];
-    if (cm->seq_params.frame_id_numbers_present_flag) {
-      int frame_id_length = cm->seq_params.frame_id_length;
-      int display_frame_id = aom_rb_read_literal(rb, frame_id_length);
-      /* Compare display_frame_id with ref_frame_id and check valid for
-       * referencing */
-      if (display_frame_id != cm->ref_frame_id[existing_frame_idx] ||
-          cm->valid_for_referencing[existing_frame_idx] == 0)
-        aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                           "Reference buffer frame ID mismatch");
-    }
-    lock_buffer_pool(pool);
-    if (frame_to_show < 0 || frame_bufs[frame_to_show].ref_count < 1) {
+    if (cm->show_existing_frame) {
+      // Show an existing frame directly.
+      const int existing_frame_idx = aom_rb_read_literal(rb, 3);
+      const int frame_to_show = cm->ref_frame_map[existing_frame_idx];
+      if (cm->seq_params.frame_id_numbers_present_flag) {
+        int frame_id_length = cm->seq_params.frame_id_length;
+        int display_frame_id = aom_rb_read_literal(rb, frame_id_length);
+        /* Compare display_frame_id with ref_frame_id and check valid for
+         * referencing */
+        if (display_frame_id != cm->ref_frame_id[existing_frame_idx] ||
+            cm->valid_for_referencing[existing_frame_idx] == 0)
+          aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                             "Reference buffer frame ID mismatch");
+      }
+      lock_buffer_pool(pool);
+      if (frame_to_show < 0 || frame_bufs[frame_to_show].ref_count < 1) {
+        unlock_buffer_pool(pool);
+        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                           "Buffer %d does not contain a decoded frame",
+                           frame_to_show);
+      }
+      ref_cnt_fb(frame_bufs, &cm->new_fb_idx, frame_to_show);
+      cm->reset_decoder_state =
+          frame_bufs[frame_to_show].frame_type == KEY_FRAME;
       unlock_buffer_pool(pool);
-      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                         "Buffer %d does not contain a decoded frame",
-                         frame_to_show);
-    }
-    ref_cnt_fb(frame_bufs, &cm->new_fb_idx, frame_to_show);
-    cm->reset_decoder_state = frame_bufs[frame_to_show].frame_type == KEY_FRAME;
-    unlock_buffer_pool(pool);
 
-    cm->lf.filter_level[0] = 0;
-    cm->lf.filter_level[1] = 0;
+      cm->lf.filter_level[0] = 0;
+      cm->lf.filter_level[1] = 0;
+      cm->show_frame = 1;
+
+      if (!frame_bufs[frame_to_show].showable_frame) {
+        aom_merge_corrupted_flag(&xd->corrupted, 1);
+      }
+      frame_bufs[frame_to_show].showable_frame = 0;
+      cm->film_grain_params = frame_bufs[frame_to_show].film_grain_params;
+
+      if (cm->reset_decoder_state) {
+        show_existing_frame_reset(pbi, existing_frame_idx);
+      } else {
+        pbi->refresh_frame_flags = 0;
+      }
+
+      return 0;
+    }
+
+    cm->frame_type = (FRAME_TYPE)aom_rb_read_literal(rb, 2);  // 2 bits
+    cm->show_frame = aom_rb_read_bit(rb);
+    cm->showable_frame = 0;
+    if (!cm->show_frame) {
+      // See if this frame can be used as show_existing_frame in future
+      cm->showable_frame = aom_rb_read_bit(rb);
+    }
+    cm->cur_frame->showable_frame = cm->showable_frame;
+    cm->intra_only = cm->frame_type == INTRA_ONLY_FRAME;
+    cm->error_resilient_mode = frame_is_sframe(cm) ? 1 : aom_rb_read_bit(rb);
+    cm->disable_cdf_update = aom_rb_read_bit(rb);
+  }
+  if (cm->seq_params.still_picture) {
+    cm->show_existing_frame = 0;
     cm->show_frame = 1;
-
-    if (!frame_bufs[frame_to_show].showable_frame) {
-      aom_merge_corrupted_flag(&xd->corrupted, 1);
-    }
-    frame_bufs[frame_to_show].showable_frame = 0;
-    cm->film_grain_params = frame_bufs[frame_to_show].film_grain_params;
-
-    if (cm->reset_decoder_state) {
-      show_existing_frame_reset(pbi, existing_frame_idx);
-    } else {
-      pbi->refresh_frame_flags = 0;
-    }
-
-    return 0;
+    cm->frame_type = KEY_FRAME;
   }
-
-  cm->frame_type = (FRAME_TYPE)aom_rb_read_literal(rb, 2);  // 2 bits
-  cm->show_frame = aom_rb_read_bit(rb);
-  cm->showable_frame = 0;
-  if (!cm->show_frame) {
-    // See if this frame can be used as show_existing_frame in future
-    cm->showable_frame = aom_rb_read_bit(rb);
-  }
-  cm->cur_frame->showable_frame = cm->showable_frame;
-  cm->intra_only = cm->frame_type == INTRA_ONLY_FRAME;
-  cm->error_resilient_mode = frame_is_sframe(cm) ? 1 : aom_rb_read_bit(rb);
-  cm->disable_cdf_update = aom_rb_read_bit(rb);
 
   if (cm->seq_params.force_screen_content_tools == 2) {
     cm->allow_screen_content_tools = aom_rb_read_bit(rb);
@@ -2616,60 +2641,63 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->cur_frame_force_integer_mv = 0;
   }
 
-  if (cm->seq_params.frame_id_numbers_present_flag) {
-    int frame_id_length = cm->seq_params.frame_id_length;
-    int diff_len = cm->seq_params.delta_frame_id_length;
-    int prev_frame_id = 0;
-    if (!(cm->frame_type == KEY_FRAME && cm->show_frame)) {
-      prev_frame_id = cm->current_frame_id;
-    }
-    cm->current_frame_id = aom_rb_read_literal(rb, frame_id_length);
-
-    if (!(cm->frame_type == KEY_FRAME && cm->show_frame)) {
-      int diff_frame_id;
-      if (cm->current_frame_id > prev_frame_id) {
-        diff_frame_id = cm->current_frame_id - prev_frame_id;
-      } else {
-        diff_frame_id =
-            (1 << frame_id_length) + cm->current_frame_id - prev_frame_id;
-      }
-      /* Check current_frame_id for conformance */
-      if (prev_frame_id == cm->current_frame_id ||
-          diff_frame_id >= (1 << (frame_id_length - 1))) {
-        aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                           "Invalid value of current_frame_id");
-      }
-    }
-    /* Check if some frames need to be marked as not valid for referencing */
-    for (int i = 0; i < REF_FRAMES; i++) {
-      if (cm->frame_type == KEY_FRAME && cm->show_frame) {
-        cm->valid_for_referencing[i] = 0;
-      } else if (cm->current_frame_id - (1 << diff_len) > 0) {
-        if (cm->ref_frame_id[i] > cm->current_frame_id ||
-            cm->ref_frame_id[i] < cm->current_frame_id - (1 << diff_len))
-          cm->valid_for_referencing[i] = 0;
-      } else {
-        if (cm->ref_frame_id[i] > cm->current_frame_id &&
-            cm->ref_frame_id[i] <
-                (1 << frame_id_length) + cm->current_frame_id - (1 << diff_len))
-          cm->valid_for_referencing[i] = 0;
-      }
-    }
-  }
-
-  int frame_size_override_flag =
-      frame_is_sframe(cm) ? 1 : aom_rb_read_literal(rb, 1);
-  cm->allow_intrabc = 0;
-
   cm->frame_refs_short_signaling = 0;
+  int frame_size_override_flag = 0;
+  cm->allow_intrabc = 0;
   cm->primary_ref_frame = PRIMARY_REF_NONE;
 
-  cm->frame_offset =
-      aom_rb_read_literal(rb, cm->seq_params.order_hint_bits_minus1 + 1);
-  cm->current_video_frame = cm->frame_offset;
+  if (!cm->seq_params.reduced_still_picture_hdr) {
+    if (cm->seq_params.frame_id_numbers_present_flag) {
+      int frame_id_length = cm->seq_params.frame_id_length;
+      int diff_len = cm->seq_params.delta_frame_id_length;
+      int prev_frame_id = 0;
+      if (!(cm->frame_type == KEY_FRAME && cm->show_frame)) {
+        prev_frame_id = cm->current_frame_id;
+      }
+      cm->current_frame_id = aom_rb_read_literal(rb, frame_id_length);
 
-  if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
-    cm->primary_ref_frame = aom_rb_read_literal(rb, PRIMARY_REF_BITS);
+      if (!(cm->frame_type == KEY_FRAME && cm->show_frame)) {
+        int diff_frame_id;
+        if (cm->current_frame_id > prev_frame_id) {
+          diff_frame_id = cm->current_frame_id - prev_frame_id;
+        } else {
+          diff_frame_id =
+              (1 << frame_id_length) + cm->current_frame_id - prev_frame_id;
+        }
+        /* Check current_frame_id for conformance */
+        if (prev_frame_id == cm->current_frame_id ||
+            diff_frame_id >= (1 << (frame_id_length - 1))) {
+          aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                             "Invalid value of current_frame_id");
+        }
+      }
+      /* Check if some frames need to be marked as not valid for referencing */
+      for (int i = 0; i < REF_FRAMES; i++) {
+        if (cm->frame_type == KEY_FRAME && cm->show_frame) {
+          cm->valid_for_referencing[i] = 0;
+        } else if (cm->current_frame_id - (1 << diff_len) > 0) {
+          if (cm->ref_frame_id[i] > cm->current_frame_id ||
+              cm->ref_frame_id[i] < cm->current_frame_id - (1 << diff_len))
+            cm->valid_for_referencing[i] = 0;
+        } else {
+          if (cm->ref_frame_id[i] > cm->current_frame_id &&
+              cm->ref_frame_id[i] < (1 << frame_id_length) +
+                                        cm->current_frame_id - (1 << diff_len))
+            cm->valid_for_referencing[i] = 0;
+        }
+      }
+    }
+
+    frame_size_override_flag =
+        frame_is_sframe(cm) ? 1 : aom_rb_read_literal(rb, 1);
+
+    cm->frame_offset =
+        aom_rb_read_literal(rb, cm->seq_params.order_hint_bits_minus1 + 1);
+    cm->current_video_frame = cm->frame_offset;
+
+    if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
+      cm->primary_ref_frame = aom_rb_read_literal(rb, PRIMARY_REF_BITS);
+    }
   }
 
   if (cm->frame_type == KEY_FRAME) {
@@ -2887,6 +2915,17 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
   }
 
+  const int might_bwd_adapt = !(cm->seq_params.reduced_still_picture_hdr) &&
+                              !(cm->large_scale_tile) &&
+                              !(cm->disable_cdf_update);
+  if (might_bwd_adapt) {
+    cm->refresh_frame_context = aom_rb_read_bit(rb)
+                                    ? REFRESH_FRAME_CONTEXT_DISABLED
+                                    : REFRESH_FRAME_CONTEXT_BACKWARD;
+  } else {
+    cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
+  }
+
   get_frame_new_buffer(cm)->bit_depth = cm->bit_depth;
   get_frame_new_buffer(cm)->color_primaries = cm->color_primaries;
   get_frame_new_buffer(cm)->transfer_characteristics =
@@ -2902,16 +2941,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Keyframe / intra-only frame required to reset decoder"
                        " state");
-  }
-
-  const int might_bwd_adapt =
-      !(cm->large_scale_tile) && !(cm->disable_cdf_update);
-  if (might_bwd_adapt) {
-    cm->refresh_frame_context = aom_rb_read_bit(rb)
-                                    ? REFRESH_FRAME_CONTEXT_DISABLED
-                                    : REFRESH_FRAME_CONTEXT_BACKWARD;
-  } else {
-    cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
   }
 
   // Generate next_ref_frame_map.

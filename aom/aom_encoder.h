@@ -282,6 +282,11 @@ typedef struct aom_codec_enc_cfg {
    */
   unsigned int g_h;
 
+  /*!\brief Max number of frames to encode
+   *
+   */
+  unsigned int g_limit;
+
   /*!\brief Forced maximum width of the frame
    *
    * If this value is non-zero then it is used to force the maximum frame

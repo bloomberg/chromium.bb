@@ -198,6 +198,7 @@ typedef struct SequenceHeader {
                                    // 1 - force to integer
                                    // 2 - adaptive
   int still_picture;               // Video is a single frame still picture
+  int reduced_still_picture_hdr;   // Use reduced header for still picture
   int monochrome;                  // Monochorme video
   int enable_filter_intra;         // enables/disables filterintra
   int enable_intra_edge_filter;    // enables/disables corner/edge/upsampling

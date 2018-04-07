@@ -1025,6 +1025,7 @@ static struct stream_state *new_stream(struct AvxEncoderConfig *global,
     /* Initialize remaining stream parameters */
     stream->config.write_webm = 1;
     stream->config.write_ivf = 0;
+
 #if CONFIG_WEBM_IO
     stream->config.stereo_fmt = STEREO_FORMAT_MONO;
     stream->webm_ctx.last_pts_ns = -1;
@@ -2038,6 +2039,8 @@ int main(int argc, const char **argv_) {
                 "match input format.\n",
                 stream->config.cfg.g_profile);
       }
+      /* Set limit */
+      stream->config.cfg.g_limit = global.limit;
     }
 
     FOREACH_STREAM(stream, streams) {
