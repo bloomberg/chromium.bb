@@ -1987,6 +1987,9 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
                                     const RD_STATS *const rd_stats, int blk_row,
                                     int blk_col, BLOCK_SIZE plane_bsize,
                                     TX_SIZE tx_size, TX_TYPE tx_type) {
+  // Generate small sample to restrict output size.
+  if (rand() % 100 > 0) return;
+
   const char output_file[] = "tu_stats.txt";
   FILE *fout = fopen(output_file, "a");
   if (!fout) return;
