@@ -7,6 +7,9 @@
 
 #include "base/feature_list.h"
 
+class PrefRegistrySimple;
+class PrefService;
+
 namespace content {
 class BrowserContext;
 }
@@ -17,6 +20,24 @@ namespace media_router {
 bool MediaRouterEnabled(content::BrowserContext* context);
 
 #if !defined(OS_ANDROID)
+
+namespace prefs {
+// Pref name for the enterprise policy for allowing Cast devices on all IPs.
+constexpr char kMediaRouterCastAllowAllIPs[] =
+    "media_router.cast_allow_all_ips";
+}  // namespace prefs
+
+// Registers |kMediaRouterCastAllowAllIPs| with local state pref |registry|.
+void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
+// If enabled, allows Media Router to connect to Cast devices on all IP
+// addresses, not just RFC1918/RFC4913 private addresses. Workaround for
+// https://crbug.com/813974.
+extern const base::Feature kCastAllowAllIPsFeature;
+
+// Returns |true| if CastMediaSinkService can connect to Cast devices on
+// all IPs, as determined by local state |pref_service| / feature flag.
+bool GetCastAllowAllIPsPref(PrefService* pref_service);
 
 extern const base::Feature kEnableDialSinkQuery;
 extern const base::Feature kEnableCastDiscovery;
@@ -41,7 +62,7 @@ bool CastLocalMediaEnabled();
 // TODO(crbug.com/802332): Remove this when mac_views_browser=1 by default.
 bool PresentationReceiverWindowEnabled();
 
-#endif
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace media_router
 

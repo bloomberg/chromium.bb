@@ -260,6 +260,10 @@
 #include "base/win/win_util.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/media/router/media_router_feature.h"
+#endif
+
 using content::BrowserThread;
 using net::URLRequestMockHTTPJob;
 using testing::Mock;
@@ -4622,6 +4626,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterDisabledPolicyTest, MediaRouterDisabled) {
   EXPECT_FALSE(media_router::MediaRouterEnabled(browser()->profile()));
 }
 
+#if !defined(OS_ANDROID)
 template <bool enable>
 class MediaRouterActionPolicyTest : public PolicyTest {
  public:
@@ -4662,6 +4667,37 @@ IN_PROC_BROWSER_TEST_F(MediaRouterActionDisabledPolicyTest,
       MediaRouterActionController::IsActionShownByPolicy(browser()->profile()));
   EXPECT_FALSE(HasMediaRouterActionAtInit());
 }
+
+class MediaRouterCastAllowAllIPsPolicyTest
+    : public PolicyTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    PolicyMap policies;
+    policies.Set(key::kMediaRouterCastAllowAllIPs, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(is_enabled()), nullptr);
+    provider_.UpdateChromePolicy(policies);
+  }
+
+  bool is_enabled() const { return GetParam(); }
+};
+
+IN_PROC_BROWSER_TEST_P(MediaRouterCastAllowAllIPsPolicyTest, RunTest) {
+  PrefService* const pref = g_browser_process->local_state();
+  ASSERT_TRUE(pref);
+  EXPECT_EQ(is_enabled(),
+            pref->GetBoolean(media_router::prefs::kMediaRouterCastAllowAllIPs));
+  EXPECT_TRUE(pref->IsManagedPreference(
+      media_router::prefs::kMediaRouterCastAllowAllIPs));
+  EXPECT_EQ(is_enabled(), media_router::GetCastAllowAllIPsPref(pref));
+}
+
+INSTANTIATE_TEST_CASE_P(MediaRouterCastAllowAllIPsPolicyTestInstance,
+                        MediaRouterCastAllowAllIPsPolicyTest,
+                        testing::Values(true, false));
+#endif  // !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_WEBRTC)
 // Sets the proper policy before the browser is started.

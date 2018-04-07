@@ -187,6 +187,7 @@
 #include "components/ntp_tiles/popular_sites_impl.h"
 #else
 #include "chrome/browser/gcm/gcm_product_util.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/metrics/tab_stats_tracker.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -402,6 +403,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kStabilityCrashedActivityCounts);
   registry->RegisterListPref(kStabilityLaunchedActivityCounts);
 #else
+  media_router::RegisterLocalStatePrefs(registry);
   // The native GCM is used on Android instead.
   gcm::GCMChannelStatusSyncer::RegisterPrefs(registry);
   gcm::RegisterPrefs(registry);

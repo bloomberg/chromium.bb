@@ -9,10 +9,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/router/discovery/discovery_network_monitor.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "components/cast_channel/cast_socket_service.h"
+#include "components/prefs/pref_service.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 
@@ -141,11 +144,26 @@ CastMediaSinkService::CreateImpl(
       cast_channel::CastSocketService::GetInstance();
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       cast_socket_service->task_runner();
+
+  local_state_change_registrar_.Init(g_browser_process->local_state());
+  local_state_change_registrar_.Add(
+      prefs::kMediaRouterCastAllowAllIPs,
+      base::BindRepeating(&CastMediaSinkService::SetCastAllowAllIPs,
+                          base::Unretained(this)));
   return std::unique_ptr<CastMediaSinkServiceImpl, base::OnTaskRunnerDeleter>(
-      new CastMediaSinkServiceImpl(sinks_discovered_cb, observer,
-                                   cast_socket_service,
-                                   DiscoveryNetworkMonitor::GetInstance()),
+      new CastMediaSinkServiceImpl(
+          sinks_discovered_cb, observer, cast_socket_service,
+          DiscoveryNetworkMonitor::GetInstance(),
+          GetCastAllowAllIPsPref(g_browser_process->local_state())),
       base::OnTaskRunnerDeleter(task_runner));
+}
+
+void CastMediaSinkService::SetCastAllowAllIPs() {
+  impl_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&CastMediaSinkServiceImpl::SetCastAllowAllIPs,
+                     base::Unretained(impl_.get()),
+                     GetCastAllowAllIPsPref(g_browser_process->local_state())));
 }
 
 void CastMediaSinkService::StartMdnsDiscovery() {

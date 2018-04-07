@@ -158,9 +158,6 @@ TEST_F(DnsSdRegistryTest, AddServiceWithInvalidIPAddress) {
   const std::string service_type = "_testing._tcp.local";
   const std::string ip_address1 = "invalid";
 
-  // |ip_address2| is not a private IP address and is therefore invalid.
-  const std::string ip_address2 = "111.111.111.111";
-
   DnsSdService service;
   service.service_name = "_myDevice." + service_type;
 
@@ -173,8 +170,6 @@ TEST_F(DnsSdRegistryTest, AddServiceWithInvalidIPAddress) {
   EXPECT_CALL(observer_, OnDnsSdEvent(_, _)).Times(0);
   service.ip_address = ip_address1;
   registry_->GetDelegate()->ServiceChanged(service_type, true, service);
-  service.ip_address = ip_address2;
-  registry_->GetDelegate()->ServiceChanged(service_type, false, service);
 }
 
 // Tests registering a listener and receiving an added and removed event.

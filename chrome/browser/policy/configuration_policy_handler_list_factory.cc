@@ -85,6 +85,7 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/download/default_download_dir_policy_handler.h"
 #include "chrome/browser/download/download_dir_policy_handler.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/policy/local_sync_policy_handler.h"
 #endif
 
@@ -481,6 +482,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #if !defined(OS_ANDROID)
   { key::kShowCastIconInToolbar,
     prefs::kShowCastIconInToolbar,
+    base::Value::Type::BOOLEAN },
+  { key::kMediaRouterCastAllowAllIPs,
+    media_router::prefs::kMediaRouterCastAllowAllIPs,
     base::Value::Type::BOOLEAN },
 #endif  // !defined(OS_ANDROID)
 #if BUILDFLAG(ENABLE_WEBRTC)

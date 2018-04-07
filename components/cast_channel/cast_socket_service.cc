@@ -6,7 +6,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
-#include "components/cast_channel/cast_channel_util.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/logger.h"
 #include "content/public/browser/browser_thread.h"
@@ -87,8 +86,6 @@ void CastSocketService::OpenSocket(const CastSocketOpenParams& open_params,
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   const net::IPEndPoint& ip_endpoint = open_params.ip_endpoint;
-  CHECK(IsValidCastIPAddress(ip_endpoint.address()));
-
   auto* socket = GetSocket(ip_endpoint);
   if (!socket) {
     // If cast socket does not exist.

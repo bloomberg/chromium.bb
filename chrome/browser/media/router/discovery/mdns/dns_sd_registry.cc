@@ -10,7 +10,6 @@
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_device_lister.h"
 #include "chrome/common/buildflags.h"
-#include "components/cast_channel/cast_channel_util.h"
 
 using local_discovery::ServiceDiscoveryClient;
 using local_discovery::ServiceDiscoverySharedClient;
@@ -197,8 +196,11 @@ void DnsSdRegistry::ServiceChanged(const std::string& service_type,
   if (!IsRegistered(service_type))
     return;
 
+  // TODO(imcheng): This should be validated upstream in
+  // dns_sd_device_lister.cc, i.e., |service.ip_address| should be a
+  // valid net::IPAddress.
   net::IPAddress ip_address;
-  if (!cast_channel::IsValidCastIPAddressString(service.ip_address)) {
+  if (!ip_address.AssignFromIPLiteral(service.ip_address)) {
     VLOG(1) << "Invalid IP address: " << service.ip_address;
     return;
   }
