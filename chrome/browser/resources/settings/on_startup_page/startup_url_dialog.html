@@ -9,7 +9,7 @@
 <dom-module id="settings-startup-url-dialog">
   <template>
     <style include="settings-shared"></style>
-    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
+    <cr-dialog id="dialog" close-text="$i18n{close}">
       <div slot="title">[[dialogTitle_]]</div>
       <div slot="body">
         <paper-input always-float-label id="url" label="$i18n{onStartupSiteUrl}"
@@ -26,7 +26,7 @@
         <paper-button id="actionButton" class="action-button"
             on-click="onActionButtonTap_">[[actionButtonText_]]</paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
   </template>
   <script src="startup_url_dialog.js"></script>
 </dom-module>

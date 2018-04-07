@@ -92,7 +92,7 @@
         transform: translate3d(0, 0, 0);
       }
     </style>
-    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
+    <cr-dialog id="dialog" close-text="$i18n{close}">
       <div slot="title">[[title_]]</div>
       <div slot="body">
         <template is="dom-repeat" items="[[addressWrapper_]]">
@@ -152,7 +152,7 @@
           $i18n{save}
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
   </template>
   <script src="address_edit_dialog.js"></script>
 </dom-module>

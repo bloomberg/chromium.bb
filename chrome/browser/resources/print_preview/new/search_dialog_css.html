@@ -8,31 +8,32 @@
 <dom-module id="search-dialog">
   <template>
     <style include="print-preview-shared button">
-      #dialog::backdrop {
-        background-color: rgba(255, 255, 255, 0.75);
-      }
-
       #dialog {
+        /* TODO(dpapad): Figure out how to specify
+           background-color: rgba(255, 255, 255, 0.75) for the inner dialog's
+           backdrop. See context at crbug.com/827397 */
         --cr-dialog-close-image: {
           background-image: url(chrome://theme/IDR_CLOSE_DIALOG);
-        }
+        };
         --cr-dialog-close-image-active: {
           background-image: url(chrome://theme/IDR_CLOSE_DIALOG_P);
-        }
+        };
         --cr-dialog-close-image-hover: {
           background-image: url(chrome://theme/IDR_CLOSE_DIALOG_H);
-        }
+        };
+        --cr-dialog-native: {
+          box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2),
+            0 2px 6px rgba(0, 0, 0, 0.15);
+        };
         --cr-icon-ripple-size: 0;
         --cr-icon-size: 14px;
         --cr-dialog-body: {
           box-sizing: border-box;
           padding-top: 0;
-        }
+        };
         --cr-dialog-wrapper: {
           max-height: calc(100vh - 40px);
-        }
-        box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2),
-          0 2px 6px rgba(0, 0, 0, 0.15);
+        };
       }
 
       #searchBox {

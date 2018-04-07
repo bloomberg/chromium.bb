@@ -6,7 +6,7 @@
 <dom-module id="viewer-error-screen">
   <template>
     <style include="cr-shared-style"></style>
-    <dialog is="cr-dialog" id="dialog" no-cancel>
+    <cr-dialog id="dialog" no-cancel>
       <div slot="title">
         [[strings.errorDialogTitle]]
       </div>
@@ -18,7 +18,7 @@
           [[strings.pageReload]]
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
   </template>
   <script src="viewer-error-screen.js"></script>
 </dom-module>

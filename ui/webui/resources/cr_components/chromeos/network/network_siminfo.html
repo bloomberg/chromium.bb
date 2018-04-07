@@ -90,7 +90,7 @@
     </div>
 
     <!-- Enter PIN dialog -->
-    <dialog is="cr-dialog" id="enterPinDialog" close-text="[[i18n('close')]]"
+    <cr-dialog id="enterPinDialog" close-text="[[i18n('close')]]"
         on-cancel="onEnterPinDialogCancel_"
         on-close="onEnterPinDialogClose_">
       <div slot="title">[[i18n('networkSimEnterPinTitle')]]</div>
@@ -109,10 +109,10 @@
           [[i18n('networkSimEnter')]]
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
 
     <!-- Change PIN dialog -->
-    <dialog is="cr-dialog" id="changePinDialog" close-text="[[i18n('close')]]"
+    <cr-dialog id="changePinDialog" close-text="[[i18n('close')]]"
         on-close="onChangePinDialogClose_">
       <div slot="title">[[i18n('networkSimChangePinTitle')]]</div>
       <div slot="body">
@@ -136,10 +136,10 @@
           [[i18n('networkSimChange')]]
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
 
     <!-- Unlock PIN dialog -->
-    <dialog is="cr-dialog" id="unlockPinDialog" close-text="[[i18n('close')]]"
+    <cr-dialog id="unlockPinDialog" close-text="[[i18n('close')]]"
         on-close="onUnlockPinDialogClose_">
       <div slot="title">[[i18n('networkSimLockedTitle')]]</div>
       <div slot="body">
@@ -157,10 +157,10 @@
           [[i18n('networkSimUnlock')]]
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
 
     <!-- Unlock PUK dialog -->
-    <dialog is="cr-dialog" id="unlockPukDialog" close-text="[[i18n('close')]]"
+    <cr-dialog id="unlockPukDialog" close-text="[[i18n('close')]]"
         on-close="onUnlockPinDialogClose_">
       <div slot="title">[[i18n('networkSimLockedTitle')]]</div>
       <div slot="body">
@@ -190,7 +190,7 @@
           [[i18n('networkSimUnlock')]]
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
   </template>
   <script src="network_siminfo.js"></script>
 </dom-module>

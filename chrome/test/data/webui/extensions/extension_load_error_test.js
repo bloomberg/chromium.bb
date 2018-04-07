@@ -38,7 +38,7 @@ cr.define('extension_load_error_tests', function() {
     });
 
     test(assert(TestNames.RetryError), function() {
-      var dialogElement = loadError.$$('dialog');
+      var dialogElement = loadError.$$('cr-dialog').getNative();
       expectFalse(extension_test_util.isElementVisible(dialogElement));
       loadError.show();
       expectTrue(extension_test_util.isElementVisible(dialogElement));
@@ -54,7 +54,7 @@ cr.define('extension_load_error_tests', function() {
     });
 
     test(assert(TestNames.RetrySuccess), function() {
-      var dialogElement = loadError.$$('dialog');
+      var dialogElement = loadError.$$('cr-dialog').getNative();
       expectFalse(extension_test_util.isElementVisible(dialogElement));
       loadError.show();
       expectTrue(extension_test_util.isElementVisible(dialogElement));
