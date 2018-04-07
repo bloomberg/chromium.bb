@@ -853,23 +853,6 @@ bool CertVerifyProc::HasTooLongValidity(const X509Certificate& cert) {
     return true;
   }
 
-  base::Time::Exploded exploded_start;
-  base::Time::Exploded exploded_expiry;
-  cert.valid_start().UTCExplode(&exploded_start);
-  cert.valid_expiry().UTCExplode(&exploded_expiry);
-
-  if (exploded_expiry.year - exploded_start.year > 10)
-    return true;
-
-  int month_diff = (exploded_expiry.year - exploded_start.year) * 12 +
-                   (exploded_expiry.month - exploded_start.month);
-
-  base::TimeDelta days_diff = cert.valid_expiry() - cert.valid_start();
-
-  // Add any remainder as a full month.
-  if (exploded_expiry.day_of_month > exploded_start.day_of_month)
-    ++month_diff;
-
   // These dates are derived from the transitions noted in Section 1.2.2
   // (Relevant Dates) of the Baseline Requirements.
   const base::Time time_2012_07_01 =
@@ -881,22 +864,41 @@ bool CertVerifyProc::HasTooLongValidity(const X509Certificate& cert) {
   const base::Time time_2019_07_01 =
       base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1561939200);
 
+  // Compute the maximally permissive interpretations, accounting for leap
+  // years.
+  // 10 years - two possible leap years.
+  constexpr base::TimeDelta kTenYears =
+      base::TimeDelta::FromDays((365 * 8) + (366 * 2));
+  // 5 years - two possible leap years (year 0/year 4 or year 1/year 5).
+  constexpr base::TimeDelta kSixtyMonths =
+      base::TimeDelta::FromDays((365 * 3) + (366 * 2));
+  // 39 months - one possible leap year, two at 365 days, and the longest
+  // monthly sequence of 31/31/30 days (June/July/August).
+  constexpr base::TimeDelta kThirtyNineMonths =
+      base::TimeDelta::FromDays(366 + 365 + 365 + 31 + 31 + 30);
+
+  base::TimeDelta validity_duration = cert.valid_expiry() - cert.valid_start();
+
   // For certificates issued before the BRs took effect.
-  if (start < time_2012_07_01 && (month_diff > 120 || expiry > time_2019_07_01))
+  if (start < time_2012_07_01 &&
+      (validity_duration > kTenYears || expiry > time_2019_07_01)) {
     return true;
+  }
 
   // For certificates issued after the BR effective date of 1 July 2012: 60
   // months.
-  if (start >= time_2012_07_01 && month_diff > 60)
+  if (start >= time_2012_07_01 && validity_duration > kSixtyMonths)
     return true;
 
   // For certificates issued after 1 April 2015: 39 months.
-  if (start >= time_2015_04_01 && month_diff > 39)
+  if (start >= time_2015_04_01 && validity_duration > kThirtyNineMonths)
     return true;
 
   // For certificates issued after 1 March 2018: 825 days.
-  if (start >= time_2018_03_01 && days_diff > base::TimeDelta::FromDays(825))
+  if (start >= time_2018_03_01 &&
+      validity_duration > base::TimeDelta::FromDays(825)) {
     return true;
+  }
 
   return false;
 }

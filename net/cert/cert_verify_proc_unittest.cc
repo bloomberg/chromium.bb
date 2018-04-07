@@ -1241,6 +1241,7 @@ TEST(CertVerifyProcTest, TestHasTooLongValidity) {
       {"825_days_after_2018_03_01.pem", false},
       {"826_days_after_2018_03_01.pem", true},
       {"825_days_1_second_after_2018_03_01.pem", true},
+      {"39_months_based_on_last_day.pem", false},
   };
 
   base::FilePath certs_dir = GetTestCertsDirectory();

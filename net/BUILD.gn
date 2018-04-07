@@ -2368,6 +2368,7 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/2048-rsa-intermediate.pem",
     "data/ssl/certificates/2048-rsa-root.pem",
     "data/ssl/certificates/39_months_after_2015_04.pem",
+    "data/ssl/certificates/39_months_based_on_last_day.pem",
     "data/ssl/certificates/40_months_after_2015_04.pem",
     "data/ssl/certificates/60_months_after_2012_07.pem",
     "data/ssl/certificates/61_months_after_2012_07.pem",
