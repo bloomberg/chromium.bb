@@ -55,7 +55,7 @@ class MockSha256WebCryptoDigestor : public WebCryptoDigestor {
 };
 
 // Mock WebCrypto implementation for digest calculation.
-class MockWebCrypto : public WebCrypto {
+class MockDigestWebCrypto : public WebCrypto {
   std::unique_ptr<WebCryptoDigestor> CreateDigestor(
       WebCryptoAlgorithmId algorithm_id) override {
     EXPECT_EQ(algorithm_id, WebCryptoAlgorithmId::kWebCryptoAlgorithmIdSha256);
@@ -114,7 +114,7 @@ class SourceKeyedCachedMetadataHandlerMockPlatform final
   }
 
  private:
-  MockWebCrypto mock_web_crypto_;
+  MockDigestWebCrypto mock_web_crypto_;
   Vector<CacheMetadataEntry> cache_entries_;
 };
 
