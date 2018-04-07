@@ -1153,9 +1153,6 @@ class VEAClient : public VEAClientBase {
   void CreateEncoder();
   void DestroyEncoder();
 
-  void TryToSetupEncodeOnSeparateThread();
-  void DestroyEncodeOnSeparateThread();
-
   // VideoDecodeAccelerator::Client implementation.
   void RequireBitstreamBuffers(unsigned int input_count,
                                const gfx::Size& input_coded_size,
@@ -1166,11 +1163,6 @@ class VEAClient : public VEAClientBase {
                             base::TimeDelta timestamp) override;
 
  private:
-  void BitstreamBufferReadyOnVeaClientThread(int32_t bitstream_buffer_id,
-                                             size_t payload_size,
-                                             bool key_frame,
-                                             base::TimeDelta timestamp);
-
   // Return the number of encoded frames per second.
   double frames_per_second();
 
@@ -1193,30 +1185,13 @@ class VEAClient : public VEAClientBase {
   // and accounting. Returns false once we have collected all frames we needed.
   bool HandleEncodedFrame(bool keyframe);
 
-  // Ask the encoder to flush the frame. We should call Flush() after
-  // calling Encode() on all remaining frames. However, Encode() can be called
-  // from io_thread, while Flush() should be called from the GPU main
-  // thread. To guarantee the order, the calling sequence is:
-  // 1. FlushEncoder() from the same thread as Encode()
-  // 2. FlushEncoderOnVeaClientThread() from encode client thread
-  // 3. encoder.Flush() from encode client thread
+  // Ask the encoder to flush the frame.
   void FlushEncoder();
-  void FlushEncoderOnVeaClientThread();
 
   // Callback function of encoder_->Flush(). We add the number of received
   // frames at BitstreamBufferReady() and verify the number after flush is
-  // completed. Because we posts the logic of BitstreamBufferReady() to encode
-  // client thread, we also need to post the logic of this function to the same
-  // thread. The calling sequence is:
-  // 1. BitstreamBufferReady() from io_thread
-  // 2. BitstreamBufferReadyOnVeaClientThread() from encode client thread
-  // 3. FlushEncoderDone() from encode client thread
-  // 4. FlushEncoderDoneOnIOThread() from io_thread
-  // 5. FlushEncoderDoneOnVeaClientThread() from encode client thread
-  // Then #4 must be called after #1, #5 must be called after #2.
+  // completed.
   void FlushEncoderDone(bool success);
-  void FlushEncoderDoneOnIOThread(bool success);
-  void FlushEncoderDoneOnVeaClientThread(bool success);
 
   // Timeout function to check the flush callback function is called in the
   // short period.
@@ -1379,26 +1354,6 @@ class VEAClient : public VEAClientBase {
 
   // The last timestamp popped from |frame_timestamps_|.
   base::TimeDelta previous_timestamp_;
-
-  // Dummy thread used to redirect encode tasks, represents GPU IO thread.
-  base::Thread io_thread_;
-
-  // Task runner on which |encoder_| is created.
-  // Most of VEA and VEA::Client functions are running on this thread. See
-  // comment of VEA::TryToSetupEncodeOnSeparateThread for exceptions.
-  scoped_refptr<base::SingleThreadTaskRunner> vea_client_task_runner_;
-
-  // Task runner used for posting encode tasks. If
-  // TryToSetupEncodeOnSeparateThread() is true, |io_thread|'s task runner is
-  // used, otherwise |vea_client_task_runner_|.
-  scoped_refptr<base::SingleThreadTaskRunner> encode_task_runner_;
-
-  // Weak factory used for posting tasks on |encode_task_runner_|.
-  std::unique_ptr<base::WeakPtrFactory<VideoEncodeAccelerator>>
-      encoder_weak_factory_;
-
-  // Weak factory used for TryToSetupEncodeOnSeparateThread().
-  base::WeakPtrFactory<VEAClient> client_weak_factory_for_io_;
 };
 
 VEAClient::VEAClient(TestStream* test_stream,
@@ -1437,9 +1392,7 @@ VEAClient::VEAClient(TestStream* test_stream,
       requested_bitrate_(0),
       requested_framerate_(0),
       requested_subsequent_bitrate_(0),
-      requested_subsequent_framerate_(0),
-      io_thread_("IOThread"),
-      client_weak_factory_for_io_(this) {
+      requested_subsequent_framerate_(0) {
   if (keyframe_period_)
     LOG_ASSERT(kMaxKeyframeDelay < keyframe_period_);
 
@@ -1507,10 +1460,6 @@ static std::unique_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator(
 void VEAClient::CreateEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(!has_encoder());
-
-  vea_client_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  encode_task_runner_ = vea_client_task_runner_;
-
   DVLOG(1) << "Profile: " << test_stream_->requested_profile
            << ", initial bitrate: " << requested_bitrate_;
 
@@ -1522,9 +1471,6 @@ void VEAClient::CreateEncoder() {
     SetState(CS_ERROR);
     return;
   }
-  encoder_weak_factory_.reset(
-      new base::WeakPtrFactory<VideoEncodeAccelerator>(encoder_.get()));
-  TryToSetupEncodeOnSeparateThread();
   SetStreamParameters(requested_bitrate_, requested_framerate_);
   SetState(CS_INITIALIZED);
 }
@@ -1532,22 +1478,6 @@ void VEAClient::CreateEncoder() {
 void VEAClient::DecodeCompleted() {
   DCHECK(thread_checker_.CalledOnValidThread());
   SetState(CS_VALIDATED);
-}
-
-void VEAClient::TryToSetupEncodeOnSeparateThread() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Start dummy thread if not started already.
-  if (!io_thread_.IsRunning())
-    ASSERT_TRUE(io_thread_.Start());
-
-  if (!encoder_->TryToSetupEncodeOnSeparateThread(
-          client_weak_factory_for_io_.GetWeakPtr(), io_thread_.task_runner())) {
-    io_thread_.Stop();
-    return;
-  }
-
-  encode_task_runner_ = io_thread_.task_runner();
 }
 
 void VEAClient::DecodeFailed() {
@@ -1560,30 +1490,9 @@ void VEAClient::DestroyEncoder() {
   if (!has_encoder())
     return;
 
-  if (io_thread_.IsRunning()) {
-    encode_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&VEAClient::DestroyEncodeOnSeparateThread,
-                                  client_weak_factory_for_io_.GetWeakPtr()));
-    io_thread_.Stop();
-  } else {
-    DestroyEncodeOnSeparateThread();
-  }
-
-  // Clear the objects that should be destroyed on the same thread as creation.
   encoder_.reset();
   input_timer_.reset();
   quality_validator_.reset();
-}
-
-void VEAClient::DestroyEncodeOnSeparateThread() {
-  encoder_weak_factory_->InvalidateWeakPtrs();
-  // |client_weak_factory_for_io_| is used only when
-  // TryToSetupEncodeOnSeparateThread() returns true, in order to have weak
-  // pointers to use when posting tasks on |io_thread_|. It is safe to
-  // invalidate here because |encode_task_runner_| points to |io_thread_| in
-  // this case. If not, it is safe to invalidate it on
-  // |vea_client_task_runner_| as no weak pointers are used.
-  client_weak_factory_for_io_.InvalidateWeakPtrs();
 }
 
 void VEAClient::UpdateTestStreamData(bool mid_stream_bitrate_switch,
@@ -1706,21 +1615,7 @@ void VEAClient::BitstreamBufferReady(int32_t bitstream_buffer_id,
                                      size_t payload_size,
                                      bool key_frame,
                                      base::TimeDelta timestamp) {
-  ASSERT_TRUE(encode_task_runner_->BelongsToCurrentThread());
-  vea_client_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VEAClient::BitstreamBufferReadyOnVeaClientThread,
-                     base::Unretained(this), bitstream_buffer_id, payload_size,
-                     key_frame, timestamp));
-}
-
-void VEAClient::BitstreamBufferReadyOnVeaClientThread(
-    int32_t bitstream_buffer_id,
-    size_t payload_size,
-    bool key_frame,
-    base::TimeDelta timestamp) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
   ASSERT_LE(payload_size, output_buffer_size_);
 
   IdToSHM::iterator it = output_buffers_at_client_.find(bitstream_buffer_id);
@@ -1787,10 +1682,7 @@ void VEAClient::SetStreamParameters(unsigned int bitrate,
   current_framerate_ = framerate;
   LOG_ASSERT(current_requested_bitrate_ > 0UL);
   LOG_ASSERT(current_framerate_ > 0UL);
-  encode_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VideoEncodeAccelerator::RequestEncodingParametersChange,
-                     encoder_weak_factory_->GetWeakPtr(), bitrate, framerate));
+  encoder_->RequestEncodingParametersChange(bitrate, framerate);
   DVLOG(1) << "Switched parameters to " << current_requested_bitrate_
            << " bps @ " << current_framerate_ << " FPS";
 }
@@ -1900,15 +1792,10 @@ void VEAClient::FeedEncoderWithOneInput() {
     encode_start_time_.push_back(base::TimeTicks::Now());
   }
 
-  encode_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VideoEncodeAccelerator::Encode,
-                                encoder_weak_factory_->GetWeakPtr(),
-                                video_frame, force_keyframe));
+  encoder_->Encode(video_frame, force_keyframe);
   ++num_frames_submitted_to_encoder_;
   if (num_frames_submitted_to_encoder_ == num_frames_to_encode_) {
-    encode_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&VEAClient::FlushEncoder, base::Unretained(this)));
+    FlushEncoder();
   }
 }
 
@@ -1931,10 +1818,7 @@ void VEAClient::FeedEncoderWithOutput(base::SharedMemory* shm) {
                  .insert(std::make_pair(bitstream_buffer.id(), shm))
                  .second);
 
-  encode_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VideoEncodeAccelerator::UseOutputBitstreamBuffer,
-                     encoder_weak_factory_->GetWeakPtr(), bitstream_buffer));
+  encoder_->UseOutputBitstreamBuffer(bitstream_buffer);
 }
 
 bool VEAClient::HandleEncodedFrame(bool keyframe) {
@@ -2030,15 +1914,6 @@ void VEAClient::FlushEncoder() {
   // In order to guarantee the order between encoder.Encode() and
   // encoder.Flush(), this method should be called from the same thread as
   // encoder.Encode().
-  ASSERT_TRUE(encode_task_runner_->BelongsToCurrentThread());
-
-  // Call encoder.Flush() from the main thread.
-  vea_client_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VEAClient::FlushEncoderOnVeaClientThread,
-                                base::Unretained(this)));
-}
-
-void VEAClient::FlushEncoderOnVeaClientThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(num_frames_submitted_to_encoder_ == num_frames_to_encode_);
 
@@ -2051,7 +1926,7 @@ void VEAClient::FlushEncoderOnVeaClientThread() {
 
   flush_timeout_.Reset(
       base::BindRepeating(&VEAClient::FlushTimeout, base::Unretained(this)));
-  vea_client_task_runner_->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, flush_timeout_.callback(),
       base::TimeDelta::FromMilliseconds(kFlushTimeoutMs));
 }
@@ -2059,20 +1934,6 @@ void VEAClient::FlushEncoderOnVeaClientThread() {
 void VEAClient::FlushEncoderDone(bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
   flush_timeout_.Cancel();
-  encode_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VEAClient::FlushEncoderDoneOnIOThread,
-                                base::Unretained(this), success));
-}
-
-void VEAClient::FlushEncoderDoneOnIOThread(bool success) {
-  ASSERT_TRUE(encode_task_runner_->BelongsToCurrentThread());
-  vea_client_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VEAClient::FlushEncoderDoneOnVeaClientThread,
-                                base::Unretained(this), success));
-}
-
-void VEAClient::FlushEncoderDoneOnVeaClientThread(bool success) {
-  DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(num_frames_submitted_to_encoder_ == num_frames_to_encode_);
 
   if (!success || num_encoded_frames_ != num_frames_to_encode_) {
