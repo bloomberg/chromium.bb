@@ -771,6 +771,14 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
                                    OverviewAnimationType animation_type) {
   if (in_bounds_update_)
     return;
+
+  // Do not animate if the resulting bounds does not change. The original window
+  // may change bounds so we still need to call SetItemBounds to update the
+  // window transform.
+  OverviewAnimationType new_animation_type = animation_type;
+  if (target_bounds == target_bounds_)
+    new_animation_type = OVERVIEW_ANIMATION_NONE;
+
   base::AutoReset<bool> auto_reset_in_bounds_update(&in_bounds_update_, true);
   // If |target_bounds_| is empty, this is the first update. For tablet mode,
   // let UpdateHeaderLayout know, as we do not want |item_widget_| to be
@@ -783,17 +791,17 @@ void WindowSelectorItem::SetBounds(const gfx::Rect& target_bounds,
 
   gfx::Rect inset_bounds(target_bounds);
   inset_bounds.Inset(kWindowMargin, kWindowMargin);
-  SetItemBounds(inset_bounds, animation_type);
+  SetItemBounds(inset_bounds, new_animation_type);
 
   // SetItemBounds is called before UpdateHeaderLayout so the header can
   // properly use the updated windows bounds.
-  UpdateHeaderLayout(mode, animation_type);
+  UpdateHeaderLayout(mode, new_animation_type);
 
   // Shadow is normally set after an animation is finished. In the case of no
   // animations, manually set the shadow. Shadow relies on both the window
-  // trasnform and |item_widget_|'s new bounds so set it after SetItemBounds
+  // transform and |item_widget_|'s new bounds so set it after SetItemBounds
   // and UpdateHeaderLayout.
-  if (animation_type == OVERVIEW_ANIMATION_NONE) {
+  if (new_animation_type == OVERVIEW_ANIMATION_NONE) {
     SetShadowBounds(
         base::make_optional(transform_window_.GetTransformedBounds()));
   }
@@ -1115,7 +1123,7 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
 
 void WindowSelectorItem::SetOpacity(float opacity) {
   item_widget_->SetOpacity(opacity);
-  if (background_view_) {
+  if (background_view_ && !IsNewOverviewUi()) {
     background_view_->AnimateBackgroundOpacity(
         selected_ ? 0.f : kHeaderOpacity * opacity);
   }
