@@ -805,6 +805,7 @@ void DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
   Microsoft::WRL::ComPtr<IDXGIFactoryMedia> media_factory;
   dxgi_factory.CopyTo(media_factory.GetAddressOf());
   DXGI_SWAP_CHAIN_DESC1 desc = {};
+  DCHECK(!swap_chain_size_.IsEmpty());
   desc.Width = swap_chain_size_.width();
   desc.Height = swap_chain_size_.height();
   desc.Format = DXGI_FORMAT_YUY2;
@@ -1063,8 +1064,11 @@ bool DCLayerTree::CommitAndClearPendingOverlays() {
 }
 
 bool DCLayerTree::ScheduleDCLayer(const ui::DCRendererLayerParams& params) {
-  pending_overlays_.push_back(
-      std::make_unique<ui::DCRendererLayerParams>(params));
+  // Skip work for zero-sized layers.
+  if (!params.rect.IsEmpty()) {
+    pending_overlays_.push_back(
+        std::make_unique<ui::DCRendererLayerParams>(params));
+  }
   return true;
 }
 
