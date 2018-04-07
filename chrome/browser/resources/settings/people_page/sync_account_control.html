@@ -58,7 +58,7 @@
 
       #sync-icon-container {
         align-items: center;
-        background: var(--google-blue-500);
+        background: var(--google-green-700);
         border: var(--sync-icon-border-size) solid white;
         border-radius: 50%;
         display: flex;
@@ -75,12 +75,12 @@
         right: initial;
       }
 
-      #sync-icon-container[signed-in] {
-        background: green;
+      #sync-icon-container.sync-problem {
+        background: var(--settings-error-color);
       }
 
-      #sync-icon-container[signed-in][has-error] {
-        background: var(--settings-error-color);
+      #sync-icon-container.sync-disabled {
+        background: var(--google-blue-500);
       }
 
       #sync-icon-container iron-icon {
@@ -147,9 +147,11 @@
         <div id="avatar-container">
           <img class="account-icon" alt=""
               src="[[getAccountImageSrc_(shownAccount_.avatarImage)]]">
-          <div id="sync-icon-container" signed-in$="[[syncStatus.signedIn]]"
-              has-error$="[[syncStatus.hasError]]">
-            <iron-icon icon="[[getSyncIcon_(syncStatus.hasError)]]"></iron-icon>
+          <div id="sync-icon-container" hidden="[[!syncStatus.signedIn]]"
+              class$="[[getSyncIcon_(
+                  syncStatus.hasError, syncStatus.statusAction)]]">
+            <iron-icon icon$="settings:[[getSyncIcon_(
+                syncStatus.hasError, syncStatus.statusAction)]]"></iron-icon>
           </div>
         </div>
         <div class="middle two-line no-min-width">
@@ -157,7 +159,7 @@
             <span>
               [[getNameDisplay_('$i18nPolymer{syncedToName}',
                   shownAccount_.fullName, '$i18nPolymer{syncNotWorking}',
-                  syncStatus)]]
+                  '$i18nPolymer{syncPaused}', syncStatus)]]
             </span>
             <div class="secondary">[[shownAccount_.email]]</div>
           </div>

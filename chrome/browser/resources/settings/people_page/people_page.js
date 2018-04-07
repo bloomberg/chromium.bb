@@ -487,7 +487,8 @@ Polymer({
       syncIcon = 'settings:sync-problem';
 
     // Override the icon to the disabled icon if sync is managed.
-    if (syncStatus.managed)
+    if (syncStatus.managed ||
+        syncStatus.statusAction == settings.StatusAction.REAUTHENTICATE)
       syncIcon = 'settings:sync-disabled';
 
     return syncIcon;
@@ -496,10 +497,18 @@ Polymer({
   /**
    * @private
    * @param {?settings.SyncStatus} syncStatus
-   * @return {string} The class name for the sync status text.
+   * @return {string} The class name for the sync status row.
    */
-  getSyncStatusTextClass_: function(syncStatus) {
-    return (!!syncStatus && syncStatus.hasError) ? 'sync-error' : '';
+  getSyncStatusClass_: function(syncStatus) {
+    if (syncStatus && syncStatus.hasError) {
+      // Most of the time re-authenticate states are caused by intentional user
+      // action, so they will be displayed differently as other errors.
+      return syncStatus.statusAction == settings.StatusAction.REAUTHENTICATE ?
+          'auth-error' :
+          'sync-error';
+    }
+
+    return '';
   },
 
   /**
