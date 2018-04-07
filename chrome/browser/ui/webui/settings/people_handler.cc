@@ -282,6 +282,8 @@ void PeopleHandler::OnJavascriptAllowed() {
   if (signin_manager)
     signin_observer_.Add(signin_manager);
 
+  // This is intentionally not using GetSyncService(), to go around the
+  // Profile::IsSyncAllowed() check.
   ProfileSyncService* sync_service(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_));
   if (sync_service)
@@ -625,15 +627,19 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
 void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
   AllowJavascript();
 
+  ProfileSyncService* service = GetSyncService();
+
   // Just let the page open for now, even when the user's not signed in.
   // TODO(scottchen): finish the UI for signed-out users
   //    (https://crbug.com/800972).
   if (IsUnifiedConsentEnabled(profile_) && IsProfileAuthNeededOrHasErrors()) {
+    if (service && !sync_blocker_)
+      sync_blocker_ = service->GetSetupInProgressHandle();
+
     FireWebUIListener("sync-prefs-changed", base::DictionaryValue());
     return;
   }
 
-  ProfileSyncService* service = GetSyncService();
   if (!service) {
     CloseUI();
     return;
@@ -871,13 +877,17 @@ PeopleHandler::GetSyncStatusDictionary() {
   }
 #endif
 
+  // This is intentionally not using GetSyncService(), in order to access more
+  // nuanced information, since GetSyncService() returns nullptr if anything
+  // makes Profile::IsSyncAllowed() false.
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   sync_status->SetBoolean("signinAllowed", signin->IsSigninAllowed());
   sync_status->SetBoolean("syncSystemEnabled", (service != nullptr));
-  sync_status->SetBoolean(
-      "setupInProgress",
-      service && !service->IsManaged() && service->IsFirstSetupInProgress());
+  sync_status->SetBoolean("setupInProgress",
+                          service && !service->IsManaged() &&
+                              service->IsFirstSetupInProgress() &&
+                              signin->IsAuthenticated());
 
   base::string16 status_label;
   base::string16 link_label;
