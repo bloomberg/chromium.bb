@@ -12,5 +12,6 @@ include_rules = [
   "+remoting/signaling",
   "+third_party/libjingle_xmpp",
   "+third_party/webrtc",
+  "+third_party/ocmock",
   "+third_party/protobuf/src",
 ]
