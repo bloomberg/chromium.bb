@@ -18,6 +18,7 @@
 namespace {
 
 const int kMaxErrorFrames = 12;
+const int kMaxInvisibleErrorFrames = 12;
 const int kMaxDroppableFrames = 12;
 const int kMaxErrorResilientFrames = 12;
 const int kMaxNoMFMVFrames = 12;
@@ -38,6 +39,7 @@ class ErrorResilienceTestLarge
 
   void Reset() {
     error_nframes_ = 0;
+    invisible_error_nframes_ = 0;
     droppable_nframes_ = 0;
     error_resilient_nframes_ = 0;
     nomfmv_nframes_ = 0;
@@ -152,6 +154,21 @@ class ErrorResilienceTestLarge
     return 1;
   }
 
+  virtual bool DoDecodeInvisible() const {
+    if (invisible_error_nframes_ > 0 &&
+        (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
+      for (unsigned int i = 0; i < invisible_error_nframes_; ++i) {
+        if (invisible_error_frames_[i] == nframes_ - 1) {
+          std::cout << "             Skipping decoding all invisible frames in "
+                       "frame pkt: "
+                    << invisible_error_frames_[i] << "\n";
+          return 0;
+        }
+      }
+    }
+    return 1;
+  }
+
   virtual void MismatchHook(const aom_image_t *img1, const aom_image_t *img2) {
     if (allow_mismatch_) {
       double mismatch_psnr = compute_psnr(img1, img2);
@@ -178,6 +195,16 @@ class ErrorResilienceTestLarge
     error_nframes_ = num;
     for (unsigned int i = 0; i < error_nframes_; ++i)
       error_frames_[i] = list[i];
+  }
+
+  void SetInvisibleErrorFrames(int num, unsigned int *list) {
+    if (num > kMaxInvisibleErrorFrames)
+      num = kMaxInvisibleErrorFrames;
+    else if (num < 0)
+      num = 0;
+    invisible_error_nframes_ = num;
+    for (unsigned int i = 0; i < invisible_error_nframes_; ++i)
+      invisible_error_frames_[i] = list[i];
   }
 
   void SetDroppableFrames(int num, unsigned int *list) {
@@ -230,6 +257,7 @@ class ErrorResilienceTestLarge
   unsigned int nframes_;
   unsigned int decoded_nframes_;
   unsigned int error_nframes_;
+  unsigned int invisible_error_nframes_;
   unsigned int droppable_nframes_;
   unsigned int error_resilient_nframes_;
   unsigned int nomfmv_nframes_;
@@ -237,6 +265,7 @@ class ErrorResilienceTestLarge
   double mismatch_psnr_;
   unsigned int mismatch_nframes_;
   unsigned int error_frames_[kMaxErrorFrames];
+  unsigned int invisible_error_frames_[kMaxInvisibleErrorFrames];
   unsigned int droppable_frames_[kMaxDroppableFrames];
   unsigned int error_resilient_frames_[kMaxErrorResilientFrames];
   unsigned int nomfmv_frames_[kMaxNoMFMVFrames];
@@ -351,16 +380,17 @@ TEST_P(ErrorResilienceTestLarge, SFrameTest) {
   SetAllowMismatch(1);
 
   // Note that an S-frame cannot be forced on a frame that is a
-  // show_existing_frame, or a frame that comes directly after an invisible
-  // frame. Currently, this will cause an assertion failure.
+  // show_existing_frame. This issue still needs to be addressed.
   // Set an arbitrary S-frame
   unsigned int num_s_frames = 1;
-  unsigned int s_frame_list[] = { 8 };
+  unsigned int s_frame_list[] = { 7 };
   SetSFrames(num_s_frames, s_frame_list);
+  // Ensure that any invisible frames before the S frame are dropped
+  SetInvisibleErrorFrames(num_s_frames, s_frame_list);
 
   // Set a few frames before the S frame that are lost (not decoded)
-  unsigned int num_error_frames = 5;
-  unsigned int error_frame_list[] = { 3, 4, 5, 6, 7 };
+  unsigned int num_error_frames = 4;
+  unsigned int error_frame_list[] = { 3, 4, 5, 6 };
   SetErrorFrames(num_error_frames, error_frame_list);
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));

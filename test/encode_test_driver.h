@@ -210,6 +210,9 @@ class EncoderTest {
   // Hook to determine whether to decode frame after encoding
   virtual bool DoDecode() const { return 1; }
 
+  // Hook to determine whether to decode invisible frames after encoding
+  virtual bool DoDecodeInvisible() const { return 1; }
+
   // Hook to handle encode/decode mismatch
   virtual void MismatchHook(const aom_image_t *img1, const aom_image_t *img2);
 

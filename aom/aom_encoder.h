@@ -159,6 +159,8 @@ typedef struct aom_codec_cx_pkt {
        * Only applicable when "output partition" mode is enabled. First
        * partition has id 0.*/
       int partition_id;
+      /*!\brief size of the visible frame in this packet */
+      size_t vis_frame_size;
     } frame;                            /**< data for compressed frame packet */
     aom_fixed_buf_t twopass_stats;      /**< data for two-pass packet */
     aom_fixed_buf_t firstpass_mb_stats; /**< first pass mb packet */

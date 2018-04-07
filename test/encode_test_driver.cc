@@ -240,8 +240,16 @@ void EncoderTest::RunLoop(VideoSource *video) {
           case AOM_CODEC_CX_FRAME_PKT:
             has_cxdata = true;
             if (decoder.get() != NULL && DoDecode()) {
-              aom_codec_err_t res_dec = decoder->DecodeFrame(
-                  (const uint8_t *)pkt->data.frame.buf, pkt->data.frame.sz);
+              aom_codec_err_t res_dec;
+              if (DoDecodeInvisible()) {
+                res_dec = decoder->DecodeFrame(
+                    (const uint8_t *)pkt->data.frame.buf, pkt->data.frame.sz);
+              } else {
+                res_dec = decoder->DecodeFrame(
+                    (const uint8_t *)pkt->data.frame.buf +
+                        (pkt->data.frame.sz - pkt->data.frame.vis_frame_size),
+                    pkt->data.frame.vis_frame_size);
+              }
 
               if (!HandleDecodeResult(res_dec, decoder.get())) break;
 
