@@ -182,7 +182,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_register_streams_early2, false)
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_clear_queued_packets_before_sending_connectivity_probing,
-    true)
+    false)
 
 // When true, this flag has QuicConnection call
 // QuicConnectionVisitorInterface::OnSuccessfulVersionNegotiation earlier when
