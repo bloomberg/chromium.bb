@@ -54,7 +54,10 @@ Polymer({
     },
 
     /** @type {settings.SyncStatus} */
-    syncStatus: Object,
+    syncStatus: {
+      type: Object,
+      observer: 'onSyncStatusChanged_',
+    },
 
     /**
      * Whether the "create passphrase" inputs should be shown. These inputs
@@ -92,6 +95,20 @@ Polymer({
     existingPassphrase_: {
       type: String,
       value: '',
+    },
+
+    /** @private */
+    syncSectionDisabled_: {
+      type: Boolean,
+      value: false,
+      computed: 'computeSyncSectionDisabled_(' +
+          'unifiedConsentEnabled, syncStatus.signedIn)',
+    },
+
+    /** @private */
+    syncSectionOpened_: {
+      type: Boolean,
+      value: true,
     },
 
     // <if expr="not chromeos">
@@ -147,6 +164,14 @@ Polymer({
       window.removeEventListener('beforeunload', this.beforeunloadCallback_);
       this.beforeunloadCallback_ = null;
     }
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeSyncSectionDisabled_() {
+    return this.unifiedConsentEnabled && !this.syncStatus.signedIn;
   },
 
   /** @protected */
@@ -428,6 +453,53 @@ Polymer({
   onCancelSyncClick_: function() {
     this.didAbort_ = true;
     settings.navigateTo(settings.routes.BASIC);
+  },
+
+  /** @private */
+  onSyncStatusChanged_: function() {
+    this.syncSectionOpened_ = !!this.syncStatus.signedIn;
+  },
+
+  /**
+   * Toggles the expand button within the element being listened to.
+   * @param {!Event} e
+   * @private
+   */
+  toggleExpandButton_: function(e) {
+    // The expand button handles toggling itself.
+    const expandButtonTag = 'CR-EXPAND-BUTTON';
+    if (e.target.tagName == expandButtonTag)
+      return;
+
+    if (!e.currentTarget.hasAttribute('actionable'))
+      return;
+
+    /** @type {!CrExpandButtonElement} */
+    const expandButton = e.currentTarget.querySelector(expandButtonTag);
+    assert(expandButton);
+    expandButton.expanded = !expandButton.expanded;
+  },
+
+  /**
+   * When unified-consent enabled, the non-toggle items on the bottom of sync
+   * section should be wrapped with 'list-frame' in order to be indented
+   * correctly.
+   * @return {string}
+   * @private
+   */
+  getListFrameClass_: function() {
+    return this.unifiedConsentEnabled ? 'list-frame' : '';
+  },
+
+  /**
+   * When unified-consent enabled, the non-toggle items on the bottom of sync
+   * section will be wrapped with 'list-frame', and should have the 'list-item'
+   * instead of 'settings-box' in order to be indented correctly.
+   * @return {string}
+   * @private
+   */
+  getListItemClass_: function() {
+    return this.unifiedConsentEnabled ? 'list-item' : 'settings-box';
   },
 
   // <if expr="not chromeos">

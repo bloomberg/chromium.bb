@@ -3235,6 +3235,12 @@
   <message name="IDS_SETTINGS_SYNC" desc="Name of the sync service.">
     Sync
   </message>
+  <message name="IDS_SETTINGS_SYNC_DESCRIPTION" desc="Text explaining what the sync system does.">
+    Passwords, bookmarks, history, and more are synced to your account
+  </message>
+  <message name="IDS_SETTINGS_SYNC_SECTION_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the sync settings. Only visible by screen reader software.">
+    Show sync settings
+  </message>
   <message name="IDS_SETTINGS_SYNC_SYNC_AND_PERSONALIZATION" desc="The label of button that takes the user to manage their sync and personalization settings.">
     Sync and personalization
   </message>
