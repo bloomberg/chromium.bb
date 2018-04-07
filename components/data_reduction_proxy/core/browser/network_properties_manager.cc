@@ -360,18 +360,41 @@ void NetworkPropertiesManager::SetHasWarmupURLProbeFailed(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (secure_proxy && is_core_proxy) {
+    if (!warmup_url_probe_failed) {
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          "DataReductionProxy.WarmupURL.FetchAttemptsBeforeSuccess.Secure.Core",
+          warmup_url_fetch_attempt_counts_secure_core_, 10);
+    }
     has_warmup_url_succeded_secure_core_ = !warmup_url_probe_failed;
     network_properties_.mutable_secure_proxy_flags()
         ->set_disallowed_due_to_warmup_probe_failure(warmup_url_probe_failed);
   } else if (secure_proxy && !is_core_proxy) {
+    if (!warmup_url_probe_failed) {
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          "DataReductionProxy.WarmupURL.FetchAttemptsBeforeSuccess.Secure."
+          "NonCore",
+          warmup_url_fetch_attempt_counts_secure_non_core_, 10);
+    }
     has_warmup_url_succeded_secure_non_core_ = !warmup_url_probe_failed;
     network_properties_.mutable_secure_non_core_proxy_flags()
         ->set_disallowed_due_to_warmup_probe_failure(warmup_url_probe_failed);
   } else if (!secure_proxy && is_core_proxy) {
+    if (!warmup_url_probe_failed) {
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          "DataReductionProxy.WarmupURL.FetchAttemptsBeforeSuccess.Insecure."
+          "Core",
+          warmup_url_fetch_attempt_counts_insecure_core_, 10);
+    }
     has_warmup_url_succeded_insecure_core_ = !warmup_url_probe_failed;
     network_properties_.mutable_insecure_proxy_flags()
         ->set_disallowed_due_to_warmup_probe_failure(warmup_url_probe_failed);
   } else {
+    if (!warmup_url_probe_failed) {
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          "DataReductionProxy.WarmupURL.FetchAttemptsBeforeSuccess.Insecure."
+          "NonCore",
+          warmup_url_fetch_attempt_counts_insecure_non_core_, 10);
+    }
     has_warmup_url_succeded_insecure_non_core_ = !warmup_url_probe_failed;
     network_properties_.mutable_insecure_non_core_proxy_flags()
         ->set_disallowed_due_to_warmup_probe_failure(warmup_url_probe_failed);
