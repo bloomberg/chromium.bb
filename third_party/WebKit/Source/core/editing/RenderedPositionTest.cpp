@@ -32,17 +32,17 @@ class RenderedPositionTest : public testing::WithParamInterface<bool>,
     LoadAhem();
   }
 
-  void FocusAndSelectAll() {
-    HTMLInputElement* target =
-        ToHTMLInputElement(GetDocument().getElementById("target"));
-    DCHECK(target);
-    target->focus();
+  void FocusAndSelectAll(Element* focus, const Node& select) {
+    DCHECK(focus);
+    focus->focus();
     Selection().SetSelection(
-        SelectionInDOMTree::Builder()
-            .SelectAllChildren(*target->InnerEditorElement())
-            .Build(),
+        SelectionInDOMTree::Builder().SelectAllChildren(select).Build(),
         SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
     UpdateAllLifecyclePhases();
+  }
+
+  void FocusAndSelectAll(TextControlElement* target) {
+    FocusAndSelectAll(target, *target->InnerEditorElement());
   }
 
  private:
@@ -63,7 +63,7 @@ TEST_P(RenderedPositionTest, ComputeCompositedSelection) {
       style='width: 100px; height: 20px;'>
   )HTML");
 
-  FocusAndSelectAll();
+  FocusAndSelectAll(ToHTMLInputElement(GetDocument().getElementById("target")));
 
   const CompositedSelection& composited_selection =
       RenderedPosition::ComputeCompositedSelection(Selection());
@@ -94,7 +94,7 @@ TEST_P(RenderedPositionTest, PositionInScrollableRoot) {
       <input id=target width=20 value='test test test test test tes tes test'>
   )HTML");
 
-  FocusAndSelectAll();
+  FocusAndSelectAll(ToHTMLInputElement(GetDocument().getElementById("target")));
 
   ScrollableArea* root_scroller = GetDocument().View()->GetScrollableArea();
   root_scroller->SetScrollOffset(ScrollOffset(800, 500), kProgrammaticScroll);
@@ -158,7 +158,7 @@ TEST_P(RenderedPositionTest, PositionInScroller) {
       </div>
   )HTML");
 
-  FocusAndSelectAll();
+  FocusAndSelectAll(ToHTMLInputElement(GetDocument().getElementById("target")));
 
   Element* e = GetDocument().getElementById("scroller");
   PaintLayerScrollableArea* scroller =
@@ -182,39 +182,13 @@ TEST_P(RenderedPositionTest, PositionInScroller) {
             composited_selection.end.edge_bottom_in_layer);
 }
 
-// TODO(yoichio): These helper static functions are introduced to avoid
-// conflicting while merging this change into M66.
-// Refactor them into RenderedPositionTest member.
-namespace rendered_position_test {
-static void SetUpinternal(RenderedPositionTest* test) {
-  // Enable compositing.
-  test->GetPage().GetSettings().SetAcceleratedCompositingEnabled(true);
-  test->GetDocument().View()->SetParentVisible(true);
-  test->GetDocument().View()->SetSelfVisible(true);
-  test->GetDocument().View()->UpdateAllLifecyclePhases();
-}
-
-static void FocusAndSelect(RenderedPositionTest* test,
-                           Element* focus,
-                           const Node& select) {
-  DCHECK(focus);
-  focus->focus();
-  test->Selection().SetSelection(
-      SelectionInDOMTree::Builder().SelectAllChildren(select).Build(),
-      SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
-  test->UpdateAllLifecyclePhases();
-}
-}  // namespace rendered_position_test
-
 // crbug.com/807930
 TEST_P(RenderedPositionTest, ContentEditableLinebreak) {
-  rendered_position_test::SetUpinternal(this);
-  LoadAhem();
   SetBodyContent(
       "<div style='font: 10px/10px Ahem;' contenteditable>"
       "test<br><br></div>");
   Element* target = GetDocument().QuerySelector("div");
-  rendered_position_test::FocusAndSelect(this, target, *target);
+  FocusAndSelectAll(target, *target);
   const CompositedSelection& composited_selection =
       RenderedPosition::ComputeCompositedSelection(Selection());
   EXPECT_EQ(composited_selection.start.edge_top_in_layer,
@@ -229,15 +203,10 @@ TEST_P(RenderedPositionTest, ContentEditableLinebreak) {
 
 // crbug.com/807930
 TEST_P(RenderedPositionTest, TextAreaLinebreak) {
-  rendered_position_test::SetUpinternal(this);
-  LoadAhem();
   SetBodyContent(
       "<textarea style='font: 10px/10px Ahem;'>"
       "test\n</textarea>");
-  TextControlElement* target =
-      ToTextControl(GetDocument().QuerySelector("textarea"));
-  rendered_position_test::FocusAndSelect(this, target,
-                                         *target->InnerEditorElement());
+  FocusAndSelectAll(ToTextControl(GetDocument().QuerySelector("textarea")));
   const CompositedSelection& composited_selection =
       RenderedPosition::ComputeCompositedSelection(Selection());
   EXPECT_EQ(composited_selection.start.edge_top_in_layer,
