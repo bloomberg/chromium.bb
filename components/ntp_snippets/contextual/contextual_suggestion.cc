@@ -42,6 +42,9 @@ namespace ntp_snippets {
 
 ContextualSuggestion::ContextualSuggestion(const std::string& id) : id_(id) {}
 
+ContextualSuggestion::ContextualSuggestion(const ContextualSuggestion& other) =
+    default;
+
 ContextualSuggestion::~ContextualSuggestion() = default;
 
 // static

@@ -26,6 +26,7 @@ class ContextualSuggestion {
  public:
   using PtrVector = std::vector<std::unique_ptr<ContextualSuggestion>>;
 
+  ContextualSuggestion(const ContextualSuggestion& other);
   ~ContextualSuggestion();
 
   // Creates a ContextualSuggestion from a dictionary. Returns a null pointer if
@@ -56,6 +57,8 @@ class ContextualSuggestion {
   // network requests.
   const GURL& salient_image_url() const { return salient_image_url_; }
 
+  const std::string& image_id() const { return image_id_; }
+
   static std::unique_ptr<ContextualSuggestion> CreateForTesting(
       const std::string& to_url,
       const std::string& image_url);
@@ -72,6 +75,7 @@ class ContextualSuggestion {
   GURL url_;
   std::string publisher_name_;
   GURL salient_image_url_;
+  std::string image_id_;
   std::string snippet_;
   base::Time publish_date_;
 };

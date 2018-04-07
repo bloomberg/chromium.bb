@@ -33,6 +33,7 @@ class ContextualContentSuggestionsService : public KeyedService {
   struct Cluster {
    public:
     Cluster();
+    explicit Cluster(const std::string& title);
     Cluster(Cluster&& other);
     ~Cluster();
 
@@ -64,23 +65,32 @@ class ContextualContentSuggestionsService : public KeyedService {
                               std::vector<Cluster> clusters)>;
 
   // Asynchronously fetches contextual suggestions for the given URL.
-  void FetchContextualSuggestions(const GURL& url,
-                                  FetchContextualSuggestionsCallback callback);
+  virtual void FetchContextualSuggestions(
+      const GURL& url,
+      FetchContextualSuggestionsCallback callback);
 
   // Asynchronously fetches contextual suggestions for the given URL.
-  void FetchContextualSuggestionClusters(
+  virtual void FetchContextualSuggestionClusters(
       const GURL& url,
       FetchContextualSuggestionClustersCallback callback);
 
+  // Fetches an image pointed to by |url| and internally caches it using
+  // |suggestion_id|. Asynchronous if cache or network is queried.
+  virtual void FetchContextualSuggestionImage(
+      const ContentSuggestion::ID& suggestion_id,
+      const GURL& url,
+      ImageFetchedCallback callback);
+
   // Fetches an image for a given contextual suggestion ID.
   // Asynchronous if cache or network is queried.
-  void FetchContextualSuggestionImage(
+  virtual void FetchContextualSuggestionImageLegacy(
       const ContentSuggestion::ID& suggestion_id,
       ImageFetchedCallback callback);
 
   // Used to report events using various metrics (e.g. UMA, UKM).
-  void ReportEvent(ukm::SourceId sourceId,
-                   contextual_suggestions::ContextualSuggestionsEvent event);
+  virtual void ReportEvent(
+      ukm::SourceId sourceId,
+      contextual_suggestions::ContextualSuggestionsEvent event);
 
   // KeyedService overrides.
   void Shutdown() override;
