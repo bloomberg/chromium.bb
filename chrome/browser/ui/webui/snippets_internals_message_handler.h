@@ -27,7 +27,6 @@ class ListValue;
 
 namespace ntp_snippets {
 class ContentSuggestionsService;
-class ContextualContentSuggestionsService;
 }  // namespace ntp_snippets
 
 class PrefService;
@@ -39,8 +38,6 @@ class SnippetsInternalsMessageHandler
  public:
   SnippetsInternalsMessageHandler(
       ntp_snippets::ContentSuggestionsService* content_suggestions_service,
-      ntp_snippets::ContextualContentSuggestionsService*
-          contextual_content_suggestions_service,
       PrefService* pref_service);
   ~SnippetsInternalsMessageHandler() override;
 
@@ -69,12 +66,7 @@ class SnippetsInternalsMessageHandler
   void HandleClearClassification(const base::ListValue* args);
   void HandleFetchRemoteSuggestionsInTheBackgroundIn2Seconds(
       const base::ListValue* args);
-  void HandleFetchContextualSuggestions(const base::ListValue* args);
   void HandleResetNotificationsState(const base::ListValue* args);
-  void OnContextualSuggestionsFetched(
-      ntp_snippets::Status status_code,
-      const GURL& url,
-      std::vector<ntp_snippets::ContentSuggestion> suggestions);
   void HandlePushDummySuggestionIn10Seconds(const base::ListValue* args);
 
   void SendAllContent();
@@ -101,8 +93,8 @@ class SnippetsInternalsMessageHandler
   bool dom_loaded_;
 
   ntp_snippets::ContentSuggestionsService* content_suggestions_service_;
-  ntp_snippets::ContextualContentSuggestionsService*
-      contextual_content_suggestions_service_;
+  // TODO(pnoland): Add back contextual content suggestions service and
+  // handle the new data format.
   ntp_snippets::RemoteSuggestionsProvider* remote_suggestions_provider_;
   PrefService* pref_service_;
 

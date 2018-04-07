@@ -248,49 +248,4 @@ found in the LICENSE file.
     </div>
     <div class="detail" id="content-suggestions-empty"></div>
   </div>
-
-  <div id="contextual-suggestions-section" class="hidden">
-    <h2>Contextual Suggestions</h2>
-    <h3>Request for URL</h3>
-    <input type="url" id="contextual-url"
-        value="https://en.wikipedia.org/wiki/Persian_language"></input>
-    <button id="fetch-contextual-suggestions-button">
-      Fetch Contextual Suggestions
-    </button>
-
-    <h3>Response status</h3>
-    <div id="contextual-suggestions-request-result">
-      No request sent yet.
-    </div>
-
-    <h3>Contextual Suggestions response</h3>
-    <div id="contextual-suggestions">
-      <table class="section-details">
-        <tr jsselect="list" style="display:none">
-          <td class="title-link">
-            <span class="contextual-hidden-toggler content-suggestion-title"
-                jsvalues="hidden-id:id">
-              <span jscontent="title"></span>&gt;&gt;
-            </span>
-            <div jsvalues="id:id" class="content-suggestion-detail hidden">
-              <table>
-                <tr>
-                  <td>ID
-                  <td jscontent="idWithinCategory">
-                <tr>
-                  <td>URL
-                  <td><a class="url" jsvalues="href:url" jscontent="url"></a>
-                <tr>
-                  <td>URL with favicon
-                  <td>
-                    <a class="url" jsvalues="href:urlWithFavicon"
-                        jscontent="urlWithFavicon"></a>
-                <tr>
-                  <td>Publisher name
-                  <td jscontent="publisherName">
-              </table>
-            </div>
-      </table>
-    </div>
-  </div>
 </div>
