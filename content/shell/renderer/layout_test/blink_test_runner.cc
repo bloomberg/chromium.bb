@@ -994,7 +994,7 @@ void BlinkTestRunner::OnTryLeakDetection() {
   DCHECK_EQ(GURL(url::kAboutBlankURL),
             GURL(main_frame->ToWebLocalFrame()->GetDocument().Url()));
 
-  leak_detector_->TryLeakDetection(main_frame);
+  leak_detector_->TryLeakDetection();
 }
 
 void BlinkTestRunner::OnReplyBluetoothManualChooserEvents(

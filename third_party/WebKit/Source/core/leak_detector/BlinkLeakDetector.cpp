@@ -12,6 +12,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/leak_detector/BlinkLeakDetectorClient.h"
+#include "core/page/Page.h"
 #include "core/workers/DedicatedWorkerMessagingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/Timer.h"
@@ -36,7 +37,7 @@ BlinkLeakDetector::BlinkLeakDetector()
 
 BlinkLeakDetector::~BlinkLeakDetector() = default;
 
-void BlinkLeakDetector::PrepareForLeakDetection(WebFrame* frame) {
+void BlinkLeakDetector::PrepareForLeakDetection() {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
@@ -58,10 +59,13 @@ void BlinkLeakDetector::PrepareForLeakDetection(WebFrame* frame) {
   // Currently PrepareForLeakDetection takes frame to get the spellchecker,
   // but in the future when leak detection runs with multiple frames,
   // this code must be refactored so that it iterates thru all the frames.
-  if (WebLocalFrameImpl::ToCoreFrame(*frame)->IsLocalFrame()) {
-    ToLocalFrame(WebLocalFrameImpl::ToCoreFrame(*frame))
-        ->GetSpellChecker()
-        .PrepareForLeakDetection();
+  for (Page* page : Page::OrdinaryPages()) {
+    for (Frame* frame = page->MainFrame(); frame;
+         frame = frame->Tree().TraverseNext()) {
+      if (!frame->IsLocalFrame())
+        continue;
+      ToLocalFrame(frame)->GetSpellChecker().PrepareForLeakDetection();
+    }
   }
 
   // FIXME: HTML5 Notification should be closed because notification affects

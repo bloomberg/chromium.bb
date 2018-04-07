@@ -52,7 +52,7 @@ class WebLeakDetectorImpl final : public WebLeakDetector,
 
   ~WebLeakDetectorImpl() override = default;
 
-  void PrepareForLeakDetection(WebFrame*) override;
+  void PrepareForLeakDetection() override;
   void CollectGarbageAndReport() override;
 
   // BlinkLeakDetectorClient:
@@ -63,10 +63,10 @@ class WebLeakDetectorImpl final : public WebLeakDetector,
   DISALLOW_COPY_AND_ASSIGN(WebLeakDetectorImpl);
 };
 
-void WebLeakDetectorImpl::PrepareForLeakDetection(WebFrame* frame) {
+void WebLeakDetectorImpl::PrepareForLeakDetection() {
   BlinkLeakDetector& detector = BlinkLeakDetector::Instance();
   detector.SetClient(this);
-  detector.PrepareForLeakDetection(frame);
+  detector.PrepareForLeakDetection();
 }
 
 void WebLeakDetectorImpl::CollectGarbageAndReport() {

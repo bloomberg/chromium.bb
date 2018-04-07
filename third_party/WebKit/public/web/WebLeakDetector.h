@@ -35,8 +35,6 @@
 
 namespace blink {
 
-class WebFrame;
-
 class WebLeakDetectorClient {
  public:
   struct Result {
@@ -83,7 +81,7 @@ class WebLeakDetector {
 
   // Perform initial stage of preparing for leak detection,
   // releasing references to resources held globally.
-  virtual void PrepareForLeakDetection(WebFrame*) = 0;
+  virtual void PrepareForLeakDetection() = 0;
 
   // Garbage collect Blink's heaps and report leak counts.
   // |WebLeakDetectorClient::onLeakDetectionComplete()| is called
