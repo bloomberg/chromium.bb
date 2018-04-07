@@ -45,7 +45,7 @@
     </template>
     <template id="doNotTrackDialogIf" is="dom-if"
         if="[[showDoNotTrackDialog_]]" notify-dom-change>
-      <dialog is="cr-dialog" id="confirmDoNotTrackDialog"
+      <cr-dialog id="confirmDoNotTrackDialog"
           close-text="$i18n{close}" on-cancel="onDoNotTrackDialogCancel_"
           on-close="onDoNotTrackDialogClosed_">
         <div slot="title">$i18n{doNotTrackDialogTitle}</div>
@@ -60,7 +60,7 @@
             $i18n{confirm}
           </paper-button>
         </div>
-      </dialog>
+      </cr-dialog>
     </template>
     <settings-animated-pages id="pages" section="privacy"
         focus-config="[[focusConfig_]]">

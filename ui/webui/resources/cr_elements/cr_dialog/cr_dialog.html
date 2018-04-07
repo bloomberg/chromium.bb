@@ -9,7 +9,7 @@
 <dom-module id="cr-dialog">
   <template>
     <style include="cr-hidden-style cr-icons">
-      :host {
+      dialog {
         --scroll-border: 1px solid var(--paper-grey-300);
         border: 0;
         border-radius: 2px;
@@ -21,9 +21,10 @@
         padding: 0;
         top: 50%;
         width: 512px;
+        @apply --cr-dialog-native;
       }
 
-      :host([open]) #content-wrapper {
+      dialog[open] #content-wrapper {
         /* Keep max-height within viewport, and flex content accordingly. */
         display: flex;
         flex-direction: column;
@@ -39,7 +40,7 @@
         flex-shrink: 0;
       }
 
-      :host::backdrop {
+      dialog::backdrop {
         background-color: rgba(0, 0, 0, 0.6);
         bottom: 0;
         left: 0;
@@ -128,29 +129,31 @@
         @apply --cr-dialog-close-image-active;
       }
     </style>
-    <!-- This wrapper is necessary, such that the "pulse" animation is not
-      erroneously played when the user clicks on the outer-most scrollbar. -->
-    <div id="content-wrapper">
-      <div class="top-container">
-        <div class="title-container" tabindex="-1">
-          <slot name="title"></slot>
+    <dialog id="dialog">
+      <!-- This wrapper is necessary, such that the "pulse" animation is not
+        erroneously played when the user clicks on the outer-most scrollbar. -->
+      <div id="content-wrapper">
+        <div class="top-container">
+          <div class="title-container" tabindex="-1">
+            <slot name="title"></slot>
+          </div>
+          <paper-icon-button-light id="closeContainer" class="icon-clear"
+              hidden$="[[noCancel]]">
+            <button id="close" aria-label$="[[closeText]]"
+                on-tap="cancel" on-keypress="onCloseKeypress_">
+            </button>
+          </paper-icon-button-light>
         </div>
-        <paper-icon-button-light id="closeContainer" class="icon-clear"
-            hidden$="[[noCancel]]">
-          <button id="close" aria-label$="[[closeText]]"
-              on-tap="cancel" on-keypress="onCloseKeypress_">
-          </button>
-        </paper-icon-button-light>
+        <slot name="header"></slot>
+        <div class="body-container">
+          <span id="bodyTopMarker"></span>
+          <slot name="body"></slot>
+          <span id="bodyBottomMarker"></span>
+        </div>
+        <slot name="button-container"></slot>
+        <slot name="footer"></slot>
       </div>
-      <slot name="header"></slot>
-      <div class="body-container">
-        <span id="bodyTopMarker"></span>
-        <slot name="body"></slot>
-        <span id="bodyBottomMarker"></span>
-      </div>
-      <slot name="button-container"></slot>
-      <slot name="footer"></slot>
-    </div>
+    </dialog>
   </template>
   <script src="cr_dialog.js"></script>
 </dom-module>

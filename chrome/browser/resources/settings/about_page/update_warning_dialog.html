@@ -9,7 +9,7 @@
 <dom-module id="settings-update-warning-dialog">
   <template>
     <style include="settings-shared"></style>
-    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
+    <cr-dialog id="dialog" close-text="$i18n{close}">
       <div slot="title">$i18n{aboutUpdateWarningTitle}</div>
       <div slot="body">
         <div id="update-warning-message"></div>
@@ -22,7 +22,7 @@
           $i18n{aboutUpdateWarningContinue}
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
   </template>
   <script src="update_warning_dialog.js"></script>
 </dom-module>

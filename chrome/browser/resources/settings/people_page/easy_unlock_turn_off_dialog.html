@@ -12,7 +12,7 @@
 <dom-module id="easy-unlock-turn-off-dialog">
   <template>
     <style include="settings-shared"></style>
-    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
+    <cr-dialog id="dialog" close-text="$i18n{close}">
       <div slot="title">[[getTitleText_(status_)]]</div>
       <div slot="body">
         [[getDescriptionText_(status_)]]
@@ -31,7 +31,7 @@
           [[getTurnOffButtonText_(status_)]]
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
   </template>
   <script src="easy_unlock_turn_off_dialog.js"></script>
 </dom-module>

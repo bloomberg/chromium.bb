@@ -8,7 +8,7 @@
 <dom-module id="settings-drive-cache-dialog">
   <template>
     <style include="settings-shared"></style>
-    <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
+    <cr-dialog id="dialog" close-text="$i18n{close}">
       <div slot="title">
         $i18n{storageClearDriveCacheDialogTitle}
       </div>
@@ -25,7 +25,7 @@
           $i18n{storageDeleteAllButtonTitle}
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
   </template>
   <script src="drive_cache_dialog.js"></script>
 </dom-module>

@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -30,7 +31,7 @@
     </template>
 
     <!-- Confirm disable android apps dialog -->
-    <dialog is="cr-dialog" id="confirmDisableDialog" close-text="$i18n{close}"
+    <cr-dialog id="confirmDisableDialog" close-text="$i18n{close}"
         on-cancel="onConfirmDisableDialogCancel_"
         on-close="onConfirmDisableDialogClose_">
       <div slot="title">$i18n{androidAppsDisableDialogTitle}</div>
@@ -45,7 +46,7 @@
           $i18n{androidAppsDisableDialogRemove}
         </paper-button>
       </div>
-    </dialog>
+    </cr-dialog>
 
   </template>
   <script src="android_apps_subpage.js"></script>

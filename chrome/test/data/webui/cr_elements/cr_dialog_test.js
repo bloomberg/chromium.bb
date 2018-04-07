@@ -13,12 +13,12 @@ suite('cr-dialog', function() {
 
   test('focuses title on show', function() {
     document.body.innerHTML = `
-      <dialog is="cr-dialog">
+      <cr-dialog>
         <div slot="title">title</div>
         <div slot="body"><button>button</button></div>
-      </dialog>`;
+      </cr-dialog>`;
 
-    const dialog = document.body.querySelector('dialog');
+    const dialog = document.body.querySelector('cr-dialog');
     const button = document.body.querySelector('button');
 
     assertNotEquals(dialog, document.activeElement);
@@ -32,15 +32,15 @@ suite('cr-dialog', function() {
 
   test('enter keys should trigger action buttons once', function() {
     document.body.innerHTML = `
-      <dialog is="cr-dialog">
+      <cr-dialog>
         <div slot="title">title</div>
         <div slot="body">
           <button class="action-button">button</button>
           <button id="other-button">other button</button>
         </div>
-      </dialog>`;
+      </cr-dialog>`;
 
-    const dialog = document.body.querySelector('dialog');
+    const dialog = document.body.querySelector('cr-dialog');
     const actionButton = document.body.querySelector('.action-button');
 
     dialog.showModal();
@@ -69,7 +69,7 @@ suite('cr-dialog', function() {
 
   test('enter keys find the first non-hidden non-disabled button', function() {
     document.body.innerHTML = `
-      <dialog is="cr-dialog">
+      <cr-dialog>
         <div slot="title">title</div>
         <div slot="body">
           <button id="hidden" class="action-button" hidden>hidden</button>
@@ -77,9 +77,9 @@ suite('cr-dialog', function() {
           <button class="action-button" disabled hidden>disabled hidden</button>
           <button id="active" class="action-button">active</button>
         </div>
-      </dialog>`;
+      </cr-dialog>`;
 
-    const dialog = document.body.querySelector('dialog');
+    const dialog = document.body.querySelector('cr-dialog');
     const hiddenButton = document.body.querySelector('#hidden');
     const actionButton = document.body.querySelector('#active');
     dialog.showModal();
@@ -99,16 +99,16 @@ suite('cr-dialog', function() {
 
   test('enter keys from paper-inputs (only) are processed', function() {
     document.body.innerHTML = `
-      <dialog is="cr-dialog">
+      <cr-dialog>
         <div slot="title">title</div>
         <div slot="body">
           <paper-input></paper-input>
           <foobar></foobar>
           <button class="action-button">active</button>
         </div>
-      </dialog>`;
+      </cr-dialog>`;
 
-    const dialog = document.body.querySelector('dialog');
+    const dialog = document.body.querySelector('cr-dialog');
 
     const inputElement = document.body.querySelector('paper-input');
     const otherElement = document.body.querySelector('foobar');
@@ -132,12 +132,12 @@ suite('cr-dialog', function() {
 
   test('focuses [autofocus] instead of title when present', function() {
     document.body.innerHTML = `
-      <dialog is="cr-dialog">
+      <cr-dialog>
         <div slot="title">title</div>
         <div slot="body"><button autofocus>button</button></div>
-      </dialog>`;
+      </cr-dialog>`;
 
-    const dialog = document.body.querySelector('dialog');
+    const dialog = document.body.querySelector('cr-dialog');
     const button = document.body.querySelector('button');
 
     assertNotEquals(dialog, document.activeElement);
@@ -153,12 +153,12 @@ suite('cr-dialog', function() {
   // dialog has been opened.
   test('body scrollable border not added before modal shown', function(done) {
     document.body.innerHTML = `
-      <dialog is="cr-dialog">
+      <cr-dialog>
         <div slot="title">title</div>
         <div slot="body">body</div>
-      </dialog>`;
+      </cr-dialog>`;
 
-    const dialog = document.body.querySelector('dialog');
+    const dialog = document.body.querySelector('cr-dialog');
     assertFalse(dialog.open);
     const bodyContainer = dialog.$$('.body-container');
     assertTrue(!!bodyContainer);
@@ -174,14 +174,14 @@ suite('cr-dialog', function() {
 
   test('dialog body scrollable border when appropriate', function(done) {
     document.body.innerHTML = `
-      <dialog is="cr-dialog">
+      <cr-dialog>
         <div slot="title">title</div>
         <div slot="body">
           <div style="height: 100px">tall content</div>
         </div>
-      </dialog>`;
+      </cr-dialog>`;
 
-    const dialog = document.body.querySelector('dialog');
+    const dialog = document.body.querySelector('cr-dialog');
     const bodyContainer = dialog.$$('.body-container');
     assertTrue(!!bodyContainer);
 
@@ -225,11 +225,11 @@ suite('cr-dialog', function() {
 
   test('dialog cannot be cancelled when `no-cancel` is set', function() {
     document.body.innerHTML = `
-      <dialog is="cr-dialog" no-cancel>
+      <cr-dialog no-cancel>
         <div slot="title">title</div>
-      </dialog>`;
+      </cr-dialog>`;
 
-    const dialog = document.body.querySelector('dialog');
+    const dialog = document.body.querySelector('cr-dialog');
     dialog.showModal();
 
     // The paper-icon-button-light is the hidden element which is the
