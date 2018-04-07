@@ -430,13 +430,14 @@ InspectorAccessibilityAgent::InspectorAccessibilityAgent(
     : page_(page), dom_agent_(dom_agent) {}
 
 Response InspectorAccessibilityAgent::getPartialAXTree(
-    int dom_node_id,
+    Maybe<int> dom_node_id,
+    Maybe<int> backend_node_id,
+    Maybe<String> object_id,
     Maybe<bool> fetch_relatives,
     std::unique_ptr<protocol::Array<AXNode>>* nodes) {
-  if (!dom_agent_->Enabled())
-    return Response::Error("DOM agent must be enabled");
   Node* dom_node = nullptr;
-  Response response = dom_agent_->AssertNode(dom_node_id, dom_node);
+  Response response =
+      dom_agent_->AssertNode(dom_node_id, backend_node_id, object_id, dom_node);
   if (!response.isSuccess())
     return response;
 
