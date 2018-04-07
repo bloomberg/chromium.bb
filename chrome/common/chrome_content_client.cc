@@ -15,7 +15,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"

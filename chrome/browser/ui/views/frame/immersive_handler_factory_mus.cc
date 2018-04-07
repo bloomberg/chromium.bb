@@ -7,7 +7,6 @@
 #include "ash/public/cpp/immersive/immersive_focus_watcher.h"
 #include "ash/public/cpp/immersive/immersive_gesture_handler.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 
 ImmersiveHandlerFactoryMus::ImmersiveHandlerFactoryMus() {}
 

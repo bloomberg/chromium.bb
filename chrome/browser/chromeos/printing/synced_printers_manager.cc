@@ -14,7 +14,6 @@
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/md5.h"
-#include "base/memory/ptr_util.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/optional.h"
 #include "base/synchronization/lock.h"

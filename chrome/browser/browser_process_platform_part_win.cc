@@ -4,7 +4,6 @@
 
 #include "chrome/browser/browser_process_platform_part_win.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/active_use_util.h"
 #include "chrome/browser/google/did_run_updater_win.h"
 

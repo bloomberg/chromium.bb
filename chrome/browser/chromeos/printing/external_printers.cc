@@ -8,7 +8,6 @@
 
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"

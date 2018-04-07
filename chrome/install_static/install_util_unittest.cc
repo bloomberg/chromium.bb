@@ -9,7 +9,6 @@
 #include <tuple>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/test_reg_util_win.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"

@@ -8,7 +8,6 @@
 #include <unordered_set>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 
 namespace {

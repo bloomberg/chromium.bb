@@ -6,7 +6,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "jni/PrefChangeRegistrar_jni.h"

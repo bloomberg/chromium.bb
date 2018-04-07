@@ -5,7 +5,6 @@
 #include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"

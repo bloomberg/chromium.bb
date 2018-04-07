@@ -4,7 +4,6 @@
 
 #include "chrome/browser/metrics/tab_reactivation_tracker.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "content/public/browser/web_contents_observer.h"
 

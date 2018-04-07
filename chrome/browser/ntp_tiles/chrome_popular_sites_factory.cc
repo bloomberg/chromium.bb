@@ -5,7 +5,6 @@
 #include "chrome/browser/ntp_tiles/chrome_popular_sites_factory.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"

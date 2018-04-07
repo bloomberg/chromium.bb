@@ -4,7 +4,6 @@
 
 #include "chrome/common/media_router/route_request_result.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/common/media_router/media_route.h"
 
 namespace media_router {

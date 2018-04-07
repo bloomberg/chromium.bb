@@ -5,7 +5,6 @@
 #include "chrome/browser/spellchecker/spell_check_panel_host_impl.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "components/spellcheck/browser/spellcheck_platform.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/search/instant_io_context.h"
 
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_context.h"
 #include "net/url_request/url_request.h"

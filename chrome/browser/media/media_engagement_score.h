@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/clock.h"
 #include "base/values.h"
 #include "chrome/browser/media/media_engagement_score_details.mojom.h"

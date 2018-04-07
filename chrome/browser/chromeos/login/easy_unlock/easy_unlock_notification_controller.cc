@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_notification_controller.h"
 
 #include "base/guid.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/chrome_pages.h"

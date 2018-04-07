@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/budget_service/budget_manager.h"

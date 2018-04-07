@@ -4,7 +4,6 @@
 
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/grit/locale_settings.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 
-#include "base/memory/ptr_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/search_engines/template_url_service.h"
 

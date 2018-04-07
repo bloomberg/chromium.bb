@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/grit/generated_resources.h"

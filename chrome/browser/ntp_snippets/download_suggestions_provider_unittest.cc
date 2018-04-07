@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_clock.h"

@@ -12,7 +12,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/net/predictor.h"

@@ -9,7 +9,6 @@
 #include "base/android/build_info.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"

@@ -6,7 +6,6 @@
 
 #include "chrome/browser/client_hints/client_hints.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"

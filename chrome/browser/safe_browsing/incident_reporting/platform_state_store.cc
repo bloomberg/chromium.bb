@@ -16,7 +16,6 @@
 
 #include "chrome/browser/safe_browsing/incident_reporting/platform_state_store.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 #if defined(USE_PLATFORM_STATE_STORE)

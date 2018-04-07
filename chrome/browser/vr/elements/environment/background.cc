@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/elements/environment/background.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/skia_surface_provider.h"
 #include "chrome/browser/vr/ui_element_renderer.h"

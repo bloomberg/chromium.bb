@@ -4,7 +4,6 @@
 
 #include "chrome/browser/budget_service/budget_manager_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/time/default_clock.h"
 #include "chrome/browser/budget_service/budget_manager.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"

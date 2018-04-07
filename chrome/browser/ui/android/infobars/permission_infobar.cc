@@ -10,7 +10,6 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 #include "components/content_settings/core/common/content_settings_types.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"

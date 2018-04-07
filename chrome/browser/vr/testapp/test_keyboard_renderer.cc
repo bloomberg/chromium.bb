@@ -5,7 +5,6 @@
 #include "chrome/browser/vr/testapp/test_keyboard_renderer.h"
 
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "chrome/browser/vr/skia_surface_provider.h"

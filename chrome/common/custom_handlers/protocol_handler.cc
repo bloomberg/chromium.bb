@@ -4,7 +4,6 @@
 
 #include "chrome/common/custom_handlers/protocol_handler.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"

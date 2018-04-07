@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 

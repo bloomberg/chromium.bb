@@ -4,7 +4,6 @@
 
 #include "chrome/browser/history/chrome_history_backend_client.h"
 
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/common/channel_info.h"
 #include "components/bookmarks/browser/bookmark_model.h"

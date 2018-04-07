@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/bit_cast.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/win/registry.h"

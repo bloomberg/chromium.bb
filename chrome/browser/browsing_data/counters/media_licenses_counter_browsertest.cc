@@ -4,7 +4,6 @@
 
 #include "chrome/browser/browsing_data/counters/media_licenses_counter.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

@@ -15,7 +15,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/common/conflicts/module_watcher_win.h"

@@ -5,7 +5,6 @@
 #include "chrome/browser/task_manager/providers/fallback_task_provider.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"

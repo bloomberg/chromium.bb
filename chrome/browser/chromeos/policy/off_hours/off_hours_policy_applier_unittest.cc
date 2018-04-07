@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_interval.h"
 #include "chrome/browser/chromeos/policy/off_hours/weekly_time.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"

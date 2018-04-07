@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"

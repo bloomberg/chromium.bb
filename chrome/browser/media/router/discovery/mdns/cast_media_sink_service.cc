@@ -5,7 +5,6 @@
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"

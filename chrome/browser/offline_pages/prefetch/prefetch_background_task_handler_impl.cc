@@ -4,7 +4,6 @@
 
 #include "chrome/browser/offline_pages/prefetch/prefetch_background_task_handler_impl.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_background_task_scheduler.h"
 #include "chrome/common/pref_names.h"

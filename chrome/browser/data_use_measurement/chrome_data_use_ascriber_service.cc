@@ -5,7 +5,6 @@
 #include "chrome/browser/data_use_measurement/chrome_data_use_ascriber_service.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_ascriber.h"

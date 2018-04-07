@@ -8,7 +8,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/memory/ptr_util.h"
 #include "jni/AdsBlockedInfoBar_jni.h"
 
 using base::android::JavaParamRef;

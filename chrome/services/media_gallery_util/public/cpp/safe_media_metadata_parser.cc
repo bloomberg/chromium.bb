@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/blob_reader.h"
