@@ -41,7 +41,7 @@ class HTMLMapElement;
 // There is 2 types of images:
 // * normal images, e.g. <image>, <picture>.
 // * content images with "content: url(path/to/image.png)".
-// We store the type inside  m_isGeneratedContent.
+// We store the type inside |is_generated_content_|.
 //
 // The class is image type agnostic as it only manipulates decoded images.
 // See LayoutImageResource that holds this image.
