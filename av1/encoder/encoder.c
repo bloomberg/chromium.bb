@@ -3290,25 +3290,20 @@ static void update_reference_frames(AV1_COMP *cpi) {
 #endif  // USE_GF16_MULTI_LAYER
 
   BufferPool *const pool = cm->buffer_pool;
+
   // At this point the new frame has been encoded.
   // If any buffer copy / swapping is signaled it should be done here.
+
   if (cm->frame_type == KEY_FRAME || frame_is_sframe(cm)) {
-    ref_cnt_fb(pool->frame_bufs,
-               &cm->ref_frame_map[cpi->ref_fb_idx[GOLDEN_FRAME - 1]],
-               cm->new_fb_idx);
-    ref_cnt_fb(pool->frame_bufs,
-               &cm->ref_frame_map[cpi->ref_fb_idx[BWDREF_FRAME - 1]],
-               cm->new_fb_idx);
-    ref_cnt_fb(pool->frame_bufs,
-               &cm->ref_frame_map[cpi->ref_fb_idx[ALTREF2_FRAME - 1]],
-               cm->new_fb_idx);
-    ref_cnt_fb(pool->frame_bufs,
-               &cm->ref_frame_map[cpi->ref_fb_idx[ALTREF_FRAME - 1]],
-               cm->new_fb_idx);
-    ref_cnt_fb(pool->frame_bufs,
-               &cm->ref_frame_map[cpi->ref_fb_idx[REF_FRAMES - 1]],
-               cm->new_fb_idx);
-  } else if (av1_preserve_existing_gf(cpi)) {
+    for (int ref_frame = 0; ref_frame < REF_FRAMES; ++ref_frame) {
+      ref_cnt_fb(pool->frame_bufs,
+                 &cm->ref_frame_map[cpi->ref_fb_idx[ref_frame]],
+                 cm->new_fb_idx);
+    }
+    return;
+  }
+
+  if (av1_preserve_existing_gf(cpi)) {
     // We have decided to preserve the previously existing golden frame as our
     // new ARF frame. However, in the short term in function
     // av1_bitstream.c::get_refresh_mask() we left it in the GF slot and, if
@@ -3426,50 +3421,40 @@ static void update_reference_frames(AV1_COMP *cpi) {
     //      |                |                |
     //      v                v                v
     // ref_fb_idx[2],   ref_fb_idx[0],   ref_fb_idx[1]
-    int ref_frame;
+    int tmp;
 
-    if (cm->frame_type == KEY_FRAME || frame_is_sframe(cm)) {
-      for (ref_frame = 0; ref_frame < LAST_REF_FRAMES; ++ref_frame) {
-        ref_cnt_fb(pool->frame_bufs,
-                   &cm->ref_frame_map[cpi->ref_fb_idx[ref_frame]],
-                   cm->new_fb_idx);
-      }
-    } else {
-      int tmp;
+    ref_cnt_fb(pool->frame_bufs,
+               &cm->ref_frame_map[cpi->ref_fb_idx[LAST_REF_FRAMES - 1]],
+               cm->new_fb_idx);
 
-      ref_cnt_fb(pool->frame_bufs,
-                 &cm->ref_frame_map[cpi->ref_fb_idx[LAST_REF_FRAMES - 1]],
-                 cm->new_fb_idx);
+    tmp = cpi->ref_fb_idx[LAST_REF_FRAMES - 1];
 
+    shift_last_ref_frames(cpi);
+    cpi->ref_fb_idx[0] = tmp;
+
+    assert(cm->show_existing_frame == 0);
+    memcpy(cpi->interp_filter_selected[LAST_FRAME],
+           cpi->interp_filter_selected[0],
+           sizeof(cpi->interp_filter_selected[0]));
+
+    if (cpi->rc.is_last_bipred_frame) {
+      // Refresh the LAST_FRAME with the BWDREF_FRAME and retire the
+      // LAST3_FRAME by updating the virtual indices.
+      //
+      // NOTE: The source frame for BWDREF does not have a holding position as
+      //       the OVERLAY frame for ALTREF's. Hence, to resolve the reference
+      //       virtual index reshuffling for BWDREF, the encoder always
+      //       specifies a LAST_BIPRED right before BWDREF and completes the
+      //       reshuffling job accordingly.
       tmp = cpi->ref_fb_idx[LAST_REF_FRAMES - 1];
 
       shift_last_ref_frames(cpi);
-      cpi->ref_fb_idx[0] = tmp;
+      cpi->ref_fb_idx[0] = cpi->ref_fb_idx[BWDREF_FRAME - 1];
+      cpi->ref_fb_idx[BWDREF_FRAME - 1] = tmp;
 
-      assert(cm->show_existing_frame == 0);
       memcpy(cpi->interp_filter_selected[LAST_FRAME],
-             cpi->interp_filter_selected[0],
-             sizeof(cpi->interp_filter_selected[0]));
-
-      if (cpi->rc.is_last_bipred_frame) {
-        // Refresh the LAST_FRAME with the BWDREF_FRAME and retire the
-        // LAST3_FRAME by updating the virtual indices.
-        //
-        // NOTE: The source frame for BWDREF does not have a holding position as
-        //       the OVERLAY frame for ALTREF's. Hence, to resolve the reference
-        //       virtual index reshuffling for BWDREF, the encoder always
-        //       specifies a LAST_BIPRED right before BWDREF and completes the
-        //       reshuffling job accordingly.
-        tmp = cpi->ref_fb_idx[LAST_REF_FRAMES - 1];
-
-        shift_last_ref_frames(cpi);
-        cpi->ref_fb_idx[0] = cpi->ref_fb_idx[BWDREF_FRAME - 1];
-        cpi->ref_fb_idx[BWDREF_FRAME - 1] = tmp;
-
-        memcpy(cpi->interp_filter_selected[LAST_FRAME],
-               cpi->interp_filter_selected[BWDREF_FRAME],
-               sizeof(cpi->interp_filter_selected[BWDREF_FRAME]));
-      }
+             cpi->interp_filter_selected[BWDREF_FRAME],
+             sizeof(cpi->interp_filter_selected[BWDREF_FRAME]));
     }
   }
 
