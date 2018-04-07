@@ -18,20 +18,20 @@ WebUsbChooserServiceDesktop::WebUsbChooserServiceDesktop(
     : WebUsbChooserService(render_frame_host) {}
 
 WebUsbChooserServiceDesktop::~WebUsbChooserServiceDesktop() {
-  for (const auto& bubble : bubbles_) {
-    if (bubble)
-      bubble->CloseBubble(BUBBLE_CLOSE_FORCED);
-  }
+  if (bubble_)
+    bubble_->CloseBubble(BUBBLE_CLOSE_FORCED);
 }
 
 void WebUsbChooserServiceDesktop::ShowChooser(
     std::unique_ptr<UsbChooserController> controller) {
+  // Only one chooser bubble may be shown at a time.
+  if (bubble_)
+    bubble_->CloseBubble(BUBBLE_CLOSE_FORCED);
+
   auto delegate = std::make_unique<ChooserBubbleDelegate>(
       render_frame_host(), std::move(controller));
   auto* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host());
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  BubbleReference bubble_reference =
-      browser->GetBubbleManager()->ShowBubble(std::move(delegate));
-  bubbles_.push_back(bubble_reference);
+  bubble_ = browser->GetBubbleManager()->ShowBubble(std::move(delegate));
 }
