@@ -2259,11 +2259,11 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   _pi_no_hwtest_boards = frozenset([
       'betty-arcnext',
       'caroline-arcnext',
-      'eve-arcnext',
       'kevin-arcnext',
   ])
-  _pi_no_hwtest_experimental_boards = frozenset([])
-  _pi_no_hwtest_experimental_boards = frozenset([])
+  _pi_no_hwtest_experimental_boards = frozenset([
+      'eve-arcnext',
+  ])
   _pi_vmtest_boards = frozenset([])
 
 
