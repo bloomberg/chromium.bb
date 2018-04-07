@@ -68,14 +68,15 @@ TEST_F(PowerMonitorMessageBroadcasterTest, PowerMessageBroadcast) {
 
   std::unique_ptr<PowerMonitorBroadcastSource> broadcast_source(
       new PowerMonitorBroadcastSource(
-          std::make_unique<MockClient>(run_loop.QuitClosure()), connector(),
+          std::make_unique<MockClient>(run_loop.QuitClosure()),
           base::SequencedTaskRunnerHandle::Get()));
+  broadcast_source->Init(connector());
   run_loop.Run();
 
   MockClient* client =
       static_cast<MockClient*>(broadcast_source->client_for_testing());
 
-  // Above PowerMonitorBroadcastSource ctor will connect to Device Service to
+  // Above PowerMonitorBroadcastSource::Init() will connect to Device Service to
   // bind device::mojom::PowerMonitor interface, on which AddClient() will be
   // called then, this should invoke immediatelly a power state change back to
   // PowerMonitorBroadcastSource.

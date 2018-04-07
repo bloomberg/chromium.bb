@@ -15,27 +15,26 @@
 namespace device {
 
 PowerMonitorBroadcastSource::PowerMonitorBroadcastSource(
-    service_manager::Connector* connector,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : PowerMonitorBroadcastSource(std::make_unique<Client>(),
-                                  connector,
                                   task_runner) {}
 
 PowerMonitorBroadcastSource::PowerMonitorBroadcastSource(
     std::unique_ptr<Client> client,
-    service_manager::Connector* connector,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : client_(std::move(client)), task_runner_(task_runner) {
+    : client_(std::move(client)), task_runner_(task_runner) {}
+
+PowerMonitorBroadcastSource::~PowerMonitorBroadcastSource() {
+  task_runner_->DeleteSoon(FROM_HERE, client_.release());
+}
+
+void PowerMonitorBroadcastSource::Init(service_manager::Connector* connector) {
   if (connector) {
     task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&PowerMonitorBroadcastSource::Client::Init,
                                   base::Unretained(client_.get()),
                                   base::Passed(connector->Clone())));
   }
-}
-
-PowerMonitorBroadcastSource::~PowerMonitorBroadcastSource() {
-  task_runner_->DeleteSoon(FROM_HERE, client_.release());
 }
 
 bool PowerMonitorBroadcastSource::IsOnBatteryPowerImpl() {
