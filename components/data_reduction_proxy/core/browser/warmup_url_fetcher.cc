@@ -208,19 +208,39 @@ base::TimeDelta WarmupURLFetcher::GetFetchTimeout() const {
   DCHECK_LE(0u, previous_attempt_counts_);
   DCHECK_GE(2u, previous_attempt_counts_);
 
-  // The timeout value should always be between kMinTimeout and kMaxTimeout
+  // The timeout value should always be between |min_timeout| and |max_timeout|
   // (both inclusive).
-  constexpr base::TimeDelta kMinTimeout = base::TimeDelta::FromSeconds(8);
-  constexpr base::TimeDelta kMaxTimeout = base::TimeDelta::FromSeconds(60);
+  const base::TimeDelta min_timeout =
+      base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
+          features::kDataReductionProxyRobustConnection,
+          "warmup_url_fetch_min_timeout_seconds", 8));
+  const base::TimeDelta max_timeout =
+      base::TimeDelta::FromSeconds(GetFieldTrialParamByFeatureAsInt(
+          features::kDataReductionProxyRobustConnection,
+          "warmup_url_fetch_max_timeout_seconds", 60));
+  DCHECK_LT(base::TimeDelta::FromSeconds(0), min_timeout);
+  DCHECK_LT(base::TimeDelta::FromSeconds(0), max_timeout);
+  DCHECK_LE(min_timeout, max_timeout);
 
   // Set the timeout based on how many times the fetching of the warmup URL
   // has been tried.
-  size_t http_rtt_multiplier = 5;
+  size_t http_rtt_multiplier = GetFieldTrialParamByFeatureAsInt(
+      features::kDataReductionProxyRobustConnection,
+      "warmup_url_fetch_init_http_rtt_multiplier", 5);
   if (previous_attempt_counts_ == 1) {
-    http_rtt_multiplier = 10;
+    http_rtt_multiplier = GetFieldTrialParamByFeatureAsInt(
+                              features::kDataReductionProxyRobustConnection,
+                              "warmup_url_fetch_init_http_rtt_multiplier", 5) *
+                          2;
   } else if (previous_attempt_counts_ == 2) {
-    http_rtt_multiplier = 20;
+    http_rtt_multiplier = GetFieldTrialParamByFeatureAsInt(
+                              features::kDataReductionProxyRobustConnection,
+                              "warmup_url_fetch_init_http_rtt_multiplier", 5) *
+                          4;
   }
+  // Sanity checks.
+  DCHECK_LT(0u, http_rtt_multiplier);
+  DCHECK_GE(1000u, http_rtt_multiplier);
 
   const net::NetworkQualityEstimator* network_quality_estimator =
       url_request_context_getter_->GetURLRequestContext()
@@ -229,14 +249,14 @@ base::TimeDelta WarmupURLFetcher::GetFetchTimeout() const {
   base::Optional<base::TimeDelta> http_rtt_estimate =
       network_quality_estimator->GetHttpRTT();
   if (!http_rtt_estimate)
-    return kMaxTimeout;
+    return max_timeout;
 
   base::TimeDelta timeout = http_rtt_multiplier * http_rtt_estimate.value();
-  if (timeout > kMaxTimeout)
-    return kMaxTimeout;
+  if (timeout > max_timeout)
+    return max_timeout;
 
-  if (timeout < kMinTimeout)
-    return kMinTimeout;
+  if (timeout < min_timeout)
+    return min_timeout;
 
   return timeout;
 }
