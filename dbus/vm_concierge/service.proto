@@ -322,3 +322,38 @@ message LaunchContainerApplicationResponse {
   // The failure_reason if the requested application could not be started.
   string failure_reason = 2;
 }
+
+// Request to get application icons in the specified VM/container. Used with the
+// GetContainerAppIcon D-Bus message into vm_concierge.
+message ContainerAppIconRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target, if empty the default
+  // container name will be used.
+  string container_name = 2;
+
+  // IDs of the application to get icons for, should map to the desktop_file_id
+  // that is in the application list sent back from the container.
+  repeated string desktop_file_ids = 3;
+
+  // The icon size with both its height and width equals to this number.
+  int32 size = 4;
+
+  // The target scale of this icon. This is the scale at which this icon is
+  // designed to be used.
+  int32 scale = 5;
+}
+
+// One desktop file ID with its icon.
+message DesktopIcon {
+  string desktop_file_id = 1;
+  bytes icon = 2;
+}
+
+// Response sent back by vm_concierge when it receives a
+// GetContainerAppIcon D-Bus message.
+// Some desktop_file_id may not have an icon.
+message ContainerAppIconResponse {
+  repeated DesktopIcon icons = 1;
+}
