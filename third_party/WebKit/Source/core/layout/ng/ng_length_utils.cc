@@ -48,26 +48,17 @@ LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraint_space,
   DCHECK_GE(constraint_space.AvailableSize().inline_size, LayoutUnit());
   DCHECK_GE(constraint_space.PercentageResolutionSize().inline_size,
             LayoutUnit());
-  // TODO(layout-dev) enable this DCHECK
-  // DCHECK_EQ(constraint_space.WritingMode(),
-  //          style.GetWritingMode());
+  DCHECK_EQ(constraint_space.GetWritingMode(), style.GetWritingMode());
 
   if (constraint_space.IsAnonymous())
     return constraint_space.AvailableSize().inline_size;
 
+  NGBoxStrut border_and_padding = ComputeBorders(constraint_space, style) +
+                                  ComputePadding(constraint_space, style);
+
   if (type == LengthResolveType::kMinSize && length.IsAuto())
-    return LayoutUnit();
+    return border_and_padding.InlineSum();
 
-  if (type == LengthResolveType::kMarginBorderPaddingSize && length.IsAuto())
-    return LayoutUnit();
-
-  // We don't need this when we're resolving margin/border/padding; skip
-  // computing it as an optimization and to simplify the code below.
-  NGBoxStrut border_and_padding;
-  if (type != LengthResolveType::kMarginBorderPaddingSize) {
-    border_and_padding = ComputeBorders(constraint_space, style) +
-                         ComputePadding(constraint_space, style);
-  }
   switch (length.GetType()) {
     case kAuto:
     case kFillAvailable: {
@@ -80,10 +71,7 @@ LayoutUnit ResolveInlineLength(const NGConstraintSpace& constraint_space,
     case kFixed:
     case kCalculated: {
       LayoutUnit percentage_resolution_size =
-          type == LengthResolveType::kMarginBorderPaddingSize
-              ? constraint_space
-                    .PercentageResolutionInlineSizeForParentWritingMode()
-              : constraint_space.PercentageResolutionSize().inline_size;
+          constraint_space.PercentageResolutionSize().inline_size;
       LayoutUnit value = ValueForLength(length, percentage_resolution_size);
       if (style.BoxSizing() == EBoxSizing::kContentBox) {
         value += border_and_padding.InlineSum();
@@ -130,14 +118,10 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
                               LayoutUnit content_size,
                               LengthResolveType type) {
   DCHECK(!length.IsMaxSizeNone());
-  DCHECK_NE(type, LengthResolveType::kMarginBorderPaddingSize);
   DCHECK_EQ(constraint_space.GetWritingMode(), style.GetWritingMode());
 
   if (constraint_space.IsAnonymous())
     return content_size;
-
-  if (type == LengthResolveType::kMinSize && length.IsAuto())
-    return LayoutUnit();
 
   if (length.IsPercentOrCalc() &&
       constraint_space.PercentageResolutionSize().block_size ==
@@ -155,13 +139,12 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
     return LayoutUnit();
   }
 
-  // We don't need this when we're resolving margin/border/padding; skip
-  // computing it as an optimization and to simplify the code below.
-  NGBoxStrut border_and_padding;
-  if (type != LengthResolveType::kMarginBorderPaddingSize) {
-    border_and_padding = ComputeBorders(constraint_space, style) +
-                         ComputePadding(constraint_space, style);
-  }
+  NGBoxStrut border_and_padding = ComputeBorders(constraint_space, style) +
+                                  ComputePadding(constraint_space, style);
+
+  if (type == LengthResolveType::kMinSize && length.IsAuto())
+    return border_and_padding.BlockSum();
+
   switch (length.GetType()) {
     case kFillAvailable: {
       LayoutUnit content_size = constraint_space.AvailableSize().block_size;
@@ -205,6 +188,38 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
     default:
       NOTREACHED();
       return border_and_padding.BlockSum();
+  }
+}
+
+LayoutUnit ResolveMarginPaddingLength(const NGConstraintSpace& constraint_space,
+                                      const Length& length) {
+  DCHECK_GE(constraint_space.AvailableSize().inline_size, LayoutUnit());
+
+  // Margins and padding always get computed relative to the inline size:
+  // https://www.w3.org/TR/CSS2/box.html#value-def-margin-width
+  // https://www.w3.org/TR/CSS2/box.html#value-def-padding-width
+  switch (length.GetType()) {
+    case kAuto:
+      return LayoutUnit();
+    case kPercent:
+    case kFixed:
+    case kCalculated: {
+      LayoutUnit percentage_resolution_size =
+          constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
+      return ValueForLength(length, percentage_resolution_size);
+    }
+    case kMinContent:
+    case kMaxContent:
+    case kFillAvailable:
+    case kFitContent:
+    case kExtendToZoom:
+    case kDeviceWidth:
+    case kDeviceHeight:
+    case kMaxSizeNone:
+      FALLTHROUGH;
+    default:
+      NOTREACHED();
+      return LayoutUnit();
   }
 }
 
@@ -441,23 +456,17 @@ LayoutUnit ResolveUsedColumnGap(LayoutUnit available_size,
 NGPhysicalBoxStrut ComputePhysicalMargins(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
-  // We don't need these for margin computations
-  MinMaxSize empty_sizes;
-  // Margins always get computed relative to the inline size:
-  // https://www.w3.org/TR/CSS2/box.html#value-def-margin-width
+  if (constraint_space.IsAnonymous())
+    return NGPhysicalBoxStrut();
   NGPhysicalBoxStrut physical_dim;
-  physical_dim.left = ResolveInlineLength(
-      constraint_space, style, empty_sizes, style.MarginLeft(),
-      LengthResolveType::kMarginBorderPaddingSize);
-  physical_dim.right = ResolveInlineLength(
-      constraint_space, style, empty_sizes, style.MarginRight(),
-      LengthResolveType::kMarginBorderPaddingSize);
-  physical_dim.top = ResolveInlineLength(
-      constraint_space, style, empty_sizes, style.MarginTop(),
-      LengthResolveType::kMarginBorderPaddingSize);
-  physical_dim.bottom = ResolveInlineLength(
-      constraint_space, style, empty_sizes, style.MarginBottom(),
-      LengthResolveType::kMarginBorderPaddingSize);
+  physical_dim.left =
+      ResolveMarginPaddingLength(constraint_space, style.MarginLeft());
+  physical_dim.right =
+      ResolveMarginPaddingLength(constraint_space, style.MarginRight());
+  physical_dim.top =
+      ResolveMarginPaddingLength(constraint_space, style.MarginTop());
+  physical_dim.bottom =
+      ResolveMarginPaddingLength(constraint_space, style.MarginBottom());
   return physical_dim;
 }
 
@@ -532,23 +541,15 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
   if (constraint_space.IsAnonymous())
     return NGBoxStrut();
 
-  // We don't need these for padding computations
-  MinMaxSize empty_sizes;
-  // Padding always gets computed relative to the inline size:
-  // https://www.w3.org/TR/CSS2/box.html#value-def-padding-width
   NGBoxStrut padding;
-  padding.inline_start = ResolveInlineLength(
-      constraint_space, style, empty_sizes, style.PaddingStart(),
-      LengthResolveType::kMarginBorderPaddingSize);
-  padding.inline_end = ResolveInlineLength(
-      constraint_space, style, empty_sizes, style.PaddingEnd(),
-      LengthResolveType::kMarginBorderPaddingSize);
-  padding.block_start = ResolveInlineLength(
-      constraint_space, style, empty_sizes, style.PaddingBefore(),
-      LengthResolveType::kMarginBorderPaddingSize);
-  padding.block_end = ResolveInlineLength(
-      constraint_space, style, empty_sizes, style.PaddingAfter(),
-      LengthResolveType::kMarginBorderPaddingSize);
+  padding.inline_start =
+      ResolveMarginPaddingLength(constraint_space, style.PaddingStart());
+  padding.inline_end =
+      ResolveMarginPaddingLength(constraint_space, style.PaddingEnd());
+  padding.block_start =
+      ResolveMarginPaddingLength(constraint_space, style.PaddingBefore());
+  padding.block_end =
+      ResolveMarginPaddingLength(constraint_space, style.PaddingAfter());
   return padding;
 }
 

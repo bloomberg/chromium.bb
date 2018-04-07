@@ -21,12 +21,7 @@ class NGConstraintSpace;
 class NGBlockNode;
 class NGLayoutInputNode;
 
-enum class LengthResolveType {
-  kMinSize,
-  kMaxSize,
-  kContentSize,
-  kMarginBorderPaddingSize
-};
+enum class LengthResolveType { kMinSize, kMaxSize, kContentSize };
 
 // Whether the caller needs to compute min-content and max-content sizes to
 // pass them to ResolveInlineLength / ComputeInlineSizeForFragment.
@@ -55,6 +50,11 @@ CORE_EXPORT LayoutUnit ResolveBlockLength(const NGConstraintSpace&,
                                           const Length&,
                                           LayoutUnit content_size,
                                           LengthResolveType);
+
+// Convert margin/border/padding length to a layout unit using the
+// given constraint space.
+CORE_EXPORT LayoutUnit ResolveMarginPaddingLength(const NGConstraintSpace&,
+                                                  const Length&);
 
 // For the given style and min/max content sizes, computes the min and max
 // content contribution (https://drafts.csswg.org/css-sizing/#contributions).
