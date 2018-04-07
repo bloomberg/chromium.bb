@@ -24,6 +24,12 @@ cr.define('extensions', function() {
     });
   }
 
+  // The minimum width in pixels for the options dialog.
+  const MIN_WIDTH = 400;
+
+  // The maximum height in pixels for the options dialog.
+  const MAX_HEIGHT = 640;
+
   const OptionsDialog = Polymer({
     is: 'extensions-options-dialog',
 
@@ -47,19 +53,21 @@ cr.define('extensions', function() {
     /**
      * Resizes the dialog to the given width/height, taking into account the
      * window width/height.
-     * @param {number} width
-     * @param {number} height
+     * @param {number} width The desired height of the dialog contents.
+     * @param {number} height The desired width of the dialog contents.
      * @private
      */
     updateDialogSize_: function(width, height) {
-      const effectiveHeight = Math.min(window.innerHeight, height);
-      const effectiveWidth = Math.min(window.innerWidth, width);
+      const HEADER_HEIGHT = 64;
+      const maxHeight = Math.min(0.9 * window.innerHeight, MAX_HEIGHT);
+      const effectiveHeight = Math.min(maxHeight, HEADER_HEIGHT + height);
+      const effectiveWidth = Math.max(MIN_WIDTH, width);
 
       // Get a reference to the inner native <dialog>.
       const nativeDialog =
           /** @type {!CrDialogElement} */ (this.$.dialog).getNative();
-      nativeDialog.style.height = effectiveHeight + 'px';
-      nativeDialog.style.width = effectiveWidth + 'px';
+      nativeDialog.style.height = `${effectiveHeight}px`;
+      nativeDialog.style.width = `${effectiveWidth}px`;
     },
 
     /** @param {chrome.developerPrivate.ExtensionInfo} data */
@@ -121,5 +129,9 @@ cr.define('extensions', function() {
     },
   });
 
-  return {OptionsDialog: OptionsDialog};
+  return {
+    OptionsDialog: OptionsDialog,
+    OptionsDialogMinWidth: MIN_WIDTH,
+    OptionsDialogMaxHeight: MAX_HEIGHT,
+  };
 });
