@@ -2055,7 +2055,7 @@ group("blink_platform_unittests_data") {
 
     # Required by some image decoder tests.
     "image-decoders/testing/",
-    "../../LayoutTests/images/resources/",
+    "//third_party/WebKit/LayoutTests/images/resources/",
   ]
 }
 
