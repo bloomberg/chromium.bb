@@ -860,13 +860,13 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, FreezeTab) {
       "if (window.location.pathname != '/iframe_cross_site.html')"
       "  throw 'Incorrect frame';"
       "mainFrameFreezeCount = 0;"
-      "window.onfreeze = function(){ mainFrameFreezeCount++; };"));
+      "window.document.onfreeze = function(){ mainFrameFreezeCount++; };"));
 
   EXPECT_TRUE(content::ExecuteScript(
       child_frame,
       "if (window.location.pathname != '/title1.html') throw 'Incorrect frame';"
       "childFrameFreezeCount = 0;"
-      "window.onfreeze = function(){ childFrameFreezeCount++; };"));
+      "window.document.onfreeze = function(){ childFrameFreezeCount++; };"));
 
   // freeze_count_result should be 0 for both frames, if it is undefined then we
   // are in the wrong frame/tab.
