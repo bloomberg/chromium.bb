@@ -1511,8 +1511,6 @@ jumbo_split_static_library("browser") {
     "usb/usb_chooser_controller.h",
     "usb/usb_tab_helper.cc",
     "usb/usb_tab_helper.h",
-    "usb/usb_util.cc",
-    "usb/usb_util.h",
     "usb/web_usb_chooser_service.cc",
     "usb/web_usb_chooser_service.h",
     "usb/web_usb_histograms.cc",

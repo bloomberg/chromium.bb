@@ -17,9 +17,9 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tab_strip_tracker.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/usb/usb_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
@@ -83,7 +83,9 @@ GURL GetActiveTabURL() {
 }
 
 void OpenURL(const GURL& url) {
-  GetBrowser()->OpenURL(content::OpenURLParams(
+  chrome::ScopedTabbedBrowserDisplayer browser_displayer(
+      ProfileManager::GetLastUsedProfileAllowedByPolicy());
+  browser_displayer.browser()->OpenURL(content::OpenURLParams(
       url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false /* is_renderer_initialized */));
 }

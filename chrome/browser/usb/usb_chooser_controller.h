@@ -20,6 +20,7 @@
 
 namespace content {
 class RenderFrameHost;
+class WebContents;
 }
 
 namespace device {
@@ -64,6 +65,7 @@ class UsbChooserController : public ChooserController,
   GURL requesting_origin_;
   GURL embedding_origin_;
 
+  content::WebContents* const web_contents_;
   base::WeakPtr<UsbChooserContext> chooser_context_;
   ScopedObserver<device::UsbService, device::UsbService::Observer>
       usb_service_observer_;
