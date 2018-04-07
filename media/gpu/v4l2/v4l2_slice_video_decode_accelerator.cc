@@ -196,6 +196,11 @@ V4L2SliceVideoDecodeAccelerator::OutputRecord::OutputRecord()
       egl_sync(EGL_NO_SYNC_KHR),
       cleared(false) {}
 
+V4L2SliceVideoDecodeAccelerator::OutputRecord::OutputRecord(OutputRecord&&) =
+    default;
+
+V4L2SliceVideoDecodeAccelerator::OutputRecord::~OutputRecord() = default;
+
 struct V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(
       base::WeakPtr<VideoDecodeAccelerator::Client>& client,

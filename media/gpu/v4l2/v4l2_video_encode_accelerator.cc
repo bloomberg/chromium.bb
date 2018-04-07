@@ -95,6 +95,9 @@ struct V4L2VideoEncodeAccelerator::BitstreamBufferRef {
 
 V4L2VideoEncodeAccelerator::InputRecord::InputRecord() : at_device(false) {}
 
+V4L2VideoEncodeAccelerator::InputRecord::InputRecord(const InputRecord&) =
+    default;
+
 V4L2VideoEncodeAccelerator::InputRecord::~InputRecord() {}
 
 V4L2VideoEncodeAccelerator::OutputRecord::OutputRecord()
@@ -109,6 +112,9 @@ V4L2VideoEncodeAccelerator::InputFrameInfo::InputFrameInfo(
     scoped_refptr<VideoFrame> frame,
     bool force_keyframe)
     : frame(frame), force_keyframe(force_keyframe) {}
+
+V4L2VideoEncodeAccelerator::InputFrameInfo::InputFrameInfo(
+    const InputFrameInfo&) = default;
 
 V4L2VideoEncodeAccelerator::InputFrameInfo::~InputFrameInfo() {}
 

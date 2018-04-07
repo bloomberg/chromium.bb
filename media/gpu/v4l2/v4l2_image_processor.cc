@@ -47,9 +47,14 @@ namespace media {
 
 V4L2ImageProcessor::InputRecord::InputRecord() : at_device(false) {}
 
+V4L2ImageProcessor::InputRecord::InputRecord(
+    const V4L2ImageProcessor::InputRecord&) = default;
+
 V4L2ImageProcessor::InputRecord::~InputRecord() {}
 
 V4L2ImageProcessor::OutputRecord::OutputRecord() : at_device(false) {}
+
+V4L2ImageProcessor::OutputRecord::OutputRecord(OutputRecord&&) = default;
 
 V4L2ImageProcessor::OutputRecord::~OutputRecord() {}
 
