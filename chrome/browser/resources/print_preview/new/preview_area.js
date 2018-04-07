@@ -366,10 +366,9 @@ Polymer({
    * Called when the document page count is received from the native layer.
    * Always occurs as a result of a preview request.
    * @param {number} pageCount The document's page count.
-   * @param {number} previewResponseId The request ID that corresponds to this
-   *     page count.
+   * @param {number} previewResponseId The request ID for this page count event.
    * @param {number} fitToPageScaling The scaling required to fit the document
-   *     to page (unused).
+   *     to page.
    * @private
    */
   onPageCountReady_: function(pageCount, previewResponseId, fitToPageScaling) {
