@@ -188,7 +188,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Record for output buffers.
   struct OutputRecord {
     OutputRecord();
-    OutputRecord(OutputRecord&&) = default;
+    OutputRecord(OutputRecord&&);
     ~OutputRecord();
     OutputRecordState state;
     EGLImageKHR egl_image;  // EGLImageKHR for the output buffer.

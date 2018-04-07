@@ -134,7 +134,7 @@ const unsigned int kFlushTimeoutMs = 300;
 //   Bitrate is only forced for tests that test bitrate.
 const char* g_default_in_filename = "bear_320x192_40frames.yuv";
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 const base::FilePath::CharType* g_default_in_parameters =
     FILE_PATH_LITERAL(":320:192:1:out.h264:200000");
 #elif defined(OS_MACOSX) || defined(OS_WIN)
@@ -2529,7 +2529,7 @@ TEST_P(VideoEncodeAcceleratorSimpleTest, TestSimpleEncode) {
     SimpleTestFunc<VEACacheLineUnalignedInputClient>();
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 // TODO(kcwu): add back test of verify_output=true after
 // https://crbug.com/694131 fixed.
 INSTANTIATE_TEST_CASE_P(
@@ -2636,7 +2636,7 @@ INSTANTIATE_TEST_CASE_P(
         std::make_tuple(1, false, 0, true, false, false, false, false, false)));
 #endif  // defined(OS_WIN)
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
 // TODO(posciak): more tests:
 // - async FeedEncoderWithOutput

@@ -133,6 +133,9 @@ V4L2VideoDecodeAccelerator::OutputRecord::OutputRecord()
       texture_id(0),
       cleared(false) {}
 
+V4L2VideoDecodeAccelerator::OutputRecord::OutputRecord(OutputRecord&&) =
+    default;
+
 V4L2VideoDecodeAccelerator::OutputRecord::~OutputRecord() {}
 
 V4L2VideoDecodeAccelerator::PictureRecord::PictureRecord(bool cleared,
@@ -2333,10 +2336,10 @@ uint32_t V4L2VideoDecodeAccelerator::FindImageProcessorOutputFormat() {
   static const uint32_t kPreferredFormats[] = {V4L2_PIX_FMT_YVU420,
                                                V4L2_PIX_FMT_NV12};
   auto preferred_formats_first = [](uint32_t a, uint32_t b) -> bool {
-    auto iter_a = std::find(std::begin(kPreferredFormats),
-                            std::end(kPreferredFormats), a);
-    auto iter_b = std::find(std::begin(kPreferredFormats),
-                            std::end(kPreferredFormats), b);
+    auto* iter_a = std::find(std::begin(kPreferredFormats),
+                             std::end(kPreferredFormats), a);
+    auto* iter_b = std::find(std::begin(kPreferredFormats),
+                             std::end(kPreferredFormats), b);
     return iter_a < iter_b;
   };
 

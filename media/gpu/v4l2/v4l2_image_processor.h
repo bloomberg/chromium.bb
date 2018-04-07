@@ -109,6 +109,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor {
   // Record for input buffers.
   struct InputRecord {
     InputRecord();
+    InputRecord(const V4L2ImageProcessor::InputRecord&);
     ~InputRecord();
     scoped_refptr<VideoFrame> frame;
     bool at_device;
@@ -117,7 +118,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor {
   // Record for output buffers.
   struct OutputRecord {
     OutputRecord();
-    OutputRecord(OutputRecord&&) = default;
+    OutputRecord(OutputRecord&&);
     ~OutputRecord();
     bool at_device;
     // The processed frame will be stored in these buffers if

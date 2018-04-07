@@ -68,6 +68,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Record for codec input buffers.
   struct InputRecord {
     InputRecord();
+    InputRecord(const InputRecord&);
     ~InputRecord();
     bool at_device;
     scoped_refptr<VideoFrame> frame;
@@ -87,6 +88,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   struct InputFrameInfo {
     InputFrameInfo();
     InputFrameInfo(scoped_refptr<VideoFrame> frame, bool force_keyframe);
+    InputFrameInfo(const InputFrameInfo&);
     ~InputFrameInfo();
     scoped_refptr<VideoFrame> frame;
     bool force_keyframe;

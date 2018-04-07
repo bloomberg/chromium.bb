@@ -83,7 +83,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Record for output buffers.
   struct OutputRecord {
     OutputRecord();
-    OutputRecord(OutputRecord&&) = default;
+    OutputRecord(OutputRecord&&);
+    ~OutputRecord();
     bool at_device;
     bool at_client;
     int32_t picture_id;

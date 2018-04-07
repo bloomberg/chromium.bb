@@ -180,11 +180,11 @@ class MEDIA_GPU_EXPORT V4L2JpegDecodeAccelerator
   // ordering.
   std::vector<int> free_output_buffers_;
 
-  // Weak factory for producing weak pointers on the child thread.
-  base::WeakPtrFactory<V4L2JpegDecodeAccelerator> weak_factory_;
   // Point to |this| for use in posting tasks from the decoder thread back to
   // the ChildThread.
   base::WeakPtr<V4L2JpegDecodeAccelerator> weak_ptr_;
+  // Weak factory for producing weak pointers on the child thread.
+  base::WeakPtrFactory<V4L2JpegDecodeAccelerator> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(V4L2JpegDecodeAccelerator);
 };
