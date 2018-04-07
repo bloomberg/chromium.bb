@@ -382,8 +382,15 @@ deps_os = {
     self._commit_git('repo_2', {
       'origin': 'git/repo_2@1\n',
       'DEPS': """
+vars = {
+  'repo2_false_var': 'False',
+}
+
 deps = {
-  'foo/bar': '/repo_3',
+  'foo/bar': {
+    'url': '/repo_3',
+    'condition': 'repo2_false_var',
+  }
 }
 """,
     })

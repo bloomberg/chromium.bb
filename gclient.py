@@ -766,14 +766,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     local_scope = {}
     if deps_content:
       try:
-        vars_override = {}
-        if self.parent:
-          vars_override = self.parent.get_vars()
-        vars_override.update(self.get_vars())
         local_scope = gclient_eval.Parse(
             deps_content, expand_vars,
             self._get_option('validate_syntax', False),
-            filepath, vars_override)
+            filepath, self.get_vars())
       except SyntaxError as e:
         gclient_utils.SyntaxErrorToError(filepath, e)
 
@@ -1369,8 +1365,15 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         'checkout_x64': 'x64' in self.target_cpu,
         'host_cpu': detect_host_arch.HostArch(),
     }
-    # Variables defined in DEPS file override built-in ones.
+    # Variable precedence:
+    # - built-in
+    # - DEPS vars
+    # - parents, from first to last
+    # - custom_vars overrides
     result.update(self._vars)
+    if self.parent:
+      parent_vars = self.parent.get_vars()
+      result.update(parent_vars)
     result.update(self.custom_vars or {})
     return result
 
