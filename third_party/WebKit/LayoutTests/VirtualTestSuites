@@ -635,6 +635,16 @@
     "args": ["--enable-features=NavigationMojoResponse"]
   },
   {
+    "prefix": "htxg",
+    "base": "http/tests/loading/htxg",
+    "args": ["--enable-features=SignedHTTPExchange"]
+  },
+  {
+    "prefix": "htxg-with-network-service",
+    "base": "http/tests/loading/htxg",
+    "args": ["--enable-features=SignedHTTPExchange,NetworkService"]
+  },
+  {
     "prefix": "picture-in-picture",
     "base": "external/wpt/picture-in-picture",
     "args": ["--enable-features=PictureInPicture,UseSurfaceLayerForVideo"]
