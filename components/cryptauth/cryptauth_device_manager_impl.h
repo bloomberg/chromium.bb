@@ -38,6 +38,7 @@ class CryptAuthDeviceManagerImpl : public CryptAuthDeviceManager,
     static void SetInstanceForTesting(Factory* factory);
 
    protected:
+    virtual ~Factory();
     virtual std::unique_ptr<CryptAuthDeviceManager> BuildInstance(
         base::Clock* clock,
         std::unique_ptr<CryptAuthClientFactory> client_factory,

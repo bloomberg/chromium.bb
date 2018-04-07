@@ -341,6 +341,8 @@ void CryptAuthDeviceManagerImpl::Factory::SetInstanceForTesting(
   factory_instance_ = factory;
 }
 
+CryptAuthDeviceManagerImpl::Factory::~Factory() = default;
+
 std::unique_ptr<CryptAuthDeviceManager>
 CryptAuthDeviceManagerImpl::Factory::BuildInstance(
     base::Clock* clock,

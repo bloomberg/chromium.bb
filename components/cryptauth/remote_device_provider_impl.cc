@@ -34,6 +34,8 @@ void RemoteDeviceProviderImpl::Factory::SetInstanceForTesting(
   factory_instance_ = factory;
 }
 
+RemoteDeviceProviderImpl::Factory::~Factory() = default;
+
 std::unique_ptr<RemoteDeviceProvider>
 RemoteDeviceProviderImpl::Factory::BuildInstance(
     CryptAuthDeviceManager* device_manager,
