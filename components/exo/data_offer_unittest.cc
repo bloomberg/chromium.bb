@@ -359,8 +359,9 @@ TEST_F(DataOfferTest, SetClipboardData) {
   data_offer.SetClipboardData(&file_helper,
                               *ui::Clipboard::GetForCurrentThread());
 
-  EXPECT_EQ(1u, delegate.mime_types().size());
+  EXPECT_EQ(2u, delegate.mime_types().size());
   EXPECT_EQ("text/plain;charset=utf-8", delegate.mime_types()[0]);
+  EXPECT_EQ("UTF8_STRING", delegate.mime_types()[1]);
 
   base::ScopedFD read_pipe;
   base::ScopedFD write_pipe;

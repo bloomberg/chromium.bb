@@ -21,6 +21,7 @@ namespace exo {
 namespace {
 
 constexpr char kTextMimeTypeUtf8[] = "text/plain;charset=utf-8";
+constexpr char kUtf8String[] = "UTF8_STRING";
 constexpr char kUriListSeparator[] = "\r\n";
 
 class RefCountedString16 : public base::RefCountedMemory {
@@ -181,9 +182,12 @@ void DataOffer::SetClipboardData(FileHelper* file_helper,
     base::string16 content;
     data.ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &content);
     std::string utf8_content = base::UTF16ToUTF8(content);
-    data_.emplace(std::string(kTextMimeTypeUtf8),
-                  base::RefCountedString::TakeString(&utf8_content));
+    scoped_refptr<base::RefCountedString> utf8_ref =
+        base::RefCountedString::TakeString(&utf8_content);
+    data_.emplace(std::string(kTextMimeTypeUtf8), utf8_ref);
+    data_.emplace(std::string(kUtf8String), utf8_ref);
     delegate_->OnOffer(std::string(kTextMimeTypeUtf8));
+    delegate_->OnOffer(std::string(kUtf8String));
   }
 }
 
