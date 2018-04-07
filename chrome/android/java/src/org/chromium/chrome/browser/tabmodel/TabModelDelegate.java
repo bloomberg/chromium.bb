@@ -8,8 +8,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 
 /**
- * This class serves as a callback from TabModel to TabModelSelector. The number of methods in this
- * class should be reduced to a minimum. http://crbug.com/263579
+ * This class serves as a callback from TabModel to TabModelSelector. Avoid adding unnecessary
+ * methods that expose too much access to TabModel. http://crbug.com/263579
  */
 public interface TabModelDelegate {
 
@@ -26,6 +26,12 @@ public interface TabModelDelegate {
      * @return Whether the request was handled.
      */
     boolean closeAllTabsRequest(boolean incognito);
+
+    /**
+     * @param model The specified model.
+     * @return Whether the specified model is currently selected.
+     */
+    boolean isCurrentModel(TabModel model);
 
     // TODO(aurimas): clean these methods up.
     TabModel getCurrentModel();

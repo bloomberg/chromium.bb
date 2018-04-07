@@ -145,6 +145,10 @@ public abstract class TabModelJniBridge implements TabModel {
     @CalledByNative
     protected abstract boolean isSessionRestoreInProgress();
 
+    @CalledByNative
+    @Override
+    public abstract boolean isCurrentModel();
+
     /**
      * Register the start of tab switch latency timing. Called when setIndex() indicates a tab
      * switch event.

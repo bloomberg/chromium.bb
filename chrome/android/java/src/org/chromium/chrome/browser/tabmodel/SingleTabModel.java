@@ -125,6 +125,11 @@ public class SingleTabModel implements TabModel {
     }
 
     @Override
+    public boolean isCurrentModel() {
+        return true;
+    }
+
+    @Override
     public void moveTab(int id, int newIndex) {
         assert false;
     }

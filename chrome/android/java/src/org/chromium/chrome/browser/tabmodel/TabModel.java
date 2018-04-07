@@ -182,6 +182,12 @@ public interface TabModel extends TabList {
     public void setIndex(int i, final TabSelectionType type);
 
     /**
+     * @return Whether this tab model is currently selected in the correspond
+     *         {@link TabModelSelector}.
+     */
+    boolean isCurrentModel();
+
+    /**
      * Moves a tab to a new index.
      * @param id       The id of the tab to move.
      * @param newIndex The new place to put the tab.

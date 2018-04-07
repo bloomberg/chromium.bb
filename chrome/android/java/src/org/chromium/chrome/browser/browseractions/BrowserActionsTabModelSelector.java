@@ -172,6 +172,11 @@ public class BrowserActionsTabModelSelector
     }
 
     @Override
+    public boolean isCurrentModel(TabModel model) {
+        return false;
+    }
+
+    @Override
     public boolean isInOverviewMode() {
         return false;
     }
