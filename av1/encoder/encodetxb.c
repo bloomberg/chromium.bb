@@ -1174,11 +1174,10 @@ int hbt_create_hashes(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
                           txb_eob_costs, p, block, fast_mode, rate_cost);
 }
 
-static INLINE int get_coeff_cost_simple(int ci, tran_low_t abs_qc,
-                                        int coeff_ctx,
-                                        const LV_MAP_COEFF_COST *txb_costs,
-                                        int bwl, TX_CLASS tx_class,
-                                        const uint8_t *levels) {
+static AOM_FORCE_INLINE int get_coeff_cost_simple(
+    int ci, tran_low_t abs_qc, int coeff_ctx,
+    const LV_MAP_COEFF_COST *txb_costs, int bwl, TX_CLASS tx_class,
+    const uint8_t *levels) {
   // this simple version assumes the coeff's scan_idx is not DC (scan_idx != 0)
   // and not the last (scan_idx != eob - 1)
   assert(ci > 0);
@@ -1279,7 +1278,7 @@ static INLINE void update_coeff_general(
   }
 }
 
-static INLINE void update_coeff_simple(
+static AOM_FORCE_INLINE void update_coeff_simple(
     int *accu_rate, int si, int eob, TX_SIZE tx_size, TX_CLASS tx_class,
     int bwl, int64_t rdmult, int shift, const int16_t *dequant,
     const int16_t *scan, const LV_MAP_COEFF_COST *txb_costs,
@@ -1325,7 +1324,7 @@ static INLINE void update_coeff_simple(
   }
 }
 
-static INLINE void update_coeff_eob(
+static AOM_FORCE_INLINE void update_coeff_eob(
     int *accu_rate, int64_t *accu_dist, int *eob, int *nz_num, int *nz_ci,
     int si, TX_SIZE tx_size, TX_CLASS tx_class, int bwl, int height,
     int dc_sign_ctx, int64_t rdmult, int shift, const int16_t *dequant,
@@ -1534,11 +1533,22 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
     --si;
   }
 
-  for (; si >= 0 && nz_num <= max_nz_num; --si) {
-    update_coeff_eob(&accu_rate, &accu_dist, &eob, &nz_num, nz_ci, si, tx_size,
-                     tx_class, bwl, height, txb_ctx->dc_sign_ctx, rdmult, shift,
-                     dequant, scan, txb_eob_costs, txb_costs, tcoeff, qcoeff,
-                     dqcoeff, levels);
+#define UPDATE_COEFF_EOB_CASE(tx_class_literal)                            \
+  case tx_class_literal:                                                   \
+    for (; si >= 0 && nz_num <= max_nz_num; --si) {                        \
+      update_coeff_eob(&accu_rate, &accu_dist, &eob, &nz_num, nz_ci, si,   \
+                       tx_size, tx_class_literal, bwl, height,             \
+                       txb_ctx->dc_sign_ctx, rdmult, shift, dequant, scan, \
+                       txb_eob_costs, txb_costs, tcoeff, qcoeff, dqcoeff,  \
+                       levels);                                            \
+    }                                                                      \
+    break;
+  switch (tx_class) {
+    UPDATE_COEFF_EOB_CASE(TX_CLASS_2D);
+    UPDATE_COEFF_EOB_CASE(TX_CLASS_HORIZ);
+    UPDATE_COEFF_EOB_CASE(TX_CLASS_VERT);
+#undef UPDATE_COEFF_EOB_CASE
+    default: assert(false);
   }
 
   if (si == -1 && nz_num <= max_nz_num) {
@@ -1546,10 +1556,20 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                 non_skip_cost, qcoeff, dqcoeff);
   }
 
-  for (; si >= 1; --si) {
-    update_coeff_simple(&accu_rate, si, eob, tx_size, tx_class, bwl, rdmult,
-                        shift, dequant, scan, txb_costs, tcoeff, qcoeff,
-                        dqcoeff, levels);
+#define UPDATE_COEFF_SIMPLE_CASE(tx_class_literal)                             \
+  case tx_class_literal:                                                       \
+    for (; si >= 1; --si) {                                                    \
+      update_coeff_simple(&accu_rate, si, eob, tx_size, tx_class_literal, bwl, \
+                          rdmult, shift, dequant, scan, txb_costs, tcoeff,     \
+                          qcoeff, dqcoeff, levels);                            \
+    }                                                                          \
+    break;
+  switch (tx_class) {
+    UPDATE_COEFF_SIMPLE_CASE(TX_CLASS_2D);
+    UPDATE_COEFF_SIMPLE_CASE(TX_CLASS_HORIZ);
+    UPDATE_COEFF_SIMPLE_CASE(TX_CLASS_VERT);
+#undef UPDATE_COEFF_SIMPLE_CASE
+    default: assert(false);
   }
 
   // DC position

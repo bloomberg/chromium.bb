@@ -362,9 +362,9 @@ static INLINE int get_br_ctx_2d(const uint8_t *const levels,
   return mag + 14;
 }
 
-static INLINE int get_br_ctx(const uint8_t *const levels,
-                             const int c,  // raster order
-                             const int bwl, const TX_CLASS tx_class) {
+static AOM_FORCE_INLINE int get_br_ctx(const uint8_t *const levels,
+                                       const int c,  // raster order
+                                       const int bwl, const TX_CLASS tx_class) {
   const int row = c >> bwl;
   const int col = c - (row << bwl);
   const int stride = (1 << bwl) + TX_PAD_HOR;
@@ -441,8 +441,8 @@ static const uint8_t clip_max3[256] = {
   3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
 };
 
-static INLINE int get_nz_mag(const uint8_t *const levels, const int bwl,
-                             const TX_CLASS tx_class) {
+static AOM_FORCE_INLINE int get_nz_mag(const uint8_t *const levels,
+                                       const int bwl, const TX_CLASS tx_class) {
   int mag;
 
   // Note: AOMMIN(level, 3) is useless for decoder since level < 3.
@@ -505,7 +505,7 @@ static const int nz_map_ctx_offset_1d[32] = {
   NZ_MAP_CTX_10, NZ_MAP_CTX_10,
 };
 
-static INLINE int get_nz_map_ctx_from_stats(
+static AOM_FORCE_INLINE int get_nz_map_ctx_from_stats(
     const int stats,
     const int coeff_idx,  // raster order
     const int bwl, const TX_SIZE tx_size, const TX_CLASS tx_class) {
@@ -569,9 +569,10 @@ static INLINE int get_lower_levels_ctx_2d(const uint8_t *levels, int coeff_idx,
   const int ctx = AOMMIN((mag + 1) >> 1, 4);
   return ctx + av1_nz_map_ctx_offset[tx_size][coeff_idx];
 }
-static INLINE int get_lower_levels_ctx(const uint8_t *levels, int coeff_idx,
-                                       int bwl, TX_SIZE tx_size,
-                                       TX_CLASS tx_class) {
+static AOM_FORCE_INLINE int get_lower_levels_ctx(const uint8_t *levels,
+                                                 int coeff_idx, int bwl,
+                                                 TX_SIZE tx_size,
+                                                 TX_CLASS tx_class) {
   const int stats =
       get_nz_mag(levels + get_padded_idx(coeff_idx, bwl), bwl, tx_class);
   return get_nz_map_ctx_from_stats(stats, coeff_idx, bwl, tx_size, tx_class);
