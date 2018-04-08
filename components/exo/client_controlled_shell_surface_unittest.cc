@@ -20,6 +20,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller_test_api.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
 #include "components/exo/pointer.h"
@@ -1041,6 +1042,28 @@ TEST_F(ClientControlledShellSurfaceTest, CaptionButtonModel) {
   shell_surface->SetFrameButtons(
       kAllButtonMask | 1 << ash::CAPTION_BUTTON_ICON_ZOOM, kAllButtonMask);
   EXPECT_TRUE(container->model()->InZoomMode());
+}
+
+TEST_F(ClientControlledShellSurfaceTest, SetExtraTitle) {
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(64, 64))));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  shell_surface->SetExtraTitle(base::string16(base::ASCIIToUTF16("extra")));
+  EXPECT_EQ(base::string16(base::ASCIIToUTF16("extra")),
+            shell_surface->GetWindowTitle());
+
+  shell_surface->SetTitle(base::string16(base::ASCIIToUTF16("title")));
+  EXPECT_EQ(base::string16(base::ASCIIToUTF16("title extra")),
+            shell_surface->GetWindowTitle());
+
+  shell_surface->SetExtraTitle(base::string16(base::ASCIIToUTF16("")));
+  EXPECT_EQ(base::string16(base::ASCIIToUTF16("title")),
+            shell_surface->GetWindowTitle());
 }
 
 }  // namespace exo

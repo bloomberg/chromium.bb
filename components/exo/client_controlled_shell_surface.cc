@@ -24,6 +24,7 @@
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/exo/surface.h"
@@ -452,6 +453,15 @@ void ClientControlledShellSurface::SetFrameButtons(
   }
 }
 
+void ClientControlledShellSurface::SetExtraTitle(
+    const base::string16& extra_title) {
+  TRACE_EVENT1("exo", "ClientControlledShellSurface::SetExtraTitle",
+               "extra_title", base::UTF16ToUTF8(extra_title));
+  extra_title_ = extra_title;
+  if (widget_)
+    widget_->UpdateWindowTitle();
+}
+
 void ClientControlledShellSurface::OnBoundsChangeEvent(
     ash::mojom::WindowStateType current_state,
     ash::mojom::WindowStateType requested_state,
@@ -589,6 +599,16 @@ void ClientControlledShellSurface::OnWindowAddedToRootWindow(
 
 bool ClientControlledShellSurface::CanMaximize() const {
   return can_maximize_;
+}
+
+base::string16 ClientControlledShellSurface::GetWindowTitle() const {
+  base::string16 title = ShellSurfaceBase::GetWindowTitle();
+  if (!extra_title_.empty()) {
+    if (!title.empty())
+      title += base::UTF8ToUTF16(" ");
+    title += extra_title_;
+  }
+  return title;
 }
 
 views::NonClientFrameView*

@@ -2253,7 +2253,10 @@ void remote_surface_set_frame_buttons(wl_client* client,
 
 void remote_surface_set_extra_title(wl_client* client,
                                     wl_resource* resource,
-                                    const char* extra_title) {}
+                                    const char* extra_title) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetExtraTitle(
+      base::string16(base::UTF8ToUTF16(extra_title)));
+}
 
 const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
