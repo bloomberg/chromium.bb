@@ -1763,8 +1763,8 @@ static uint32_t get_intra_txb_hash(MACROBLOCK *x, int plane, int blk_row,
     cur_hash_row += txb_w;
     cur_diff_row += diff_stride;
   }
-  return (av1_get_crc_value(&x->mb_rd_record.crc_calculator,
-                            (uint8_t *)hash_data, 2 * txb_w * txb_h)
+  return (av1_get_crc32c_value(&x->mb_rd_record.crc_calculator,
+                               (uint8_t *)hash_data, 2 * txb_w * txb_h)
           << 5) +
          tx_size;
 }
@@ -4361,8 +4361,8 @@ static uint32_t get_block_residue_hash(MACROBLOCK *x, BLOCK_SIZE bsize) {
   const int16_t *diff = &p->src_diff[0];
   uint16_t hash_data[MAX_SB_SQUARE];
   memcpy(hash_data, diff, sizeof(*hash_data) * rows * cols);
-  return (av1_get_crc_value(&x->mb_rd_record.crc_calculator,
-                            (uint8_t *)hash_data, 2 * rows * cols)
+  return (av1_get_crc32c_value(&x->mb_rd_record.crc_calculator,
+                               (uint8_t *)hash_data, 2 * rows * cols)
           << 7) +
          bsize;
 }
@@ -4487,9 +4487,9 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
             cur_hash_row += cur_tx_bw;
             cur_diff_row += diff_stride;
           }
-          const int hash = av1_get_crc_value(&x->mb_rd_record.crc_calculator,
-                                             (uint8_t *)hash_data,
-                                             2 * cur_tx_bw * cur_tx_bh);
+          const int hash = av1_get_crc32c_value(&x->mb_rd_record.crc_calculator,
+                                                (uint8_t *)hash_data,
+                                                2 * cur_tx_bw * cur_tx_bh);
 
           // Find corresponding RD info based on the hash value.
           const int rd_record_idx =

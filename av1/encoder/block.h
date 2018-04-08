@@ -112,7 +112,7 @@ typedef struct {
   MB_RD_INFO tx_rd_info[RD_RECORD_BUFFER_LEN];  // Circular buffer.
   int index_start;
   int num;
-  CRC_CALCULATOR crc_calculator;  // Hash function.
+  CRC32C crc_calculator;  // Hash function.
 } MB_RD_RECORD;
 
 typedef struct {

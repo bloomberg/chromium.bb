@@ -3692,7 +3692,7 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
 
   cfl_init(&td->mb.e_mbd.cfl, cm);
 
-  av1_crc_calculator_init(&td->mb.mb_rd_record.crc_calculator, 24, 0x5D6DCB);
+  av1_crc32c_calculator_init(&td->mb.mb_rd_record.crc_calculator);
 
   td->intrabc_used_this_tile = 0;
 

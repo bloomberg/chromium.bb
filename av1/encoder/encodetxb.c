@@ -24,7 +24,7 @@
 #include "av1/encoder/tokenize.h"
 
 static int hbt_needs_init = 1;
-static CRC_CALCULATOR crc_calculator;
+static CRC32C crc_calculator;
 static const int HBT_EOB = 16;            // also the length in opt_qcoeff
 static const int HBT_TABLE_SIZE = 65536;  // 16 bit: holds 65536 'arrays'
 static const int HBT_ARRAY_LENGTH = 256;  // 8 bit: 256 entries
@@ -911,7 +911,7 @@ void hbt_init() {
       aom_malloc(sizeof(OptTxbQcoeff) * HBT_TABLE_SIZE * HBT_ARRAY_LENGTH);
   memset(hbt_hash_table, 0,
          sizeof(OptTxbQcoeff) * HBT_TABLE_SIZE * HBT_ARRAY_LENGTH);
-  av1_crc_calculator_init(&crc_calculator, 31, 0x5D6DCB);  // 31 bit: qc & ctx
+  av1_crc32c_calculator_init(&crc_calculator);  // 31 bit: qc & ctx
 
   hbt_needs_init = 0;
 }
@@ -1108,7 +1108,7 @@ int hbt_create_hashes(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   assert(hash_data_index <= 64);
   // 31 bit qc_hash: index to array
   uint32_t hbt_qc_hash =
-      av1_get_crc_value(&crc_calculator, txb_hash_data, hash_data_index);
+      av1_get_crc32c_value(&crc_calculator, txb_hash_data, hash_data_index);
 
   // Make ctx_hash.
   hash_data_index = 0;
@@ -1167,7 +1167,7 @@ int hbt_create_hashes(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
   assert(hash_data_index <= 256);
   // 31 bit ctx_hash: used to index table
   uint32_t hbt_ctx_hash =
-      av1_get_crc_value(&crc_calculator, txb_hash_data, hash_data_index);
+      av1_get_crc32c_value(&crc_calculator, txb_hash_data, hash_data_index);
   //// End hash creation
 
   return hbt_search_match(hbt_ctx_hash, hbt_qc_hash, txb_info, txb_costs,

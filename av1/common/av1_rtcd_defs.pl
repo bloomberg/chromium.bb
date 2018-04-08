@@ -250,8 +250,8 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/av1_wedge_compute_delta_squares sse2/;
 
   # hash
-  add_proto qw/uint32_t av1_get_crc_value/, "void *crc_calculator, uint8_t *p, int length";
-  specialize qw/av1_get_crc_value sse4_2/;
+  add_proto qw/uint32_t av1_get_crc32c_value/, "void *crc_calculator, uint8_t *p, int length";
+  specialize qw/av1_get_crc32c_value sse4_2/;
 
 }
 # end encoder functions
