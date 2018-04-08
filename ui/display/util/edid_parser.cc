@@ -333,12 +333,11 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
   constexpr uint8_t kITOverscanFlagPosition = 2;
   constexpr uint8_t kCEOverscanFlagPosition = 0;
 
-  if (edid.size() < kNumExtensionsOffset) {
+  if (edid.size() < kNumExtensionsOffset + 1) {
     LOG(ERROR) << "Too short EDID data: extensions";
     // TODO(mcasas): add UMA, https://crbug.com/821393.
     return;  // Any other fields below are beyond this edid offset.
   }
-
   const uint8_t num_extensions = edid[kNumExtensionsOffset];
 
   for (size_t i = 0; i < num_extensions; ++i) {
