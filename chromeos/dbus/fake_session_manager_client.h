@@ -104,7 +104,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
                      VoidDBusMethodCallback callback) override;
 
   // Notifies observers as if ArcInstanceStopped signal is received.
-  void NotifyArcInstanceStopped(bool clean,
+  void NotifyArcInstanceStopped(login_manager::ArcContainerStopReason,
                                 const std::string& conainer_instance_id);
 
   // Returns true if flags for |cryptohome_id| have been set. If the return

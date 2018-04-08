@@ -169,7 +169,7 @@ class ArcSessionImpl : public ArcSession,
   void StopArcInstance();
 
   // chromeos::SessionManagerClient::Observer:
-  void ArcInstanceStopped(bool clean,
+  void ArcInstanceStopped(login_manager::ArcContainerStopReason stop_reason,
                           const std::string& container_instance_id) override;
 
   // Completes the termination procedure. Note that calling this may end up with

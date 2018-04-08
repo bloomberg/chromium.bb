@@ -488,11 +488,11 @@ void ArcSessionImpl::StopArcInstance() {
 }
 
 void ArcSessionImpl::ArcInstanceStopped(
-    bool clean,
+    login_manager::ArcContainerStopReason stop_reason,
     const std::string& container_instance_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   VLOG(1) << "Notified that ARC instance is stopped "
-          << (clean ? "cleanly" : "uncleanly");
+          << static_cast<uint32_t>(stop_reason);
 
   if (container_instance_id != container_instance_id_) {
     VLOG(1) << "Container instance id mismatch. Do nothing."
@@ -507,12 +507,19 @@ void ArcSessionImpl::ArcInstanceStopped(
   // unlock the TaskScheduler's thread.
   accept_cancel_pipe_.reset();
 
+  // TODO(hidehiko): In new D-Bus signal, more detailed reason why ARC
+  // container is stopped. Check it in details.
   ArcStopReason reason;
   if (stop_requested_) {
     // If the ARC instance is stopped after its explicit request,
     // return SHUTDOWN.
     reason = ArcStopReason::SHUTDOWN;
-  } else if (clean) {
+  } else if (stop_reason ==
+             login_manager::ArcContainerStopReason::LOW_DISK_SPACE) {
+    // ARC mini container is stopped because of upgarde failure due to low
+    // disk space.
+    reason = ArcStopReason::LOW_DISK_SPACE;
+  } else if (stop_reason != login_manager::ArcContainerStopReason::CRASH) {
     // If the ARC instance is stopped, but it is not explicitly requested,
     // then this is triggered by some failure during the starting procedure.
     // Return GENERIC_BOOT_FAILURE for the case.
