@@ -142,6 +142,35 @@ main_html = replaceline(main_html, 'foreground/js/main_scripts.js', [
     ('<link rel="import" href="../../../third_party/polymer/v1_0/'
      'components-chromium/polymer/polymer.html">')] + scripts)
 
+# Load QuickView in iframe rather than webview.
+# Change references in files_quick_view.html to use updated
+# files_safe_media.html which will use webview rather than iframe,
+# and sets src directly on iframe.
+for filename, substitutions in (
+    ('elements/files_quick_view.html', (
+        ('="files_icon', '="../../../foreground/elements/files_icon'),
+        ('="files_metadata', '="../../../foreground/elements/files_metadata'),
+        ('="files_tooltip', '="../../../foreground/elements/files_tooltip'),
+        ('="files_quick', '="../../../foreground/elements/files_quick'),
+        ('="icons', '="../../../foreground/elements/icons'),
+        ('webview', 'iframe'),
+    )),
+    ('elements/files_safe_media.html', (('webview', 'iframe'),)),
+    ('elements/files_safe_media.js', (
+        ("'webview'", "'iframe'"),
+        ("'contentload'", "'load'"),
+        ('this.webview_.contentWindow.postMessage(data, FILES_APP_ORIGIN);',
+         ('this.webview_.contentWindow.content.type = this.type;'
+          'this.webview_.contentWindow.content.src = this.src;')),
+    )),
+    ):
+  buf = read('foreground/' + filename)
+  for old, new in substitutions:
+    buf = buf.replace(old, new)
+  write('test/gen/' + filename, GENERATED_JS + buf)
+  main_html = replaceline(main_html, 'foreground/' + filename,
+                          ['<script src="test/gen/%s"></script>' % filename])
+
 test_html = GENERATED_HTML + '\n'.join(main_html)
 write('test.html', test_html)
 

@@ -7,6 +7,9 @@
 // All testing functions in namespace 'test'.
 var test = test || {};
 
+// Update paths for testing.
+constants.FILES_QUICK_VIEW_HTML = 'test/gen/elements/files_quick_view.html';
+
 // Stores Blobs loaded from src/chrome/test/data/chromeos/file_manager.
 test.DATA = {
   'archive.zip': null,
