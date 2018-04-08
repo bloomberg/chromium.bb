@@ -519,5 +519,34 @@ TEST_F(ShellSurfaceTest, FrameColors) {
   EXPECT_EQ(SK_ColorBLUE, frame->GetInactiveFrameColorForTest());
 }
 
+TEST_F(ShellSurfaceTest, CycleSnap) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  EXPECT_EQ(buffer_size,
+            shell_surface->GetWidget()->GetWindowBoundsInScreen().size());
+
+  ash::wm::WMEvent event(ash::wm::WM_EVENT_CYCLE_SNAP_LEFT);
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+
+  // Enter snapped mode.
+  ash::wm::GetWindowState(window)->OnWMEvent(&event);
+
+  EXPECT_EQ(CurrentContext()->bounds().width() / 2,
+            shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  // Commit shouldn't change widget bounds when snapped.
+  EXPECT_EQ(CurrentContext()->bounds().width() / 2,
+            shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
+}
+
 }  // namespace
 }  // namespace exo
