@@ -654,24 +654,13 @@ void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x, int mi_row,
   }
 }
 
-int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
-                        const int plane, const int blk_row, const int blk_col,
-                        const int block, const TX_SIZE tx_size,
-                        const TXB_CTX *const txb_ctx) {
-  const struct macroblock_plane *p = &x->plane[plane];
-  const int eob = p->eobs[block];
-  const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
-  const PLANE_TYPE plane_type = get_plane_type(plane);
-  const LV_MAP_COEFF_COST *const coeff_costs =
-      &x->coeff_costs[txs_ctx][plane_type];
-  if (eob == 0) {
-    return coeff_costs->txb_skip_cost[txb_ctx->txb_skip_ctx][1];
-  }
-
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
-                                          tx_size, cm->reduced_tx_set_used);
-  const TX_CLASS tx_class = tx_type_to_class[tx_type];
+static AOM_FORCE_INLINE int warehouse_efficients_txb(
+    const AV1_COMMON *const cm, const MACROBLOCK *x, const int plane,
+    const int block, const TX_SIZE tx_size, const TXB_CTX *const txb_ctx,
+    const struct macroblock_plane *p, const int eob,
+    const PLANE_TYPE plane_type, const LV_MAP_COEFF_COST *const coeff_costs,
+    const MACROBLOCKD *const xd, const TX_TYPE tx_type,
+    const TX_CLASS tx_class) {
   const tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   const int txb_skip_ctx = txb_ctx->txb_skip_ctx;
   const int bwl = get_txb_bwl(tx_size);
@@ -695,44 +684,111 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
 
   av1_get_nz_map_contexts(levels, scan, eob, tx_size, tx_class, coeff_contexts);
 
-  for (int c = eob - 1; c >= 0; --c) {
+  const int(*lps_cost)[COEFF_BASE_RANGE + 1] = coeff_costs->lps_cost;
+  int c = eob - 1;
+  {
     const int pos = scan[c];
     const tran_low_t v = qcoeff[pos];
-    const int is_nz = (v != 0);
-    const int level = abs(v);
+    const int sign = v >> 31;
+    const int level = (v ^ sign) - sign;
     const int coeff_ctx = coeff_contexts[pos];
-    if (c == eob - 1) {
-      cost += coeff_costs->base_eob_cost[coeff_ctx][AOMMIN(level, 3) - 1];
-    } else {
-      cost += coeff_costs->base_cost[coeff_ctx][AOMMIN(level, 3)];
-    }
+    cost += coeff_costs->base_eob_cost[coeff_ctx][AOMMIN(level, 3) - 1];
 
-    if (is_nz) {
-      const int sign = (v < 0) ? 1 : 0;
-
+    if (v) {
       // sign bit cost
-      if (c == 0) {
-        const int dc_sign_ctx = txb_ctx->dc_sign_ctx;
-        cost += coeff_costs->dc_sign_cost[dc_sign_ctx][sign];
-      } else {
-        cost += av1_cost_literal(1);
-      }
       if (level > NUM_BASE_LEVELS) {
         const int ctx = get_br_ctx(levels, pos, bwl, tx_class);
-        const int base_range = level - 1 - NUM_BASE_LEVELS;
-        if (base_range < COEFF_BASE_RANGE) {
-          cost += coeff_costs->lps_cost[ctx][base_range];
-        } else {
-          cost += coeff_costs->lps_cost[ctx][COEFF_BASE_RANGE];
-        }
+        const int base_range =
+            AOMMIN(level - 1 - NUM_BASE_LEVELS, COEFF_BASE_RANGE);
+        cost += lps_cost[ctx][base_range];
+        cost += get_golomb_cost(level);
+      }
+      if (c) {
+        cost += av1_cost_literal(1);
+      } else {
+        const int sign01 = (sign ^ sign) - sign;
+        const int dc_sign_ctx = txb_ctx->dc_sign_ctx;
+        cost += coeff_costs->dc_sign_cost[dc_sign_ctx][sign01];
+        return cost;
+      }
+    }
+  }
+  const int(*base_cost)[4] = coeff_costs->base_cost;
+  for (c = eob - 2; c >= 1; --c) {
+    const int pos = scan[c];
+    const int coeff_ctx = coeff_contexts[pos];
+    const tran_low_t v = qcoeff[pos];
+    const int level = abs(v);
+    const int cost0 = base_cost[coeff_ctx][AOMMIN(level, 3)];
+    if (v) {
+      // sign bit cost
+      cost += av1_cost_literal(1);
+      if (level > NUM_BASE_LEVELS) {
+        const int ctx = get_br_ctx(levels, pos, bwl, tx_class);
+        const int base_range =
+            AOMMIN(level - 1 - NUM_BASE_LEVELS, COEFF_BASE_RANGE);
+        cost += lps_cost[ctx][base_range];
+        cost += get_golomb_cost(level);
+      }
+    }
+    cost += cost0;
+  }
+  if (c == 0) {
+    const int pos = scan[c];
+    const tran_low_t v = qcoeff[pos];
+    const int coeff_ctx = coeff_contexts[pos];
+    const int sign = v >> 31;
+    const int level = (v ^ sign) - sign;
+    cost += base_cost[coeff_ctx][AOMMIN(level, 3)];
 
-        if (level >= 1 + NUM_BASE_LEVELS + COEFF_BASE_RANGE) {
-          cost += get_golomb_cost(level);
-        }
+    if (v) {
+      // sign bit cost
+      const int sign01 = (sign ^ sign) - sign;
+      const int dc_sign_ctx = txb_ctx->dc_sign_ctx;
+      cost += coeff_costs->dc_sign_cost[dc_sign_ctx][sign01];
+      if (level > NUM_BASE_LEVELS) {
+        const int ctx = get_br_ctx(levels, pos, bwl, tx_class);
+        const int base_range =
+            AOMMIN(level - 1 - NUM_BASE_LEVELS, COEFF_BASE_RANGE);
+        cost += lps_cost[ctx][base_range];
+        cost += get_golomb_cost(level);
       }
     }
   }
   return cost;
+}
+
+int av1_cost_coeffs_txb(const AV1_COMMON *const cm, const MACROBLOCK *x,
+                        const int plane, const int blk_row, const int blk_col,
+                        const int block, const TX_SIZE tx_size,
+                        const TXB_CTX *const txb_ctx) {
+  const struct macroblock_plane *p = &x->plane[plane];
+  const int eob = p->eobs[block];
+  const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
+  const PLANE_TYPE plane_type = get_plane_type(plane);
+  const LV_MAP_COEFF_COST *const coeff_costs =
+      &x->coeff_costs[txs_ctx][plane_type];
+  if (eob == 0) {
+    return coeff_costs->txb_skip_cost[txb_ctx->txb_skip_ctx][1];
+  }
+
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
+                                          tx_size, cm->reduced_tx_set_used);
+  const TX_CLASS tx_class = tx_type_to_class[tx_type];
+
+#define WAREHOUSE_EFFICIENTS_TXB_CASE(tx_class_literal)                        \
+  case tx_class_literal:                                                       \
+    return warehouse_efficients_txb(cm, x, plane, block, tx_size, txb_ctx, p,  \
+                                    eob, plane_type, coeff_costs, xd, tx_type, \
+                                    tx_class_literal);
+  switch (tx_class) {
+    WAREHOUSE_EFFICIENTS_TXB_CASE(TX_CLASS_2D);
+    WAREHOUSE_EFFICIENTS_TXB_CASE(TX_CLASS_HORIZ);
+    WAREHOUSE_EFFICIENTS_TXB_CASE(TX_CLASS_VERT);
+#undef WAREHOUSE_EFFICIENTS_TXB_CASE
+    default: assert(false); return 0;
+  }
 }
 
 static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
