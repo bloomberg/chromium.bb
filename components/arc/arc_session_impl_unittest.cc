@@ -94,6 +94,10 @@ class TestArcSessionObserver : public ArcSession::Observer {
       : arc_session_(arc_session) {
     arc_session_->AddObserver(this);
   }
+  TestArcSessionObserver(ArcSession* arc_session, base::RunLoop* run_loop)
+      : arc_session_(arc_session), run_loop_(run_loop) {
+    arc_session_->AddObserver(this);
+  }
 
   ~TestArcSessionObserver() override { arc_session_->RemoveObserver(this); }
 
@@ -107,10 +111,13 @@ class TestArcSessionObserver : public ArcSession::Observer {
                         bool upgrade_requested) override {
     on_session_stopped_args_.emplace(
         OnSessionStoppedArgs{reason, was_running, upgrade_requested});
+    if (run_loop_)
+      run_loop_->Quit();
   }
 
  private:
   ArcSession* const arc_session_;  // Not owned.
+  base::RunLoop* const run_loop_ = nullptr;  // Not owned.
   base::Optional<OnSessionStoppedArgs> on_session_stopped_args_;
 
   DISALLOW_COPY_AND_ASSIGN(TestArcSessionObserver);
@@ -225,11 +232,12 @@ TEST_F(ArcSessionImplTest, Upgrade_LowDisk) {
   // Set up. Start mini-container. The mini-container doesn't use the disk, so
   // there being low disk space won't cause it to start.
   auto arc_session = CreateArcSession();
-  TestArcSessionObserver observer(arc_session.get());
+  base::RunLoop run_loop;
+  TestArcSessionObserver observer(arc_session.get(), &run_loop);
   ASSERT_NO_FATAL_FAILURE(SetupMiniContainer(arc_session.get(), &observer));
 
   arc_session->RequestUpgrade();
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();
 
   EXPECT_EQ(ArcSessionImpl::State::STOPPED, arc_session->GetStateForTesting());
   ASSERT_TRUE(observer.on_session_stopped_args().has_value());
@@ -512,7 +520,7 @@ TEST_F(ArcSessionImplTest, ArcStopInstance) {
   // Deliver the ArcInstanceStopped D-Bus signal.
   auto* session_manager_client = GetSessionManagerClient();
   session_manager_client->NotifyArcInstanceStopped(
-      false /* meaning crash */,
+      login_manager::ArcContainerStopReason::CRASH,
       session_manager_client->container_instance_id());
 
   EXPECT_EQ(ArcSessionImpl::State::STOPPED, arc_session->GetStateForTesting());
@@ -535,8 +543,8 @@ TEST_F(ArcSessionImplTest, ArcStopInstance_WrongContainerInstanceId) {
 
   // Deliver the ArcInstanceStopped D-Bus signal.
   auto* session_manager_client = GetSessionManagerClient();
-  session_manager_client->NotifyArcInstanceStopped(false /* meaning crash */,
-                                                   "dummy instance id");
+  session_manager_client->NotifyArcInstanceStopped(
+      login_manager::ArcContainerStopReason::CRASH, "dummy instance id");
 
   // The signal should be ignored.
   EXPECT_EQ(ArcSessionImpl::State::RUNNING_FULL_INSTANCE,

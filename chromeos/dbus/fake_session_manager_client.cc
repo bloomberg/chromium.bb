@@ -531,6 +531,12 @@ void FakeSessionManagerClient::UpgradeArcContainer(
   }
   if (low_disk_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&FakeSessionManagerClient::NotifyArcInstanceStopped,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       login_manager::ArcContainerStopReason::LOW_DISK_SPACE,
+                       std::move(container_instance_id_)));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(error_callback), true));
     return;
   }
@@ -552,7 +558,8 @@ void FakeSessionManagerClient::StopArcInstance(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeSessionManagerClient::NotifyArcInstanceStopped,
-                     weak_ptr_factory_.GetWeakPtr(), true /* clean */,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     login_manager::ArcContainerStopReason::USER_REQUEST,
                      std::move(container_instance_id_)));
   container_instance_id_.clear();
 }
@@ -590,10 +597,10 @@ void FakeSessionManagerClient::RemoveArcData(
 }
 
 void FakeSessionManagerClient::NotifyArcInstanceStopped(
-    bool clean,
+    login_manager::ArcContainerStopReason reason,
     const std::string& container_instance_id) {
   for (auto& observer : observers_)
-    observer.ArcInstanceStopped(clean, container_instance_id);
+    observer.ArcInstanceStopped(reason, container_instance_id);
 }
 
 bool FakeSessionManagerClient::GetFlagsForUser(

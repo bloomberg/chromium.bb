@@ -75,8 +75,9 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
     // request, false if it died unexpectedly.
     // |container_instance_id| is the identifier of the container instance.
     // See details for StartArcInstanceCallback.
-    virtual void ArcInstanceStopped(bool clean,
-                                    const std::string& container_instance_id) {}
+    virtual void ArcInstanceStopped(
+        login_manager::ArcContainerStopReason reason,
+        const std::string& container_instance_id) {}
   };
 
   // Interface for performing actions on behalf of the stub implementation.
