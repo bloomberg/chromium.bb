@@ -1268,15 +1268,22 @@ bool ShellSurfaceBase::IsResizing() const {
 void ShellSurfaceBase::UpdateWidgetBounds() {
   DCHECK(widget_);
 
-  ash::wm::WindowState* window_state =
-      ash::wm::GetWindowState(widget_->GetNativeWindow());
+  aura::Window* window = widget_->GetNativeWindow();
+  ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
   // Return early if the shell is currently managing the bounds of the widget.
   if (!window_state->allow_set_bounds_direct()) {
     // 1) When a window is either maximized/fullscreen/pinned.
     if (window_state->IsMaximizedOrFullscreenOrPinned())
       return;
-    // 2) When a window is being dragged by |resizer_|.
+    // 2) When a window is snapped.
+    if (window_state->IsSnapped())
+      return;
+    // 3) When a window is being interactively resized.
     if (IsResizing())
+      return;
+    // 4) When a window's bounds are being animated.
+    if (window->layer()->GetAnimator()->IsAnimatingProperty(
+            ui::LayerAnimationElement::BOUNDS))
       return;
   }
 
