@@ -4,6 +4,7 @@
 
 #include "components/exo/client_controlled_shell_surface.h"
 
+#include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -195,6 +196,30 @@ class ClientControlledWindowStateDelegate
 bool IsPinned(const ash::wm::WindowState* window_state) {
   return window_state->IsPinned() || window_state->IsTrustedPinned();
 }
+
+class CaptionButtonModel : public ash::CaptionButtonModel {
+ public:
+  CaptionButtonModel(uint32_t visible_button_mask, uint32_t enabled_button_mask)
+      : visible_button_mask_(visible_button_mask),
+        enabled_button_mask_(enabled_button_mask) {}
+
+  // Overridden from ash::CaptionButtonModel:
+  bool IsVisible(ash::CaptionButtonIcon icon) const override {
+    return visible_button_mask_ & (1 << icon);
+  }
+  bool IsEnabled(ash::CaptionButtonIcon icon) const override {
+    return enabled_button_mask_ & (1 << icon);
+  }
+  bool InZoomMode() const override {
+    return visible_button_mask_ & (1 << ash::CAPTION_BUTTON_ICON_ZOOM);
+  }
+
+ private:
+  uint32_t visible_button_mask_;
+  uint32_t enabled_button_mask_;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptionButtonModel);
+};
 
 }  // namespace
 
@@ -408,6 +433,22 @@ void ClientControlledShellSurface::UpdateAutoHideFrame() {
     immersive_fullscreen_controller_->SetEnabled(
         ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, enabled);
     GetFrameView()->set_zero_top_border_height(enabled);
+  }
+}
+
+void ClientControlledShellSurface::SetFrameButtons(
+    uint32_t visible_button_mask,
+    uint32_t enabled_button_mask) {
+  if (frame_visible_button_mask_ == visible_button_mask &&
+      frame_enabled_button_mask_ == enabled_button_mask) {
+    return;
+  }
+  frame_visible_button_mask_ = visible_button_mask;
+  frame_enabled_button_mask_ = enabled_button_mask;
+
+  if (widget_) {
+    GetFrameView()->SetCaptionButtonModel(std::make_unique<CaptionButtonModel>(
+        visible_button_mask, enabled_button_mask));
   }
 }
 
@@ -747,6 +788,9 @@ void ClientControlledShellSurface::InitializeWindowState(
   window_state->set_ignore_keyboard_bounds_change(true);
   if (container_ == ash::kShellWindowId_SystemModalContainer)
     DisableMovement();
+  ash::CustomFrameViewAsh* frame_view = GetFrameView();
+  frame_view->SetCaptionButtonModel(std::make_unique<CaptionButtonModel>(
+      frame_visible_button_mask_, frame_enabled_button_mask_));
   UpdateAutoHideFrame();
 }
 

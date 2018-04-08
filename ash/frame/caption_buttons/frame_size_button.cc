@@ -208,6 +208,7 @@ void FrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
       case CAPTION_BUTTON_ICON_BACK:
       case CAPTION_BUTTON_ICON_LOCATION:
       case CAPTION_BUTTON_ICON_MENU:
+      case CAPTION_BUTTON_ICON_ZOOM:
       case CAPTION_BUTTON_ICON_COUNT:
         NOTREACHED();
         break;

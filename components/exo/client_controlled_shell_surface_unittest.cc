@@ -4,7 +4,10 @@
 
 #include "components/exo/client_controlled_shell_surface.h"
 
+#include "ash/frame/caption_buttons/caption_button_model.h"
+#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/custom_frame_view_ash.h"
+#include "ash/frame/header_view.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"
@@ -975,6 +978,69 @@ TEST_F(ClientControlledShellSurfaceTest, ClientIniatedResize) {
   event_generator.PressLeftButton();
   shell_surface->StartDrag(HTTOP, gfx::Point(0, 0));
   ASSERT_FALSE(window_state->is_dragged());
+}
+
+TEST_F(ClientControlledShellSurfaceTest, CaptionButtonModel) {
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  std::unique_ptr<Buffer> desktop_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(64, 64))));
+  surface->Attach(desktop_buffer.get());
+  shell_surface->SetGeometry(gfx::Rect(0, 0, 64, 64));
+  surface->Commit();
+
+  constexpr ash::CaptionButtonIcon kAllButtons[] = {
+      ash::CAPTION_BUTTON_ICON_MINIMIZE,
+      ash::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+      ash::CAPTION_BUTTON_ICON_CLOSE,
+      ash::CAPTION_BUTTON_ICON_BACK,
+      ash::CAPTION_BUTTON_ICON_MENU,
+  };
+  constexpr uint32_t kAllButtonMask =
+      1 << ash::CAPTION_BUTTON_ICON_MINIMIZE |
+      1 << ash::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE |
+      1 << ash::CAPTION_BUTTON_ICON_CLOSE | 1 << ash::CAPTION_BUTTON_ICON_BACK |
+      1 << ash::CAPTION_BUTTON_ICON_MENU;
+
+  ash::CustomFrameViewAsh* frame_view = static_cast<ash::CustomFrameViewAsh*>(
+      shell_surface->GetWidget()->non_client_view()->frame_view());
+  ash::FrameCaptionButtonContainerView* container =
+      static_cast<ash::HeaderView*>(frame_view->GetHeaderView())
+          ->caption_button_container();
+
+  // Visible
+  for (auto visible : kAllButtons) {
+    uint32_t visible_buttons = 1 << visible;
+    shell_surface->SetFrameButtons(visible_buttons, 0);
+    const ash::CaptionButtonModel* model = container->model();
+    for (auto not_visible : kAllButtons) {
+      if (not_visible != visible)
+        EXPECT_FALSE(model->IsVisible(not_visible));
+    }
+    EXPECT_TRUE(model->IsVisible(visible));
+    EXPECT_FALSE(model->IsEnabled(visible));
+  }
+
+  // Enable
+  for (auto enabled : kAllButtons) {
+    uint32_t enabled_buttons = 1 << enabled;
+    shell_surface->SetFrameButtons(kAllButtonMask, enabled_buttons);
+    const ash::CaptionButtonModel* model = container->model();
+    for (auto not_enabled : kAllButtons) {
+      if (not_enabled != enabled)
+        EXPECT_FALSE(model->IsEnabled(not_enabled));
+    }
+    EXPECT_TRUE(model->IsEnabled(enabled));
+    EXPECT_TRUE(model->IsVisible(enabled));
+  }
+
+  // Zoom mode
+  EXPECT_FALSE(container->model()->InZoomMode());
+  shell_surface->SetFrameButtons(
+      kAllButtonMask | 1 << ash::CAPTION_BUTTON_ICON_ZOOM, kAllButtonMask);
+  EXPECT_TRUE(container->model()->InZoomMode());
 }
 
 }  // namespace exo

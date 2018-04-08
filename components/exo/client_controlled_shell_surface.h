@@ -161,6 +161,12 @@ class ClientControlledShellSurface
   // Update the auto hide frame state.
   void UpdateAutoHideFrame();
 
+  // Set the frame button state. The |visible_button_mask| and
+  // |enabled_button_mask| is a bit mask whose position is defined
+  // in ash::CaptionButtonIcon enum.
+  void SetFrameButtons(uint32_t frame_visible_button_mask,
+                       uint32_t frame_enabled_button_mask);
+
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
   bool IsInputEnabled(Surface* surface) const override;
@@ -243,6 +249,9 @@ class ClientControlledShellSurface
 
   double scale_ = 1.0;
   double pending_scale_ = 1.0;
+
+  uint32_t frame_visible_button_mask_ = 0;
+  uint32_t frame_enabled_button_mask_ = 0;
 
   StateChangedCallback state_changed_callback_;
   BoundsChangedCallback bounds_changed_callback_;

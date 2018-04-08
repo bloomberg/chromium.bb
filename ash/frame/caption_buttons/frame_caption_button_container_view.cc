@@ -135,6 +135,7 @@ class DefaultCaptionButtonModel : public CaptionButtonModel {
       // No back or menu button by default.
       case CAPTION_BUTTON_ICON_BACK:
       case CAPTION_BUTTON_ICON_MENU:
+      case CAPTION_BUTTON_ICON_ZOOM:
         return false;
       case CAPTION_BUTTON_ICON_LOCATION:
       case CAPTION_BUTTON_ICON_COUNT:
@@ -181,8 +182,10 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   tablet_mode_animation_->SetTweenType(gfx::Tween::LINEAR);
 
   // Ensure animation tracks visibility of size button.
-  if (model_->IsVisible(CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE))
+  if (model_->IsVisible(CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE) ||
+      model_->InZoomMode()) {
     tablet_mode_animation_->Reset(1.0f);
+  }
 
   // Insert the buttons left to right.
   menu_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_MENU);
@@ -266,7 +269,8 @@ int FrameCaptionButtonContainerView::NonClientHitTest(
 
 void FrameCaptionButtonContainerView::UpdateCaptionButtonState(bool animate) {
   bool size_button_visible =
-      model_->IsVisible(CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE);
+      (model_->IsVisible(CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE) ||
+       model_->InZoomMode());
   if (size_button_visible) {
     size_button_->SetVisible(true);
     if (animate) {
@@ -282,7 +286,8 @@ void FrameCaptionButtonContainerView::UpdateCaptionButtonState(bool animate) {
     }
   }
   size_button_->SetEnabled(
-      model_->IsEnabled(CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE));
+      (model_->IsEnabled(CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE) ||
+       model_->InZoomMode()));
   minimize_button_->SetVisible(model_->IsVisible(CAPTION_BUTTON_ICON_MINIMIZE));
   minimize_button_->SetEnabled(model_->IsEnabled(CAPTION_BUTTON_ICON_MINIMIZE));
   menu_button_->SetVisible(model_->IsVisible(CAPTION_BUTTON_ICON_MENU));
