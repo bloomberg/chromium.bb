@@ -1698,4 +1698,6 @@ HashMap<String, String> ParseAttributes(const String& string, bool& attrs_ok) {
   return state.attributes;
 }
 
+#undef xmlParseChunk
+
 }  // namespace blink
