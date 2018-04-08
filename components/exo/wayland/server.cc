@@ -335,6 +335,23 @@ int Component(uint32_t direction) {
   return HTNOWHERE;
 }
 
+uint32_t CaptionButtonMask(uint32_t mask) {
+  uint32_t caption_button_icon_mask = 0;
+  if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_BACK)
+    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_BACK;
+  if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_MENU)
+    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_MENU;
+  if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_MINIMIZE)
+    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_MINIMIZE;
+  if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_MAXIMIZE_RESTORE)
+    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE;
+  if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_CLOSE)
+    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_CLOSE;
+  if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_ZOOM)
+    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_ZOOM;
+  return caption_button_icon_mask;
+}
+
 // A property key containing the surface resource that is associated with
 // window. If unset, no surface resource is associated with surface object.
 DEFINE_UI_CLASS_PROPERTY_KEY(wl_resource*, kSurfaceResourceKey, nullptr);
@@ -2228,7 +2245,11 @@ void remote_surface_set_frame(wl_client* client,
 void remote_surface_set_frame_buttons(wl_client* client,
                                       wl_resource* resource,
                                       uint32_t visible_button_mask,
-                                      uint32_t enabled_button_mask) {}
+                                      uint32_t enabled_button_mask) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetFrameButtons(
+      CaptionButtonMask(visible_button_mask),
+      CaptionButtonMask(enabled_button_mask));
+}
 
 void remote_surface_set_extra_title(wl_client* client,
                                     wl_resource* resource,
