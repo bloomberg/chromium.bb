@@ -358,7 +358,7 @@ static INLINE int write_uniform_cost(int n, int v) {
 
 // Similar to store_cfl_required(), but for use during the RDO process,
 // where we haven't yet determined whether this block uses CfL.
-static inline CFL_ALLOWED_TYPE store_cfl_required_rdo(const AV1_COMMON *cm,
+static INLINE CFL_ALLOWED_TYPE store_cfl_required_rdo(const AV1_COMMON *cm,
                                                       const MACROBLOCK *x) {
   const MACROBLOCKD *xd = &x->e_mbd;
 

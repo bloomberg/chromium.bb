@@ -34,7 +34,7 @@ static INLINE CFL_ALLOWED_TYPE is_cfl_allowed(const MACROBLOCKD *xd) {
 
 // Do we need to save the luma pixels from the current block,
 // for a possible future CfL prediction?
-static inline CFL_ALLOWED_TYPE store_cfl_required(const AV1_COMMON *cm,
+static INLINE CFL_ALLOWED_TYPE store_cfl_required(const AV1_COMMON *cm,
                                                   const MACROBLOCKD *xd) {
   const MB_MODE_INFO *mbmi = xd->mi[0];
 
