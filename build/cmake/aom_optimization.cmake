@@ -165,6 +165,7 @@ function (add_gas_asm_library lib_name asm_sources dependent_target)
     set(output_asm_source "${asm_converted_source_dir}/${output_asm_source}")
     set(output_asm_source "${output_asm_source}.${AOM_GAS_EXT}")
     execute_process(COMMAND "${PERL_EXECUTABLE}" "${AOM_ADS2GAS}"
+                        ${AOM_ADS2GAS_OPTS}
                     INPUT_FILE "${neon_asm_source}"
                     OUTPUT_FILE "${output_asm_source}")
     list(APPEND gas_target_sources "${output_asm_source}")
@@ -188,7 +189,8 @@ function (add_gas_asm_library lib_name asm_sources dependent_target)
     add_custom_command(
         OUTPUT "${gas_asm_source}"
         COMMAND ${PERL_EXECUTABLE}
-        ARGS "${AOM_ADS2GAS}" < "${neon_asm_source}" > "${gas_asm_source}"
+        ARGS "${AOM_ADS2GAS}" ${AOM_ADS2GAS_OPTS} < "${neon_asm_source}"
+            > "${gas_asm_source}"
         DEPENDS "${neon_asm_source}"
         COMMENT "ads2gas conversion ${neon_name} -> ${gas_name}"
         WORKING_DIRECTORY "${AOM_CONFIG_DIR}"
