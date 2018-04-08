@@ -3284,6 +3284,7 @@ crbug.com/791529 external/wpt/css/css-variables/variable-transitions-from-no-val
 crbug.com/791529 external/wpt/css/css-variables/variable-transitions-to-no-value.html [ Skip ]
 crbug.com/791529 external/wpt/css/css-variables/variable-transitions-transition-property-variable-before-value.html [ Skip ]
 crbug.com/791529 external/wpt/css/css-variables/variable-transitions-value-before-transition-property-variable.html [ Skip ]
+crbug.com/830270 external/wpt/css/css-variables/variable-cssText.html [ Skip ]
 
 # Feature Policy changes fullscreen behaviour, tests need updating
 crbug.com/718155 fullscreen/full-screen-iframe-not-allowed.html [ Failure ]
