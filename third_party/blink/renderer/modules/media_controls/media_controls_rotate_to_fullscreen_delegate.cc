@@ -23,7 +23,7 @@ namespace blink {
 namespace {
 
 // Videos must be at least this big in both dimensions to qualify.
-constexpr unsigned kMinSize = 200;
+constexpr unsigned kMinVideoSize = 200;
 
 // At least this fraction of the video must be visible.
 constexpr float kVisibilityThreshold = 0.75;
@@ -252,7 +252,7 @@ MediaControlsRotateToFullscreenDelegate::ComputeVideoOrientation() const {
   const unsigned width = video_element_->videoWidth();
   const unsigned height = video_element_->videoHeight();
 
-  if (width < kMinSize || height < kMinSize)
+  if (width < kMinVideoSize || height < kMinVideoSize)
     return SimpleOrientation::kUnknown;  // Too small, ignore this video.
 
   if (width >= height)
