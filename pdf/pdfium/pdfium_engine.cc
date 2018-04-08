@@ -111,6 +111,13 @@ constexpr int kMaxPasswordTries = 3;
 constexpr base::TimeDelta kTouchLongPressTimeout =
     base::TimeDelta::FromMilliseconds(300);
 
+// Windows has native panning capabilities. No need to use our own.
+#if defined(OS_WIN)
+constexpr bool kViewerImplementedPanning = false;
+#else
+constexpr bool kViewerImplementedPanning = true;
+#endif
+
 // See Table 3.20 in
 // http://www.adobe.com/devnet/acrobat/pdfs/pdf_reference_1-7.pdf
 const uint32_t kPDFPermissionPrintLowQualityMask = 1 << 2;
@@ -1979,8 +1986,10 @@ bool PDFiumEngine::OnMiddleMouseDown(const pp::MouseInputEvent& event) {
   if (IsLinkArea(area))
     return true;
 
-  // Switch to hand cursor when panning.
-  client_->UpdateCursor(PP_CURSORTYPE_HAND);
+  if (kViewerImplementedPanning) {
+    // Switch to hand cursor when panning.
+    client_->UpdateCursor(PP_CURSORTYPE_HAND);
+  }
 
   // Prevent middle mouse button from selecting texts.
   return false;
@@ -2108,8 +2117,11 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
   }
 
   if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
-    // Update the cursor when panning stops.
-    client_->UpdateCursor(DetermineCursorType(area, form_type));
+    if (kViewerImplementedPanning) {
+      // Update the cursor when panning stops.
+      client_->UpdateCursor(DetermineCursorType(area, form_type));
+    }
+
     // Prevent middle mouse button from selecting texts.
     return false;
   }
@@ -2165,7 +2177,7 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
       SetFormSelectedText(form_, pages_[last_page_mouse_down_]->GetPage());
     }
 
-    if (mouse_middle_button_down_) {
+    if (kViewerImplementedPanning && mouse_middle_button_down_) {
       // Subtract (origin - destination) so delta is already the delta for
       // moving the page, rather than the delta the mouse moved.
       // GetMovement() does not work here, as small mouse movements are
@@ -2194,7 +2206,7 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
 
 PP_CursorType_Dev PDFiumEngine::DetermineCursorType(PDFiumPage::Area area,
                                                     int form_type) const {
-  if (mouse_middle_button_down_) {
+  if (kViewerImplementedPanning && mouse_middle_button_down_) {
     return PP_CURSORTYPE_HAND;
   }
 
