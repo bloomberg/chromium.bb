@@ -301,6 +301,7 @@ sign \x255a 6
 sign \x255d 56
 sign \x255f 23
 sign \x2562 56
+sign \x25cf 35 # black circle
 math \x2715 578 # multiplication x
 math \x27c2 34568 # perpendicular
 math \x2a2f 578 # vector or cross product
