@@ -70,7 +70,17 @@ chrome.fileManagerPrivate = {
   },
   getFileTasks: (entries, callback) => {
     // Returns FileTask[].
-    setTimeout(callback, 0, []);
+    var results = [];
+    // Support for view-in-browser on single text file used by QuickView.
+    if (entries.length == 1 &&
+        entries[0].metadata.contentMimeType == 'text/plain') {
+      results.push({
+        taskId: '|file|view-in-browser',
+        title: '__MSG_OPEN_ACTION__',
+        isDefault: true,
+      });
+    }
+    setTimeout(callback, 0, results);
   },
   getPreferences: (callback) => {
     setTimeout(callback, 0, chrome.fileManagerPrivate.preferences_);

@@ -53,3 +53,9 @@ constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES = [
   'shared',
   'size',
 ];
+
+/**
+ * Path for files_quick_view.html file.  Allow override for testing.
+ * @type {string}
+ */
+constants.FILES_QUICK_VIEW_HTML = 'foreground/elements/files_quick_view.html';
