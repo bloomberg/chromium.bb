@@ -237,9 +237,9 @@ void WorkerThreadableLoader::Start(const ResourceRequest& original_request) {
 
   WorkerThread* worker_thread = worker_global_scope_->GetThread();
   scoped_refptr<base::SingleThreadTaskRunner> worker_loading_task_runner =
-      worker_global_scope_->GetTaskRunner(TaskType::kUnspecedLoading);
+      worker_global_scope_->GetTaskRunner(TaskType::kInternalLoading);
   PostCrossThreadTask(
-      *parent_frame_task_runners_->Get(TaskType::kUnspecedLoading), FROM_HERE,
+      *parent_frame_task_runners_->Get(TaskType::kInternalLoading), FROM_HERE,
       CrossThreadBind(
           &MainThreadLoaderHolder::CreateAndStart,
           WrapCrossThreadPersistent(this),
@@ -274,7 +274,7 @@ void WorkerThreadableLoader::OverrideTimeout(
   if (!main_thread_loader_holder_)
     return;
   PostCrossThreadTask(
-      *parent_frame_task_runners_->Get(TaskType::kUnspecedLoading), FROM_HERE,
+      *parent_frame_task_runners_->Get(TaskType::kInternalLoading), FROM_HERE,
       CrossThreadBind(&MainThreadLoaderHolder::OverrideTimeout,
                       main_thread_loader_holder_, timeout_milliseconds));
 }
@@ -283,7 +283,7 @@ void WorkerThreadableLoader::Cancel() {
   DCHECK(!IsMainThread());
   if (main_thread_loader_holder_) {
     PostCrossThreadTask(
-        *parent_frame_task_runners_->Get(TaskType::kUnspecedLoading), FROM_HERE,
+        *parent_frame_task_runners_->Get(TaskType::kInternalLoading), FROM_HERE,
         CrossThreadBind(&MainThreadLoaderHolder::Cancel,
                         main_thread_loader_holder_));
     main_thread_loader_holder_ = nullptr;
@@ -316,7 +316,7 @@ void WorkerThreadableLoader::DidStart(
   if (!client_) {
     // The thread is terminating.
     PostCrossThreadTask(
-        *parent_frame_task_runners_->Get(TaskType::kUnspecedLoading), FROM_HERE,
+        *parent_frame_task_runners_->Get(TaskType::kInternalLoading), FROM_HERE,
         CrossThreadBind(&MainThreadLoaderHolder::Cancel,
                         WrapCrossThreadPersistent(main_thread_loader_holder)));
     return;

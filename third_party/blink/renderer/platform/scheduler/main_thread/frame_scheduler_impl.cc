@@ -259,7 +259,7 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
   switch (type) {
     case TaskType::kJavascriptTimer:
       return TaskRunnerImpl::Create(ThrottleableTaskQueue(), type);
-    case TaskType::kUnspecedLoading:
+    case TaskType::kInternalLoading:
     case TaskType::kNetworking:
       return TaskRunnerImpl::Create(LoadingTaskQueue(), type);
     case TaskType::kNetworkingControl:

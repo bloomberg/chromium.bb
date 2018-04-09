@@ -340,14 +340,14 @@ WorkerGlobalScope::WorkerGlobalScope(
       user_agent_(creation_params->user_agent),
       parent_devtools_token_(creation_params->parent_devtools_token),
       v8_cache_options_(creation_params->v8_cache_options),
-      // Specify |kUnspecedLoading| because these task runners are used during
+      // Specify |kInternalLoading| because these task runners are used during
       // module loading and this usage is not explicitly spec'ed.
       fetch_coordinator_proxy_(
           WorkerOrWorkletModuleFetchCoordinatorProxy::Create(
               creation_params->module_fetch_coordinator,
               thread->GetParentFrameTaskRunners()->Get(
-                  TaskType::kUnspecedLoading),
-              thread->GetTaskRunner(TaskType::kUnspecedLoading))),
+                  TaskType::kInternalLoading),
+              thread->GetTaskRunner(TaskType::kInternalLoading))),
       thread_(thread),
       timers_(GetTaskRunner(TaskType::kJavascriptTimer)),
       time_origin_(time_origin),

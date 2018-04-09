@@ -67,10 +67,10 @@ ScriptPromise Worklet::addModule(ScriptState* script_state,
 
   // Step 5: "Return promise, and then continue running this algorithm in
   // parallel."
-  // |kUnspecedLoading| is used here because this is a part of script module
+  // |kInternalLoading| is used here because this is a part of script module
   // loading.
   ExecutionContext::From(script_state)
-      ->GetTaskRunner(TaskType::kUnspecedLoading)
+      ->GetTaskRunner(TaskType::kInternalLoading)
       ->PostTask(FROM_HERE, WTF::Bind(&Worklet::FetchAndInvokeScript,
                                       WrapPersistent(this), module_url_record,
                                       options, WrapPersistent(resolver)));
@@ -111,7 +111,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
   // document's UnspecedLoading task runner as that is what we commonly use for
   // module loading.
   scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner =
-      GetExecutionContext()->GetTaskRunner(TaskType::kUnspecedLoading);
+      GetExecutionContext()->GetTaskRunner(TaskType::kInternalLoading);
 
   // Step 8: "Let moduleResponsesMap be worklet's module responses map."
   // ModuleResponsesMap() returns moduleResponsesMap.

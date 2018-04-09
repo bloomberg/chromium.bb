@@ -26,7 +26,7 @@ ParentFrameTaskRunners* ParentFrameTaskRunners::Create() {
 ParentFrameTaskRunners::ParentFrameTaskRunners(ExecutionContext* context)
     : ContextLifecycleObserver(context) {
   // For now we only support very limited task types.
-  for (auto type : {TaskType::kUnspecedTimer, TaskType::kUnspecedLoading,
+  for (auto type : {TaskType::kUnspecedTimer, TaskType::kInternalLoading,
                     TaskType::kNetworking, TaskType::kPostedMessage,
                     TaskType::kUnthrottled, TaskType::kInternalTest}) {
     auto task_runner =

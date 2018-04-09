@@ -94,7 +94,7 @@ WorkerFetchContext::WorkerFetchContext(
     : global_scope_(global_scope),
       web_context_(std::move(web_context)),
       loading_task_runner_(
-          global_scope_->GetTaskRunner(TaskType::kUnspecedLoading)),
+          global_scope_->GetTaskRunner(TaskType::kInternalLoading)),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {
   web_context_->InitializeOnWorkerThread();
   std::unique_ptr<blink::WebDocumentSubresourceFilter> web_filter =

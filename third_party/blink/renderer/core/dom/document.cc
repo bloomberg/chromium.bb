@@ -646,7 +646,7 @@ Document::Document(const DocumentInit& initializer,
       load_event_delay_timer_(GetTaskRunner(TaskType::kNetworking),
                               this,
                               &Document::LoadEventDelayTimerFired),
-      plugin_loading_timer_(GetTaskRunner(TaskType::kUnspecedLoading),
+      plugin_loading_timer_(GetTaskRunner(TaskType::kInternalLoading),
                             this,
                             &Document::PluginLoadingTimerFired),
       document_timing_(*this),
@@ -662,7 +662,7 @@ Document::Document(const DocumentInit& initializer,
       worklet_animation_controller_(new WorkletAnimationController(this)),
       template_document_host_(nullptr),
       did_associate_form_controls_timer_(
-          GetTaskRunner(TaskType::kUnspecedLoading),
+          GetTaskRunner(TaskType::kInternalLoading),
           this,
           &Document::DidAssociateFormControlsTimerFired),
       timers_(GetTaskRunner(TaskType::kJavascriptTimer)),
@@ -4895,7 +4895,7 @@ void Document::SendSensitiveInputVisibility() {
     return;
 
   sensitive_input_visibility_task_ = PostCancellableTask(
-      *GetTaskRunner(TaskType::kUnspecedLoading), FROM_HERE,
+      *GetTaskRunner(TaskType::kInternalLoading), FROM_HERE,
       WTF::Bind(&Document::SendSensitiveInputVisibilityInternal,
                 WrapWeakPersistent(this)));
 }
