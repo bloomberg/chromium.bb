@@ -134,7 +134,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.browser.vr_shell.OnExitVrRequestListener;
 import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.webapps.AddToHomescreenManager;
@@ -2304,17 +2303,30 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             super.startActivity(intent, options);
             return;
         }
-        VrShellDelegate.requestToExitVr(new OnExitVrRequestListener() {
-            @Override
-            public void onSucceeded() {
-                if (!VrShellDelegate.canLaunch2DIntents()) {
-                    throw new IllegalStateException("Still in VR after having exited VR.");
-                }
-                startActivity(intent, options);
+        VrShellDelegate.requestToExitVrAndRunOnSuccess(() -> {
+            if (!VrShellDelegate.canLaunch2DIntents()) {
+                throw new IllegalStateException("Still in VR after having exited VR.");
             }
+            super.startActivity(intent, options);
+        });
+    }
 
-            @Override
-            public void onDenied() {}
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode) {
+        startActivityForResult(intent, requestCode, null);
+    }
+
+    @Override
+    public void startActivityForResult(Intent intent, int requestCode, Bundle options) {
+        if (VrShellDelegate.canLaunch2DIntents() || VrIntentUtils.isVrIntent(intent)) {
+            super.startActivityForResult(intent, requestCode, options);
+            return;
+        }
+        VrShellDelegate.requestToExitVrAndRunOnSuccess(() -> {
+            if (!VrShellDelegate.canLaunch2DIntents()) {
+                throw new IllegalStateException("Still in VR after having exited VR.");
+            }
+            super.startActivityForResult(intent, requestCode, options);
         });
     }
 
