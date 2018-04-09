@@ -161,18 +161,20 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
   if (!CanUseNewLayout()) {
     return RunOldLayout(constraint_space);
   }
+  LayoutBlockFlow* block_flow =
+      box_->IsLayoutNGMixin() ? ToLayoutBlockFlow(box_) : nullptr;
   scoped_refptr<NGLayoutResult> layout_result;
   if (box_->IsLayoutNGMixin()) {
     layout_result = ToLayoutBlockFlow(box_)->CachedLayoutResult(
         constraint_space, break_token);
-    if (layout_result)
+    if (layout_result) {
+      block_flow->SetPaintFragment(layout_result->PhysicalFragment());
       return layout_result;
+    }
   }
 
   layout_result =
       LayoutWithAlgorithm(Style(), *this, box_, constraint_space, break_token);
-  LayoutBlockFlow* block_flow =
-      box_->IsLayoutNGMixin() ? ToLayoutBlockFlow(box_) : nullptr;
   if (block_flow) {
     block_flow->SetCachedLayoutResult(constraint_space, break_token,
                                       layout_result);
