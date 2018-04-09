@@ -1696,13 +1696,6 @@ public class VrShellDelegate
             });
         }
 
-        if (mCancellingEntryAnimation) {
-            // If we know this onResume is called after cancel animation finished, it is safe to
-            // request exit VR and show DOFF.
-            runPendingExitVrTask();
-            mCancellingEntryAnimation = false;
-        }
-
         if (mDonSucceeded || mEnterVrOnStartup) {
             handleDonFlowSuccess();
         } else {
@@ -1722,6 +1715,17 @@ public class VrShellDelegate
 
         mProbablyInDon = false;
         mShowVrServicesUpdatePrompt = null;
+
+        postOnResume();
+    }
+
+    private void postOnResume() {
+        if (mCancellingEntryAnimation) {
+            // If we know this onResume is called after cancel animation finished, it is safe to
+            // request exit VR and show DOFF.
+            runPendingExitVrTask();
+            mCancellingEntryAnimation = false;
+        }
     }
 
     private void handleDonFlowSuccess() {
