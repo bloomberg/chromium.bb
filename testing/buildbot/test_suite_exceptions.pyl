@@ -3537,7 +3537,7 @@
       # chromium.fyi
       'Dummy WebKit Mac10.13': {
         'swarming': {
-          'shards': 6,
+          'shards': 12,
         },
       },
       'linux-blink-heap-incremental-marking': {
