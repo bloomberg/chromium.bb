@@ -4691,11 +4691,13 @@ interface RTCRtpReceiver
     getter track
     method constructor
     method getContributingSources
+    method getStats
 interface RTCRtpSender
     attribute @@toStringTag
     getter dtmf
     getter track
     method constructor
+    method getStats
     method replaceTrack
 interface RTCSessionDescription
     attribute @@toStringTag
