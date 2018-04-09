@@ -1493,13 +1493,22 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
                                                  const GURL& dest_url) {
   BrowserContext* browser_context =
       delegate_->GetControllerForRenderManager().GetBrowserContext();
-
-  // Don't compare effective URLs for subframe navigations, since we don't want
-  // to create OOPIFs based on that mechanism (e.g., for hosted apps).
-  // See https://crbug.com/718516.
-  // TODO(creis): This should eventually call out to embedder to help decide,
-  // if we can find a way to make decisions about popups based on their opener.
-  bool should_compare_effective_urls = frame_tree_node_->IsMainFrame();
+  // Don't compare effective URLs for all subframe navigations, since we don't
+  // want to create OOPIFs based on that mechanism (e.g., for hosted apps). For
+  // main frames, don't compare effective URLs when transitioning from app to
+  // non-app URLs if there exists another app WebContents that might script
+  // this one.  These navigations should stay in the app process to not break
+  // scripting when a hosted app opens a same-site popup. See
+  // https://crbug.com/718516 and https://crbug.com/828720.
+  bool src_has_effective_url = SiteInstanceImpl::HasEffectiveURL(
+      browser_context, candidate->GetSiteInstance()->original_url());
+  bool dest_has_effective_url =
+      SiteInstanceImpl::HasEffectiveURL(browser_context, dest_url);
+  bool should_compare_effective_urls = true;
+  if (!frame_tree_node_->IsMainFrame() ||
+      (src_has_effective_url && !dest_has_effective_url &&
+       candidate->GetSiteInstance()->GetRelatedActiveContentsCount() > 1u))
+    should_compare_effective_urls = false;
 
   // If the process type is incorrect, reject the candidate even if |dest_url|
   // is same-site.  (The URL may have been installed as an app since
@@ -1509,12 +1518,9 @@ bool RenderFrameHostManager::IsCurrentlySameSite(RenderFrameHostImpl* candidate,
   // hosted app to non-hosted app, and vice versa, in the same process.
   // Otherwise, this would return false due to a process privilege level
   // mismatch.
-  bool src_or_dest_has_effective_url =
-      (SiteInstanceImpl::HasEffectiveURL(browser_context, dest_url) ||
-       SiteInstanceImpl::HasEffectiveURL(
-           browser_context, candidate->GetSiteInstance()->original_url()));
   bool should_check_for_wrong_process =
-      should_compare_effective_urls || !src_or_dest_has_effective_url;
+      should_compare_effective_urls ||
+      (!src_has_effective_url && !dest_has_effective_url);
   if (should_check_for_wrong_process &&
       candidate->GetSiteInstance()->HasWrongProcessForURL(dest_url))
     return false;
