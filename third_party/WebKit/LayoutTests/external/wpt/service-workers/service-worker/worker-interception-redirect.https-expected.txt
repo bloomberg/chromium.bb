@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS initialize global state
+FAIL request to sw1 scope gets network redirect to sw2 scope assert_equals: expected "the shared worker script was served from network" but got "sw2 saw the request for the worker script"
+FAIL request to sw1 scope gets network redirect to out-of-scope assert_equals: expected "fetch(): sw1 saw the fetch from the worker" but got "fetch(): a simple text file\n"
+PASS request to sw1 scope gets service-worker redirect to sw2 scope
+FAIL request to sw1 scope gets service-worker redirect to out-of-scope assert_equals: expected "fetch(): sw1 saw the fetch from the worker" but got "fetch(): a simple text file\n"
+PASS cleanup global state
+Harness: the test ran to completion.
+
