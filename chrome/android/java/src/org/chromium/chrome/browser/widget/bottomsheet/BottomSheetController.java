@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
+import org.chromium.chrome.browser.compositor.layouts.phone.SimpleAnimationLayout;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchObserver;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
@@ -117,10 +118,10 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
             public void onSceneChange(Layout layout) {
                 // If the tab did not change, reshow the existing content. Once the tab actually
                 // changes, existing content and requests will be cleared.
-                if (layout instanceof StaticLayout && mWasShownForCurrentTab
+                if (canShowInLayout(layout) && mWasShownForCurrentTab && !mBottomSheet.isSheetOpen()
                         && mBottomSheet.getCurrentSheetContent() != null) {
                     mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
-                } else {
+                } else if (!canShowInLayout(layout)) {
                     mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HIDDEN, false);
                 }
             }
@@ -234,7 +235,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
      */
     public boolean requestContentPreload(BottomSheetContent content) {
         if (content == mBottomSheet.getCurrentSheetContent()) return true;
-        if (!isValidLayoutShowing()) return false;
+        if (!canShowInLayout(mLayoutManager.getActiveLayout())) return false;
 
         boolean shouldSuppressExistingContent = mBottomSheet.getCurrentSheetContent() != null
                 && mBottomSheet.getSheetState() <= BottomSheet.SHEET_STATE_PEEK
@@ -334,10 +335,11 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
     }
 
     /**
-     * @return Whether the browser is in a layout that supports showing the bottom sheet.
+     * @param layout A {@link Layout} to check if the sheet can be shown in.
+     * @return Whether the bottom sheet can show in the specified layout.
      */
-    protected boolean isValidLayoutShowing() {
-        return mLayoutManager.getActiveLayout() instanceof StaticLayout;
+    protected boolean canShowInLayout(Layout layout) {
+        return layout instanceof StaticLayout || layout instanceof SimpleAnimationLayout;
     }
 
     /**
