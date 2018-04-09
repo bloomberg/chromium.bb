@@ -50,6 +50,7 @@
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/ml.h"
 #include "av1/encoder/palette.h"
+#include "av1/encoder/random.h"
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/rd.h"
 #include "av1/encoder/rdopt.h"
@@ -1898,14 +1899,13 @@ void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   }
 }
 
-// This macro has 3 possible values:
-// 0: Do not collect any RD stats
-// 1: Collect RD stats for transform units
-// 2: Collect RD stats for partition units
-#define COLLECT_RD_STATS 0
+  // NOTE: CONFIG_COLLECT_RD_STATS takes 3 possible values
+  // This macro has 3 possible values:
+  // 0: Do not collect any RD stats
+  // 1: Collect RD stats for transform units
+  // 2: Collect RD stats for partition units
 
-#if COLLECT_RD_STATS == 1
-
+#if CONFIG_COLLECT_RD_STATS
 static double get_mean(const int16_t *diff, int stride, int w, int h) {
   double sum = 0.0;
   for (int j = 0; j < h; ++j) {
@@ -1990,7 +1990,8 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (rd_stats->rate == INT_MAX || rd_stats->dist == INT64_MAX) return;
 
   // Generate small sample to restrict output size.
-  if (rand() % 100 > 0) return;
+  static unsigned int seed = 21743;
+  if (lcg_rand16(&seed) % 100 > 0) return;
 
   const char output_file[] = "tu_stats.txt";
   FILE *fout = fopen(output_file, "a");
@@ -2073,7 +2074,88 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   fclose(fout);
 }
 
-#endif  // COLLECT_RD_STATS == 1
+static void PrintPredictionUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
+                                     const RD_STATS *const rd_stats,
+                                     BLOCK_SIZE plane_bsize) {
+  if (rd_stats->invalid_rate) return;
+  if (rd_stats->rate == INT_MAX || rd_stats->dist == INT64_MAX) return;
+
+  // Generate small sample to restrict output size.
+  static unsigned int seed = 95014;
+  if (lcg_rand16(&seed) % 100 > 0) return;
+
+  const char output_file[] = "pu_stats.txt";
+  FILE *fout = fopen(output_file, "a");
+  if (!fout) return;
+
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const int plane = 0;
+  struct macroblock_plane *const p = &x->plane[plane];
+  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  const int bw = block_size_wide[plane_bsize];
+  const int bh = block_size_high[plane_bsize];
+  const int dequant_shift =
+      (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd - 5 : 3;
+  const int q_step = pd->dequant_Q3[1] >> dequant_shift;
+  const double num_samples = bw * bh;
+
+  const double rate_norm = (double)rd_stats->rate / num_samples;
+  const double dist_norm = (double)rd_stats->dist / num_samples;
+
+  fprintf(fout, "%g %g", rate_norm, dist_norm);
+
+  const int src_stride = p->src.stride;
+  const uint8_t *const src = p->src.buf;
+  const int dst_stride = pd->dst.stride;
+  const uint8_t *const dst = pd->dst.buf;
+  unsigned int sse;
+  cpi->fn_ptr[plane_bsize].vf(src, src_stride, dst, dst_stride, &sse);
+  const double sse_norm = (double)sse / num_samples;
+
+  const unsigned int sad =
+      cpi->fn_ptr[plane_bsize].sdf(src, src_stride, dst, dst_stride);
+  const double sad_norm = (double)sad / num_samples;
+
+  fprintf(fout, " %g %g", sse_norm, sad_norm);
+
+  const int diff_stride = block_size_wide[plane_bsize];
+  const int16_t *const src_diff = p->src_diff;
+
+  double sse_norm_arr[4], sad_norm_arr[4];
+  get_2x2_normalized_sses_and_sads(cpi, plane_bsize, src, src_stride, dst,
+                                   dst_stride, src_diff, diff_stride,
+                                   sse_norm_arr, sad_norm_arr);
+  for (int i = 0; i < 4; ++i) {
+    fprintf(fout, " %g", sse_norm_arr[i]);
+  }
+  for (int i = 0; i < 4; ++i) {
+    fprintf(fout, " %g", sad_norm_arr[i]);
+  }
+
+  fprintf(fout, " %d %d %d", q_step, bw, bh);
+
+  int model_rate;
+  int64_t model_dist;
+  model_rd_from_sse(cpi, xd, plane_bsize, plane, sse, &model_rate, &model_dist);
+  const double model_rate_norm = (double)model_rate / num_samples;
+  const double model_dist_norm = (double)model_dist / num_samples;
+  fprintf(fout, " %g %g", model_rate_norm, model_dist_norm);
+
+  const double mean = get_mean(src_diff, diff_stride, bw, bh);
+  double hor_corr, vert_corr;
+  get_horver_correlation(src_diff, diff_stride, bw, bh, &hor_corr, &vert_corr);
+  fprintf(fout, " %g %g %g", mean, hor_corr, vert_corr);
+
+  double hdist[4] = { 0 }, vdist[4] = { 0 };
+  get_energy_distribution_fine(cpi, plane_bsize, src, src_stride, dst,
+                               dst_stride, 1, hdist, vdist);
+  fprintf(fout, " %g %g %g %g %g %g %g %g", hdist[0], hdist[1], hdist[2],
+          hdist[3], vdist[0], vdist[1], vdist[2], vdist[3]);
+
+  fprintf(fout, "\n");
+  fclose(fout);
+}
+#endif  // CONFIG_COLLECT_RD_STATS
 
 static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                                int block, int blk_row, int blk_col,
@@ -2273,12 +2355,12 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       best_eob = x->plane[plane].eobs[block];
     }
 
-#if COLLECT_RD_STATS == 1
+#if CONFIG_COLLECT_RD_STATS == 1
     if (plane == 0) {
       PrintTransformUnitStats(cpi, x, &this_rd_stats, blk_row, blk_col,
                               plane_bsize, tx_size, tx_type);
     }
-#endif  // COLLECT_RD_STATS == 1
+#endif  // CONFIG_COLLECT_RD_STATS == 1
 
     if (cpi->sf.adaptive_txb_search)
       if ((best_rd - (best_rd >> 2)) > ref_best_rd) break;
@@ -2346,8 +2428,6 @@ RECON_INTRA:
 
   return best_rd;
 }
-
-#undef COLLECT_RD_STATS
 
 static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                           BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg) {
@@ -7397,6 +7477,9 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
         // Motion mode
         select_tx_type_yrd(cpi, x, rd_stats_y, bsize, mi_row, mi_col,
                            ref_best_rd);
+#if CONFIG_COLLECT_RD_STATS == 2
+        PrintPredictionUnitStats(cpi, x, rd_stats_y, bsize);
+#endif  // CONFIG_COLLECT_RD_STATS == 2
       } else {
         super_block_yrd(cpi, x, rd_stats_y, bsize, ref_best_rd);
         memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
