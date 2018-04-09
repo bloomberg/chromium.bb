@@ -126,7 +126,7 @@ CHROMEOS_EXPORT extern const char kGuestWallpaperLarge[];
 CHROMEOS_EXPORT extern const char kGuestWallpaperSmall[];
 CHROMEOS_EXPORT extern const char kHasChromeOSDiamondKey[];
 CHROMEOS_EXPORT extern const char kHasChromeOSKeyboard[];
-CHROMEOS_EXPORT extern const char kHideNonActiveAppsFromShelf[];
+CHROMEOS_EXPORT extern const char kHideActiveAppsFromShelf[];
 CHROMEOS_EXPORT extern const char kHomedir[];
 CHROMEOS_EXPORT extern const char kHostPairingOobe[];
 CHROMEOS_EXPORT extern const char kIgnoreUserProfileMappingForTests[];
@@ -211,6 +211,9 @@ CHROMEOS_EXPORT bool AreExperimentalAccessibilityFeaturesEnabled();
 
 // Returns true if experimental display zoom setting is enabled.
 CHROMEOS_EXPORT bool IsDisplayZoomSettingEnabled();
+
+// Returns true if we should hide open apps that aren't pinned from the shelf.
+CHROMEOS_EXPORT bool ShouldHideActiveAppsFromShelf();
 
 }  // namespace switches
 }  // namespace chromeos

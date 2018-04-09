@@ -34,6 +34,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -1749,7 +1750,8 @@ void ShelfView::ShelfItemAdded(int model_index) {
                                           true);
     model_index = CancelDrag(model_index);
   }
-  views::View* view = CreateViewForItem(model_->items()[model_index]);
+  const ShelfItem& item(model_->items()[model_index]);
+  views::View* view = CreateViewForItem(item);
   AddChildView(view);
   // Hide the view, it'll be made visible when the animation is done. Using
   // opacity 0 here to avoid messing with CalculateIdealBounds which touches
@@ -1765,18 +1767,22 @@ void ShelfView::ShelfItemAdded(int model_index) {
   CalculateIdealBounds(&overflow_bounds);
   view->SetBoundsRect(view_model_->ideal_bounds(model_index));
 
-  // The first animation moves all the views to their target position. |view|
-  // is hidden, so it visually appears as though we are providing space for
-  // it. When done we'll fade the view in.
-  AnimateToIdealBounds();
-  if (model_index <= last_visible_index_ ||
-      model_index >= model_->FirstPanelIndex()) {
-    bounds_animator_->SetAnimationDelegate(
-        view, std::unique_ptr<gfx::AnimationDelegate>(
-                  new StartFadeAnimationDelegate(this, view)));
+  if (ShouldShowShelfItem(item)) {
+    // The first animation moves all the views to their target position. |view|
+    // is hidden, so it visually appears as though we are providing space for
+    // it. When done we'll fade the view in.
+    AnimateToIdealBounds();
+    if (model_index <= last_visible_index_ ||
+        model_index >= model_->FirstPanelIndex()) {
+      bounds_animator_->SetAnimationDelegate(
+          view, std::unique_ptr<gfx::AnimationDelegate>(
+                    new StartFadeAnimationDelegate(this, view)));
+    } else {
+      // Undo the hiding if animation does not run.
+      view->layer()->SetOpacity(1.0f);
+    }
   } else {
-    // Undo the hiding if animation does not run.
-    view->layer()->SetOpacity(1.0f);
+    view->SetVisible(false);
   }
 }
 
@@ -1844,6 +1850,17 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
     AddChildView(new_view);
     view_model_->Add(new_view, model_index);
     view_model_->set_ideal_bounds(model_index, old_ideal_bounds);
+
+    bool new_item_is_visible = ShouldShowShelfItem(item);
+    if (ShouldShowShelfItem(old_item) != new_item_is_visible) {
+      views::View* view = view_model_->view_at(model_index);
+      view->SetVisible(new_item_is_visible);
+      if (!new_item_is_visible) {
+        // Nothing else to do.
+        return;
+      }
+    }
+
     new_view->SetBoundsRect(old_view->bounds());
     if (overflow_button_ && overflow_button_->visible())
       AnimateToIdealBounds();
@@ -2077,6 +2094,19 @@ bool ShelfView::IsRepostEvent(const ui::Event& event) {
   // If the current (press down) event is a repost event, the time stamp of
   // these two events should be the same.
   return closing_event_time_ == event.time_stamp();
+}
+
+bool ShelfView::ShouldShowShelfItem(const ShelfItem& item) {
+  // We only consider hiding shelf items in tablet mode.
+  if (!IsTabletModeEnabled()) {
+    return true;
+  }
+  // We also don't do any hiding if the relevant flag is off.
+  if (!chromeos::switches::ShouldHideActiveAppsFromShelf()) {
+    return true;
+  }
+  // Hide running apps that aren't also pinned.
+  return item.type != TYPE_APP;
 }
 
 const ShelfItem* ShelfView::ShelfItemForView(const views::View* view) const {

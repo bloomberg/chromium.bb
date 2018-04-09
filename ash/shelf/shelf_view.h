@@ -388,6 +388,9 @@ class ASH_EXPORT ShelfView : public views::View,
   // item, we should ignore the call.
   bool IsRepostEvent(const ui::Event& event);
 
+  // Returns true if the given |item| is supposed to be shown to the user.
+  bool ShouldShowShelfItem(const ShelfItem& item);
+
   // Convenience accessor to model_->items().
   const ShelfItem* ShelfItemForView(const views::View* view) const;
 

@@ -509,8 +509,8 @@ extern const char kHorizontalTabSwitcherAndroidDescription[];
 extern const char kViewsCastDialogName[];
 extern const char kViewsCastDialogDescription[];
 
-extern const char kHideNonActiveAppsFromShelfName[];
-extern const char kHideNonActiveAppsFromShelfDescription[];
+extern const char kHideActiveAppsFromShelfName[];
+extern const char kHideActiveAppsFromShelfDescription[];
 
 extern const char kHistoryRequiresUserGestureName[];
 extern const char kHistoryRequiresUserGestureDescription[];

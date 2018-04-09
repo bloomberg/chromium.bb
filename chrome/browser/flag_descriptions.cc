@@ -792,10 +792,10 @@ const char kViewsCastDialogName[] = "Views Cast dialog";
 const char kViewsCastDialogDescription[] =
     "Replace the WebUI Cast dialog with a Views toolkit dialog.";
 
-const char kHideNonActiveAppsFromShelfName[] =
-    "Hide apps that are not running from the shelf";
-const char kHideNonActiveAppsFromShelfDescription[] =
-    "Save space in the shelf by hiding apps that are not running.";
+const char kHideActiveAppsFromShelfName[] =
+    "Hide running apps (that are not pinned) from the shelf";
+const char kHideActiveAppsFromShelfDescription[] =
+    "Save space in the shelf by hiding running apps (that are not pinned).";
 
 const char kHistoryRequiresUserGestureName[] =
     "New history entries require a user gesture.";
