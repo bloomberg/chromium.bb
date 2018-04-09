@@ -23,7 +23,7 @@ class AwURLLoaderThrottleProvider : public content::URLLoaderThrottleProvider {
   // content::URLLoaderThrottleProvider implementation.
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> CreateThrottles(
       int render_frame_id,
-      const blink::WebURL& url,
+      const blink::WebURLRequest& request,
       content::ResourceType resource_type) override;
 
  private:

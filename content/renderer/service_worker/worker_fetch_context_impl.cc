@@ -185,7 +185,7 @@ void WorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
   extra_data->set_initiated_in_secure_context(is_secure_context_);
   if (throttle_provider_) {
     extra_data->set_url_loader_throttles(throttle_provider_->CreateThrottles(
-        parent_frame_id_, request.Url(), WebURLRequestToResourceType(request)));
+        parent_frame_id_, request, WebURLRequestToResourceType(request)));
   }
   request.SetExtraData(std::move(extra_data));
   request.SetAppCacheHostID(appcache_host_id_);

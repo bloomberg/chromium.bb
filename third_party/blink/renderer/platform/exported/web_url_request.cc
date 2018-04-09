@@ -419,6 +419,10 @@ base::Optional<WebString> WebURLRequest::GetSuggestedFilename() const {
       resource_request_->GetSuggestedFilename().value());
 }
 
+bool WebURLRequest::IsAdResource() const {
+  return resource_request_->IsAdResource();
+}
+
 const ResourceRequest& WebURLRequest::ToResourceRequest() const {
   DCHECK(resource_request_);
   return *resource_request_;

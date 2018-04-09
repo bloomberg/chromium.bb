@@ -70,7 +70,7 @@ void ServiceWorkerFetchContextImpl::WillSendRequest(
   extra_data->set_initiated_in_secure_context(true);
   if (throttle_provider_) {
     extra_data->set_url_loader_throttles(throttle_provider_->CreateThrottles(
-        MSG_ROUTING_NONE, request.Url(), WebURLRequestToResourceType(request)));
+        MSG_ROUTING_NONE, request, WebURLRequestToResourceType(request)));
   }
   request.SetExtraData(std::move(extra_data));
 }

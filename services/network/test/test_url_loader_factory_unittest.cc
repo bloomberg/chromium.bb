@@ -79,4 +79,25 @@ TEST_F(TestURLLoaderFactoryTest, MultipleSameURL) {
   EXPECT_EQ(GetData(client()), data2);
 }
 
+TEST_F(TestURLLoaderFactoryTest, Redirects) {
+  GURL url("http://example.test/");
+
+  net::RedirectInfo redirect_info;
+  redirect_info.status_code = 301;
+  redirect_info.new_url = GURL("http://example2.test/");
+  network::TestURLLoaderFactory::Redirects redirects{
+      {redirect_info, network::ResourceResponseHead()}};
+  URLLoaderCompletionStatus status;
+  std::string content = "foo";
+  status.decoded_body_length = content.size();
+  factory()->AddResponse(url, network::ResourceResponseHead(), content, status,
+                         redirects);
+  StartRequest(url.spec());
+  client()->RunUntilComplete();
+
+  EXPECT_EQ(GetData(client()), content);
+  EXPECT_TRUE(client()->has_received_redirect());
+  EXPECT_EQ(redirect_info.new_url, client()->redirect_info().new_url);
+}
+
 }  // namespace network

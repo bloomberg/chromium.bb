@@ -4932,7 +4932,7 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   if (render_thread && render_thread->url_loader_throttle_provider()) {
     extra_data->set_url_loader_throttles(
         render_thread->url_loader_throttle_provider()->CreateThrottles(
-            routing_id_, request.Url(), resource_type));
+            routing_id_, request, resource_type));
   }
 
   if (request.GetPreviewsState() == WebURLRequest::kPreviewsUnspecified) {
