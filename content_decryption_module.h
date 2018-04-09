@@ -439,7 +439,7 @@ enum QueryResult : uint32_t { kQuerySucceeded = 0, kQueryFailed };
 CHECK_TYPE(QueryResult, 4, 4);
 
 // The Initialization Data Type. The valid types are defined in the spec:
-// http://w3c.github.io/encrypted-media/initdata-format-registry.html#registry
+// https://w3c.github.io/encrypted-media/format-registry/initdata/index.html#registry
 enum InitDataType : uint32_t { kCenc = 0, kKeyIds = 1, kWebM = 2 };
 CHECK_TYPE(InitDataType, 4, 4);
 
