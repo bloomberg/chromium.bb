@@ -197,6 +197,8 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
         mCoordinator.removeSuggestions();
         mCurrentRequestUrl = "";
 
+        if (mSuggestionsSource != null) mSuggestionsSource.getBridge().clearState();
+
         if (mSheetObserver != null) {
             mCoordinator.removeBottomSheetObserver(mSheetObserver);
         }
