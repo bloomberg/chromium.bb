@@ -37,10 +37,10 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
 
   // Asynchronously download an icon from the given url, decodes the loaded
   // data, and passes the bitmap to the given callback.
-  void Start(BackgroundFetchBridge*,
-             ExecutionContext*,
+  void Start(BackgroundFetchBridge* bridge,
+             ExecutionContext* execution_context,
              HeapVector<IconDefinition>,
-             IconCallback);
+             IconCallback callback);
 
   // Cancels the pending load, if there is one. The |icon_callback_| will not
   // be run.
@@ -50,7 +50,7 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
   void DidReceiveData(const char* data, unsigned length) override;
   void DidFinishLoading(unsigned long resource_identifier,
                         double finish_time) override;
-  void DidFail(const ResourceError&) override;
+  void DidFail(const ResourceError& error) override;
   void DidFailRedirectCheck() override;
 
   void Trace(blink::Visitor* visitor) {
@@ -64,19 +64,19 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
 
   // Callback for BackgroundFetchBridge::GetIconDisplaySize()
   void DidGetIconDisplaySizeIfSoLoadIcon(
-      ExecutionContext*,
-      IconCallback,
+      ExecutionContext* execution_context,
+      IconCallback callback,
       const WebSize& icon_display_size_pixels);
 
   // Picks the best icon from the list of developer provided icons, for current
   // display, given the ideal |icon_display_size_pixels|, and returns its index
   // in the icons_ array.
-  int PickBestIconForDisplay(ExecutionContext*,
+  int PickBestIconForDisplay(ExecutionContext* execution_context,
                              const WebSize& icon_display_size_pixels);
 
   // Get a score for the given icon, based on ideal_size. The icon with the
   // highest score is chosen.
-  double GetIconScore(IconDefinition, const int ideal_size);
+  double GetIconScore(IconDefinition icon, const int ideal_size);
 
   bool stopped_ = false;
   scoped_refptr<SharedBuffer> data_;

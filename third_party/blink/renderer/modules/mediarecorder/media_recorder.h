@@ -34,13 +34,13 @@ class MODULES_EXPORT MediaRecorder final
  public:
   enum class State { kInactive = 0, kRecording, kPaused };
 
-  static MediaRecorder* Create(ExecutionContext*,
-                               MediaStream*,
-                               ExceptionState&);
-  static MediaRecorder* Create(ExecutionContext*,
-                               MediaStream*,
-                               const MediaRecorderOptions&,
-                               ExceptionState&);
+  static MediaRecorder* Create(ExecutionContext* context,
+                               MediaStream* stream,
+                               ExceptionState& exception_state);
+  static MediaRecorder* Create(ExecutionContext* context,
+                               MediaStream* stream,
+                               const MediaRecorderOptions& options,
+                               ExceptionState& exception_state);
 
   virtual ~MediaRecorder() = default;
 
@@ -57,14 +57,14 @@ class MODULES_EXPORT MediaRecorder final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(resume);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-  void start(ExceptionState&);
-  void start(int time_slice, ExceptionState&);
-  void stop(ExceptionState&);
-  void pause(ExceptionState&);
-  void resume(ExceptionState&);
-  void requestData(ExceptionState&);
+  void start(ExceptionState& exception_state);
+  void start(int time_slice, ExceptionState& exception_state);
+  void stop(ExceptionState& exception_state);
+  void pause(ExceptionState& exception_state);
+  void resume(ExceptionState& exception_state);
+  void requestData(ExceptionState& exception_state);
 
-  static bool isTypeSupported(ExecutionContext*, const String& type);
+  static bool isTypeSupported(ExecutionContext* context, const String& type);
 
   // EventTarget
   const AtomicString& InterfaceName() const override;
@@ -73,7 +73,7 @@ class MODULES_EXPORT MediaRecorder final
   // PausableObject
   void Pause() override;
   void Unpause() override;
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext* context) override;
 
   // ScriptWrappable
   bool HasPendingActivity() const final { return !stopped_; }
@@ -85,18 +85,18 @@ class MODULES_EXPORT MediaRecorder final
                  double timecode) override;
   void OnError(const WebString& message) override;
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(blink::Visitor* visitor);
 
  private:
-  MediaRecorder(ExecutionContext*,
-                MediaStream*,
-                const MediaRecorderOptions&,
-                ExceptionState&);
+  MediaRecorder(ExecutionContext* context,
+                MediaStream* stream,
+                const MediaRecorderOptions& options,
+                ExceptionState& exception_state);
 
-  void CreateBlobEvent(Blob*, double);
+  void CreateBlobEvent(Blob* blob, double timecode);
 
   void StopRecording();
-  void ScheduleDispatchEvent(Event*);
+  void ScheduleDispatchEvent(Event* event);
   void DispatchScheduledEvent();
 
   Member<MediaStream> stream_;

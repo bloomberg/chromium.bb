@@ -23,7 +23,7 @@ class PushController final : public GarbageCollected<PushController>,
  public:
   static const char kSupplementName[];
 
-  PushController(LocalFrame&, WebPushClient*);
+  PushController(LocalFrame& frame, WebPushClient* client);
 
   static PushController* From(LocalFrame* frame) {
     return Supplement<LocalFrame>::From<PushController>(frame);
@@ -40,7 +40,8 @@ class PushController final : public GarbageCollected<PushController>,
   WebPushClient* client_;
 };
 
-MODULES_EXPORT void ProvidePushControllerTo(LocalFrame&, WebPushClient*);
+MODULES_EXPORT void ProvidePushControllerTo(LocalFrame& frame,
+                                            WebPushClient* client);
 
 }  // namespace blink
 

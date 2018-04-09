@@ -38,11 +38,13 @@ class MODULES_EXPORT PushEvent final : public ExtendableEvent {
 
   PushMessageData* data();
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(blink::Visitor* visitor);
 
  private:
-  PushEvent(const AtomicString& type, PushMessageData*, WaitUntilObserver*);
-  PushEvent(const AtomicString& type, const PushEventInit&);
+  PushEvent(const AtomicString& type,
+            PushMessageData* data,
+            WaitUntilObserver* observer);
+  PushEvent(const AtomicString& type, const PushEventInit& initializer);
 
   Member<PushMessageData> data_;
 };

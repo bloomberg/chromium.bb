@@ -49,26 +49,27 @@ class MODULES_EXPORT BackgroundFetchedEvent final
   HeapVector<Member<BackgroundFetchSettledFetch>> fetches() const;
 
   // Web Exposed method defined in the IDL file.
-  ScriptPromise updateUI(ScriptState*, const String& title);
+  ScriptPromise updateUI(ScriptState* script_state, const String& title);
 
   // ExtendableEvent interface.
   const AtomicString& InterfaceName() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(blink::Visitor* visitor) override;
 
  private:
   BackgroundFetchedEvent(const AtomicString& type,
-                         const BackgroundFetchedEventInit&);
+                         const BackgroundFetchedEventInit& initializer);
   BackgroundFetchedEvent(
       const AtomicString& type,
-      const BackgroundFetchedEventInit&,
+      const BackgroundFetchedEventInit& initializer,
       const String& unique_id,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches,
-      ScriptState*,
-      WaitUntilObserver*,
-      ServiceWorkerRegistration*);
+      ScriptState* script_state,
+      WaitUntilObserver* observer,
+      ServiceWorkerRegistration* registration);
 
-  void DidUpdateUI(ScriptPromiseResolver*, mojom::blink::BackgroundFetchError);
+  void DidUpdateUI(ScriptPromiseResolver* resolver,
+                   mojom::blink::BackgroundFetchError error);
 
   // Globally unique ID for the registration, generated in content/. Used to
   // distinguish registrations in case a developer re-uses |developer_id_|s. Not

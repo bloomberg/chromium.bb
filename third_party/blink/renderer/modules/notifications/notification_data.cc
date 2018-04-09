@@ -27,9 +27,8 @@ WebNotificationData::Direction ToDirectionEnumValue(const String& direction) {
   return WebNotificationData::kDirectionAuto;
 }
 
-WebURL CompleteURL(ExecutionContext* execution_context,
-                   const String& string_url) {
-  WebURL url = execution_context->CompleteURL(string_url);
+WebURL CompleteURL(ExecutionContext* context, const String& string_url) {
+  WebURL url = context->CompleteURL(string_url);
   if (url.IsValid())
     return url;
   return WebURL();
@@ -38,7 +37,7 @@ WebURL CompleteURL(ExecutionContext* execution_context,
 }  // namespace
 
 WebNotificationData CreateWebNotificationData(
-    ExecutionContext* execution_context,
+    ExecutionContext* context,
     const String& title,
     const NotificationOptions& options,
     ExceptionState& exception_state) {
@@ -66,13 +65,13 @@ WebNotificationData CreateWebNotificationData(
   web_data.tag = options.tag();
 
   if (options.hasImage() && !options.image().IsEmpty())
-    web_data.image = CompleteURL(execution_context, options.image());
+    web_data.image = CompleteURL(context, options.image());
 
   if (options.hasIcon() && !options.icon().IsEmpty())
-    web_data.icon = CompleteURL(execution_context, options.icon());
+    web_data.icon = CompleteURL(context, options.icon());
 
   if (options.hasBadge() && !options.badge().IsEmpty())
-    web_data.badge = CompleteURL(execution_context, options.badge());
+    web_data.badge = CompleteURL(context, options.badge());
 
   web_data.vibrate =
       VibrationController::SanitizeVibrationPattern(options.vibrate());
@@ -126,7 +125,7 @@ WebNotificationData CreateWebNotificationData(
     web_action.placeholder = action.placeholder();
 
     if (action.hasIcon() && !action.icon().IsEmpty())
-      web_action.icon = CompleteURL(execution_context, action.icon());
+      web_action.icon = CompleteURL(context, action.icon());
 
     actions.push_back(web_action);
   }

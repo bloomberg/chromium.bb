@@ -32,7 +32,8 @@ class MODULES_EXPORT PushMessageData final : public ScriptWrappable {
 
   DOMArrayBuffer* arrayBuffer() const;
   Blob* blob() const;
-  ScriptValue json(ScriptState*, ExceptionState&) const;
+  ScriptValue json(ScriptState* script_state,
+                   ExceptionState& exception_state) const;
   String text() const;
 
  private:

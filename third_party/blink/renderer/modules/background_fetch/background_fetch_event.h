@@ -43,8 +43,8 @@ class MODULES_EXPORT BackgroundFetchEvent : public ExtendableEvent {
 
  protected:
   BackgroundFetchEvent(const AtomicString& type,
-                       const BackgroundFetchEventInit&,
-                       WaitUntilObserver*);
+                       const BackgroundFetchEventInit& initializer,
+                       WaitUntilObserver* observer);
 
   // Corresponds to IDL 'id' attribute. Not unique - an active registration can
   // have the same |developer_id_| as one or more inactive registrations.

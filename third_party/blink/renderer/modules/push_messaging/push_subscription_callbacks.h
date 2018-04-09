@@ -25,12 +25,15 @@ class PushSubscriptionCallbacks final : public WebPushSubscriptionCallbacks {
   USING_FAST_MALLOC(PushSubscriptionCallbacks);
 
  public:
-  PushSubscriptionCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
+  PushSubscriptionCallbacks(
+      ScriptPromiseResolver* resolver,
+      ServiceWorkerRegistration* service_worker_registration);
   ~PushSubscriptionCallbacks() override;
 
   // WebPushSubscriptionCallbacks interface.
-  void OnSuccess(std::unique_ptr<WebPushSubscription>) override;
-  void OnError(const WebPushError&) override;
+  void OnSuccess(
+      std::unique_ptr<WebPushSubscription> web_push_subscription) override;
+  void OnError(const WebPushError& error) override;
 
  private:
   Persistent<ScriptPromiseResolver> resolver_;

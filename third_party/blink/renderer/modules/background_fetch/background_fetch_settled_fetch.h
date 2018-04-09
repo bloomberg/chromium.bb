@@ -28,10 +28,10 @@ class BackgroundFetchSettledFetch final : public BackgroundFetchFetch {
   // Web Exposed attribute defined in the IDL file.
   Response* response() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(blink::Visitor* visitor) override;
 
  private:
-  BackgroundFetchSettledFetch(Request*, Response*);
+  BackgroundFetchSettledFetch(Request* request, Response* response);
 
   Member<Response> response_;
 };

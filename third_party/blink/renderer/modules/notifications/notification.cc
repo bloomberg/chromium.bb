@@ -463,7 +463,7 @@ const AtomicString& Notification::InterfaceName() const {
   return EventTargetNames::Notification;
 }
 
-void Notification::ContextDestroyed(ExecutionContext*) {
+void Notification::ContextDestroyed(ExecutionContext* context) {
   listener_binding_.Close();
 
   state_ = State::kClosed;

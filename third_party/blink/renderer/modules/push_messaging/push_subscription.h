@@ -29,9 +29,10 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PushSubscription* Take(ScriptPromiseResolver*,
-                                std::unique_ptr<WebPushSubscription>,
-                                ServiceWorkerRegistration*);
+  static PushSubscription* Take(
+      ScriptPromiseResolver* resolver,
+      std::unique_ptr<WebPushSubscription> push_subscription,
+      ServiceWorkerRegistration* service_worker_registration);
   static void Dispose(WebPushSubscription* subscription_raw);
 
   virtual ~PushSubscription();
@@ -42,17 +43,18 @@ class MODULES_EXPORT PushSubscription final : public ScriptWrappable {
   PushSubscriptionOptions* options() const { return options_.Get(); }
 
   DOMArrayBuffer* getKey(const AtomicString& name) const;
-  ScriptPromise unsubscribe(ScriptState*);
+  ScriptPromise unsubscribe(ScriptState* script_state);
 
-  ScriptValue toJSONForBinding(ScriptState*);
+  ScriptValue toJSONForBinding(ScriptState* script_state);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor* visitor);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PushSubscriptionTest,
                            SerializesToBase64URLWithoutPadding);
 
-  PushSubscription(const WebPushSubscription&, ServiceWorkerRegistration*);
+  PushSubscription(const WebPushSubscription& subscription,
+                   ServiceWorkerRegistration* service_worker_registration);
 
   KURL endpoint_;
 

@@ -465,7 +465,7 @@ void BackgroundFetchManager::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void BackgroundFetchManager::ContextDestroyed(ExecutionContext*) {
+void BackgroundFetchManager::ContextDestroyed(ExecutionContext* context) {
   if (loader_) {
     loader_->Stop();
   }

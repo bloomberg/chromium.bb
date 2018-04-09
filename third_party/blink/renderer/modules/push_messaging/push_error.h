@@ -20,7 +20,7 @@ class PushError {
  public:
   // For CallbackPromiseAdapter.
   using WebType = const WebPushError&;
-  static DOMException* Take(ScriptPromiseResolver*,
+  static DOMException* Take(ScriptPromiseResolver* resolver,
                             const WebPushError& web_error);
 };
 

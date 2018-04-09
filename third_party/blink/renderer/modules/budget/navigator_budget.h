@@ -22,15 +22,15 @@ class NavigatorBudget final : public GarbageCollected<NavigatorBudget>,
  public:
   static const char kSupplementName[];
 
-  static NavigatorBudget& From(Navigator&);
+  static NavigatorBudget& From(Navigator& navigator);
 
-  static BudgetService* budget(ExecutionContext*, Navigator&);
-  BudgetService* budget(ExecutionContext*);
+  static BudgetService* budget(ExecutionContext* context, Navigator& navigator);
+  BudgetService* budget(ExecutionContext* context);
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(blink::Visitor* visitor);
 
  private:
-  explicit NavigatorBudget(Navigator&);
+  explicit NavigatorBudget(Navigator& navigator);
 
   Member<BudgetService> budget_;
 };

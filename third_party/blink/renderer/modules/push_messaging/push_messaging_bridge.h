@@ -31,21 +31,21 @@ class PushMessagingBridge final
  public:
   static const char kSupplementName[];
 
-  static PushMessagingBridge* From(ServiceWorkerRegistration*);
+  static PushMessagingBridge* From(ServiceWorkerRegistration* registration);
 
   virtual ~PushMessagingBridge();
 
   // Asynchronously determines the permission state for the current origin.
-  ScriptPromise GetPermissionState(ScriptState*,
-                                   const PushSubscriptionOptionsInit&);
+  ScriptPromise GetPermissionState(ScriptState* script_state,
+                                   const PushSubscriptionOptionsInit& options);
 
  private:
-  explicit PushMessagingBridge(ServiceWorkerRegistration&);
+  explicit PushMessagingBridge(ServiceWorkerRegistration& registration);
 
   // Method to be invoked when the permission status has been retrieved from the
   // permission service. Will settle the given |resolver|.
-  void DidGetPermissionState(ScriptPromiseResolver*,
-                             mojom::blink::PermissionStatus);
+  void DidGetPermissionState(ScriptPromiseResolver* resolver,
+                             mojom::blink::PermissionStatus status);
 
   mojom::blink::PermissionServicePtr permission_service_;
 };

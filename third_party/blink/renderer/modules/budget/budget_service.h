@@ -34,25 +34,28 @@ class BudgetService final : public ScriptWrappable {
   ~BudgetService();
 
   // Implementation of the Budget API interface.
-  ScriptPromise getCost(ScriptState*, const AtomicString& operation);
-  ScriptPromise getBudget(ScriptState*);
-  ScriptPromise reserve(ScriptState*, const AtomicString& operation);
+  ScriptPromise getCost(ScriptState* script_state,
+                        const AtomicString& operation);
+  ScriptPromise getBudget(ScriptState* script_state);
+  ScriptPromise reserve(ScriptState* script_state,
+                        const AtomicString& operation);
 
  private:
   // Callbacks from the BudgetService to the blink layer.
-  void GotCost(ScriptPromiseResolver*, double cost) const;
+  void GotCost(ScriptPromiseResolver* resolver, double cost) const;
   void GotBudget(
-      ScriptPromiseResolver*,
-      mojom::blink::BudgetServiceErrorType,
+      ScriptPromiseResolver* resolver,
+      mojom::blink::BudgetServiceErrorType error,
       const WTF::Vector<mojom::blink::BudgetStatePtr> expectations) const;
-  void GotReservation(ScriptPromiseResolver*,
-                      mojom::blink::BudgetServiceErrorType,
+  void GotReservation(ScriptPromiseResolver* resolver,
+                      mojom::blink::BudgetServiceErrorType error,
                       bool success) const;
 
   // Error handler for use if mojo service doesn't connect.
   void OnConnectionError();
 
-  explicit BudgetService(service_manager::InterfaceProvider*);
+  explicit BudgetService(
+      service_manager::InterfaceProvider* interface_provider);
 
   // Pointer to the Mojo service which will proxy calls to the browser.
   mojom::blink::BudgetServicePtr service_;

@@ -26,17 +26,15 @@
 namespace blink {
 
 // static
-NotificationManager* NotificationManager::From(
-    ExecutionContext* execution_context) {
-  DCHECK(execution_context);
-  DCHECK(execution_context->IsContextThread());
+NotificationManager* NotificationManager::From(ExecutionContext* context) {
+  DCHECK(context);
+  DCHECK(context->IsContextThread());
 
   NotificationManager* manager =
-      Supplement<ExecutionContext>::From<NotificationManager>(
-          execution_context);
+      Supplement<ExecutionContext>::From<NotificationManager>(context);
   if (!manager) {
-    manager = new NotificationManager(*execution_context);
-    Supplement<ExecutionContext>::ProvideTo(*execution_context, manager);
+    manager = new NotificationManager(*context);
+    Supplement<ExecutionContext>::ProvideTo(*context, manager);
   }
 
   return manager;
@@ -45,8 +43,8 @@ NotificationManager* NotificationManager::From(
 // static
 const char NotificationManager::kSupplementName[] = "NotificationManager";
 
-NotificationManager::NotificationManager(ExecutionContext& execution_context)
-    : Supplement<ExecutionContext>(execution_context) {}
+NotificationManager::NotificationManager(ExecutionContext& context)
+    : Supplement<ExecutionContext>(context) {}
 
 NotificationManager::~NotificationManager() = default;
 

@@ -40,7 +40,7 @@ class BackgroundFetchRegistration final
   // Initializes the BackgroundFetchRegistration to be associated with the given
   // ServiceWorkerRegistration. It will register itself as an observer for
   // progress events, powering the `progress` JavaScript event.
-  void Initialize(ServiceWorkerRegistration*);
+  void Initialize(ServiceWorkerRegistration* registration);
 
   // BackgroundFetchRegistrationObserver implementation.
   void OnProgress(uint64_t upload_total,
@@ -59,7 +59,7 @@ class BackgroundFetchRegistration final
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
 
-  ScriptPromise abort(ScriptState*);
+  ScriptPromise abort(ScriptState* script_state);
 
   // EventTargetWithInlineData implementation.
   const AtomicString& InterfaceName() const override;
@@ -67,10 +67,11 @@ class BackgroundFetchRegistration final
 
   void Dispose();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(blink::Visitor* visitor) override;
 
  private:
-  void DidAbort(ScriptPromiseResolver*, mojom::blink::BackgroundFetchError);
+  void DidAbort(ScriptPromiseResolver* resolver,
+                mojom::blink::BackgroundFetchError error);
 
   Member<ServiceWorkerRegistration> registration_;
 
