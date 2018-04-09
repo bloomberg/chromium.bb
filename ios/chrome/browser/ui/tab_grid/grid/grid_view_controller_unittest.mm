@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_view_controller.h"
+
 #import "base/mac/foundation_util.h"
+#import "base/numerics/safe_conversions.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -51,9 +53,11 @@ class GridViewControllerTest : public PlatformTest {
  public:
   GridViewControllerTest() {
     view_controller_ = [[TestGridViewController alloc] init];
-    [view_controller_
-        populateItems:@[ [[GridItem alloc] init], [[GridItem alloc] init] ]
-        selectedIndex:0];
+    NSArray* items = @[
+      [[GridItem alloc] initWithIdentifier:@"A"],
+      [[GridItem alloc] initWithIdentifier:@"B"]
+    ];
+    [view_controller_ populateItems:items selectedItemID:@"A"];
     delegate_ = [[FakeGridViewControllerDelegate alloc] init];
     delegate_.itemCount = 2;
     view_controller_.delegate = delegate_;
@@ -69,9 +73,8 @@ class GridViewControllerTest : public PlatformTest {
 TEST_F(GridViewControllerTest, InitializeItems) {
   // Previously: The grid had 2 items and selectedIndex was 0. The delegate had
   // an itemCount of 2.
-  GridItem* item = [[GridItem alloc] init];
-  item.identifier = @"NEW-ITEM";
-  [view_controller_ populateItems:@[ item ] selectedIndex:0];
+  GridItem* item = [[GridItem alloc] initWithIdentifier:@"NEW-ITEM"];
+  [view_controller_ populateItems:@[ item ] selectedItemID:@"NEW-ITEM"];
   EXPECT_NSEQ(@"NEW-ITEM", view_controller_.items[0].identifier);
   EXPECT_EQ(1U, view_controller_.items.count);
   EXPECT_EQ(0U, view_controller_.selectedIndex);
@@ -82,9 +85,9 @@ TEST_F(GridViewControllerTest, InitializeItems) {
 TEST_F(GridViewControllerTest, InsertItem) {
   // Previously: The grid had 2 items and selectedIndex was 0. The delegate had
   // an itemCount of 2.
-  [view_controller_ insertItem:[[GridItem alloc] init]
-                       atIndex:0
-                 selectedIndex:2];
+  [view_controller_ insertItem:[[GridItem alloc] initWithIdentifier:@"C"]
+                       atIndex:2
+                selectedItemID:@"C"];
   EXPECT_EQ(3U, view_controller_.items.count);
   EXPECT_EQ(2U, view_controller_.selectedIndex);
   EXPECT_EQ(3U, delegate_.itemCount);
@@ -94,9 +97,9 @@ TEST_F(GridViewControllerTest, InsertItem) {
 TEST_F(GridViewControllerTest, RemoveItem) {
   // Previously: The grid had 2 items and selectedIndex was 0. The delegate had
   // an itemCount of 2.
-  [view_controller_ removeItemAtIndex:0 selectedIndex:1];
+  [view_controller_ removeItemWithID:@"A" selectedItemID:@"B"];
   EXPECT_EQ(1U, view_controller_.items.count);
-  EXPECT_EQ(1U, view_controller_.selectedIndex);
+  EXPECT_EQ(0U, view_controller_.selectedIndex);
   EXPECT_EQ(1U, delegate_.itemCount);
 }
 
@@ -104,8 +107,19 @@ TEST_F(GridViewControllerTest, RemoveItem) {
 TEST_F(GridViewControllerTest, SelectItem) {
   // Previously: The grid had 2 items and selectedIndex was 0. The delegate had
   // an itemCount of 2.
-  [view_controller_ selectItemAtIndex:1];
+  [view_controller_ selectItemWithID:@"B"];
   EXPECT_EQ(1U, view_controller_.selectedIndex);
+  EXPECT_EQ(2U, delegate_.itemCount);
+}
+
+// Tests that when a nonexistent item is selected, the selected item index is
+// NSNotFound
+TEST_F(GridViewControllerTest, SelectNonexistentItem) {
+  // Previously: The grid had 2 items and selectedIndex was 0. The delegate had
+  // an itemCount of 2.
+  [view_controller_ selectItemWithID:@"NOT-A-KNOWN-ITEM"];
+  EXPECT_EQ(base::checked_cast<NSUInteger>(NSNotFound),
+            view_controller_.selectedIndex);
   EXPECT_EQ(2U, delegate_.itemCount);
 }
 
@@ -113,20 +127,28 @@ TEST_F(GridViewControllerTest, SelectItem) {
 TEST_F(GridViewControllerTest, ReplaceItem) {
   // Previously: The grid had 2 items and selectedIndex was 0. The delegate had
   // an itemCount of 2.
-  GridItem* item = [[GridItem alloc] init];
-  item.identifier = @"NEW-ITEM";
-  [view_controller_ replaceItemAtIndex:0 withItem:item];
+  GridItem* item = [[GridItem alloc] initWithIdentifier:@"NEW-ITEM"];
+  [view_controller_ replaceItemID:@"A" withItem:item];
   EXPECT_NSEQ(@"NEW-ITEM", view_controller_.items[0].identifier);
   EXPECT_EQ(2U, delegate_.itemCount);
 }
 
-// Tests that an item is moved.
-TEST_F(GridViewControllerTest, MoveItem) {
+// Tests that the selected item is moved.
+TEST_F(GridViewControllerTest, MoveSelectedItem) {
   // Previously: The grid had 2 items and selectedIndex was 0. The delegate had
   // an itemCount of 2.
-  view_controller_.items[0].identifier = @"ITEM-0";
-  [view_controller_ moveItemFromIndex:0 toIndex:1 selectedIndex:1];
-  EXPECT_NSEQ(@"ITEM-0", view_controller_.items[1].identifier);
+  [view_controller_ moveItemWithID:@"A" toIndex:1];
+  EXPECT_NSEQ(@"A", view_controller_.items[1].identifier);
+  EXPECT_EQ(1U, view_controller_.selectedIndex);
+  EXPECT_EQ(2U, delegate_.itemCount);
+}
+
+// Tests that a non-selected item is moved.
+TEST_F(GridViewControllerTest, MoveUnselectedItem) {
+  // Previously: The grid had 2 items and selectedIndex was 0. The delegate had
+  // an itemCount of 2.
+  [view_controller_ moveItemWithID:@"B" toIndex:0];
+  EXPECT_NSEQ(@"A", view_controller_.items[1].identifier);
   EXPECT_EQ(1U, view_controller_.selectedIndex);
   EXPECT_EQ(2U, delegate_.itemCount);
 }

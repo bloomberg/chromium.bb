@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_view_controller.h"
 
+#import "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "base/numerics/safe_conversions.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_cell.h"
@@ -33,10 +34,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @property(nonatomic, weak) UICollectionView* collectionView;
 // The local model backing the collection view.
 @property(nonatomic, strong) NSMutableArray<GridItem*>* items;
-// Index of the selected item. This value is disregarded if |self.items| is
+// Identifier of the selected item. This value is disregarded if |self.items| is
 // empty. This bookkeeping is done to set the correct selection on
 // |-viewWillAppear:|.
-@property(nonatomic, assign) NSUInteger selectedIndex;
+@property(nonatomic, copy) NSString* selectedItemID;
+// Index of the selected item in |items|.
+@property(nonatomic, readonly) NSUInteger selectedIndex;
 @end
 
 @implementation GridViewController
@@ -47,7 +50,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // Private properties.
 @synthesize collectionView = _collectionView;
 @synthesize items = _items;
-@synthesize selectedIndex = _selectedIndex;
+@synthesize selectedItemID = _selectedItemID;
 
 - (instancetype)init {
   if (self = [super init]) {
@@ -195,13 +198,22 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 #pragma mark - GridConsumer
 
 - (void)populateItems:(NSArray<GridItem*>*)items
-        selectedIndex:(NSUInteger)selectedIndex {
+       selectedItemID:(NSString*)selectedItemID {
+#ifndef NDEBUG
+  // Consistency check: ensure no IDs are duplicated.
+  NSMutableSet<NSString*>* identifiers = [[NSMutableSet alloc] init];
+  for (GridItem* item in items) {
+    [identifiers addObject:item.identifier];
+  }
+  CHECK_EQ(identifiers.count, items.count);
+#endif
+
   self.items = [items mutableCopy];
-  self.selectedIndex = selectedIndex;
+  self.selectedItemID = selectedItemID;
   if ([self isViewVisible]) {
     [self.collectionView reloadData];
     [self.collectionView
-        selectItemAtIndexPath:CreateIndexPath(selectedIndex)
+        selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
                      animated:YES
                scrollPosition:UICollectionViewScrollPositionTop];
   }
@@ -211,10 +223,13 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (void)insertItem:(GridItem*)item
            atIndex:(NSUInteger)index
-     selectedIndex:(NSUInteger)selectedIndex {
+    selectedItemID:(NSString*)selectedItemID {
+  // Consistency check: |item|'s ID is not in |items|.
+  // (using DCHECK rather than DCHECK_EQ to avoid a checked_cast on NSNotFound).
+  DCHECK([self indexOfItemWithID:item.identifier] == NSNotFound);
   auto performDataSourceUpdates = ^{
     [self.items insertObject:item atIndex:index];
-    self.selectedIndex = selectedIndex;
+    self.selectedItemID = selectedItemID;
   };
   if (![self isViewVisible]) {
     performDataSourceUpdates();
@@ -228,7 +243,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   };
   auto completion = ^(BOOL finished) {
     [self.collectionView
-        selectItemAtIndexPath:CreateIndexPath(selectedIndex)
+        selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
                      animated:YES
                scrollPosition:UICollectionViewScrollPositionNone];
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
@@ -237,11 +252,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                                 completion:completion];
 }
 
-- (void)removeItemAtIndex:(NSUInteger)index
-            selectedIndex:(NSUInteger)selectedIndex {
+- (void)removeItemWithID:(NSString*)removedItemID
+          selectedItemID:(NSString*)selectedItemID {
+  NSUInteger index = [self indexOfItemWithID:removedItemID];
   auto performDataSourceUpdates = ^{
     [self.items removeObjectAtIndex:index];
-    self.selectedIndex = selectedIndex;
+    self.selectedItemID = selectedItemID;
   };
   if (![self isViewVisible]) {
     performDataSourceUpdates();
@@ -258,7 +274,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   auto completion = ^(BOOL finished) {
     if (self.items.count > 0) {
       [self.collectionView
-          selectItemAtIndexPath:CreateIndexPath(selectedIndex)
+          selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
                        animated:YES
                  scrollPosition:UICollectionViewScrollPositionNone];
     }
@@ -268,31 +284,33 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                                 completion:completion];
 }
 
-- (void)selectItemAtIndex:(NSUInteger)selectedIndex {
-  self.selectedIndex = selectedIndex;
+- (void)selectItemWithID:(NSString*)selectedItemID {
+  self.selectedItemID = selectedItemID;
   if (![self isViewVisible])
     return;
   [self.collectionView
-      selectItemAtIndexPath:CreateIndexPath(selectedIndex)
+      selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
                    animated:YES
              scrollPosition:UICollectionViewScrollPositionNone];
 }
 
-- (void)replaceItemAtIndex:(NSUInteger)index withItem:(GridItem*)item {
+- (void)replaceItemID:(NSString*)itemID withItem:(GridItem*)item {
+  // Consistency check: |item|'s ID is either |itemID| or not in |items|.
+  DCHECK([item.identifier isEqualToString:itemID] ||
+         [self indexOfItemWithID:item.identifier] == NSNotFound);
+  NSUInteger index = [self indexOfItemWithID:itemID];
   self.items[index] = item;
   if (![self isViewVisible])
     return;
   [self.collectionView reloadItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
 }
 
-- (void)moveItemFromIndex:(NSUInteger)fromIndex
-                  toIndex:(NSUInteger)toIndex
-            selectedIndex:(NSUInteger)selectedIndex {
+- (void)moveItemWithID:(NSString*)itemID toIndex:(NSUInteger)toIndex {
+  NSUInteger fromIndex = [self indexOfItemWithID:itemID];
   auto performDataSourceUpdates = ^{
     GridItem* item = self.items[fromIndex];
     [self.items removeObjectAtIndex:fromIndex];
     [self.items insertObject:item atIndex:toIndex];
-    self.selectedIndex = selectedIndex;
   };
   if (![self isViewVisible]) {
     performDataSourceUpdates();
@@ -305,7 +323,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   };
   auto completion = ^(BOOL finished) {
     [self.collectionView
-        selectItemAtIndexPath:CreateIndexPath(selectedIndex)
+        selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
                      animated:YES
                scrollPosition:UICollectionViewScrollPositionNone];
   };
@@ -313,7 +331,22 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                                 completion:completion];
 }
 
-#pragma mark - Private
+#pragma mark - Private properties
+
+- (NSUInteger)selectedIndex {
+  return [self indexOfItemWithID:self.selectedItemID];
+}
+
+#pragma mark - Private properties
+
+// Returns the index in |self.items| of the first item whose identifier is
+// |identifier|.
+- (NSUInteger)indexOfItemWithID:(NSString*)identifier {
+  auto selectedTest = ^BOOL(GridItem* item, NSUInteger index, BOOL* stop) {
+    return [item.identifier isEqualToString:identifier];
+  };
+  return [self.items indexOfObjectPassingTest:selectedTest];
+}
 
 // If the view is not visible, there is no need to update the collection view.
 - (BOOL)isViewVisible {
