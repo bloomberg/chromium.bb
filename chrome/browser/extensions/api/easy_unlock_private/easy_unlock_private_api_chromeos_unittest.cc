@@ -61,7 +61,6 @@ using extensions::EasyUnlockPrivateCreateSecureMessageFunction;
 using extensions::EasyUnlockPrivateConnectionManager;
 using extensions::EasyUnlockPrivateGenerateEcP256KeyPairFunction;
 using extensions::EasyUnlockPrivatePerformECDHKeyAgreementFunction;
-using extensions::EasyUnlockPrivateSetAutoPairingResultFunction;
 using extensions::EasyUnlockPrivateUnwrapSecureMessageFunction;
 using extensions::Extension;
 using extensions::ExtensionBuilder;
@@ -502,57 +501,6 @@ struct AutoPairingResult {
   bool success;
   std::string error;
 };
-
-// Test factory to register EasyUnlockService.
-std::unique_ptr<KeyedService> BuildTestEasyUnlockService(
-    content::BrowserContext* context) {
-  std::unique_ptr<chromeos::EasyUnlockServiceRegular> service(
-      new chromeos::EasyUnlockServiceRegular(
-          Profile::FromBrowserContext(context)));
-  service->Initialize(chromeos::EasyUnlockAppManager::Create(
-      extensions::ExtensionSystem::Get(context), -1 /* manifest id */,
-      base::FilePath()));
-  return std::move(service);
-}
-
-TEST_F(EasyUnlockPrivateApiTest, AutoPairing) {
-  extensions::TestEventRouter* event_router =
-      extensions::CreateAndUseTestEventRouter(profile());
-  event_router->set_expected_extension_id(extension_misc::kEasyUnlockAppId);
-
-  chromeos::EasyUnlockServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile(), &BuildTestEasyUnlockService);
-
-  AutoPairingResult result;
-
-  // Dispatch OnStartAutoPairing event on EasyUnlockService::StartAutoPairing.
-  chromeos::EasyUnlockService* service =
-      chromeos::EasyUnlockService::Get(profile());
-  service->StartAutoPairing(base::Bind(&AutoPairingResult::SetResult,
-                                       base::Unretained(&result)));
-  EXPECT_EQ(1,
-            event_router->GetEventCount(extensions::api::easy_unlock_private::
-                                            OnStartAutoPairing::kEventName));
-
-  // Test SetAutoPairingResult call with failure.
-  scoped_refptr<EasyUnlockPrivateSetAutoPairingResultFunction> function(
-      new EasyUnlockPrivateSetAutoPairingResultFunction());
-  ASSERT_TRUE(extension_function_test_utils::RunFunction(
-      function.get(), "[{\"success\":false, \"errorMessage\":\"fake_error\"}]",
-      browser(), extensions::api_test_utils::NONE));
-  EXPECT_FALSE(result.success);
-  EXPECT_EQ("fake_error", result.error);
-
-  // Test SetAutoPairingResult call with success.
-  service->StartAutoPairing(base::Bind(&AutoPairingResult::SetResult,
-                                       base::Unretained(&result)));
-  function = new EasyUnlockPrivateSetAutoPairingResultFunction();
-  ASSERT_TRUE(extension_function_test_utils::RunFunction(
-      function.get(), "[{\"success\":true}]", browser(),
-      extensions::api_test_utils::NONE));
-  EXPECT_TRUE(result.success);
-  EXPECT_TRUE(result.error.empty());
-}
 
 // Tests that no BrowserContext dependencies of EasyUnlockPrivateApi (and its
 // dependencies) are referenced after the BrowserContext is torn down. The test

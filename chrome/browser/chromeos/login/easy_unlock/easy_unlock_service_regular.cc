@@ -453,14 +453,6 @@ void EasyUnlockServiceRegular::StartAutoPairing(
   }
 
   auto_pairing_callback_ = callback;
-
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
-  std::unique_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::EASY_UNLOCK_PRIVATE_ON_START_AUTO_PAIRING,
-      extensions::api::easy_unlock_private::OnStartAutoPairing::kEventName,
-      std::move(args)));
-  extensions::EventRouter::Get(profile())->DispatchEventWithLazyListener(
-      extension_misc::kEasyUnlockAppId, std::move(event));
 }
 
 void EasyUnlockServiceRegular::SetAutoPairingResult(bool success,

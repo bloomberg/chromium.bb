@@ -122,13 +122,6 @@ class TestAppManager : public EasyUnlockAppManager {
       ++reload_count_;
   }
 
-  bool SendUserUpdatedEvent(const std::string& user_id,
-                            bool is_logged_in,
-                            bool data_ready) override {
-    // TODO(tbarzic): Make this a bit smarter and add some test to utilize it.
-    return true;
-  }
-
   bool SendAuthAttemptEvent() override {
     ADD_FAILURE() << "Not reached.";
     return false;

@@ -443,8 +443,6 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
 
   if (should_update_app_state) {
     UpdateAppState();
-  } else {
-    NotifyUserUpdated();
   }
 
   LoadCurrentUserDataIfNeeded();
@@ -511,11 +509,6 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
                               EasyUnlockScreenlockStateHandler::NO_PAIRING);
     }
   }
-
-  // If the fetched data belongs to the currently focused user, notify the app
-  // that it has to refresh it's user data.
-  if (account_id == account_id_)
-    NotifyUserUpdated();
 
   if (devices.empty())
     return;

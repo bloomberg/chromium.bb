@@ -260,9 +260,6 @@ class EasyUnlockService : public KeyedService {
   // the lock screen UI should remain unchanged until the screen unlocks.
   void DisableAppWithoutResettingScreenlockState();
 
-  // Notifies the easy unlock app that the user state has been updated.
-  void NotifyUserUpdated();
-
   // Notifies observers that the turn off flow status changed.
   void NotifyTurnOffOperationStatusChanged();
 
