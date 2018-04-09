@@ -48,11 +48,6 @@ void NativeViewHost::Detach() {
   Detach(false);
 }
 
-void NativeViewHost::SetPreferredSize(const gfx::Size& size) {
-  preferred_size_ = size;
-  PreferredSizeChanged();
-}
-
 bool NativeViewHost::SetCornerRadius(int corner_radius) {
   return native_wrapper_->SetCornerRadius(corner_radius);
 }
@@ -72,10 +67,6 @@ void NativeViewHost::NativeViewDestroyed() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHost, View overrides:
-
-gfx::Size NativeViewHost::CalculatePreferredSize() const {
-  return preferred_size_;
-}
 
 void NativeViewHost::Layout() {
   if (!native_view_ || !native_wrapper_.get())

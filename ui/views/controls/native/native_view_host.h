@@ -47,9 +47,6 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // detached before calling this function, and this has no effect in that case.
   void Detach();
 
-  // Sets a preferred size for the native view attached to this View.
-  void SetPreferredSize(const gfx::Size& size);
-
   // Sets the corner radius for clipping gfx::NativeView. Returns true on
   // success or false if the platform doesn't support the operation.
   // NB: This does not interact nicely with fast_resize.
@@ -86,7 +83,6 @@ class VIEWS_EXPORT NativeViewHost : public View {
   void NativeViewDestroyed();
 
   // Overridden from View:
-  gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
   void OnPaint(gfx::Canvas* canvas) override;
   void VisibilityChanged(View* starting_from, bool is_visible) override;
@@ -119,9 +115,6 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // A platform-specific wrapper that does the OS-level manipulation of the
   // attached gfx::NativeView.
   std::unique_ptr<NativeViewHostWrapper> native_wrapper_;
-
-  // The preferred size of this View
-  gfx::Size preferred_size_;
 
   // The actual size of the NativeView, or an empty size if no scaling of the
   // NativeView should occur.
