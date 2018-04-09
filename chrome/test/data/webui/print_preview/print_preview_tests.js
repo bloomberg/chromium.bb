@@ -1801,16 +1801,21 @@ cr.define('print_preview_test', function() {
       test('MacOpenPDFInPreviewBadPrintTicket', function() {
         const device = getPdfPrinter();
         initialSettings.printerName = device.printer.deviceName;
+        const openPdfPreviewLink = $('open-pdf-in-preview-link');
         return Promise.all([
           setupSettingsAndDestinationsWithCapabilities(device),
           nativeLayer.whenCalled('getPreview')
         ]).then(function() {
-          const openPdfPreviewLink = $('open-pdf-in-preview-link');
           checkElementDisplayed(openPdfPreviewLink, true);
           expectFalse(openPdfPreviewLink.disabled);
           const pageSettings = $('page-settings');
           checkSectionVisible(pageSettings, true);
           nativeLayer.resetResolver('getPreview');
+
+          // Wait for ticket change.
+          const whenTicketChange = test_util.eventToPromise(
+              print_preview.ticket_items.TicketItem.EventType.CHANGE,
+              printPreview.printTicketStore_.pageRange);
 
           // Set page settings to a bad value
           pageSettings.querySelector('.page-settings-custom-input').value =
@@ -1822,6 +1827,8 @@ cr.define('print_preview_test', function() {
             assertTrue(false);
           });
 
+          return whenTicketChange;
+        }).then(function() {
           // Expect disabled print button and Pdf in preview link
           const printButton = $('print-header').querySelector('button.print');
           checkElementDisplayed(printButton, true);
@@ -1861,17 +1868,22 @@ cr.define('print_preview_test', function() {
       // Test that the System Dialog link is correctly disabled when the
       // print ticket is invalid.
       test('WinSystemDialogLinkBadPrintTicket', function() {
+        const systemDialogLink = $('system-dialog-link');
         return Promise.all([
           setupSettingsAndDestinationsWithCapabilities(),
           nativeLayer.whenCalled('getPreview')
         ]).then(function() {
-          const systemDialogLink = $('system-dialog-link');
           checkElementDisplayed(systemDialogLink, true);
           expectFalse(systemDialogLink.disabled);
 
           const pageSettings = $('page-settings');
           checkSectionVisible(pageSettings, true);
           nativeLayer.resetResolver('getPreview');
+
+          // Wait for ticket change.
+          const whenTicketChange = test_util.eventToPromise(
+              print_preview.ticket_items.TicketItem.EventType.CHANGE,
+              printPreview.printTicketStore_.pageRange);
 
           // Set page settings to a bad value
           pageSettings.querySelector('.page-settings-custom-input').value =
@@ -1882,7 +1894,8 @@ cr.define('print_preview_test', function() {
           nativeLayer.whenCalled('getPreview').then(function() {
             assertTrue(false);
           });
-
+          return whenTicketChange;
+        }).then(function() {
           // Expect disabled print button and Pdf in preview link
           const printButton = $('print-header').querySelector('button.print');
           checkElementDisplayed(printButton, true);
