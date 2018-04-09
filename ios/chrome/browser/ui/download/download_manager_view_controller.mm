@@ -26,13 +26,15 @@ namespace {
 // Layout Guide name for action button UILayoutGuide.
 GuideName* const kActionButtonGuide = @"kDownloadManagerActionButtonGuide";
 
-// A margin for every control element (status label, action button, close
-// button). Defines the minimal distance between elements.
-const CGFloat kElementMargin = 16;
+// Additional left margin for close button.
+const CGFloat kCloseButtonLeftMargin = 17;
 
 // The size of the shadow used for background resizable image.
 const CGFloat kTopShadowHeight = 8;
 const CGFloat kLeftRightShadowHeight = 16;
+
+// Height of download or install drive controls row.
+const CGFloat kRowHeight = 48;
 
 // Returns formatted size string.
 NSString* GetSizeString(long long size_in_bytes) {
@@ -176,11 +178,11 @@ NSString* GetSizeString(long long size_in_bytes) {
     self.downloadControlsRowTrailingConstraint,
     [downloadRow.topAnchor constraintEqualToAnchor:view.topAnchor
                                           constant:kTopShadowHeight],
-    [downloadRow.layoutMarginsGuide.heightAnchor
-        constraintEqualToAnchor:closeButton.heightAnchor],
+    [downloadRow.heightAnchor constraintEqualToConstant:kRowHeight],
   ]];
 
   // install drive controls row constraints.
+  UIView* horizontalLine = self.horizontalLine;
   UIView* installDriveRow = self.installDriveControlsRow;
   UIButton* installDriveButton = self.installDriveButton;
   self.installDriveControlsRowLeadingConstraint = [installDriveRow.leadingAnchor
@@ -192,9 +194,8 @@ NSString* GetSizeString(long long size_in_bytes) {
     self.installDriveControlsRowLeadingConstraint,
     self.installDriveControlsRowTrailingConstraint,
     [installDriveRow.topAnchor
-        constraintEqualToAnchor:downloadRow.bottomAnchor],
-    [installDriveRow.heightAnchor
-        constraintEqualToAnchor:downloadRow.heightAnchor],
+        constraintEqualToAnchor:horizontalLine.bottomAnchor],
+    [installDriveRow.heightAnchor constraintEqualToConstant:kRowHeight],
   ]];
 
   // close button constraints.
@@ -202,7 +203,8 @@ NSString* GetSizeString(long long size_in_bytes) {
     [closeButton.centerYAnchor
         constraintEqualToAnchor:downloadRow.centerYAnchor],
     [closeButton.trailingAnchor
-        constraintEqualToAnchor:downloadRow.layoutMarginsGuide.trailingAnchor],
+        constraintEqualToAnchor:downloadRow.layoutMarginsGuide.trailingAnchor
+                       constant:-4],
   ]];
 
   // status icon constraints.
@@ -210,7 +212,8 @@ NSString* GetSizeString(long long size_in_bytes) {
   [NSLayoutConstraint activateConstraints:@[
     [stateIcon.centerYAnchor constraintEqualToAnchor:downloadRow.centerYAnchor],
     [stateIcon.leadingAnchor
-        constraintEqualToAnchor:downloadRow.layoutMarginsGuide.leadingAnchor],
+        constraintEqualToAnchor:downloadRow.layoutMarginsGuide.leadingAnchor
+                       constant:3],
   ]];
 
   // progress view constraints.
@@ -231,7 +234,7 @@ NSString* GetSizeString(long long size_in_bytes) {
     [statusLabel.centerYAnchor
         constraintEqualToAnchor:downloadRow.centerYAnchor],
     [statusLabel.leadingAnchor constraintEqualToAnchor:stateIcon.trailingAnchor
-                                              constant:kElementMargin],
+                                              constant:11],
   ]];
   [self updateStatusLabelTrailingConstraint];
 
@@ -241,7 +244,7 @@ NSString* GetSizeString(long long size_in_bytes) {
         constraintEqualToAnchor:downloadRow.centerYAnchor],
     [actionButton.trailingAnchor
         constraintEqualToAnchor:closeButton.leadingAnchor
-                       constant:-kElementMargin],
+                       constant:-kCloseButtonLeftMargin],
   ]];
 
   // install google drive button constraints.
@@ -249,8 +252,7 @@ NSString* GetSizeString(long long size_in_bytes) {
     [installDriveButton.centerYAnchor
         constraintEqualToAnchor:installDriveRow.centerYAnchor],
     [installDriveButton.trailingAnchor
-        constraintEqualToAnchor:closeButton.leadingAnchor
-                       constant:-kElementMargin],
+        constraintEqualToAnchor:actionButton.trailingAnchor],
   ]];
 
   // install google drive icon constraints.
@@ -271,15 +273,13 @@ NSString* GetSizeString(long long size_in_bytes) {
         constraintEqualToAnchor:statusLabel.leadingAnchor],
     [installDriveLabel.trailingAnchor
         constraintLessThanOrEqualToAnchor:installDriveButton.leadingAnchor
-                                 constant:-kElementMargin],
+                                 constant:-kCloseButtonLeftMargin],
   ]];
 
   // constraint line which separates download controls and install drive rows.
-  UIView* horizontalLine = self.horizontalLine;
   [NSLayoutConstraint activateConstraints:@[
     [horizontalLine.heightAnchor constraintEqualToConstant:1],
-    [horizontalLine.topAnchor
-        constraintEqualToAnchor:installDriveRow.topAnchor],
+    [horizontalLine.topAnchor constraintEqualToAnchor:downloadRow.bottomAnchor],
     [horizontalLine.leadingAnchor
         constraintEqualToAnchor:installDriveRow.leadingAnchor],
     [horizontalLine.trailingAnchor
@@ -634,7 +634,7 @@ NSString* GetSizeString(long long size_in_bytes) {
 
   self.statusLabelTrailingConstraint = [self.statusLabel.trailingAnchor
       constraintLessThanOrEqualToAnchor:secondAnchorElement.leadingAnchor
-                               constant:-kElementMargin];
+                               constant:-kCloseButtonLeftMargin];
 
   self.statusLabelTrailingConstraint.active = YES;
 }
