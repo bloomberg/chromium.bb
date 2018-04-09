@@ -247,6 +247,8 @@ void CloudPolicyClient::RegisterWithToken(const std::string& token,
       policy_fetch_request_job_->GetRequest()
           ->mutable_register_browser_request();
   request->set_machine_name(GetMachineName());
+  request->set_os_platform(GetOSPlatform());
+  request->set_os_version(GetOSVersion());
 
   policy_fetch_request_job_->SetRetryCallback(base::Bind(
       &CloudPolicyClient::OnRetryRegister, weak_ptr_factory_.GetWeakPtr()));

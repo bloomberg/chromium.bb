@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
@@ -103,8 +104,7 @@ void MachineLevelUserCloudPolicyFetcher::SetupRegistrationAndFetchPolicy(
   policy_manager_->store()->SetupRegistration(dm_token, client_id);
   DCHECK(policy_manager_->IsClientRegistered());
 
-  policy_manager_->core()->service()->RefreshPolicy(
-      CloudPolicyService::RefreshPolicyCallback());
+  policy_manager_->core()->service()->RefreshPolicy(base::DoNothing());
 }
 
 void MachineLevelUserCloudPolicyFetcher::OnInitializationCompleted(

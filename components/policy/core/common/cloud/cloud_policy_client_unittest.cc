@@ -161,6 +161,8 @@ class CloudPolicyClientTest : public testing::Test {
     em::RegisterBrowserRequest* enrollment_request =
         enrollment_token_request_.mutable_register_browser_request();
     enrollment_request->set_machine_name(policy::GetMachineName());
+    enrollment_request->set_os_platform(policy::GetOSPlatform());
+    enrollment_request->set_os_version(policy::GetOSVersion());
 #endif
 
     unregistration_request_.mutable_unregister_request();
