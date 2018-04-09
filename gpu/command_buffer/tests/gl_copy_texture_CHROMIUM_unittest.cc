@@ -867,16 +867,21 @@ TEST_P(GLCopyTextureCHROMIUMTest, InternalFormatNotSupported) {
       glCopyTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
                             unsupported_dest_formats[dest_index],
                             GL_UNSIGNED_BYTE, false, false, false);
+      EXPECT_THAT(glGetError(),
+                  testing::AnyOf(GL_INVALID_VALUE, GL_INVALID_OPERATION))
+          << "dest_index:" << dest_index;
     } else {
       glBindTexture(GL_TEXTURE_2D, textures_[1]);
       glTexImage2D(GL_TEXTURE_2D, 0, unsupported_dest_formats[dest_index], 1, 1,
                    0, unsupported_dest_formats[dest_index], GL_UNSIGNED_BYTE,
                    nullptr);
+      // clear GL_INVALID_ENUM error from glTexImage2D on ES2 devices
+      glGetError();
       glCopySubTextureCHROMIUM(textures_[0], 0, GL_TEXTURE_2D, textures_[1], 0,
                                0, 0, 0, 0, 1, 1, false, false, false);
+      EXPECT_TRUE(GL_INVALID_OPERATION == glGetError())
+          << "dest_index:" << dest_index;
     }
-    EXPECT_TRUE(GL_INVALID_OPERATION == glGetError())
-        << "dest_index:" << dest_index;
   }
   glDeleteTextures(2, textures_);
   glDeleteFramebuffers(1, &framebuffer_id_);
