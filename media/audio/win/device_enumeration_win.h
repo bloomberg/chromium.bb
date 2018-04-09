@@ -8,6 +8,7 @@
 #include <string>
 
 #include "media/audio/audio_device_name.h"
+#include "media/base/media_export.h"
 
 namespace media {
 
@@ -28,6 +29,16 @@ bool GetOutputDeviceNamesWin(media::AudioDeviceNames* device_names);
 // - device_name: "Microphone (Realtek High Defini".
 // - unique_id: "Microphone (Realtek High Defini" (same as friendly name).
 bool GetOutputDeviceNamesWinXP(media::AudioDeviceNames* device_names);
+
+// Given a string |controller_id| with the controller ID of a USB device,
+// returns a string containing the device's VID and PID.
+// The format of the string is " (vid:pid)", with vid and pid being 4-character
+// lowercase hexadecimal numbers. This string is intended to be appended to a
+// device-name string without any further formatting.
+// If |controller_id| does not refer to a USB device, this function returns an
+// empty string.
+MEDIA_EXPORT std::string GetUsbVidPidSuffixWin(
+    const std::string& controller_id);
 
 }  // namespace media
 
