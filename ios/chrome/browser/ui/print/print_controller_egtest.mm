@@ -47,7 +47,14 @@ const char kHTMLURL[] = "http://test";
 
 // Tests that the AirPrint menu successfully loads when a normal web page is
 // loaded.
+// TODO(crbug.com/683280): Does this test serve any purpose on iOS11?
 - (void)testPrintNormalPage {
+  if (base::ios::IsRunningOnIOS11OrLater() && IsUIRefreshPhase1Enabled()) {
+    EARL_GREY_TEST_SKIPPED(
+        @"Dispatcher-based printing does not work on iOS11 when the "
+        @"UIRefresh flag is enabled.");
+  }
+
   GURL url = web::test::HttpServer::MakeUrl(kHTMLURL);
   std::map<GURL, std::string> responses;
   std::string response = "Test";
@@ -61,7 +68,14 @@ const char kHTMLURL[] = "http://test";
 }
 
 // Tests that the AirPrint menu successfully loads when a PDF is loaded.
+// TODO(crbug.com/683280): Does this test serve any purpose on iOS11?
 - (void)testPrintPDF {
+  if (base::ios::IsRunningOnIOS11OrLater() && IsUIRefreshPhase1Enabled()) {
+    EARL_GREY_TEST_SKIPPED(
+        @"Dispatcher-based printing does not work on iOS11 when the "
+        @"UIRefresh flag is enabled.");
+  }
+
   web::test::SetUpFileBasedHttpServer();
   GURL url = web::test::HttpServer::MakeUrl(kPDFURL);
   chrome_test_util::LoadUrl(url);
@@ -73,6 +87,7 @@ const char kHTMLURL[] = "http://test";
   // EarlGrey does not have the ability to interact with the share menu in
   // iOS11, so use the dispatcher to trigger the print view controller instead.
   if (base::ios::IsRunningOnIOS11OrLater()) {
+    DCHECK(!IsUIRefreshPhase1Enabled());
     [chrome_test_util::DispatcherForActiveViewController() printTab];
   } else {
     [ChromeEarlGreyUI openShareMenu];
