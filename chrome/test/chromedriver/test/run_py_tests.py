@@ -250,11 +250,7 @@ _ANDROID_NEGATIVE_FILTER['chromium'] = (
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
     _ANDROID_NEGATIVE_FILTER['chrome_stable'] + [
-        # Tests in HeadlessInvalidCertificateTest class can't be run
-        # on chromedriver_webview_shell
-        'HeadlessInvalidCertificateTest.*',
         'ChromeLoggingCapabilityTest.testPerformanceLogger',
-        'ChromeDriverTest.testShadowDom*',
         # WebView doesn't support emulating network conditions.
         'ChromeDriverTest.testEmulateNetworkConditions',
         'ChromeDriverTest.testEmulateNetworkConditionsNameSpeed',
@@ -270,10 +266,6 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testSwitchToWindow',
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
         'ChromeDriverTest.testGetLogOnClosedWindow',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1295
-        # TODO(gmanikpure): re-enable this test when we stop supporting
-        # WebView on KitKat.
-        'ChromeDriverTest.testGetUrlOnInvalidUrl',
         # The WebView shell that we test against (on KitKat) does not perform
         # cross-process navigations.
         # TODO(samuong): reenable when it does.
@@ -289,18 +281,6 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testGetLogOnWindowWithAlert',
         'ChromeDriverTest.testSendTextToAlert',
         'ChromeDriverTest.testUnexpectedAlertOpenExceptionMessage',
-        # The WebView shell that we test against (on Kitkat) does not yet
-        # support Network.setCookie & deleteCookies DevTools command.
-        # TODO(gmanikpure): reenable when it does.
-        'ChromeDriverLogTest.testDisablingDriverLogsSuppressesChromeDriverLog',
-        'ChromeDriverTest.testCookiePath',
-        'ChromeDriverTest.testDeleteCookie',
-        'ChromeDriverTest.testGetHttpOnlyCookie',
-        'ChromeDriverTest.testGetNamedCookie',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1941
-        'ChromeDriverTest.testTouchDownMoveUpElement',
-        'ChromeDriverTest.testTouchFlickElement',
-        'ChromeDriverTest.testTouchSingleTapElement',
         # https://bugs.chromium.org/p/chromium/issues/detail?id=746266
         'ChromeDriverSiteIsolation.testCanClickOOPIF',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2332
