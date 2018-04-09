@@ -1,4 +1,4 @@
-[Rendered](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/core/css/style-calculation.md)
+[Rendered](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/core/css/style-calculation.md)
 
 
 # About this document
@@ -31,13 +31,13 @@ The process of calculating styles for the elements is broken into 3 phases:
 A catalogue of the classes involved. Read their class docs.
 
 * [`Element`](https://cs.chromium.org/?q=symbol:%5Eblink::Element$) See also
-[dom/README.md](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/core/dom/README.md)
+[dom/README.md](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/core/dom/README.md)
 * [`TreeScope`](https://cs.chromium.org/?q=symbol:%5Eblink::TreeScope$)
 Represents a tree of elements for a document or shadow root. Gives fast access
 to various things inside the tree of elements. Holds a
 [`ScopedStyleResolver`](https://cs.chromium.org/?q=symbol:%5Eblink::ScopedStyleResolver$)
 for this scope. See
-[dom/README.md](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/core/dom/README.md#treescope)
+[dom/README.md](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/core/dom/README.md#treescope)
 * [`StyleEngine`](https://cs.chromium.org/?q=symbol:%5Eblink::StyleEngine$)
 * [`StyleResolver`](https://cs.chromium.org/?q=symbol:%5Eblink::StyleResolver$)
 * [`ScopedStyleResolver`](https://cs.chromium.org/?q=symbol:%5Eblink::ScopedStyleResolver$)
@@ -209,7 +209,7 @@ The tree is traversed in [shadow-including tree
 oreder](https://www.w3.org/TR/shadow-dom/#concept-shadow-including-tree-order). There
 are 2 recursive paths that can be taken. The simpler one is in the case where
 the
-[change](https://chromium.googlesource.com/chromium/src/+/lkcr/third_party/WebKit/Source/core/style/stylerecalc.md)
+[change](https://chromium.googlesource.com/chromium/src/+/lkcr/third_party/blink/renderer/core/style/stylerecalc.md)
 being applied is
 [`ComputedStyleConstants::kReattach`](https://cs.chromium.org/?q=symbol:%5Eblink::StyleRecalcChange::kReattach$). It
 recurses through
@@ -228,13 +228,13 @@ calculation is performed by
 # Omissions
 
 *   Caching, fast reject,
-    [`NthIndexCache`](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/core/dom/NthIndexCache.h?l=36&gsn=NthIndexCache)
+    [`NthIndexCache`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/dom/nth_index_cache.h?l=36&gsn=NthIndexCache)
 *   Ordering, e.g. the comment at the start of
     [`MatchScopedRules`](https://cs.chromium.org/?q=symbol:%5Eblink::StyleResolver::MatchScopedRules$)
 *   How the collected set of rules that match an element are combined with
     inline style and parent style to get computed-style.
 *   How the [various types of
-    failure](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/core/css/SelectorChecker.h?l=153)
+    failure](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/css/selector_checker.h?l=153)
     are used to optimize application of `MatchSelector`
 *   Other entry points that lead into rule collection.
 *   Animation.

@@ -21,7 +21,7 @@ Layout tests should be used to accomplish one of the following goals:
    get better. This is very much in line with our goal to move the Web forward.
 2. When a Blink feature cannot be tested using the tools provided by WPT, and
    cannot be easily covered by
-   [C++ unit tests](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/web/tests/?q=webframetest&sq=package:chromium&type=cs),
+   [C++ unit tests](https://cs.chromium.org/chromium/src/third_party/blink/renderer/web/tests/?q=webframetest&sq=package:chromium&type=cs),
    the feature must be covered by layout tests, to avoid unexpected regressions.
    These tests will use Blink-specific testing APIs that are only available in
    [content_shell](./layout_tests_in_content_shell.md).

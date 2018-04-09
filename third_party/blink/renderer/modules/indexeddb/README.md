@@ -21,8 +21,8 @@ implementation.
 
 Please add documents below as you write it.
 
-* [Overview for Database People](/third_party/WebKit/Source/modules/indexeddb/docs/idb_overview.md)
-* [IndexedDB Data Path](/third_party/WebKit/Source/modules/indexeddb/docs/idb_data_path.md)
+* [Overview for Database People](/third_party/blink/renderer/modules/indexeddb/docs/idb_overview.md)
+* [IndexedDB Data Path](/third_party/blink/renderer/modules/indexeddb/docs/idb_data_path.md)
 
 ## Design Docs
 

@@ -7,7 +7,7 @@ This service is exposed to the web in the [blink bluetooth module].
 
 [Web Bluetooth specification]: https://webbluetoothcg.github.io/web-bluetooth/
 [/device/bluetooth]: /device/bluetooth
-[blink bluetooth module]: /third_party/WebKit/Source/modules/bluetooth/
+[blink bluetooth module]: /third_party/blink/renderer/modules/bluetooth/
 
 
 ## Testing

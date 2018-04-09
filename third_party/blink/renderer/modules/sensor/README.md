@@ -1,6 +1,6 @@
 # Generic Sensor
 
-`third_party/WebKit/Source/modules/sensor` implements the following concrete
+`third_party/blink/renderer/modules/sensor` implements the following concrete
 sensor intrefaces based on the [Generic Sensor API]
 (https://w3c.github.io/sensors):
 1. [Ambient Light Sensor] (https://w3c.github.io/ambient-light)

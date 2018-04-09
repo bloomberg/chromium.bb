@@ -157,5 +157,5 @@ base. [Smooth Scrolling in Chromium](https://goo.gl/XXwAwk) provides
 an overview of smooth scrolling. There is further class header
 documentation in
 Blink's
-[platform/scroll](https://codesearch.chromium.org/chromium/src/third_party/WebKit/Source/platform/scroll/)
+[platform/scroll](https://codesearch.chromium.org/chromium/src/third_party/blink/renderer/platform/scroll/)
 directory.

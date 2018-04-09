@@ -76,7 +76,7 @@ Note that *wrappables* have to be *on-heap objects* and thus all
 [Oilpan-related rules][oilpan-docs] apply.
 
 [object-grouping-slides]: https://docs.google.com/presentation/d/1I6leiRm0ysSTqy7QWh33Gfp7_y4ngygyM2tDAqdF0fI/
-[oilpan-docs]: https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/platform/heap/BlinkGCAPIReference.md
+[oilpan-docs]: https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/platform/heap/BlinkGCAPIReference.md
 
 ## Basic usage
 
@@ -84,8 +84,8 @@ The annotations that are required can be found in the following header files.
 Pick the header file depending on what types are needed.
 
 ```c++
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/bindings/TraceWrapperV8Reference.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 ```
 
 The following example will guide through the modifications that are needed to
