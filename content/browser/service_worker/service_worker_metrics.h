@@ -299,9 +299,6 @@ class ServiceWorkerMetrics {
                                         bool is_shutdown);
   static void RecordInstallEventStatus(ServiceWorkerStatusCode status);
 
-  static void RecordForeignFetchRegistrationCount(size_t scope_count,
-                                                  size_t origin_count);
-
   // Records how often a dispatched event times out.
   static void RecordEventTimeout(EventType event);
 
