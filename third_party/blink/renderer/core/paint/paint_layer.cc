@@ -3288,8 +3288,7 @@ void PaintLayer::MarkCompositingContainerChainForNeedsRepaint() {
     // this layer's Container(), so in addition to the CompositingContainer()
     // chain, we also need to mark NeedsRepaint for Parent().
     // TODO(crbug.com/828103): clean up this.
-    if (layer->Parent() && !layer->IsSelfPaintingLayer() &&
-        layer->HasSelfPaintingLayerDescendant())
+    if (layer->Parent() && !layer->IsSelfPaintingLayer())
       layer->Parent()->SetNeedsRepaint();
 
     PaintLayer* container = layer->CompositingContainer();
