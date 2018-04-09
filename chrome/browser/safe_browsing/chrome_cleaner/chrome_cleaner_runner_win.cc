@@ -144,6 +144,10 @@ ChromeCleanerRunner::ChromeCleanerRunner(
     cleaner_command_line_.AppendSwitchASCII(
         chrome_cleaner::kSRTPromptFieldTrialGroupNameSwitch, group_name);
   }
+
+  std::string reboot_prompt_type = base::IntToString(GetRebootPromptType());
+  cleaner_command_line_.AppendSwitchASCII(
+      chrome_cleaner::kRebootPromptMethodSwitch, reboot_prompt_type);
 }
 
 ChromeCleanerRunner::ProcessStatus

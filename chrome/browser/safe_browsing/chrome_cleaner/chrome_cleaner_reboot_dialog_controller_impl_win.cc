@@ -30,16 +30,6 @@ enum SettingsPageActiveOnRebootRequiredHistogramValue {
   SETTINGS_PAGE_ON_REBOOT_REQUIRED_MAX,
 };
 
-// These values are used to record how the user was prompted to reboot the
-// machine. Must be in sync with the SoftwareReporterRebootPromptType enum from
-// enums.xml.
-enum SoftwareReporterRebootPromptTypeHistogramValue {
-  REBOOT_PROMPT_TYPE_SETTINGS_PAGE_OPENED = 1,
-  REBOOT_PROMPT_TYPE_MODAL_DIALOG_SHOWN = 2,
-  REBOOT_PROMPT_TYPE_NON_MODAL_DIALOG_SHOWN = 3,
-  REBOOT_PROMPT_TYPE_MAX,
-};
-
 class PromptDelegateImpl
     : public ChromeCleanerRebootDialogControllerImpl::PromptDelegate {
  public:
@@ -181,19 +171,14 @@ void ChromeCleanerRebootDialogControllerImpl::StartRebootPromptForBrowser(
   RecordSettingsPageActiveOnRebootRequired(
       SETTINGS_PAGE_ON_REBOOT_REQUIRED_NOT_ACTIVE_TAB);
 
-  if (base::FeatureList::IsEnabled(kRebootPromptDialogFeature)) {
-    prompt_delegate_->ShowChromeCleanerRebootPrompt(browser, this);
-    SoftwareReporterRebootPromptTypeHistogramValue prompt_type =
-        IsRebootPromptModal() ? REBOOT_PROMPT_TYPE_MODAL_DIALOG_SHOWN
-                              : REBOOT_PROMPT_TYPE_NON_MODAL_DIALOG_SHOWN;
-    UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Cleaner.RebootPromptShown",
-                              prompt_type, REBOOT_PROMPT_TYPE_MAX);
-  } else {
+  RebootPromptType reboot_prompt_type = GetRebootPromptType();
+  UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Cleaner.RebootPromptShown",
+                            reboot_prompt_type, REBOOT_PROMPT_TYPE_MAX);
+  if (reboot_prompt_type == REBOOT_PROMPT_TYPE_OPEN_SETTINGS_PAGE) {
     prompt_delegate_->OpenSettingsPage(browser);
-    UMA_HISTOGRAM_ENUMERATION("SoftwareReporter.Cleaner.RebootPromptShown",
-                              REBOOT_PROMPT_TYPE_SETTINGS_PAGE_OPENED,
-                              REBOOT_PROMPT_TYPE_MAX);
     OnInteractionDone();
+  } else {
+    prompt_delegate_->ShowChromeCleanerRebootPrompt(browser, this);
   }
 }
 

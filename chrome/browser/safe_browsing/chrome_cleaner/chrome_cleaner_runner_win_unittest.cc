@@ -192,6 +192,11 @@ TEST_P(ChromeCleanerRunnerSimpleTest, LaunchParams) {
   EXPECT_EQ(
       command_line_.GetSwitchValueASCII(chrome_cleaner::kChromePromptSwitch),
       base::IntToString(static_cast<int>(chrome_prompt_)));
+
+  const std::string reboot_prompt_method = command_line_.GetSwitchValueASCII(
+      chrome_cleaner::kRebootPromptMethodSwitch);
+  int reboot_prompt = -1;
+  EXPECT_TRUE(base::StringToInt(reboot_prompt_method, &reboot_prompt));
 }
 
 INSTANTIATE_TEST_CASE_P(
