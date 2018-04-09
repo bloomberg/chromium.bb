@@ -434,6 +434,10 @@ float UiElement::computed_opacity() const {
   return computed_opacity_;
 }
 
+float UiElement::ComputedAndLocalOpacityForTest() const {
+  return computed_opacity();
+}
+
 bool UiElement::LocalHitTest(const gfx::PointF& point) const {
   if (point.x() < 0.0f || point.x() > 1.0f || point.y() < 0.0f ||
       point.y() > 1.0f) {

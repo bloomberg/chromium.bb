@@ -63,4 +63,8 @@ void Rect::NotifyClientFloatAnimated(float value,
   }
 }
 
+float Rect::ComputedAndLocalOpacityForTest() const {
+  return computed_opacity() * local_opacity_;
+}
+
 }  // namespace vr

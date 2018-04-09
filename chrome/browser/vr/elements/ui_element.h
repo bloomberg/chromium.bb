@@ -271,6 +271,8 @@ class UiElement : public cc::AnimationTarget {
     computed_opacity_ = computed_opacity;
   }
 
+  virtual float ComputedAndLocalOpacityForTest() const;
+
   LayoutAlignment x_anchoring() const { return x_anchoring_; }
   void set_x_anchoring(LayoutAlignment x_anchoring) {
     DCHECK(x_anchoring == LEFT || x_anchoring == RIGHT || x_anchoring == NONE);

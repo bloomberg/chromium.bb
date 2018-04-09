@@ -214,7 +214,8 @@ void UiTest::CheckRendererOpacityRecursive(UiElement* element) {
   // It is expected that some elements doesn't render anything (such as root
   // elements). So skipping verify these elements should be fine.
   if (renderer.called()) {
-    EXPECT_FLOAT_EQ(renderer.opacity(), element->computed_opacity())
+    EXPECT_FLOAT_EQ(renderer.opacity(),
+                    element->ComputedAndLocalOpacityForTest())
         << "element name: " << element->name();
   }
 
