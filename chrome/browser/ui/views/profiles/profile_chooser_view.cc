@@ -987,7 +987,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
       !is_guest && avatar_item.signed_in && !account_consistency_enabled;
   const base::string16 hover_button_title =
       dice_enabled_ && browser_->profile()->IsSyncAllowed()
-          ? l10n_util::GetStringUTF16(IDS_PROFILES_SYNCED_TO_TITLE)
+          ? l10n_util::GetStringUTF16(IDS_PROFILES_SYNC_COMPLETE_TITLE)
           : profile_name;
   HoverButton* profile_card = new HoverButton(
       this, std::move(current_profile_photo), hover_button_title,
