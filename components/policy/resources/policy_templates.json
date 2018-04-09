@@ -939,7 +939,7 @@
       },
       'example_value': False,
       'id': 345,
-      'caption': '''Enables HTTP/0.9 support on non-default ports''',
+      'caption': '''Enable HTTP/0.9 support on non-default ports''',
       'tags': [],
       'desc': '''This policy enables HTTP/0.9 on ports other than 80 for HTTP and 443 for HTTPS.
 
@@ -1369,7 +1369,7 @@
       },
       'example_value': False,
       'id': 285,
-      'caption': '''Requires that the name of the local user and the remote access host owner match''',
+      'caption': '''Require that the name of the local user and the remote access host owner match''',
       'tags': [],
       'desc': '''If this setting is enabled, then the remote access host compares the name of the local user (that the host is associated with) and the name of the Google account registered as the host owner (i.e. "johndoe" if the host is owned by "johndoe@example.com" Google account).  The remote access host will not start if the name of the host owner is different from the name of the local user that the host is associated with.  RemoteAccessHostMatchUsername policy should be used together with RemoteAccessHostDomain to also enforce that the Google account of the host owner is associated with a specific domain (i.e. "example.com").
 
@@ -1967,7 +1967,7 @@
       'deprecated': True,
       'example_value': True,
       'id': 190,
-      'caption': '''Allows sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
+      'caption': '''Allow sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
       'tags': [],
       'desc': '''This policy is deprecated, consider using SyncDisabled instead.
 
@@ -1987,7 +1987,7 @@
       'deprecated': True,
       'example_value': False,
       'id': 265,
-      'caption': '''Enables the old web-based signin flow''',
+      'caption': '''Enable the old web-based signin flow''',
       'tags': [],
       'desc': '''This setting was named EnableWebBasedSignin prior to Chrome 42, and support for it will be removed entirely in Chrome 43.
 
@@ -4717,7 +4717,7 @@
       },
       'example_value': False,
       'id': 83,
-      'caption': '''Enables or disables bookmark editing''',
+      'caption': '''Enable or disable bookmark editing''',
       'tags': [],
       'desc': '''If you enable this setting, bookmarks can be added, removed or modified. This is the default also when this policy is not set.
 
@@ -5041,7 +5041,7 @@
       },
       'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/good_path', 'https://server:8080/path', '.exact.hostname.com'],
       'id': 104,
-      'caption': '''Allows access to a list of URLs''',
+      'caption': '''Allow access to a list of URLs''',
       'tags': [],
       'desc': '''Allows access to the listed URLs, as exceptions to the URL blacklist.
 
@@ -5541,7 +5541,7 @@
       'deprecated': True,
       'example_value': 'remove-lru',
       'id': 246,
-      'caption': '''Selects the strategy used to free up disk space during automatic clean-up (deprecated)''',
+      'caption': '''Select the strategy used to free up disk space during automatic clean-up (deprecated)''',
       'tags': [],
       'desc': '''This policy is deprecated. <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will always use the 'RemoveLRU' clean-up strategy.
 
@@ -6122,7 +6122,7 @@
       },
       'example_value': True,
       'id': 136,
-      'caption': '''Disables Auto Update''',
+      'caption': '''Disable Auto Update''',
       'tags': ['system-security'],
       'desc': '''Disables automatic updates when set to True.
 
@@ -6440,7 +6440,7 @@
       },
       'example_value': True,
       'id': 139,
-      'caption': '''Disables Drive in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app''',
+      'caption': '''Disable Drive in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app''',
       'tags': [],
       'desc': '''Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app when set to True. In that case, no data is uploaded to Google Drive.
 
@@ -6458,7 +6458,7 @@
       },
       'example_value': True,
       'id': 140,
-      'caption': '''Disables Google Drive over cellular connections in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app''',
+      'caption': '''Disable Google Drive over cellular connections in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app''',
       'tags': [],
       'desc': '''Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> Files app when using a cellular connection when set to True. In that case, data is only synced to Google Drive when connected via WiFi or Ethernet.
 
@@ -8688,7 +8688,7 @@
       'example_value': True,
       'default_for_enterprise_users': False,
       'id': 272,
-      'caption': '''Allows Smart Lock to be used''',
+      'caption': '''Allow Smart Lock to be used''',
       'tags': [],
       'desc': '''If you enable this setting, users will be allowed to use Smart Lock if the requirements for the feature are satisfied.
 
@@ -8775,7 +8775,7 @@
       },
       'example_value': False,
       'id': 346,
-      'caption': '''Enables force sign in for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
+      'caption': '''Enable force sign in for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
       'tags': [],
       'desc': '''If this policy is set to true, user has to sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> with their profile before using the browser. And the default value of BrowserGuestModeEnabled will be set to false. Note that existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see help center article.
 
@@ -9169,7 +9169,7 @@
       },
       'example_value': True,
       'id': 301,
-      'caption': '''Allows QUIC protocol''',
+      'caption': '''Allow QUIC protocol''',
       'tags': [],
       'desc': '''If this policy is set to true or not set usage of QUIC protocol in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is allowed.
       If this policy is set to false usage of QUIC protocol is disallowed.''',
@@ -9624,7 +9624,7 @@
     },
     {
       'name': 'TaskManagerEndProcessEnabled',
-      'caption': '''Enables ending processes in Task Manager''',
+      'caption': '''Enable ending processes in Task Manager''',
       'desc': '''If set to false, the 'End process' button is disabled in the Task Manager.
 
       If set to true or not configured, the user can end processes in the Task Manager.''',
@@ -9642,7 +9642,7 @@
     {
       'name': 'NetworkThrottlingEnabled',
       'device_only': True,
-      'caption': '''Enables throttling network bandwidth''',
+      'caption': '''Enable throttling network bandwidth''',
       'desc': '''Allows enabling or disabling network throttling.
       This applies to all users, and to all interfaces on the device. Once set,
       the throttling persists until the policy is changed to disable it.
@@ -9859,7 +9859,7 @@
       },
       'example_value': True,
       'id': 333,
-      'caption': '''Enables <ph name="PRODUCT_NAME">Google Cast</ph>''',
+      'caption': '''Enable <ph name="PRODUCT_NAME">Google Cast</ph>''',
       'tags': [],
       'desc': '''If this policy is set to true or is not set, <ph name="PRODUCT_NAME">Google Cast</ph> will be enabled, and users will be able to launch it from the app menu, page context menus, media controls on Cast-enabled websites, and (if shown) the Cast toolbar icon.
 
@@ -9876,7 +9876,7 @@
       },
       'example_value': False,
       'id': 362,
-      'caption': '''Shows the <ph name="PRODUCT_NAME">Google Cast</ph> toolbar icon''',
+      'caption': '''Show the <ph name="PRODUCT_NAME">Google Cast</ph> toolbar icon''',
       'tags': [],
       'desc': '''If this policy is set to true, the Cast toolbar icon will always be shown on the toolbar or the overflow menu, and users will not be able to remove it.
 
@@ -9895,7 +9895,7 @@
       },
       'example_value': False,
       'id': 437,
-      'caption': '''Allows <ph name="PRODUCT_NAME">Google Cast</ph> to connect to Cast devices on all IP addresses.''',
+      'caption': '''Allow <ph name="PRODUCT_NAME">Google Cast</ph> to connect to Cast devices on all IP addresses.''',
       'tags': [],
       'desc': '''If this policy is set to true, <ph name="PRODUCT_NAME">Google Cast</ph> will connect to Cast devices on all IP addresses, not just RFC1918/RFC4913 private addresses.
 
@@ -10016,7 +10016,7 @@
       },
       'example_value': True,
       'id': 342,
-      'caption': '''Enables component updates in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
+      'caption': '''Enable component updates in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>''',
       'tags': [],
       'desc': '''Enables component updates for all components in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when not set or set to True.
 
@@ -10454,7 +10454,7 @@
       },
       'example_value': 2,
       'id': 353,
-      'caption': '''Sets how often user has to enter password to use quick unlock''',
+      'caption': '''Set how often user has to enter password to use quick unlock''',
       'tags': [],
       'desc': '''This setting controls how often the lock screen will request the password to be entered in order to continue using quick unlock. Each time the lock screen is entered, if the last password entry was more than this setting, the quick unlock will not be available on entering the lock screen. Should the user stay on the lock screen past this period of time, a password will be requested next time the user enters the wrong code, or re-enters the lock screen, whichever comes first.
 
@@ -10473,7 +10473,7 @@
       },
       'example_value': 6,
       'id': 354,
-      'caption': '''Sets the minimum length of the lock screen PIN''',
+      'caption': '''Set the minimum length of the lock screen PIN''',
       'tags': [],
       'desc': '''If the policy is set, the configured minimal PIN length is
           enforced. (The absolute minimum PIN length is 1; values less than 1
@@ -10493,7 +10493,7 @@
       },
       'example_value': 0,
       'id': 355,
-      'caption': '''Sets the maximum length of the lock screen PIN''',
+      'caption': '''Set the maximum length of the lock screen PIN''',
       'tags': [],
       'desc': '''If the policy is set, the configured maximal PIN length is enforced. A value of 0 or less means no maximum length; in that case the user may set a PIN as long as they want. If this setting is less than <ph name="PIN_UNLOCK_MINIMUM_LENGTH_POLICY_NAME">PinUnlockMinimumLength</ph> but greater than 0, the maximum length is the same as the minimum length.
 
@@ -10510,7 +10510,7 @@
       },
       'example_value': False,
       'id': 356,
-      'caption': '''Enables users to set weak PINs for the lock screen PIN''',
+      'caption': '''Enable users to set weak PINs for the lock screen PIN''',
       'tags': [],
       'desc': '''If false, users will be unable to set PINs which are weak and easy to guess.
 
@@ -10604,7 +10604,7 @@
       'example_value': True,
       'default_for_enterprise_users': False,
       'id': 367,
-      'caption': '''Allows Instant Tethering to be used.''',
+      'caption': '''Allow Instant Tethering to be used.''',
       'tags': ['local-data-access', 'google-sharing'],
       'desc': '''If this setting is enabled, users will be allowed to use Instant Tethering, which allows their Google phone to share its mobile data with their device.
 
@@ -11260,7 +11260,7 @@
       },
       'example_value': False,
       'id': 407,
-      'caption': '''Enables third party software injection blocking''',
+      'caption': '''Enable third party software injection blocking''',
       'tags': [],
       'desc': '''If the policy is set to false then third party software will be allowed to inject executable code into Chrome's processes. If the policy is unset or set to true then third party software will be prevented from injecting executable code into Chrome's processes.''',
     },
@@ -11621,7 +11621,7 @@
       },
       'example_value': True,
       'id': 430,
-      'caption': '''Allows media autoplay''',
+      'caption': '''Allow media autoplay''',
       'tags': [],
       'desc': '''Allows you to control if videos can play automatically (without user consent) with audio content in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
@@ -11646,7 +11646,7 @@
       },
       'example_value': ['https://example.com', 'https://www.chromium.org'],
       'id': 431,
-      'caption': '''Allows media autoplay on a whitelist of URL patterns''',
+      'caption': '''Allow media autoplay on a whitelist of URL patterns''',
       'tags': [],
       'desc': '''Controls the whitelist of URL patterns that autoplay will always be enabled on.
 
@@ -11671,7 +11671,7 @@
       },
       'example_value': True,
       'id': 432,
-      'caption': '''Allows sites to simultaneously navigate and open pop-ups''',
+      'caption': '''Allow sites to simultaneously navigate and open pop-ups''',
       'tags': [],
       'desc': '''Allows sites to simultaneously navigate and open pop-ups.
 
@@ -11691,7 +11691,7 @@
       },
       'example_value': False,
       'id': 433,
-      'caption': '''Allows access to native CUPS printers''',
+      'caption': '''Allow access to native CUPS printers''',
       'tags': [],
       'desc': '''Allows you to control if users can access non-enterprise printers
 
