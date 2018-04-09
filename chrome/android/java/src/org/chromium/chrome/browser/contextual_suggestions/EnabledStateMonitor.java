@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
+import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListener;
 import org.chromium.components.sync.ModelType;
@@ -13,7 +15,7 @@ import org.chromium.components.sync.UploadState;
  * A monitor that is responsible for detecting changes to conditions required for contextual
  * suggestions to be enabled. Alerts its {@link Observer} when state changes.
  */
-public class EnabledStateMonitor implements SyncStateChangedListener {
+public class EnabledStateMonitor implements SyncStateChangedListener, SignInStateObserver {
     /** An observer to be notified of enabled state changes. **/
     interface Observer {
         void onEnabledStateChanged(boolean enabled);
@@ -29,15 +31,27 @@ public class EnabledStateMonitor implements SyncStateChangedListener {
     EnabledStateMonitor(Observer observer) {
         mObserver = observer;
         ProfileSyncService.get().addSyncStateChangedListener(this);
+        SigninManager.get().addSignInStateObserver(this);
         updateEnabledState();
     }
 
     void destroy() {
         ProfileSyncService.get().removeSyncStateChangedListener(this);
+        SigninManager.get().removeSignInStateObserver(this);
     }
 
     @Override
     public void syncStateChanged() {
+        updateEnabledState();
+    }
+
+    @Override
+    public void onSignedIn() {
+        updateEnabledState();
+    }
+
+    @Override
+    public void onSignedOut() {
         updateEnabledState();
     }
 
@@ -49,10 +63,11 @@ public class EnabledStateMonitor implements SyncStateChangedListener {
         boolean previousState = mEnabled;
 
         ProfileSyncService service = ProfileSyncService.get();
-        mEnabled = service.getUploadToGoogleState(ModelType.HISTORY_DELETE_DIRECTIVES)
-                == UploadState.ACTIVE;
+        mEnabled = (service.getUploadToGoogleState(ModelType.HISTORY_DELETE_DIRECTIVES)
+                           == UploadState.ACTIVE)
+                && !ContextualSuggestionsBridge.isEnterprisePolicyManaged();
 
-        // TODO(twellington): Add other run-time checks, e.g. enterprise policy, opt-out state.
+        // TODO(twellington): Add other run-time checks, e.g. opt-out state.
 
         if (mEnabled != previousState) mObserver.onEnabledStateChanged(mEnabled);
     }

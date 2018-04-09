@@ -8,8 +8,11 @@
 #include "base/android/jni_string.h"
 #include "base/callback.h"
 #include "chrome/browser/ntp_snippets/contextual_content_suggestions_service_factory.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
@@ -46,6 +49,23 @@ static jlong JNI_ContextualSuggestionsBridge_Init(
   ContextualSuggestionsBridge* contextual_suggestions_bridge =
       new ContextualSuggestionsBridge(env, std::move(service_proxy));
   return reinterpret_cast<intptr_t>(contextual_suggestions_bridge);
+}
+
+static jboolean JNI_ContextualSuggestionsBridge_IsEnterprisePolicyManaged(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz) {
+  // TODO(fgorski): This is simply checking whether the profile is managed by
+  // an enterprise policy.
+  // http://crbug.com/829460 covers implementation of policy controller for
+  // contextual content suggestions.
+  Profile* profile = ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
+  if (!profile)
+    return false;
+
+  policy::ProfilePolicyConnector* policy_connector =
+      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+
+  return (policy_connector != nullptr) && policy_connector->IsManaged();
 }
 
 ContextualSuggestionsBridge::ContextualSuggestionsBridge(
