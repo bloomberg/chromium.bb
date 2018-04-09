@@ -390,14 +390,10 @@ TEST_F(APIEventHandlerTest, DifferentCallingMethods) {
       "})";
   {
     v8::Local<v8::Value> args[] = {event};
-    // TODO(devlin): This is the generic type error that gin throws. It's not
-    // very descriptive, nor does it match the web (which would just say e.g.
-    // "Illegal invocation"). Might be worth updating later.
     RunFunctionAndExpectError(
-        FunctionFromString(context, kAddListenerOnNull),
-        context, 1, args,
-        "Uncaught TypeError: Error processing argument at index -1,"
-        " conversion failure from undefined");
+        FunctionFromString(context, kAddListenerOnNull), context, 1, args,
+        "Uncaught TypeError: Illegal invocation: Function must be called on "
+        "an object of type Event");
   }
   EXPECT_EQ(0u, handler()->GetNumEventListenersForTesting(kEventName, context));
 
