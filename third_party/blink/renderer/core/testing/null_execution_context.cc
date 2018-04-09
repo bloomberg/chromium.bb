@@ -46,6 +46,10 @@ void NullExecutionContext::SetUpSecurityContext() {
   SecurityContext::SetContentSecurityPolicy(policy);
 }
 
+FrameOrWorkerGlobalScopeScheduler* NullExecutionContext::GetScheduler() {
+  return nullptr;
+}
+
 scoped_refptr<base::SingleThreadTaskRunner> NullExecutionContext::GetTaskRunner(
     TaskType) {
   return Platform::Current()->CurrentThread()->GetTaskRunner();

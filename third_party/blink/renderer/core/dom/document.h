@@ -70,6 +70,7 @@
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/length.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
@@ -1409,6 +1410,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   ukm::UkmRecorder* UkmRecorder();
   int64_t UkmSourceID() const;
+
+  // May return nullptr.
+  FrameScheduler* GetScheduler() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 

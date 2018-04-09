@@ -312,6 +312,11 @@ ExitCode WorkerThread::GetExitCodeForTesting() {
   return exit_code_;
 }
 
+scheduler::WorkerGlobalScopeScheduler* WorkerThread::GetScheduler() {
+  DCHECK(IsCurrentThread());
+  return global_scope_scheduler_.get();
+}
+
 WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
                            WorkerReportingProxy& worker_reporting_proxy)
     : time_origin_(CurrentTimeTicksInSeconds()),

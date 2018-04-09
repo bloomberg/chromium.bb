@@ -176,6 +176,12 @@ void WorkerOrWorkletGlobalScope::SetModulator(Modulator* modulator) {
   modulator_ = modulator;
 }
 
+scheduler::WorkerGlobalScopeScheduler*
+WorkerOrWorkletGlobalScope::GetScheduler() {
+  DCHECK(IsContextThread());
+  return GetThread()->GetScheduler();
+}
+
 scoped_refptr<base::SingleThreadTaskRunner>
 WorkerOrWorkletGlobalScope::GetTaskRunner(TaskType type) {
   DCHECK(IsContextThread());
