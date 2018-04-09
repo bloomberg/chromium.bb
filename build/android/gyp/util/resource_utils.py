@@ -244,6 +244,21 @@ def _CreateRJavaSourceFile(srcjar_dir, package, resources_by_type,
     f.write(java_file_contents)
 
 
+# Resource IDs inside resource arrays are sorted. Application resource IDs start
+# with 0x7f but system resource IDs start with 0x01 thus system resource ids are
+# always at the start of the array. This function finds the index of the first
+# non system resource id to be used for package ID rewriting (we should not
+# rewrite system resource ids).
+def _GetNonSystemIndex(entry):
+  """Get the index of the first application resource ID within a resource
+  array."""
+  res_ids = re.findall(r'0x[0-9a-f]{8}', entry.value)
+  for i, res_id in enumerate(res_ids):
+    if res_id.startswith('0x7f'):
+      return i
+  return len(res_ids)
+
+
 def _RenderRJavaSource(package, resources_by_type, rjava_build_options):
   """Render an R.java source file. See _CreateRJaveSourceFile for args info."""
   final_resources_by_type = collections.defaultdict(list)
@@ -262,6 +277,8 @@ def _RenderRJavaSource(package, resources_by_type, rjava_build_options):
   create_id = ('{{ e.resource_type }}.{{ e.name }} ^= packageIdTransform;')
   create_id_arr = ('{{ e.resource_type }}.{{ e.name }}[i] ^='
                    ' packageIdTransform;')
+  for_loop_condition  = ('int i = {{ startIndex(e) }}; i < '
+                         '{{ e.resource_type }}.{{ e.name }}.length; ++i')
 
   # Here we diverge from what aapt does. Because we have so many
   # resources, the onResourcesLoaded method was exceeding the 64KB limit that
@@ -292,7 +309,7 @@ public final class R {
         onResourcesLoaded{{ resource_type|title }}(packageIdTransform);
         {% for e in non_final_resources[resource_type] %}
         {% if e.java_type == 'int[]' %}
-        for(int i = 0; i < {{ e.resource_type }}.{{ e.name }}.length; ++i) {
+        for(""" + for_loop_condition + """) {
             """ + create_id_arr + """
         }
         {% endif %}
@@ -318,7 +335,8 @@ public final class R {
       resource_types=sorted(resources_by_type),
       has_on_resources_loaded=rjava_build_options.has_on_resources_loaded,
       final_resources=final_resources_by_type,
-      non_final_resources=non_final_resources_by_type)
+      non_final_resources=non_final_resources_by_type,
+      startIndex=_GetNonSystemIndex)
 
 
 def ExtractPackageFromManifest(manifest_path):
