@@ -14,7 +14,6 @@ import hashlib
 import os
 import re
 import string
-import time
 from xml import sax
 
 from chromite.lib import config_lib
@@ -22,7 +21,6 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
-from chromite.lib import retry_util
 
 
 # Retry a git operation if git returns a error response with any of these
@@ -785,7 +783,7 @@ class ManifestCheckout(Manifest):
     return obj
 
 
-def RunGit(git_repo, cmd, retry=True, **kwargs):
+def RunGit(git_repo, cmd, **kwargs):
   """RunCommand wrapper for git commands.
 
   This suppresses print_cmd, and suppresses output by default.  Git
@@ -798,31 +796,16 @@ def RunGit(git_repo, cmd, retry=True, **kwargs):
     cmd: A sequence of the git subcommand to run.  The 'git' prefix is
       added automatically.  If you wished to run 'git remote update',
       this would be ['remote', 'update'] for example.
-    retry: If set, retry on transient errors. Defaults to True.
     kwargs: Any RunCommand or GenericRetry options/overrides to use.
 
   Returns:
     A CommandResult object.
   """
 
-  def _ShouldRetry(exc):
-    """Returns True if push operation failed with a transient error."""
-    if (isinstance(exc, cros_build_lib.RunCommandError)
-        and exc.result and exc.result.error and
-        GIT_TRANSIENT_ERRORS_RE.search(exc.result.error)):
-      logging.warning('git reported transient error (cmd=%s); retrying',
-                      cros_build_lib.CmdToStr(cmd), exc_info=True)
-      return True
-    return False
-
-  max_retry = kwargs.pop('max_retry', DEFAULT_RETRIES if retry else 0)
   kwargs.setdefault('print_cmd', False)
-  kwargs.setdefault('sleep', DEFAULT_RETRY_INTERVAL)
   kwargs.setdefault('cwd', git_repo)
   kwargs.setdefault('capture_output', True)
-  return retry_util.GenericRetry(
-      _ShouldRetry, max_retry, cros_build_lib.RunCommand,
-      ['git'] + cmd, **kwargs)
+  return cros_build_lib.RunCommand(['git'] + cmd, **kwargs)
 
 
 def Init(git_repo):
@@ -1263,7 +1246,7 @@ def UploadCL(git_repo, remote, branch, local_branch='HEAD', draft=False,
   return GitPush(git_repo, local_branch, remote_ref, **kwargs)
 
 
-def GitPush(git_repo, refspec, push_to, force=False, retry=True,
+def GitPush(git_repo, refspec, push_to, force=False,
             capture_output=True, skip=False, **kwargs):
   """Wrapper for pushing to a branch.
 
@@ -1272,7 +1255,6 @@ def GitPush(git_repo, refspec, push_to, force=False, retry=True,
     refspec: The local ref to push to the remote.
     push_to: A RemoteRef object representing the remote ref to push to.
     force: Whether to bypass non-fastforward checks.
-    retry: Retry a push in case of transient errors.
     capture_output: Whether to capture output for this command.
     skip: Do not actually push anything.
   """
@@ -1287,7 +1269,7 @@ def GitPush(git_repo, refspec, push_to, force=False, retry=True,
     logging.info('Would have run "%s"', cmd)
     return
 
-  return RunGit(git_repo, cmd, retry=retry, capture_output=capture_output,
+  return RunGit(git_repo, cmd, capture_output=capture_output,
                 **kwargs)
 
 
@@ -1347,9 +1329,7 @@ def SyncPushBranch(git_repo, remote, target, use_merge=False, **kwargs):
     raise
 
 
-# TODO(build): Switch this to use the GitPush function.
-def PushWithRetry(branch, git_repo, dryrun=False, retries=5,
-                  staging_branch=None):
+def PushBranch(branch, git_repo, dryrun=False, staging_branch=None):
   """General method to push local git changes.
 
   This method only works with branches created via the CreatePushBranch
@@ -1361,7 +1341,6 @@ def PushWithRetry(branch, git_repo, dryrun=False, retries=5,
       also already be checked out to that branch.
     git_repo: Git repository to push from.
     dryrun: Git push --dry-run if set to True.
-    retries: The number of times to retry before giving up, default: 5
     staging_branch: Push change commits to the staging_branch if it's not None
 
   Raises:
@@ -1377,28 +1356,25 @@ def PushWithRetry(branch, git_repo, dryrun=False, retries=5,
     raise Exception('Was asked to push to a non branch namespace: %s' %
                     remote_ref.ref)
 
-  reference = staging_branch if staging_branch is not None else remote_ref.ref
-  push_command = ['push', remote_ref.remote, '%s:%s' % (branch, reference)]
+  #reference = staging_branch if staging_branch is not None else remote_ref.ref
+  if staging_branch is not None:
+    remote_ref = remote_ref._replace(ref=staging_branch)
+
   logging.debug('Trying to push %s to %s:%s',
-                git_repo, branch, reference)
+                git_repo, branch, remote_ref.ref)
 
   if dryrun:
-    push_command.append('--dry-run')
-  for retry in range(1, retries + 1):
-    SyncPushBranch(git_repo, remote_ref.remote, local_ref.ref)
-    try:
-      RunGit(git_repo, push_command)
-      break
-    except cros_build_lib.RunCommandError:
-      if retry < retries:
-        logging.warning('Error pushing changes trying again (%s/%s)',
-                        retry, retries)
-        time.sleep(5 * retry)
-        continue
-      raise
+    dryrun = True
+
+  SyncPushBranch(git_repo, remote_ref.remote, local_ref.ref)
+
+  try:
+    GitPush(git_repo, branch, remote_ref, skip=dryrun)
+  except cros_build_lib.RunCommandError:
+    raise
 
   logging.info('Successfully pushed %s to %s %s:%s',
-               git_repo, remote_ref.remote, branch, reference)
+               git_repo, remote_ref.remote, branch, remote_ref.ref)
 
 
 def CleanAndDetachHead(git_repo):

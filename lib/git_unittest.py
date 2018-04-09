@@ -332,7 +332,7 @@ class GitPushTest(cros_test_lib.MockTestCase):
     """Runs git.GitPush with some default arguments."""
     git.GitPush('some_repo_path', 'local-ref',
                 git.RemoteRef('some-remote', 'remote-ref'),
-                retry=True, skip=False)
+                skip=False)
 
   def testPushSuccess(self):
     """Test handling of successful git push."""
@@ -354,19 +354,6 @@ class GitPushTest(cros_test_lib.MockTestCase):
         rc_mock.AddCmdResult(partial_mock.In('push'), returncode=128,
                              error=error)
         self.assertRaises(cros_build_lib.RunCommandError, self._RunGitPush)
-
-  def testOneTimeTransientError(self):
-    """GitPush retries transient errors."""
-    for error in self.TRANSIENT_ERRORS:
-      with cros_build_lib_unittest.RunCommandMock() as rc_mock:
-        results = [
-            rc_mock.CmdResult(128, '', error),
-            rc_mock.CmdResult(0, 'success', ''),
-        ]
-        # pylint: disable=cell-var-from-loop
-        side_effect = lambda *_args, **_kwargs: results.pop(0)
-        rc_mock.AddCmdResult(partial_mock.In('push'), side_effect=side_effect)
-        self._RunGitPush()
 
 
 class GitBranchDetectionTest(patch_unittest.GitRepoPatchTestCase):

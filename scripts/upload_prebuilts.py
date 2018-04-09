@@ -145,13 +145,12 @@ def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
   return made_changes
 
 
-def RevGitFile(filename, data, retries=5, dryrun=False):
+def RevGitFile(filename, data, dryrun=False):
   """Update and push the git file.
 
   Args:
     filename: file to modify that is in a git repo already
     data: A dict of key/values to update in |filename|
-    retries: The number of times to retry before giving up, default: 5
     dryrun: If True, do not actually commit the change.
   """
   prebuilt_branch = 'prebuilt_branch'
@@ -168,7 +167,7 @@ def RevGitFile(filename, data, retries=5, dryrun=False):
       UpdateLocalFile(filename, value, key)
     git.RunGit(cwd, ['add', filename])
     git.RunGit(cwd, ['commit', '-m', description])
-    git.PushWithRetry(prebuilt_branch, cwd, dryrun=dryrun, retries=retries)
+    git.PushBranch(prebuilt_branch, cwd, dryrun=dryrun)
   finally:
     # We reset the index and the working tree state in case there are any
     # uncommitted or pending changes, but we don't change any existing commits.

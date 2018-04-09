@@ -90,7 +90,7 @@ class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.PatchObject(config_stages.UpdateConfigStage, '_DownloadTemplate')
     self.PatchObject(config_stages.UpdateConfigStage, '_CheckoutBranch')
     self.PatchObject(config_stages.UpdateConfigStage, '_UpdateConfigDump')
-    self.PatchObject(git, 'PushWithRetry')
+    self.PatchObject(git, 'PushBranch')
     self.PatchObject(git, 'RunGit')
     self.PatchObject(repository, 'CloneWorkingRepo')
     self.PatchObject(cros_build_lib, 'RunCommand')

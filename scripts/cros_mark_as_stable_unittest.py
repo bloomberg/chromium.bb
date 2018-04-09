@@ -53,7 +53,7 @@ class NonClassTests(cros_test_lib.MockTestCase):
     self.PatchObject(cros_mark_as_stable.GitBranch, 'Exists',
                      side_effect=side_effect)
 
-    push_mock = self.PatchObject(git, 'PushWithRetry')
+    push_mock = self.PatchObject(git, 'PushBranch')
     self.PatchObject(
         git, 'GetTrackingBranch',
         return_value=git.RemoteRef('gerrit', 'refs/remotes/gerrit/master'))

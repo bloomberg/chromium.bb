@@ -985,15 +985,11 @@ class GitRepoPatch(PatchQuery):
     sha1 = self.HasBeenFetched(git_repo)
 
     if sha1 is None:
-      def _StatusCallback(attempt, _):
-        fields = {'project_url': self.project_url}
-        metrics.Counter(constants.MON_GIT_FETCH_COUNT).increment(fields=fields)
-        if attempt:
-          metrics.Counter(constants.MON_GIT_FETCH_RETRY_COUNT).increment(
-              fields=fields)
+      fields = {'project_url': self.project_url}
+      metrics.Counter(constants.MON_GIT_FETCH_COUNT).increment(fields=fields)
 
       git.RunGit(git_repo, ['fetch', '-f', self.project_url, self.ref],
-                 print_cmd=True, status_callback=_StatusCallback)
+                 print_cmd=True)
 
     return self.UpdateMetadataFromRepo(git_repo, sha1=sha1 or self.sha1)
 

@@ -158,8 +158,8 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd,
   git.RunGit(cwd, ['merge', '--squash', stable_branch])
   git.RunGit(cwd, ['commit', '-m', description])
   git.RunGit(cwd, ['config', 'push.default', 'tracking'])
-  git.PushWithRetry(constants.MERGE_BRANCH, cwd, dryrun=dryrun,
-                    staging_branch=staging_branch)
+  git.PushBranch(constants.MERGE_BRANCH, cwd, dryrun=dryrun,
+                 staging_branch=staging_branch)
 
 
 class GitBranch(object):

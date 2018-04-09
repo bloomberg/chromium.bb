@@ -343,7 +343,7 @@ class UpdateConfigStage(generic_stages.BuilderStage):
 
     git.RunGit(self.chromite_dir, ['config', 'push.default', 'tracking'],
                print_cmd=True)
-    git.PushWithRetry(self.branch, self.chromite_dir, dryrun=self.dry_run)
+    git.PushBranch(self.branch, self.chromite_dir, dryrun=self.dry_run)
 
   def PerformStage(self):
     logging.info('Update configs for branch %s, template gs path %s',
