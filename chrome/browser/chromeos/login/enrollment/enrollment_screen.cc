@@ -12,6 +12,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_uma.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
@@ -109,7 +110,8 @@ EnrollmentScreen::EnrollmentScreen(BaseScreenDelegate* base_screen_delegate,
 }
 
 EnrollmentScreen::~EnrollmentScreen() {
-  DCHECK(!enrollment_helper_ || g_browser_process->IsShuttingDown());
+  DCHECK(!enrollment_helper_ || g_browser_process->IsShuttingDown() ||
+         browser_shutdown::IsTryingToQuit());
 }
 
 void EnrollmentScreen::SetParameters(
