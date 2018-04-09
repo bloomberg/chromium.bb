@@ -846,6 +846,30 @@ void AutomationInternalCustomBindings::AddRoutes() {
         result.Set(custom_actions);
       });
   RouteNodeIDFunction(
+      "GetStandardActions",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        std::vector<std::string> standard_actions;
+        for (uint32_t action = static_cast<uint32_t>(ax::mojom::Action::kNone);
+             action <= static_cast<uint32_t>(ax::mojom::Action::kMaxValue);
+             ++action) {
+          if (node->data().HasAction(static_cast<ax::mojom::Action>(action)))
+            standard_actions.push_back(
+                ToString(static_cast<api::automation::ActionType>(action)));
+        }
+        auto actions_result = v8::Array::New(isolate, standard_actions.size());
+        for (size_t i = 0; i < standard_actions.size(); i++) {
+          const v8::Maybe<bool>& did_set_value = actions_result->Set(
+              isolate->GetCurrentContext(), i,
+              v8::String::NewFromUtf8(isolate, standard_actions[i].c_str()));
+
+          bool did_set_value_result = false;
+          if (!did_set_value.To(&did_set_value_result) || !did_set_value_result)
+            return;
+        }
+        result.Set(actions_result);
+      });
+  RouteNodeIDFunction(
       "GetChecked",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {

@@ -189,7 +189,7 @@ var GetUnclippedLocation = natives.GetUnclippedLocation;
 /**
  * @param {number} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
- * @return {!Array.<number>} The text offset where each line starts, or an empty
+ * @return {!Array<number>} The text offset where each line starts, or an empty
  *     array if this node has no text content, or undefined if the tree or node
  *     was not found.
  */
@@ -227,7 +227,7 @@ var GetIntAttribute = natives.GetIntAttribute;
  * @param {number} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
  * @param {string} attr The name of an attribute.
- * @return {?Array.<number>} The ids of nodes who have a relationship pointing
+ * @return {?Array<number>} The ids of nodes who have a relationship pointing
  *     to |nodeID| (a reverse relationship).
  */
 var GetIntAttributeReverseRelations =
@@ -246,7 +246,7 @@ var GetFloatAttribute = natives.GetFloatAttribute;
  * @param {number} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
  * @param {string} attr The name of an attribute.
- * @return {?Array.<number>} The value of this attribute, or undefined
+ * @return {?Array<number>} The value of this attribute, or undefined
  *     if the tree, node, or attribute wasn't found.
  */
 var GetIntListAttribute =
@@ -256,7 +256,7 @@ var GetIntListAttribute =
  * @param {number} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
  * @param {string} attr The name of an attribute.
- * @return {?Array.<number>} The ids of nodes who have a relationship pointing
+ * @return {?Array<number>} The ids of nodes who have a relationship pointing
  *     to |nodeID| (a reverse relationship).
  */
 var GetIntListAttributeReverseRelations =
@@ -309,10 +309,17 @@ var GetLineThrough = natives.GetLineThrough;
 /**
  * @param {number} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
- * @return {?Array.<automation.CustomAction>} List of custom actions of the
+ * @return {?Array<automation.CustomAction>} List of custom actions of the
  *     node.
  */
 var GetCustomActions = natives.GetCustomActions;
+
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {?Array<string>} List of standard actions of the node.
+ */
+var GetStandardActions = natives.GetStandardActions;
 
 /**
  * @param {number} axTreeID The id of the accessibility tree.
@@ -493,6 +500,10 @@ AutomationNodeImpl.prototype = {
     return GetCustomActions(this.treeID, this.id);
   },
 
+  get standardActions() {
+    return GetStandardActions(this.treeID, this.id);
+  },
+
   get defaultActionVerb() {
     return GetDefaultActionVerb(this.treeID, this.id);
   },
@@ -530,11 +541,26 @@ AutomationNodeImpl.prototype = {
   },
 
   makeVisible: function() {
-    this.performAction_('makeVisible');
+    this.performAction_('scrollToMakeVisible');
   },
 
   performCustomAction: function(customActionId) {
     this.performAction_('customAction', { customActionID: customActionId });
+  },
+
+  performStandardAction: function(action) {
+    var standardActions = GetStandardActions(this.treeID, this.id);
+    if (!standardActions ||
+        !standardActions.find(item => action == item)) {
+      throw 'Inapplicable action for node: ' + action;
+    }
+    this.performAction_(action);
+  },
+
+  replaceSelectedText: function(value) {
+    if (this.state.editable) {
+      this.performAction_('replaceSelectedText', { value: value});
+    }
   },
 
   resumeMedia: function() {
@@ -576,6 +602,12 @@ AutomationNodeImpl.prototype = {
 
   setSequentialFocusNavigationStartingPoint: function() {
     this.performAction_('setSequentialFocusNavigationStartingPoint');
+  },
+
+  setValue: function(value) {
+    if (this.state.editable) {
+      this.performAction_('setValue', { value: value});
+    }
   },
 
   showContextMenu: function() {
@@ -1343,6 +1375,8 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
     'makeVisible',
     'matches',
     'performCustomAction',
+    'performStandardAction',
+    'replaceSelectedText',
     'resumeMedia',
     'scrollBackward',
     'scrollForward',
@@ -1352,6 +1386,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
     'scrollRight',
     'setSelection',
     'setSequentialFocusNavigationStartingPoint',
+    'setValue',
     'showContextMenu',
     'startDuckingMedia',
     'stopDuckingMedia',
@@ -1386,6 +1421,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
       'underline',
       'lineThrough',
       'customActions',
+      'standardActions',
       'unclippedLocation',
   ]),
 });

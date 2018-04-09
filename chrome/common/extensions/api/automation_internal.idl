@@ -31,24 +31,9 @@ namespace automationInternal {
     long actionRequestID;
   };
 
-  // All possible actions that can be performed on automation nodes.
-  enum ActionType {
-    customAction,
-    doDefault,
-    focus,
-    getImageData,
-    hitTest,
-    makeVisible,
+  // Actions internally used by automation.
+  enum ActionTypePrivate {
     resumeMedia,
-    scrollBackward,
-    scrollForward,
-    scrollUp,
-    scrollDown,
-    scrollLeft,
-    scrollRight,
-    setSequentialFocusNavigationStartingPoint,
-    setSelection,
-    showContextMenu,
     startDuckingMedia,
     stopDuckingMedia,
     suspendMedia
@@ -58,7 +43,11 @@ namespace automationInternal {
   dictionary PerformActionRequiredParams {
     long treeID;
     long automationNodeID;
-    ActionType actionType;
+
+    // This can be either automation::ActionType or
+    // automation_internal::ActionTypePrivate.
+    DOMString actionType;
+
     long? requestID;
   };
 
@@ -75,6 +64,16 @@ namespace automationInternal {
     long focusNodeID;
     long anchorOffset;
     long focusOffset;
+  };
+
+  // Arguments for the replaceSelectedText action supplied to performAction.
+  dictionary ReplaceSelectedTextParams {
+    DOMString value;
+  };
+
+  // Arguments for the setValue action supplied to performAction.
+  dictionary SetValueParams {
+    DOMString value;
   };
 
   // Arguments for the querySelector function.

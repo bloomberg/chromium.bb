@@ -285,11 +285,11 @@ enum Action {
    // Scrolls by approximately one screen in a specific direction. Should be
    // called on a node that has scrollable boolean set to true.
   kScrollBackward,
-  kScrollForward,
-  kScrollUp,
   kScrollDown,
+  kScrollForward,
   kScrollLeft,
   kScrollRight,
+  kScrollUp,
 
    // Scroll any scrollable containers to make the target object visible
    // on the screen.  Optionally pass a subfocus rect in

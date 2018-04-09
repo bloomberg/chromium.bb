@@ -9,6 +9,15 @@ var allTests = [
       chrome.test.succeed();
     }, true);
     okButton.focus();
+  },
+
+  function testSetValue() {
+    var textField = rootNode.find({role: RoleType.TEXT_FIELD});
+    textField.addEventListener(EventType.VALUE_CHANGED, function() {
+      assertEq('success!', textField.value);
+      chrome.test.succeed();
+    }, true);
+    textField.setValue('success!');
   }
 ];
 

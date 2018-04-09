@@ -21,6 +21,7 @@
 
 namespace arc {
 
+using AXActionType = mojom::AccessibilityActionType;
 using AXBooleanProperty = mojom::AccessibilityBooleanProperty;
 using AXCollectionInfoData = mojom::AccessibilityCollectionInfoData;
 using AXCollectionItemInfoData = mojom::AccessibilityCollectionItemInfoData;
@@ -577,6 +578,24 @@ void AXTreeSourceArc::SerializeNode(AXNodeInfoData* node,
 
   if (GetProperty(node, AXIntProperty::TEXT_SELECTION_END, &val) && val >= 0)
     out_data->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, val);
+
+  std::vector<int32_t> standard_action_ids;
+  if (GetProperty(node, AXIntListProperty::STANDARD_ACTION_IDS,
+                  &standard_action_ids)) {
+    for (size_t i = 0; i < standard_action_ids.size(); ++i) {
+      switch (static_cast<AXActionType>(standard_action_ids[i])) {
+        case AXActionType::SCROLL_BACKWARD:
+          out_data->AddAction(ax::mojom::Action::kScrollBackward);
+          break;
+        case AXActionType::SCROLL_FORWARD:
+          out_data->AddAction(ax::mojom::Action::kScrollForward);
+          break;
+        default:
+          // unmapped
+          break;
+      }
+    }
+  }
 
   // Custom actions.
   std::vector<int32_t> custom_action_ids;
