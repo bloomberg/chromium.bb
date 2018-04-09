@@ -163,11 +163,13 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
     seq_params->level[0] = 0;
     seq_params->decoder_rate_model_param_present_flag[0] = 0;
   } else {
-    uint8_t operating_points_minus1_cnt = aom_rb_read_literal(rb, 5);
+    uint8_t operating_points_minus1_cnt =
+        aom_rb_read_literal(rb, OP_POINTS_MINUS1_BITS);
     pbi->common.enhancement_layers_cnt = operating_points_minus1_cnt + 1;
     for (int i = 0; i < operating_points_minus1_cnt + 1; i++) {
-      seq_params->operating_point_idc[i] = aom_rb_read_literal(rb, 12);
-      seq_params->level[i] = aom_rb_read_literal(rb, 4);
+      seq_params->operating_point_idc[i] =
+          aom_rb_read_literal(rb, OP_POINTS_IDC_BITS);
+      seq_params->level[i] = aom_rb_read_literal(rb, LEVEL_BITS);
       seq_params->decoder_rate_model_param_present_flag[i] =
           aom_rb_read_literal(rb, 1);
       if (seq_params->decoder_rate_model_param_present_flag[i]) {
