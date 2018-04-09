@@ -111,7 +111,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
     // Called to notify that ARC begins to start.
     virtual void OnArcStarted() {}
 
-    // Called to notify that ARC has been initialized successfully.
+    // Called to notify that ARC has been successfully provisioned for the first
+    // time after OptIn.
     virtual void OnArcInitialStart() {}
 
     // Called when ARC session is stopped, and is not being restarted

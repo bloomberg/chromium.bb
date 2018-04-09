@@ -11,11 +11,11 @@ FakeBackupSettingsInstance::FakeBackupSettingsInstance() = default;
 FakeBackupSettingsInstance::~FakeBackupSettingsInstance() = default;
 
 void FakeBackupSettingsInstance::ClearCallHistory() {
-  set_backup_enabled_called_ = false;
+  set_backup_enabled_count_ = 0;
 }
 
 void FakeBackupSettingsInstance::SetBackupEnabled(bool enabled, bool managed) {
-  set_backup_enabled_called_ = true;
+  ++set_backup_enabled_count_;
   enabled_ = enabled;
   managed_ = managed;
 }
