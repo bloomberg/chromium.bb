@@ -623,7 +623,25 @@ void AdbClientSocket::OnResponseLength(
 
   std::string new_response =
       response + std::string(response_buffer->data(), result);
+  // Sometimes ADB server will respond like "OKAYOKAY<payload_length><payload>"
+  // instead of the expected "OKAY<payload_length><payload>".
+  // For the former case, the first OKAY is cropped off in the OnResponseStatus
+  // but we still need to crop the second OKAY.
+  if (new_response.substr(0, 4) == "OKAY") {
+    VLOG(3) << "cutting new_response down to size";
+    new_response = new_response.substr(4);
+  }
   if (new_response.length() < 4) {
+    if (new_response.length() == 0 && result == net::OK) {
+      // The socket is shut down and all data has been read.
+      // Note that this is a hack because is_void is false,
+      // but we are not returning any data. The upstream logic
+      // to determine is_void is not in a good state.
+      // However, this is a better solution than trusting is_void anyway
+      // because otherwise this can become an infinite loop.
+      callback.Run(net::OK, new_response);
+      return;
+    }
     result = socket_->Read(response_buffer.get(),
                            kBufferSize,
                            base::Bind(&AdbClientSocket::OnResponseLength,
@@ -636,7 +654,9 @@ void AdbClientSocket::OnResponseLength(
   } else {
     int payload_length = 0;
     if (!base::HexStringToInt(new_response.substr(0, 4), &payload_length)) {
-      callback.Run(net::ERR_FAILED, new_response);
+      VLOG(1) << "net error since payload length wasn't readable.";
+      callback.Run(net::ERR_FAILED, "response <" + new_response +
+                                        "> from adb server was unexpected");
       return;
     }
 
