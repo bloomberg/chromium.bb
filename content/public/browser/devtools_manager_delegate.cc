@@ -42,14 +42,6 @@ bool DevToolsManagerDelegate::HandleCommand(DevToolsAgentHost* agent_host,
   return false;
 }
 
-bool DevToolsManagerDelegate::HandleAsyncCommand(
-    DevToolsAgentHost* agent_host,
-    DevToolsAgentHostClient* client,
-    base::DictionaryValue* command,
-    const CommandCallback& callback) {
-  return false;
-}
-
 std::string DevToolsManagerDelegate::GetDiscoveryPageHTML() {
   return std::string();
 }

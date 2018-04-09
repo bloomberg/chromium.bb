@@ -10,6 +10,7 @@ import("//printing/buildflags/buildflags.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//third_party/closure_compiler/compile_js.gni")
+import("//third_party/inspector_protocol/inspector_protocol.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
@@ -264,6 +265,42 @@ if (headless_fontconfig_utils && !is_fuchsia) {
   }
 }
 
+inspector_protocol_generate("protocol_sources") {
+  visibility = [ "//headless" ]
+  deps = [
+    "//third_party/blink/renderer/core/inspector:protocol_version",
+  ]
+  _blink_protocol_path = rebase_path(
+          "$root_gen_dir/third_party/blink/renderer/core/inspector/protocol.json",
+          root_build_dir)
+
+  inspector_protocol_dir = "//third_party/inspector_protocol"
+  out_dir = target_gen_dir
+  config_file = "protocol_config.json"
+  config_values = [ "protocol.path=$_blink_protocol_path" ]
+
+  inputs = [
+    "$root_gen_dir/third_party/blink/renderer/core/inspector/protocol.json",
+    config_file,
+  ]
+
+  # These are relative to $target_gen_dir.
+  outputs = [
+    "lib/browser/protocol/dp_browser.cc",
+    "lib/browser/protocol/dp_browser.h",
+    "lib/browser/protocol/dp_headless_experimental.cc",
+    "lib/browser/protocol/dp_headless_experimental.h",
+    "lib/browser/protocol/dp_network.cc",
+    "lib/browser/protocol/dp_network.h",
+    "lib/browser/protocol/dp_page.cc",
+    "lib/browser/protocol/dp_page.h",
+    "lib/browser/protocol/dp_target.cc",
+    "lib/browser/protocol/dp_target.h",
+    "lib/browser/protocol/protocol.cc",
+    "lib/browser/protocol/protocol.h",
+  ]
+}
+
 component("headless") {
   sources = [
     "app/headless_shell_switches.cc",
@@ -306,6 +343,22 @@ component("headless") {
     "lib/browser/headless_url_request_context_getter.cc",
     "lib/browser/headless_url_request_context_getter.h",
     "lib/browser/headless_window_tree_host.h",
+    "lib/browser/protocol/browser_handler.cc",
+    "lib/browser/protocol/browser_handler.h",
+    "lib/browser/protocol/domain_handler.cc",
+    "lib/browser/protocol/domain_handler.h",
+    "lib/browser/protocol/headless_devtools_session.cc",
+    "lib/browser/protocol/headless_devtools_session.h",
+    "lib/browser/protocol/headless_handler.cc",
+    "lib/browser/protocol/headless_handler.h",
+    "lib/browser/protocol/network_handler.cc",
+    "lib/browser/protocol/network_handler.h",
+    "lib/browser/protocol/page_handler.cc",
+    "lib/browser/protocol/page_handler.h",
+    "lib/browser/protocol/protocol_string.cc",
+    "lib/browser/protocol/protocol_string.h",
+    "lib/browser/protocol/target_handler.cc",
+    "lib/browser/protocol/target_handler.h",
     "lib/headless_content_client.cc",
     "lib/headless_content_client.h",
     "public/headless_browser.cc",
@@ -360,6 +413,7 @@ component("headless") {
   }
 
   sources += generated_devtools_api
+  sources += get_target_outputs(":protocol_sources")
 
   if (use_aura) {
     sources += [
@@ -397,6 +451,7 @@ component("headless") {
   deps = [
     ":gen_devtools_client_api",
     ":headless_render_frame_controller",
+    ":protocol_sources",
     ":tab_socket",
     ":version_header",
     "//components/cookie_config",

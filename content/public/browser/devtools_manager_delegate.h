@@ -54,14 +54,6 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
                              DevToolsAgentHostClient* client,
                              base::DictionaryValue* command);
 
-  // Returns true if the command has been handled, false otherwise.
-  using CommandCallback =
-      base::Callback<void(std::unique_ptr<base::DictionaryValue> response)>;
-  virtual bool HandleAsyncCommand(DevToolsAgentHost* agent_host,
-                                  DevToolsAgentHostClient* client,
-                                  base::DictionaryValue* command,
-                                  const CommandCallback& callback);
-
   // Should return discovery page HTML that should list available tabs
   // and provide attach links.
   virtual std::string GetDiscoveryPageHTML();

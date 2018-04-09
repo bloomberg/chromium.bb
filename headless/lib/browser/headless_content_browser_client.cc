@@ -32,6 +32,7 @@
 #include "headless/lib/headless_macros.h"
 #include "net/base/url_util.h"
 #include "net/ssl/client_cert_identity.h"
+#include "printing/buildflags/buildflags.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
