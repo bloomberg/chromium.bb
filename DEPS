@@ -5,7 +5,7 @@ vars = {
 
   "clang_format_rev": "0653eee0c81ea04715c635dd0885e8096ff6ba6d",   # r302580
   "libcxx_revision": "ece1de8658d749e19c12cacd4458cc330eca94e3",    # r329375
-  "libcxxabi_revision": "d4dc2dd4696ddc4ccc5fe2ba3fcd4f52564bdd44", # r329208
+  "libcxxabi_revision": "52c7a3760aef1df328a9bc957f686410872f0dc0", # r329629
   "libunwind_revision": "0f3cbe4123f8afacd646bd4f5414aa6528ef8129", # r329340
 }
 
