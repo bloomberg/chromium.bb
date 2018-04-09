@@ -1258,6 +1258,8 @@ public class BottomSheet extends FrameLayout
             return;
         }
 
+        @SheetState
+        final int previousState = mCurrentState;
         mCurrentState = state;
 
         if (mCurrentState == SHEET_STATE_HALF || mCurrentState == SHEET_STATE_FULL) {
@@ -1280,11 +1282,29 @@ public class BottomSheet extends FrameLayout
             o.onSheetStateChanged(mCurrentState);
         }
 
-        if (state <= SHEET_STATE_PEEK) {
+        if (isSheetOpen() && isClosedState(getSheetState())) {
             onSheetClosed(reason);
-        } else {
+        } else if (!isSheetOpen() && isClosedState(previousState)
+                && isOpenedState(getSheetState())) {
             onSheetOpened(reason);
         }
+    }
+
+    /**
+     * @param state A state of the {@link BottomSheet}.
+     * @return Whether the provided state is considered open.
+     */
+    private boolean isOpenedState(@SheetState int state) {
+        return state == SHEET_STATE_HALF || state == SHEET_STATE_FULL
+                || state == SHEET_STATE_SCROLLING;
+    }
+
+    /**
+     * @param state A state of the {@link BottomSheet}.
+     * @return Whether the provided state is considered closed.
+     */
+    private boolean isClosedState(@SheetState int state) {
+        return state == SHEET_STATE_PEEK || state == SHEET_STATE_HIDDEN;
     }
 
     /**
