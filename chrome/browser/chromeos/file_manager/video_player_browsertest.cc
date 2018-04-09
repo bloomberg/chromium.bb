@@ -45,14 +45,8 @@ IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest,
   StartTest();
 }
 
-// http://crbug.com/508949
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_OpenSingleVideoOnDownloads DISABLED_OpenSingleVideoOnDownloads
-#else
-#define MAYBE_OpenSingleVideoOnDownloads OpenSingleVideoOnDownloads
-#endif
 IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTestInGuestMode,
-                       MAYBE_OpenSingleVideoOnDownloads) {
+                       OpenSingleVideoOnDownloads) {
   set_test_case_name("openSingleVideoOnDownloads");
   StartTest();
 }
