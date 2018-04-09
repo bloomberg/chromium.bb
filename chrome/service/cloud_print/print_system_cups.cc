@@ -177,9 +177,7 @@ class PrintServerWatcherCUPS
   : public PrintSystem::PrintServerWatcher {
  public:
   explicit PrintServerWatcherCUPS(PrintSystemCUPS* print_system)
-      : print_system_(print_system),
-        delegate_(NULL) {
-  }
+      : print_system_(print_system) {}
 
   // PrintSystem::PrintServerWatcher implementation.
   bool StartWatching(
@@ -187,13 +185,14 @@ class PrintServerWatcherCUPS
     delegate_ = delegate;
     printers_hash_ = GetPrintersHash();
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&PrintServerWatcherCUPS::CheckForUpdates, this),
+        FROM_HERE,
+        base::BindOnce(&PrintServerWatcherCUPS::CheckForUpdates, this),
         print_system_->GetUpdateTimeout());
     return true;
   }
 
   bool StopWatching() override {
-    delegate_ = NULL;
+    delegate_ = nullptr;
     return true;
   }
 
@@ -208,7 +207,8 @@ class PrintServerWatcherCUPS
       delegate_->OnPrinterAdded();
     }
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&PrintServerWatcherCUPS::CheckForUpdates, this),
+        FROM_HERE,
+        base::BindOnce(&PrintServerWatcherCUPS::CheckForUpdates, this),
         print_system_->GetUpdateTimeout());
   }
 
@@ -233,7 +233,7 @@ class PrintServerWatcherCUPS
   }
 
   scoped_refptr<PrintSystemCUPS> print_system_;
-  PrintSystem::PrintServerWatcher::Delegate* delegate_;
+  PrintSystem::PrintServerWatcher::Delegate* delegate_ = nullptr;
   std::string printers_hash_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintServerWatcherCUPS);
@@ -245,14 +245,13 @@ class PrinterWatcherCUPS
   PrinterWatcherCUPS(PrintSystemCUPS* print_system,
                      const std::string& printer_name)
       : printer_name_(printer_name),
-        delegate_(NULL),
         print_system_(print_system) {
   }
 
   // PrintSystem::PrinterWatcher implementation.
   bool StartWatching(PrintSystem::PrinterWatcher::Delegate* delegate) override {
     scoped_refptr<printing::PrintBackend> print_backend(
-        printing::PrintBackend::CreateInstance(NULL));
+        printing::PrintBackend::CreateInstance(nullptr));
     crash_keys::ScopedPrinterInfo crash_key(
         print_backend->GetPrinterDriverInfo(printer_name_));
     if (delegate_)
@@ -261,18 +260,18 @@ class PrinterWatcherCUPS
     settings_hash_ = GetSettingsHash();
     // Schedule next job status update.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&PrinterWatcherCUPS::JobStatusUpdate, this),
+        FROM_HERE, base::BindOnce(&PrinterWatcherCUPS::JobStatusUpdate, this),
         base::TimeDelta::FromSeconds(kJobUpdateTimeoutSeconds));
     // Schedule next printer check.
     // TODO(gene): Randomize time for the next printer update.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&PrinterWatcherCUPS::PrinterUpdate, this),
+        FROM_HERE, base::BindOnce(&PrinterWatcherCUPS::PrinterUpdate, this),
         print_system_->GetUpdateTimeout());
     return true;
   }
 
   bool StopWatching() override {
-    delegate_ = NULL;
+    delegate_ = nullptr;
     return true;
   }
 
@@ -292,7 +291,7 @@ class PrinterWatcherCUPS
     // outstanding jobs, OnJobChanged() will do nothing.
     delegate_->OnJobChanged();
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&PrinterWatcherCUPS::JobStatusUpdate, this),
+        FROM_HERE, base::BindOnce(&PrinterWatcherCUPS::JobStatusUpdate, this),
         base::TimeDelta::FromSeconds(kJobUpdateTimeoutSeconds));
   }
 
@@ -317,7 +316,7 @@ class PrinterWatcherCUPS
       }
     }
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&PrinterWatcherCUPS::PrinterUpdate, this),
+        FROM_HERE, base::BindOnce(&PrinterWatcherCUPS::PrinterUpdate, this),
         print_system_->GetUpdateTimeout());
   }
 
@@ -348,8 +347,8 @@ class PrinterWatcherCUPS
 
     return base::MD5String(to_hash);
   }
-  std::string printer_name_;
-  PrintSystem::PrinterWatcher::Delegate* delegate_;
+  const std::string printer_name_;
+  PrintSystem::PrinterWatcher::Delegate* delegate_ = nullptr;
   scoped_refptr<PrintSystemCUPS> print_system_;
   std::string settings_hash_;
 
@@ -378,8 +377,8 @@ class JobSpoolerCUPS : public PrintSystem::JobSpooler {
         print_ticket, print_data_file_path, print_data_mime_type,
         printer_name, job_title, tags, &dry_run);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&JobSpoolerCUPS::NotifyDelegate, delegate, job_id, dry_run));
+        FROM_HERE, base::BindOnce(&JobSpoolerCUPS::NotifyDelegate, delegate,
+                                  job_id, dry_run));
     return true;
   }
 
@@ -493,7 +492,7 @@ void PrintSystemCUPS::UpdatePrinters() {
 
   // Schedule next update.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&PrintSystemCUPS::UpdatePrinters, this),
+      FROM_HERE, base::BindOnce(&PrintSystemCUPS::UpdatePrinters, this),
       GetUpdateTimeout());
 }
 
@@ -517,12 +516,12 @@ void PrintSystemCUPS::GetPrinterCapsAndDefaults(
   printing::PrinterCapsAndDefaults printer_info;
   bool succeeded = GetPrinterCapsAndDefaults(printer_name, &printer_info);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PrintSystemCUPS::RunCapsCallback, callback,
-                            succeeded, printer_name, printer_info));
+      FROM_HERE, base::BindOnce(&PrintSystemCUPS::RunCapsCallback, callback,
+                                succeeded, printer_name, printer_info));
 }
 
 bool PrintSystemCUPS::IsValidPrinter(const std::string& printer_name) {
-  return GetPrinterInfo(printer_name, NULL);
+  return GetPrinterInfo(printer_name, nullptr);
 }
 
 bool PrintSystemCUPS::ValidatePrintTicket(
@@ -599,7 +598,7 @@ bool PrintSystemCUPS::GetJobDetails(const std::string& printer_name,
 
   crash_keys::ScopedPrinterInfo crash_key(
       server_info->backend->GetPrinterDriverInfo(short_printer_name));
-  cups_job_t* jobs = NULL;
+  cups_job_t* jobs = nullptr;
   int num_jobs = GetJobs(&jobs, server_info->url, cups_encryption_,
                          short_printer_name.c_str(), 1, -1);
   bool error = (num_jobs == 0) && (cupsLastError() > IPP_OK_EVENTS_COMPLETE);
@@ -713,7 +712,7 @@ std::string PrintSystemCUPS::GetSupportedMimeTypes() {
 
 scoped_refptr<PrintSystem> PrintSystem::CreateInstance(
     const base::DictionaryValue* print_system_settings) {
-  return new PrintSystemCUPS(print_system_settings);
+  return base::MakeRefCounted<PrintSystemCUPS>(print_system_settings);
 }
 
 int PrintSystemCUPS::PrintFile(const GURL& url, http_encryption_t encryption,
@@ -820,7 +819,7 @@ PrintServerInfoCUPS* PrintSystemCUPS::FindServerByFullName(
   if (front == std::string::npos || separator == std::string::npos) {
     LOG(WARNING) << "CP_CUPS: Invalid UNC"
                  << ", printer name: " << full_printer_name;
-    return NULL;
+    return nullptr;
   }
   std::string server = full_printer_name.substr(2, separator - 2);
 
@@ -839,7 +838,7 @@ PrintServerInfoCUPS* PrintSystemCUPS::FindServerByFullName(
 
   LOG(WARNING) << "CP_CUPS: Server not found"
                << ", printer name: " << full_printer_name;
-  return NULL;
+  return nullptr;
 }
 
 void PrintSystemCUPS::RunCapsCallback(
