@@ -110,7 +110,7 @@ def use_local_result(method):
 
 
 def runtime_call_stats_context(interface, method):
-    includes.add('platform/bindings/RuntimeCallStats.h')
+    includes.add('platform/bindings/runtime_call_stats.h')
     generic_counter_name = 'Blink_' + v8_utilities.cpp_name(interface) + '_' + method.name
     (method_counter, extended_attribute_defined) = v8_utilities.rcs_counter_name(method, generic_counter_name)
     return {
@@ -134,12 +134,12 @@ def method_context(interface, method, is_visible=True):
 
     is_call_with_script_arguments = has_extended_attribute_value(method, 'CallWith', 'ScriptArguments')
     if is_call_with_script_arguments:
-        includes.update(['bindings/core/v8/ScriptCallStack.h',
-                         'core/inspector/ScriptArguments.h'])
+        includes.update(['bindings/core/v8/script_call_stack.h',
+                         'core/inspector/script_arguments.h'])
     is_call_with_script_state = has_extended_attribute_value(method, 'CallWith', 'ScriptState')
     is_call_with_this_value = has_extended_attribute_value(method, 'CallWith', 'ThisValue')
     if is_call_with_script_state or is_call_with_this_value:
-        includes.add('platform/bindings/ScriptState.h')
+        includes.add('platform/bindings/script_state.h')
 
     # [CheckSecurity]
     is_cross_origin = 'CrossOrigin' in extended_attributes
@@ -149,24 +149,24 @@ def method_context(interface, method, is_visible=True):
     is_check_security_for_return_value = (
         has_extended_attribute_value(method, 'CheckSecurity', 'ReturnValue'))
     if is_check_security_for_receiver or is_check_security_for_return_value:
-        includes.add('bindings/core/v8/BindingSecurity.h')
+        includes.add('bindings/core/v8/binding_security.h')
 
     is_ce_reactions = 'CEReactions' in extended_attributes
     if is_ce_reactions:
-        includes.add('core/html/custom/CEReactionsScope.h')
+        includes.add('core/html/custom/ce_reactions_scope.h')
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
     if is_custom_element_callbacks:
-        includes.add('core/html/custom/V0CustomElementProcessingStack.h')
+        includes.add('core/html/custom/v0_custom_element_processing_stack.h')
 
     is_raises_exception = 'RaisesException' in extended_attributes
     is_custom_call_prologue = has_extended_attribute_value(method, 'Custom', 'CallPrologue')
     is_custom_call_epilogue = has_extended_attribute_value(method, 'Custom', 'CallEpilogue')
     is_post_message = 'PostMessage' in extended_attributes
     if is_post_message:
-        includes.add('bindings/core/v8/serialization/SerializedScriptValueFactory.h')
-        includes.add('bindings/core/v8/serialization/Transferables.h')
-        includes.add('core/typed_arrays/DOMArrayBufferBase.h')
-        includes.add('core/imagebitmap/ImageBitmap.h')
+        includes.add('bindings/core/v8/serialization/serialized_script_value_factory.h')
+        includes.add('bindings/core/v8/serialization/transferables.h')
+        includes.add('core/typed_arrays/dom_array_buffer_base.h')
+        includes.add('core/imagebitmap/image_bitmap.h')
 
     if 'LenientThis' in extended_attributes:
         raise Exception('[LenientThis] is not supported for operations.')

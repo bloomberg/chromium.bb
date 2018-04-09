@@ -16,14 +16,14 @@ from v8_utilities import has_extended_attribute_value
 
 
 DICTIONARY_H_INCLUDES = frozenset([
-    'bindings/core/v8/NativeValueTraits.h',
-    'bindings/core/v8/ToV8ForCore.h',
-    'bindings/core/v8/V8BindingForCore.h',
-    'platform/heap/Handle.h',
+    'bindings/core/v8/native_value_traits.h',
+    'bindings/core/v8/to_v8_for_core.h',
+    'bindings/core/v8/v8_binding_for_core.h',
+    'platform/heap/handle.h',
 ])
 
 DICTIONARY_CPP_INCLUDES = frozenset([
-    'bindings/core/v8/ExceptionState.h',
+    'bindings/core/v8/exception_state.h',
 ])
 
 
@@ -181,7 +181,7 @@ def dictionary_impl_context(dictionary, interfaces_info):
 
     includes.clear()
     header_forward_decls = set()
-    header_includes = set(['platform/heap/Handle.h'])
+    header_includes = set(['platform/heap/handle.h'])
     members = [member_impl_context(member, interfaces_info,
                                    header_includes, header_forward_decls)
                for member in dictionary.members]
@@ -202,7 +202,7 @@ def dictionary_impl_context(dictionary, interfaces_info):
     else:
         context['parent_cpp_class'] = 'IDLDictionaryBase'
         context['header_includes'].add(
-            'bindings/core/v8/IDLDictionaryBase.h')
+            'bindings/core/v8/idl_dictionary_base.h')
     return context
 
 

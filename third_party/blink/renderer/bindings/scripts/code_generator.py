@@ -105,18 +105,12 @@ def initialize_jinja_env(cache_dir):
     return jinja_env
 
 
-def normalize_and_sort_includes(include_paths, snake_case):
+def normalize_and_sort_includes(include_paths):
     normalized_include_paths = []
     for include_path in include_paths:
         match = re.search(r'/gen/blink/(.*)$', posixpath.abspath(include_path))
         if match:
             include_path = match.group(1)
-        if snake_case:
-            match = re.search(r'/([^/]+)\.h$', include_path)
-            if match:
-                name = match.group(1)
-                if name.lower() != name:
-                    include_path = include_path[0:match.start(1)] + to_snake_case(name) + '.h'
         normalized_include_paths.append(include_path)
     return sorted(normalized_include_paths)
 
@@ -131,12 +125,11 @@ def render_template(template, context):
 class CodeGeneratorBase(object):
     """Base class for jinja-powered jinja template generation.
     """
-    def __init__(self, generator_name, info_provider, cache_dir, output_dir, snake_case):
+    def __init__(self, generator_name, info_provider, cache_dir, output_dir):
         self.generator_name = generator_name
         self.info_provider = info_provider
         self.jinja_env = initialize_jinja_env(cache_dir)
         self.output_dir = output_dir
-        self.snake_case_generated_files = snake_case
         self.set_global_type_info()
 
     def should_generate_code(self, definitions):
@@ -159,7 +152,7 @@ class CodeGeneratorBase(object):
 
         # Add includes for any dependencies
         template_context['header_includes'] = normalize_and_sort_includes(
-            template_context['header_includes'], self.snake_case_generated_files)
+            template_context['header_includes'])
 
         for include_path in include_paths:
             if component:
@@ -167,7 +160,7 @@ class CodeGeneratorBase(object):
                 assert is_valid_component_dependency(component, dependency)
             includes.add(include_path)
 
-        template_context['cpp_includes'] = normalize_and_sort_includes(includes, self.snake_case_generated_files)
+        template_context['cpp_includes'] = normalize_and_sort_includes(includes)
 
         header_text = render_template(header_template, template_context)
         cpp_text = render_template(cpp_template, template_context)

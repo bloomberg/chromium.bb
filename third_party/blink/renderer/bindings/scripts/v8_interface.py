@@ -45,28 +45,30 @@ from v8_globals import includes
 import v8_methods
 import v8_types
 import v8_utilities
-from v8_utilities import (context_enabled_feature_name, cpp_name_or_partial, cpp_name,
-                          has_extended_attribute_value, runtime_enabled_feature_name,
+from v8_utilities import (binding_header_basename, context_enabled_feature_name,
+                          cpp_name_or_partial, cpp_name,
+                          has_extended_attribute_value,
+                          runtime_enabled_feature_name,
                           is_legacy_interface_type_checking)
 
 
 INTERFACE_H_INCLUDES = frozenset([
-    'bindings/core/v8/GeneratedCodeHelper.h',
-    'bindings/core/v8/NativeValueTraits.h',
-    'platform/bindings/ScriptWrappable.h',
-    'bindings/core/v8/ToV8ForCore.h',
-    'bindings/core/v8/V8BindingForCore.h',
-    'platform/bindings/V8DOMWrapper.h',
-    'platform/bindings/WrapperTypeInfo.h',
-    'platform/heap/Handle.h',
+    'bindings/core/v8/generated_code_helper.h',
+    'bindings/core/v8/native_value_traits.h',
+    'platform/bindings/script_wrappable.h',
+    'bindings/core/v8/to_v8_for_core.h',
+    'bindings/core/v8/v8_binding_for_core.h',
+    'platform/bindings/v8_dom_wrapper.h',
+    'platform/bindings/wrapper_type_info.h',
+    'platform/heap/handle.h',
 ])
 INTERFACE_CPP_INCLUDES = frozenset([
     'base/memory/scoped_refptr.h',
-    'bindings/core/v8/ExceptionState.h',
-    'bindings/core/v8/V8DOMConfiguration.h',
-    'platform/bindings/V8ObjectConstructor.h',
-    'core/execution_context/ExecutionContext.h',
-    'platform/wtf/GetPtr.h',
+    'bindings/core/v8/exception_state.h',
+    'bindings/core/v8/v8_dom_configuration.h',
+    'platform/bindings/v8_object_constructor.h',
+    'core/execution_context/execution_context.h',
+    'platform/wtf/get_ptr.h',
 ])
 
 
@@ -141,7 +143,7 @@ def origin_trial_features(interface, constants, attributes, methods):
         feature['needs_secure_context'] = any(member.get('secure_context_test', False) for member in members)
 
     if features:
-        includes.add('platform/bindings/ScriptState.h')
+        includes.add('platform/bindings/script_state.h')
         includes.add('core/origin_trials/origin_trials.h')
     return features
 
@@ -168,7 +170,7 @@ def context_enabled_features(attributes):
                  'needs_instance': False}
                 for name in feature_names]
     if features:
-        includes.add('platform/bindings/ScriptState.h')
+        includes.add('platform/bindings/script_state.h')
     return features
 
 
@@ -207,7 +209,7 @@ def interface_context(interface, interfaces):
         parent_interface = None
         is_event_target = False
         # partial interface needs the definition of its original interface.
-        includes.add('bindings/core/v8/V8%s.h' % interface.name)
+        includes.add('bindings/core/v8/%s' % binding_header_basename(interface.name))
     else:
         parent_interface = interface.parent
         if parent_interface:
@@ -219,20 +221,20 @@ def interface_context(interface, interfaces):
     is_array_buffer_or_view = interface.idl_type.is_array_buffer_or_view
     is_typed_array_type = interface.idl_type.is_typed_array
     if is_array_buffer_or_view:
-        includes.update(('bindings/core/v8/V8ArrayBuffer.h',
-                         'bindings/core/v8/V8SharedArrayBuffer.h'))
+        includes.update(('bindings/core/v8/v8_array_buffer.h',
+                         'bindings/core/v8/v8_shared_array_buffer.h'))
     if interface.name == 'ArrayBufferView':
         includes.update((
-            'bindings/core/v8/V8Int8Array.h',
-            'bindings/core/v8/V8Int16Array.h',
-            'bindings/core/v8/V8Int32Array.h',
-            'bindings/core/v8/V8Uint8Array.h',
-            'bindings/core/v8/V8Uint8ClampedArray.h',
-            'bindings/core/v8/V8Uint16Array.h',
-            'bindings/core/v8/V8Uint32Array.h',
-            'bindings/core/v8/V8Float32Array.h',
-            'bindings/core/v8/V8Float64Array.h',
-            'bindings/core/v8/V8DataView.h'))
+            'bindings/core/v8/v8_int8_array.h',
+            'bindings/core/v8/v8_int16_array.h',
+            'bindings/core/v8/v8_int32_array.h',
+            'bindings/core/v8/v8_uint8_array.h',
+            'bindings/core/v8/v8_uint8_clamped_array.h',
+            'bindings/core/v8/v8_uint16_array.h',
+            'bindings/core/v8/v8_uint32_array.h',
+            'bindings/core/v8/v8_float32_array.h',
+            'bindings/core/v8/v8_float64_array.h',
+            'bindings/core/v8/v8_data_view.h'))
 
     # [ActiveScriptWrappable]
     active_scriptwrappable = 'ActiveScriptWrappable' in extended_attributes
@@ -240,8 +242,8 @@ def interface_context(interface, interfaces):
     # [CheckSecurity]
     is_check_security = 'CheckSecurity' in extended_attributes
     if is_check_security:
-        includes.add('bindings/core/v8/BindingSecurity.h')
-        includes.add('core/frame/LocalDOMWindow.h')
+        includes.add('bindings/core/v8/binding_security.h')
+        includes.add('core/frame/local_dom_window.h')
 
     # [PrimaryGlobal] and [Global]
     is_global = ('PrimaryGlobal' in extended_attributes or
@@ -326,7 +328,7 @@ def interface_context(interface, interfaces):
             raise Exception('[Constructor] and [NoInterfaceObject] MUST NOT be'
                             ' specified with [HTMLConstructor]: '
                             '%s' % interface.name)
-        includes.add('bindings/core/v8/V8HTMLConstructor.h')
+        includes.add('bindings/core/v8/v8_html_constructor.h')
 
     # [NamedConstructor]
     named_constructor = named_constructor_context(interface)
@@ -337,10 +339,10 @@ def interface_context(interface, interfaces):
                             ' specified on partial interface definitions: '
                             '%s' % interface.name)
         if named_constructor:
-            includes.add('platform/bindings/V8PrivateProperty.h')
+            includes.add('platform/bindings/v8_private_property.h')
 
-        includes.add('platform/bindings/V8ObjectConstructor.h')
-        includes.add('core/frame/LocalDOMWindow.h')
+        includes.add('platform/bindings/v8_object_constructor.h')
+        includes.add('core/frame/local_dom_window.h')
     elif 'Measure' in extended_attributes or 'MeasureAs' in extended_attributes:
         if not interface.is_partial:
             raise Exception('[Measure] or [MeasureAs] specified for interface without a constructor: '
@@ -348,7 +350,7 @@ def interface_context(interface, interfaces):
 
     # [ConstructorCallWith=Document]
     if has_extended_attribute_value(interface, 'ConstructorCallWith', 'Document'):
-        includes.add('core/dom/Document.h')
+        includes.add('core/dom/document.h')
 
     # [Unscopable] attributes and methods
     unscopables = []
@@ -369,7 +371,7 @@ def interface_context(interface, interfaces):
     has_ce_reactions = any(setter_or_deleter and 'CEReactions' in setter_or_deleter.extended_attributes
                            for setter_or_deleter in setter_or_deleters)
     if has_ce_reactions:
-        includes.add('core/html/custom/CEReactionsScope.h')
+        includes.add('core/html/custom/ce_reactions_scope.h')
 
     context.update({
         'constructors': constructors,

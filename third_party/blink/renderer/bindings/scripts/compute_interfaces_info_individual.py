@@ -75,8 +75,6 @@ def parse_options():
     parser.add_option('--idl-files-list', help='file listing IDL files')
     parser.add_option('--interfaces-info-file', help='interface info pickle file')
     parser.add_option('--component-info-file', help='component wide info pickle file')
-    # TODO(tkent): Remove the option after the great mv. crbug.com/760462
-    parser.add_option('--snake-case-generated-files', action='store_true', default=False)
 
     options, args = parser.parse_args()
     if options.interfaces_info_file is None:
@@ -97,7 +95,7 @@ def relative_dir_posix(idl_filename, base_path):
     return relative_dir_local.replace(os.path.sep, posixpath.sep)
 
 
-def include_path(idl_filename, snake_case_generated_files, implemented_as=None):
+def include_path(idl_filename, implemented_as=None):
     """Returns relative path to header file in POSIX format; used in includes.
 
     POSIX format is used for consistency of output, so reference tests are
@@ -110,8 +108,7 @@ def include_path(idl_filename, snake_case_generated_files, implemented_as=None):
 
     # IDL file basename is used even if only a partial interface file
     output_file_basename = implemented_as or idl_filename_to_basename(idl_filename)
-    if snake_case_generated_files:
-        output_file_basename = to_snake_case(output_file_basename)
+    output_file_basename = to_snake_case(output_file_basename)
     return posixpath.join(relative_dir, output_file_basename + '.h')
 
 
@@ -196,7 +193,7 @@ class InterfaceInfoCollector(object):
             return False
         return all(value in existing_enum.values for value in enum.values)
 
-    def collect_info(self, idl_filename, snake_case_generated_files=False):
+    def collect_info(self, idl_filename):
         """Reads an idl file and collects information which is required by the
         binding code generation."""
         def collect_unforgeable_attributes(definition, idl_filename):
@@ -277,7 +274,7 @@ class InterfaceInfoCollector(object):
         extended_attributes = definition.extended_attributes
         implemented_as = extended_attributes.get('ImplementedAs')
         full_path = os.path.realpath(idl_filename)
-        this_include_path = include_path(idl_filename, snake_case_generated_files, implemented_as)
+        this_include_path = include_path(idl_filename, implemented_as)
         if definition.is_partial:
             # We don't create interface_info for partial interfaces, but
             # adds paths to another dict.
@@ -356,7 +353,7 @@ def main():
     # partial_interface_files.
     info_collector = InterfaceInfoCollector(options.cache_directory)
     for idl_filename in idl_files:
-        info_collector.collect_info(idl_filename, options.snake_case_generated_files)
+        info_collector.collect_info(idl_filename)
 
     write_pickle_file(options.interfaces_info_file,
                       info_collector.get_info_as_dict())

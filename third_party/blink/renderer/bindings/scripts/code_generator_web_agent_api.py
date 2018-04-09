@@ -33,7 +33,7 @@ from blinkpy.common.name_style_converter import NameStyleConverter
 
 MODULE_PYNAME = os.path.splitext(os.path.basename(__file__))[0] + '.py'
 
-STRING_INCLUDE_PATH = 'platform/wtf/text/WTFString.h'
+STRING_INCLUDE_PATH = 'platform/wtf/text/wtf_string.h'
 WEB_AGENT_API_IDL_ATTRIBUTE = 'WebAgentAPI'
 
 
@@ -84,7 +84,7 @@ class TypeResolver(object):
         return idl_definition.idl_type.base_type
 
     def base_class_includes(self):
-        return set(['platform/heap/Handle.h'])
+        return set(['platform/heap/handle.h'])
 
 
 class MethodOverloadSplitter(object):
@@ -239,9 +239,9 @@ class InterfaceContextBuilder(object):
 
 
 class CodeGeneratorWebAgentAPI(CodeGeneratorBase):
-    def __init__(self, info_provider, cache_dir, output_dir, snake_case):
+    def __init__(self, info_provider, cache_dir, output_dir):
         CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider,
-                                   cache_dir, output_dir, snake_case)
+                                   cache_dir, output_dir)
         self.type_resolver = TypeResolver(info_provider.interfaces_info)
         self.typedef_resolver = TypedefResolver(info_provider)
 

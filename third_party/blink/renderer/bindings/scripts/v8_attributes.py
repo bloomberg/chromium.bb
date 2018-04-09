@@ -65,7 +65,7 @@ def attribute_context(interface, attribute, interfaces):
 
     idl_type.add_includes_for_type(extended_attributes)
     if idl_type.enum_values:
-        includes.add('core/inspector/ConsoleMessage.h')
+        includes.add('core/inspector/console_message.h')
 
     # [CheckSecurity]
     is_cross_origin = 'CrossOrigin' in extended_attributes
@@ -75,10 +75,10 @@ def attribute_context(interface, attribute, interfaces):
     is_check_security_for_return_value = (
         has_extended_attribute_value(attribute, 'CheckSecurity', 'ReturnValue'))
     if is_check_security_for_receiver or is_check_security_for_return_value:
-        includes.add('bindings/core/v8/BindingSecurity.h')
+        includes.add('bindings/core/v8/binding_security.h')
     # [CrossOrigin]
     if has_extended_attribute_value(attribute, 'CrossOrigin', 'Setter'):
-        includes.add('bindings/core/v8/V8CrossOriginSetterInfo.h')
+        includes.add('bindings/core/v8/v8_cross_origin_setter_info.h')
     # [Constructor]
     # TODO(yukishiino): Constructors are much like methods although constructors
     # are not methods.  Constructors must be data-type properties, and we can
@@ -87,12 +87,12 @@ def attribute_context(interface, attribute, interfaces):
     # [CEReactions]
     is_ce_reactions = 'CEReactions' in extended_attributes
     if is_ce_reactions:
-        includes.add('core/html/custom/CEReactionsScope.h')
+        includes.add('core/html/custom/ce_reactions_scope.h')
     # [CustomElementCallbacks], [Reflect]
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
     is_reflect = 'Reflect' in extended_attributes
     if is_custom_element_callbacks or is_reflect:
-        includes.add('core/html/custom/V0CustomElementProcessingStack.h')
+        includes.add('core/html/custom/v0_custom_element_processing_stack.h')
     # [PerWorldBindings]
     if 'PerWorldBindings' in extended_attributes:
         assert idl_type.is_wrapper_type or 'LogActivity' in extended_attributes, '[PerWorldBindings] should only be used with wrapper types: %s.%s' % (interface.name, attribute.name)
@@ -101,22 +101,22 @@ def attribute_context(interface, attribute, interfaces):
         'SameObject' in attribute.extended_attributes and
         'SaveSameObject' in attribute.extended_attributes)
     if is_save_same_object:
-        includes.add('platform/bindings/V8PrivateProperty.h')
+        includes.add('platform/bindings/v8_private_property.h')
 
     if (base_idl_type == 'EventHandler' and
             interface.name in ['Window', 'WorkerGlobalScope'] and
             attribute.name == 'onerror'):
-        includes.add('bindings/core/v8/V8ErrorHandler.h')
+        includes.add('bindings/core/v8/v8_error_handler.h')
 
     cached_attribute_validation_method = extended_attributes.get('CachedAttribute')
     keep_alive_for_gc = is_keep_alive_for_gc(interface, attribute)
     if cached_attribute_validation_method or keep_alive_for_gc:
-        includes.add('platform/bindings/V8PrivateProperty.h')
+        includes.add('platform/bindings/v8_private_property.h')
 
     # [CachedAccessor]
     is_cached_accessor = 'CachedAccessor' in extended_attributes
     if is_cached_accessor:
-        includes.add('platform/bindings/V8PrivateProperty.h')
+        includes.add('platform/bindings/v8_private_property.h')
 
     context = {
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
@@ -212,7 +212,7 @@ def attribute_context(interface, attribute, interfaces):
 
 
 def runtime_call_stats_context(interface, attribute, context):
-    includes.add('platform/bindings/RuntimeCallStats.h')
+    includes.add('platform/bindings/runtime_call_stats.h')
     generic_counter_name = 'Blink_' + v8_utilities.cpp_name(interface) + '_' + attribute.name
     (counter, extended_attribute_defined) = v8_utilities.rcs_counter_name(attribute, generic_counter_name)
     runtime_call_stats = {
@@ -489,7 +489,7 @@ def setter_expression(interface, attribute, context):
             getter_name, ', '.join(arguments))
         if (interface.name in ['Window', 'WorkerGlobalScope'] and
                 attribute.name == 'onerror'):
-            includes.add('bindings/core/v8/V8ErrorHandler.h')
+            includes.add('bindings/core/v8/v8_error_handler.h')
             arguments.append(
                 'V8EventListenerHelper::EnsureErrorHandler(' +
                 'ScriptState::ForRelevantRealm(info), v8Value)')

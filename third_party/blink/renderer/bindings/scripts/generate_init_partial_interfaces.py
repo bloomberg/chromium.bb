@@ -47,9 +47,6 @@ def parse_options():
                       help='if specified, idl-files-list is newline separated. ' +
                       'When unspecified, it\'s formatted as a Posix command line.')
     parser.add_option('--output')
-    # TODO(tkent): Remove the option after the great mv. crbug.com/760462
-    parser.add_option('--snake-case-generated-files',
-                      action='store_true', default=False)
 
     options, args = parser.parse_args()
     if options.output is None:
@@ -97,7 +94,7 @@ def main():
     interface_names.sort()
 
     includes = ['#include "bindings/modules/v8/%s"' %
-                build_basename(interface_name, options.snake_case_generated_files, ext='.h')
+                build_basename(interface_name, ext='.h')
                 for interface_name in interface_names]
     initialize_calls = ['  %s::initialize();' % interface_name
                         for interface_name in interface_names]

@@ -123,9 +123,6 @@ template("process_json5_files") {
     if (defined(invoker.other_args)) {
       args += invoker.other_args
     }
-    if (snake_case_source_files) {
-      args += [ "--snake-case-source-files" ]
-    }
 
     if (defined(invoker.deps)) {
       deps = invoker.deps

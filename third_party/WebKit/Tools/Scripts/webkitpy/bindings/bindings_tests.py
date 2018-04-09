@@ -67,7 +67,6 @@ TBR=(someone in Source/bindings/OWNERS or WATCHLISTS:bindings)
 """
 
 SOURCE_PATH = path_finder.get_source_dir()
-IS_SNAKE_CASE = path_finder.is_source_in_blink()
 DEPENDENCY_IDL_FILES = frozenset([
     'test_implements.idl',
     'test_implements_2.idl',
@@ -79,17 +78,6 @@ DEPENDENCY_IDL_FILES = frozenset([
     'test_interface_partial_secure_context.idl',
     'test_interface_2_partial.idl',
     'test_interface_2_partial_2.idl',
-]) if IS_SNAKE_CASE else frozenset([
-    'TestImplements.idl',
-    'TestImplements2.idl',
-    'TestImplements3.idl',
-    'TestInterfacePartial.idl',
-    'TestInterfacePartial2.idl',
-    'TestInterfacePartial3.idl',
-    'TestInterfacePartial4.idl',
-    'TestInterfacePartialSecureContext.idl',
-    'TestInterface2Partial.idl',
-    'TestInterface2Partial2.idl',
 ])
 
 COMPONENT_DIRECTORY = frozenset(['core', 'modules'])
@@ -202,7 +190,6 @@ class IdlCompilerOptions(object):
         self.output_directory = output_directory
         self.cache_directory = cache_directory
         self.impl_output_directory = impl_output_directory
-        self.snake_case_generated_files = IS_SNAKE_CASE
         self.target_component = target_component
 
 
@@ -327,11 +314,7 @@ def bindings_tests(output_directory, verbose, suppress_diff):
                     idl_basename = os.path.basename(idl_path)
                     name_from_basename, _ = os.path.splitext(idl_basename)
                     definition_name = get_first_interface_name_from_idl(get_file_contents(idl_path))
-                    is_partial_interface_idl = False
-                    if IS_SNAKE_CASE:
-                        is_partial_interface_idl = to_snake_case(definition_name) != name_from_basename
-                    else:
-                        is_partial_interface_idl = definition_name != name_from_basename
+                    is_partial_interface_idl = to_snake_case(definition_name) != name_from_basename
                     if not is_partial_interface_idl:
                         interface_info = interfaces_info[definition_name]
                         if interface_info['is_dictionary']:

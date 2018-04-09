@@ -40,19 +40,19 @@ import v8_types
 import v8_utilities
 
 CALLBACK_INTERFACE_H_INCLUDES = frozenset([
-    'platform/bindings/CallbackInterfaceBase.h',
+    'platform/bindings/callback_interface_base.h',
 ])
 CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
-    'bindings/core/v8/GeneratedCodeHelper.h',
-    'bindings/core/v8/V8BindingForCore.h',
-    'core/execution_context/ExecutionContext.h',
+    'bindings/core/v8/generated_code_helper.h',
+    'bindings/core/v8/v8_binding_for_core.h',
+    'core/execution_context/execution_context.h',
 ])
 LEGACY_CALLBACK_INTERFACE_H_INCLUDES = frozenset([
-    'platform/bindings/DOMWrapperWorld.h',
+    'platform/bindings/dom_wrapper_world.h',
 ])
 LEGACY_CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
-    'bindings/core/v8/V8BindingForCore.h',
-    'bindings/core/v8/V8DOMConfiguration.h',
+    'bindings/core/v8/v8_binding_for_core.h',
+    'bindings/core/v8/v8_dom_configuration.h',
 ])
 
 
