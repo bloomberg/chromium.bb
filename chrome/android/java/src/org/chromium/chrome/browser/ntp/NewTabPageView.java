@@ -287,14 +287,13 @@ public class NewTabPageView
         mSearchBoxView = mNewTabPageLayout.findViewById(R.id.search_box);
         if (SuggestionsConfig.useModernLayout()) {
             mSearchBoxView.setBackgroundResource(R.drawable.modern_toolbar_background);
+            mSearchBoxView.getLayoutParams().height =
+                    getResources().getDimensionPixelSize(R.dimen.ntp_search_box_height_modern);
+
             if (!DeviceFormFactor.isTablet()) {
-                mSearchBoxView.getLayoutParams().height = getResources().getDimensionPixelSize(
-                        R.dimen.modern_toolbar_background_size);
                 mSearchBoxBoundsLateralInset = getResources().getDimensionPixelSize(
                         R.dimen.ntp_search_box_bounds_lateral_inset_modern);
             } else {
-                mSearchBoxView.getLayoutParams().height =
-                        getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
                 GradientDrawable background = (GradientDrawable) mSearchBoxView.getBackground();
                 background.setCornerRadius(mSearchBoxView.getLayoutParams().height / 2.f);
             }
