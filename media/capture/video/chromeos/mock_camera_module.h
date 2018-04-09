@@ -17,18 +17,18 @@
 namespace media {
 namespace unittest_internal {
 
-class MockCameraModule : public arc::mojom::CameraModule {
+class MockCameraModule : public cros::mojom::CameraModule {
  public:
   MockCameraModule();
 
   ~MockCameraModule();
 
   void OpenDevice(int32_t camera_id,
-                  arc::mojom::Camera3DeviceOpsRequest device_ops_request,
+                  cros::mojom::Camera3DeviceOpsRequest device_ops_request,
                   OpenDeviceCallback callback) override;
   MOCK_METHOD3(DoOpenDevice,
                void(int32_t camera_id,
-                    arc::mojom::Camera3DeviceOpsRequest& device_ops_request,
+                    cros::mojom::Camera3DeviceOpsRequest& device_ops_request,
                     OpenDeviceCallback& callback));
 
   void GetNumberOfCameras(GetNumberOfCamerasCallback callback) override;
@@ -40,10 +40,10 @@ class MockCameraModule : public arc::mojom::CameraModule {
   MOCK_METHOD2(DoGetCameraInfo,
                void(int32_t camera_id, GetCameraInfoCallback& callback));
 
-  void SetCallbacks(arc::mojom::CameraModuleCallbacksPtr callbacks,
+  void SetCallbacks(cros::mojom::CameraModuleCallbacksPtr callbacks,
                     SetCallbacksCallback callback) override;
   MOCK_METHOD2(DoSetCallbacks,
-               void(arc::mojom::CameraModuleCallbacksPtr& callbacks,
+               void(cros::mojom::CameraModuleCallbacksPtr& callbacks,
                     SetCallbacksCallback& callback));
 
   void Init(InitCallback callback) override;
@@ -57,17 +57,17 @@ class MockCameraModule : public arc::mojom::CameraModule {
                     bool enabled,
                     SetTorchModeCallback& callback));
 
-  arc::mojom::CameraModulePtrInfo GetInterfacePtrInfo();
+  cros::mojom::CameraModulePtrInfo GetInterfacePtrInfo();
 
  private:
   void CloseBindingOnThread();
 
   void BindOnThread(base::WaitableEvent* done,
-                    arc::mojom::CameraModulePtrInfo* ptr_info);
+                    cros::mojom::CameraModulePtrInfo* ptr_info);
 
   base::Thread mock_module_thread_;
-  mojo::Binding<arc::mojom::CameraModule> binding_;
-  arc::mojom::CameraModuleCallbacksPtr callbacks_;
+  mojo::Binding<cros::mojom::CameraModule> binding_;
+  cros::mojom::CameraModuleCallbacksPtr callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCameraModule);
 };

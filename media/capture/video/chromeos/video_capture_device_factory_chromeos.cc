@@ -70,13 +70,8 @@ bool VideoCaptureDeviceFactoryChromeOS::ShouldEnable() {
   // Checks whether the Chrome OS binary which provides the HAL v3 camera
   // service is installed on the device.  If the binary exists we assume the
   // device is using the new camera HAL v3 stack.
-  //
-  // TODO(jcliang): Remove kArcCamera3Service once we've fully transitioned all
-  //                boards to the new package.
-  const base::FilePath kArcCamera3Service("/usr/bin/arc_camera3_service");
   const base::FilePath kCrosCameraService("/usr/bin/cros_camera_service");
-  return base::PathExists(kArcCamera3Service) ||
-         base::PathExists(kCrosCameraService);
+  return base::PathExists(kCrosCameraService);
 }
 
 // static

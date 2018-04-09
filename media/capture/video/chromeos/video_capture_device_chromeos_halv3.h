@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_VIDEO_CHROMEOS_VIDEO_CAPTURE_DEVICE_ARC_CHROMEOS_H_
-#define MEDIA_CAPTURE_VIDEO_CHROMEOS_VIDEO_CAPTURE_DEVICE_ARC_CHROMEOS_H_
+#ifndef MEDIA_CAPTURE_VIDEO_CHROMEOS_VIDEO_CAPTURE_DEVICE_CHROMEOS_HALV3_H_
+#define MEDIA_CAPTURE_VIDEO_CHROMEOS_VIDEO_CAPTURE_DEVICE_CHROMEOS_HALV3_H_
 
 #include <memory>
 
@@ -28,19 +28,19 @@ class CameraHalDelegate;
 class CameraDeviceContext;
 class CameraDeviceDelegate;
 
-// Implementation of VideoCaptureDevice for ChromeOS with ARC++ camera HALv3.
-class CAPTURE_EXPORT VideoCaptureDeviceArcChromeOS final
+// Implementation of VideoCaptureDevice for ChromeOS with CrOS camera HALv3.
+class CAPTURE_EXPORT VideoCaptureDeviceChromeOSHalv3 final
     : public VideoCaptureDevice,
       public DisplayRotationObserver,
       public chromeos::PowerManagerClient::Observer {
  public:
-  VideoCaptureDeviceArcChromeOS(
+  VideoCaptureDeviceChromeOSHalv3(
       scoped_refptr<base::SingleThreadTaskRunner>
           task_runner_for_screen_observer,
       const VideoCaptureDeviceDescriptor& device_descriptor,
       scoped_refptr<CameraHalDelegate> camera_hal_delegate);
 
-  ~VideoCaptureDeviceArcChromeOS() final;
+  ~VideoCaptureDeviceChromeOSHalv3() final;
 
   // VideoCaptureDevice implementation.
   void AllocateAndStart(const VideoCaptureParams& params,
@@ -81,7 +81,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceArcChromeOS final
   base::Thread camera_device_ipc_thread_;
 
   VideoCaptureParams capture_params_;
-  // |device_context_| is created and owned by VideoCaptureDeviceArcChromeOS
+  // |device_context_| is created and owned by VideoCaptureDeviceChromeOSHalv3
   // and is only accessed by |camera_device_delegate_|.
   std::unique_ptr<CameraDeviceContext> device_context_;
 
@@ -98,11 +98,11 @@ class CAPTURE_EXPORT VideoCaptureDeviceArcChromeOS final
   const bool rotates_with_device_;
   int rotation_;
 
-  base::WeakPtrFactory<VideoCaptureDeviceArcChromeOS> weak_ptr_factory_;
+  base::WeakPtrFactory<VideoCaptureDeviceChromeOSHalv3> weak_ptr_factory_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceArcChromeOS);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceChromeOSHalv3);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_CAPTURE_VIDEO_CHROMEOS_VIDEO_CAPTURE_DEVICE_ARC_CHROMEOS_H_
+#endif  // MEDIA_CAPTURE_VIDEO_CHROMEOS_VIDEO_CAPTURE_DEVICE_CHROMEOS_HALV3_H_

@@ -4,13 +4,13 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("arc_camera3") {
+mojom("cros_camera") {
   sources = [
-    "arc_camera3_service.mojom",
     "camera3.mojom",
     "camera_common.mojom",
     "camera_metadata.mojom",
     "camera_metadata_tags.mojom",
+    "cros_camera_service.mojom",
   ]
 
   deps = [

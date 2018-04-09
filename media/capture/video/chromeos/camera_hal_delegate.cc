@@ -16,7 +16,7 @@
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
-#include "media/capture/video/chromeos/video_capture_device_arc_chromeos.h"
+#include "media/capture/video/chromeos/video_capture_device_chromeos_halv3.h"
 
 namespace media {
 
@@ -31,7 +31,7 @@ class LocalCameraClientObserver : public CameraClientObserver {
       scoped_refptr<CameraHalDelegate> camera_hal_delegate)
       : camera_hal_delegate_(std::move(camera_hal_delegate)) {}
 
-  void OnChannelCreated(arc::mojom::CameraModulePtr camera_module) override {
+  void OnChannelCreated(cros::mojom::CameraModulePtr camera_module) override {
     camera_hal_delegate_->SetCameraModule(camera_module.PassInterface());
   }
 
@@ -65,7 +65,7 @@ void CameraHalDelegate::RegisterCameraClient() {
 }
 
 void CameraHalDelegate::SetCameraModule(
-    arc::mojom::CameraModulePtrInfo camera_module_ptr_info) {
+    cros::mojom::CameraModulePtrInfo camera_module_ptr_info) {
   ipc_task_runner_->PostTask(
       FROM_HERE, base::Bind(&CameraHalDelegate::SetCameraModuleOnIpcThread,
                             this, base::Passed(&camera_module_ptr_info)));
@@ -89,7 +89,7 @@ std::unique_ptr<VideoCaptureDevice> CameraHalDelegate::CreateDevice(
     LOG(ERROR) << "Invalid camera device: " << device_descriptor.device_id;
     return capture_device;
   }
-  capture_device.reset(new VideoCaptureDeviceArcChromeOS(
+  capture_device.reset(new VideoCaptureDeviceChromeOSHalv3(
       std::move(task_runner_for_screen_observer), device_descriptor, this));
   return capture_device;
 }
@@ -108,11 +108,11 @@ void CameraHalDelegate::GetSupportedFormats(
     LOG(ERROR) << "Invalid camera_id: " << camera_id;
     return;
   }
-  const arc::mojom::CameraInfoPtr& camera_info = camera_info_[camera_id];
+  const cros::mojom::CameraInfoPtr& camera_info = camera_info_[camera_id];
 
-  const arc::mojom::CameraMetadataEntryPtr* min_frame_durations =
+  const cros::mojom::CameraMetadataEntryPtr* min_frame_durations =
       GetMetadataEntry(camera_info->static_camera_characteristics,
-                       arc::mojom::CameraMetadataTag::
+                       cros::mojom::CameraMetadataTag::
                            ANDROID_SCALER_AVAILABLE_MIN_FRAME_DURATIONS);
   if (!min_frame_durations) {
     LOG(ERROR)
@@ -144,7 +144,7 @@ void CameraHalDelegate::GetSupportedFormats(
 
     DVLOG(1) << "[" << std::hex << format << " " << std::dec << width << " "
              << height << " " << duration << "]";
-    auto hal_format = static_cast<arc::mojom::HalPixelFormat>(format);
+    auto hal_format = static_cast<cros::mojom::HalPixelFormat>(format);
     const ChromiumPixelFormat cr_format =
         camera_buffer_factory_->ResolveStreamBufferFormat(hal_format);
     if (cr_format.video_format == PIXEL_FORMAT_UNKNOWN) {
@@ -167,7 +167,7 @@ void CameraHalDelegate::GetDeviceDescriptors(
   for (size_t id = 0; id < num_builtin_cameras_; ++id) {
     VideoCaptureDeviceDescriptor desc;
     std::string camera_id = std::to_string(id);
-    const arc::mojom::CameraInfoPtr& camera_info = camera_info_[camera_id];
+    const cros::mojom::CameraInfoPtr& camera_info = camera_info_[camera_id];
     if (!camera_info) {
       continue;
     }
@@ -175,15 +175,15 @@ void CameraHalDelegate::GetDeviceDescriptors(
     desc.capture_api = VideoCaptureApi::ANDROID_API2_LIMITED;
     desc.transport_type = VideoCaptureTransportType::OTHER_TRANSPORT;
     switch (camera_info->facing) {
-      case arc::mojom::CameraFacing::CAMERA_FACING_BACK:
+      case cros::mojom::CameraFacing::CAMERA_FACING_BACK:
         desc.facing = VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT;
         desc.set_display_name("Back Camera");
         break;
-      case arc::mojom::CameraFacing::CAMERA_FACING_FRONT:
+      case cros::mojom::CameraFacing::CAMERA_FACING_FRONT:
         desc.facing = VideoFacingMode::MEDIA_VIDEO_FACING_USER;
         desc.set_display_name("Front Camera");
         break;
-      case arc::mojom::CameraFacing::CAMERA_FACING_EXTERNAL:
+      case cros::mojom::CameraFacing::CAMERA_FACING_EXTERNAL:
         desc.facing = VideoFacingMode::MEDIA_VIDEO_FACING_NONE;
         desc.set_display_name("External Camera");
         break;
@@ -210,7 +210,7 @@ void CameraHalDelegate::GetCameraInfo(int32_t camera_id,
 
 void CameraHalDelegate::OpenDevice(
     int32_t camera_id,
-    arc::mojom::Camera3DeviceOpsRequest device_ops_request,
+    cros::mojom::Camera3DeviceOpsRequest device_ops_request,
     const OpenDeviceCallback& callback) {
   DCHECK(!ipc_task_runner_->BelongsToCurrentThread());
   // This method may be called on any thread except |ipc_task_runner_|.
@@ -224,7 +224,7 @@ void CameraHalDelegate::OpenDevice(
 }
 
 void CameraHalDelegate::SetCameraModuleOnIpcThread(
-    arc::mojom::CameraModulePtrInfo camera_module_ptr_info) {
+    cros::mojom::CameraModulePtrInfo camera_module_ptr_info) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   if (camera_module_.is_bound()) {
     LOG(ERROR) << "CameraModule is already bound";
@@ -284,8 +284,8 @@ void CameraHalDelegate::OnGotNumberOfCamerasOnIpcThread(int32_t num_cameras) {
   // Per camera HAL v3 specification SetCallbacks() should be called after the
   // first time GetNumberOfCameras() is called, and before other CameraModule
   // functions are called.
-  arc::mojom::CameraModuleCallbacksPtr camera_module_callbacks_ptr;
-  arc::mojom::CameraModuleCallbacksRequest camera_module_callbacks_request =
+  cros::mojom::CameraModuleCallbacksPtr camera_module_callbacks_ptr;
+  cros::mojom::CameraModuleCallbacksRequest camera_module_callbacks_request =
       mojo::MakeRequest(&camera_module_callbacks_ptr);
   camera_module_callbacks_.Bind(std::move(camera_module_callbacks_request));
   camera_module_->SetCallbacks(
@@ -318,7 +318,7 @@ void CameraHalDelegate::GetCameraInfoOnIpcThread(
 void CameraHalDelegate::OnGotCameraInfoOnIpcThread(
     int32_t camera_id,
     int32_t result,
-    arc::mojom::CameraInfoPtr camera_info) {
+    cros::mojom::CameraInfoPtr camera_info) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "Got camera info of camera " << camera_id;
   if (result) {
@@ -333,7 +333,7 @@ void CameraHalDelegate::OnGotCameraInfoOnIpcThread(
 
 void CameraHalDelegate::OpenDeviceOnIpcThread(
     int32_t camera_id,
-    arc::mojom::Camera3DeviceOpsRequest device_ops_request,
+    cros::mojom::Camera3DeviceOpsRequest device_ops_request,
     const OpenDeviceCallback& callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   camera_module_->OpenDevice(camera_id, std::move(device_ops_request),
@@ -343,7 +343,7 @@ void CameraHalDelegate::OpenDeviceOnIpcThread(
 // CameraModuleCallbacks implementations.
 void CameraHalDelegate::CameraDeviceStatusChange(
     int32_t camera_id,
-    arc::mojom::CameraDeviceStatus new_status) {
+    cros::mojom::CameraDeviceStatus new_status) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   // TODO(jcliang): Handle status change for external cameras.
   NOTIMPLEMENTED() << "CameraDeviceStatusChange is not implemented";
@@ -351,7 +351,7 @@ void CameraHalDelegate::CameraDeviceStatusChange(
 
 void CameraHalDelegate::TorchModeStatusChange(
     int32_t camera_id,
-    arc::mojom::TorchModeStatus new_status) {
+    cros::mojom::TorchModeStatus new_status) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   // Do nothing here as we don't care about torch mode status.
 }
