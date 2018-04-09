@@ -1224,6 +1224,7 @@ static int read_is_inter_block(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                int segment_id, aom_reader *r) {
   if (segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME)) {
     const int frame = get_segdata(&cm->seg, segment_id, SEG_LVL_REF_FRAME);
+    if (frame < LAST_FRAME) return 0;
     RefBuffer *ref_buf = &cm->frame_refs[frame - LAST_FRAME];
     return frame != INTRA_FRAME && av1_is_valid_scale(&ref_buf->sf);
   }
