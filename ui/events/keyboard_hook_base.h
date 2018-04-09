@@ -20,6 +20,9 @@ class KeyboardHookBase : public KeyboardHook {
                    KeyEventCallback callback);
   ~KeyboardHookBase() override;
 
+  // KeyboardHook implementation.
+  bool IsKeyLocked(int native_key_code) override;
+
  protected:
   // Indicates whether |key_code| should be intercepted by the keyboard hook.
   bool ShouldCaptureKeyEvent(int key_code) const;

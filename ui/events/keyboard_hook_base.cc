@@ -22,6 +22,10 @@ KeyboardHookBase::KeyboardHookBase(
 
 KeyboardHookBase::~KeyboardHookBase() = default;
 
+bool KeyboardHookBase::IsKeyLocked(int native_key_code) {
+  return ShouldCaptureKeyEvent(native_key_code);
+}
+
 bool KeyboardHookBase::ShouldCaptureKeyEvent(int key_code) const {
   return !key_codes_ || base::ContainsKey(key_codes_.value(), key_code);
 }

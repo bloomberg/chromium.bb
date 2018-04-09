@@ -83,6 +83,10 @@ bool HeadlessWindowTreeHost::CaptureSystemKeyEventsImpl(
 
 void HeadlessWindowTreeHost::ReleaseSystemKeyEventCapture() {}
 
+bool HeadlessWindowTreeHost::IsKeyLocked(int native_key_code) {
+  return false;
+}
+
 void HeadlessWindowTreeHost::SetCursorNative(gfx::NativeCursor cursor_type) {}
 
 void HeadlessWindowTreeHost::MoveCursorToScreenLocationInPixels(

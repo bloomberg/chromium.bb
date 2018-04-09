@@ -27,6 +27,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/touch_selection/touch_selection_controller.h"
 
 #if defined(OS_WIN)
@@ -298,6 +299,12 @@ void RenderWidgetHostViewEventHandler::OnKeyEvent(ui::KeyEvent* event) {
     SetKeyboardFocus();
     // We don't have to communicate with an input method here.
     NativeWebKeyboardEvent webkit_event(*event);
+
+    // If the key has been reserved as part of the active KeyboardLock request,
+    // then we want to mark it as such so it is not intercepted by the browser.
+    if (IsKeyLocked(*event))
+      webkit_event.skip_in_browser = true;
+
     delegate_->ForwardKeyboardEventWithLatencyInfo(
         webkit_event, *event->latency(), &mark_event_as_handled);
   }
@@ -929,6 +936,17 @@ void RenderWidgetHostViewEventHandler::ProcessTouchEvent(
     const blink::WebTouchEvent& event,
     const ui::LatencyInfo& latency) {
   host_->ForwardTouchEventWithLatencyInfo(event, latency);
+}
+
+bool RenderWidgetHostViewEventHandler::IsKeyLocked(const ui::KeyEvent& event) {
+  // Note: We never consider 'ESC' to be locked as we don't want to prevent it
+  // from being handled by the browser.  Doing so would have adverse effects
+  // such as the user being unable to exit fullscreen mode.
+  if (!IsKeyboardLocked() || event.key_code() == ui::VKEY_ESCAPE)
+    return false;
+
+  int key_code = ui::KeycodeConverter::DomCodeToNativeKeycode(event.code());
+  return scoped_keyboard_hook_->IsKeyLocked(key_code);
 }
 
 }  // namespace content

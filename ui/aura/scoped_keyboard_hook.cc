@@ -9,6 +9,8 @@
 
 namespace aura {
 
+ScopedKeyboardHook::ScopedKeyboardHook() = default;
+
 ScopedKeyboardHook::ScopedKeyboardHook(
     base::WeakPtr<WindowTreeHost> window_tree_host)
     : window_tree_host_(window_tree_host) {
@@ -19,6 +21,10 @@ ScopedKeyboardHook::~ScopedKeyboardHook() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (window_tree_host_)
     window_tree_host_->ReleaseSystemKeyEventCapture();
+}
+
+bool ScopedKeyboardHook::IsKeyLocked(int native_key_code) {
+  return window_tree_host_ && window_tree_host_->IsKeyLocked(native_key_code);
 }
 
 }  // namespace aura

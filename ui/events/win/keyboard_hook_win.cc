@@ -102,7 +102,7 @@ LRESULT CALLBACK KeyboardHookWin::ProcessKeyEvent(int code,
 
   KBDLLHOOKSTRUCT* ll_hooks = reinterpret_cast<KBDLLHOOKSTRUCT*>(l_param);
   if (!IsOSReservedKey(ll_hooks->vkCode) &&
-      instance_->ShouldCaptureKeyEvent(ll_hooks->vkCode)) {
+      instance_->ShouldCaptureKeyEvent(ll_hooks->scanCode)) {
     MSG msg = {nullptr, w_param, ll_hooks->vkCode,
                (ll_hooks->scanCode << 16) | (ll_hooks->flags & 0xFFFF),
                ll_hooks->time};

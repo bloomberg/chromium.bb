@@ -20,7 +20,13 @@ class WindowTreeHost;
 class AURA_EXPORT ScopedKeyboardHook {
  public:
   explicit ScopedKeyboardHook(base::WeakPtr<WindowTreeHost> weak_ptr);
-  ~ScopedKeyboardHook();
+  virtual ~ScopedKeyboardHook();
+
+  // True if |native_key_code| is reserved for an active KeyboardLock request.
+  virtual bool IsKeyLocked(int native_key_code);
+
+ protected:
+  ScopedKeyboardHook();
 
  private:
   THREAD_CHECKER(thread_checker_);

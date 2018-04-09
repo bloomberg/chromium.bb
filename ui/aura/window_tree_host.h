@@ -273,6 +273,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // Stops capturing system keyboard events.
   virtual void ReleaseSystemKeyEventCapture() = 0;
 
+  // True if |native_key_code| is reserved for an active KeyboardLock request.
+  virtual bool IsKeyLocked(int native_key_code) = 0;
+
  protected:
   const base::ObserverList<WindowTreeHostObserver>& observers() const {
     return observers_;

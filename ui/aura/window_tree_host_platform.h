@@ -73,6 +73,7 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
   bool CaptureSystemKeyEventsImpl(
       base::Optional<base::flat_set<int>> native_key_codes) override;
   void ReleaseSystemKeyEventCapture() override;
+  bool IsKeyLocked(int native_key_code) override;
 
  private:
   gfx::AcceleratedWidget widget_;

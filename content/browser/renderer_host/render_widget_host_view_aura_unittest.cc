@@ -84,6 +84,7 @@
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/scoped_keyboard_hook.h"
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/aura_test_utils.h"
 #include "ui/aura/test/test_cursor_client.h"
@@ -111,6 +112,7 @@
 #include "ui/events/gestures/motion_event_aura.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/selection_bound.h"
@@ -477,6 +479,45 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
   bool new_content_rendering_timeout_fired_;
   std::unique_ptr<MockWidgetImpl> widget_impl_;
 };
+
+class TestScopedKeyboardHook : public aura::ScopedKeyboardHook {
+ public:
+  TestScopedKeyboardHook();
+  ~TestScopedKeyboardHook() override;
+
+  // aura::ScopedKeyboardHook override.
+  bool IsKeyLocked(int native_key_code) override;
+
+  // Set up the keys being locked for testing.  One of these methods must be
+  // called before using an instance.
+  void LockAllKeys();
+  void LockSpecificKey(int new_key_to_lock);
+
+ private:
+  bool keyboard_lock_active_ = false;
+  base::Optional<int> locked_key_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestScopedKeyboardHook);
+};
+
+TestScopedKeyboardHook::TestScopedKeyboardHook() = default;
+
+TestScopedKeyboardHook::~TestScopedKeyboardHook() = default;
+
+bool TestScopedKeyboardHook::IsKeyLocked(int native_key_code) {
+  DCHECK(keyboard_lock_active_) << "Did you forget to reserve keys to lock?";
+  return !locked_key_ || (locked_key_.value() == native_key_code);
+}
+
+void TestScopedKeyboardHook::LockAllKeys() {
+  keyboard_lock_active_ = true;
+  locked_key_.reset();
+}
+
+void TestScopedKeyboardHook::LockSpecificKey(int key_to_lock) {
+  keyboard_lock_active_ = true;
+  locked_key_ = key_to_lock;
+}
 
 enum WheelScrollingMode {
   kWheelScrollingModeNone,
@@ -1705,6 +1746,293 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   EXPECT_EQ(0U, pointer_state().GetPointerCount());
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ(0U, events.size());
+}
+
+// The DOM KeyCode map for Fuchsia maps all DomCodes to 0.  This means that
+// tests which expect different behaviors for different keys will not work.
+// Tracked via crbug.com/829551
+#if defined(OS_FUCHSIA)
+#define MAYBE_KeyEventRoutingWithKeyboardLockActiveForOneKey \
+  DISABLED_KeyEventRoutingWithKeyboardLockActiveForOneKey
+#else
+#define MAYBE_KeyEventRoutingWithKeyboardLockActiveForOneKey \
+  KeyEventRoutingWithKeyboardLockActiveForOneKey
+#endif
+TEST_F(RenderWidgetHostViewAuraTest,
+       MAYBE_KeyEventRoutingWithKeyboardLockActiveForOneKey) {
+  view_->InitAsChild(nullptr);
+  view_->Show();
+
+  auto test_hook = std::make_unique<TestScopedKeyboardHook>();
+  test_hook->LockSpecificKey(
+      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::US_A));
+  view_->event_handler()->scoped_keyboard_hook_ = std::move(test_hook);
+
+  // This locked key will skip the prehandler and be sent to the input handler.
+  ui::KeyEvent key_event1(ui::ET_KEY_PRESSED,
+                          ui::DomCodeToUsLayoutKeyboardCode(ui::DomCode::US_A),
+                          ui::DomCode::US_A, ui::EF_NONE);
+  view_->OnKeyEvent(&key_event1);
+  const NativeWebKeyboardEvent* event1 =
+      render_widget_host_delegate()->last_event();
+  ASSERT_FALSE(event1);
+  // Run the runloop to ensure input messages are dispatched.  Otherwise the
+  // result of GetAndResetDispatchedMessages() will not be valid.
+  base::RunLoop().RunUntilIdle();
+  auto events = GetAndResetDispatchedMessages();
+  ASSERT_FALSE(events.empty());
+  const NativeWebKeyboardEvent* native_key_event1 =
+      static_cast<const NativeWebKeyboardEvent*>(
+          events[0]->ToEvent()->Event()->web_event.get());
+  ASSERT_TRUE(native_key_event1);
+  ASSERT_EQ(key_event1.key_code(), native_key_event1->windows_key_code);
+  ASSERT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event1.code()),
+            native_key_event1->native_key_code);
+
+  // These keys will pass through the prehandler since they aren't locked.
+  std::vector<ui::DomCode> dom_codes = {
+      ui::DomCode::US_B,     ui::DomCode::US_Z,  ui::DomCode::TAB,
+      ui::DomCode::ALT_LEFT, ui::DomCode::ENTER, ui::DomCode::ESCAPE};
+  for (ui::DomCode dom_code : dom_codes) {
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+                           ui::DomCodeToUsLayoutKeyboardCode(dom_code),
+                           dom_code, ui::EF_NONE);
+    view_->OnKeyEvent(&key_event);
+    const NativeWebKeyboardEvent* event =
+        render_widget_host_delegate()->last_event();
+    ASSERT_TRUE(event) << "Failed for DomCode: "
+                       << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+    ASSERT_EQ(key_event.key_code(), event->windows_key_code);
+    ASSERT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event.code()),
+              event->native_key_code);
+  }
+}
+
+// The DOM KeyCode map for Fuchsia maps all DomCodes to 0.  This means that
+// tests which expect different behaviors for different keys will not work.
+// Tracked via crbug.com/829551
+#if defined(OS_FUCHSIA)
+#define MAYBE_KeyEventRoutingWithKeyboardLockActiveForEscKey \
+  DISABLED_KeyEventRoutingWithKeyboardLockActiveForEscKey
+#else
+#define MAYBE_KeyEventRoutingWithKeyboardLockActiveForEscKey \
+  KeyEventRoutingWithKeyboardLockActiveForEscKey
+#endif
+TEST_F(RenderWidgetHostViewAuraTest,
+       MAYBE_KeyEventRoutingWithKeyboardLockActiveForEscKey) {
+  view_->InitAsChild(nullptr);
+  view_->Show();
+
+  auto test_hook = std::make_unique<TestScopedKeyboardHook>();
+  test_hook->LockSpecificKey(
+      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::ESCAPE));
+  view_->event_handler()->scoped_keyboard_hook_ = std::move(test_hook);
+
+  // Although this key was locked, it will still pass through the prehandler as
+  // we do not want to prevent ESC from being used to exit fullscreen.
+  ui::KeyEvent key_event1(
+      ui::ET_KEY_PRESSED,
+      ui::DomCodeToUsLayoutKeyboardCode(ui::DomCode::ESCAPE),
+      ui::DomCode::ESCAPE, ui::EF_NONE);
+  view_->OnKeyEvent(&key_event1);
+  const NativeWebKeyboardEvent* event1 =
+      render_widget_host_delegate()->last_event();
+  ASSERT_TRUE(event1);
+  ASSERT_EQ(key_event1.key_code(), event1->windows_key_code);
+  ASSERT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event1.code()),
+            event1->native_key_code);
+
+  // This event will pass through the prehandler since it isn't locked.
+  ui::KeyEvent key_event2(ui::ET_KEY_PRESSED,
+                          ui::DomCodeToUsLayoutKeyboardCode(ui::DomCode::US_B),
+                          ui::DomCode::US_B, ui::EF_NONE);
+  view_->OnKeyEvent(&key_event2);
+  const NativeWebKeyboardEvent* event2 =
+      render_widget_host_delegate()->last_event();
+  ASSERT_TRUE(event2);
+  ASSERT_EQ(key_event2.key_code(), event2->windows_key_code);
+  ASSERT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event2.code()),
+            event2->native_key_code);
+}
+
+TEST_F(RenderWidgetHostViewAuraTest,
+       KeyEventRoutingWithKeyboardLockActiveForAllKeys) {
+  view_->InitAsChild(nullptr);
+  view_->Show();
+
+  auto test_hook = std::make_unique<TestScopedKeyboardHook>();
+  test_hook->LockAllKeys();
+  view_->event_handler()->scoped_keyboard_hook_ = std::move(test_hook);
+
+  // These keys will skip the prehandler and be sent to the input handler.
+  std::vector<ui::DomCode> dom_codes = {ui::DomCode::US_A, ui::DomCode::US_B,
+                                        ui::DomCode::TAB, ui::DomCode::ALT_LEFT,
+                                        ui::DomCode::ENTER};
+  for (ui::DomCode dom_code : dom_codes) {
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+                           ui::DomCodeToUsLayoutKeyboardCode(dom_code),
+                           dom_code, ui::EF_NONE);
+    view_->OnKeyEvent(&key_event);
+    const NativeWebKeyboardEvent* event =
+        render_widget_host_delegate()->last_event();
+    ASSERT_FALSE(event) << "Failed for DomCode: "
+                        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+    // Run the runloop to ensure input messages are dispatched.  Otherwise the
+    // result of GetAndResetDispatchedMessages() will not be valid.
+    base::RunLoop().RunUntilIdle();
+    auto events = GetAndResetDispatchedMessages();
+    ASSERT_FALSE(events.empty())
+        << "Failed for DomCode: "
+        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+    const NativeWebKeyboardEvent* native_key_event =
+        static_cast<const NativeWebKeyboardEvent*>(
+            events[0]->ToEvent()->Event()->web_event.get());
+    ASSERT_TRUE(native_key_event)
+        << "Failed for DomCode: "
+        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+    ASSERT_EQ(key_event.key_code(), native_key_event->windows_key_code);
+    ASSERT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event.code()),
+              native_key_event->native_key_code);
+  }
+
+  // Although this key was locked, it will still pass through the prehandler as
+  // we do not want to prevent ESC from being used to exit fullscreen.
+  ui::KeyEvent esc_key_event(
+      ui::ET_KEY_PRESSED,
+      ui::DomCodeToUsLayoutKeyboardCode(ui::DomCode::ESCAPE),
+      ui::DomCode::ESCAPE, ui::EF_NONE);
+  view_->OnKeyEvent(&esc_key_event);
+  const NativeWebKeyboardEvent* esc_event =
+      render_widget_host_delegate()->last_event();
+  ASSERT_TRUE(esc_event);
+  ASSERT_EQ(esc_key_event.key_code(), esc_event->windows_key_code);
+  ASSERT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(esc_key_event.code()),
+            esc_event->native_key_code);
+}
+
+TEST_F(RenderWidgetHostViewAuraTest,
+       KeyEventRoutingKeyboardLockAndChildPopupWithInputGrab) {
+  parent_view_->SetBounds(gfx::Rect(10, 10, 400, 400));
+  parent_view_->Focus();
+  ASSERT_TRUE(parent_view_->HasFocus());
+
+  // kWebPopupTypePage means the child view (popup) will receive input.
+  view_->SetPopupType(blink::kWebPopupTypePage);
+  view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
+  ASSERT_NE(nullptr, view_->GetNativeView());
+  view_->Show();
+
+  MockRenderWidgetHostImpl* parent_host =
+      static_cast<MockRenderWidgetHostImpl*>(parent_host_);
+  // Run the runloop to ensure input messages are dispatched.  Otherwise the
+  // result of GetAndResetDispatchedMessages() will not be valid.
+  base::RunLoop().RunUntilIdle();
+  // A MouseCapture lost message is posted when the child gains focus, clear
+  // that message out so we can reliably test the number of messages
+  // dispatched later on in the test.
+  parent_host->input_handler()->GetAndResetDispatchedMessages();
+
+  // The parent view owns the KeyboardLock for this test.
+  auto test_hook = std::make_unique<TestScopedKeyboardHook>();
+  test_hook->LockAllKeys();
+  parent_view_->event_handler()->scoped_keyboard_hook_ = std::move(test_hook);
+
+  // These keys will not be processed by the parent view but will be handled in
+  // the child (popup) view.
+  std::vector<ui::DomCode> dom_codes = {
+      ui::DomCode::US_A,     ui::DomCode::ENTER, ui::DomCode::TAB,
+      ui::DomCode::ALT_LEFT, ui::DomCode::US_Z,  ui::DomCode::ESCAPE};
+  for (ui::DomCode dom_code : dom_codes) {
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+                           ui::DomCodeToUsLayoutKeyboardCode(dom_code),
+                           dom_code, ui::EF_NONE);
+    parent_view_->OnKeyEvent(&key_event);
+    const NativeWebKeyboardEvent* parent_event = delegates_[0]->last_event();
+    ASSERT_FALSE(parent_event)
+        << "Failed for DomCode: "
+        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+
+    const NativeWebKeyboardEvent* child_event =
+        render_widget_host_delegate()->last_event();
+    ASSERT_TRUE(child_event)
+        << "Failed for DomCode: "
+        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+    ASSERT_EQ(key_event.key_code(), child_event->windows_key_code);
+    ASSERT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event.code()),
+              child_event->native_key_code);
+    // Run the runloop to ensure input messages are dispatched.  Otherwise the
+    // result of GetAndResetDispatchedMessages() will not be valid.
+    base::RunLoop().RunUntilIdle();
+    auto parent_events =
+        parent_host->input_handler()->GetAndResetDispatchedMessages();
+    ASSERT_TRUE(parent_events.empty())
+        << "Failed for DomCode: "
+        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+    auto child_events = GetAndResetDispatchedMessages();
+    ASSERT_FALSE(child_events.empty())
+        << "Failed for DomCode: "
+        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+  }
+}
+
+TEST_F(RenderWidgetHostViewAuraTest,
+       KeyEventRoutingKeyboardLockAndChildPopupWithoutInputGrab) {
+  parent_view_->SetBounds(gfx::Rect(10, 10, 400, 400));
+  parent_view_->Focus();
+  ASSERT_TRUE(parent_view_->HasFocus());
+
+  // kWebPopupTypeNone means the child view (popup) will not receive input.
+  view_->SetPopupType(blink::kWebPopupTypeNone);
+  view_->InitAsPopup(parent_view_, gfx::Rect(10, 10, 100, 100));
+  ASSERT_NE(nullptr, view_->GetNativeView());
+  view_->Show();
+
+  // The parent view owns the KeyboardLock for this test.
+  auto test_hook = std::make_unique<TestScopedKeyboardHook>();
+  test_hook->LockAllKeys();
+  parent_view_->event_handler()->scoped_keyboard_hook_ = std::move(test_hook);
+
+  // These keys will be handled by the parent view and will not be sent through
+  // the prehandler input pipeline.
+  std::vector<ui::DomCode> dom_codes = {ui::DomCode::US_A, ui::DomCode::ENTER,
+                                        ui::DomCode::TAB, ui::DomCode::ALT_LEFT,
+                                        ui::DomCode::US_Z};
+  MockRenderWidgetHostImpl* parent_host =
+      static_cast<MockRenderWidgetHostImpl*>(parent_host_);
+  for (ui::DomCode dom_code : dom_codes) {
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+                           ui::DomCodeToUsLayoutKeyboardCode(dom_code),
+                           dom_code, ui::EF_NONE);
+    parent_view_->OnKeyEvent(&key_event);
+    const NativeWebKeyboardEvent* child_event =
+        render_widget_host_delegate()->last_event();
+    ASSERT_FALSE(child_event)
+        << "Failed for DomCode: "
+        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+    // Run the runloop to ensure input messages are dispatched.  Otherwise the
+    // result of GetAndResetDispatchedMessages() will not be valid.
+    base::RunLoop().RunUntilIdle();
+    auto child_events = GetAndResetDispatchedMessages();
+    ASSERT_TRUE(child_events.empty())
+        << "Failed for DomCode: "
+        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+
+    const NativeWebKeyboardEvent* parent_event = delegates_[0]->last_event();
+    ASSERT_FALSE(parent_event)
+        << "Failed for DomCode: "
+        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+    auto events = parent_host->input_handler()->GetAndResetDispatchedMessages();
+    ASSERT_FALSE(events.empty());
+    const NativeWebKeyboardEvent* native_key_event =
+        static_cast<const NativeWebKeyboardEvent*>(
+            events.back()->ToEvent()->Event()->web_event.get());
+    ASSERT_TRUE(native_key_event)
+        << "Failed for DomCode: "
+        << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
+    ASSERT_EQ(key_event.key_code(), native_key_event->windows_key_code);
+    ASSERT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event.code()),
+              native_key_event->native_key_code);
+  }
 }
 
 void RenderWidgetHostViewAuraTest::TimerBasedWheelEventPhaseInfo() {

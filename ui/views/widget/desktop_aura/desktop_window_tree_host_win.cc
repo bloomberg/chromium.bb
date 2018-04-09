@@ -572,6 +572,10 @@ void DesktopWindowTreeHostWin::ReleaseSystemKeyEventCapture() {
   keyboard_hook_.reset();
 }
 
+bool DesktopWindowTreeHostWin::IsKeyLocked(int native_key_code) {
+  return keyboard_hook_ && keyboard_hook_->IsKeyLocked(native_key_code);
+}
+
 void DesktopWindowTreeHostWin::SetCursorNative(gfx::NativeCursor cursor) {
   ui::CursorLoaderWin cursor_loader;
   cursor_loader.SetPlatformCursor(&cursor);

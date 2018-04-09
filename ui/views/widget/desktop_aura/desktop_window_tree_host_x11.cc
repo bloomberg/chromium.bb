@@ -1314,6 +1314,10 @@ void DesktopWindowTreeHostX11::ReleaseSystemKeyEventCapture() {
   keyboard_hook_.reset();
 }
 
+bool DesktopWindowTreeHostX11::IsKeyLocked(int native_key_code) {
+  return keyboard_hook_ && keyboard_hook_->IsKeyLocked(native_key_code);
+}
+
 void DesktopWindowTreeHostX11::SetCursorNative(gfx::NativeCursor cursor) {
   XDefineCursor(xdisplay_, xwindow_, cursor.platform());
 }
