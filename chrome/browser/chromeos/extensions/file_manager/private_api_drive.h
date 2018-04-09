@@ -36,6 +36,26 @@ struct EntryProperties;
 }  // namespace file_manager_private
 }  // namespace api
 
+// Implements the chrome.fileManagerPrivate.ensureFileDownloaded method.
+class FileManagerPrivateInternalEnsureFileDownloadedFunction
+    : public LoggedAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.ensureFileDownloaded",
+                             FILEMANAGERPRIVATE_ENSUREFILEDOWNLOADED)
+
+ protected:
+  ~FileManagerPrivateInternalEnsureFileDownloadedFunction() override {}
+
+  // AsyncExtensionFunction overrides.
+  bool RunAsync() override;
+
+ private:
+  // Callback for RunAsync().
+  void OnDownloadFinished(drive::FileError error,
+                          const base::FilePath& file_path,
+                          std::unique_ptr<drive::ResourceEntry> entry);
+};
+
 // Retrieves property information for an entry and returns it as a dictionary.
 // On error, returns a dictionary with the key "error" set to the error number
 // (base::File::Error).

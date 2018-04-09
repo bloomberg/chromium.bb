@@ -653,6 +653,50 @@ void FileManagerPrivateInternalPinDriveFileFunction::OnPinStateSet(
   }
 }
 
+bool FileManagerPrivateInternalEnsureFileDownloadedFunction::RunAsync() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  using extensions::api::file_manager_private_internal::EnsureFileDownloaded::
+      Params;
+  const std::unique_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const base::FilePath drive_path =
+      drive::util::ExtractDrivePath(file_manager::util::GetLocalPathFromURL(
+          render_frame_host(), GetProfile(), GURL(params->url)));
+  if (drive_path.empty()) {
+    // Not under Drive. No need to fill the cache.
+    SendResponse(true);
+    return true;
+  }
+
+  drive::FileSystemInterface* const file_system =
+      drive::util::GetFileSystemByProfile(GetProfile());
+  if (!file_system)  // |file_system| is NULL if Drive is disabled.
+    return false;
+
+  file_system->GetFile(
+      drive_path,
+      base::Bind(&FileManagerPrivateInternalEnsureFileDownloadedFunction::
+                     OnDownloadFinished,
+                 this));
+  return true;
+}
+
+void FileManagerPrivateInternalEnsureFileDownloadedFunction::OnDownloadFinished(
+    drive::FileError error,
+    const base::FilePath& file_path,
+    std::unique_ptr<drive::ResourceEntry> entry) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (error == drive::FILE_ERROR_OK) {
+    SendResponse(true);
+  } else {
+    SetError(drive::FileErrorToString(error));
+    SendResponse(false);
+  }
+}
+
 bool FileManagerPrivateInternalCancelFileTransfersFunction::RunAsync() {
   using extensions::api::file_manager_private_internal::CancelFileTransfers::
       Params;

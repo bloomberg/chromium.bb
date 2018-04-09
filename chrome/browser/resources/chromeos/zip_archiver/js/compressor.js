@@ -75,6 +75,12 @@ unpacker.Compressor = function(naclModule, items) {
   this.entries_ = {};
 
   /**
+   * The file being packed.
+   * @type {File}
+   */
+  this.file_ = null;
+
+  /**
    * Map from entry ids to its metadata.
    * @const {!Object<!unpacker.types.EntryId, !Metadata>}
    */
@@ -451,7 +457,14 @@ unpacker.Compressor.prototype.onReadFileChunk_ = function(data) {
   if (!this.file_) {
     entry.file(function(file) {
       this.file_ = file;
-      readFileChunk();
+      chrome.fileManagerPrivate.ensureFileDownloaded(entry, () => {
+        if (chrome.runtime.lastError) {
+          console.error(chrome.runtime.lastError.message);
+          this.onErrorInternal_();
+          return;
+        }
+        readFileChunk();
+      });
     }.bind(this));
     return;
   }
