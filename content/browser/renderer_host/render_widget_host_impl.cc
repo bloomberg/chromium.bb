@@ -6,6 +6,7 @@
 
 #include <math.h>
 
+#include <algorithm>
 #include <set>
 #include <tuple>
 #include <utility>
@@ -104,6 +105,9 @@
 #include "ui/display/screen.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/event.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -2314,15 +2318,17 @@ void RenderWidgetHostImpl::RequestKeyboardLock(
     return;
   }
 
-  // If keyboard lock is already active, then skip the request and just update
-  // the set of keys used for the lock.  Otherwise call through the delegate to
-  // request keyboard lock.  Cancel the request if we don't have a delegate.
   DCHECK(!keys_to_lock.has_value() || !keys_to_lock.value().empty());
   keyboard_keys_to_lock_ = std::move(keys_to_lock);
   keyboard_lock_requested_ = true;
-  if (IsKeyboardLocked())
-    LockKeyboard();
-  else if (!delegate_->RequestKeyboardLock(this))
+
+  const int esc_native_key_code =
+      ui::KeycodeConverter::DomCodeToNativeKeycode(ui::DomCode::ESCAPE);
+  const bool esc_requested =
+      !keyboard_keys_to_lock_.has_value() ||
+      base::ContainsKey(keyboard_keys_to_lock_.value(), esc_native_key_code);
+
+  if (!delegate_->RequestKeyboardLock(this, esc_requested))
     CancelKeyboardLock();
 }
 

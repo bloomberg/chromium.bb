@@ -454,6 +454,14 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Notification that the page has lost the mouse lock.
   virtual void LostMouseLock() {}
 
+  // Requests keyboard lock. Once the request is approved or rejected,
+  // GotResponseToKeyboardLockRequest() will be called on |web_contents|.
+  virtual void RequestKeyboardLock(WebContents* web_contents,
+                                   bool esc_key_locked) {}
+
+  // Notification that the keyboard lock request has been canceled.
+  virtual void CancelKeyboardLockRequest(WebContents* web_contents) {}
+
   // Asks permission to use the camera and/or microphone. If permission is
   // granted, a call should be made to |callback| with the devices. If the
   // request is denied, a call should be made to |callback| with an empty list

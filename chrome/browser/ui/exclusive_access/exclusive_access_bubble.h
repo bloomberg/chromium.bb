@@ -19,8 +19,8 @@ class Rect;
 }
 
 // Bubble that informs the user when an exclusive access state is in effect and
-// as to how to exit out of the state. Currently there are two exclusive access
-// state, namely fullscreen and mouse lock.
+// as to how to exit out of the state. Currently there are three exclusive
+// access states: fullscreen, keyboard lock, and mouse lock.
 //
 // Notification display design note: if the #simplified-fullscreen-ui flag is
 // enabled, the bubble has the following behaviour:

@@ -7,16 +7,16 @@
 
 #include <memory>
 
-#include "base/feature_list.h"
 #include "base/macros.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/exclusive_access/keyboard_lock_controller.h"
 #include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
 
 class ExclusiveAccessContext;
 class FullscreenController;
 class GURL;
+class KeyboardLockController;
 class MouseLockController;
 
 namespace content {
@@ -37,6 +37,10 @@ class ExclusiveAccessManager {
     return &fullscreen_controller_;
   }
 
+  KeyboardLockController* keyboard_lock_controller() {
+    return &keyboard_lock_controller_;
+  }
+
   MouseLockController* mouse_lock_controller() {
     return &mouse_lock_controller_;
   }
@@ -49,7 +53,6 @@ class ExclusiveAccessManager {
 
   GURL GetExclusiveAccessBubbleURL() const;
 
-  static bool IsExperimentalKeyboardLockUIEnabled();
   static bool IsSimplifiedFullscreenUIEnabled();
 
   // Callbacks ////////////////////////////////////////////////////////////////
@@ -64,7 +67,7 @@ class ExclusiveAccessManager {
   void OnTabClosing(content::WebContents* web_contents);
 
   // Called by Browser::PreHandleKeyboardEvent.
-  bool HandleUserKeyPress(const content::NativeWebKeyboardEvent& event);
+  bool HandleUserKeyEvent(const content::NativeWebKeyboardEvent& event);
 
   // Called by Browser::ContentsMouseEvent.
   void OnUserInput();
@@ -74,13 +77,10 @@ class ExclusiveAccessManager {
   void RecordBubbleReshownUMA(ExclusiveAccessBubbleType type);
 
  private:
-  // Called when the user has held down Escape.
-  void HandleUserHeldEscape();
-
   ExclusiveAccessContext* const exclusive_access_context_;
   FullscreenController fullscreen_controller_;
+  KeyboardLockController keyboard_lock_controller_;
   MouseLockController mouse_lock_controller_;
-  base::OneShotTimer hold_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExclusiveAccessManager);
 };

@@ -677,6 +677,10 @@ class WebContents : public PageNavigator,
   // locked.
   virtual bool GotResponseToLockMouseRequest(bool allowed) = 0;
 
+  // Called when the response to a keyboard mouse lock request has arrived.
+  // Returns false if the request is no longer valid, otherwise true.
+  virtual bool GotResponseToKeyboardLockRequest(bool allowed) = 0;
+
   // Called when the user has selected a color in the color chooser.
   virtual void DidChooseColorInColorChooser(SkColor color) = 0;
 

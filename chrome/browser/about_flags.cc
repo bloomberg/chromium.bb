@@ -2277,7 +2277,7 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsLinux | kOsCrOS,
      FEATURE_VALUE_TYPE(features::kSimplifiedFullscreenUI)},
     {"keyboard-lock-api", flag_descriptions::kKeyboardLockApiName,
-     flag_descriptions::kKeyboardLockApiDescription, kOsWin,
+     flag_descriptions::kKeyboardLockApiDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kKeyboardLockAPI)},
     {"experimental-keyboard-lock-ui",
      flag_descriptions::kExperimentalKeyboardLockUiName,

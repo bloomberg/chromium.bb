@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 #include "build/build_config.h"
@@ -196,7 +197,8 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Requests to lock the keyboard. Once the request is approved or rejected,
   // GotResponseToKeyboardLockRequest() will be called on the requesting render
   // widget host.
-  virtual bool RequestKeyboardLock(RenderWidgetHostImpl* render_widget_host);
+  virtual bool RequestKeyboardLock(RenderWidgetHostImpl* render_widget_host,
+                                   bool esc_key_locked);
 
   // Cancels a previous keyboard lock request.
   virtual void CancelKeyboardLock(RenderWidgetHostImpl* render_widget_host) {}

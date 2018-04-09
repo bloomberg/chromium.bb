@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_FULLSCREEN_CONTROLLER_TEST_H_
 #define CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_FULLSCREEN_CONTROLLER_TEST_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_hide_callback.h"
@@ -42,7 +45,8 @@ class MouseLockNotificationObserver
   DISALLOW_COPY_AND_ASSIGN(MouseLockNotificationObserver);
 };
 
-// Test fixture with convenience functions for fullscreen and mouse lock.
+// Test fixture with convenience functions for fullscreen, keyboard lock, and
+// mouse lock.
 class FullscreenControllerTest : public InProcessBrowserTest {
  protected:
   FullscreenControllerTest();
@@ -51,9 +55,11 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
 
+  void RequestKeyboardLock(bool esc_key_locked);
   void RequestToLockMouse(bool user_gesture,
                           bool last_unlocked_by_target);
   void SetWebContentsGrantedSilentMouseLockPermission();
+  void CancelKeyboardLock();
   void LostMouseLock();
   bool SendEscapeToFullscreenController();
   bool IsFullscreenForBrowser();
@@ -64,17 +70,24 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   void Reload();
   void SetPrivilegedFullscreen(bool is_privileged);
   void EnterActiveTabFullscreen();
+  void EnterExtensionInitiatedFullscreen();
 
+  static const char kFullscreenKeyboardLockHTML[];
   static const char kFullscreenMouseLockHTML[];
   FullscreenController* GetFullscreenController();
   ExclusiveAccessManager* GetExclusiveAccessManager();
 
-  void OnBubbleHidden(ExclusiveAccessBubbleHideReason);
+  void OnBubbleHidden(
+      std::vector<ExclusiveAccessBubbleHideReason>* reason_recorder,
+      ExclusiveAccessBubbleHideReason);
 
   int InitialBubbleDelayMs() const;
 
   std::vector<ExclusiveAccessBubbleHideReason>
       mouse_lock_bubble_hide_reason_recorder_;
+
+  std::vector<ExclusiveAccessBubbleHideReason>
+      keyboard_lock_bubble_hide_reason_recorder_;
 
  private:
   void ToggleTabFullscreen_Internal(bool enter_fullscreen,
@@ -86,6 +99,8 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   // testing.
   ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen_window_;
 #endif
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   base::WeakPtrFactory<FullscreenControllerTest> weak_ptr_factory_;
 

@@ -74,7 +74,8 @@ RenderWidgetHostImpl* RenderWidgetHostDelegate::GetMouseLockWidget() {
   return nullptr;
 }
 
-bool RenderWidgetHostDelegate::RequestKeyboardLock(RenderWidgetHostImpl* host) {
+bool RenderWidgetHostDelegate::RequestKeyboardLock(RenderWidgetHostImpl* host,
+                                                   bool esc_key_locked) {
   return false;
 }
 
