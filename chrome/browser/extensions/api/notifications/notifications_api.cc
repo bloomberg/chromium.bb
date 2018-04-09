@@ -361,7 +361,7 @@ bool NotificationsApiFunction::CreateNotification(
   optional_fields.settings_button_handler =
       base::FeatureList::IsEnabled(message_center::kNewStyleNotifications)
           ? message_center::SettingsButtonHandler::INLINE
-          : message_center::SettingsButtonHandler::DELEGATE;
+          : message_center::SettingsButtonHandler::NONE;
 
   // TODO(crbug.com/772004): Remove the manual limitation in favor of an IDL
   // annotation once supported.
