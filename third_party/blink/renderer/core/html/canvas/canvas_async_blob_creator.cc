@@ -197,7 +197,8 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
   idle_task_status_ = kIdleTaskNotSupported;
   num_rows_completed_ = 0;
   if (context->IsDocument()) {
-    parent_frame_task_runner_ = ParentFrameTaskRunners::Create(context);
+    parent_frame_task_runner_ =
+        context->GetTaskRunner(TaskType::kCanvasBlobSerialization);
   }
   if (script_promise_resolver_) {
     function_type_ = kOffscreenCanvasToBlobPromise;
@@ -212,7 +213,6 @@ void CanvasAsyncBlobCreator::Dispose() {
   // Eagerly let go of references to prevent retention of these
   // resources while any remaining posted tasks are queued.
   context_.Clear();
-  parent_frame_task_runner_.Clear();
   callback_.Clear();
   script_promise_resolver_.Clear();
   image_ = nullptr;
@@ -436,16 +436,14 @@ void CanvasAsyncBlobCreator::EncodeImageOnEncoderThread(double quality) {
 
   if (!EncodeImage(quality)) {
     PostCrossThreadTask(
-        *parent_frame_task_runner_->Get(TaskType::kCanvasBlobSerialization),
-        FROM_HERE,
+        *parent_frame_task_runner_, FROM_HERE,
         CrossThreadBind(&CanvasAsyncBlobCreator::CreateNullAndReturnResult,
                         WrapCrossThreadPersistent(this)));
     return;
   }
 
   PostCrossThreadTask(
-      *parent_frame_task_runner_->Get(TaskType::kCanvasBlobSerialization),
-      FROM_HERE,
+      *parent_frame_task_runner_, FROM_HERE,
       CrossThreadBind(&CanvasAsyncBlobCreator::CreateBlobAndReturnResult,
                       WrapCrossThreadPersistent(this)));
 }
@@ -545,7 +543,6 @@ void CanvasAsyncBlobCreator::PostDelayedTaskToCurrentThread(
 
 void CanvasAsyncBlobCreator::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
-  visitor->Trace(parent_frame_task_runner_);
   visitor->Trace(callback_);
   visitor->Trace(script_promise_resolver_);
 }

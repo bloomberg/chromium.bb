@@ -28,8 +28,7 @@ ParentFrameTaskRunners::ParentFrameTaskRunners(ExecutionContext* context)
   // For now we only support very limited task types.
   for (auto type : {TaskType::kUnspecedTimer, TaskType::kUnspecedLoading,
                     TaskType::kNetworking, TaskType::kPostedMessage,
-                    TaskType::kCanvasBlobSerialization, TaskType::kUnthrottled,
-                    TaskType::kInternalTest}) {
+                    TaskType::kUnthrottled, TaskType::kInternalTest}) {
     auto task_runner =
         context ? context->GetTaskRunner(type)
                 : Platform::Current()->CurrentThread()->GetTaskRunner();

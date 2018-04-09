@@ -8,11 +8,11 @@
 #include <memory>
 
 #include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob_callback.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
-#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -116,7 +116,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   ToBlobFunctionType function_type_;
 
   // Used when CanvasAsyncBlobCreator runs on main thread only
-  Member<ParentFrameTaskRunners> parent_frame_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> parent_frame_task_runner_;
 
   // Used for HTMLCanvasElement only
   //
