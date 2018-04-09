@@ -222,6 +222,77 @@ public class CachedMetrics {
     }
 
     /**
+     * Caches a set of custom count histogram samples.
+     * Corresponds to UMA_HISTOGRAM_CUSTOM_COUNTS C++ macro.
+     */
+    public static class CustomCountHistogramSample extends CachedMetric {
+        private final List<Integer> mSamples = new ArrayList<Integer>();
+        private final int mMin;
+        private final int mMax;
+        private final int mNumBuckets;
+
+        public CustomCountHistogramSample(String histogramName, int min, int max, int numBuckets) {
+            super(histogramName);
+            mMin = min;
+            mMax = max;
+            mNumBuckets = numBuckets;
+        }
+
+        public void record(int sample) {
+            synchronized (CachedMetric.sMetrics) {
+                if (LibraryLoader.isInitialized()) {
+                    recordWithNative(sample);
+                } else {
+                    mSamples.add(sample);
+                    addToCache();
+                }
+            }
+        }
+
+        private void recordWithNative(int sample) {
+            RecordHistogram.recordCustomCountHistogram(mName, sample, mMin, mMax, mNumBuckets);
+        }
+
+        @Override
+        protected void commitAndClear() {
+            for (Integer sample : mSamples) {
+                recordWithNative(sample);
+            }
+            mSamples.clear();
+        }
+    }
+
+    /**
+     * Caches a set of count histogram samples in range [1, 100).
+     * Corresponds to UMA_HISTOGRAM_COUNTS_100 C++ macro.
+     */
+    public static class Count100HistogramSample extends CustomCountHistogramSample {
+        public Count100HistogramSample(String histogramName) {
+            super(histogramName, 1, 100, 50);
+        }
+    }
+
+    /**
+     * Caches a set of count histogram samples in range [1, 1000).
+     * Corresponds to UMA_HISTOGRAM_COUNTS_1000 C++ macro.
+     */
+    public static class Count1000HistogramSample extends CustomCountHistogramSample {
+        public Count1000HistogramSample(String histogramName) {
+            super(histogramName, 1, 1000, 50);
+        }
+    }
+
+    /**
+     * Caches a set of count histogram samples in range [1, 1000000).
+     * Corresponds to UMA_HISTOGRAM_COUNTS_1M C++ macro.
+     */
+    public static class Count1MHistogramSample extends CustomCountHistogramSample {
+        public Count1MHistogramSample(String histogramName) {
+            super(histogramName, 1, 1000000, 50);
+        }
+    }
+
+    /**
      * Calls out to native code to commit any cached histograms and events.
      * Should be called once the native library has been loaded.
      */
