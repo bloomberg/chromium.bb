@@ -1179,6 +1179,13 @@ void DevToolsWindow::WebContentsCreated(WebContents* source_contents,
         toolbox_web_contents_);
     data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
         toolbox_web_contents_);
+
+    // The toolbox holds a placeholder for the inspected WebContents. When the
+    // placeholder is resized, a frame is requested. The inspected WebContents
+    // is resized when the frame is rendered. Force rendering of the toolbox at
+    // all times, to make sure that a frame can be rendered even when the
+    // inspected WebContents fully covers the toolbox. https://crbug.com/828307
+    toolbox_web_contents_->IncrementCapturerCount(gfx::Size());
   }
 }
 
