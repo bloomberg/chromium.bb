@@ -119,8 +119,8 @@ class EnterpriseDeviceAttributesTest :
     }
     policy::UserPolicyBuilder user_policy;
     policy::affiliation_test_helper::SetUserAffiliationIDs(
-        &user_policy, fake_session_manager_client,
-        affiliated_account_id_.GetUserEmail(), user_affiliation_ids);
+        &user_policy, fake_session_manager_client, affiliated_account_id_,
+        user_affiliation_ids);
 
     // Set up fake install attributes.
     std::unique_ptr<chromeos::StubInstallAttributes> attributes =

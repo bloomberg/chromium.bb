@@ -78,8 +78,8 @@ class UnaffiliatedArcAllowedTest
       user_affiliation_ids.insert(kAnotherAffiliationID);
 
     affiliation_test_helper::SetUserAffiliationIDs(
-        &user_policy, session_manager_client(),
-        affiliated_account_id_.GetUserEmail(), user_affiliation_ids);
+        &user_policy, session_manager_client(), affiliated_account_id_,
+        user_affiliation_ids);
   }
 
   void TearDownOnMainThread() override {

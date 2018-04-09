@@ -166,6 +166,7 @@ void SignData(const std::string& data,
 // Constants used as dummy data for filling the PolicyData protobuf.
 const char PolicyBuilder::kFakeDeviceId[] = "device-id";
 const char PolicyBuilder::kFakeDomain[] = "example.com";
+const char PolicyBuilder::kFakeGaiaId[] = "gaia-id";
 const char PolicyBuilder::kFakeMachineName[] = "machine-name";
 const char PolicyBuilder::kFakePolicyType[] = "policy type";
 const int PolicyBuilder::kFakePublicKeyVersion = 17;
@@ -179,6 +180,7 @@ PolicyBuilder::PolicyBuilder() {
   CreatePolicyData();
   policy_data_->set_policy_type(kFakePolicyType);
   policy_data_->set_timestamp(kFakeTimestamp);
+  policy_data_->set_gaia_id(kFakeGaiaId);
   policy_data_->set_request_token(kFakeToken);
   policy_data_->set_machine_name(kFakeMachineName);
   policy_data_->set_public_key_version(kFakePublicKeyVersion);

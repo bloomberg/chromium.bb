@@ -45,6 +45,23 @@ enum MetricPolicyKeyVerification {
   METRIC_POLICY_KEY_VERIFICATION_SIZE  // Must be the last.
 };
 
+const char kMetricPolicyUserVerification[] =
+    "Enterprise.PolicyUserVerification";
+
+enum class MetricPolicyUserVerification {
+  // Gaia id check used, but failed.
+  kGaiaIdFailed = 0,
+  // Gaia id check used and succeeded.
+  kGaiaIdSucceeded = 1,
+  // Gaia id is not present and username check failed.
+  kUsernameFailed = 2,
+  // Gaia id is not present for user and username check succeeded.
+  kUsernameSucceeded = 3,
+  // Gaia id is not present in policy and username check succeeded.
+  kGaiaIdMissingUsernameSucceeded = 4,
+  kMaxValue = kGaiaIdMissingUsernameSucceeded,
+};
+
 }  // namespace
 
 CloudPolicyValidatorBase::~CloudPolicyValidatorBase() {}
@@ -57,11 +74,19 @@ void CloudPolicyValidatorBase::ValidateTimestamp(
   timestamp_option_ = timestamp_option;
 }
 
+void CloudPolicyValidatorBase::ValidateUser(const AccountId& account_id) {
+  validation_flags_ |= VALIDATE_USER;
+  account_id_ = account_id;
+  // Always canonicalize when falls back to username check,
+  // because it checks only for regular users.
+  canonicalize_user_ = true;
+}
+
 void CloudPolicyValidatorBase::ValidateUsername(
     const std::string& expected_user,
     bool canonicalize) {
-  validation_flags_ |= VALIDATE_USERNAME;
-  user_ = expected_user;
+  validation_flags_ |= VALIDATE_USER;
+  account_id_ = AccountId::FromUserEmail(expected_user);
   canonicalize_user_ = canonicalize;
 }
 
@@ -243,7 +268,7 @@ void CloudPolicyValidatorBase::RunChecks() {
       { VALIDATE_ENTITY_ID,   &CloudPolicyValidatorBase::CheckEntityId },
       { VALIDATE_DM_TOKEN,    &CloudPolicyValidatorBase::CheckDMToken },
       { VALIDATE_DEVICE_ID,   &CloudPolicyValidatorBase::CheckDeviceId },
-      { VALIDATE_USERNAME,    &CloudPolicyValidatorBase::CheckUsername },
+      { VALIDATE_USER,        &CloudPolicyValidatorBase::CheckUser },
       { VALIDATE_DOMAIN,      &CloudPolicyValidatorBase::CheckDomain },
       { VALIDATE_TIMESTAMP,   &CloudPolicyValidatorBase::CheckTimestamp },
       { VALIDATE_PAYLOAD,     &CloudPolicyValidatorBase::CheckPayload },
@@ -456,22 +481,50 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckDeviceId() {
   return VALIDATION_OK;
 }
 
-CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckUsername() {
-  if (!policy_data_->has_username()) {
-    LOG(ERROR) << "Policy is missing user name";
-    return VALIDATION_BAD_USERNAME;
+CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckUser() {
+  if (!policy_data_->has_username() && !policy_data_->has_gaia_id()) {
+    LOG(ERROR) << "Policy is missing user name and gaia id";
+    return VALIDATION_BAD_USER;
   }
 
-  std::string expected = user_;
-  std::string actual = policy_data_->username();
-  if (canonicalize_user_) {
-    expected = gaia::CanonicalizeEmail(gaia::SanitizeEmail(expected));
-    actual = gaia::CanonicalizeEmail(gaia::SanitizeEmail(actual));
-  }
+  if (policy_data_->has_gaia_id() && !policy_data_->gaia_id().empty() &&
+      account_id_.GetAccountType() == AccountType::GOOGLE &&
+      !account_id_.GetGaiaId().empty()) {
+    std::string expected = account_id_.GetGaiaId();
+    std::string actual = policy_data_->gaia_id();
 
-  if (expected != actual) {
-    LOG(ERROR) << "Invalid user name " << policy_data_->username();
-    return VALIDATION_BAD_USERNAME;
+    if (expected != actual) {
+      LOG(ERROR) << "Invalid gaia id: " << actual;
+      UMA_HISTOGRAM_ENUMERATION(kMetricPolicyUserVerification,
+                                MetricPolicyUserVerification::kGaiaIdFailed);
+      return VALIDATION_BAD_USER;
+    }
+    UMA_HISTOGRAM_ENUMERATION(kMetricPolicyUserVerification,
+                              MetricPolicyUserVerification::kGaiaIdSucceeded);
+  } else {
+    std::string expected = account_id_.GetUserEmail();
+    std::string actual = policy_data_->username();
+    if (canonicalize_user_) {
+      expected = gaia::CanonicalizeEmail(gaia::SanitizeEmail(expected));
+      actual = gaia::CanonicalizeEmail(gaia::SanitizeEmail(actual));
+    }
+
+    if (expected != actual) {
+      LOG(ERROR) << "Invalid user name " << policy_data_->username();
+      UMA_HISTOGRAM_ENUMERATION(kMetricPolicyUserVerification,
+                                MetricPolicyUserVerification::kUsernameFailed);
+      return VALIDATION_BAD_USER;
+    }
+    if (account_id_.GetAccountType() != AccountType::GOOGLE ||
+        account_id_.GetGaiaId().empty()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          kMetricPolicyUserVerification,
+          MetricPolicyUserVerification::kUsernameSucceeded);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(
+          kMetricPolicyUserVerification,
+          MetricPolicyUserVerification::kGaiaIdMissingUsernameSucceeded);
+    }
   }
 
   return VALIDATION_OK;
@@ -481,12 +534,12 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckDomain() {
   std::string policy_domain = ExtractDomainFromPolicy();
   if (policy_domain.empty()) {
     LOG(ERROR) << "Policy is missing user name";
-    return VALIDATION_BAD_USERNAME;
+    return VALIDATION_BAD_USER;
   }
 
   if (domain_ != policy_domain) {
     LOG(ERROR) << "Invalid user name " << policy_data_->username();
-    return VALIDATION_BAD_USERNAME;
+    return VALIDATION_BAD_USER;
   }
 
   return VALIDATION_OK;

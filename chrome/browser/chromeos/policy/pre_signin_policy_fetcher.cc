@@ -302,8 +302,8 @@ PreSigninPolicyFetcher::CreateValidatorForCachedPolicy(
   validator->ValidatePayload();
 
   if (!is_active_directory_managed_) {
-    // Also validate the user e-mail and the signature (except for authpolicy).
-    validator->ValidateUsername(account_id_.GetUserEmail(), true);
+    // Also validate the user and the signature (except for authpolicy).
+    validator->ValidateUser(account_id_);
     validator->ValidateSignature(
         cached_policy_key_loader_->cached_policy_key());
   }

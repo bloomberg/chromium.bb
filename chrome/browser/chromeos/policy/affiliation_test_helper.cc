@@ -88,17 +88,17 @@ void SetDeviceAffiliationID(
 void SetUserAffiliationIDs(
     policy::UserPolicyBuilder* user_policy,
     chromeos::FakeSessionManagerClient* fake_session_manager_client,
-    const std::string& user_email,
+    const AccountId& user_account_id,
     const std::set<std::string>& user_affiliation_ids) {
-  const AccountId account_id = AccountId::FromUserEmail(user_email);
-  user_policy->policy_data().set_username(user_email);
+  user_policy->policy_data().set_username(user_account_id.GetUserEmail());
+  user_policy->policy_data().set_gaia_id(user_account_id.GetGaiaId());
   SetUserKeys(user_policy);
   for (const auto& user_affiliation_id : user_affiliation_ids) {
     user_policy->policy_data().add_user_affiliation_ids(user_affiliation_id);
   }
   user_policy->Build();
   fake_session_manager_client->set_user_policy(
-      cryptohome::Identification(account_id), user_policy->GetBlob());
+      cryptohome::Identification(user_account_id), user_policy->GetBlob());
 }
 
 void PreLoginUser(const AccountId& account_id) {

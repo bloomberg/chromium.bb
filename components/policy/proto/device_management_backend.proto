@@ -506,6 +506,10 @@ message PolicyData {
 
   // Whether the device needs to upload an enrollment identifier to the cloud.
   optional bool enrollment_id_needed = 28;
+
+  // Gaia id of the user the policy is intended for.
+  // Should be fetched with user policy.
+  optional string gaia_id = 29;
 }
 
 message PolicyFetchResponse {

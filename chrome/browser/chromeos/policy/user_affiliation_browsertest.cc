@@ -148,7 +148,7 @@ class UserAffiliationBrowserTest
       user_affiliation_ids.insert(kAnotherAffiliationID);
     }
     affiliation_test_helper::SetUserAffiliationIDs(
-        &user_policy, fake_session_manager_client, account_id_.GetUserEmail(),
+        &user_policy, fake_session_manager_client, account_id_,
         user_affiliation_ids);
 
     // Set retry delay to prevent timeouts.
