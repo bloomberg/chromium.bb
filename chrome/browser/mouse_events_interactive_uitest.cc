@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(MouseEventsTest, MouseDownOnBrowserCaption) {
 IN_PROC_BROWSER_TEST_F(MouseEventsTest, MAYBE_ContextMenu) {
   EXPECT_NO_FATAL_FAILURE(NavigateAndWaitForMouseOver());
 
-  ContextMenuWaiter menu_observer(content::NotificationService::AllSources());
+  ContextMenuWaiter menu_observer;
   ui_controls::SendMouseClick(ui_controls::RIGHT);
   // Wait until the context menu is opened and closed.
   menu_observer.WaitForMenuOpenAndClose();

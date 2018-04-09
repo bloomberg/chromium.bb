@@ -6,40 +6,33 @@
 #define CHROME_BROWSER_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_BROWSERTEST_UTIL_H_
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "content/public/common/context_menu_params.h"
 
 class RenderViewContextMenu;
 
-class ContextMenuNotificationObserver : public content::NotificationObserver {
+class ContextMenuNotificationObserver {
  public:
   // Wait for a context menu to be shown, and then execute |command_to_execute|.
   explicit ContextMenuNotificationObserver(int command_to_execute);
-  ~ContextMenuNotificationObserver() override;
+  ~ContextMenuNotificationObserver();
 
  private:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  void MenuShown(RenderViewContextMenu* context_menu);
 
   void ExecuteCommand(RenderViewContextMenu* context_menu);
 
-  content::NotificationRegistrar registrar_;
   int command_to_execute_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuNotificationObserver);
 };
 
-class ContextMenuWaiter : public content::NotificationObserver {
+class ContextMenuWaiter {
  public:
-  // Register to listen for notifications of
-  // NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN from either
-  // a specific source, or from all sources if |source| is
-  // NotificationService::AllSources().
-  explicit ContextMenuWaiter(const content::NotificationSource& source);
-  ~ContextMenuWaiter() override;
+  ContextMenuWaiter();
+  ~ContextMenuWaiter();
 
   content::ContextMenuParams& params();
 
@@ -47,15 +40,12 @@ class ContextMenuWaiter : public content::NotificationObserver {
   void WaitForMenuOpenAndClose();
 
  private:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  void MenuShown(RenderViewContextMenu* context_menu);
 
   void Cancel(RenderViewContextMenu* context_menu);
 
-  bool menu_visible_;
   content::ContextMenuParams params_;
-  content::NotificationRegistrar registrar_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuWaiter);
 };

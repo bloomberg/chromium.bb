@@ -27,7 +27,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -162,37 +161,32 @@ class WebContentsHiddenObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(WebContentsHiddenObserver);
 };
 
-// Watches for context menu to be shown, records count of how many times
-// context menu was shown.
-class ContextMenuCallCountObserver {
+// Watches for context menu to be shown, sets a boolean if it is shown.
+class ContextMenuShownObserver {
  public:
-  ContextMenuCallCountObserver()
-      : num_times_shown_(0),
-        menu_observer_(chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
-                       base::Bind(&ContextMenuCallCountObserver::OnMenuShown,
-                                  base::Unretained(this))) {
+  ContextMenuShownObserver() {
+    RenderViewContextMenu::RegisterMenuShownCallbackForTesting(base::BindOnce(
+        &ContextMenuShownObserver::OnMenuShown, base::Unretained(this)));
   }
-  ~ContextMenuCallCountObserver() {}
+  ~ContextMenuShownObserver() {}
 
-  bool OnMenuShown(const content::NotificationSource& source,
-                   const content::NotificationDetails& details) {
-    ++num_times_shown_;
-    auto* context_menu = content::Source<RenderViewContextMenu>(source).ptr();
+  void OnMenuShown(RenderViewContextMenu* context_menu) {
+    shown_ = true;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&RenderViewContextMenuBase::Cancel,
                                   base::Unretained(context_menu)));
-    return true;
+    run_loop_.Quit();
   }
 
-  void Wait() { menu_observer_.Wait(); }
+  void Wait() { run_loop_.Run(); }
 
-  int num_times_shown() { return num_times_shown_; }
+  bool shown() { return shown_; }
 
  private:
-  int num_times_shown_;
-  content::WindowedNotificationObserver menu_observer_;
+  bool shown_ = false;
+  base::RunLoop run_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContextMenuCallCountObserver);
+  DISALLOW_COPY_AND_ASSIGN(ContextMenuShownObserver);
 };
 
 class EmbedderWebContentsObserver : public content::WebContentsObserver {
@@ -2456,18 +2450,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenusAPI_Basic) {
   ASSERT_EQ(0u, items_after_all_removal.size());
 }
 
-// Called in the TestContextMenu test to cancel the context menu after its
-// shown notification is received.
-static bool ContextMenuNotificationCallback(
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  auto* context_menu = content::Source<RenderViewContextMenu>(source).ptr();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&RenderViewContextMenuBase::Cancel,
-                                base::Unretained(context_menu)));
-  return true;
-}
-
 IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenusAPI_PreventDefault) {
   LoadAppWithGuest("web_view/context_menus/basic");
 
@@ -2480,13 +2462,13 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenusAPI_PreventDefault) {
   ExtensionTestMessageListener prevent_default_listener(
       "WebViewTest.CONTEXT_MENU_DEFAULT_PREVENTED", false);
   EXPECT_TRUE(content::ExecuteScript(embedder, "registerPreventDefault()"));
-  ContextMenuCallCountObserver context_menu_shown_observer;
+  ContextMenuShownObserver context_menu_shown_observer;
 
   OpenContextMenu(guest_web_contents);
 
   EXPECT_TRUE(prevent_default_listener.WaitUntilSatisfied());
   // Expect the menu to not show up.
-  EXPECT_EQ(0, context_menu_shown_observer.num_times_shown());
+  EXPECT_EQ(false, context_menu_shown_observer.shown());
 
   // Now remove the preventDefault() and expect context menu to be shown.
   ExecuteScriptWaitForTitle(
@@ -2495,7 +2477,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenusAPI_PreventDefault) {
 
   // We expect to see a context menu for the second call to |OpenContextMenu|.
   context_menu_shown_observer.Wait();
-  EXPECT_EQ(1, context_menu_shown_observer.num_times_shown());
+  EXPECT_EQ(true, context_menu_shown_observer.shown());
 }
 
 // Tests that a context menu is created when right-clicking in the webview. This
@@ -2504,15 +2486,23 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, TestContextMenu) {
   LoadAppWithGuest("web_view/context_menus/basic");
   content::WebContents* guest_web_contents = GetGuestWebContents();
 
-  // Register an observer for the context menu.
-  content::WindowedNotificationObserver menu_observer(
-      chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
-      base::Bind(ContextMenuNotificationCallback));
+  auto close_menu_and_stop_run_loop = [](base::OnceClosure closure,
+                                         RenderViewContextMenu* context_menu) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&RenderViewContextMenuBase::Cancel,
+                                  base::Unretained(context_menu)));
+
+    std::move(closure).Run();
+  };
+
+  base::RunLoop run_loop;
+  RenderViewContextMenu::RegisterMenuShownCallbackForTesting(
+      base::BindOnce(close_menu_and_stop_run_loop, run_loop.QuitClosure()));
 
   OpenContextMenu(guest_web_contents);
 
   // Wait for the context menu to be visible.
-  menu_observer.Wait();
+  run_loop.Run();
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, MediaAccessAPIAllow_TestAllow) {

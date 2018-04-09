@@ -1063,7 +1063,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, TwoFingerTapContextMenu) {
 
   // Send a two finger tap event to the child and wait for the context menu to
   // open.
-  ContextMenuWaiter menu_waiter(content::NotificationService::AllSources());
+  ContextMenuWaiter menu_waiter;
 
   gfx::PointF child_location(1, 1);
   gfx::PointF child_location_in_root =

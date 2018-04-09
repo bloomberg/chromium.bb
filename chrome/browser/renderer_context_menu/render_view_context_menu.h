@@ -74,6 +74,11 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void ExecuteCommand(int command_id, int event_flags) override;
   void AddSpellCheckServiceItem(bool is_checked) override;
 
+  // Registers a one-time callback that will be called the next time a context
+  // menu is shown.
+  static void RegisterMenuShownCallbackForTesting(
+      base::OnceCallback<void(RenderViewContextMenu*)> cb);
+
  protected:
   Profile* GetProfile();
   Browser* GetBrowser() const;

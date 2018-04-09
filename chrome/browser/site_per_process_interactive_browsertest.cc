@@ -1132,7 +1132,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
   content::RenderWidgetHostView* child_view =
       ChildFrameAt(active_web_contents->GetMainFrame(), 0)->GetView();
 
-  ContextMenuWaiter menu_waiter(content::NotificationService::AllSources());
+  ContextMenuWaiter menu_waiter;
 
   // Declaring a lambda to send a right-button mouse event to the embedder
   // frame.

@@ -1177,7 +1177,7 @@ IN_PROC_BROWSER_TEST_F(WebViewContextMenuInteractiveTest,
              NO_TEST_SERVER);
   ASSERT_TRUE(guest_web_contents());
 
-  ContextMenuWaiter menu_observer(content::NotificationService::AllSources());
+  ContextMenuWaiter menu_observer;
   SimulateRWHMouseClick(guest_web_contents()->GetRenderViewHost()->GetWidget(),
                         blink::WebMouseEvent::Button::kRight, 10, 20);
   // Wait until the context menu is opened and closed.
@@ -1615,7 +1615,7 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, TextSelection) {
 
   // Wait until guest sees a context menu.
   ExtensionTestMessageListener ctx_listener("MSG_CONTEXTMENU", false);
-  ContextMenuWaiter menu_observer(content::NotificationService::AllSources());
+  ContextMenuWaiter menu_observer;
   SimulateRWHMouseClick(guest_web_contents()->GetRenderViewHost()->GetWidget(),
                         blink::WebMouseEvent::Button::kRight, 20, 20);
   menu_observer.WaitForMenuOpenAndClose();
