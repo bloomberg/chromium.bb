@@ -171,6 +171,11 @@ def method_context(interface, method, is_visible=True):
     if 'LenientThis' in extended_attributes:
         raise Exception('[LenientThis] is not supported for operations.')
 
+    if has_extended_attribute_value(method, 'Affects', 'Nothing'):
+        side_effect_type = 'V8DOMConfiguration::kHasNoSideEffect'
+    else:
+        side_effect_type = 'V8DOMConfiguration::kHasSideEffect'
+
     argument_contexts = [
         argument_context(interface, method, argument, index, is_visible=is_visible)
         for index, argument in enumerate(arguments)]
@@ -236,6 +241,7 @@ def method_context(interface, method, is_visible=True):
         'runtime_call_stats': runtime_call_stats_context(interface, method),
         'runtime_enabled_feature_name': v8_utilities.runtime_enabled_feature_name(method),  # [RuntimeEnabled]
         'secure_context_test': v8_utilities.secure_context(method, interface),  # [SecureContext]
+        'side_effect_type': side_effect_type,  # [Affects]
         'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
         'use_local_result': use_local_result(method),
         'v8_set_return_value': v8_set_return_value(interface.name, method, this_cpp_value),

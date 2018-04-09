@@ -441,10 +441,10 @@ void V8TestInterfacePartial::partial4StaticVoidMethodMethodCallback(const v8::Fu
 }
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
-    {"partialVoidTestEnumModulesArgMethod", V8TestInterfacePartial::partialVoidTestEnumModulesArgMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
-    {"partial2VoidTestEnumModulesRecordMethod", V8TestInterfacePartial::partial2VoidTestEnumModulesRecordMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
-    {"unscopableVoidMethod", V8TestInterfacePartial::unscopableVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
-    {"unionWithTypedefMethod", V8TestInterfacePartial::unionWithTypedefMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"partialVoidTestEnumModulesArgMethod", V8TestInterfacePartial::partialVoidTestEnumModulesArgMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"partial2VoidTestEnumModulesRecordMethod", V8TestInterfacePartial::partial2VoidTestEnumModulesRecordMethodMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"unscopableVoidMethod", V8TestInterfacePartial::unscopableVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"unionWithTypedefMethod", V8TestInterfacePartial::unionWithTypedefMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
 };
 
 void V8TestInterfacePartial::installV8TestInterfaceTemplate(
@@ -520,14 +520,14 @@ void V8TestInterfacePartial::installOriginTrialPartialFeature(v8::Isolate* isola
   V8DOMConfiguration::InstallConstant(isolate, interface, prototype, constantPartial4UnsignedShortConfiguration);
   if (isSecureContext) {
     static const V8DOMConfiguration::MethodConfiguration methodPartial4StaticvoidmethodConfiguration[] = {
-      {"partial4StaticVoidMethod", V8TestInterfacePartial::partial4StaticVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
+      {"partial4StaticVoidMethod", V8TestInterfacePartial::partial4StaticVoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnInterface, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
     };
     for (const auto& methodConfig : methodPartial4StaticvoidmethodConfiguration)
       V8DOMConfiguration::InstallMethod(isolate, world, instance, prototype, interface, signature, methodConfig);
   }
   if (isSecureContext) {
     static const V8DOMConfiguration::MethodConfiguration methodPartial4VoidmethodConfiguration[] = {
-      {"partial4VoidMethod", V8TestInterfacePartial::partial4VoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
+      {"partial4VoidMethod", V8TestInterfacePartial::partial4VoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
     };
     for (const auto& methodConfig : methodPartial4VoidmethodConfiguration)
       V8DOMConfiguration::InstallMethod(isolate, world, instance, prototype, interface, signature, methodConfig);

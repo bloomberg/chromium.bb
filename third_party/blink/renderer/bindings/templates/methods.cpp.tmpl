@@ -649,10 +649,10 @@ V8SetReturnValue(info, wrapper);
 {% if method.is_per_world_bindings %}
 {% set method_callback_for_main_world =
        '%s::%sMethodCallbackForMainWorld' % (v8_class_or_partial, method.name) %}
-{"{{method.name}}", {{method_callback_for_main_world}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, V8DOMConfiguration::kMainWorld},
-{"{{method.name}}", {{method_callback}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, V8DOMConfiguration::kNonMainWorlds}
+{"{{method.name}}", {{method_callback_for_main_world}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, {{method.side_effect_type}}, V8DOMConfiguration::kMainWorld},
+{"{{method.name}}", {{method_callback}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, {{method.side_effect_type}}, V8DOMConfiguration::kNonMainWorlds}
 {%- else %}
-{"{{method.name}}", {{method_callback}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, V8DOMConfiguration::kAllWorlds}
+{"{{method.name}}", {{method_callback}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, {{method.side_effect_type}}, V8DOMConfiguration::kAllWorlds}
 {%- endif %}
 {%- endmacro %}
 

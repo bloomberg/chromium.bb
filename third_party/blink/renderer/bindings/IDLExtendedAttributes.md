@@ -1548,6 +1548,23 @@ V8PrivateProperty::getHTMLFooBarCachedAccessor().set(context, object, newValue);
 ```
 
 
+### [Affects] _(m)_
+
+Summary: `[Affects=Nothing]` indicates that a function must not produce JS-observable side effects. Functions without this attribute are never invoked by V8 with throwOnSideEffect.
+
+Marked functions are allowed to be nondeterministic and throw exceptions, but must not set values, cache objects, or schedule execution that will be observable after the function completes. If a marked function calls into V8, it must properly handle cases when the V8 call returns an MaybeHandle.
+
+There is not yet support for marking SymbolKeyedMethodConfigurations as side-effect free. This requires additional support in V8 to whitelist Intrinsics.
+
+Usage: `[Affects=Nothing]` can be specified on a method to indicate that it is side effect free:
+
+```webidl
+interface HTMLFoo {
+    [Affects=Nothing] void bar();
+};
+```
+
+
 ## Discouraged Blink-specific IDL Extended Attributes
 
 These extended attributes are _discouraged_ - they are not deprecated, but they should be avoided and removed if possible.

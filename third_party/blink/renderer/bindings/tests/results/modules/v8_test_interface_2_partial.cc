@@ -75,7 +75,7 @@ void V8TestInterface2Partial::voidMethodPartial2MethodCallback(const v8::Functio
 }
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
-    {"voidMethodPartial2", V8TestInterface2Partial::voidMethodPartial2MethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds},
+    {"voidMethodPartial2", V8TestInterface2Partial::voidMethodPartial2MethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
 };
 
 void V8TestInterface2Partial::installV8TestInterface2Template(
@@ -121,7 +121,7 @@ void V8TestInterface2Partial::InstallRuntimeEnabledFeaturesOnTemplate(
   // Custom signature
   if (RuntimeEnabledFeatures::Interface2PartialFeatureNameEnabled()) {
     const V8DOMConfiguration::MethodConfiguration voidMethodPartial1MethodConfiguration[] = {
-      {"voidMethodPartial1", V8TestInterface2Partial::voidMethodPartial1MethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kAllWorlds}
+      {"voidMethodPartial1", V8TestInterface2Partial::voidMethodPartial1MethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds}
     };
     for (const auto& methodConfig : voidMethodPartial1MethodConfiguration)
       V8DOMConfiguration::InstallMethod(isolate, world, instance_template, prototype_template, interface_template, signature, methodConfig);
