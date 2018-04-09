@@ -708,7 +708,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInBookmarkApp) {
 // Check filename on clicking "Save Link As" via a "real" context menu.
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, SuggestedFileName) {
   // Register observer.
-  ContextMenuWaiter menu_observer(content::NotificationService::AllSources());
+  ContextMenuWaiter menu_observer;
 
   // Go to a page with a link having download attribute.
   const std::string kSuggestedFilename("test_filename.png");
@@ -1006,7 +1006,7 @@ IN_PROC_BROWSER_TEST_F(SearchByImageBrowserTest, ImageSearchWithCorruptImage) {
   SetupAndLoadImagePage(kCorruptImage);
 
   // Open and close a context menu.
-  ContextMenuWaiter waiter(content::NotificationService::AllSources());
+  ContextMenuWaiter waiter;
   RightClickImage();
   waiter.WaitForMenuOpenAndClose();
 

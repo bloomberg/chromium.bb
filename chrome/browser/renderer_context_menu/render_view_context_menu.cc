@@ -17,6 +17,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/apps/app_load_service.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_stats.h"
@@ -104,7 +104,6 @@
 #include "content/public/browser/guest_mode.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/picture_in_picture_window_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -196,6 +195,12 @@ using extensions::MenuItem;
 using extensions::MenuManager;
 
 namespace {
+
+base::OnceCallback<void(RenderViewContextMenu*)>* GetMenuShownCallback() {
+  static base::NoDestructor<base::OnceCallback<void(RenderViewContextMenu*)>>
+      callback;
+  return callback.get();
+}
 
 // State of the profile that is activated via "Open Link as User".
 enum UmaEnumOpenLinkAsUser {
@@ -2028,6 +2033,12 @@ void RenderViewContextMenu::AddSpellCheckServiceItem(bool is_checked) {
   AddSpellCheckServiceItem(&menu_model_, is_checked);
 }
 
+// static
+void RenderViewContextMenu::RegisterMenuShownCallbackForTesting(
+    base::OnceCallback<void(RenderViewContextMenu*)> cb) {
+  *GetMenuShownCallback() = std::move(cb);
+}
+
 ProtocolHandlerRegistry::ProtocolHandlerList
     RenderViewContextMenu::GetHandlersForLinkUrl() {
   ProtocolHandlerRegistry::ProtocolHandlerList handlers =
@@ -2037,10 +2048,9 @@ ProtocolHandlerRegistry::ProtocolHandlerList
 }
 
 void RenderViewContextMenu::NotifyMenuShown() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
-      content::Source<RenderViewContextMenu>(this),
-      content::NotificationService::NoDetails());
+  auto* cb = GetMenuShownCallback();
+  if (!cb->is_null())
+    std::move(*cb).Run(this);
 }
 
 base::string16 RenderViewContextMenu::PrintableSelectionText() {

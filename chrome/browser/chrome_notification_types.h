@@ -346,10 +346,6 @@ enum NotificationType {
   NOTIFICATION_TAB_DRAG_LOOP_DONE,
 #endif
 
-  // Send when a context menu is shown. Used to notify tests that the context
-  // menu has been created and shown.
-  NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
-
   // Sent when the CaptivePortalService checks if we're behind a captive portal.
   // The Source is the Profile the CaptivePortalService belongs to, and the
   // Details are a Details<CaptivePortalService::CheckResults>.

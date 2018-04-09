@@ -1637,7 +1637,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ContextMenuCoordinates) {
   auto context_menu_filter = base::MakeRefCounted<content::ContextMenuFilter>();
   guest_process_host->AddFilter(context_menu_filter.get());
 
-  ContextMenuWaiter menu_observer(content::NotificationService::AllSources());
+  ContextMenuWaiter menu_observer;
   // Send mouse right-click to activate context menu.
   content::SimulateRoutedMouseClickAt(embedder_contents, kDefaultKeyModifier,
                                       blink::WebMouseEvent::Button::kRight,
