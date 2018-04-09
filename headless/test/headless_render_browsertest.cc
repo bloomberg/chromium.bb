@@ -33,6 +33,7 @@ namespace {
 constexpr char kSomeUrl[] = "http://example.com/foobar";
 constexpr char kTextHtml[] = "text/html";
 constexpr char kApplicationOctetStream[] = "application/octet-stream";
+constexpr char kImagePng[] = "image/png";
 constexpr char kImageSvgXml[] = "image/svg+xml";
 
 using dom_snapshot::GetSnapshotResult;
@@ -1433,5 +1434,55 @@ img {
   }
 };
 HEADLESS_RENDER_BROWSERTEST(CssUrlFilter);
+
+// Ensures that a number of SVGs features render correctly.
+class SvgExamples : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/",
+        ResponseFromFile("svg_examples.svg", kImageSvgXml));
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/svg_example_image.png",
+        ResponseFromFile("svg_example_image.png", kImagePng));
+
+    return GURL("http://www.example.com/");
+  }
+
+  base::Optional<ScreenshotOptions> GetScreenshotOptions() override {
+    return ScreenshotOptions("svg_examples.png", 0, 0, 400, 600, 1);
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(SvgExamples);
+
+// Ensures that basic <canvas> painting is supported.
+class Canvas : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+<html>
+  <body>
+    <canvas id="test_canvas" width="200" height="200"
+            style="position:absolute;left:0px;top:0px">
+      Oops!  Canvas not supported!
+    </canvas>
+    <script>
+      var context = document.getElementById("test_canvas").
+                    getContext("2d");
+      context.fillStyle = "rgb(255,0,0)";
+      context.fillRect(30, 30, 50, 50);
+    </script>
+  </body>
+</html>
+)|"));
+
+    return GURL("http://www.example.com/");
+  }
+
+  base::Optional<ScreenshotOptions> GetScreenshotOptions() override {
+    return ScreenshotOptions("canvas.png", 0, 0, 200, 200, 1);
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(Canvas);
 
 }  // namespace headless
