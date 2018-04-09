@@ -43,7 +43,8 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
                     Features.SERVICE_WORKER_CACHE_MODE,
                     Features.SERVICE_WORKER_CONTENT_ACCESS,
                     Features.SERVICE_WORKER_FILE_ACCESS,
-                    Features.SERVICE_WORKER_BLOCK_NETWORK_LOADS
+                    Features.SERVICE_WORKER_BLOCK_NETWORK_LOADS,
+                    Features.SERVICE_WORKER_SHOULD_INTERCEPT_REQUEST
             };
     // clang-format on
 

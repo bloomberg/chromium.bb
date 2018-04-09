@@ -10,6 +10,6 @@ import android.webkit.WebResourceResponse;
 /**
  * Boundary interface for ServiceWorkerClient.
  */
-public interface ServiceWorkerClientBoundaryInterface {
+public interface ServiceWorkerClientBoundaryInterface extends FeatureFlagHolderBoundaryInterface {
     WebResourceResponse shouldInterceptRequest(WebResourceRequest request);
 }
