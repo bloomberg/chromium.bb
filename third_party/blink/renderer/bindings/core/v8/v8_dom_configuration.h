@@ -66,6 +66,11 @@ class CORE_EXPORT V8DOMConfiguration final {
     kDoNotCheckAccess,
   };
 
+  enum SideEffectConfiguration : unsigned {
+    kHasSideEffect,
+    kHasNoSideEffect,
+  };
+
   // Bit field to select which worlds the member will be defined in.
   enum WorldConfiguration : unsigned {
     kMainWorld = 1 << 0,
@@ -274,6 +279,8 @@ class CORE_EXPORT V8DOMConfiguration final {
     unsigned holder_check_configuration : 1;
     // AccessCheckConfiguration
     unsigned access_check_configuration : 1;
+    // SideEffectConfiguration
+    unsigned side_effect_type : 1;
     // WorldConfiguration
     unsigned world_configuration : 2;
   };
@@ -299,6 +306,8 @@ class CORE_EXPORT V8DOMConfiguration final {
     unsigned holder_check_configuration : 1;
     // AccessCheckConfiguration
     unsigned access_check_configuration : 1;
+    // SideEffectConfiguration
+    unsigned side_effect_type : 1;
   };
 
   static void InstallMethods(v8::Isolate*,

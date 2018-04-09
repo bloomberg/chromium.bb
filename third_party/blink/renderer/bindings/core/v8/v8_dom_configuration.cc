@@ -406,11 +406,17 @@ void InstallMethodInternal(v8::Isolate* isolate,
     signature = v8::Local<v8::Signature>();
 
   DCHECK(method.property_location_configuration);
+  v8::SideEffectType side_effect_type =
+      method.side_effect_type == V8DOMConfiguration::kHasNoSideEffect
+          ? v8::SideEffectType::kHasNoSideEffect
+          : v8::SideEffectType::kHasSideEffect;
   if (method.property_location_configuration &
       (V8DOMConfiguration::kOnInstance | V8DOMConfiguration::kOnPrototype)) {
+    // TODO(luoe): use ConstructorBehavior::kThrow for non-constructor methods.
     v8::Local<v8::FunctionTemplate> function_template =
-        v8::FunctionTemplate::New(isolate, callback, v8::Local<v8::Value>(),
-                                  signature, method.length);
+        v8::FunctionTemplate::New(
+            isolate, callback, v8::Local<v8::Value>(), signature, method.length,
+            v8::ConstructorBehavior::kAllow, side_effect_type);
     function_template->RemovePrototype();
     if (method.access_check_configuration == V8DOMConfiguration::kCheckAccess)
       function_template->SetAcceptAnyReceiver(false);
@@ -430,9 +436,12 @@ void InstallMethodInternal(v8::Isolate* isolate,
     // Operations installed on the interface object must be static methods, so
     // no need to specify a signature, i.e. no need to do type check against a
     // holder.
+    // TODO(luoe): use ConstructorBehavior::kThrow for non-constructor methods.
     v8::Local<v8::FunctionTemplate> function_template =
         v8::FunctionTemplate::New(isolate, callback, v8::Local<v8::Value>(),
-                                  v8::Local<v8::Signature>(), method.length);
+                                  v8::Local<v8::Signature>(), method.length,
+                                  v8::ConstructorBehavior::kAllow,
+                                  side_effect_type);
     function_template->RemovePrototype();
     // Similarly, there is no need to do an access check for static methods, as
     // there is no holder to check against.
@@ -464,12 +473,18 @@ void InstallMethodInternal(
     signature = v8::Local<v8::Signature>();
 
   const unsigned location = config.property_location_configuration;
+  v8::SideEffectType side_effect_type =
+      config.side_effect_type == V8DOMConfiguration::kHasNoSideEffect
+          ? v8::SideEffectType::kHasNoSideEffect
+          : v8::SideEffectType::kHasSideEffect;
   DCHECK(location);
   if (location &
       (V8DOMConfiguration::kOnInstance | V8DOMConfiguration::kOnPrototype)) {
+    // TODO(luoe): use ConstructorBehavior::kThrow for non-constructor methods.
     v8::Local<v8::FunctionTemplate> function_template =
-        v8::FunctionTemplate::New(isolate, callback, v8::Local<v8::Value>(),
-                                  signature, config.length);
+        v8::FunctionTemplate::New(
+            isolate, callback, v8::Local<v8::Value>(), signature, config.length,
+            v8::ConstructorBehavior::kAllow, side_effect_type);
     function_template->RemovePrototype();
     if (config.access_check_configuration == V8DOMConfiguration::kCheckAccess) {
       function_template->SetAcceptAnyReceiver(false);
@@ -496,9 +511,12 @@ void InstallMethodInternal(
     // Operations installed on the interface object must be static
     // operations, so no need to specify a signature, i.e. no need to do
     // type check against a holder.
+    // TODO(luoe): use ConstructorBehavior::kThrow for non-constructor methods.
     v8::Local<v8::FunctionTemplate> function_template =
         v8::FunctionTemplate::New(isolate, callback, v8::Local<v8::Value>(),
-                                  v8::Local<v8::Signature>(), config.length);
+                                  v8::Local<v8::Signature>(), config.length,
+                                  v8::ConstructorBehavior::kAllow,
+                                  side_effect_type);
     function_template->RemovePrototype();
     v8::Local<v8::Function> function =
         function_template->GetFunction(isolate->GetCurrentContext())

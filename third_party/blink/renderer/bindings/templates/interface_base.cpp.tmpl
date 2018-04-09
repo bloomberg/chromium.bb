@@ -566,7 +566,8 @@ static void install{{v8_class}}Template(
       v8::DontEnum,
       V8DOMConfiguration::kOnPrototype,
       V8DOMConfiguration::kCheckHolder,
-      V8DOMConfiguration::kDoNotCheckAccess
+      V8DOMConfiguration::kDoNotCheckAccess,
+      V8DOMConfiguration::kHasSideEffect
   };
   V8DOMConfiguration::InstallMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
   {% endfilter %}
@@ -752,7 +753,8 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesOnTemplate(
       v8::DontEnum,
       V8DOMConfiguration::kOnPrototype,
       V8DOMConfiguration::kCheckHolder,
-      V8DOMConfiguration::kDoNotCheckAccess
+      V8DOMConfiguration::kDoNotCheckAccess,
+      V8DOMConfiguration::kHasSideEffect
   };
   V8DOMConfiguration::InstallMethod(
       isolate, world, prototype_template, signature,
