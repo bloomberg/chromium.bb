@@ -38,6 +38,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, quindi <ph name="TAB" /> o <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">Salva la pagina web corrente nei Preferiti</translation>
 <translation id="2750942583782703988">Carica di nuovo la pagina corrente</translation>
+<translation id="2764005613199379871">Consente di impostare lo stato attivo nella barra degli indirizzi di ricerca</translation>
 <translation id="2789868185375229787">Diminuisce lo zoom nella pagina</translation>
 <translation id="2804480015716812239">Premi <ph name="ALT" /> e fai clic su un link</translation>
 <translation id="2830827904629746450">Aggancia una finestra a destra</translation>
@@ -49,6 +50,7 @@
 <translation id="3105917916468784889">Acquisisce uno screenshot</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Area attiva nella barra degli indirizzi</translation>
+<translation id="3256109297135787951">Consente di rimuovere l'evidenziazione da un elemento sulla shelf</translation>
 <translation id="3288816184963444640">Chiude la finestra corrente</translation>
 <translation id="3407560819924487926">Apre il Task Manager</translation>
 <translation id="3422679037938588196">Passa alla corrispondenza precedente della ricerca</translation>
@@ -62,6 +64,7 @@
 <translation id="3720939646656082033">Apre il link in una nuova scheda e passa alla nuova scheda</translation>
 <translation id="3725795051337497754">Chiude la scheda corrente</translation>
 <translation id="3751033133896282964">Annulla l'ultima azione</translation>
+<translation id="3792178297143798024">Consente di aprire l'elemento evidenziato sulla shelf</translation>
 <translation id="379295446891231126">Da <ph name="CTRL" /><ph name="SEPARATOR" /> 1 a 8</translation>
 <translation id="3837047332182291558">Aumenta la luminosità della tastiera (soltanto per tastiere retroilluminate)</translation>
 <translation id="3976863468609830880">Seleziona l'ultima icona nella shelf</translation>
@@ -134,10 +137,12 @@
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, quindi <ph name="SPACE" /> o <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Apre un file nel browser</translation>
 <translation id="7917881398263220094">Interrompe il caricamento della pagina corrente</translation>
+<translation id="7952165122793773711">Consente di accedere alle schede da 1 a 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> o <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
 <translation id="8130528849632411619">Passa all'inizio del documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> o <ph name="E" /></translation>
+<translation id="8232835244134740473">Consente di spostare lo stato attivo tra: l'area di stato (dove è visualizzata l'immagine del tuo account), Avvio applicazioni, la barra degli indirizzi, la barra dei Preferiti (se visibile), la pagina web aperta e la barra dei download (se visibile).</translation>
 <translation id="8234414138295101081">Ruota lo schermo di 90 gradi</translation>
 <translation id="836869401750819675">Apre la pagina Download</translation>
 <translation id="8388247778047144397">Trascina il link in un'area vuota della tabstrip</translation>

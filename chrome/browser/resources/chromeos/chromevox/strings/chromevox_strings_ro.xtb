@@ -370,6 +370,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="4176463684765177261">Dezactivat</translation>
 <translation id="4188530942454211480">Propoziția anterioară</translation>
 <translation id="4191918948604314587">Un buton</translation>
+<translation id="419265409837491189">Accesează coloana anterioară</translation>
 <translation id="4202186506458631436">Deplasează spre dreapta</translation>
 <translation id="4206289001967551965">În interiorul tabelului</translation>
 <translation id="4209770650650780359">Apasă săgeata în sus sau săgeata în jos pentru completări automate.</translation>
@@ -420,6 +421,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="4660783501463101648">Versiunea clasică a fost eliminată. Comanda de comutare de la tastatură pentru revenirea la versiunea clasică ChromeVox a fost eliminată.</translation>
 <translation id="4661075872484491155">arbore</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4677535310137735442">Accesează coloana următoare</translation>
 <translation id="4688873778442829762">grilă</translation>
 <translation id="4693675773662933727">Reperul anterior</translation>
 <translation id="4696413482802371445">Nu există un titlu de nivel 5 următor.</translation>
@@ -435,6 +437,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="4826415162591436065">Navigați înainte</translation>
 <translation id="4826604887384865800">Saltul următor</translation>
 <translation id="4827410568042294688">neselectat</translation>
+<translation id="4839925464551908214">Accesează rândul anterior</translation>
 <translation id="4842108708071771135">Nu există un blockquote următor.</translation>
 <translation id="4844625982113518938">Apasă pe orice tastă pentru a afla numele acesteia. Combinația Ctrl + W va închide modul de învățare.</translation>
 <translation id="4846428657345567687">Bun venit la ChromeVox!</translation>
@@ -789,6 +792,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="8186185314313222077">activează/dezactivează ecranul complet</translation>
 <translation id="8199231515320852133">Anunță anteturile celulei curente</translation>
 <translation id="820417203470636242">Celulă goală.</translation>
+<translation id="820469951249669083">Accesează rândul următor</translation>
 <translation id="8215202828671303819">Selectare multiplă</translation>
 <translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">Salt la elementul focalizabil anterior</translation>

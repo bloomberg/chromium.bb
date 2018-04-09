@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Maaf, kata laluan anda masih tidak dapat disahkan. Perhatian: jika anda menukar kata laluan anda baru-baru ini, kata laluan baharu anda akan digunakan apabila anda log keluar, sila gunakan kata laluan yang lama di sini.</translation>
 <translation id="1677472565718498478">Berbaki <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Alamat IPv6: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">Pentadbir peranti mungkin dapat memantau aktiviti anda.</translation>
 <translation id="1734367976349034509">Peranti ini diurus perusahaan</translation>
 <translation id="1746730358044914197">Kaedah masukan dikonfigurasi oleh pentadbir anda.</translation>
 <translation id="1747827819627189109">Papan kekunci pada skrin didayakan</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Butang limpahan</translation>
 <translation id="1951012854035635156">Pembantu</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Tetapkan bahasa anda</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Matikan kuasa</translation>
 <translation id="2012624427112548395">Ctrl+Cari+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Serah</translation>
 <translation id="2675319268637823299">Pentadbir telah melarang log masuk berbilang untuk <ph name="USER_EMAIL" />.
     Semua pengguna mesti log keluar untuk meneruskan.</translation>
+<translation id="2696763960464195425">Maklumat anda akan dialih keluar apabila anda log keluar. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Tetapkan papan kekunci anda</translation>
 <translation id="2718395828230677721">Cahaya Malam</translation>
 <translation id="2727977024730340865">Dipalamkan pada pengecas berkuasa rendah. Pengecasan bateri mungkin tidak boleh diharapkan.</translation>
 <translation id="2761704814324807722">Dulang status, masa <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -329,6 +333,7 @@ Gunakan ciri ini dengan akaun yang anda percaya sahaja.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pengecas berkuasa rendah disambungkan</translation>
 <translation id="8734991477317290293">Papan kekunci mungkin sedang cuba mencuri ketukan kekunci anda</translation>
+<translation id="8809737090443522491">Taip nama apl atau dokumen</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Memindahkan tetingkap ke desktop lain boleh menyebabkan gelagat yang tidak dijangka.
 

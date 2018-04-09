@@ -3,9 +3,6 @@
 <translationbundle lang="pt-BR">
 <translation id="1002108253973310084">Foi detectada uma versão incompatível do protocolo. Certifique-se de que você tenha a versão mais recente do software instalada em ambos os computadores e tente novamente.</translation>
 <translation id="1050693411695664090">Insatisfatória</translation>
-<translation id="1059802506829356230">• Nova aparência.
-• Desempenho, capacidade de resposta e confiabilidade aprimorados.
-• Compatibilidade com reprodução de áudio em computadores Windows ou Linux.</translation>
 <translation id="1152528166145813711">Selecionar...</translation>
 <translation id="1199593201721843963">Desativar conexões remotas</translation>
 <translation id="1291443878853470558">Ative conexões remotas se quiser usar o Chromoting para acessar este computador.</translation>
@@ -143,6 +140,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="4145029455188493639">Conectado como <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Alguns componentes obrigatórios não foram encontrados. Certifique-se de que você esteja executando a última versão do software e tente novamente.</translation>
 <translation id="4156740505453712750">Para proteger o acesso a este computador, selecione um PIN de <ph name="BOLD_START" />pelo menos seis dígitos<ph name="BOLD_END" />. Este PIN será necessário para estabelecer conexão a partir de outro local.</translation>
+<translation id="4169432154993690151">Para escolher uma foto do perfil, permita que a Área de trabalho remota do Google Chrome acesse sua câmera</translation>
 <translation id="4176825807642096119">Código de acesso</translation>
 <translation id="4207623512727273241">Execute o instalador antes de continuar.</translation>
 <translation id="4227991223508142681">Utilitário de aprovisionamento de host</translation>
@@ -260,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="677755392401385740">Host iniciado para o usuário <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Visualizar/editar</translation>
+<translation id="6913710942997637770">Para escolher uma foto do perfil, permita que a Área de trabalho remota do Google Chrome acesse suas fotos</translation>
 <translation id="6930242544192836755">Duração</translation>
 <translation id="6939719207673461467">Mostrar/ocultar teclado</translation>
 <translation id="6944854424004126054">Restaurar janela</translation>

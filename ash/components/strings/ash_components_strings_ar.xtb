@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="104962181688258143">فتح تطبيق الملفات</translation>
-<translation id="1122869341872663659">عرض <ph name="N" /> نتيجة بحث لطلب البحث <ph name="QUERY" /></translation>
+<translation id="1122869341872663659">الاطّلاع <ph name="N" /> على نتائج بحث <ph name="QUERY" /></translation>
 <translation id="1134347825771908369">كتم الصوت</translation>
 <translation id="1195667586424773550">اسحب الرابط إلى شريط عناوين علامة التبويب</translation>
 <translation id="1204450209689312104">فتح نافذة جديدة في وضع التصفح المتخفي</translation>
@@ -115,6 +115,7 @@
 <translation id="6435207348963613811">تحديد العنصر السابق على الرف</translation>
 <translation id="6445033640292336367">إرجاع علامة التبويب إلى موضعها الأصلي</translation>
 <translation id="649811797655257835">حدِّد الملف، ثم اضغط على <ph name="SPACE" /></translation>
+<translation id="6556040137485212400">فتح النافذة التي لم يتم استخدامها منذ فترة زمنية طويلة</translation>
 <translation id="666343722268997814">النقر بالزر الأيمن لفتح قائمة العنصر المُحدَّد</translation>
 <translation id="6671538777808758331">الانتقال إلى المطابقة التالية للبحث</translation>
 <translation id="6690765639083431875">إرساء نافذة على اليمين</translation>
@@ -159,7 +160,7 @@
 <translation id="9052808072970550123">التبديل إلى المستخدم التالي</translation>
 <translation id="906458777597946297">تكبير النافذة</translation>
 <translation id="9106898733795143799">الصفحة ومتصفّح الويب</translation>
-<translation id="9162942292291287644">لم يتم العثور على أي نتيجة بحث لطلب البحث <ph name="QUERY" /></translation>
+<translation id="9162942292291287644">لم يتم العثور على أي نتائج بحث <ph name="QUERY" /></translation>
 <translation id="9179672198516322668">الاختصارات الشائعة</translation>
 <translation id="93603345341560814">اضغط على <ph name="SHIFT" /> وانقر على الرابط</translation>
 <translation id="945383118875625837">اسحب الرابط إلى شريط الإشارات</translation>

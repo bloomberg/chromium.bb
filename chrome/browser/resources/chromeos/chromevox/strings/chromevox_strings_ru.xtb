@@ -370,6 +370,7 @@
 <translation id="4176463684765177261">Отключено</translation>
 <translation id="4188530942454211480">Перейти к предыдущему предложению</translation>
 <translation id="4191918948604314587">Кнопка</translation>
+<translation id="419265409837491189">Перейти к предыдущему столбцу</translation>
 <translation id="4202186506458631436">Переместить вправо</translation>
 <translation id="4206289001967551965">Открыта таблица.</translation>
 <translation id="4209770650650780359">Для автозаполнения нажимайте стрелку вверх или вниз.</translation>
@@ -420,6 +421,7 @@
 <translation id="4660783501463101648">Мы отказались от ChromeVox Classic. Теперь на эту версию нельзя переключиться с помощью клавиатуры.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4677535310137735442">Перейти к следующему столбцу</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Перейти к предыдущему ориентиру</translation>
 <translation id="4696413482802371445">Следующего заголовка пятого уровня нет.</translation>
@@ -435,6 +437,7 @@
 <translation id="4826415162591436065">Перейти к следующему элементу</translation>
 <translation id="4826604887384865800">Следующий переход</translation>
 <translation id="4827410568042294688">Выделение отменено.</translation>
+<translation id="4839925464551908214">Перейти к предыдущей строке</translation>
 <translation id="4842108708071771135">Следующей цитаты нет.</translation>
 <translation id="4844625982113518938">Чтобы узнать, какая это клавиша, нажмите на нее. Чтобы выйти из режима обучения, нажмите CTRL + Ц.</translation>
 <translation id="4846428657345567687">Добро пожаловать в ChromeVox!</translation>
@@ -789,6 +792,7 @@
 <translation id="8186185314313222077">включить полноэкранный режим</translation>
 <translation id="8199231515320852133">Назвать заголовки текущей ячейки</translation>
 <translation id="820417203470636242">Пустая ячейка.</translation>
+<translation id="820469951249669083">Перейти к следующей строке</translation>
 <translation id="8215202828671303819">Множественный выбор</translation>
 <translation id="826991282343985864">стр$1стлб$2</translation>
 <translation id="8276439074553447000">Перейти к предыдущему активируемому элементу</translation>
