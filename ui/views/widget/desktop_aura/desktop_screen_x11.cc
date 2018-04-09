@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/protected_memory_cfi.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -314,6 +315,14 @@ DesktopScreenX11::DesktopScreenX11(
     views::LinuxUI::instance()->AddDeviceScaleFactorObserver(this);
 }
 
+typedef XRRMonitorInfo* (*XRRGetMonitors)(::Display*, Window, bool, int*);
+typedef void (*XRRFreeMonitors)(XRRMonitorInfo*);
+
+PROTECTED_MEMORY_SECTION base::ProtectedMemory<XRRGetMonitors>
+    g_XRRGetMonitors_ptr;
+PROTECTED_MEMORY_SECTION base::ProtectedMemory<XRRFreeMonitors>
+    g_XRRFreeMonitors_ptr;
+
 std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
   DCHECK(xrandr_version_ >= 103);
   std::vector<display::Display> displays;
@@ -330,23 +339,22 @@ std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
   if (xrandr_version_ >= 105) {
     void* xrandr_lib = dlopen(NULL, RTLD_NOW);
     if (xrandr_lib) {
-      typedef XRRMonitorInfo* (*XRRGetMonitors_type)(::Display*, Window, bool,
-                                                     int*);
-      typedef void (*XRRFreeMonitors_type)(XRRMonitorInfo*);
-      XRRGetMonitors_type XRRGetMonitors_ptr =
-          (XRRGetMonitors_type)dlsym(xrandr_lib, "XRRGetMonitors");
-      XRRFreeMonitors_type XRRFreeMonitors_ptr =
-          (XRRFreeMonitors_type)dlsym(xrandr_lib, "XRRFreeMonitors");
-      if (XRRGetMonitors_ptr && XRRFreeMonitors_ptr) {
+      static base::ProtectedMemory<XRRGetMonitors>::Initializer get_init(
+          &g_XRRGetMonitors_ptr, reinterpret_cast<XRRGetMonitors>(
+                                     dlsym(xrandr_lib, "XRRGetMonitors")));
+      static base::ProtectedMemory<XRRFreeMonitors>::Initializer free_init(
+          &g_XRRFreeMonitors_ptr, reinterpret_cast<XRRFreeMonitors>(
+                                      dlsym(xrandr_lib, "XRRFreeMonitors")));
+      if (*g_XRRGetMonitors_ptr && *g_XRRFreeMonitors_ptr) {
         int nmonitors = 0;
-        XRRMonitorInfo* monitors =
-            XRRGetMonitors_ptr(xdisplay_, x_root_window_, false, &nmonitors);
+        XRRMonitorInfo* monitors = base::UnsanitizedCfiCall(
+            g_XRRGetMonitors_ptr)(xdisplay_, x_root_window_, false, &nmonitors);
         for (int monitor = 0; monitor < nmonitors; monitor++) {
           for (int j = 0; j < monitors[monitor].noutput; j++) {
             output_to_monitor[monitors[monitor].outputs[j]] = monitor;
           }
         }
-        XRRFreeMonitors_ptr(monitors);
+        base::UnsanitizedCfiCall(g_XRRFreeMonitors_ptr)(monitors);
       }
     }
   }
