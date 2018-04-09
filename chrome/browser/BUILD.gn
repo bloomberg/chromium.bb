@@ -3720,6 +3720,8 @@ jumbo_split_static_library("browser") {
       "offline_pages/recent_tab_helper.h",
       "offline_pages/request_coordinator_factory.h",
       "offline_pages/resource_loading_observer.h",
+      "offline_pages/thumbnail_decoder_impl.cc",
+      "offline_pages/thumbnail_decoder_impl.h",
     ]
     if (is_android) {
       sources += [

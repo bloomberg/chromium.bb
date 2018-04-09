@@ -18,6 +18,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
+#include "base/test/mock_callback.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -28,13 +30,18 @@
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/downloads/offline_item_conversions.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
+#include "components/offline_pages/core/thumbnail_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/image/image_unittest_util.h"
 
 using offline_items_collection::OfflineItemState;
 
 namespace offline_pages {
-
 namespace {
+using testing::_;
+using testing::Invoke;
+using testing::WithArg;
+
 // Constants for a test OfflinePageItem.
 static const int kTestOfflineId1 = 1;
 static const int kTestOfflineId2 = 2;
@@ -64,16 +71,10 @@ void GetItemAndVerify(const base::Optional<OfflineItem>& expected,
   EXPECT_EQ(expected.value().state, actual.value().state);
 }
 
-void GetAllItemsAndIgnoreResult(const std::vector<OfflineItem>& actual) {
-  // Do nothing.
-}
-
 void GetAllItemsAndVerify(size_t expected_size,
                           const std::vector<OfflineItem>& actual) {
   EXPECT_EQ(expected_size, actual.size());
 }
-
-}  // namespace
 
 // Mock DownloadUIAdapter::Delegate
 class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
@@ -91,6 +92,17 @@ class DownloadUIAdapterDelegate : public DownloadUIAdapter::Delegate {
 
   bool is_visible = true;
   bool is_temporarily_hidden = false;
+};
+
+class MockThumbnailDecoder : public ThumbnailDecoder {
+ public:
+  MOCK_METHOD2(DecodeAndCropThumbnail_,
+               void(const std::string& thumbnail_data,
+                    DecodeComplete* complete_callback));
+  void DecodeAndCropThumbnail(const std::string& thumbnail_data,
+                              DecodeComplete complete_callback) override {
+    DecodeAndCropThumbnail_(thumbnail_data, &complete_callback);
+  }
 };
 
 // Mock OfflinePageModel for testing the SavePage calls.
@@ -148,6 +160,21 @@ class MockOfflinePageModel : public StubOfflinePageModel {
     }
   }
 
+  void GetThumbnailByOfflineId(
+      int64_t offline_id,
+      base::OnceCallback<void(std::unique_ptr<OfflinePageThumbnail>)> callback)
+      override {
+    EXPECT_EQ(kTestOfflineId1, offline_id);
+
+    std::unique_ptr<OfflinePageThumbnail> copy;
+    if (thumbnail_by_offline_id_result) {
+      copy = std::make_unique<OfflinePageThumbnail>(
+          *thumbnail_by_offline_id_result);
+    }
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(copy)));
+  }
+
   void AddPageAndNotifyAdapter(const OfflinePageItem& page) {
     EXPECT_EQ(pages.end(), pages.find(page.offline_id));
     pages[page.offline_id] = page;
@@ -159,6 +186,7 @@ class MockOfflinePageModel : public StubOfflinePageModel {
   }
 
   std::map<int64_t, OfflinePageItem> pages;
+  std::unique_ptr<OfflinePageThumbnail> thumbnail_by_offline_id_result;
 
  private:
   OfflinePageModel::Observer* observer_;
@@ -177,6 +205,10 @@ class MockOfflinePageModel : public StubOfflinePageModel {
 class DownloadUIAdapterTest : public testing::Test,
                               public OfflineContentProvider::Observer {
  public:
+  const std::string kThumbnailData = "Thumbnail-data";
+  const OfflinePageThumbnail kThumbnail = {kTestOfflineId1, kTestCreationTime,
+                                           kThumbnailData};
+
   DownloadUIAdapterTest();
   ~DownloadUIAdapterTest() override;
 
@@ -207,6 +239,7 @@ class DownloadUIAdapterTest : public testing::Test,
   DownloadUIAdapterDelegate* adapter_delegate;
   std::unique_ptr<DownloadUIAdapter> adapter;
   OfflinerStub* offliner_stub;
+  MockThumbnailDecoder* thumbnail_decoder;
 
  private:
   std::unique_ptr<RequestCoordinatorStubTaco> request_coordinator_taco_;
@@ -232,9 +265,13 @@ void DownloadUIAdapterTest::SetUp() {
   request_coordinator_taco_->SetOffliner(std::move(offliner));
 
   request_coordinator_taco_->CreateRequestCoordinator();
+
+  auto decoder = std::make_unique<MockThumbnailDecoder>();
+  thumbnail_decoder = decoder.get();
+
   adapter = std::make_unique<DownloadUIAdapter>(
       nullptr, model.get(), request_coordinator_taco_->request_coordinator(),
-      std::move(delegate));
+      std::move(decoder), std::move(delegate));
 
   adapter->AddObserver(this);
 }
@@ -273,7 +310,7 @@ int64_t DownloadUIAdapterTest::AddRequest(const GURL& url,
 void DownloadUIAdapterTest::AddInitialPage() {
   model->AddInitialPage();
   // Trigger cache load in the adapter.
-  adapter->GetAllItems(base::BindOnce(&GetAllItemsAndIgnoreResult));
+  adapter->GetAllItems(base::DoNothing());
   PumpLoop();
 }
 
@@ -281,7 +318,7 @@ int64_t DownloadUIAdapterTest::AddInitialRequest(const GURL& url,
                                                  const ClientId& client_id) {
   int64_t id = AddRequest(url, client_id);
   // Trigger cache load in the adapter.
-  adapter->GetAllItems(base::BindOnce(&GetAllItemsAndIgnoreResult));
+  adapter->GetAllItems(base::DoNothing());
   PumpLoop();
   return id;
 }
@@ -539,9 +576,12 @@ TEST_F(DownloadUIAdapterTest, RequestBecomesPage) {
   // request is competed successfully, waiting for the page with the
   // same client_id to come in.
   item.state = OfflineItemState::IN_PROGRESS;
-  adapter->GetItemById(kTestContentId1,
-                       base::BindOnce(&GetItemAndVerify, item));
-  PumpLoop();
+  {
+    SCOPED_TRACE("IN_PROGRESS");
+    adapter->GetItemById(kTestContentId1,
+                         base::BindOnce(&GetItemAndVerify, item));
+    PumpLoop();
+  }
 
   // Add a new saved page with the same client id.
   // This simulates what happens when the request is completed.
@@ -560,9 +600,12 @@ TEST_F(DownloadUIAdapterTest, RequestBecomesPage) {
   std::string last_updated_guid = updated_guids[updated_guids.size() - 1];
   item.id = ContentId(kOfflinePageNamespace, last_updated_guid);
   item.state = OfflineItemState::COMPLETE;
-  adapter->GetItemById(kTestContentId1,
-                       base::BindOnce(&GetItemAndVerify, item));
-  PumpLoop();
+  {
+    SCOPED_TRACE("COMPLETE");
+    adapter->GetItemById(kTestContentId1,
+                         base::BindOnce(&GetItemAndVerify, item));
+    PumpLoop();
+  }
 }
 
 TEST_F(DownloadUIAdapterTest, UpdateProgress) {
@@ -582,4 +625,121 @@ TEST_F(DownloadUIAdapterTest, UpdateProgress) {
   PumpLoop();
 }
 
+TEST_F(DownloadUIAdapterTest, GetVisualsForItem) {
+  AddInitialPage();
+  model->thumbnail_by_offline_id_result =
+      std::make_unique<OfflinePageThumbnail>(kThumbnail);
+  const int kImageWidth = 24;
+  EXPECT_CALL(*thumbnail_decoder, DecodeAndCropThumbnail_(kThumbnailData, _))
+      .WillOnce(
+          WithArg<1>(Invoke([&](ThumbnailDecoder::DecodeComplete* callback) {
+            std::move(*callback).Run(
+                gfx::test::CreateImage(kImageWidth, kImageWidth));
+          })));
+  bool called = false;
+  auto callback = base::BindLambdaForTesting(
+      [&](const offline_items_collection::ContentId& id,
+          std::unique_ptr<offline_items_collection::OfflineItemVisuals>
+              visuals) {
+        EXPECT_EQ(kImageWidth, visuals->icon.Width());
+        called = true;
+      });
+  adapter->GetAllItems(base::DoNothing());
+  adapter->GetVisualsForItem(kTestContentId1, callback);
+  PumpLoop();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DownloadUIAdapterTest, GetVisualsForItemInvalidItem) {
+  EXPECT_CALL(*thumbnail_decoder, DecodeAndCropThumbnail_(kThumbnailData, _))
+      .Times(0);
+  AddInitialPage();
+  const ContentId kContentID("not", "valid");
+  bool called = false;
+  auto callback = base::BindLambdaForTesting(
+      [&](const offline_items_collection::ContentId& id,
+          std::unique_ptr<offline_items_collection::OfflineItemVisuals>
+              visuals) {
+        EXPECT_EQ(kContentID, id);
+        EXPECT_FALSE(visuals);
+        called = true;
+      });
+  adapter->GetAllItems(base::DoNothing());
+  adapter->GetVisualsForItem(kContentID, callback);
+  PumpLoop();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DownloadUIAdapterTest, GetVisualsForItemNoThumbnail) {
+  AddInitialPage();
+  model->thumbnail_by_offline_id_result = nullptr;
+  EXPECT_CALL(*thumbnail_decoder, DecodeAndCropThumbnail_(_, _)).Times(0);
+  bool called = false;
+  auto callback = base::BindLambdaForTesting(
+      [&](const offline_items_collection::ContentId& id,
+          std::unique_ptr<offline_items_collection::OfflineItemVisuals>
+              visuals) {
+        EXPECT_EQ(kTestContentId1, id);
+        EXPECT_FALSE(visuals);
+        called = true;
+      });
+  adapter->GetAllItems(base::DoNothing());
+  adapter->GetVisualsForItem(kTestContentId1, callback);
+  PumpLoop();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DownloadUIAdapterTest, GetVisualsForItemBadDecode) {
+  AddInitialPage();
+  model->thumbnail_by_offline_id_result =
+      std::make_unique<OfflinePageThumbnail>(kThumbnail);
+  EXPECT_CALL(*thumbnail_decoder, DecodeAndCropThumbnail_(kThumbnailData, _))
+      .WillOnce(
+          WithArg<1>(Invoke([&](ThumbnailDecoder::DecodeComplete* callback) {
+            std::move(*callback).Run(gfx::test::CreateImage(0, 0));
+          })));
+  bool called = false;
+  auto callback = base::BindLambdaForTesting(
+      [&](const offline_items_collection::ContentId& id,
+          std::unique_ptr<offline_items_collection::OfflineItemVisuals>
+              visuals) {
+        EXPECT_EQ(kTestContentId1, id);
+        EXPECT_FALSE(visuals);
+        called = true;
+      });
+  adapter->GetAllItems(base::DoNothing());
+  adapter->GetVisualsForItem(kTestContentId1, callback);
+  PumpLoop();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DownloadUIAdapterTest, ThumbnailAddedUpdatesItem) {
+  // Add an item without a thumbnail. Then notify the adapter about the added
+  // thumbnail. It should notify the delegate about the updated item.
+  AddInitialPage();
+  adapter->GetAllItems(base::DoNothing());
+  PumpLoop();
+  updated_guids.clear();
+
+  OfflinePageThumbnail thumb;
+  thumb.offline_id = kTestOfflineId1;
+  adapter->ThumbnailAdded(nullptr, thumb);
+
+  EXPECT_EQ(std::vector<std::string>{kTestGuid1}, updated_guids);
+}
+
+TEST_F(DownloadUIAdapterTest, ThumbnailAddedItemNotFound) {
+  // Notify the adapter about an item not yet loaded. It should be ignored.
+  AddInitialPage();
+  adapter->GetAllItems(base::DoNothing());
+  PumpLoop();
+  updated_guids.clear();
+
+  OfflinePageThumbnail thumb;
+  thumb.offline_id = 958120;
+  adapter->ThumbnailAdded(nullptr, thumb);
+
+  EXPECT_EQ(std::vector<std::string>{}, updated_guids);
+}
+}  // namespace
 }  // namespace offline_pages

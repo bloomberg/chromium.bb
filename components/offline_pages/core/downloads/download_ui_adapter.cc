@@ -16,6 +16,8 @@
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/downloads/offline_item_conversions.h"
 #include "components/offline_pages/core/offline_page_model.h"
+#include "components/offline_pages/core/thumbnail_decoder.h"
+#include "ui/gfx/image/image.h"
 
 namespace {
 // Value of this constant doesn't matter, only its address is used.
@@ -81,13 +83,16 @@ DownloadUIAdapter::ItemInfo::ItemInfo(const SavePageRequest& request,
 
 DownloadUIAdapter::ItemInfo::~ItemInfo() {}
 
-DownloadUIAdapter::DownloadUIAdapter(OfflineContentAggregator* aggregator,
-                                     OfflinePageModel* model,
-                                     RequestCoordinator* request_coordinator,
-                                     std::unique_ptr<Delegate> delegate)
+DownloadUIAdapter::DownloadUIAdapter(
+    OfflineContentAggregator* aggregator,
+    OfflinePageModel* model,
+    RequestCoordinator* request_coordinator,
+    std::unique_ptr<ThumbnailDecoder> thumbnail_decoder,
+    std::unique_ptr<Delegate> delegate)
     : aggregator_(aggregator),
       model_(model),
       request_coordinator_(request_coordinator),
+      thumbnail_decoder_(std::move(thumbnail_decoder)),
       delegate_(std::move(delegate)),
       state_(State::NOT_LOADED),
       weak_ptr_factory_(this) {
@@ -247,6 +252,67 @@ void DownloadUIAdapter::GetAllItems(
   LoadCache();
 }
 
+void DownloadUIAdapter::GetVisualsForItem(
+    const ContentId& id,
+    const VisualsCallback& visuals_callback) {
+  auto it = items_.find(id.id);
+  if (it == items_.end() || !thumbnail_decoder_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(visuals_callback, id, nullptr));
+    return;
+  }
+  const ItemInfo* item = it->second.get();
+  model_->GetThumbnailByOfflineId(
+      item->offline_id,
+      base::BindOnce(&DownloadUIAdapter::OnThumbnailLoaded,
+                     weak_ptr_factory_.GetWeakPtr(), id, visuals_callback));
+}
+
+void DownloadUIAdapter::OnThumbnailLoaded(
+    const ContentId& content_id,
+    const VisualsCallback& visuals_callback,
+    std::unique_ptr<OfflinePageThumbnail> thumbnail) {
+  DCHECK(thumbnail_decoder_);
+  if (!thumbnail || thumbnail->thumbnail.empty()) {
+    // PostTask not required, GetThumbnailByOfflineId does it for us.
+    visuals_callback.Run(content_id, nullptr);
+    return;
+  }
+
+  auto forward_visuals_lambda = [](const ContentId& content_id,
+                                   const VisualsCallback& visuals_callback,
+                                   const gfx::Image& image) {
+    if (image.IsEmpty()) {
+      visuals_callback.Run(content_id, nullptr);
+      return;
+    }
+    auto visuals =
+        std::make_unique<offline_items_collection::OfflineItemVisuals>();
+    visuals->icon = image;
+    visuals_callback.Run(content_id, std::move(visuals));
+  };
+
+  thumbnail_decoder_->DecodeAndCropThumbnail(
+      thumbnail->thumbnail,
+      base::BindOnce(forward_visuals_lambda, content_id, visuals_callback));
+}
+
+void DownloadUIAdapter::ThumbnailAdded(OfflinePageModel* model,
+                                       const OfflinePageThumbnail& thumbnail) {
+  // Note, this is an O(N) lookup. Not ideal, but this method is called at most
+  // 10 times a day (once per prefetch download), so it's probably not worth
+  // optimizing.
+  auto it =
+      std::find_if(items_.cbegin(), items_.cend(),
+                   [&](const OfflineItems::value_type& entry) {
+                     return entry.second->offline_id == thumbnail.offline_id;
+                   });
+  if (it == items_.end() || !it->second->ui_item)
+    return;
+  for (auto& observer : observers_)
+    observer.OnItemUpdated(*it->second->ui_item);
+}
+
 // TODO(dimich): Remove this method since it is not used currently. If needed,
 // it has to be updated to fault in the initial load of items. Currently it
 // simply returns nullopt if the cache is not loaded.
@@ -359,8 +425,9 @@ void DownloadUIAdapter::LoadCache() {
   if (state_ != State::NOT_LOADED)
     return;
   state_ = State::LOADING_PAGES;
-  model_->GetAllPages(base::Bind(&DownloadUIAdapter::OnOfflinePagesLoaded,
-                                 weak_ptr_factory_.GetWeakPtr()));
+  model_->GetAllPages(
+      base::BindRepeating(&DownloadUIAdapter::OnOfflinePagesLoaded,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 // TODO(dimich): Start clearing this cache on UI close. Also, after OpenItem can
