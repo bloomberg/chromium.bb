@@ -613,19 +613,6 @@ void ServiceWorkerMetrics::RecordInstallEventStatus(
                             SERVICE_WORKER_ERROR_MAX_VALUE);
 }
 
-void ServiceWorkerMetrics::RecordForeignFetchRegistrationCount(
-    size_t scope_count,
-    size_t origin_count) {
-  UMA_HISTOGRAM_COUNTS_100("ServiceWorker.ForeignFetch.ScopeCount",
-                           scope_count);
-  if (scope_count > 0) {
-    // Only record number of origins if service worker registered for at least
-    // one foreign fetch scope.
-    UMA_HISTOGRAM_COUNTS_100("ServiceWorker.ForeignFetch.OriginCount",
-                             origin_count);
-  }
-}
-
 void ServiceWorkerMetrics::RecordEventDispatchingDelay(EventType event_type,
                                                        base::TimeDelta time,
                                                        Site site_for_metrics) {
