@@ -1606,6 +1606,8 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   speech_recognition_root->set_contributes_to_parent_bounds(false);
   speech_recognition_root->SetTranslate(0.f, 0.f, -kContentDistance);
   speech_recognition_root->SetTransitionedProperties({OPACITY});
+  speech_recognition_root->set_visibility_bindings_depend_on_child_visibility(
+      true);
   speech_recognition_root->SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(
           kSpeechRecognitionOpacityAnimationDurationMs));
@@ -1747,8 +1749,8 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
       VR_BIND_LAMBDA(
           [](Model* model, UiElement* speech_listening,
              UiElement* speech_result_parent) {
-            // The speech recognition root should be visible ad long as the
-            // speech listening or result subtree is visibe.
+            // The speech recognition root should be visible as long as the
+            // speech listening or result subtree is visible.
             return model->voice_search_enabled() ||
                    speech_listening->GetTargetOpacity() != 0.f ||
                    speech_result_parent->GetTargetOpacity() != 0.f;
@@ -2403,9 +2405,18 @@ void UiSceneCreator::CreateOmnibox() {
                      base::Unretained(model_)),
       VR_BIND_LAMBDA(
           [](UiElement* e, const bool& v) {
-            float y_offset =
-                v ? kOmniboxVerticalOffsetDMM : kUrlBarVerticalOffsetDMM;
-            y_offset -= 0.5 * kOmniboxHeightDMM;
+            float y_offset = -0.5 * kOmniboxHeightDMM;
+            // TODO(crbug.com/830592): we should not have to alter the set of
+            // transitioned properties here, but there is a bug in the
+            // transitions code in that it doesn't take into account any
+            // currently running animations when starting a transition.
+            if (v) {
+              e->SetTransitionedProperties({TRANSFORM});
+              y_offset += kOmniboxVerticalOffsetDMM;
+            } else {
+              e->SetTransitionedProperties({});
+              y_offset += kUrlBarVerticalOffsetDMM;
+            }
             e->SetTranslate(0, y_offset, kOmniboxShadowOffset);
           },
           shadow.get())));
