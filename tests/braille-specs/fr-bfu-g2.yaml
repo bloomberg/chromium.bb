@@ -1105,6 +1105,12 @@ table:
   __assert-match: fr-bfu-g2.ctb
 flags: {testmode: backward}
 tests:
+    - - Isolated letters (lower)
+      - ⠁ ⠰⠃ ⠰⠉ ⠰⠙ ⠑ ⠰⠋ ⠰⠛ ⠰⠓ ⠰⠊ ⠰⠚ ⠰⠅ ⠰⠇ ⠰⠍ ⠰⠝ ⠰⠕ ⠰⠏ ⠰⠟ ⠰⠗ ⠰⠎ ⠰⠞ ⠰⠥ ⠰⠧ ⠰⠺ ⠰⠭ ⠽ ⠰⠵ ⠷ ⠰⠯
+      - a b c d e f g h i j k l m n o p q r s t u v w x y z à ç
+    - - Isolated letters (upper)
+      - ⠨⠁ ⠰⠨⠃ ⠰⠨⠉ ⠰⠨⠙ ⠨⠑ ⠰⠨⠋ ⠰⠨⠛ ⠰⠨⠓ ⠰⠨⠊ ⠰⠨⠚ ⠰⠨⠅ ⠰⠨⠇ ⠰⠨⠍ ⠰⠨⠝ ⠰⠨⠕ ⠰⠨⠏ ⠰⠨⠟ ⠰⠨⠗ ⠰⠨⠎ ⠰⠨⠞ ⠰⠨⠥ ⠰⠨⠧ ⠰⠨⠺ ⠰⠨⠭ ⠨⠽ ⠰⠨⠵ ⠨⠷ ⠰⠨⠯
+      - A B C D E F G H I J K L M N O P Q R S T U V W X Y Z À Ç
     - ["⠨⠁⠠⠡ ⠰⠃⠠⠱ ⠠⠡⠣⠼⠼⠨⠺ ⠨⠁⠠⠡⠱⠫⠫ ⠰⠨⠉⠠⠣⠨⠊",
        "A1 b5 1200W A1566 C2I"]
     - ["⠰⠍⠲⠰⠞⠲⠰⠎⠲", "m.t.s."]
@@ -2250,6 +2256,7 @@ tests:
     - ["⠤⠫", "complet"]
     - ["⠤⠫⠍", "complément"]
     - ["⠤⠫⠍⠗", "complémentaire"]
+
     - ["¨bj! ¨bj?", "Bonjour! Bonjour?"]
     - ["⠠⠷⠦⠡⠖⠡⠴⠤⠦⠩⠹⠖⠡⠹⠴⠾", "[(1+1)-(34+14)]"]
     - ["⠠⠦⠡⠖⠡⠴⠈⠣⠤⠣⠌⠣", "(1+1)^2-2/2"]
@@ -2261,3 +2268,4 @@ tests:
       - bien tyrol... tournais. tournais... aligator. aligator... transistor...
     - - l c⠰ û u *s)umê. c⠰)
       - le cor est un instrument. cor)
+    - ["⠨⠊ ⠽ ⠁", "Il y a"]
