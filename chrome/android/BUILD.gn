@@ -785,6 +785,7 @@ android_assets("chrome_public_locale_pak_assets") {
 
 jinja_template_resources("chrome_public_apk_template_resources") {
   resources = [
+    "java/res_template/xml/file_paths.xml",
     "java/res_template/xml/launchershortcuts.xml",
     "java/res_template/xml/searchable.xml",
     "java/res_template/xml/syncadapter.xml",
@@ -795,6 +796,7 @@ jinja_template_resources("chrome_public_apk_template_resources") {
 
 jinja_template_resources("chrome_sync_shell_apk_template_resources") {
   resources = [
+    "java/res_template/xml/file_paths.xml",
     "java/res_template/xml/launchershortcuts.xml",
     "java/res_template/xml/searchable.xml",
     "java/res_template/xml/syncadapter.xml",
