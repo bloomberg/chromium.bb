@@ -183,7 +183,9 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
     const extensions::Extension* extension,
     const extensions::Extension* triggering_extension,
     const gfx::ImageSkia* image)
-    : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+    : BubbleDialogDelegateView(anchor_view,
+                               anchor_view ? views::BubbleBorder::TOP_RIGHT
+                                           : views::BubbleBorder::NONE),
       dialog_(dialog_view),
       extension_name_(base::UTF8ToUTF16(extension->name())),
       report_abuse_checkbox_(nullptr),
