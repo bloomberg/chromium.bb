@@ -931,4 +931,30 @@ TEST_F(UpdateCheckerTest, UpdatePauseResume) {
             request.find("<packages><package fp=\"fp1\"/></packages></app>"));
 }
 
+// Tests that an update checker object and its underlying URLFetcher can
+// be safely destroyed while it is paused.
+TEST_F(UpdateCheckerTest, UpdateResetUpdateChecker) {
+  base::RunLoop runloop;
+  auto quit_closure = runloop.QuitClosure();
+
+  EXPECT_TRUE(post_interceptor_->ExpectRequest(
+      std::make_unique<PartialMatch>("updatecheck"),
+      test_file("updatecheck_reply_1.xml")));
+  post_interceptor_->url_job_request_ready_callback(base::BindOnce(
+      [](base::OnceClosure quit_closure) { std::move(quit_closure).Run(); },
+      std::move(quit_closure)));
+  post_interceptor_->Pause();
+
+  IdToComponentPtrMap components;
+  components[kUpdateItemId] = MakeComponent();
+
+  update_checker_ = UpdateChecker::Create(config_, metadata_.get());
+  update_checker_->CheckForUpdates(
+      update_context_->session_id, std::vector<std::string>{kUpdateItemId},
+      components, "", true,
+      base::BindOnce(&UpdateCheckerTest::UpdateCheckComplete,
+                     base::Unretained(this)));
+  runloop.Run();
+}
+
 }  // namespace update_client
