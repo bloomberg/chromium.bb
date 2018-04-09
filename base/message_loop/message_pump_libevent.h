@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump.h"
+#include "base/message_loop/watchable_io_message_pump_posix.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 
@@ -22,35 +22,18 @@ namespace base {
 
 // Class to monitor sockets and issue callbacks when sockets are ready for I/O
 // TODO(dkegel): add support for background file IO somehow
-class BASE_EXPORT MessagePumpLibevent : public MessagePump {
+class BASE_EXPORT MessagePumpLibevent : public MessagePump,
+                                        public WatchableIOMessagePumpPosix {
  public:
-  // Used with WatchFileDescriptor to asynchronously monitor the I/O readiness
-  // of a file descriptor.
-  class Watcher {
+  class FdWatchController : public FdWatchControllerInterface {
    public:
-    // Called from MessageLoop::Run when an FD can be read from/written to
-    // without blocking
-    virtual void OnFileCanReadWithoutBlocking(int fd) = 0;
-    virtual void OnFileCanWriteWithoutBlocking(int fd) = 0;
+    explicit FdWatchController(const Location& from_here);
 
-   protected:
-    virtual ~Watcher() = default;
-  };
+    // Implicitly calls StopWatchingFileDescriptor.
+    ~FdWatchController() override;
 
-  // Object returned by WatchFileDescriptor to manage further watching.
-  class FileDescriptorWatcher {
-   public:
-    explicit FileDescriptorWatcher(const Location& from_here);
-    ~FileDescriptorWatcher();  // Implicitly calls StopWatchingFileDescriptor.
-
-    // NOTE: These methods aren't called StartWatching()/StopWatching() to
-    // avoid confusion with the win32 ObjectWatcher class.
-
-    // Stop watching the FD, always safe to call.  No-op if there's nothing
-    // to do.
-    bool StopWatchingFileDescriptor();
-
-    const Location& created_from_location() { return created_from_location_; }
+    // FdWatchControllerInterface:
+    bool StopWatchingFileDescriptor() override;
 
    private:
     friend class MessagePumpLibevent;
@@ -65,51 +48,33 @@ class BASE_EXPORT MessagePumpLibevent : public MessagePump {
     void set_pump(MessagePumpLibevent* pump) { pump_ = pump; }
     MessagePumpLibevent* pump() const { return pump_; }
 
-    void set_watcher(Watcher* watcher) { watcher_ = watcher; }
+    void set_watcher(FdWatcher* watcher) { watcher_ = watcher; }
 
     void OnFileCanReadWithoutBlocking(int fd, MessagePumpLibevent* pump);
     void OnFileCanWriteWithoutBlocking(int fd, MessagePumpLibevent* pump);
 
     std::unique_ptr<event> event_;
     MessagePumpLibevent* pump_ = nullptr;
-    Watcher* watcher_ = nullptr;
+    FdWatcher* watcher_ = nullptr;
     // If this pointer is non-NULL, the pointee is set to true in the
     // destructor.
     bool* was_destroyed_ = nullptr;
 
-    const Location created_from_location_;
-
-    DISALLOW_COPY_AND_ASSIGN(FileDescriptorWatcher);
+    DISALLOW_COPY_AND_ASSIGN(FdWatchController);
   };
 
-  enum Mode {
-    WATCH_READ = 1 << 0,
-    WATCH_WRITE = 1 << 1,
-    WATCH_READ_WRITE = WATCH_READ | WATCH_WRITE
-  };
+  // TODO(gab): Mass migrate users of the old types.
+  using Watcher = FdWatcher;
+  using FileDescriptorWatcher = FdWatchController;
 
   MessagePumpLibevent();
   ~MessagePumpLibevent() override;
 
-  // Registers |delegate| with the current thread's message loop so that its
-  // methods are invoked when file descriptor |fd| becomes ready for reading or
-  // writing (or both) without blocking.  |mode| selects ready for reading, for
-  // writing, or both.  (See "enum Mode" above. TODO(unknown): nuke the
-  // plethora of equivalent "enum Mode" declarations.)  |controller| manages
-  // the lifetime of registrations. ("Registrations" are also ambiguously
-  // called "events" in many places, for instance in libevent.)  It is an error
-  // to use the same |controller| for different file descriptors; however, the
-  // same controller can be reused to add registrations with a different
-  // |mode|.  If |controller| is already attached to one or more registrations,
-  // the new registration is added on to those.  If an error occurs while
-  // calling this method, any registration previously attached to |controller|
-  // is removed.  Returns true on success.  Must be called on the same thread
-  // the message_pump is running on.
   bool WatchFileDescriptor(int fd,
                            bool persistent,
                            int mode,
-                           FileDescriptorWatcher* controller,
-                           Watcher* delegate);
+                           FdWatchController* controller,
+                           FdWatcher* delegate);
 
   // MessagePump methods:
   void Run(Delegate* delegate) override;
