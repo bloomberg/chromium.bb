@@ -69,12 +69,14 @@ NSString* const NSAccessibilityDropEffectsAttribute = @"AXDropEffects";
 NSString* const NSAccessibilityEditableAncestorAttribute =
     @"AXEditableAncestor";
 NSString* const NSAccessibilityGrabbedAttribute = @"AXGrabbed";
+NSString* const NSAccessibilityHasPopupAttribute = @"AXHasPopup";
 NSString* const NSAccessibilityHighestEditableAncestorAttribute =
     @"AXHighestEditableAncestor";
 NSString* const NSAccessibilityInvalidAttribute = @"AXInvalid";
 NSString* const NSAccessibilityIsMultiSelectableAttribute =
     @"AXIsMultiSelectable";
 NSString* const NSAccessibilityLoadingProgressAttribute = @"AXLoadingProgress";
+NSString* const NSAccessibilityOwnsAttribute = @"AXOwns";
 NSString* const
     NSAccessibilityUIElementCountForSearchPredicateParameterizedAttribute =
         @"AXUIElementCountForSearchPredicate";
@@ -583,6 +585,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       {NSAccessibilityFocusedAttribute, @"focused"},
       {NSAccessibilityGrabbedAttribute, @"grabbed"},
       {NSAccessibilityHeaderAttribute, @"header"},
+      {NSAccessibilityHasPopupAttribute, @"hasPopup"},
       {NSAccessibilityHelpAttribute, @"help"},
       {NSAccessibilityHighestEditableAncestorAttribute,
        @"highestEditableAncestor"},
@@ -598,6 +601,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       {NSAccessibilityMinValueAttribute, @"minValue"},
       {NSAccessibilityNumberOfCharactersAttribute, @"numberOfCharacters"},
       {NSAccessibilityOrientationAttribute, @"orientation"},
+      {NSAccessibilityOwnsAttribute, @"owns"},
       {NSAccessibilityParentAttribute, @"parent"},
       {NSAccessibilityPlaceholderValueAttribute, @"placeholderValue"},
       {NSAccessibilityPositionAttribute, @"position"},
@@ -1108,6 +1112,13 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   return [NSNumber numberWithBool:NO];
 }
 
+- (NSNumber*)hasPopup {
+  if (![self instanceActive])
+    return nil;
+  return browserAccessibility_->HasState(ax::mojom::State::kHaspopup) ? @YES
+                                                                      : @NO;
+}
+
 - (id)header {
   if (![self instanceActive])
     return nil;
@@ -1358,6 +1369,40 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return NSAccessibilityHorizontalOrientationValue;
 
   return @"";
+}
+
+- (id)owns {
+  if (![self instanceActive])
+    return nil;
+
+  //
+  // If the active descendant points to an element in a container with
+  // selectable children, add the "owns" relationship to point to that
+  // container. That's the only way activeDescendant is actually
+  // supported with VoiceOver.
+  //
+
+  int activeDescendantId;
+  if (!browserAccessibility_->GetIntAttribute(
+          ax::mojom::IntAttribute::kActivedescendantId, &activeDescendantId))
+    return nil;
+
+  BrowserAccessibilityManager* manager = browserAccessibility_->manager();
+  BrowserAccessibility* activeDescendant =
+      manager->GetFromID(activeDescendantId);
+  if (!activeDescendant)
+    return nil;
+
+  BrowserAccessibility* container = activeDescendant->PlatformGetParent();
+  while (container &&
+         !ui::IsContainerWithSelectableChildrenRole(container->GetRole()))
+    container = container->PlatformGetParent();
+  if (!container)
+    return nil;
+
+  NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
+  [ret addObject:ToBrowserAccessibilityCocoa(container)];
+  return ret;
 }
 
 - (NSNumber*)numberOfCharacters {
@@ -2984,6 +3029,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     [ret addObjectsFromArray:@[ NSAccessibilityGrabbedAttribute ]];
   }
 
+  if (browserAccessibility_->HasState(ax::mojom::State::kHaspopup)) {
+    [ret addObjectsFromArray:@[ NSAccessibilityHasPopupAttribute ]];
+  }
+
   // Add expanded attribute only if it has expanded or collapsed state.
   if (GetState(browserAccessibility_, ax::mojom::State::kExpanded) ||
       GetState(browserAccessibility_, ax::mojom::State::kCollapsed)) {
@@ -3007,6 +3056,12 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (browserAccessibility_->HasStringAttribute(
           ax::mojom::StringAttribute::kLanguage)) {
     [ret addObjectsFromArray:@[ NSAccessibilityLanguageAttribute ]];
+  }
+
+  if ([self internalRole] == ax::mojom::Role::kTextFieldWithComboBox) {
+    [ret addObjectsFromArray:@[
+      NSAccessibilityOwnsAttribute,
+    ]];
   }
 
   // Title UI Element.
