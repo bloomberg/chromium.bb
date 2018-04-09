@@ -315,6 +315,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
                                               KeyboardEvent&) {}
   virtual void TextFieldDataListChanged(HTMLInputElement&) {}
   virtual void DidChangeSelectionInSelectControl(HTMLFormControlElement&) {}
+  virtual void SelectFieldOptionsChanged(HTMLFormControlElement&) {}
   virtual void AjaxSucceeded(LocalFrame*) {}
 
   // Input method editor related functions.

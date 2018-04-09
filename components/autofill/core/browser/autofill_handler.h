@@ -96,6 +96,9 @@ class AutofillHandler {
   virtual void OnSetDataList(const std::vector<base::string16>& values,
                              const std::vector<base::string16>& labels) = 0;
 
+  // Invoked when the options of a select element in the |form| changed.
+  virtual void SelectFieldOptionsDidChange(const FormData& form) = 0;
+
   // Resets cache.
   virtual void Reset() = 0;
 

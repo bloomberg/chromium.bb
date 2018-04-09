@@ -1772,6 +1772,37 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
 }
 
+// Test that dynamic forms don't get filled when the feature is disabled.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicChangingFormFill) {
+  // Explicitly disable the filling of dynamic forms.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillRequireSecureCreditCardContext);
+
+  CreateTestProfile();
+
+  GURL url =
+      embedded_test_server()->GetURL("/autofill/dynamic_form_disabled.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill();
+
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "hasRefilled()", &has_refilled));
+  ASSERT_FALSE(has_refilled);
+
+  // Make sure that the new form was not filled.
+  ExpectFieldValue("firstname", "");
+  ExpectFieldValue("address1", "");
+  ExpectFieldValue("state", "CA");  // Default value.
+  ExpectFieldValue("city", "");
+  ExpectFieldValue("company", "");
+  ExpectFieldValue("email", "");
+  ExpectFieldValue("phone", "");
+}
+
 // An extension of the test fixture for tests with site isolation.
 class AutofillInteractiveIsolationTest : public AutofillInteractiveTest {
  protected:
@@ -1926,7 +1957,10 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
 class DynamicFormInteractiveTest : public AutofillInteractiveTest {
  protected:
   DynamicFormInteractiveTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    // Setup that the test expects a re-fill to happen.
+    test_delegate()->SetIsExpectingDynamicRefill(true);
+  }
   ~DynamicFormInteractiveTest() override = default;
 
   // AutofillInteractiveTest:
@@ -1968,9 +2002,6 @@ class DynamicFormInteractiveTest : public AutofillInteractiveTest {
 #endif
 IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
                        MAYBE_DynamicChangingFormFill) {
-  // Setup that the test expects a re-fill to happen.
-  test_delegate()->SetIsExpectingDynamicRefill(true);
-
   CreateTestProfile();
 
   GURL url =
@@ -1998,9 +2029,6 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 // Test that forms that dynamically change a second time do not get filled.
 IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
                        DynamicChangingFormFill_SecondChange) {
-  // Setup that the test expects a re-fill to happen.
-  test_delegate()->SetIsExpectingDynamicRefill(true);
-
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
@@ -2028,9 +2056,6 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 // Test that forms that dynamically change after a second do not get filled.
 IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
                        DynamicChangingFormFill_AfterDelay) {
-  // Setup that the test expects a re-fill to happen.
-  test_delegate()->SetIsExpectingDynamicRefill(true);
-
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
@@ -2058,9 +2083,6 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 // Test that only field of a type group that was filled initially get refilled.
 IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
                        DynamicChangingFormFill_AddsNewFieldTypeGroups) {
-  // Setup that the test expects a re-fill to happen.
-  test_delegate()->SetIsExpectingDynamicRefill(true);
-
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
@@ -2094,9 +2116,6 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 // Test that credit card fields are never re-filled.
 IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
                        DynamicChangingFormFill_NotForCreditCard) {
-  // Setup that the test expects a re-fill to happen.
-  test_delegate()->SetIsExpectingDynamicRefill(true);
-
   // Add a credit card.
   CreditCard card;
   test::SetCreditCardInfo(&card, "Milton Waddams", "4111111111111111", "09",
@@ -2127,6 +2146,62 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
   ExpectFieldValue("cc-exp-month", "01");   // Default value.
   ExpectFieldValue("cc-exp-year", "2010");  // Default value.
   ExpectFieldValue("cc-csc", "");
+}
+
+// Test that we can Autofill dynamically changing selects that have options
+// added and removed.
+IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
+                       DynamicChangingFormFill_SelectUpdated) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/dynamic_form_select_options_change.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill();
+
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "hasRefilled()", &has_refilled));
+  ASSERT_TRUE(has_refilled);
+
+  // Make sure the new form was filled correctly.
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("address1", "4120 Freidrich Lane");
+  ExpectFieldValue("state", "TX");
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("email", "red.swingline@initech.com");
+  ExpectFieldValue("phone", "15125551234");
+}
+
+// Test that we can Autofill dynamically changing selects that have options
+// added and removed only once.
+IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
+                       DynamicChangingFormFill_DoubleSelectUpdated) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "a.com", "/autofill/dynamic_form_double_select_options_change.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill();
+
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "hasRefilled()", &has_refilled));
+  ASSERT_TRUE(has_refilled);
+
+  // The fields that were initially filled and not reset should still be filled.
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("address1", "");  // That field value was reset dynamically.
+  ExpectFieldValue("state", "CA");   // Default value.
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("email", "red.swingline@initech.com");
+  ExpectFieldValue("phone", "15125551234");
 }
 
 }  // namespace autofill

@@ -81,6 +81,10 @@ namespace autofill {
 
 namespace {
 
+// Time to wait, in ms, after a select option change before taking action to
+// wait for other option changes.
+size_t kWaitTimeForSelectOptionsChangesMs = 50;
+
 // Whether the "single click" autofill feature is enabled, through command-line
 // or field trial.
 bool IsSingleClickEnabled() {
@@ -426,6 +430,8 @@ void AutofillAgent::FillForm(int32_t id, const FormData& form) {
 
   if (id != autofill_query_id_ && id != kNoQueryId)
     return;
+
+  was_last_action_fill_ = true;
 
   if (base::FeatureList::IsEnabled(features::kAutofillDynamicForms))
     ReplaceElementIfNowInvalid(form);
@@ -790,11 +796,42 @@ void AutofillAgent::SelectControlDidChange(
   form_tracker_.SelectControlDidChange(element);
 }
 
+void AutofillAgent::SelectFieldOptionsChanged(
+    const blink::WebFormControlElement& element) {
+  if (!was_last_action_fill_ || element_.IsNull())
+    return;
+
+  FormData form;
+  FormFieldData field;
+  if (form_util::FindFormAndFieldForFormControlElement(element, &form,
+                                                       &field) &&
+      !field.option_values.empty()) {
+    // Since a change of a select options often come in batches, start a timer
+    // to wait for other changed. Restart the timer if it was already running.
+    if (on_select_update_timer_.IsRunning()) {
+      on_select_update_timer_.AbandonAndStop();
+    }
+
+    // After the options have finished changing, notify the driver that the
+    // select field was updated.
+    on_select_update_timer_.Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kWaitTimeForSelectOptionsChangesMs),
+        base::BindRepeating(&AutofillAgent::SelectWasUpdated,
+                            weak_ptr_factory_.GetWeakPtr(), form));
+  }
+}
+
+void AutofillAgent::SelectWasUpdated(FormData form) {
+  GetAutofillDriver()->SelectFieldOptionsDidChange(form);
+}
+
 void AutofillAgent::FormControlElementClicked(
     const WebFormControlElement& element,
     bool was_focused) {
   last_clicked_form_control_element_for_testing_ = element;
   last_clicked_form_control_element_was_focused_for_testing_ = was_focused;
+  was_last_action_fill_ = false;
 
   const WebInputElement* input_element = ToWebInputElement(&element);
   if (!input_element && !form_util::IsTextAreaElement(element))

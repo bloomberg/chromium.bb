@@ -1035,6 +1035,15 @@ void AutofillManager::OnSetDataList(const std::vector<base::string16>& values,
   external_delegate_->SetCurrentDataListValues(values, labels);
 }
 
+void AutofillManager::SelectFieldOptionsDidChange(const FormData& form) {
+  FormStructure* form_structure = nullptr;
+  if (!ParseForm(form, &form_structure))
+    return;
+
+  if (ShouldTriggerRefill(*form_structure))
+    TriggerRefill(form, form_structure);
+}
+
 void AutofillManager::OnLoadedServerPredictions(
     std::string response,
     const std::vector<std::string>& form_signatures) {
@@ -1370,6 +1379,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
       continue;
     }
 
+    // The field order should be the same in |form_structure| and |result|.
     DCHECK(form_structure->field(i)->SameFieldAs(result.fields[i]));
 
     AutofillField* cached_field = form_structure->field(i);
@@ -1384,7 +1394,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
     if (cached_field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION)
       continue;
 
-    // Don't fill previously autofilled fields.
+    // Don't fill previously autofilled fields except the initiating field.
     if (result.fields[i].is_autofilled && !cached_field->SameFieldAs(field))
       continue;
 
@@ -1430,7 +1440,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
     autofilled_form_signatures_.pop_back();
 
   // Note that this may invalidate |data_model|.
-  if (action == AutofillDriver::FORM_DATA_ACTION_FILL)
+  if (action == AutofillDriver::FORM_DATA_ACTION_FILL && !is_refill)
     personal_data_->RecordUseOf(data_model);
 
   driver()->SendFormDataToRenderer(query_id, action, result);
