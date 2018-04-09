@@ -108,6 +108,7 @@ class MediaEngagementScore final {
  protected:
   friend class MediaEngagementAutoplayBrowserTest;
   friend class MediaEngagementContentsObserverTest;
+  friend class MediaEngagementSessionTest;
   friend class MediaEngagementService;
 
   // Only used by the Media Engagement service when bulk loading data.
