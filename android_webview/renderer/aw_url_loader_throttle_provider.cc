@@ -37,7 +37,7 @@ AwURLLoaderThrottleProvider::~AwURLLoaderThrottleProvider() {
 std::vector<std::unique_ptr<content::URLLoaderThrottle>>
 AwURLLoaderThrottleProvider::CreateThrottles(
     int render_frame_id,
-    const blink::WebURL& url,
+    const blink::WebURLRequest& request,
     content::ResourceType resource_type) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
