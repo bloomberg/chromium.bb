@@ -394,6 +394,10 @@ if (is_android) {
       "android/apk/src/org/chromium/chromecast/shell/CastWebContentsSurfaceHelper.java",
     ]
 
+    if (is_android_things_non_public) {
+      sources += [ "android/apk/src/org/chromium/chromecast/shell/CastSysInfoAndroidThings.java" ]
+    }
+
     jni_package = "chromecast"
   }
 }

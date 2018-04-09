@@ -187,6 +187,7 @@ cast_source_set("cast_sys_info") {
   if (is_android) {
     deps += [
       ":cast_version",
+      "//chromecast:chromecast_buildflags",
       "//chromecast/browser:jni_headers",
     ]
   } else if (chromecast_branding == "public") {
