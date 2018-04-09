@@ -35,7 +35,8 @@ namespace {
 // events with "getKeyEventReport()" function. It has two magic keys: pressing
 // "S" to enter fullscreen mode; pressing "X" to indicate the end of all the
 // keys (see FinishTestAndVerifyResult() function).
-constexpr char kFullscreenKeyboardLockHTML[] = "/fullscreen_keyboardlock.html";
+constexpr char kFullscreenKeyboardLockHTML[] =
+    "/fullscreen_keyboardlock/fullscreen_keyboardlock.html";
 
 // On MacOSX command key is used for most of the shortcuts, so replace it with
 // control to reduce the complexity of comparison of the results.

@@ -19,8 +19,9 @@ class WebContents;
 }
 
 // The base class for the different exclusive access controllers like the
-// FullscreenController, and MouseLockController which controls lifetime for
-// which the resource (screen/mouse) is held exclusively.
+// FullscreenController, KeyboardLockController, and MouseLockController which
+// controls lifetime for which the resource (screen/mouse/keyboard) is held
+// exclusively.
 class ExclusiveAccessControllerBase : public content::NotificationObserver {
  public:
   explicit ExclusiveAccessControllerBase(ExclusiveAccessManager* manager);

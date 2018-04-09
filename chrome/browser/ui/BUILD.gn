@@ -1363,6 +1363,8 @@ split_static_library("ui") {
       "exclusive_access/fullscreen_controller.h",
       "exclusive_access/fullscreen_within_tab_helper.cc",
       "exclusive_access/fullscreen_within_tab_helper.h",
+      "exclusive_access/keyboard_lock_controller.cc",
+      "exclusive_access/keyboard_lock_controller.h",
       "exclusive_access/mouse_lock_controller.cc",
       "exclusive_access/mouse_lock_controller.h",
       "fast_unload_controller.cc",

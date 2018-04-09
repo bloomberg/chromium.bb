@@ -32,4 +32,8 @@ enum class ExclusiveAccessBubbleHideReason {
 using ExclusiveAccessBubbleHideCallback =
     base::OnceCallback<void(ExclusiveAccessBubbleHideReason)>;
 
+// Repeating callback meant for testing.
+using ExclusiveAccessBubbleHideCallbackForTest =
+    base::RepeatingCallback<void(ExclusiveAccessBubbleHideReason)>;
+
 #endif  // CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_EXCLUSIVE_ACCESS_BUBBLE_HIDE_CALLBACK_H_

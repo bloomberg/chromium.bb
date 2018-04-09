@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 
+#include <utility>
+
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -15,26 +18,16 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "content/public/common/content_features.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using content::WebContents;
-
-namespace {
-
-// Time in milliseconds to hold the Esc key in order to exit full screen.
-// TODO(dominickn) refactor the way timings/input handling works so this
-// constant doesn't have to be in this file.
-const int kHoldEscapeTimeMs = 1500;
-
-}
 
 ExclusiveAccessManager::ExclusiveAccessManager(
     ExclusiveAccessContext* exclusive_access_context)
     : exclusive_access_context_(exclusive_access_context),
       fullscreen_controller_(this),
-      mouse_lock_controller_(this) {
-}
+      keyboard_lock_controller_(this),
+      mouse_lock_controller_(this) {}
 
 ExclusiveAccessManager::~ExclusiveAccessManager() {
 }
@@ -57,7 +50,8 @@ ExclusiveAccessManager::GetExclusiveAccessExitBubbleType() const {
       return EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
     }
 
-    if (IsExperimentalKeyboardLockUIEnabled())
+    if (keyboard_lock_controller_.IsKeyboardLockActive() &&
+        keyboard_lock_controller_.RequiresPressAndHoldEscToExit())
       return EXCLUSIVE_ACCESS_BUBBLE_TYPE_KEYBOARD_LOCK_EXIT_INSTRUCTION;
 
     if (mouse_lock_controller_.IsMouseLocked())
@@ -98,12 +92,6 @@ GURL ExclusiveAccessManager::GetExclusiveAccessBubbleURL() const {
 }
 
 // static
-bool ExclusiveAccessManager::IsExperimentalKeyboardLockUIEnabled() {
-  return base::FeatureList::IsEnabled(features::kKeyboardLockAPI) ||
-         base::FeatureList::IsEnabled(features::kExperimentalKeyboardLockUI);
-}
-
-// static
 bool ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() {
 #if defined(OS_MACOSX)
   // Always enabled on Mac (the mouse cursor tracking required to implement the
@@ -116,51 +104,40 @@ bool ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() {
 
 void ExclusiveAccessManager::OnTabDeactivated(WebContents* web_contents) {
   fullscreen_controller_.OnTabDeactivated(web_contents);
+  keyboard_lock_controller_.OnTabDeactivated(web_contents);
   mouse_lock_controller_.OnTabDeactivated(web_contents);
 }
 
 void ExclusiveAccessManager::OnTabDetachedFromView(WebContents* web_contents) {
   fullscreen_controller_.OnTabDetachedFromView(web_contents);
+  keyboard_lock_controller_.OnTabDetachedFromView(web_contents);
   mouse_lock_controller_.OnTabDetachedFromView(web_contents);
 }
 
 void ExclusiveAccessManager::OnTabClosing(WebContents* web_contents) {
   fullscreen_controller_.OnTabClosing(web_contents);
+  keyboard_lock_controller_.OnTabClosing(web_contents);
   mouse_lock_controller_.OnTabClosing(web_contents);
 }
 
-bool ExclusiveAccessManager::HandleUserKeyPress(
+bool ExclusiveAccessManager::HandleUserKeyEvent(
     const content::NativeWebKeyboardEvent& event) {
   if (event.windows_key_code != ui::VKEY_ESCAPE) {
     OnUserInput();
     return false;
   }
 
-  if (IsExperimentalKeyboardLockUIEnabled()) {
-    if (event.GetType() == content::NativeWebKeyboardEvent::kKeyUp &&
-        hold_timer_.IsRunning()) {
-      // Seeing a key up event on Esc with the hold timer running cancels the
-      // timer and doesn't exit. This means the user pressed Esc, but not long
-      // enough to trigger an exit
-      hold_timer_.Stop();
-    } else if (event.GetType() ==
-                   content::NativeWebKeyboardEvent::kRawKeyDown &&
-               !hold_timer_.IsRunning()) {
-      // Seeing a key down event on Esc when the hold timer is stopped starts
-      // the timer. When the timer reaches 0, the callback will trigger an exit
-      // from fullscreen/mouselock.
-      hold_timer_.Start(
-          FROM_HERE, base::TimeDelta::FromMilliseconds(kHoldEscapeTimeMs),
-          base::Bind(&ExclusiveAccessManager::HandleUserHeldEscape,
-                     base::Unretained(this)));
-    }
-    // We never handle the keyboard event.
+  // Give the |keyboard_lock_controller_| first chance at handling the ESC event
+  // as there are specific UX behaviors that occur when that mode is active
+  // which are coordinated by that class.  Return false as we don't want to
+  // prevent the event from propagating to the webpage.
+  if (keyboard_lock_controller_.HandleKeyEvent(event))
     return false;
-  }
 
   bool handled = false;
   handled = fullscreen_controller_.HandleUserPressedEscape();
   handled |= mouse_lock_controller_.HandleUserPressedEscape();
+  handled |= keyboard_lock_controller_.HandleUserPressedEscape();
   return handled;
 }
 
@@ -170,24 +147,29 @@ void ExclusiveAccessManager::OnUserInput() {
 
 void ExclusiveAccessManager::ExitExclusiveAccess() {
   fullscreen_controller_.ExitExclusiveAccessToPreviousState();
+  keyboard_lock_controller_.LostKeyboardLock();
   mouse_lock_controller_.LostMouseLock();
 }
 
 void ExclusiveAccessManager::RecordBubbleReshownUMA(
     ExclusiveAccessBubbleType type) {
-  // Figure out whether each of fullscreen, mouselock is in effect.
+  // Figure out whether fullscreen, mouselock, or keyboardlock is in effect.
   bool fullscreen = false;
   bool mouselock = false;
+  bool keyboardlock = false;
   switch (type) {
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE:
       // None in effect.
       break;
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION:
-    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_KEYBOARD_LOCK_EXIT_INSTRUCTION:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION:
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION:
       // Only fullscreen in effect.
       fullscreen = true;
+      break;
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_KEYBOARD_LOCK_EXIT_INSTRUCTION:
+      fullscreen = true;
+      keyboardlock = true;
       break;
     case EXCLUSIVE_ACCESS_BUBBLE_TYPE_MOUSELOCK_EXIT_INSTRUCTION:
       // Only mouselock in effect.
@@ -204,9 +186,6 @@ void ExclusiveAccessManager::RecordBubbleReshownUMA(
     fullscreen_controller_.RecordBubbleReshownUMA();
   if (mouselock)
     mouse_lock_controller_.RecordBubbleReshownUMA();
-}
-
-void ExclusiveAccessManager::HandleUserHeldEscape() {
-  fullscreen_controller_.HandleUserPressedEscape();
-  mouse_lock_controller_.HandleUserPressedEscape();
+  if (keyboardlock)
+    keyboard_lock_controller_.RecordBubbleReshownUMA();
 }

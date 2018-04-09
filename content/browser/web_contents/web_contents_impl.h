@@ -430,6 +430,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetPageScale(float page_scale_factor) override;
   gfx::Size GetPreferredSize() const override;
   bool GotResponseToLockMouseRequest(bool allowed) override;
+  bool GotResponseToKeyboardLockRequest(bool allowed) override;
   bool HasOpener() const override;
   RenderFrameHostImpl* GetOpener() const override;
   bool HasOriginalOpener() const override;
@@ -725,7 +726,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                           bool user_gesture,
                           bool last_unlocked_by_target,
                           bool privileged) override;
-  bool RequestKeyboardLock(RenderWidgetHostImpl* render_widget_host) override;
+  bool RequestKeyboardLock(RenderWidgetHostImpl* render_widget_host,
+                           bool esc_key_locked) override;
   void CancelKeyboardLock(RenderWidgetHostImpl* render_widget_host) override;
   RenderWidgetHostImpl* GetKeyboardLockWidget() override;
   // The following function is already listed under WebContents overrides:
@@ -1670,6 +1672,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Stores the RenderWidgetHost that currently holds a keyboard lock or nullptr
   // if no RenderWidgetHost has the keyboard locked.
   RenderWidgetHostImpl* keyboard_lock_widget_ = nullptr;
+
+  // Indicates whether the escape key is one of the requested keys to be locked.
+  // This information is used to drive the browser UI so the correct exit
+  // instructions are displayed to the user in fullscreen mode.
+  bool esc_key_locked_ = false;
 
 #if defined(OS_ANDROID)
   std::unique_ptr<service_manager::InterfaceProvider> java_interfaces_;

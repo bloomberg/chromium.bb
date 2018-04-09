@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_MOUSE_LOCK_CONTROLLER_H_
 #define CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_MOUSE_LOCK_CONTROLLER_H_
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -58,8 +60,7 @@ class MouseLockController : public ExclusiveAccessControllerBase {
   // If set, |bubble_hide_callback_for_test_| will be called during
   // |OnBubbleHidden()|.
   void set_bubble_hide_callback_for_test_(
-      base::RepeatingCallback<void(ExclusiveAccessBubbleHideReason)>
-          callback_for_test) {
+      ExclusiveAccessBubbleHideCallbackForTest callback_for_test) {
     bubble_hide_callback_for_test_ = std::move(callback_for_test);
   }
 
@@ -90,8 +91,7 @@ class MouseLockController : public ExclusiveAccessControllerBase {
       nullptr;
 
   bool fake_mouse_lock_for_test_;
-  base::RepeatingCallback<void(ExclusiveAccessBubbleHideReason)>
-      bubble_hide_callback_for_test_;
+  ExclusiveAccessBubbleHideCallbackForTest bubble_hide_callback_for_test_;
 
   base::WeakPtrFactory<MouseLockController> weak_ptr_factory_;
 

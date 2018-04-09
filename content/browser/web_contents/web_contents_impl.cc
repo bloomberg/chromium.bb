@@ -2117,11 +2117,12 @@ void WebContentsImpl::EnterFullscreenMode(const GURL& origin) {
         ->ShutdownAndDestroyWidget(true);
   }
 
-  if (keyboard_lock_widget_)
-    keyboard_lock_widget_->GotResponseToKeyboardLockRequest(true);
-
-  if (delegate_)
+  if (delegate_) {
     delegate_->EnterFullscreenModeForTab(this, origin);
+
+    if (keyboard_lock_widget_)
+      delegate_->RequestKeyboardLock(this, esc_key_locked_);
+  }
 
   for (auto& observer : observers_)
     observer.DidToggleFullscreenModeForTab(IsFullscreenForCurrentTab(), false);
@@ -2142,11 +2143,12 @@ void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
     video_view->ExitFullscreen();
 #endif
 
-  if (keyboard_lock_widget_)
-    keyboard_lock_widget_->GotResponseToKeyboardLockRequest(false);
-
-  if (delegate_)
+  if (delegate_) {
     delegate_->ExitFullscreenModeForTab(this);
+
+    if (keyboard_lock_widget_)
+      delegate_->CancelKeyboardLockRequest(this);
+  }
 
   // The fullscreen state is communicated to the renderer through a resize
   // message. If the change in fullscreen state doesn't cause a view resize
@@ -2261,11 +2263,9 @@ RenderWidgetHostImpl* WebContentsImpl::GetMouseLockWidget() {
 }
 
 bool WebContentsImpl::RequestKeyboardLock(
-    RenderWidgetHostImpl* render_widget_host) {
+    RenderWidgetHostImpl* render_widget_host,
+    bool esc_key_locked) {
   DCHECK(render_widget_host);
-  if (render_widget_host == keyboard_lock_widget_)
-    return true;
-
   if (render_widget_host->delegate()->GetAsWebContents() != this) {
     NOTREACHED();
     return false;
@@ -2276,11 +2276,11 @@ bool WebContentsImpl::RequestKeyboardLock(
   if (GetOuterWebContents())
     return false;
 
+  esc_key_locked_ = esc_key_locked;
   keyboard_lock_widget_ = render_widget_host;
 
-  if (IsFullscreen())
-    render_widget_host->GotResponseToKeyboardLockRequest(true);
-
+  if (delegate_)
+    delegate_->RequestKeyboardLock(this, esc_key_locked_);
   return true;
 }
 
@@ -2291,6 +2291,9 @@ void WebContentsImpl::CancelKeyboardLock(
 
   RenderWidgetHostImpl* old_keyboard_lock_widget = keyboard_lock_widget_;
   keyboard_lock_widget_ = nullptr;
+
+  if (delegate_)
+    delegate_->CancelKeyboardLockRequest(this);
 
   old_keyboard_lock_widget->CancelKeyboardLock();
 }
@@ -3599,6 +3602,24 @@ bool WebContentsImpl::GotResponseToLockMouseRequest(bool allowed) {
   }
 
   return false;
+}
+
+bool WebContentsImpl::GotResponseToKeyboardLockRequest(bool allowed) {
+  if (!keyboard_lock_widget_)
+    return false;
+
+  if (keyboard_lock_widget_->delegate()->GetAsWebContents() != this) {
+    NOTREACHED();
+    return false;
+  }
+
+  // KeyboardLock is only supported when called by the top-level browsing
+  // context and is not supported in embedded content scenarios.
+  if (GetOuterWebContents())
+    return false;
+
+  keyboard_lock_widget_->GotResponseToKeyboardLockRequest(allowed);
+  return true;
 }
 
 bool WebContentsImpl::HasOpener() const {
