@@ -18,7 +18,6 @@ Bug(none) external/wpt/service-workers/service-worker/fetch-request-xhr-sync-on-
 crbug.com/771118 external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Failure Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html [ Failure ]
-Bug(none) external/wpt/service-workers/service-worker/ready.https.html [ Pass Crash Failure ]
 Bug(none) http/tests/appcache/top-frame-3.html [ Pass Timeout ]
 Bug(none) http/tests/appcache/top-frame-4.html [ Pass Timeout ]
 Bug(none) http/tests/appcache/local-content.html [ Pass Timeout ]
