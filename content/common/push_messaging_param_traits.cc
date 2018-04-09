@@ -46,8 +46,8 @@ static_assert(blink::WebPushError::ErrorType::kErrorTypeInvalidState ==
 
 static_assert(blink::WebPushError::ErrorType::kErrorTypeLast ==
                   static_cast<blink::WebPushError::ErrorType>(
-                      content::mojom::PushErrorType::LAST),
-              "PushErrorType enums must match, LAST");
+                      content::mojom::PushErrorType::kMaxValue),
+              "PushErrorType enums must match, kMaxValue");
 
 // static
 bool StructTraits<content::mojom::PushSubscriptionOptionsDataView,

@@ -88,15 +88,11 @@ const char kSilentPushUnsupportedMessage[] =
     "https://goo.gl/yqv4Q4 for more details.";
 
 void RecordDeliveryStatus(content::mojom::PushDeliveryStatus status) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "PushMessaging.DeliveryStatus", status,
-      static_cast<int>(content::mojom::PushDeliveryStatus::LAST) + 1);
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus", status);
 }
 
 void RecordUnsubscribeReason(content::mojom::PushUnregistrationReason reason) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "PushMessaging.UnregistrationReason", reason,
-      static_cast<int>(content::mojom::PushUnregistrationReason::LAST) + 1);
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UnregistrationReason", reason);
 }
 
 void RecordUnsubscribeGCMResult(gcm::GCMClient::Result result) {

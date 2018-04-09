@@ -55,22 +55,16 @@ const char kIncognitoPushUnsupportedMessage[] =
 void RecordRegistrationStatus(mojom::PushRegistrationStatus status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_ENUMERATION(
-      "PushMessaging.RegistrationStatus", status,
-      static_cast<int>(mojom::PushRegistrationStatus::LAST) + 1);
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.RegistrationStatus", status);
 }
 void RecordUnregistrationStatus(mojom::PushUnregistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  UMA_HISTOGRAM_ENUMERATION(
-      "PushMessaging.UnregistrationStatus", status,
-      static_cast<int>(mojom::PushUnregistrationStatus::LAST) + 1);
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UnregistrationStatus", status);
 }
 void RecordGetRegistrationStatus(mojom::PushGetRegistrationStatus status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UMA_HISTOGRAM_ENUMERATION(
-      "PushMessaging.GetRegistrationStatus", status,
-      static_cast<int>(mojom::PushGetRegistrationStatus::LAST) + 1);
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.GetRegistrationStatus", status);
 }
 
 const char* PushUnregistrationStatusToString(

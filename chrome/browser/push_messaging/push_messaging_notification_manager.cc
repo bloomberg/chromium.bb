@@ -59,9 +59,7 @@ using content::WebContents;
 
 namespace {
 void RecordUserVisibleStatus(content::mojom::PushUserVisibleStatus status) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "PushMessaging.UserVisibleStatus", status,
-      static_cast<int>(content::mojom::PushUserVisibleStatus::LAST) + 1);
+  UMA_HISTOGRAM_ENUMERATION("PushMessaging.UserVisibleStatus", status);
 }
 
 content::StoragePartition* GetStoragePartition(Profile* profile,
