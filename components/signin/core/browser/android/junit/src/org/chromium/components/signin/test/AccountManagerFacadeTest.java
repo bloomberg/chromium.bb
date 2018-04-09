@@ -22,6 +22,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Callback;
+import org.chromium.base.CommandLine;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -30,6 +32,10 @@ import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 import org.chromium.testing.local.CustomShadowAsyncTask;
 import org.chromium.testing.local.CustomShadowUserManager;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Test class for {@link AccountManagerFacade}.
@@ -214,9 +220,50 @@ public class AccountManagerFacadeTest {
         Assert.assertArrayEquals(new Account[] {account}, mFacade.getGoogleAccounts());
     }
 
-    private Account addTestAccount(String accountName) {
+    @Test
+    @SmallTest
+    public void testCheckChildAccount_usmSwitchOff() throws AccountManagerDelegateException {
+        Account testAccount = addTestAccount("test@gmail.com");
+        Account ucaAccount =
+                addTestAccount("uca@gmail.com", AccountManagerFacade.FEATURE_IS_CHILD_ACCOUNT_KEY);
+        Account usmAccount =
+                addTestAccount("usm@gmail.com", AccountManagerFacade.FEATURE_IS_USM_ACCOUNT_KEY);
+        Account bothAccount = addTestAccount("uca_usm@gmail.com",
+                AccountManagerFacade.FEATURE_IS_CHILD_ACCOUNT_KEY,
+                AccountManagerFacade.FEATURE_IS_USM_ACCOUNT_KEY);
+
+        assertChildAccountStatus(testAccount, false);
+        assertChildAccountStatus(ucaAccount, true);
+        assertChildAccountStatus(usmAccount, false);
+        assertChildAccountStatus(bothAccount, true);
+    }
+
+    @Test
+    @SmallTest
+    public void testCheckChildAccount_usmSwitchOn() throws AccountManagerDelegateException {
+        Account testAccount = addTestAccount("test@gmail.com");
+        Account ucaAccount =
+                addTestAccount("uca@gmail.com", AccountManagerFacade.FEATURE_IS_CHILD_ACCOUNT_KEY);
+        Account usmAccount =
+                addTestAccount("usm@gmail.com", AccountManagerFacade.FEATURE_IS_USM_ACCOUNT_KEY);
+        Account bothAccount = addTestAccount("uca_usm@gmail.com",
+                AccountManagerFacade.FEATURE_IS_CHILD_ACCOUNT_KEY,
+                AccountManagerFacade.FEATURE_IS_USM_ACCOUNT_KEY);
+
+        CommandLine.getInstance().appendSwitch(AccountManagerFacade.ENABLE_USM_ACCOUNTS_SWITCH);
+
+        assertChildAccountStatus(testAccount, false);
+        assertChildAccountStatus(ucaAccount, true);
+        assertChildAccountStatus(usmAccount, true);
+        assertChildAccountStatus(bothAccount, true);
+    }
+
+    private Account addTestAccount(String accountName, String... features) {
         Account account = AccountManagerFacade.createAccountFromName(accountName);
-        AccountHolder holder = AccountHolder.builder(account).alwaysAccept(true).build();
+        AccountHolder holder = AccountHolder.builder(account)
+                                       .alwaysAccept(true)
+                                       .featureSet(new HashSet<>(Arrays.asList(features)))
+                                       .build();
         mDelegate.addAccountHolderExplicitly(holder);
         Assert.assertFalse(AccountManagerFacade.get().isUpdatePending());
         return account;
@@ -224,5 +271,17 @@ public class AccountManagerFacadeTest {
 
     private void removeTestAccount(Account account) {
         mDelegate.removeAccountHolderExplicitly(AccountHolder.builder(account).build());
+    }
+
+    private void assertChildAccountStatus(Account account, boolean status) {
+        final AtomicInteger callCount = new AtomicInteger();
+        AccountManagerFacade.get().checkChildAccount(account, new Callback<Boolean>() {
+            @Override
+            public void onResult(Boolean result) {
+                callCount.incrementAndGet();
+                Assert.assertEquals(result, status);
+            }
+        });
+        Assert.assertEquals(1, callCount.get());
     }
 }
