@@ -77,6 +77,8 @@ class OomInterventionTabHelper
 
   void ResetInterventionState();
 
+  void ResetInterfaces();
+
   bool navigation_started_ = false;
   base::Optional<base::TimeTicks> near_oom_detected_time_;
   std::unique_ptr<NearOomMonitor::Subscription> subscription_;
