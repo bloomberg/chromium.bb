@@ -150,15 +150,7 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
   StartTest();
 }
 
-// http://crbug.com/804364 : Flaky due to crash on linux-chromeos-dbg
-#if !defined(NDEBUG)
-#define MAYBE_TraverseSlideThumbnailsOnDrive \
-  DISABLED_TraverseSlideThumbnailsOnDrive
-#else
-#define MAYBE_TraverseSlideThumbnailsOnDrive TraverseSlideThumbnailsOnDrive
-#endif
-IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
-                       MAYBE_TraverseSlideThumbnailsOnDrive) {
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideThumbnailsOnDrive) {
   set_test_case_name("traverseSlideThumbnailsOnDrive");
   StartTest();
 }
