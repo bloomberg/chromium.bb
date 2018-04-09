@@ -77,6 +77,7 @@ struct VideoDecodeAcceleratorConfig {
 // this will tell the server to import and use the protected buffer instead of
 // the dummy buffer.
 //
+// Deprecated method IDs: 3, 7, 8
 // Next method ID: 10
 interface VideoDecodeAccelerator {
   [Extensible]
@@ -96,13 +97,6 @@ interface VideoDecodeAccelerator {
   Initialize@0(VideoDecodeAcceleratorConfig config,
                VideoDecodeClient client) => (Result result);
 
-  // TODO(crbug.com/816327): Remove.
-  // Allocate protected input buffer with |handle_fd| and aligned |size|.
-  // This function can be called only in secure mode.
-  // If this is succeeded, this returns true. Otherwise, returns false.
-  AllocateProtectedBufferDeprecated@7(handle handle_fd,
-                                      uint64 size) => (bool success);
-
   // Decodes the content in the shared memory of the bitstream buffer. The
   // callee needs to map the the shared memory to read the content and is
   // responsible to release the shared memory by closing the file descriptor.
@@ -111,19 +105,6 @@ interface VideoDecodeAccelerator {
   // Sets the number of output picture buffers.
   // This releases any buffers in use/imported previously.
   AssignPictureBuffers@2(uint32 count);
-
-  // Imports a buffer to be used by the accelerator with specified
-  // |picture_buffer_id|.
-  // Releases any previously imported buffer under given |picture_buffer_id|.
-  // This should be preceded by a call to AssignPictureBuffers().
-  // In secure mode, a new protected output buffer will be allocated for the
-  // given |picture_buffer_id|.
-  // Calls VDA::ImportBufferForPicture() with |format| and a
-  // gfx::GpuMemoryBufferHandle created from |handle_fd| and |planes|.
-  // TODO(crbug.com/816327): Remove.
-  ImportBufferForPictureDeprecated@8(int32 picture_buffer_id,
-                                     HalPixelFormat format, handle handle_fd,
-                                     array<VideoFramePlane> planes);
 
   // Imports a buffer to be used by the accelerator with specified
   // |picture_buffer_id|.
@@ -150,6 +131,7 @@ interface VideoDecodeAccelerator {
   Flush@6() => (Result result);
 };
 
+// Deprecated method IDs: 0
 // Next method ID: 5
 interface VideoDecodeClient {
 
