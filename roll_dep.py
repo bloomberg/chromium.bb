@@ -71,7 +71,9 @@ def should_show_log(upstream_url):
 
 
 def get_gclient_root():
-  return check_output(['gclient', 'root']).strip()
+  gclient = os.path.join(
+      os.path.dirname(os.path.abspath(__file__)), 'gclient.py')
+  return check_output([sys.executable, gclient, 'root']).strip()
 
 
 def get_deps(root):
