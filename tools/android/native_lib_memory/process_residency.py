@@ -90,7 +90,7 @@ def PlotResidency(data, output_filename):
 
   start = data['start']
   end = data['end']
-  fig, ax = plt.subplots(figsize=(20, 10))
+  _, ax = plt.subplots(figsize=(20, 10))
   timestamps = sorted(residency.keys())
   x_max = len(residency.values()[0]) * 4096
   for t in timestamps:
