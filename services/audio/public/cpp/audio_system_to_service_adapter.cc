@@ -13,11 +13,21 @@
 namespace audio {
 
 AudioSystemToServiceAdapter::AudioSystemToServiceAdapter(
-    std::unique_ptr<service_manager::Connector> connector)
+    std::unique_ptr<service_manager::Connector> connector,
+    base::TimeDelta disconnect_timeout)
     : connector_(std::move(connector)) {
   DCHECK(connector_);
   DETACH_FROM_THREAD(thread_checker_);
+  if (disconnect_timeout > base::TimeDelta()) {
+    disconnect_timer_.emplace(
+        FROM_HERE, disconnect_timeout, this,
+        &AudioSystemToServiceAdapter::DisconnectOnTimeout);
+  }
 }
+
+AudioSystemToServiceAdapter::AudioSystemToServiceAdapter(
+    std::unique_ptr<service_manager::Connector> connector)
+    : AudioSystemToServiceAdapter(std::move(connector), base::TimeDelta()) {}
 
 AudioSystemToServiceAdapter::~AudioSystemToServiceAdapter() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -91,7 +101,20 @@ mojom::SystemInfo* AudioSystemToServiceAdapter::GetSystemInfo() {
                        base::Unretained(this)));
     DCHECK(system_info_);
   }
+  if (disconnect_timer_)
+    disconnect_timer_->Reset();
   return system_info_.get();
+}
+
+void AudioSystemToServiceAdapter::DisconnectOnTimeout() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DVLOG(4) << "AudioSystemToServiceAdapter::Disconnect";
+  if (system_info_.IsExpectingResponse()) {
+    if (disconnect_timer_)
+      disconnect_timer_->Reset();
+    return;
+  }
+  system_info_.reset();
 }
 
 void AudioSystemToServiceAdapter::OnConnectionError() {
