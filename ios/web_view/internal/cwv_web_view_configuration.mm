@@ -8,10 +8,12 @@
 
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
+#include "ios/web_view/cwv_web_view_features.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/cwv_preferences_internal.h"
 #import "ios/web_view/internal/cwv_user_content_controller_internal.h"
 #import "ios/web_view/internal/cwv_web_view_internal.h"
+#import "ios/web_view/internal/signin/cwv_authentication_controller_internal.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "ios/web_view/internal/web_view_global_state_util.h"
 
@@ -30,13 +32,24 @@
   BOOL _wasShutDown;
 }
 
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
+// This web view configuration's authentication controller.
+// Nil if CWVWebViewConfiguration is created with +incognitoConfiguration.
+@property(nonatomic, readonly, nullable)
+    CWVAuthenticationController* authenticationController;
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
+
 // Initializes configuration with the specified browser state mode.
 - (instancetype)initWithBrowserState:
     (std::unique_ptr<ios_web_view::WebViewBrowserState>)browserState;
+
 @end
 
 @implementation CWVWebViewConfiguration
 
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
+@synthesize authenticationController = _authenticationController;
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
 @synthesize preferences = _preferences;
 @synthesize userContentController = _userContentController;
 
@@ -101,6 +114,18 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
 - (void)dealloc {
   DCHECK(_wasShutDown);
 }
+
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
+#pragma mark - Signin
+
+- (CWVAuthenticationController*)authenticationController {
+  if (!_authenticationController && self.persistent) {
+    _authenticationController = [[CWVAuthenticationController alloc]
+        initWithBrowserState:self.browserState];
+  }
+  return _authenticationController;
+}
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
 
 #pragma mark - Public Methods
 

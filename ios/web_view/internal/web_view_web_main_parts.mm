@@ -7,6 +7,7 @@
 #include "base/base_paths.h"
 #include "base/path_service.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "ios/web_view/cwv_web_view_features.h"
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #include "ios/web_view/internal/translate/web_view_translate_service.h"
@@ -46,8 +47,10 @@ void WebViewWebMainParts::PreCreateThreads() {
 void WebViewWebMainParts::PreMainMessageLoopRun() {
   WebViewTranslateService::GetInstance()->Initialize();
 
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
   ContentSettingsPattern::SetNonWildcardDomainNonPortSchemes(
       /*schemes=*/nullptr, 0);
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
 }
 
 void WebViewWebMainParts::PostMainMessageLoopRun() {

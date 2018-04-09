@@ -189,8 +189,10 @@ def main():
                       help='Additional gn args to pass through to ninja.')
   parser.add_argument('--include_cronet', action='store_true',
                       help='Combines Cronet and ChromeWebView as 1 framework.')
-  parser.add_argument('--enable_sync', action='store_true',
-                      help='Enables public API for ChromeSync.')
+  parser.add_argument('--enable_signin', action='store_true',
+                      help='Enables public API for signin.')
+  parser.add_argument('--enable_autofill', action='store_true',
+                      help='Enables public API for autofill.')
   build_configs = ['Debug', 'Release']
   target_devices = ['iphonesimulator', 'iphoneos']
   parser.add_argument('--build_configs', nargs='+', default=build_configs,
@@ -222,10 +224,14 @@ def main():
     output_name = 'CronetChromeWebView'
   else:
     extra_gn_options += 'ios_web_view_include_cronet=false '
-  if options.enable_sync:
-    extra_gn_options += 'ios_web_view_enable_sync=true '
+  if options.enable_signin:
+    extra_gn_options += 'ios_web_view_enable_signin=true '
   else:
-    extra_gn_options += 'ios_web_view_enable_sync=false '
+    extra_gn_options += 'ios_web_view_enable_signin=false '
+  if options.enable_autofill:
+    extra_gn_options += 'ios_web_view_enable_autofill=true '
+  else:
+    extra_gn_options += 'ios_web_view_enable_autofill=false '
   extra_gn_options += 'ios_web_view_output_name="%s" ' % output_name
 
   return package_all_frameworks(out_dir, output_name, extra_gn_options,
