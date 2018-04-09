@@ -20,7 +20,6 @@
 namespace arc {
 
 class ProtectedBufferManager;
-class ProtectedBufferAllocator;
 
 // GpuArcVideoDecodeAccelerator is executed in the GPU process.
 // It takes decoding requests from ARC via IPC channels and translates and
@@ -58,19 +57,8 @@ class GpuArcVideoDecodeAccelerator
   void Initialize(mojom::VideoDecodeAcceleratorConfigPtr config,
                   mojom::VideoDecodeClientPtr client,
                   InitializeCallback callback) override;
-  // TODO(crbug.com/816327): Remove.
-  void AllocateProtectedBufferDeprecated(
-      mojo::ScopedHandle handle,
-      uint64_t size,
-      AllocateProtectedBufferDeprecatedCallback callback) override;
   void Decode(mojom::BitstreamBufferPtr bitstream_buffer) override;
   void AssignPictureBuffers(uint32_t count) override;
-  // TODO(crbug.com/816327): Remove.
-  void ImportBufferForPictureDeprecated(
-      int32_t picture_buffer_id,
-      mojom::HalPixelFormat format,
-      mojo::ScopedHandle handle,
-      std::vector<VideoFramePlane> planes) override;
   void ImportBufferForPicture(int32_t picture_buffer_id,
                               mojom::HalPixelFormat format,
                               mojo::ScopedHandle handle,
@@ -95,15 +83,6 @@ class GpuArcVideoDecodeAccelerator
   // successful. Otherwise, returns an error status.
   mojom::VideoDecodeAccelerator::Result InitializeTask(
       mojom::VideoDecodeAcceleratorConfigPtr config);
-
-  // A common function called from ImportBufferForPictureDeprecated() and
-  // ImportBufferForPicture().
-  // TODO(crbug.com/816327): Remove
-  void ImportBufferForPictureInternal(int32_t picture_buffer_id,
-                                      mojom::HalPixelFormat format,
-                                      mojo::ScopedHandle handle,
-                                      std::vector<VideoFramePlane> planes,
-                                      bool allocate);
 
   // Execute all pending requests until a VDA::Reset() request is encountered.
   // When that happens, we need to explicitly wait for NotifyResetDone().
@@ -164,16 +143,7 @@ class GpuArcVideoDecodeAccelerator
 
   scoped_refptr<ProtectedBufferManager> protected_buffer_manager_;
 
-  // TODO(crbug.com/816327): Remove them.
-  std::unique_ptr<ProtectedBufferAllocator> protected_input_buffer_allocator_;
-  std::unique_ptr<ProtectedBufferAllocator> protected_output_buffer_allocator_;
   size_t protected_input_buffer_count_ = 0;
-  // Used only if secure_mode_ = true. Stores fds for all buffers successfully
-  // imported via ImportBufferForPicture() for which protected buffers were
-  // allocated, at indices equal to their picture_buffer_id.
-  // Used to release these buffers when the client requests a different buffer
-  // to be imported under the same picture_buffer_id later on.
-  std::vector<base::ScopedFD> allocated_protected_output_buffer_fds_;
 
   bool secure_mode_ = false;
   size_t output_buffer_count_ = 0;
