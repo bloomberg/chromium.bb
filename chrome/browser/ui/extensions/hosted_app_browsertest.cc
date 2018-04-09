@@ -1269,7 +1269,9 @@ class HostedAppProcessModelTest : public HostedAppTest {
                   extensions::kExtensionScheme))
         << " for " << url << " from " << rfh->GetLastCommittedURL();
 
+    content::WebContentsDestroyedWatcher watcher(new_tab);
     ASSERT_TRUE(content::ExecuteScript(new_rfh, "window.close();"));
+    watcher.Wait();
   }
 
   // Creates a subframe underneath |parent_rfh| to |url|, verifies whether it
@@ -1505,9 +1507,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest,
 }
 
 // Tests that popups opened within a hosted app behave as expected.
-// TODO(creis): The goal is for same-site popups to stay in the app's process so
-// that they can be scripted, but this is not yet supported.  See
-// https://crbug.com/718516.
 IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, PopupsInsideHostedApp) {
   // Set up and launch the hosted app.
   GURL url = embedded_test_server()->GetURL(
@@ -1539,17 +1538,11 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, PopupsInsideHostedApp) {
   }
   {
     SCOPED_TRACE("... for diff_dir popup");
-    // TODO(creis): This should stay in the app's process, but that's not yet
-    // supported in modes that swap for cross-site navigations.
-    TestPopupProcess(app, diff_dir_url_, !should_swap_for_cross_site_,
-                     !should_swap_for_cross_site_);
+    TestPopupProcess(app, diff_dir_url_, true, true);
   }
   {
     SCOPED_TRACE("... for same_site popup");
-    // TODO(creis): This should stay in the app's process, but that's not yet
-    // supported in modes that swap for cross-site navigations.
-    TestPopupProcess(app, same_site_url_, !should_swap_for_cross_site_,
-                     !should_swap_for_cross_site_);
+    TestPopupProcess(app, same_site_url_, true, true);
   }
   {
     SCOPED_TRACE("... for isolated_url popup");
@@ -1571,17 +1564,11 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, PopupsInsideHostedApp) {
   }
   {
     SCOPED_TRACE("... for diff_dir iframe popup");
-    // TODO(creis): This should stay in the app's process, but that's not yet
-    // supported in modes that swap for cross-site navigations.
-    TestPopupProcess(diff_dir, diff_dir_url_, !should_swap_for_cross_site_,
-                     !should_swap_for_cross_site_);
+    TestPopupProcess(diff_dir, diff_dir_url_, true, true);
   }
   {
     SCOPED_TRACE("... for same_site iframe popup");
-    // TODO(creis): This should stay in the app's process, but that's not yet
-    // supported in modes that swap for cross-site navigations.
-    TestPopupProcess(same_site, same_site_url_, !should_swap_for_cross_site_,
-                     !should_swap_for_cross_site_);
+    TestPopupProcess(same_site, same_site_url_, true, true);
   }
   {
     SCOPED_TRACE("... for isolated_url iframe popup");
