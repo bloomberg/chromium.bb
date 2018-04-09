@@ -1624,6 +1624,34 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnBoth) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50), overflow->CurrentScrollOffset());
 }
 
+TEST_F(LayerTreeHostImplTest, GetSnapFlingInfoWhenZoomed) {
+  LayerImpl* overflow = CreateLayerForSnapping();
+  // Scales the page to its 1/5.
+  host_impl_->active_tree()->PushPageScaleFromMainThread(0.2f, 0.1f, 5.f);
+
+  // Should be (10, 10) in the scroller's coordinate.
+  gfx::Point scroll_position(2, 2);
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_
+          ->ScrollBegin(BeginState(scroll_position).get(), InputHandler::WHEEL)
+          .thread);
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
+
+  // Should be (20, 20) in the scroller's coordinate.
+  gfx::Vector2dF delta(4, 4);
+  InputHandlerScrollResult result =
+      host_impl_->ScrollBy(UpdateState(scroll_position, delta).get());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 20), overflow->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(4, 4), result.current_offset);
+
+  gfx::Vector2dF initial_offset, target_offset;
+  EXPECT_TRUE(host_impl_->GetSnapFlingInfo(gfx::Vector2dF(10, 10),
+                                           &initial_offset, &target_offset));
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(4, 4), initial_offset);
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 10), target_offset);
+}
+
 TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(200, 200));
   host_impl_->SetViewportSize(gfx::Size(100, 100));
