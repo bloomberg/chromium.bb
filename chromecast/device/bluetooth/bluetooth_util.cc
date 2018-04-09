@@ -88,6 +88,22 @@ bool ParseUuid(const std::string& str, bluetooth_v2_shlib::Uuid* uuid) {
   return ret == static_cast<int>(uuid->size());
 }
 
+bluetooth_v2_shlib::Uuid UuidFromInt16(uint16_t uuid) {
+  bluetooth_v2_shlib::Uuid ret = kUuidBase;
+  ret[2] = (uuid >> 8) & 0xff;
+  ret[3] = uuid & 0xff;
+  return ret;
+}
+
+bluetooth_v2_shlib::Uuid UuidFromInt32(uint32_t uuid) {
+  bluetooth_v2_shlib::Uuid ret = kUuidBase;
+  ret[0] = (uuid >> 24) & 0xff;
+  ret[1] = (uuid >> 16) & 0xff;
+  ret[2] = (uuid >> 8) & 0xff;
+  ret[3] = uuid & 0xff;
+  return ret;
+}
+
 }  // namespace util
 }  // namespace bluetooth
 }  // namespace chromecast

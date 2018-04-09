@@ -85,6 +85,20 @@ TEST(BluetoothUtilTest, UuidStringConversion) {
   EXPECT_EQ(kUuid3, UuidToString(uuid));
 }
 
+TEST(BluetoothUtilTest, UuidFromInt16) {
+  static const bluetooth_v2_shlib::Uuid kExpected = {
+      {0x00, 0x00, 0x11, 0x0a, 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x80,
+       0x5F, 0x9B, 0x34, 0xFB}};
+  EXPECT_EQ(kExpected, UuidFromInt16(0x110a));
+}
+
+TEST(BluetoothUtilTest, UuidFromInt32) {
+  static const bluetooth_v2_shlib::Uuid kExpected = {
+      {0x01, 0x02, 0x03, 0x04, 0x00, 0x00, 0x10, 0x00, 0x80, 0x00, 0x00, 0x80,
+       0x5F, 0x9B, 0x34, 0xFB}};
+  EXPECT_EQ(kExpected, UuidFromInt32(0x01020304));
+}
+
 }  // namespace util
 }  // namespace bluetooth
 }  // namespace chromecast

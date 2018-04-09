@@ -7,39 +7,23 @@
 
 #include <list>
 #include <map>
-#include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/optional.h"
-#include "chromecast/public/bluetooth/bluetooth_types.h"
+#include "chromecast/device/bluetooth/le/le_scan_result.h"
 
 namespace chromecast {
 namespace bluetooth {
 
 class LeScanManager {
  public:
-  struct ScanResult {
-    ScanResult();
-    ScanResult(const ScanResult& other);
-    ~ScanResult();
-
-    bluetooth_v2_shlib::Addr addr;
-    std::vector<uint8_t> adv_data;
-    int rssi = -255;
-
-    std::string name;
-    uint8_t flags = 0;
-    std::map<uint8_t, std::vector<uint8_t>> type_to_data;
-  };
-
   class Observer {
    public:
     // Called when the scan has been enabled or disabled.
     virtual void OnScanEnableChanged(bool enabled) {}
 
     // Called when a new scan result is ready.
-    virtual void OnNewScanResult(ScanResult result) {}
+    virtual void OnNewScanResult(LeScanResult result) {}
 
     virtual ~Observer() = default;
   };
@@ -58,7 +42,7 @@ class LeScanManager {
   // |service_uuid| is passed, only scan results advertising the given
   // |service_uuid| will be returned.
   using GetScanResultsCallback =
-      base::OnceCallback<void(std::vector<ScanResult>)>;
+      base::OnceCallback<void(std::vector<LeScanResult>)>;
   virtual void GetScanResults(
       GetScanResultsCallback cb,
       base::Optional<uint16_t> service_uuid = base::nullopt) = 0;

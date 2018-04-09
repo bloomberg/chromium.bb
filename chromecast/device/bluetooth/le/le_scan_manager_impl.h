@@ -40,7 +40,7 @@ class LeScanManagerImpl : public LeScanManager,
  private:
   // Returns a list of all BLE scan results. The results are sorted by RSSI.
   // Must be called on |io_task_runner|.
-  std::vector<ScanResult> GetScanResultsInternal(
+  std::vector<LeScanResult> GetScanResultsInternal(
       base::Optional<uint16_t> service_uuid);
 
   // bluetooth_v2_shlib::LeScanner::Delegate implementation:
@@ -51,7 +51,7 @@ class LeScanManagerImpl : public LeScanManager,
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
-  std::map<bluetooth_v2_shlib::Addr, std::list<ScanResult>>
+  std::map<bluetooth_v2_shlib::Addr, std::list<LeScanResult>>
       addr_to_scan_results_;
 
   base::WeakPtrFactory<LeScanManagerImpl> weak_factory_;
