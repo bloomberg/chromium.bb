@@ -349,7 +349,15 @@ class PDFExtensionTest : public ExtensionApiTest,
   }
 };
 
-IN_PROC_BROWSER_TEST_P(PDFExtensionTest, Load) {
+// Disabled because it's flaky.
+// See the issue for details: https://crbug.com/826055.
+#if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(ADDRESS_SANITIZER)
+#define MAYBE_Load DISABLED_Load
+#else
+#define MAYBE_Load Load
+#endif
+IN_PROC_BROWSER_TEST_P(PDFExtensionTest, MAYBE_Load) {
 #if defined(GOOGLE_CHROME_BUILD)
   // Load private PDFs.
   LoadAllPdfsTest("pdf_private", GetParam());
