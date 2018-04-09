@@ -1987,6 +1987,8 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
                                     const RD_STATS *const rd_stats, int blk_row,
                                     int blk_col, BLOCK_SIZE plane_bsize,
                                     TX_SIZE tx_size, TX_TYPE tx_type) {
+  if (rd_stats->rate == INT_MAX || rd_stats->dist == INT64_MAX) return;
+
   // Generate small sample to restrict output size.
   if (rand() % 100 > 0) return;
 
