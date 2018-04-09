@@ -1325,9 +1325,13 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
     IncrementalMarkingFinalize();
   }
 
+  // We don't want floating garbage for the specific garbage collection types
+  // mentioned below. In this case we will follow up with a regular full garbage
+  // collection.
   const bool should_do_full_gc = !was_incremental_marking ||
                                  reason == BlinkGC::kForcedGC ||
-                                 reason == BlinkGC::kMemoryPressureGC;
+                                 reason == BlinkGC::kMemoryPressureGC ||
+                                 reason == BlinkGC::kThreadTerminationGC;
   if (should_do_full_gc) {
     CompleteSweep();
     SetGCState(kNoGCScheduled);
