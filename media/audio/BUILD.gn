@@ -461,6 +461,7 @@ source_set("unit_tests") {
       "win/audio_low_latency_output_win_unittest.cc",
       "win/audio_output_win_unittest.cc",
       "win/core_audio_util_win_unittest.cc",
+      "win/device_enumeration_win_unittest.cc",
     ]
   }
 

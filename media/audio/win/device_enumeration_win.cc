@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/audio/win/device_enumeration_win.h"
+
 #include <MMDeviceAPI.h>
 #include <mmsystem.h>
 #include <objbase.h>
@@ -10,10 +12,12 @@
 #include <wrl/client.h>
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_propvariant.h"
 #include "media/audio/win/audio_manager_win.h"
+#include "media/audio/win/core_audio_util_win.h"
 
 using base::win::ScopedCoMem;
 
@@ -84,6 +88,13 @@ static bool GetDeviceNamesWinImpl(EDataFlow data_flow,
           friendly_name.get().pwszVal) {
         device.device_name = base::WideToUTF8(friendly_name.get().pwszVal);
       }
+
+      // Append VID/PID to USB devices.
+      std::string controller_id = CoreAudioUtil::GetAudioControllerID(
+          audio_device.Get(), enumerator.Get());
+      std::string vid_pid_suffix = GetUsbVidPidSuffixWin(controller_id);
+      if (!vid_pid_suffix.empty())
+        device.device_name += vid_pid_suffix;
     }
 
     // Add combination of user-friendly and unique name to the output list.
@@ -152,6 +163,16 @@ bool GetInputDeviceNamesWinXP(AudioDeviceNames* device_names) {
 bool GetOutputDeviceNamesWinXP(AudioDeviceNames* device_names) {
   return GetDeviceNamesWinXPImpl<waveOutGetNumDevs, WAVEOUTCAPSW,
                                  waveOutGetDevCapsW>(device_names);
+}
+
+std::string GetUsbVidPidSuffixWin(const std::string& controller_id) {
+  std::string vid_pid;
+  if (controller_id.size() >= 21 && controller_id.substr(0, 8) == "USB\\VID_" &&
+      controller_id.substr(12, 5) == "&PID_") {
+    vid_pid = " (" + base::ToLowerASCII(controller_id.substr(8, 4)) + ":" +
+              base::ToLowerASCII(controller_id.substr(17, 4)) + ")";
+  }
+  return vid_pid;
 }
 
 }  // namespace media
