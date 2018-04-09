@@ -1041,8 +1041,6 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, CrossSiteRedirectionToPDF) {
                          ->GetLastCommittedURL());
 }
 
-// TODO(csharrison): These tests should become tentative WPT, once the feature
-// is enabled by default.
 class NavigationConsumingTest : public ChromeNavigationBrowserTest {
   void SetUpCommandLine(base::CommandLine* cmd_line) override {
     ChromeNavigationBrowserTest::SetUpCommandLine(cmd_line);
@@ -1052,50 +1050,9 @@ class NavigationConsumingTest : public ChromeNavigationBrowserTest {
   base::test::ScopedFeatureList scoped_feature_;
 };
 
-// The fullscreen API is spec'd to require a user activation (aka user gesture),
-// so use that API to test if navigation consumes the activation.
-// https://fullscreen.spec.whatwg.org/#allowed-to-request-fullscreen
-IN_PROC_BROWSER_TEST_F(NavigationConsumingTest,
-                       NavigationConsumesUserGesture_Fullscreen) {
-  ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL("/navigation_consumes_gesture.html"));
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  // Normally, fullscreen should work, as long as there is a user gesture.
-  bool is_fullscreen = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents, "document.body.webkitRequestFullscreen();", &is_fullscreen));
-  EXPECT_TRUE(is_fullscreen);
-
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      contents, "document.webkitExitFullscreen();", &is_fullscreen));
-  EXPECT_FALSE(is_fullscreen);
-
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
-      contents, "document.body.webkitRequestFullscreen();", &is_fullscreen));
-  EXPECT_FALSE(is_fullscreen);
-
-  // However, starting a navigation should consume the gesture. Fullscreen
-  // should not work afterwards. Make sure the navigation is synchronously
-  // started via click().
-  std::string script = R"(
-    document.getElementsByTagName('a')[0].click();
-    document.body.webkitRequestFullscreen();
-  )";
-
-  // Use the TestNavigationManager to ensure the navigation is not finished
-  // before fullscreen can occur.
-  content::TestNavigationManager nav_manager(
-      contents, embedded_test_server()->GetURL("/title1.html"));
-  EXPECT_TRUE(
-      content::ExecuteScriptAndExtractBool(contents, script, &is_fullscreen));
-  EXPECT_FALSE(is_fullscreen);
-}
-
-// Similar to the fullscreen test above, but checks that popups are successfully
-// blocked if spawned after a navigation.
+// Checks that popups are successfully blocked if spawned after a navigation.
+// It is hard to convert this test to WPT because WPT don't use Chrome's popup
+// blocker, since it is implemented in the //chrome layer.
 IN_PROC_BROWSER_TEST_F(NavigationConsumingTest,
                        NavigationConsumesUserGesture_Popups) {
   ui_test_utils::NavigateToURL(browser(),
