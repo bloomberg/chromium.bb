@@ -506,7 +506,9 @@ void Resource::SetResponse(const ResourceResponse& response) {
 std::unique_ptr<CachedMetadataSender> Resource::CreateCachedMetadataSender()
     const {
   if (GetResponse().WasFetchedViaServiceWorker()) {
-    if (GetResponse().CacheStorageCacheName().IsNull()) {
+    // TODO(leszeks): Check whether it's correct that the source_origin can be
+    // null.
+    if (!source_origin_ || GetResponse().CacheStorageCacheName().IsNull()) {
       return std::make_unique<NullCachedMetadataSender>();
     }
     return std::make_unique<ServiceWorkerCachedMetadataSender>(
