@@ -13,7 +13,7 @@
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/fido_response_test_data.h"
+#include "device/fido/fido_test_data.h"
 #include "device/fido/make_credential_task.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
