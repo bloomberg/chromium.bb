@@ -121,7 +121,7 @@ TEST_F(ApplyBlockElementCommandTest, InsertPlaceHolderAtDisconnectedPosition) {
   EXPECT_FALSE(command->Apply());
   EXPECT_EQ(
       "<pre>|<input></pre><input class=\"input\" style=\"position:absolute\">",
-      GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+      GetSelectionTextFromBody());
 }
 
 }  // namespace blink

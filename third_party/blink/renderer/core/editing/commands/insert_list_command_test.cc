@@ -65,7 +65,7 @@ TEST_F(InsertListCommandTest, UnlistifyParagraphCrashOnVisuallyEmptyParagraph) {
       "<dl><ul>"
       "|<textarea style=\"float:left;\"></textarea>"
       "</ul></dl>",
-      GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+      GetSelectionTextFromBody());
 }
 
 // Refer https://crbug.com/798176
@@ -91,7 +91,7 @@ TEST_F(InsertListCommandTest, CleanupNodeSameAsDestinationNode) {
       "<ul><li><br></li></ul>"
       "</col></colgroup></table>"
       "<button></button>",
-      GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+      GetSelectionTextFromBody());
 }
 
 TEST_F(InsertListCommandTest, InsertListOnEmptyHiddenElements) {
@@ -108,7 +108,7 @@ TEST_F(InsertListCommandTest, InsertListOnEmptyHiddenElements) {
       "<button>"
       "|<ul><li><br></li></ul>"
       "</button>",
-      GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+      GetSelectionTextFromBody());
 }
 
 // Refer https://crbug.com/797520
@@ -128,6 +128,6 @@ TEST_F(InsertListCommandTest, InsertListWithCollapsedVisibility) {
       "<dl>"
       "<ol></ol><ul>^a|</ul>"
       "</dl>",
-      GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+      GetSelectionTextFromBody());
 }
 }

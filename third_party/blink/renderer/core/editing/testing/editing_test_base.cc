@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/testing/selection_sample.h"
@@ -69,6 +70,10 @@ SelectionInDOMTree EditingTestBase::SetSelectionText(
 std::string EditingTestBase::GetSelectionTextFromBody(
     const SelectionInDOMTree& selection) const {
   return SelectionSample::GetSelectionText(*GetDocument().body(), selection);
+}
+
+std::string EditingTestBase::GetSelectionTextFromBody() const {
+  return GetSelectionTextFromBody(Selection().GetSelectionInDOMTree());
 }
 
 std::string EditingTestBase::GetSelectionTextInFlatTreeFromBody(

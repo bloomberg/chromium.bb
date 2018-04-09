@@ -65,7 +65,7 @@ TEST_F(TypingCommandTest,
       GetDocument(), " ", 0,
       TypingCommand::TextCompositionType::kTextCompositionUpdate, true);
   EXPECT_EQ("<div contenteditable>^<h1></h1>|</div>",
-            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+            GetSelectionTextFromBody());
 }
 
 // crbug.com/794397
@@ -90,7 +90,7 @@ TEST_F(TypingCommandTest, ForwardDeleteInvalidatesSelection) {
       "</table>\n"
       "<svg></svg>"
       "</q>",
-      GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+      GetSelectionTextFromBody());
 }
 
 }  // namespace blink
