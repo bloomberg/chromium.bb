@@ -590,7 +590,7 @@ TEST_F(SupervisedUserURLFilterTest, GoogleFamiliesAlwaysAllowed) {
   EXPECT_TRUE(IsURLWhitelisted("https://families.google.com/"));
   EXPECT_TRUE(IsURLWhitelisted("https://families.google.com"));
   EXPECT_TRUE(IsURLWhitelisted("https://families.google.com/something"));
-  EXPECT_FALSE(IsURLWhitelisted("http://families.google.com/"));
+  EXPECT_TRUE(IsURLWhitelisted("http://families.google.com/"));
   EXPECT_FALSE(IsURLWhitelisted("https://families.google.com:8080/"));
   EXPECT_FALSE(IsURLWhitelisted("https://subdomain.families.google.com/"));
 }
