@@ -116,8 +116,8 @@ void RemoveProviderHost(base::WeakPtr<ServiceWorkerContextCore> context,
   if (!context || !context->GetProviderHost(process_id, provider_id)) {
     // In some cases, it is possible for the Mojo endpoint of a pre-created
     // host to be destroyed before being claimed by the renderer and
-    // becoming owned by ServiceWorkerContextCore. The owner of the host is
-    // responsible for deleting the host, so just return here.
+    // having the host become owned by ServiceWorkerContextCore. The owner of
+    // the host is responsible for deleting the host, so just return here.
     return;
   }
   context->RemoveProviderHost(process_id, provider_id);
