@@ -93,4 +93,9 @@ public interface VrDaydreamApi {
      * Closes this DaydreamApi instance.
      */
     void close();
+
+    /**
+     * @return Whether 2D-in-VR rendering mode is currently supported.
+     */
+    boolean supports2dInVr();
 }

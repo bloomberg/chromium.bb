@@ -554,6 +554,13 @@ public class VrShellImpl
         mVrModalPresenter.closeCurrentDialog();
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean focused) {
+        // This handles the case where we open 2D popups in 2D-in-VR. We lose window focus, but stay
+        // resumed, so we have to listen for focus gain to know when the popup was closed.
+        if (focused) VrShellDelegate.setVrModeEnabled(mActivity, true);
+    }
+
     @CalledByNative
     public void setContentCssSize(float width, float height, float dpr) {
         ThreadUtils.assertOnUiThread();

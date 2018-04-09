@@ -8,6 +8,8 @@ import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 
 import org.chromium.base.VisibleForTesting;
@@ -168,12 +170,44 @@ public class VrIntentUtils {
      * @param activity The activity context to launch the intent from.
      */
     public static void launchInVr(Intent intent, Activity activity) {
-        VrClassesWrapper wrapper = VrShellDelegate.getVrClassesWrapper();
-        if (wrapper == null) return;
-        VrDaydreamApi api = wrapper.createVrDaydreamApi(activity);
+        VrDaydreamApi api = createDaydreamApi(activity);
         if (api == null) return;
         api.launchInVr(intent);
         api.close();
+    }
+
+    /**
+     * @param intent The intent to possibly forward to the VR launcher.
+     * @return whether the intent was forwarded to the VR launcher.
+     */
+    public static boolean maybeForwardToVrLauncher(Intent intent, Activity activity) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.O) return false;
+        if (wouldUse2DInVrRenderingMode(activity)) {
+            Intent vrIntent = new Intent(intent);
+            vrIntent.setComponent(null);
+            vrIntent.setPackage(activity.getPackageName());
+            vrIntent.addCategory(VrIntentUtils.DAYDREAM_CATEGORY);
+            if (vrIntent.resolveActivity(activity.getPackageManager()) != null) {
+                VrIntentUtils.launchInVr(vrIntent, activity);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param activity A context for reading the current device configuration.
+     * @return Whether launching a non-VR Activity would trigger the 2D-in-VR rendering path.
+     */
+    public static boolean wouldUse2DInVrRenderingMode(Activity activity) {
+        Configuration config = activity.getResources().getConfiguration();
+        int uiMode = config.uiMode & Configuration.UI_MODE_TYPE_MASK;
+        if (uiMode != Configuration.UI_MODE_TYPE_VR_HEADSET) return false;
+        VrDaydreamApi api = createDaydreamApi(activity);
+        if (api == null) return false;
+        boolean supports2dInVr = api.supports2dInVr();
+        api.close();
+        return supports2dInVr;
     }
 
     /**
@@ -190,5 +224,11 @@ public class VrIntentUtils {
         if (intent == null) return;
         intent.removeCategory(DAYDREAM_CATEGORY);
         assert !isVrIntent(intent);
+    }
+
+    private static VrDaydreamApi createDaydreamApi(Activity activity) {
+        VrClassesWrapper wrapper = VrShellDelegate.getVrClassesWrapper();
+        if (wrapper == null) return null;
+        return wrapper.createVrDaydreamApi(activity);
     }
 }
