@@ -10,7 +10,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/features.h"
-#include "components/safe_browsing/triggers/trigger_manager.h"
+#include "components/safe_browsing/triggers/mock_trigger_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
@@ -35,27 +35,6 @@ const char kNonAdUrl[] = "https://foo.com/";
 const char kAdName[] = "google_ads_iframe_1";
 const char kNonAdName[] = "foo";
 }  // namespace
-
-class MockTriggerManager : public TriggerManager {
- public:
-  MockTriggerManager() : TriggerManager(nullptr) {}
-
-  MOCK_METHOD6(StartCollectingThreatDetails,
-               bool(TriggerType trigger_type,
-                    content::WebContents* web_contents,
-                    const security_interstitials::UnsafeResource& resource,
-                    net::URLRequestContextGetter* request_context_getter,
-                    history::HistoryService* history_service,
-                    const SBErrorOptions& error_display_options));
-
-  MOCK_METHOD6(FinishCollectingThreatDetails,
-               bool(TriggerType trigger_type,
-                    content::WebContents* web_contents,
-                    const base::TimeDelta& delay,
-                    bool did_proceed,
-                    int num_visits,
-                    const SBErrorOptions& error_display_options));
-};
 
 class AdSamplerTriggerTest : public content::RenderViewHostTestHarness {
  public:
