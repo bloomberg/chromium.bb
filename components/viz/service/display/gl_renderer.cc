@@ -177,8 +177,14 @@ BlendMode BlendModeFromSkXfermode(SkBlendMode mode) {
 const float kAntiAliasingEpsilon = 1.0f / 1024.0f;
 }  // anonymous namespace
 
+static GLint GetActiveTextureUnit(GLES2Interface* gl) {
+  GLint active_unit = 0;
+  gl->GetIntegerv(GL_ACTIVE_TEXTURE, &active_unit);
+  return active_unit;
+}
+
 // Parameters needed to draw a RenderPassDrawQuad.
-struct DrawRenderPassDrawQuadParams {
+struct GLRenderer::DrawRenderPassDrawQuadParams {
   DrawRenderPassDrawQuadParams() {}
   ~DrawRenderPassDrawQuadParams() {
     // Don't leak the texture.
@@ -261,12 +267,6 @@ struct DrawRenderPassDrawQuadParams {
   // bypass_quad_resource_lock, depending on the path taken).
   gfx::ColorSpace contents_and_bypass_color_space;
 };
-
-static GLint GetActiveTextureUnit(GLES2Interface* gl) {
-  GLint active_unit = 0;
-  gl->GetIntegerv(GL_ACTIVE_TEXTURE, &active_unit);
-  return active_unit;
-}
 
 class GLRenderer::ScopedUseGrContext {
  public:

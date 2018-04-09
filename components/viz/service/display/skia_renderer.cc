@@ -54,7 +54,7 @@
 
 namespace viz {
 // Parameters needed to draw a RenderPassDrawQuad.
-struct DrawRenderPassDrawQuadParams {
+struct SkiaRenderer::DrawRenderPassDrawQuadParams {
   // The "in" parameters that will be used when apply filters.
   const cc::FilterOperations* filters = nullptr;
   const cc::FilterOperations* background_filters = nullptr;

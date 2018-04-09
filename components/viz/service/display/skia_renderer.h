@@ -26,7 +26,6 @@ class PictureDrawQuad;
 class SolidColorDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;
-struct DrawRenderPassDrawQuadParams;
 
 class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
  public:
@@ -73,6 +72,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void GenerateMipmap() override;
 
  private:
+  struct DrawRenderPassDrawQuadParams;
+
   void ClearCanvas(SkColor color);
   void ClearFramebuffer();
   void SetClipRect(const gfx::Rect& rect);
