@@ -145,6 +145,9 @@ class InterfacePtr {
     return internal_state_.HasAssociatedInterfaces();
   }
 
+  // Returns true if bound and awaiting a response to a message.
+  bool IsExpectingResponse() { return internal_state_.has_pending_callbacks(); }
+
   // Indicates whether the message pipe has encountered an error. If true,
   // method calls made on this interface will be dropped (and may already have
   // been dropped).

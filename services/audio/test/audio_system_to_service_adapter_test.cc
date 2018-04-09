@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "services/audio/public/cpp/audio_system_to_service_adapter.h"
+#include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/audio/audio_system_test_util.h"
 #include "media/audio/test_audio_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -11,6 +13,8 @@
 #include "services/audio/system_info.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
 using testing::Exactly;
@@ -337,6 +341,171 @@ TEST_F(AudioSystemToServiceAdapterConnectionLossTest, GetInputDeviceInfo) {
   }
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(system_info_binding_->is_bound());
+}
+
+namespace {
+
+static constexpr auto kResponseDelay = base::TimeDelta::FromMilliseconds(10);
+static constexpr char kSomeDeviceId[] = "Some device";
+static constexpr char kValidReplyId[] =
+    "If you can read it you received the reply";
+
+}  // namespace
+
+class AudioSystemToServiceAdapterDisconnectTest : public testing::Test {
+ public:
+  AudioSystemToServiceAdapterDisconnectTest() {}
+  ~AudioSystemToServiceAdapterDisconnectTest() override {}
+
+ protected:
+  class MockSystemInfo : public mojom::SystemInfo {
+   public:
+    MockSystemInfo(base::TimeDelta response_delay) {}
+    ~MockSystemInfo() override {}
+
+   private:
+    // audio::mojom::SystemInfo implementation.
+    void GetInputStreamParameters(
+        const std::string& device_id,
+        GetInputStreamParametersCallback callback) override {
+      NOTIMPLEMENTED();
+    }
+    void GetOutputStreamParameters(
+        const std::string& device_id,
+        GetOutputStreamParametersCallback callback) override {
+      NOTIMPLEMENTED();
+    }
+    void HasInputDevices(HasInputDevicesCallback callback) override {
+      NOTIMPLEMENTED();
+    }
+    void HasOutputDevices(HasOutputDevicesCallback callback) override {
+      NOTIMPLEMENTED();
+    }
+    void GetInputDeviceDescriptions(
+        GetInputDeviceDescriptionsCallback callback) override {
+      NOTIMPLEMENTED();
+    }
+    void GetOutputDeviceDescriptions(
+        GetOutputDeviceDescriptionsCallback callback) override {
+      NOTIMPLEMENTED();
+    }
+    void GetAssociatedOutputDeviceID(
+        const std::string& input_device_id,
+        GetAssociatedOutputDeviceIDCallback callback) override {
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, base::BindOnce(std::move(callback), kValidReplyId),
+          kResponseDelay);
+    }
+    void GetInputDeviceInfo(const std::string& input_device_id,
+                            GetInputDeviceInfoCallback callback) override {
+      NOTIMPLEMENTED();
+    }
+  };  // class MockSystemInfo
+
+  std::unique_ptr<service_manager::Connector> GetConnector() {
+    service_manager::mojom::ConnectorRequest ignored_request;
+    auto connector = service_manager::Connector::Create(&ignored_request);
+    service_manager::Connector::TestApi connector_test_api(connector.get());
+    connector_test_api.OverrideBinderForTesting(
+        service_manager::Identity(mojom::kServiceName),
+        mojom::SystemInfo::Name_,
+        base::BindRepeating(
+            &AudioSystemToServiceAdapterDisconnectTest::BindSystemInfoRequest,
+            base::Unretained(this)));
+    return connector;
+  }
+
+  void BindSystemInfoRequest(mojo::ScopedMessagePipeHandle handle) {
+    ClientConnected();
+    system_info_binding_.Bind(mojom::SystemInfoRequest(std::move(handle)));
+    system_info_binding_.set_connection_error_handler(base::BindOnce(
+        &AudioSystemToServiceAdapterDisconnectTest::OnConnectionError,
+        base::Unretained(this)));
+  }
+
+  void OnConnectionError() {
+    system_info_binding_.Close();
+    ClientDisconnected();
+  }
+
+  MOCK_METHOD0(ClientConnected, void(void));
+  MOCK_METHOD0(ClientDisconnected, void(void));
+
+  base::test::ScopedTaskEnvironment scoped_task_environment_{
+      base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME};
+
+  const base::Optional<std::string> valid_reply_{kValidReplyId};
+  base::MockCallback<media::AudioSystem::OnDeviceIdCallback> response_received_;
+
+  MockSystemInfo mock_system_info_{kResponseDelay};
+  mojo::Binding<mojom::SystemInfo> system_info_binding_{&mock_system_info_};
+};
+
+TEST_F(AudioSystemToServiceAdapterDisconnectTest,
+       ResponseDelayIsShorterThanDisconnectTimeout) {
+  const base::TimeDelta kDisconnectTimeout = kResponseDelay * 2;
+  AudioSystemToServiceAdapter audio_system(GetConnector(), kDisconnectTimeout);
+  {
+    EXPECT_CALL(*this, ClientConnected());
+    EXPECT_CALL(*this, ClientDisconnected()).Times(0);
+    EXPECT_CALL(response_received_, Run(valid_reply_));
+    audio_system.GetAssociatedOutputDeviceID(kSomeDeviceId,
+                                             response_received_.Get());
+    scoped_task_environment_.FastForwardBy(kResponseDelay);
+  }
+  EXPECT_CALL(*this, ClientDisconnected());
+  scoped_task_environment_.FastForwardBy(kDisconnectTimeout);
+}
+
+TEST_F(AudioSystemToServiceAdapterDisconnectTest,
+       ResponseDelayIsLongerThanDisconnectTimeout) {
+  const base::TimeDelta kDisconnectTimeout = kResponseDelay / 2;
+  AudioSystemToServiceAdapter audio_system(GetConnector(), kDisconnectTimeout);
+  {
+    EXPECT_CALL(*this, ClientConnected());
+    EXPECT_CALL(*this, ClientDisconnected()).Times(0);
+    EXPECT_CALL(response_received_, Run(valid_reply_));
+    audio_system.GetAssociatedOutputDeviceID(kSomeDeviceId,
+                                             response_received_.Get());
+    scoped_task_environment_.FastForwardBy(kResponseDelay);
+  }
+  EXPECT_CALL(*this, ClientDisconnected());
+  scoped_task_environment_.FastForwardBy(kDisconnectTimeout);
+}
+
+TEST_F(AudioSystemToServiceAdapterDisconnectTest,
+       DisconnectTimeoutIsResetOnSecondRequest) {
+  const base::TimeDelta kDisconnectTimeout = kResponseDelay * 1.5;
+  AudioSystemToServiceAdapter audio_system(GetConnector(), kDisconnectTimeout);
+  {
+    EXPECT_CALL(*this, ClientConnected());
+    EXPECT_CALL(*this, ClientDisconnected()).Times(0);
+    EXPECT_CALL(response_received_, Run(valid_reply_));
+    audio_system.GetAssociatedOutputDeviceID(kSomeDeviceId,
+                                             response_received_.Get());
+    scoped_task_environment_.FastForwardBy(kResponseDelay);
+  }
+  {
+    EXPECT_CALL(*this, ClientConnected()).Times(0);
+    EXPECT_CALL(*this, ClientDisconnected()).Times(0);
+    EXPECT_CALL(response_received_, Run(valid_reply_));
+    audio_system.GetAssociatedOutputDeviceID(kSomeDeviceId,
+                                             response_received_.Get());
+    scoped_task_environment_.FastForwardBy(kResponseDelay);
+  }
+  EXPECT_CALL(*this, ClientDisconnected());
+  scoped_task_environment_.FastForwardBy(kDisconnectTimeout);
+}
+
+TEST_F(AudioSystemToServiceAdapterDisconnectTest,
+       DoesNotDisconnectIfNoTimeout) {
+  AudioSystemToServiceAdapter audio_system(GetConnector(), base::TimeDelta());
+  EXPECT_CALL(*this, ClientConnected());
+  EXPECT_CALL(*this, ClientDisconnected()).Times(0);
+  EXPECT_CALL(response_received_, Run(valid_reply_));
+  audio_system.GetAssociatedOutputDeviceID(kSomeDeviceId,
+                                           response_received_.Get());
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 }  // namespace audio
