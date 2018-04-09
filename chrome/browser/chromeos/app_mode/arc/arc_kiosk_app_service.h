@@ -9,6 +9,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/kiosk/arc_kiosk_bridge.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -35,7 +36,8 @@ class ArcKioskAppService
       public ArcKioskAppManager::ArcKioskAppManagerObserver,
       public arc::ArcKioskBridge::Delegate,
       public ArcKioskAppLauncher::Delegate,
-      public ArcAppIcon::Observer {
+      public ArcAppIcon::Observer,
+      public arc::ArcSessionManager::Observer {
  public:
   class Delegate {
    public:
@@ -82,6 +84,10 @@ class ArcKioskAppService
   // ArcAppIcon::Observer overrides
   void OnIconUpdated(ArcAppIcon* icon) override;
 
+  // ArcSessionManager::Observer overrides
+  void OnArcSessionRestarting() override;
+  void OnArcSessionStopped(arc::ArcStopReason reason) override;
+
  private:
   explicit ArcKioskAppService(Profile* profile);
   ~ArcKioskAppService() override;
@@ -91,6 +97,8 @@ class ArcKioskAppService
   void PreconditionsChanged();
   // Updates local cache with proper name and icon.
   void RequestNameAndIconUpdate();
+  // Triggered when app is closed to reset launcher.
+  void ResetAppLauncher();
 
   Profile* const profile_;
   bool maintenance_session_running_ = false;

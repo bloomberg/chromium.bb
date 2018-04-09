@@ -41,6 +41,7 @@ void ArcKioskAppService::SetDelegate(Delegate* delegate) {
 
 void ArcKioskAppService::Shutdown() {
   ArcAppListPrefs::Get(profile_)->RemoveObserver(this);
+  arc::ArcSessionManager::Get()->RemoveObserver(this);
   app_manager_->RemoveObserver(this);
 }
 
@@ -82,8 +83,7 @@ void ArcKioskAppService::OnTaskCreated(int32_t task_id,
 
 void ArcKioskAppService::OnTaskDestroyed(int32_t task_id) {
   if (task_id == task_id_) {
-    app_launcher_.reset();
-    task_id_ = -1;
+    ResetAppLauncher();
     // Trying to restart app if it was somehow closed or crashed
     // as kiosk app should always be running during the session.
     PreconditionsChanged();
@@ -123,8 +123,21 @@ void ArcKioskAppService::OnIconUpdated(ArcAppIcon* icon) {
                                   app_icon_->image_skia());
 }
 
+void ArcKioskAppService::OnArcSessionRestarting() {
+  // Reset state as the app is for sure not running.
+  VLOG(2) << "Clearing ARC Kiosk state on restart";
+  ResetAppLauncher();
+}
+
+void ArcKioskAppService::OnArcSessionStopped(arc::ArcStopReason reason) {
+  // Reset state as the app is for sure not running.
+  VLOG(2) << "Clearing ARC Kiosk state on stop";
+  ResetAppLauncher();
+}
+
 ArcKioskAppService::ArcKioskAppService(Profile* profile) : profile_(profile) {
   ArcAppListPrefs::Get(profile_)->AddObserver(this);
+  arc::ArcSessionManager::Get()->AddObserver(this);
   app_manager_ = ArcKioskAppManager::Get();
   DCHECK(app_manager_);
   app_manager_->AddObserver(this);
@@ -203,6 +216,11 @@ std::string ArcKioskAppService::GetAppId() {
     return *app_ids.begin();
   // Check that the app is registered for given package.
   return app_ids.count(app->app_id()) ? app->app_id() : std::string();
+}
+
+void ArcKioskAppService::ResetAppLauncher() {
+  app_launcher_.reset();
+  task_id_ = -1;
 }
 
 }  // namespace chromeos
