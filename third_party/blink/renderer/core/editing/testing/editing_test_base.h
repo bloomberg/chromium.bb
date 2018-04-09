@@ -58,6 +58,8 @@ class EditingTestBase : public PageTestBase {
   // |SelectionInDOMTree|.
   std::string GetSelectionTextFromBody(const SelectionInDOMTree&) const;
 
+  std::string GetSelectionTextFromBody() const;
+
   // Returns selection text for child nodes of BODY with specified
   // |SelectionInFlatTree|.
   std::string GetSelectionTextInFlatTreeFromBody(

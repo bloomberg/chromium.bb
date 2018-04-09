@@ -93,6 +93,6 @@ TEST_F(ApplyStyleCommandTest, FontSizeDeltaWithSpanElement) {
                             InputEvent::InputType::kNone)
       ->Apply();
   EXPECT_EQ("<div contenteditable><div></div><span>^a|</span></div>",
-            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+            GetSelectionTextFromBody());
 }
 }  // namespace blink

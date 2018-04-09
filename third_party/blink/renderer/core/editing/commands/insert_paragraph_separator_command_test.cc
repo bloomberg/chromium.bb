@@ -29,7 +29,7 @@ TEST_F(InsertParagraphSeparatorCommandTest,
       "<table contenteditable>"
       "    <colgroup style=\"-webkit-appearance:radio;\">|<br></colgroup>"
       "</table>",
-      GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+      GetSelectionTextFromBody());
 }
 
 // http://crbug.com/777378
@@ -52,7 +52,7 @@ TEST_F(InsertParagraphSeparatorCommandTest,
       "        <col>"
       "    </colgroup>"
       "</table>",
-      GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+      GetSelectionTextFromBody());
 }
 
 }  // namespace blink

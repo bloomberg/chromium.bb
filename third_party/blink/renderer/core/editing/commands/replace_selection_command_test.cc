@@ -171,8 +171,7 @@ TEST_F(ReplaceSelectionCommandTest, TrailingNonVisibleTextCrash) {
 
   // Crash should not occur on applying ReplaceSelectionCommand
   EXPECT_FALSE(command->Apply());
-  EXPECT_EQ("<div>bar</div>|<br>",
-            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+  EXPECT_EQ("<div>bar</div>|<br>", GetSelectionTextFromBody());
 }
 
 // This is a regression test for https://crbug.com/796840
@@ -185,8 +184,7 @@ TEST_F(ReplaceSelectionCommandTest, CrashWithNoSelection) {
 
   // Crash should not occur on applying ReplaceSelectionCommand
   EXPECT_FALSE(command->Apply());
-  EXPECT_EQ("<div></div>",
-            GetSelectionTextFromBody(Selection().GetSelectionInDOMTree()));
+  EXPECT_EQ("<div></div>", GetSelectionTextFromBody());
 }
 
 }  // namespace blink
