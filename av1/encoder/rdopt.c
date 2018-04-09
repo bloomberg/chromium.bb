@@ -4657,9 +4657,6 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   int64_t rd = INT64_MAX;
   int64_t best_rd = INT64_MAX;
   const int is_inter = is_inter_block(mbmi);
-  TX_SIZE best_tx_size[INTER_TX_SIZE_BUF_LEN] = { 0 };
-  TX_SIZE best_tx = max_txsize_rect_lookup[bsize];
-  uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   const int n4 = bsize_to_num_blk(bsize);
   // Get the tx_size 1 level down
   const TX_SIZE min_tx_size = sub_tx_size_map[max_txsize_rect_lookup[bsize]];
@@ -4723,10 +4720,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   ref_best_rd = AOMMIN(rd, ref_best_rd);
   if (rd < best_rd) {
     *rd_stats = this_rd_stats;
-    best_tx = mbmi->tx_size;
-    memcpy(best_blk_skip, x->blk_skip, sizeof(best_blk_skip[0]) * n4);
     found = 1;
-    av1_copy(best_tx_size, mbmi->inter_tx_size);
   }
 
   // Reset the pruning flags.
@@ -4738,12 +4732,6 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   // might have failed to find something better)
   assert(IMPLIES(!found, ref_best_rd != INT64_MAX));
   if (!found) return;
-
-  // We found a candidate transform to use. Copy our results from the "best"
-  // array into mbmi.
-  av1_copy(mbmi->inter_tx_size, best_tx_size);
-  mbmi->tx_size = best_tx;
-  memcpy(x->blk_skip, best_blk_skip, sizeof(best_blk_skip[0]) * n4);
 
   // Save the RD search results into tx_rd_record.
   if (within_border && cpi->sf.use_mb_rd_hash)
