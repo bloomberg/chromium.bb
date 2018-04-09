@@ -2055,9 +2055,10 @@ static void PrintTransformUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
   const double model_dist_norm = (double)model_dist / num_samples;
   fprintf(fout, " %g %g", model_rate_norm, model_dist_norm);
 
-  const double mean = get_mean(src_diff, txw, txw, txh);
+  const double mean = get_mean(src_diff, diff_stride, txw, txh);
   double hor_corr, vert_corr;
-  get_horver_correlation(src_diff, txw, txw, txh, &hor_corr, &vert_corr);
+  get_horver_correlation(src_diff, diff_stride, txw, txh, &hor_corr,
+                         &vert_corr);
   fprintf(fout, " %g %g %g", mean, hor_corr, vert_corr);
 
   double hdist[4] = { 0 }, vdist[4] = { 0 };
