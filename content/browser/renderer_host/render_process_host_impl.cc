@@ -643,8 +643,16 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
   // Gracefully remove and cleanup a spare RenderProcessHost if it exists.
   void CleanupSpareRenderProcessHost() {
     if (spare_render_process_host_) {
+      // Stop observing the process, to avoid getting notifications as a
+      // consequence of the Cleanup call below - such notification could call
+      // back into CleanupSpareRenderProcessHost leading to stack overflow.
+      spare_render_process_host_->RemoveObserver(this);
+
+      // Make sure the RenderProcessHost object gets destroyed.
       spare_render_process_host_->Cleanup();
-      DropSpareRenderProcessHost(spare_render_process_host_);
+
+      // Drop reference to the RenderProcessHost object.
+      spare_render_process_host_ = nullptr;
     }
   }
 
@@ -653,15 +661,17 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
   }
 
  private:
-  // RenderProcessHostObserver
-  void RenderProcessWillExit(RenderProcessHost* host) override {
-    DropSpareRenderProcessHost(host);
-  }
+  // RenderProcessHostObserver::RenderProcessWillExit is not overriden because:
+  // 1. This simplifies reasoning when Cleanup can be called.
+  // 2. In practice the spare shouldn't go through graceful shutdown.
+  // 3. Handling RenderProcessExited and RenderProcessHostDestroyed is
+  //    sufficient from correctness perspective.
 
   void RenderProcessExited(RenderProcessHost* host,
-                           base::TerminationStatus unused_status,
+                           base::TerminationStatus status,
                            int unused_exit_code) override {
-    DropSpareRenderProcessHost(host);
+    if (host == spare_render_process_host_)
+      CleanupSpareRenderProcessHost();
   }
 
   void RenderProcessHostDestroyed(RenderProcessHost* host) override {
@@ -2907,8 +2917,7 @@ bool RenderProcessHostImpl::FastShutdownIfPossible(size_t page_count,
   if (run_renderer_in_process())
     return false;  // Single process mode never shuts down the renderer.
 
-  if (!child_process_launcher_.get() || child_process_launcher_->IsStarting() ||
-      !GetHandle())
+  if (!child_process_launcher_.get())
     return false;  // Render process hasn't started or is probably crashed.
 
   // Test if there's an unload listener.

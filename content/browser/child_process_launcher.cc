@@ -103,8 +103,14 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
     bool known_dead,
     int* exit_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!process_.process.IsValid()) {
-    // Process is already gone, so return the cached termination status.
+    // Make sure to avoid using the default termination status if the process
+    // hasn't even started yet.
+    if (IsStarting())
+      termination_status_ = base::TERMINATION_STATUS_STILL_RUNNING;
+
+    // Process doesn't exist, so return the cached termination status.
     if (exit_code)
       *exit_code = exit_code_;
     return termination_status_;
