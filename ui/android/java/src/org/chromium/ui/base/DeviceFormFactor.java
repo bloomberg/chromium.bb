@@ -5,6 +5,7 @@
 package org.chromium.ui.base;
 
 import android.content.Context;
+import android.os.Build;
 import android.support.annotation.UiThread;
 
 import org.chromium.base.ContextUtils;
@@ -86,9 +87,12 @@ public class DeviceFormFactor {
     }
 
     private static int detectScreenWidthBucket(Context context) {
-        // TODO(agrieve): Remove runningOnUiThread() guard and audit for background thread usages.
-        //     https://crbug.com/669974
-        if (ThreadUtils.runningOnUiThread()
+        // Pre-JB MR1, Display.getSize() is used rather than Display.getRealSize().
+        // For our query, getSize() is not always correct. https://crbug.com/829318
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1
+                // TODO(agrieve): Remove thread check and audit for background usages.
+                //     https://crbug.com/669974
+                && ThreadUtils.runningOnUiThread()
                 && !isTabletDisplay(DisplayAndroid.getNonMultiDisplay(context))) {
             // There have been no cases where tablet resources end up being used on phone-sized
             // displays. Short-circuit this common-case since checking resources is slower (and
