@@ -315,6 +315,13 @@ HacksAndPatchesCommon() {
   nm -D --defined-only --with-symbol-versions "${libm_so}" | \
     "${SCRIPT_DIR}/find_incompatible_glibc_symbols.py" >> "${math_h}"
 
+  # glob64() was also optimized in glibc 2.27.  Make sure to choose the older
+  # version.
+  local glob_h="${INSTALL_ROOT}/usr/include/glob.h"
+  local libc_so="${INSTALL_ROOT}/lib/${arch}-${os}/libc.so.6"
+  nm -D --defined-only --with-symbol-versions "${libc_so}" | \
+    "${SCRIPT_DIR}/find_incompatible_glibc_symbols.py" >> "${glob_h}"
+
   # This is for chrome's ./build/linux/pkg-config-wrapper
   # which overwrites PKG_CONFIG_LIBDIR internally
   SubBanner "Move pkgconfig scripts"
