@@ -53,6 +53,13 @@ class ContextualSuggestionsBridge {
         mNativeContextualSuggestionsBridge = nativeInit(profile);
     }
 
+    /**
+     * @return Whether the current profile is enterprise policy managed.
+     */
+    static boolean isEnterprisePolicyManaged() {
+        return nativeIsEnterprisePolicyManaged();
+    }
+
     /** Destroys the bridge. */
     void destroy() {
         assert mNativeContextualSuggestionsBridge != 0;
@@ -125,6 +132,7 @@ class ContextualSuggestionsBridge {
                         /*isVideoSuggestion=*/false, /*thumbnailDominantColor=*/0));
     }
 
+    static private native boolean nativeIsEnterprisePolicyManaged();
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeContextualSuggestionsBridge);
     private native void nativeFetchSuggestions(long nativeContextualSuggestionsBridge, String url,
