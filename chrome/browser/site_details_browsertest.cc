@@ -282,11 +282,12 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SiteDetailsBrowserTest);
 };
 
-
 // Test the accuracy of SiteDetails process estimation, in the presence of
 // multiple iframes, navigation, multiple BrowsingInstances, and multiple tabs
 // in the same BrowsingInstance.
-IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
+//
+// Disabled since it's flaky: https://crbug.com/830318.
+IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, DISABLED_ManyIframes) {
   // Page with 14 nested oopifs across 9 sites (a.com through i.com).
   // None of these are https.
   GURL abcdefghi_url = embedded_test_server()->GetURL(
@@ -916,7 +917,10 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ExtensionWithTwoWebIframes) {
 }
 
 // Verifies that --isolate-extensions doesn't isolate hosted apps.
-IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
+//
+// Disabled since it's flaky: https://crbug.com/830318.
+IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest,
+                       DISABLED_IsolateExtensionsHostedApps) {
   GURL app_with_web_iframe_url = embedded_test_server()->GetURL(
       "app.org", "/cross_site_iframe_factory.html?app.org(b.com)");
   GURL app_in_web_iframe_url = embedded_test_server()->GetURL(
@@ -1129,9 +1133,11 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest,
 
 // Verifies that the UMA counter for SiteInstances in a BrowsingInstance is
 // correct when extensions and web pages are mixed together.
+//
+// Disabled since it's flaky: https://crbug.com/830318.
 IN_PROC_BROWSER_TEST_F(
     SiteDetailsBrowserTest,
-    VerifySiteInstanceCountInBrowsingInstanceWithExtensions) {
+    DISABLED_VerifySiteInstanceCountInBrowsingInstanceWithExtensions) {
   // Open two a.com tabs (with cross site http iframes). IsolateExtensions mode
   // should have no effect so far, since there are no frames straddling the
   // extension/web boundary.
