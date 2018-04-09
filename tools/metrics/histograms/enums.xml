@@ -8177,6 +8177,16 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Connected to service with KeepAlive connection"/>
 </enum>
 
+<enum name="CustomTabsParallelRequestStatusOnStart">
+  <int value="0" label="No Parallel Request was requested"/>
+  <int value="1" label="Parallel request successfully started"/>
+  <int value="2" label="Failure: Chrome was not initialized"/>
+  <int value="3" label="Failure: Calling application not authorized"/>
+  <int value="4" label="Failure: Invalid URL"/>
+  <int value="5" label="Failure: Invalid referrer"/>
+  <int value="6" label="Failure: Invalid referrer for the calling session"/>
+</enum>
+
 <enum name="CustomTabsSpeculationStatusOnStart">
   <int value="0"
       label="Speculation allowed. If started, the kind will also be recorded"/>

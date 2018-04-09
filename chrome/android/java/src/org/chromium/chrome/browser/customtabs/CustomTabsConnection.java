@@ -17,8 +17,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
 import android.os.SystemClock;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.support.annotation.StringDef;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsService;
@@ -41,6 +41,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.blink_public.web.WebReferrerPolicy;
 import org.chromium.chrome.R;
@@ -157,21 +158,35 @@ public class CustomTabsConnection {
     static final String PARALLEL_REQUEST_URL_KEY =
             "android.support.customtabs.PARALLEL_REQUEST_URL";
 
-    @StringDef({PARALLEL_REQUEST_SUCCESS, PARALLEL_REQUEST_FAILURE_NOT_AUTHORIZED,
+    @IntDef({PARALLEL_REQUEST_NO_REQUEST, PARALLEL_REQUEST_SUCCESS,
+            PARALLEL_REQUEST_FAILURE_NOT_INITIALIZED, PARALLEL_REQUEST_FAILURE_NOT_AUTHORIZED,
             PARALLEL_REQUEST_FAILURE_INVALID_URL, PARALLEL_REQUEST_FAILURE_INVALID_REFERRER,
             PARALLEL_REQUEST_FAILURE_INVALID_REFERRER_FOR_SESSION})
     @interface ParallelRequestStatus {}
+
     @VisibleForTesting
-    static final String PARALLEL_REQUEST_SUCCESS = "Success";
+    static final int PARALLEL_REQUEST_NO_REQUEST = 0;
     @VisibleForTesting
-    static final String PARALLEL_REQUEST_FAILURE_NOT_AUTHORIZED = "Not authorized";
+    static final int PARALLEL_REQUEST_SUCCESS = 1;
     @VisibleForTesting
-    static final String PARALLEL_REQUEST_FAILURE_INVALID_URL = "Invalid URL";
+    static final int PARALLEL_REQUEST_FAILURE_NOT_INITIALIZED = 2;
     @VisibleForTesting
-    static final String PARALLEL_REQUEST_FAILURE_INVALID_REFERRER = "Invalid referrer";
+    static final int PARALLEL_REQUEST_FAILURE_NOT_AUTHORIZED = 3;
     @VisibleForTesting
-    static final String PARALLEL_REQUEST_FAILURE_INVALID_REFERRER_FOR_SESSION =
-            "Invalid referrer for session";
+    static final int PARALLEL_REQUEST_FAILURE_INVALID_URL = 4;
+    @VisibleForTesting
+    static final int PARALLEL_REQUEST_FAILURE_INVALID_REFERRER = 5;
+    @VisibleForTesting
+    static final int PARALLEL_REQUEST_FAILURE_INVALID_REFERRER_FOR_SESSION = 6;
+    private static final int PARALLEL_REQUEST_STATUS_MAX = 7;
+
+    private static final String[] PARALLEL_REQUEST_MESSAGES = {"No request", "Success",
+            "Chrome not initialized", "Not authorized", "Invalid URL", "Invalid referrer",
+            "Invalid referrer for session"};
+
+    private static final EnumeratedHistogramSample sParallelRequestStatusOnStart =
+            new EnumeratedHistogramSample(
+                    "CustomTabs.ParallelRequestStatusOnStart", PARALLEL_REQUEST_STATUS_MAX);
 
     private static final CustomTabsConnection sInstance =
             AppHooks.get().createCustomTabsConnection();
@@ -234,7 +249,8 @@ public class CustomTabsConnection {
     @VisibleForTesting
     SpeculationParams mSpeculation;
     protected final Context mContext;
-    protected final ClientManager mClientManager;
+    @VisibleForTesting
+    final ClientManager mClientManager;
     protected final boolean mLogRequests;
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
     private final AtomicBoolean mWarmupHasBeenFinished = new AtomicBoolean();
@@ -921,10 +937,7 @@ public class CustomTabsConnection {
         if (mWarmupTasks != null) mWarmupTasks.cancel();
 
         maybePreconnectToRedirectEndpoint(session, url, intent);
-        String status = maybeStartParallelRequest(session, intent);
-        if (mLogRequests) {
-            Log.w(TAG, "maybeStartParallelRequest() = " + status);
-        }
+        handleParallelRequest(session, intent);
     }
 
     private void maybePreconnectToRedirectEndpoint(
@@ -949,8 +962,33 @@ public class CustomTabsConnection {
                 Profile.getLastUsedProfile(), redirectEndpoint.toString());
     }
 
+    @VisibleForTesting
     @ParallelRequestStatus
-    private String maybeStartParallelRequest(CustomTabsSessionToken session, Intent intent) {
+    int handleParallelRequest(CustomTabsSessionToken session, Intent intent) {
+        int status = maybeStartParallelRequest(session, intent);
+        sParallelRequestStatusOnStart.record(status);
+
+        if (mLogRequests) {
+            Log.w(TAG, "handleParallelRequest() = " + PARALLEL_REQUEST_MESSAGES[status]);
+        }
+        return status;
+    }
+
+    /**
+     * Maybe starts a parallel request.
+     *
+     * @param session Calling context session.
+     * @param intent Incoming intent with the extras.
+     * @return Whether the request was started, with reason in case of failure.
+     */
+    @ParallelRequestStatus
+    private int maybeStartParallelRequest(CustomTabsSessionToken session, Intent intent) {
+        ThreadUtils.assertOnUiThread();
+
+        if (!intent.hasExtra(PARALLEL_REQUEST_URL_KEY)) return PARALLEL_REQUEST_NO_REQUEST;
+        if (!ChromeBrowserInitializer.getInstance(mContext).hasNativeInitializationCompleted()) {
+            return PARALLEL_REQUEST_FAILURE_NOT_INITIALIZED;
+        }
         if (!mClientManager.getAllowParallelRequestForSession(session)) {
             return PARALLEL_REQUEST_FAILURE_NOT_AUTHORIZED;
         }
@@ -961,7 +999,20 @@ public class CustomTabsConnection {
         if (url == null) return PARALLEL_REQUEST_FAILURE_INVALID_URL;
         if (referrer == null) return PARALLEL_REQUEST_FAILURE_INVALID_REFERRER;
         if (policy < 0 || policy > WebReferrerPolicy.LAST) policy = WebReferrerPolicy.DEFAULT;
-        return startParallelRequest(session, url, referrer, policy);
+
+        if (url.toString().equals("") || !isValid(url)) return PARALLEL_REQUEST_FAILURE_INVALID_URL;
+        if (!canDoParallelRequest(session, referrer)) {
+            return PARALLEL_REQUEST_FAILURE_INVALID_REFERRER_FOR_SESSION;
+        }
+
+        String urlString = url.toString();
+        String referrerString = referrer.toString();
+        nativeCreateAndStartDetachedResourceRequest(
+                Profile.getLastUsedProfile(), urlString, referrerString, policy);
+        if (mLogRequests) {
+            Log.w(TAG, "startParallelRequest(%s, %s, %d)", urlString, referrerString, policy);
+        }
+        return PARALLEL_REQUEST_SUCCESS;
     }
 
     /** @return Whether {@code session} can create a parallel request for a given
@@ -979,36 +1030,6 @@ public class CustomTabsConnection {
         return ChromeBrowserInitializer.getInstance(mContext).hasNativeInitializationCompleted()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PARALLEL_REQUEST)
                 && mClientManager.isFirstPartyOriginForSession(session, new Origin(referrer));
-    }
-
-    /**
-     * Starts a parallel request.
-     *
-     * @param session Calling context session.
-     * @param url URL to send the request to.
-     * @param referrer Referrer (and first party for cookies) to use.
-     * @param referrerPolicy Referrer policy for the parallel request.
-     * @return Whether the request was started, with reason in case of failure.
-     */
-    @VisibleForTesting
-    @ParallelRequestStatus
-    String startParallelRequest(CustomTabsSessionToken session, Uri url, Uri referrer,
-            @WebReferrerPolicy int referrerPolicy) {
-        ThreadUtils.assertOnUiThread();
-        if (url.toString().equals("") || !isValid(url)) return PARALLEL_REQUEST_FAILURE_INVALID_URL;
-        if (!canDoParallelRequest(session, referrer)) {
-            return PARALLEL_REQUEST_FAILURE_INVALID_REFERRER_FOR_SESSION;
-        }
-
-        String urlString = url.toString();
-        String referrerString = referrer.toString();
-        nativeCreateAndStartDetachedResourceRequest(
-                Profile.getLastUsedProfile(), urlString, referrerString, referrerPolicy);
-        if (mLogRequests) {
-            Log.w(TAG, "startParallelRequest(%s, %s, %d)", urlString, referrerString,
-                    referrerPolicy);
-        }
-        return PARALLEL_REQUEST_SUCCESS;
     }
 
     /** See {@link ClientManager#getReferrerForSession(CustomTabsSessionToken)} */
