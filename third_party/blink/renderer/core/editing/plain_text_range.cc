@@ -160,22 +160,22 @@ EphemeralRange PlainTextRange::CreateRangeFor(
       result_end = CreatePositionInTextRun(End() - doc_text_position,
                                            text_run_start_position,
                                            text_run_end_position);
-      doc_text_position += len;
-      break;
+
+      DCHECK(start_range_found);
+      return EphemeralRange(result_start.ToOffsetInAnchor(),
+                            result_end.ToOffsetInAnchor());
     }
 
     doc_text_position += len;
   }
 
+  // Start() is out of bounds
   if (!start_range_found)
     return EphemeralRange();
 
-  if (length() && End() > doc_text_position) {  // End() is out of bounds
-    result_end = text_run_end_position;
-  }
-
+  // End() is out of bounds
   return EphemeralRange(result_start.ToOffsetInAnchor(),
-                        result_end.ToOffsetInAnchor());
+                        text_run_end_position.ToOffsetInAnchor());
 }
 
 PlainTextRange PlainTextRange::Create(const ContainerNode& scope,
