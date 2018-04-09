@@ -586,15 +586,11 @@ void ServiceWorkerRegisterJob::ResolvePromise(
 void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
     ServiceWorkerRegistration* registration) {
   DCHECK(registration);
-  // TODO(falken): This should just use GetClientProviderHostIterator as
-  // we only need same-origin clients.
   for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context_->GetProviderHostIterator();
+           context_->GetClientProviderHostIterator(
+               registration->pattern().GetOrigin());
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (host->IsHostToRunningServiceWorker() || !host->is_execution_ready()) {
-      continue;
-    }
     if (!ServiceWorkerUtils::ScopeMatches(registration->pattern(),
                                           host->document_url())) {
       continue;

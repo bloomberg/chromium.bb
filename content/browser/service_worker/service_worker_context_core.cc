@@ -392,13 +392,6 @@ void ServiceWorkerContextCore::RemoveAllProviderHostsForProcess(
 }
 
 std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator>
-ServiceWorkerContextCore::GetProviderHostIterator() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return base::WrapUnique(new ProviderHostIterator(
-      providers_.get(), ProviderHostIterator::ProviderHostPredicate()));
-}
-
-std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator>
 ServiceWorkerContextCore::GetClientProviderHostIterator(const GURL& origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return base::WrapUnique(new ProviderHostIterator(
