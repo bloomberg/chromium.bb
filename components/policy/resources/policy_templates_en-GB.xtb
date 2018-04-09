@@ -35,7 +35,6 @@
 <translation id="1099282607296956954">Enable Site Isolation for every site</translation>
 <translation id="1117535567637097036">The protocol handlers set via this policy are not used when handling Android intents.</translation>
 <translation id="1118093128235245168">Allow sites to ask the user to grant access to a connected USB device</translation>
-<translation id="1122282995569868661">Shows the <ph name="PRODUCT_NAME" /> toolbar icon</translation>
 <translation id="1128903365609589950">Configures the directory that <ph name="PRODUCT_NAME" /> will use for storing cached files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided directory regardless of whether the user has specified the '--disk-cache-dir' flag or not. To avoid data loss or other unexpected errors this policy should not be set to a volume's root directory or to a directory used for other purposes, because <ph name="PRODUCT_NAME" /> manages its contents.
@@ -100,7 +99,6 @@
 <translation id="131353325527891113">Show usernames on login screen</translation>
 <translation id="1327466551276625742">Enable network configuration prompt when offline</translation>
 <translation id="1330145147221172764">Enable on-screen keyboard</translation>
-<translation id="1330985749576490863">Disables Google Drive over mobile connections in the <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="13356285923490863">Policy Name</translation>
 <translation id="1353966721814789986">Startup pages:</translation>
 <translation id="1359553908012294236">If this policy is set to true or not configured, <ph name="PRODUCT_NAME" /> will enable guest logins. Guest logins are <ph name="PRODUCT_NAME" /> profiles where all windows are in incognito mode.
@@ -164,7 +162,6 @@
 
           For more detailed examples, visit:
           <ph name="PROXY_HELP_URL" />.</translation>
-<translation id="1503487916067509762">Enables third-party software injection blocking</translation>
 <translation id="1504431521196476721">Remote Attestation</translation>
 <translation id="1509692106376861764">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 29.</translation>
 <translation id="1519337829779572350">This setting is deprecated, use SafeBrowsingExtendedReportingEnabled instead. Enabling or disabling SafeBrowsingExtendedReportingEnabled is equivalent to setting SafeBrowsingExtendedReportingOptInAllowed to False.
@@ -407,7 +404,6 @@
       If you set this policy, users cannot change or override it. However, users will still be able to enable/disable an accessibility on-screen keyboard which takes precedence over the virtual keyboard controlled by this policy. See the |VirtualKeyboardEnabled| policy for controlling the accessibility on-screen keyboard.
 
       If this policy is left unset, the on-screen keyboard is disabled initially but can be enabled by the user anytime. Heuristic rules may also be used to decide when to display the keyboard.</translation>
-<translation id="2278947183573212094">Allows media auto-play on a whitelist of URL patterns</translation>
 <translation id="228659285074633994">Specifies the length of time without user input after which a warning dialogue is shown when running on AC power.
 
           When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> shows a warning dialogue telling the user that the idle action is about to be taken.
@@ -508,7 +504,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this setting is left unset, the user can decide to use this function or not.
 
       This setting has been removed from <ph name="PRODUCT_NAME" /> 29 and higher versions.</translation>
-<translation id="2436445024487698630">Allows sign in to <ph name="PRODUCT_NAME" /></translation>
 <translation id="244317009688098048">Enable bailout keyboard shortcut for auto-login.
 
       If this policy is unset or set to True and a device-local account is configured for zero-delay auto-login, <ph name="PRODUCT_OS_NAME" /> will honour the keyboard shortcut Ctrl+Alt+S for bypassing auto-login and showing the login screen.
@@ -549,7 +544,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2529700525201305165">Restrict which users are allowed to sign in to <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Configure the list of force-installed apps and extensions</translation>
 <translation id="253135976343875019">Idle warning delay when running on AC power</translation>
-<translation id="2536283449105918306">Enables tab-under protection</translation>
 <translation id="2552966063069741410">Timezone</translation>
 <translation id="2562339630163277285">Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER" />, which will be replaced at query time by the text the user has entered so far.
 
@@ -595,7 +589,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is optional. If not set, the default will be used which is UTF-8.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
-<translation id="2682225790874070339">Disables Drive in the <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="268577405881275241">Enable the data compression proxy feature</translation>
 <translation id="2693108589792503178">Configure the change password URL.</translation>
 <translation id="2731627323327011390">Disable usage of <ph name="PRODUCT_OS_NAME" /> certificates to ARC-apps</translation>
@@ -806,7 +799,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google account.
 
       If this setting is disabled, users cannot enable the proxy, and the machine will not be allowed to share it's printers with <ph name="CLOUD_PRINT_NAME" />.</translation>
-<translation id="3297010562646015826">Enables ending processes in Task Manager</translation>
 <translation id="3307746730474515290">Controls which app/extension types are allowed to be installed and limits runtime access.
 
           This setting white-lists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME" /> and which hosts they can interact with. The value is a list of strings, each of which should be one of the following: 'extension', 'theme', 'user_script', 'hosted_app', 'legacy_packaged_app', 'platform_app'. See the <ph name="PRODUCT_NAME" /> extensions documentation for more information on these types.
@@ -1042,7 +1034,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="3963602271515417124">If true, remote attestation is allowed for the device and a certificate will automatically be generated and uploaded to the Device Management Server.
 
           If it is set to false, or if it is not set, no certificate will be generated and calls to the enterprise.platformKeys extension API will fail.</translation>
-<translation id="3964909636571393861">Allows access to a list of URLs</translation>
 <translation id="3965339130942650562">Timeout until idle user log-out is executed</translation>
 <translation id="3973371701361892765">Never auto-hide the shelf</translation>
 <translation id="3984028218719007910">Determines whether <ph name="PRODUCT_OS_NAME" /> keeps local account data after logout. If set to true, no persistent accounts are kept by <ph name="PRODUCT_OS_NAME" /> and all data from the user session will be discarded after logout. If this policy is set to false or not configured, the device may keep (encrypted) local user data.</translation>
@@ -1526,7 +1517,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is left not set, 'AskNotifications' will be used and the user will be able to change it.</translation>
 <translation id="538108065117008131">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the following content types.</translation>
-<translation id="5388730678841939057">Selects the strategy used to free up disk space during automatic clean-up</translation>
 <translation id="5392172595902933844">Information about the status of Android is sent back to the
       server.
 
@@ -1605,7 +1595,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Note that this is not recommended, as this may allow bypassing the nameConstraints extension that restricts the hostnames that a given certificate can be authorised for.
 
       If this policy is not set, or is set to false, server certificates that lack a subjectAlternativeName extension containing either a DNS name or IP address will not be trusted.</translation>
-<translation id="557658534286111200">Enables or disables bookmark editing</translation>
 <translation id="5586942249556966598">Do nothing</translation>
 <translation id="5630352020869108293">Restore the last session</translation>
 <translation id="5645779841392247734">Allow cookies on these sites</translation>
@@ -1622,7 +1611,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If <ph name="PRODUCT_NAME" /> is unable to obtain revocation status information, such certificates will be treated as revoked ('hard-fail').
 
       If this policy is not set or it is set to false then <ph name="PRODUCT_NAME" /> will use the existing online revocation checking settings.</translation>
-<translation id="572720239788271400">Enables component updates in <ph name="PRODUCT_NAME" /></translation>
 <translation id="5728154254076636808">Enable the creation of roaming copies for <ph name="PRODUCT_NAME" /> profile data</translation>
 <translation id="5732972008943405952">Import autofill form data from default browser on first run</translation>
 <translation id="5765780083710877561">Description:</translation>
@@ -1652,7 +1640,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       See https://developers.google.com/safe-browsing for more info on SafeBrowsing.
 
       This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
-<translation id="5795001131770861387">Enables HTTP/0.9 support on non-default ports</translation>
 <translation id="5809728392451418079">Set the display name for device-local accounts</translation>
 <translation id="5814301096961727113">Set the default state of spoken feedback on the login screen</translation>
 <translation id="5815129011704381141">Automatically reboot after update</translation>
@@ -1819,7 +1806,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6155936611791017817">Set default state of the large cursor on the login screen</translation>
 <translation id="6157537876488211233">Comma-separated list of proxy bypass rules</translation>
 <translation id="6158324314836466367">Enterprise web store name (deprecated)</translation>
-<translation id="6161405879872578475">Enables <ph name="PRODUCT_NAME" /></translation>
 <translation id="6181608880636987460">Allows you to set a list of URL patterns that specify sites which are not allowed to run the <ph name="FLASH_PLUGIN_NAME" /> plug-in.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.</translation>
@@ -2088,7 +2074,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7063895219334505671">Allow pop-ups on these sites</translation>
 <translation id="706669471845501145">Allow SITE to show desktop notifications?</translation>
 <translation id="7072208053150563108">Machine password change rate</translation>
-<translation id="7072406291414141328">Enables throttling network bandwidth</translation>
 <translation id="7074513465313721551">Configure the list of domains which Safe Browsing will trust. This means:
       Safe Browsing will not check for dangerous resources (e.g. phishing, malware or unwanted software) if their URLs match these domains.
       Safe Browsing's download protection service will not check downloads hosted on these domains.
@@ -2202,10 +2187,8 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is not set, automatic clean-up uses the default built-in strategy. Currently, it is the 'RemoveLRUIfDormant' strategy.</translation>
 <translation id="7336878834592315572">Keep cookies for the duration of the session.</translation>
-<translation id="733838170182967492">Allows media auto-play</translation>
 <translation id="7340034977315324840">Report device activity times</translation>
 <translation id="7343497214039883642">Enterprise printer configuration file for devices</translation>
-<translation id="7384999953864505698">Allows QUIC protocol</translation>
 <translation id="7417972229667085380">Percentage by which to scale the idle delay in presentation mode (deprecated)</translation>
 <translation id="7421483919690710988">Set media disk cache size in bytes</translation>
 <translation id="7424751532654212117">List of exceptions to the list of disabled plugins</translation>
@@ -2334,7 +2317,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="7781069478569868053">New Tab Page</translation>
 <translation id="7788511847830146438">Per Profile</translation>
-<translation id="7789637461480472766">Allows access to native CUPS printers</translation>
 <translation id="7801886189430766248">When this policy is set to true, Android app data is uploaded to Android Backup servers and restored from them upon app re-installations for compatible apps.
 
       When this policy is set to false, Android Backup Service will be switched off.
@@ -2393,7 +2375,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8044493735196713914">Report device boot mode</translation>
 <translation id="8050080920415773384">Native Printing</translation>
 <translation id="8059164285174960932">URL where remote access clients should obtain their authentication token</translation>
-<translation id="8073243368829195">Allows Smart Lock to be used</translation>
 <translation id="8099880303030573137">Idle delay when running on battery power</translation>
 <translation id="8102913158860568230">Default mediastream setting</translation>
 <translation id="8104962233214241919">Automatically select client certificates for these sites</translation>
@@ -2573,7 +2554,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       If the policy is unset or set to true, all users are allowed to use ARC (unless ARC is disabled by other means).
 
       Changes to the policy will only be applied while ARC is not running, e.g. while Chrome OS is starting.</translation>
-<translation id="8614804915612153606">Disables Auto Update</translation>
 <translation id="8631434304112909927">until version <ph name="UNTIL_VERSION" /></translation>
 <translation id="863319402127182273">For Android apps, this policy affects the built-in camera only. When this policy is set to true, the camera is disabled for all Android apps, with no exceptions.</translation>
 <translation id="8649763579836720255">Chrome OS devices can use remote attestation (Verified Access) to get a certificate issued by the Chrome OS CA that asserts that the device is eligible to play protected content. This process involves sending hardware endorsement information to the Chrome OS CA which uniquely identifies the device.
@@ -2612,7 +2592,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
           If you enable this setting, CNAME lookup will be skipped and the server name will be used as entered.
 
           If you disable this setting or leave it unset, the canonical name of the server will be determined via CNAME lookup.</translation>
-<translation id="87812015706645271">Requires that the name of the local user and the remote access host owner match</translation>
 <translation id="8782750230688364867">Specifies the percentage by which the screen dim delay is scaled when the device is in presentation mode.
 
           If this policy is set, it specifies the percentage by which the screen dim delay is scaled when the device is in presentation mode. When the screen dim delay is scaled, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.
@@ -2724,12 +2703,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="9096086085182305205">Authentication server whitelist</translation>
 <translation id="9098553063150791878">Policies for HTTP authentication</translation>
 <translation id="9105265795073104888">Only a subset of proxy configuration options are made available to Android apps. Android apps may voluntarily choose to use the proxy. You cannot force them to use a proxy.</translation>
-<translation id="9110615239151047025">Enables tab-under protection, which blocks navigations detected as tab-unders.
-
-      For an explanation on tab-unders, see https://www.chromestatus.com/features/5675755719622656.
-      If this policy is set to True, navigations which <ph name="PRODUCT_NAME" /> detects are tab-unders will be blocked.
-      If this policy is set to False, <ph name="PRODUCT_NAME" /> will allow sites to perform tab-under navigations.
-      By default, this policy is set to True.</translation>
 <translation id="9112727953998243860">Enterprise printer configuration file</translation>
 <translation id="9112897538922695510">Allows you to register a list of protocol handlers. This can only be a recommended policy. The property |protocol| should be set to the scheme such as 'mailto' and the property |url| should be set to the URL pattern of the application that handles the scheme. The pattern can include a '%s', which if present will be replaced by the handled URL.
 
@@ -2787,7 +2760,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="922540222991413931">Configure extension, app, and user script install sources</translation>
 <translation id="924557436754151212">Import saved passwords from default browser on first run</translation>
 <translation id="930930237275114205">Set <ph name="PRODUCT_FRAME_NAME" /> user data directory</translation>
-<translation id="934390688529359269">Enables force sign in for <ph name="PRODUCT_NAME" /></translation>
 <translation id="938916311528680351">Allows you to control whether virtual machines are allowed to run on Chrome OS.
 
       If the policy is set to True, the device is allowed to run virtual machines.

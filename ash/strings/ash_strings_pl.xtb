@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Nadal nie można zweryfikować Twojego hasła. Uwaga: jeśli ostatnio hasło było zmieniane, nowe hasło zostanie zastosowane, gdy się wylogujesz. Tu podaj stare hasło.</translation>
 <translation id="1677472565718498478">Pozostało <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adres IPv6: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">Administrator urządzenia może monitorować Twoją aktywność.</translation>
 <translation id="1734367976349034509">Tym urządzeniem zarządza firma</translation>
 <translation id="1746730358044914197">Metody wprowadzania zostały skonfigurowane przez administratora.</translation>
 <translation id="1747827819627189109">Klawiatura ekranowa włączona</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Przycisk akcji</translation>
 <translation id="1951012854035635156">Asystent</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Ustaw język</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Wyłącz</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="2675319268637823299">Administrator nie zezwolił na wielokrotne logowanie użytkownika <ph name="USER_EMAIL" />.
     Aby kontynuować, wszyscy użytkownicy muszą się wylogować.</translation>
+<translation id="2696763960464195425">Gdy się wylogujesz, Twoje dane zostaną usunięte. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Ustaw klawiaturę</translation>
 <translation id="2718395828230677721">Podświetlenie nocne</translation>
 <translation id="2727977024730340865">Podłączono ładowarkę o małej mocy. Ładowanie baterii może być nieprawidłowe.</translation>
 <translation id="2761704814324807722">Pasek stanu, godzina <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -270,6 +274,7 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="7098389117866926363">Urządzenie USB-C (lewy port z tyłu)</translation>
 <translation id="7131634465328662194">Nastąpi automatyczne wylogowanie.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
+<translation id="7165511658052620796">(TYMCZASOWO) Pokaż login interfejsu webui; jeśli jest używany, zgłoś błąd (crbug.com) lub opinię (Alt+Shift+I)</translation>
 <translation id="7168224885072002358">Powrót do wcześniejszej rozdzielczości za <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Tylny mikrofon</translation>
 <translation id="726276584504105859">Przeciągnij tutaj, by podzielić ekran</translation>
@@ -330,6 +335,7 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Podłączono ładowarkę o małej mocy</translation>
 <translation id="8734991477317290293">Klawiatura może próbować przechwycić naciskane klawisze</translation>
+<translation id="8809737090443522491">Wpisz nazwę aplikacji lub dokumentu</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Przenoszenie okien na inny pulpit może spowodować nieoczekiwane zachowanie.
 

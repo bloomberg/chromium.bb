@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Non è stato ancora possibile verificare la password. Nota: se l'hai modificata di recente, la nuova password verrà applicata quando esci dall'account. Utilizza qui la tua vecchia password.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> rimanenti</translation>
 <translation id="1698760176351776263">Indirizzo IPv6: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">L'amministratore del dispositivo potrebbe essere in grado di monitorare le tue attività.</translation>
 <translation id="1734367976349034509">Questo dispositivo è gestito dall'azienda</translation>
 <translation id="1746730358044914197">I metodi di immissione vengono configurati dall'amministratore.</translation>
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Pulsante Overflow</translation>
 <translation id="1951012854035635156">Assistente</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Imposta la lingua</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Spegni</translation>
 <translation id="2012624427112548395">CTRL + tasto per la ricerca + H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Invia</translation>
 <translation id="2675319268637823299">Un amministratore ha vietato l'accesso simultaneo per <ph name="USER_EMAIL" />.
     Per continuare, devono disconnettersi tutti gli utenti.</translation>
+<translation id="2696763960464195425">Le tue informazioni verranno rimosse all'uscita dall'account. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Imposta la tastiera</translation>
 <translation id="2718395828230677721">Luminosità notturna</translation>
 <translation id="2727977024730340865">Collegato a un caricabatterie a basso consumo. La carica della batteria potrebbe non essere affidabile.</translation>
 <translation id="2761704814324807722">Barra di stato, ora: <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -329,6 +333,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Caricabatterie a basso consumo collegato</translation>
 <translation id="8734991477317290293">Potrebbe essere un tentativo di rubare i tasti premuti</translation>
+<translation id="8809737090443522491">Digita il nome di un'app o un documento</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Lo spostamento delle finestre su un altro desktop potrebbe causare comportamenti imprevisti.
 

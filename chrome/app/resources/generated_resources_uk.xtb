@@ -1006,7 +1006,6 @@
 <translation id="2575247648642144396">Цей значок відображатиметься, якщо розширення зможе працювати на поточній сторінці. Запустіть розширення, натиснувши значок або комбінацію клавіш <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2575268751393592580">Не вдається знайти телефон. Переконайтеся, що ваш пристрій <ph name="DEVICE_TYPE" /> під’єднано до Wi-Fi або мобільної мережі. &lt;a&gt;Докладніше&lt;/a&gt;</translation>
 <translation id="257779572837908839">Налаштувати як Chromebox для відеоконференцій</translation>
-<translation id="2578500300664468063">Синхронізовано з обліковим записом користувача <ph name="FULL_NAME" /></translation>
 <translation id="2579575372772932244">Відновлення профілю, зачекайте…</translation>
 <translation id="2580889980133367162">Завжди дозволяти <ph name="HOST" /> завантажувати декілька файлів</translation>
 <translation id="2580924999637585241">Усього: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
@@ -1548,7 +1547,6 @@
 <translation id="3360297538363969800">Помилка друку. Перевірте принтер і повторіть спробу.</translation>
 <translation id="3364721542077212959">Інструменти стилуса</translation>
 <translation id="3365598184818502391">Використовуйте Ctrl або Alt</translation>
-<translation id="3367813778245106622">Увійдіть знову, щоб почати синхронізацію</translation>
 <translation id="3368922792935385530">Підключено</translation>
 <translation id="3369624026883419694">-...</translation>
 <translation id="337286756654493126">Читати з папок, які ви відкриваєте в програмі</translation>
@@ -2404,7 +2402,6 @@
 <translation id="479285515899735347">Схоже, пароль уже не дійсний. Поновіть його на іншому пристрої та повторіть спробу.</translation>
 <translation id="479536056609751218">Веб-сторінка, тільки HTML</translation>
 <translation id="479989351350248267">пошук</translation>
-<translation id="4800109022693378315">Синхронізовано з</translation>
 <translation id="4801448226354548035">Сховати облікові записи</translation>
 <translation id="4801512016965057443">Дозволити роумінг мобільних даних</translation>
 <translation id="4801956050125744859">Залишити обидві версії</translation>
@@ -2692,6 +2689,7 @@
 <translation id="5238369540257804368">Діапазони</translation>
 <translation id="5241128660650683457">Переглядати всі ваші дані на веб-сайтах, які ви відвідуєте</translation>
 <translation id="5242724311594467048">Увімкнути розширення "<ph name="EXTENSION_NAME" />"?</translation>
+<translation id="5244474230056479698">Синхронізація з обліковим записом <ph name="EMAIL" /></translation>
 <translation id="5246282308050205996">Відбулося аварійне завершення роботи програми <ph name="APP_NAME" />. Натисніть цю спливаючу підказку, щоб перезапустити програму.</translation>
 <translation id="5249624017678798539">Завантаження не закінчилося через аварійне завершення роботи веб-переглядача.</translation>
 <translation id="5250372599208556903"><ph name="SEARCH_ENGINE_NAME" /> використовує ваші геодані, щоб надавати локальний вміст. Це можна змінити в меню "<ph name="SETTINGS_LINK" />".</translation>

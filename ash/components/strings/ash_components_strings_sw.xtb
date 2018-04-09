@@ -38,6 +38,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, kisha <ph name="TAB" /> au <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">Hifadhi ukurasa wa sasa wa wavuti uwe alamisho</translation>
 <translation id="2750942583782703988">Pakia upya ukurasa wa sasa</translation>
+<translation id="2764005613199379871">Angazia sehemu ya anwani ya utafutaji</translation>
 <translation id="2789868185375229787">Sogeza ukurasa mbali</translation>
 <translation id="2804480015716812239">Bonyeza <ph name="ALT" /> na ubofye kiungo</translation>
 <translation id="2830827904629746450">Tumia dirisha likiwa upande wa kulia</translation>
@@ -49,6 +50,7 @@
 <translation id="3105917916468784889">Piga picha ya skrini</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Lenga upau anwani</translation>
+<translation id="3256109297135787951">Acha kungazia kipengee kwenye rafu yako</translation>
 <translation id="3288816184963444640">Funga dirisha la sasa</translation>
 <translation id="3407560819924487926">Fungua kidhibiti cha shughuli kwenye Chrome</translation>
 <translation id="3422679037938588196">Rudi kwenye utafutaji wa awali unaolingana na utafutaji wako</translation>
@@ -62,6 +64,7 @@
 <translation id="3720939646656082033">Fungua kiungo katika kichupo kipya na utumie kichupo kipya</translation>
 <translation id="3725795051337497754">Funga kichupo cha sasa</translation>
 <translation id="3751033133896282964">Tendua kitendo chako cha mwisho</translation>
+<translation id="3792178297143798024">Fungua kipengee kilichoangaziwa kwenye rafu yako</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 hadi 8</translation>
 <translation id="3837047332182291558">Ongeza mwangaza wa kibodi (katika kibodi zenye mwanga wa nyuma pekee)</translation>
 <translation id="3976863468609830880">Bofya aikoni ya mwisho kwenye rafu yako</translation>
@@ -133,10 +136,12 @@
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, kisha <ph name="SPACE" /> au <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Fungua faili katika kivinjari</translation>
 <translation id="7917881398263220094">Acha kupakia ukurasa wako wa sasa</translation>
+<translation id="7952165122793773711">Nenda kwenye vichupo vya 1 hadi 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> au <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Futa data ya kuvinjari</translation>
 <translation id="8130528849632411619">Nenda kwenye mwanzo wa hati</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> au <ph name="E" /></translation>
+<translation id="8232835244134740473">Badilisha ulengaji kati ya: Eneo la hali (sehemu ambapo picha ya akaunti huonekana) Kifungua Programu, Sehemu ya Anwani, Sehemu ya Alamisho (kama inaonekana), ukurasa wa wavuti ambao umefunguka na Upau wa Vipakuliwa (kama unaonekana).</translation>
 <translation id="8234414138295101081">Zungusha skrini kwa digrii 90</translation>
 <translation id="836869401750819675">Fungua ukurasa wa Vipakuliwa</translation>
 <translation id="8388247778047144397">Buruta kiungo kwenye sehemu tupu katika ukanda wa vichupo</translation>

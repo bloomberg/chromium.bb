@@ -34,7 +34,6 @@
 <translation id="1096105751829466145">デフォルトの検索プロバイダ</translation>
 <translation id="1099282607296956954">すべてのサイトに対してサイト分離を有効にする</translation>
 <translation id="1117535567637097036">このポリシーで設定したプロトコル ハンドラは、Android インテントの処理には使用されません。</translation>
-<translation id="1122282995569868661"><ph name="PRODUCT_NAME" /> ツールバー アイコンを表示する</translation>
 <translation id="1128903365609589950"><ph name="PRODUCT_NAME" /> でキャッシュしたファイルをディスクに保存する際に使用するディレクトリを設定します。
 
       このポリシーを設定した場合、<ph name="PRODUCT_NAME" /> では指定されたディレクトリを使用し、ユーザーが「--disk-cache-dir」フラグを指定しているかどうかは無視されます。データの消失やその他の予期しないエラーを避けるため、ボリュームのルート ディレクトリや他の用途で使用されてるディレクトリは指定しないでください。これは、<ph name="PRODUCT_NAME" /> によってディレクトリのコンテンツが管理されるためです。
@@ -95,7 +94,6 @@
 <translation id="131353325527891113">ログイン画面でユーザー名を表示する</translation>
 <translation id="1327466551276625742">オフライン時のネットワーク設定メッセージの表示を有効にする</translation>
 <translation id="1330145147221172764">画面キーボードを有効にする</translation>
-<translation id="1330985749576490863">携帯回線接続時に <ph name="PRODUCT_OS_NAME" /> ファイル アプリでの Google ドライブの同期を無効にする</translation>
 <translation id="13356285923490863">ポリシー名</translation>
 <translation id="1353966721814789986">起動ページ</translation>
 <translation id="1359553908012294236">このポリシーが true に設定されているか未設定の場合、<ph name="PRODUCT_NAME" /> ではゲストモードでのログインが可能です。ゲストモードでのログインには、すべてのウィンドウをシークレット モードで表示する <ph name="PRODUCT_NAME" /> プロフィールが適用されます。
@@ -159,7 +157,6 @@
 
          詳しい例については、次の URL をご覧ください。
          <ph name="PROXY_HELP_URL" /></translation>
-<translation id="1503487916067509762">第三者ソフトウェアからのコードの挿入をブロックする</translation>
 <translation id="1504431521196476721">リモート認証</translation>
 <translation id="1509692106376861764">このポリシーは <ph name="PRODUCT_NAME" /> バージョン 29 で廃止されました。</translation>
 <translation id="1519337829779572350">この設定はサポートが終了しています。代わりに SafeBrowsingExtendedReportingEnabled を使用してください。SafeBrowsingExtendedReportingEnabled を有効または無効にすると、SafeBrowsingExtendedReportingOptInAllowed を false に設定したときと同じ動作になります。
@@ -471,7 +468,6 @@
       この設定が未設定の場合は、この機能を使用するかどうかをユーザーが選択できます。
 
       この設定は、<ph name="PRODUCT_NAME" /> 29 以降のバージョンでは削除されています。</translation>
-<translation id="2436445024487698630"><ph name="PRODUCT_NAME" /> へのログインを許可する</translation>
 <translation id="244317009688098048">自動ログイン回避用のキーボード ショートカットを有効にします。
 
       このポリシーが未設定の場合、または True に設定され、デバイスのローカル アカウントがゼロ遅延の自動ログイン用に設定されている場合、<ph name="PRODUCT_OS_NAME" /> では自動ログインを回避してログイン画面を表示するキーボード ショートカットの Ctrl+Alt+S を有効にします。
@@ -508,7 +504,6 @@
 <translation id="2529700525201305165"><ph name="PRODUCT_NAME" /> へのログインが許可されるユーザーを制限する</translation>
 <translation id="2529880111512635313">強制インストールするアプリと拡張機能のリストを設定します</translation>
 <translation id="253135976343875019">アイドル警告が表示されるまでの時間（AC 電源での実行時）</translation>
-<translation id="2536283449105918306">タブアンダーの保護を有効にする</translation>
 <translation id="2552966063069741410">タイムゾーン</translation>
 <translation id="2562339630163277285">インスタント検索の結果表示に使用する検索エンジンの URL を指定します。この URL には <ph name="SEARCH_TERM_MARKER" /> という文字列を含めます。この文字列は、検索時にユーザーが入力したテキストに置き換えられます。
 
@@ -548,7 +543,6 @@
           このオプションは、「DefaultSearchProviderEnabled」ポリシーが有効な場合に設定が必要で、適用されるのはその場合のみとなります。</translation>
 <translation id="2660846099862559570">プロキシを使用しない</translation>
 <translation id="267596348720209223">検索プロバイダによってサポートされる文字エンコードを指定します。エンコードは、UTF-8、GB2312、ISO-8859-1 などのコード ページ名であり、指定された順序で適用されます。このポリシーは省略可能です。未設定の場合、デフォルトでは UTF-8 が使用されます。このポリシーは、「DefaultSearchProviderEnabled」ポリシーが有効な場合にのみ適用されます。</translation>
-<translation id="2682225790874070339"><ph name="PRODUCT_OS_NAME" /> ファイル アプリでのドライブの同期を無効にする</translation>
 <translation id="268577405881275241">データ圧縮プロキシ機能を有効にする</translation>
 <translation id="2693108589792503178">パスワード変更 URL を設定する。</translation>
 <translation id="2731627323327011390">ARC アプリで <ph name="PRODUCT_OS_NAME" /> の証明書を使用できないようにする</translation>
@@ -746,7 +740,6 @@
       この設定が有効な場合または未設定の場合、ユーザーは Google アカウントでの認証によってクラウド プリント プロキシを有効にできます。
 
       この設定が無効な場合、ユーザーはプロキシを有効にできず、パソコンはプリンタを <ph name="CLOUD_PRINT_NAME" /> と共有できません。</translation>
-<translation id="3297010562646015826">タスク マネージャでプロセスを終了できるようにする</translation>
 <translation id="3307746730474515290">インストールを許可するアプリや拡張機能のタイプを指定し、ランタイム アクセスを制限します。
 
           この設定では、<ph name="PRODUCT_NAME" /> にインストールできる拡張機能やアプリのタイプと、その通信先のホストをホワイトリスト登録します。値は文字列のリストで、各項目は「extension」、「theme」、「user_script」、「hosted_app」、「legacy_packaged_app」、「platform_app」のいずれかとなります。これらのタイプについて詳しくは、<ph name="PRODUCT_NAME" /> 拡張機能のドキュメントをご覧ください。
@@ -970,7 +963,6 @@
 <translation id="3963602271515417124">このポリシーを true に設定した場合は、このデバイスでのリモート認証が可能になり、証明書が自動的に生成されてデバイス管理サーバーにアップロードされます。
 
           このポリシーを false に設定するか未設定のままにした場合、証明書は生成されず、enterprise.platformKeys 拡張機能 API の呼び出しは失敗します。</translation>
-<translation id="3964909636571393861">URL のリストへのアクセスを許可する</translation>
 <translation id="3965339130942650562">アイドル状態のユーザーがログアウトされるまでのタイムアウト</translation>
 <translation id="3973371701361892765">シェルフを自動的に非表示にしない</translation>
 <translation id="3984028218719007910">ログアウト後に <ph name="PRODUCT_OS_NAME" /> がローカル アカウントのデータを保持するかどうかを指定します。true に設定した場合、<ph name="PRODUCT_OS_NAME" /> は永続的アカウントを保持していないため、ユーザー セッションのすべてのデータがログアウト後に破棄されます。このポリシーを false に設定した場合または未設定の場合、端末は（暗号化された）ローカル ユーザー データを保持できます。</translation>
@@ -1414,7 +1406,6 @@
           true に設定されている場合や未設定の場合、このユーザーは監視対象ユーザーを作成し管理できます。</translation>
 <translation id="5378985487213287085">ウェブサイトに対してデスクトップ通知の表示を許可するかどうかを設定できます。デスクトップ通知の表示は、デフォルトで許可または禁止することができます。また、ウェブサイトでデスクトップ通知が表示される前にユーザーが毎回確認することもできます。このポリシーが未設定の場合、「AskNotifications」が使用され、ユーザーはこの設定を変更できます。</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME" /> に対して次のコンテンツ タイプの処理を許可する</translation>
-<translation id="5388730678841939057">自動クリーンアップ時にディスクの空き容量を増やす方法を選択する（サポート終了）</translation>
 <translation id="5392172595902933844">Android のステータスに関する情報をサーバーに
       返します。
 
@@ -1486,7 +1477,6 @@
       この場合、nameConstraints 拡張による制限（証明書を受け入れるホスト名の制限）が適用されなくなる可能性があるため、有効化はおすすめしません。
 
       このポリシーが未設定のままか false に設定されている場合、subjectAlternativeName 拡張がなく DNS 名または IP アドレスのいずれかを含むサーバー証明書は信頼されません。</translation>
-<translation id="557658534286111200">ブックマークの編集を有効または無効にする</translation>
 <translation id="5586942249556966598">何もしない</translation>
 <translation id="5630352020869108293">最後のセッションを復元する</translation>
 <translation id="5645779841392247734">これらのサイトの Cookie を許可する</translation>
@@ -1503,7 +1493,6 @@
       <ph name="PRODUCT_NAME" /> が失効のステータス情報を取得できない場合、該当の証明書は失効したものとして扱われます（強制エラー）。
 
       このポリシーが設定されていないか false に設定されている場合、<ph name="PRODUCT_NAME" /> は既存のオンライン失効確認設定を使用します。</translation>
-<translation id="572720239788271400"><ph name="PRODUCT_NAME" /> でコンポーネントの更新を有効にする</translation>
 <translation id="5728154254076636808"><ph name="PRODUCT_NAME" /> プロフィール データのローミング コピーを作成できるようにする</translation>
 <translation id="5732972008943405952">初回実行時にデフォルトのブラウザから自動入力フォームのデータをインポートする</translation>
 <translation id="5765780083710877561">説明:</translation>
@@ -1533,7 +1522,6 @@
       セーフ ブラウジングについて詳しくは、https://developers.google.com/safe-browsing をご覧ください。
 
       このポリシーは、<ph name="MS_AD_NAME" /> ドメインに登録されていない Windows インスタンスでは使用できません。</translation>
-<translation id="5795001131770861387">デフォルト以外のポートで HTTP/0.9 サポートを有効にする</translation>
 <translation id="5809728392451418079">デバイスのローカル アカウントの表示名を設定する</translation>
 <translation id="5814301096961727113">ログイン画面での音声フィードバックのデフォルト状態を設定する</translation>
 <translation id="5815129011704381141">更新後に自動再起動</translation>
@@ -1692,7 +1680,6 @@
 <translation id="6155936611791017817">ログイン画面での大きいカーソルのデフォルト状態を設定する</translation>
 <translation id="6157537876488211233">プロキシ バイパス ルールのカンマ区切りリスト</translation>
 <translation id="6158324314836466367">エンタープライズ ウェブストア名（サポート終了）</translation>
-<translation id="6161405879872578475"><ph name="PRODUCT_NAME" /> を有効にする</translation>
 <translation id="6181608880636987460"><ph name="FLASH_PLUGIN_NAME" /> プラグインの実行を許可しないサイトを表す URL パターンのリストを設定します。
 
           このポリシーが未設定の場合は、すべてのサイトでグローバルなデフォルト値（「DefaultPluginsSetting」ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。</translation>
@@ -1941,7 +1928,6 @@
 <translation id="7063895219334505671">これらのサイトのポップアップを許可する</translation>
 <translation id="706669471845501145">サイトに対してデスクトップ通知の表示を許可する</translation>
 <translation id="7072208053150563108">パソコンのパスワードの変更頻度</translation>
-<translation id="7072406291414141328">ネットワークの帯域幅制限を有効にする</translation>
 <translation id="7074513465313721551">セーフ ブラウジングで信頼するドメインのリストを設定します。動作は次のようになります。
       URL が指定ドメインと一致する場合、セーフ ブラウジングでは危険なリソース（フィッシング、不正なソフトウェア、迷惑ソフトウェアなど）の確認は行われません。
       セーフ ブラウジングのダウンロード保護サービスでは、指定ドメインでホストされているダウンロードは確認されません。
@@ -2053,10 +2039,8 @@
 
       このポリシーが設定されていない場合、自動クリーンアップは組み込みのデフォルト設定を使用します。現在、この設定は「RemoveLRUIfDormant」です。</translation>
 <translation id="7336878834592315572">セッションの継続中は Cookie を保存する</translation>
-<translation id="733838170182967492">メディアの自動再生を許可する</translation>
 <translation id="7340034977315324840">デバイス操作時間を報告する</translation>
 <translation id="7343497214039883642">デバイスの企業プリンタ設定ファイル</translation>
-<translation id="7384999953864505698">QUIC プロトコルを許可する</translation>
 <translation id="7417972229667085380">プレゼンテーション モードでのアイドル時間に掛ける倍率（サポート終了）</translation>
 <translation id="7421483919690710988">メディア ディスク キャッシュ サイズをバイト単位で設定する</translation>
 <translation id="7424751532654212117">無効なプラグインのリストに対する例外のリスト</translation>
@@ -2230,7 +2214,6 @@
 <translation id="8044493735196713914">デバイス起動モードを報告する</translation>
 <translation id="8050080920415773384">ネイティブ印刷</translation>
 <translation id="8059164285174960932">リモート アクセス クライアントが認証トークンを取得する URL</translation>
-<translation id="8073243368829195">Smart Lock の使用を許可する</translation>
 <translation id="8099880303030573137">アイドル状態になるまでの時間（バッテリー電源での実行時）</translation>
 <translation id="8102913158860568230">デフォルトのメディアストリームの設定</translation>
 <translation id="8104962233214241919">これらのサイトのクライアント証明書を自動的に選択する</translation>
@@ -2410,7 +2393,6 @@
       このポリシーが未設定のままの場合、または true に設定されている場合は、すべてのユーザーが ARC を使用できます（ARC が他の方法で無効になっている場合はこの限りではありません）。
 
       このポリシーに加えた変更は、ARC が実行されていないとき（例: Chrome OS の起動時）にのみ適用されます。</translation>
-<translation id="8614804915612153606">自動更新を無効にする</translation>
 <translation id="8631434304112909927">バージョン <ph name="UNTIL_VERSION" /> まで</translation>
 <translation id="863319402127182273">Android アプリに対しては、このポリシーは内蔵カメラにのみ適用されます。このポリシーを true に設定した場合、すべての Android アプリでは例外なくカメラが無効になります。</translation>
 <translation id="8649763579836720255">Chrome OS デバイスは、Chrome OS CA（デバイスが保護コンテンツを再生可能であることを証明）によって発行される証明書を取得するため、リモート認証（検証済みアクセス）を使用できます。これには、デバイスを特定するハードウェア署名情報を Chrome OS CA に送信する処理も含まれます。
@@ -2441,7 +2423,6 @@
       この設定が無効な場合、閲覧とダウンロードの履歴は削除できません。</translation>
 <translation id="8759829385824155666">許可されている Kerberos 暗号化タイプ</translation>
 <translation id="8764119899999036911">標準の DNS 名と入力された元の名前のうちどちらを基準にして Kerberos SPN を生成するかを指定します。この設定を有効にすると CNAME 検索がスキップされ、入力されたサーバー名が使用されます。この設定を無効にするか未設定の場合、サーバーの標準名は CNAME 検索によって決まります。</translation>
-<translation id="87812015706645271">ローカル ユーザーの名前とリモート アクセス ホストの所有者が一致していることを要件とする</translation>
 <translation id="8782750230688364867">画面を暗くするまでの時間に掛ける倍率を指定します。これは、デバイスがプレゼンテーション モードのときに使用されます。
 
           このポリシーが設定されている場合は、デバイスがプレゼンテーション モードのときに、ポリシーで指定された倍率が画面を暗くするまでの時間に掛けられます。画面を暗くするまでの時間が変更されるときは、画面の電源オフまでの時間、画面ロックまでの時間、およびアイドル時間も調整されます。これは、画面を暗くするまでの時間との差を当初の設定どおりに維持するためです。
@@ -2550,12 +2531,6 @@
 <translation id="9096086085182305205">認証サーバーのホワイトリスト</translation>
 <translation id="9098553063150791878">HTTP 認証のポリシー</translation>
 <translation id="9105265795073104888">Android アプリではプロキシ設定オプションの一部のみを使用できます。プロキシを使用するかどうかは Android アプリ側の選択となります。Android アプリにプロキシの使用を強制することはできません。</translation>
-<translation id="9110615239151047025">タブアンダーの保護を有効にします。この場合、タブアンダーとして検出された操作がブロックされます。
-
-      タブアンダーについては、https://www.chromestatus.com/features/5675755719622656 をご覧ください。
-      このポリシーが true に設定されている場合は、<ph name="PRODUCT_NAME" /> によりタブアンダーとして検出された操作がブロックされます。
-      このポリシーが false に設定されている場合、<ph name="PRODUCT_NAME" /> ではサイトによるタブアンダー操作の実行が許可されます。
-      デフォルトでは、このポリシーは true に設定されます。</translation>
 <translation id="9112727953998243860">企業プリンタの設定ファイル</translation>
 <translation id="9112897538922695510">プロトコル ハンドラのリストを登録できます。これはあくまでも推奨のポリシーです。プロパティ |protocol| には「mailto」などのスキームを設定し、プロパティ |url| にはこのスキームを処理するアプリケーションの URL パターンを設定します。このパターンに「%s」を含めて、処理された URL に置き換えることもできます。
 
@@ -2597,7 +2572,6 @@
 <translation id="922540222991413931">拡張機能、アプリ、ユーザー スクリプトのインストール ソースを設定する</translation>
 <translation id="924557436754151212">初回実行時にデフォルトのブラウザから保存したパスワードをインポートする</translation>
 <translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME" /> のユーザー データ ディレクトリを設定する</translation>
-<translation id="934390688529359269"><ph name="PRODUCT_NAME" /> への強制ログインを有効にする</translation>
 <translation id="938916311528680351">Chrome OS で仮想マシンを実行できるかどうかを制御します。
 
       このポリシーを true に設定した場合、端末では仮想マシンを実行できます。

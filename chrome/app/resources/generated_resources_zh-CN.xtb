@@ -1003,7 +1003,6 @@
 <translation id="2575247648642144396">仅当此扩展程序能够对当前网页采取操作时，该图标才会显示。要使用此扩展程序，请点击该图标或按 <ph name="EXTENSION_SHORTCUT" />。</translation>
 <translation id="2575268751393592580">找不到您的手机，请确保您的 <ph name="DEVICE_TYPE" /> 已连接到 Wi-Fi 或移动网络。&lt;a&gt;了解详情&lt;/a&gt;</translation>
 <translation id="257779572837908839">设为 Chromebox 会易设备</translation>
-<translation id="2578500300664468063">已以<ph name="FULL_NAME" />的身份同步</translation>
 <translation id="2579575372772932244">正在重新创建个人资料，请稍候…</translation>
 <translation id="2580889980133367162">始终允许 <ph name="HOST" /> 下载多个文件</translation>
 <translation id="2580924999637585241">总计：<ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
@@ -1542,7 +1541,6 @@
 <translation id="3360297538363969800">打印失败。请检查您的打印机，然后重试。</translation>
 <translation id="3364721542077212959">触控笔工具</translation>
 <translation id="3365598184818502391">使用 Ctrl 键或 Alt 键</translation>
-<translation id="3367813778245106622">重新登录以开始同步</translation>
 <translation id="3368922792935385530">已连接</translation>
 <translation id="3369624026883419694">正在解析主机...</translation>
 <translation id="337286756654493126">读取您在该应用中打开的文件夹</translation>
@@ -2397,7 +2395,6 @@
 <translation id="479285515899735347">糟糕！您的密码好像已过期。请在另一台机器上更新密码，然后重试。</translation>
 <translation id="479536056609751218">网页，仅 HTML</translation>
 <translation id="479989351350248267">搜索</translation>
-<translation id="4800109022693378315">已同步到</translation>
 <translation id="4801448226354548035">隐藏帐号</translation>
 <translation id="4801512016965057443">允许移动数据漫游</translation>
 <translation id="4801956050125744859">保留两种版本</translation>
@@ -2684,6 +2681,7 @@
 <translation id="5238369540257804368">范围</translation>
 <translation id="5241128660650683457">读取您在访问的网站上的所有数据</translation>
 <translation id="5242724311594467048">要启用“<ph name="EXTENSION_NAME" />”吗？</translation>
+<translation id="5244474230056479698">同步到 <ph name="EMAIL" /></translation>
 <translation id="5246282308050205996">“<ph name="APP_NAME" />”崩溃了。点击此信息框，以重启该应用。</translation>
 <translation id="5249624017678798539">浏览器崩溃了，下载还未完成。</translation>
 <translation id="5250372599208556903"><ph name="SEARCH_ENGINE_NAME" /> 会使用您的位置信息为您提供本地内容。您可以在<ph name="SETTINGS_LINK" />中更改此设置。</translation>

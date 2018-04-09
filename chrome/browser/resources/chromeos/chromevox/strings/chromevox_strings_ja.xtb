@@ -39,7 +39,7 @@
 <translation id="1286609444451033486">検索+スペースキーで切り替えます。</translation>
 <translation id="1319608975892113573">前の引用箇所はありません。</translation>
 <translation id="1321576897702511272">ChromeVox ヘルプを表示しない</translation>
-<translation id="1331702245475014624"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
+<translation id="1331702245475014624"><ph name="TOTAL" /> 分 の <ph name="INDEX" /></translation>
 <translation id="1334095593597963605">文字と単語の読み上げ</translation>
 <translation id="1339428534620983148">表の前の列</translation>
 <translation id="1342835525016946179">記事</translation>

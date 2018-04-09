@@ -1007,7 +1007,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="2575247648642144396">Ikona bo vidna, če lahko razširitev deluje na trenutni strani. Razširitev uporabite tako, da kliknete ikono ali pritisnete <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2575268751393592580">Vašega telefona ni mogoče najti. Naprava <ph name="DEVICE_TYPE" /> mora biti povezana z omrežjem Wi-Fi ali mobilnim omrežjem. &lt;a&gt;Več o tem&lt;/a&gt;</translation>
 <translation id="257779572837908839">Nastavitev kot Chromebox za videokonference</translation>
-<translation id="2578500300664468063">Sinhroniziran kot <ph name="FULL_NAME" /></translation>
 <translation id="2579575372772932244">Vnovično ustvarjanje profila, počakajte ...</translation>
 <translation id="2580889980133367162">Gostitelju <ph name="HOST" /> vedno dovoli prenos več datotek</translation>
 <translation id="2580924999637585241">Skupaj: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
@@ -1549,7 +1548,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="3360297538363969800">Tiskanje ni uspelo. Preverite tiskalnik in poskusite znova.</translation>
 <translation id="3364721542077212959">Orodja pisala</translation>
 <translation id="3365598184818502391">Uporabite Ctrl ali Alt</translation>
-<translation id="3367813778245106622">Prijavite se znova, če želite začeti sinhronizacijo</translation>
 <translation id="3368922792935385530">Povezano</translation>
 <translation id="3369624026883419694">Razrešujem gostitelja ...</translation>
 <translation id="337286756654493126">Branje map, ki jih odprete v aplikaciji</translation>
@@ -2405,7 +2403,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="479285515899735347">Ojoj. Videti je, da je vaše geslo poteklo. Obnovite ga v drugem računalniku in poskusite znova.</translation>
 <translation id="479536056609751218">Spletna stran, samo HTML</translation>
 <translation id="479989351350248267">search</translation>
-<translation id="4800109022693378315">Sinhroniziranje z</translation>
 <translation id="4801448226354548035">Skrij račune</translation>
 <translation id="4801512016965057443">Dovoli mobilno podatkovno gostovanje</translation>
 <translation id="4801956050125744859">Obdrži obe</translation>
@@ -2693,6 +2690,7 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="5238369540257804368">Obsegi</translation>
 <translation id="5241128660650683457">Branje vseh vaših podatkov na spletnih mestih, ki jih obiščete</translation>
 <translation id="5242724311594467048">Ali želite omogočiti »<ph name="EXTENSION_NAME" />«?</translation>
+<translation id="5244474230056479698">Syncing to <ph name="EMAIL" /></translation>
 <translation id="5246282308050205996">Program <ph name="APP_NAME" /> se je zrušil. Kliknite ta oblaček, da ga znova zaženete.</translation>
 <translation id="5249624017678798539">Brskalnik se je sesul pred koncem prenosa.</translation>
 <translation id="5250372599208556903"><ph name="SEARCH_ENGINE_NAME" /> uporablja lokacijo za zagotavljanje lokalne vsebine. To lahko spremenite tukaj: <ph name="SETTINGS_LINK" />.</translation>

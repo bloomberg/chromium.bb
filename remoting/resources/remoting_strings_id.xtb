@@ -3,9 +3,6 @@
 <translationbundle lang="id">
 <translation id="1002108253973310084">Versi protokol yang tidak kompatibel terdeteksi. Pastikan Anda memasang software versi terbaru di kedua komputer dan coba lagi.</translation>
 <translation id="1050693411695664090">Buruk</translation>
-<translation id="1059802506829356230">• Tampilan dan nuansa baru.
-• Performa, respons, dan keandalan yang disempurnakan.
-• Dukungan untuk memutar audio dari komputer Windows atau Linux.</translation>
 <translation id="1152528166145813711">Pilih…</translation>
 <translation id="1199593201721843963">Nonaktifkan sambungan jarak jauh</translation>
 <translation id="1291443878853470558">Anda harus mengaktifkan sambungan jarak jauh jika ingin menggunakan Chromoting untuk mengakses komputer ini.</translation>
@@ -143,6 +140,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="4145029455188493639">Login sebagai <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Beberapa komponen yang diperlukan tidak ada. Pastikan Anda memasang software versi terbaru dan coba lagi.</translation>
 <translation id="4156740505453712750">Untuk melindungi akses ke komputer ini, gunakan PIN <ph name="BOLD_START" />setidaknya enam digit<ph name="BOLD_END" />. PIN ini akan diperlukan saat menyambung dari lokasi lainnya.</translation>
+<translation id="4169432154993690151">Untuk memilih gambar profil, izinkan Chrome Desktop Jarak Jauh mengakses kamera Anda</translation>
 <translation id="4176825807642096119">Kode akses</translation>
 <translation id="4207623512727273241">Jalankan pemasang sebelum melanjutkan.</translation>
 <translation id="4227991223508142681">Utilitas Penyediaan Host</translation>
@@ -260,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">Dari</translation>
 <translation id="677755392401385740">Host dimulai untuk pengguna: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Lihat/edit</translation>
+<translation id="6913710942997637770">Untuk memilih gambar profil, izinkan Chrome Desktop Jarak Jauh mengakses foto Anda</translation>
 <translation id="6930242544192836755">Durasi</translation>
 <translation id="6939719207673461467">Tunjukkan/sembunyikan keyboard.</translation>
 <translation id="6944854424004126054">Pulihkan jendela</translation>

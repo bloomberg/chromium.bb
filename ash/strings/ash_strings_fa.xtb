@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">متأسفیم، گذرواژه‌تان هنوز تأیید نشده است. توجه: اگر به‌تازگی گذرواژه‌تان را تغییر داده‌اید، گذرواژه جدید شما هنگامی‌که از سیستم خارج شوید، اعمال می‌شود؛ لطفاً اینجا از گذرواژه قدیمی خود استفاده کنید.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> باقی‌مانده</translation>
 <translation id="1698760176351776263">‏نشانی IPv6: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">سرپرست دستگاه ممکن است بر فعالیتتان نظارت داشته باشد.</translation>
 <translation id="1734367976349034509">این دستگاه توسط سازمانی مدیریت می‌شود</translation>
 <translation id="1746730358044914197">روش‌های ورودی توسط سرپرستتان پیکربندی می‌شوند.</translation>
 <translation id="1747827819627189109">صفحه‌کلید روی صفحه فعال شد</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">دکمه سرریز</translation>
 <translation id="1951012854035635156">دستیار</translation>
 <translation id="1957803754585243749">۰ درجه</translation>
+<translation id="1957958912175573503">تنظیم زبان</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" /> (‏USB)</translation>
 <translation id="1995660704900986789">خاموش کردن</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">ارائه</translation>
 <translation id="2675319268637823299">یکی از سرپرست‌ها ورود چندگانه به سیستم را برای <ph name="USER_EMAIL" /> غیرمجاز کرده است.
     برای ادامه دادن، همه کاربران باید از سیستم خارج شوند.</translation>
+<translation id="2696763960464195425">هنگامی‌که از سیستم خارج شوید، اطلاعاتتان حذف خواهد شد. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">تنظیم صفحه‌کلید</translation>
 <translation id="2718395828230677721">نور شب</translation>
 <translation id="2727977024730340865">باتری به شارژر برق ضعیف متصل است. شارژ باتری ممکن است قابل اطمینان نباشد.</translation>
 <translation id="2761704814324807722">سینی وضعیت، زمان <ph name="TIME" />، ‏<ph name="BATTERY" /></translation>
@@ -330,6 +334,7 @@
 <translation id="8673028979667498656">‎۲۷۰°‎</translation>
 <translation id="8676770494376880701">شارژر برق متصل شده ضعیف است</translation>
 <translation id="8734991477317290293">ممکن است تلاش کند ضربه‌کلیدهای شما را به سرقت ببرد</translation>
+<translation id="8809737090443522491">نام برنامه یا سندی را وارد کنید</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">انتقال پنجره‌ها به میزکار دیگری ممکن است منجر به رفتاری غیرمنتظره شود.
 

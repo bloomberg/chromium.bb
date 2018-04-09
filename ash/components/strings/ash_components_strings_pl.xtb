@@ -38,6 +38,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a następnie <ph name="TAB" /> lub <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">Zapisz bieżącą stronę internetową jako zakładkę</translation>
 <translation id="2750942583782703988">Ponownie załaduj bieżącą stronę</translation>
+<translation id="2764005613199379871">Ustaw fokus na pasku adresu i wyszukiwania</translation>
 <translation id="2789868185375229787">Pomniejsz widok strony</translation>
 <translation id="2804480015716812239">Naciśnij <ph name="ALT" /> i kliknij link</translation>
 <translation id="2830827904629746450">Zadokuj okno po prawej stronie</translation>
@@ -49,6 +50,7 @@
 <translation id="3105917916468784889">Zapisz zrzut ekranu</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Zaznacz pasek adresu</translation>
+<translation id="3256109297135787951">Anuluj zaznaczenia elementu na półce</translation>
 <translation id="3288816184963444640">Zamknij bieżące okno</translation>
 <translation id="3407560819924487926">Otwórz menedżera zadań</translation>
 <translation id="3422679037938588196">Przejdź do poprzedniego wyrażenia pasującego do zapytania</translation>
@@ -62,6 +64,7 @@
 <translation id="3720939646656082033">Otwórz link w nowej karcie i przełącz się na nią</translation>
 <translation id="3725795051337497754">Zamknij bieżącą kartę</translation>
 <translation id="3751033133896282964">Cofnij ostatnią czynność</translation>
+<translation id="3792178297143798024">Otwórz zaznaczony element na półce</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> od 1 do 8</translation>
 <translation id="3837047332182291558">Rozjaśnij klawiaturę (dotyczy tylko klawiatur podświetlanych)</translation>
 <translation id="3976863468609830880">Kliknij ostatnią ikonę na półce</translation>
@@ -115,6 +118,7 @@
 <translation id="6435207348963613811">Zaznacz poprzedni element na półce</translation>
 <translation id="6445033640292336367">Przywróć kartę do pierwotnego położenia</translation>
 <translation id="649811797655257835">Wybierz plik i naciśnij <ph name="SPACE" /></translation>
+<translation id="6556040137485212400">Otwórz okno, które było nieużywane przez najdłuższy czas</translation>
 <translation id="666343722268997814">Otwórz menu prawego przycisku myszy dla zaznaczonego elementu</translation>
 <translation id="6671538777808758331">Przejdź do następnego wyrażenia pasującego do zapytania</translation>
 <translation id="6690765639083431875">Zadokuj okno po lewej stronie</translation>
@@ -134,10 +138,12 @@
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a następnie <ph name="SPACE" /> lub <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Otwórz plik w przeglądarce</translation>
 <translation id="7917881398263220094">Zatrzymaj wczytywanie bieżącej strony</translation>
+<translation id="7952165122793773711">Przejdź do karty 1–8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> lub <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Wyczyść dane przeglądania</translation>
 <translation id="8130528849632411619">Przejdź na początek dokumentu</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> lub <ph name="E" /></translation>
+<translation id="8232835244134740473">Przełączaj fokus między: paskiem stanu (tam, gdzie widać obraz konta), Menu z aplikacjami, paskiem adresu, paskiem zakładek (jeśli jest widoczny), otwartą aktualnie stroną, paskiem pobranych plików (jeśli jest widoczny).</translation>
 <translation id="8234414138295101081">Obróć ekran o 90 stopni</translation>
 <translation id="836869401750819675">Otwórz stronę Pobrane pliki</translation>
 <translation id="8388247778047144397">Przeciągnij link na pusty obszar na pasku kart</translation>

@@ -1006,7 +1006,6 @@ No creo que este sitio deba bloquearse</translation>
 <translation id="2575247648642144396">Este icono estará visible cuando la extensión se pueda utilizar en la página actual. Para utilizar la extensión, haz clic en el icono o pulsa <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2575268751393592580">No se encuentra tu teléfono. Asegúrate de que tu <ph name="DEVICE_TYPE" /> esté conectado a una red Wi‑Fi o móvil. &lt;a&gt;Más información&lt;/a&gt;</translation>
 <translation id="257779572837908839">Configurar como Chromebox para reuniones</translation>
-<translation id="2578500300664468063">Sincronizado como <ph name="FULL_NAME" /></translation>
 <translation id="2579575372772932244">Se está volviendo a crear el perfil, espera…</translation>
 <translation id="2580889980133367162">Permitir siempre a <ph name="HOST" /> descargar varios archivos</translation>
 <translation id="2580924999637585241">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
@@ -1548,7 +1547,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3360297538363969800">Se ha producido un error al imprimir. Comprueba la impresora y vuelve a intentarlo.</translation>
 <translation id="3364721542077212959">Herramientas del lápiz óptico</translation>
 <translation id="3365598184818502391">Usa Ctrl o Alt</translation>
-<translation id="3367813778245106622">Vuelve a iniciar sesión para que comience la sincronización</translation>
 <translation id="3368922792935385530">Con conexión</translation>
 <translation id="3369624026883419694">Resolviendo host...</translation>
 <translation id="337286756654493126">Lee carpetas que abras en la aplicación</translation>
@@ -2403,7 +2401,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="479285515899735347">¡Vaya! Parece que la contraseña ha caducado. Renuévala en otro dispositivo e inténtalo de nuevo.</translation>
 <translation id="479536056609751218">Página web (solo HTML)</translation>
 <translation id="479989351350248267">buscar</translation>
-<translation id="4800109022693378315">Sincronizada con</translation>
 <translation id="4801448226354548035">Ocultar cuentas</translation>
 <translation id="4801512016965057443">Permitir la itinerancia de datos móviles</translation>
 <translation id="4801956050125744859">Conservar las dos versiones</translation>
@@ -2690,6 +2687,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5238369540257804368">Ámbitos</translation>
 <translation id="5241128660650683457">Leer todos tus datos en los sitios web a los que accedes</translation>
 <translation id="5242724311594467048">¿Habilitar "<ph name="EXTENSION_NAME" />"?</translation>
+<translation id="5244474230056479698">Sincronizando con <ph name="EMAIL" /></translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> ha dejado de funcionar. Haz clic en este globo para reiniciar la aplicación.</translation>
 <translation id="5249624017678798539">Se ha producido un fallo en el navegador antes de que se completara la descarga.</translation>
 <translation id="5250372599208556903"><ph name="SEARCH_ENGINE_NAME" /> utiliza tu ubicación para ofrecerte contenido local. Puedes cambiar esta opción en <ph name="SETTINGS_LINK" />.</translation>

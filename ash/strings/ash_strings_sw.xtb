@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Samahani, tumeshindwa kuthibitisha nenosiri lako. Kumbuka: ikiwa ulibadilisha nenosiri lako hivi karibuni, nenosiri lako jipya litaanza kutumika pindi utakapoondoka kwenye akaunti, tafadhali tumia nenosiri la awali hapa.</translation>
 <translation id="1677472565718498478">Zimesalia <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Anwani ya IPv6: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">Msimamizi wa kifaa hiki anaweza kufuatilia shughuli zako.</translation>
 <translation id="1734367976349034509">Kifaa hiki kinadhibitiwa kibiashara</translation>
 <translation id="1746730358044914197">Mbinu za kuingiza data zimewekwa na msimamizi wako.</translation>
 <translation id="1747827819627189109">Kibodi ya skrini imewashwa</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Kitufe cha ziada</translation>
 <translation id="1951012854035635156">Mratibu</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Weka lugha yako</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Zima</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Wasilisha</translation>
 <translation id="2675319268637823299">Msimamizi amezuia uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja kwa kutumia <ph name="USER_EMAIL" />.
     Ni lazima watumiaji wote waondoke katika akaunti ili uendelee.</translation>
+<translation id="2696763960464195425">Maelezo yako yataondolewa wakati unaondoka kwenye akaunti. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Weka kibodi yako</translation>
 <translation id="2718395828230677721">Mwanga wa Usiku</translation>
 <translation id="2727977024730340865">Imechomekwa katika chaja ya kawi ya chini. Huenda kuchaji kwa betri hakutakuwa kuzuri.</translation>
 <translation id="2761704814324807722">Treya ya hali, saa <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -329,6 +333,7 @@ Tumia kipengele hiki kwa akaunti unazoamini pekee.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Chaja ya nguvu ya chini imeunganishwa</translation>
 <translation id="8734991477317290293">Huenda inajaribu kuiba mibofyo yako</translation>
+<translation id="8809737090443522491">Andika jina la programu au hati</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Kuhamisha madirisha hadi eneo-kazi jingine kunaweza kusababisha tabia ambayo hakikutarajiwa.
 

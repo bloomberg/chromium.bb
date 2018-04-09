@@ -629,7 +629,7 @@
 <translation id="1956390763342388273">Es penjaran tots els fitxers que hi ha a <ph name="FOLDER_PATH" />. Fes-ho només si confies en el lloc web.</translation>
 <translation id="1962233722219655970">Aquesta pàgina fa servir una aplicació de Native Client que no funciona al vostre ordinador.</translation>
 <translation id="1962969542251276847">Bloqueja la pantalla</translation>
-<translation id="1963227389609234879">Esborra-ho tot</translation>
+<translation id="1963227389609234879">Suprimeix-ho tot</translation>
 <translation id="1965624977906726414">No té permisos especials.</translation>
 <translation id="1970368523891847084">S'ha activat el mode de vídeo</translation>
 <translation id="197288927597451399">Conserva</translation>
@@ -1006,7 +1006,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="2575247648642144396">Aquesta icona serà visible quan les extensions puguin actuar a la pàgina actual. Per fer servir aquesta extensió, feu clic a la icona o premeu <ph name="EXTENSION_SHORTCUT" />.</translation>
 <translation id="2575268751393592580">No es troba el telèfon. Comprova que <ph name="DEVICE_TYPE" /> estigui connectat a la xarxa Wi-Fi o a una xarxa mòbil. &lt;a&gt;Més informació&lt;/a&gt;</translation>
 <translation id="257779572837908839">Estableix com a Chromebox per a reunions</translation>
-<translation id="2578500300664468063">Sincronitzat com a <ph name="FULL_NAME" /></translation>
 <translation id="2579575372772932244">S'està tornant a crear el perfil. Espereu…</translation>
 <translation id="2580889980133367162">Permet sempre que <ph name="HOST" /> baixi diversos fitxers</translation>
 <translation id="2580924999637585241">Total: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
@@ -1546,7 +1545,6 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="3360297538363969800">Hi ha hagut un error en imprimir. Comproveu la impressora i torneu-ho a provar.</translation>
 <translation id="3364721542077212959">Eines del llapis òptic</translation>
 <translation id="3365598184818502391">Utilitza Ctrl o Alt</translation>
-<translation id="3367813778245106622">Torna a iniciar la sessió per començar la sincronització</translation>
 <translation id="3368922792935385530">Connectat</translation>
 <translation id="3369624026883419694">Resolent l'amfitrió...</translation>
 <translation id="337286756654493126">Llegir carpetes que s'obrin a l'aplicació</translation>
@@ -2402,7 +2400,6 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="479285515899735347">Sembla que la contrasenya ha caducat. Renova-la en un altre dispositiu i torna-ho a provar.</translation>
 <translation id="479536056609751218">Pàgina web, només HTML</translation>
 <translation id="479989351350248267">cerca</translation>
-<translation id="4800109022693378315">S'ha sincronitzat amb</translation>
 <translation id="4801448226354548035">Amaga els comptes</translation>
 <translation id="4801512016965057443">Permet la itinerància de dades de telefonia mòbil</translation>
 <translation id="4801956050125744859">Mantén-les totes dues</translation>
@@ -2691,6 +2688,7 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="5238369540257804368">Àmbits</translation>
 <translation id="5241128660650683457">Llegir totes les dades dels llocs web que es visitin</translation>
 <translation id="5242724311594467048">Vols activar "<ph name="EXTENSION_NAME" />"?</translation>
+<translation id="5244474230056479698">S'està sincronitzant amb <ph name="EMAIL" /></translation>
 <translation id="5246282308050205996"><ph name="APP_NAME" /> ha deixat de funcionar. Feu clic en aquest globus per reiniciar l'aplicació.</translation>
 <translation id="5249624017678798539">El navegador ha fallat abans de completar-se la baixada.</translation>
 <translation id="5250372599208556903"><ph name="SEARCH_ENGINE_NAME" /> utilitza la teva ubicació per oferir-te contingut local. Per canviar-ho, ves a <ph name="SETTINGS_LINK" />.</translation>
