@@ -274,7 +274,7 @@ void RemoteFontFaceSource::BeginLoadIfNeeded() {
       if (!IsLoaded()) {
         font->StartLoadLimitTimers(
             font_selector_->GetExecutionContext()
-                ->GetTaskRunner(TaskType::kUnspecedLoading)
+                ->GetTaskRunner(TaskType::kInternalLoading)
                 .get());
       }
       histograms_.LoadStarted();

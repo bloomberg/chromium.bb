@@ -38235,7 +38235,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="21" label="IdleTask"/>
   <int value="22" label="MiscPlatformAPI"/>
   <int value="23" label="UnspecedTimer"/>
-  <int value="24" label="UnspecedLoading"/>
+  <int value="24" label="InternalLoading"/>
   <int value="25" label="Unthrottled"/>
   <int value="26" label="InternalTest"/>
   <int value="27" label="InternalWebCrypto"/>

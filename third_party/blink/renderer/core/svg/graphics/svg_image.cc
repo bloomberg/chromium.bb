@@ -690,7 +690,7 @@ void SVGImage::LoadCompleted() {
       // potential bugs and timing dependencies around ImplicitClose() and
       // to make LoadEventFinished() true when AsyncLoadCompleted() is called.
       ToLocalFrame(page_->MainFrame())
-          ->GetTaskRunner(TaskType::kUnspecedLoading)
+          ->GetTaskRunner(TaskType::kInternalLoading)
           ->PostTask(FROM_HERE, WTF::Bind(&SVGImage::NotifyAsyncLoadCompleted,
                                           scoped_refptr<SVGImage>(this)));
       break;

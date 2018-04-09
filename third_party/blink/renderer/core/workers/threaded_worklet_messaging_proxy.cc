@@ -67,11 +67,11 @@ void ThreadedWorkletMessagingProxy::FetchAndInvokeScript(
     WorkletPendingTasks* pending_tasks) {
   DCHECK(IsMainThread());
   PostCrossThreadTask(
-      *GetWorkerThread()->GetTaskRunner(TaskType::kUnspecedLoading), FROM_HERE,
+      *GetWorkerThread()->GetTaskRunner(TaskType::kInternalLoading), FROM_HERE,
       CrossThreadBind(&ThreadedWorkletObjectProxy::FetchAndInvokeScript,
                       CrossThreadUnretained(worklet_object_proxy_.get()),
-                      module_url_record,
-                      credentials_mode, std::move(outside_settings_task_runner),
+                      module_url_record, credentials_mode,
+                      std::move(outside_settings_task_runner),
                       WrapCrossThreadPersistent(pending_tasks),
                       CrossThreadUnretained(GetWorkerThread())));
 }

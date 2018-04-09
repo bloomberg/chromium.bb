@@ -24,11 +24,11 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
           std::move(creation_params),
           ToIsolate(frame),
           reporting_proxy,
-          // Specify |kUnspecedLoading| because these task runners are used
+          // Specify |kInternalLoading| because these task runners are used
           // during module loading and this usage is not explicitly spec'ed.
-          frame->GetFrameScheduler()->GetTaskRunner(TaskType::kUnspecedLoading),
+          frame->GetFrameScheduler()->GetTaskRunner(TaskType::kInternalLoading),
           frame->GetFrameScheduler()->GetTaskRunner(
-              TaskType::kUnspecedLoading)),
+              TaskType::kInternalLoading)),
       ContextClient(frame) {}
 
 MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() = default;

@@ -1791,9 +1791,9 @@ InspectorNetworkAgent::InspectorNetworkAgent(
       pending_request_(nullptr),
       remove_finished_replay_xhr_timer_(
           worker_global_scope_
-              ? worker_global_scope->GetTaskRunner(TaskType::kUnspecedLoading)
+              ? worker_global_scope->GetTaskRunner(TaskType::kInternalLoading)
               : inspected_frames->Root()->GetTaskRunner(
-                    TaskType::kUnspecedLoading),
+                    TaskType::kInternalLoading),
           this,
           &InspectorNetworkAgent::RemoveFinishedReplayXHRFired),
       max_post_data_size_(0) {

@@ -399,7 +399,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   if (observer_) {
     task_runner = ToDocument(observer_->LifecycleContext())
-                      ->GetTaskRunner(TaskType::kUnspecedLoading);
+                      ->GetTaskRunner(TaskType::kInternalLoading);
   } else {
     task_runner = Platform::Current()->CurrentThread()->GetTaskRunner();
   }

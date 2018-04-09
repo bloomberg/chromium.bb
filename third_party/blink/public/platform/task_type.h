@@ -122,10 +122,8 @@ enum class TaskType : unsigned {
   // can be posted here, but the usage is not encouraged. The task runner
   // may be throttled.
   //
-  // UnspecedLoading type should be used for all tasks associated with
-  // loading page content, UnspecedTimer should be used for all other purposes.
+  // UnspecedTimer should be used for all other purposes.
   kUnspecedTimer = 23,
-  kUnspecedLoading = 24,
 
   // Tasks that must not be throttled should be posted here, but the usage
   // should be very limited.
@@ -134,6 +132,9 @@ enum class TaskType : unsigned {
   ///////////////////////////////////////
   // Not-speced tasks should use one of the following task types
   ///////////////////////////////////////
+
+  // Tasks used for all tasks associated with loading page content.
+  kInternalLoading = 24,
 
   // Tasks for tests or mock objects.
   kInternalTest = 26,

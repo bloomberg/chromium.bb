@@ -26,10 +26,10 @@ ThreadedWorkletGlobalScope::ThreadedWorkletGlobalScope(
           std::move(creation_params),
           isolate,
           thread->GetWorkerReportingProxy(),
-          // Specify |kUnspecedLoading| because these task runners are used
+          // Specify |kInternalLoading| because these task runners are used
           // during module loading and this usage is not explicitly spec'ed.
-          thread->GetParentFrameTaskRunners()->Get(TaskType::kUnspecedLoading),
-          thread->GetTaskRunner(TaskType::kUnspecedLoading)),
+          thread->GetParentFrameTaskRunners()->Get(TaskType::kInternalLoading),
+          thread->GetTaskRunner(TaskType::kInternalLoading)),
       thread_(thread) {}
 
 ThreadedWorkletGlobalScope::~ThreadedWorkletGlobalScope() {

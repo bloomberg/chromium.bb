@@ -55,7 +55,7 @@ WorkerGlobalScopeScheduler::GetTaskRunner(TaskType type) const {
     case TaskType::kIdleTask:
     case TaskType::kMiscPlatformAPI:
     case TaskType::kUnspecedTimer:
-    case TaskType::kUnspecedLoading:
+    case TaskType::kInternalLoading:
     case TaskType::kUnthrottled:
     case TaskType::kInternalTest:
     case TaskType::kInternalWebCrypto:

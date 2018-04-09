@@ -158,7 +158,7 @@ const char* TaskTypeToString(TaskType task_type) {
       return "MiscPlatformAPI";
     case TaskType::kUnspecedTimer:
       return "UnspecedTimer";
-    case TaskType::kUnspecedLoading:
+    case TaskType::kInternalLoading:
       return "UnspecedLoading";
     case TaskType::kUnthrottled:
       return "Unthrottled";

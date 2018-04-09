@@ -38,7 +38,7 @@ void ManifestChangeNotifier::DidChangeManifest() {
   // of this notification and the favicon URL reporting.
   if (!render_frame()->GetWebFrame()->IsLoading()) {
     render_frame()
-        ->GetTaskRunner(blink::TaskType::kUnspecedLoading)
+        ->GetTaskRunner(blink::TaskType::kInternalLoading)
         ->PostTask(FROM_HERE,
                    base::BindOnce(&ManifestChangeNotifier::ReportManifestChange,
                                   weak_factory_.GetWeakPtr()));
