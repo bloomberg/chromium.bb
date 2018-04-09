@@ -71,4 +71,15 @@ public class BoundaryInterfaceReflectionUtil {
             }
         };
     }
+
+    /**
+     * Check whether a set of features {@param features} contains a certain feature {@param
+     * soughtFeature}.
+     */
+    public static boolean containsFeature(String[] features, String soughtFeature) {
+        for (String feature : features) {
+            if (feature.equals(soughtFeature)) return true;
+        }
+        return false;
+    }
 }
