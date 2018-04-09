@@ -1538,10 +1538,11 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   main_thread_only().expensive_task_policy = expensive_task_policy;
 
   if (main_thread_only().stopped_when_backgrounded) {
+    // TODO(panicker): Remove this, as it is controlled at
+    // FrameScheduler. This is currently needed to avoid early out.
     new_policy.timer_queue_policy().is_stopped = true;
-    if (RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled())
-      new_policy.loading_queue_policy().is_stopped = true;
   }
+
   if (main_thread_only().renderer_pause_count != 0) {
     new_policy.loading_queue_policy().is_paused = true;
     new_policy.timer_queue_policy().is_paused = true;

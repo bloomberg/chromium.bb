@@ -2575,59 +2575,6 @@ TEST_F(RendererSchedulerImplTest, TestRendererBackgroundedTimerSuspension) {
   EXPECT_THAT(run_order, testing::ElementsAre(std::string("T6")));
 }
 
-TEST_F(RendererSchedulerImplTest, TestRendererBackgroundedLoadingSuspension) {
-  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
-
-  scheduler_->SetStoppingWhenBackgroundedEnabled(true);
-
-  std::vector<std::string> run_order;
-  PostTestTasks(&run_order, "L1 L2");
-
-  base::TimeTicks now;
-
-  // The background signal will not immediately suspend the loading queue.
-  scheduler_->SetRendererBackgrounded(true);
-  now += base::TimeDelta::FromMilliseconds(1100);
-  clock_.SetNowTicks(now);
-  RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("L1"), std::string("L2")));
-
-  run_order.clear();
-  PostTestTasks(&run_order, "L3");
-
-  now += base::TimeDelta::FromSeconds(1);
-  clock_.SetNowTicks(now);
-  RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre(std::string("L3")));
-
-  // Advance the time until after the scheduled loading queue suspension.
-  now = base::TimeTicks() + delay_for_background_tab_stopping() +
-        base::TimeDelta::FromMilliseconds(10);
-  run_order.clear();
-  clock_.SetNowTicks(now);
-  RunUntilIdle();
-  ASSERT_TRUE(run_order.empty());
-
-  // Loading tasks should be paused until the foregrounded signal.
-  PostTestTasks(&run_order, "L4 L5");
-  now += base::TimeDelta::FromSeconds(10);
-  clock_.SetNowTicks(now);
-  RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre());
-
-  scheduler_->SetRendererBackgrounded(false);
-  RunUntilIdle();
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("L4"), std::string("L5")));
-
-  // Subsequent loading tasks should fire as usual.
-  run_order.clear();
-  PostTestTasks(&run_order, "L6");
-  RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre(std::string("L6")));
-}
-
 TEST_F(RendererSchedulerImplTest,
        ExpensiveLoadingTasksNotBlockedTillFirstBeginMainFrame) {
   std::vector<std::string> run_order;
