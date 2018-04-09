@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/api/automation.h"
 #include "chrome/common/extensions/api/automation_api_constants.h"
 #include "chrome/common/extensions/api/automation_internal.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
@@ -338,14 +339,25 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
   action->target_node_id = params->args.automation_node_id;
   int* request_id = params->args.request_id.get();
   action->request_id = request_id ? *request_id : -1;
-  switch (params->args.action_type) {
-    case api::automation_internal::ACTION_TYPE_DODEFAULT:
+  api::automation::ActionType action_type =
+      api::automation::ParseActionType(params->args.action_type);
+  switch (action_type) {
+    case api::automation::ACTION_TYPE_BLUR:
+      action->action = ax::mojom::Action::kBlur;
+      break;
+    case api::automation::ACTION_TYPE_DECREMENT:
+      action->action = ax::mojom::Action::kDecrement;
+      break;
+    case api::automation::ACTION_TYPE_DODEFAULT:
       action->action = ax::mojom::Action::kDoDefault;
       break;
-    case api::automation_internal::ACTION_TYPE_FOCUS:
+    case api::automation::ACTION_TYPE_INCREMENT:
+      action->action = ax::mojom::Action::kIncrement;
+      break;
+    case api::automation::ACTION_TYPE_FOCUS:
       action->action = ax::mojom::Action::kFocus;
       break;
-    case api::automation_internal::ACTION_TYPE_GETIMAGEDATA: {
+    case api::automation::ACTION_TYPE_GETIMAGEDATA: {
       api::automation_internal::GetImageDataParams get_image_data_params;
       EXTENSION_FUNCTION_VALIDATE(
           api::automation_internal::GetImageDataParams::Populate(
@@ -355,7 +367,7 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
                                       get_image_data_params.max_height);
       break;
     }
-    case api::automation_internal::ACTION_TYPE_HITTEST: {
+    case api::automation::ACTION_TYPE_HITTEST: {
       api::automation_internal::HitTestParams hit_test_params;
       EXTENSION_FUNCTION_VALIDATE(
           api::automation_internal::HitTestParams::Populate(
@@ -368,28 +380,31 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
         return RespondNow(NoArguments());
       break;
     }
-    case api::automation_internal::ACTION_TYPE_MAKEVISIBLE:
+    case api::automation::ACTION_TYPE_LOADINLINETEXTBOXES:
+      action->action = ax::mojom::Action::kLoadInlineTextBoxes;
+      break;
+    case api::automation::ACTION_TYPE_SCROLLTOMAKEVISIBLE:
       action->action = ax::mojom::Action::kScrollToMakeVisible;
       break;
-    case api::automation_internal::ACTION_TYPE_SCROLLBACKWARD:
+    case api::automation::ACTION_TYPE_SCROLLBACKWARD:
       action->action = ax::mojom::Action::kScrollBackward;
       break;
-    case api::automation_internal::ACTION_TYPE_SCROLLFORWARD:
+    case api::automation::ACTION_TYPE_SCROLLFORWARD:
       action->action = ax::mojom::Action::kScrollForward;
       break;
-    case api::automation_internal::ACTION_TYPE_SCROLLUP:
+    case api::automation::ACTION_TYPE_SCROLLUP:
       action->action = ax::mojom::Action::kScrollUp;
       break;
-    case api::automation_internal::ACTION_TYPE_SCROLLDOWN:
+    case api::automation::ACTION_TYPE_SCROLLDOWN:
       action->action = ax::mojom::Action::kScrollDown;
       break;
-    case api::automation_internal::ACTION_TYPE_SCROLLLEFT:
+    case api::automation::ACTION_TYPE_SCROLLLEFT:
       action->action = ax::mojom::Action::kScrollLeft;
       break;
-    case api::automation_internal::ACTION_TYPE_SCROLLRIGHT:
+    case api::automation::ACTION_TYPE_SCROLLRIGHT:
       action->action = ax::mojom::Action::kScrollRight;
       break;
-    case api::automation_internal::ACTION_TYPE_SETSELECTION: {
+    case api::automation::ACTION_TYPE_SETSELECTION: {
       api::automation_internal::SetSelectionParams selection_params;
       EXTENSION_FUNCTION_VALIDATE(
           api::automation_internal::SetSelectionParams::Populate(
@@ -401,17 +416,17 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
       action->action = ax::mojom::Action::kSetSelection;
       break;
     }
-    case api::automation_internal::ACTION_TYPE_SHOWCONTEXTMENU: {
+    case api::automation::ACTION_TYPE_SHOWCONTEXTMENU: {
       action->action = ax::mojom::Action::kShowContextMenu;
       break;
     }
-    case api::automation_internal::
+    case api::automation::
         ACTION_TYPE_SETSEQUENTIALFOCUSNAVIGATIONSTARTINGPOINT: {
       action->action =
           ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint;
       break;
     }
-    case api::automation_internal::ACTION_TYPE_CUSTOMACTION: {
+    case api::automation::ACTION_TYPE_CUSTOMACTION: {
       api::automation_internal::PerformCustomActionParams
           perform_custom_action_params;
       EXTENSION_FUNCTION_VALIDATE(
@@ -422,8 +437,36 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
       action->custom_action_id = perform_custom_action_params.custom_action_id;
       break;
     }
-    default:
-      NOTREACHED();
+    case api::automation::ACTION_TYPE_REPLACESELECTEDTEXT: {
+      api::automation_internal::ReplaceSelectedTextParams
+          replace_selected_text_params;
+      EXTENSION_FUNCTION_VALIDATE(
+          api::automation_internal::ReplaceSelectedTextParams::Populate(
+              params->opt_args.additional_properties,
+              &replace_selected_text_params));
+      action->action = ax::mojom::Action::kReplaceSelectedText;
+      action->value = base::UTF8ToUTF16(replace_selected_text_params.value);
+      break;
+    }
+    case api::automation::ACTION_TYPE_SETVALUE: {
+      api::automation_internal::SetValueParams set_value_params;
+      EXTENSION_FUNCTION_VALIDATE(
+          api::automation_internal::SetValueParams::Populate(
+              params->opt_args.additional_properties, &set_value_params));
+      action->action = ax::mojom::Action::kSetValue;
+      action->value = base::UTF8ToUTF16(set_value_params.value);
+      break;
+    }
+    // These actions are currently unused by any existing clients of
+    // automation. They also require additional arguments to be plumbed
+    // through (e.g. setValue takes a string value to be set). Future clients
+    // may wish to extend the api to support these actions.
+    case api::automation::ACTION_TYPE_SCROLLTOPOINT:
+    case api::automation::ACTION_TYPE_SETSCROLLOFFSET:
+      return RespondNow(
+          Error("Unsupported action: " + params->args.action_type));
+    case api::automation::ACTION_TYPE_NONE:
+      break;
   }
   return RespondNow(NoArguments());
 }
@@ -464,28 +507,29 @@ AutomationInternalPerformActionFunction::Run() {
         Error(kCannotRequestAutomationOnPage, contents->GetURL().spec()));
   }
 
-  // These actions are handled directly for the WebContents.
-  if (params->args.action_type ==
-      api::automation_internal::ACTION_TYPE_STARTDUCKINGMEDIA) {
-    content::MediaSession* session = content::MediaSession::Get(contents);
-    session->StartDucking();
-    return RespondNow(NoArguments());
-  } else if (params->args.action_type ==
-             api::automation_internal::ACTION_TYPE_STOPDUCKINGMEDIA) {
-    content::MediaSession* session = content::MediaSession::Get(contents);
-    session->StopDucking();
-    return RespondNow(NoArguments());
-  } else if (params->args.action_type ==
-             api::automation_internal::ACTION_TYPE_RESUMEMEDIA) {
-    content::MediaSession* session = content::MediaSession::Get(contents);
-    session->Resume(content::MediaSession::SuspendType::SYSTEM);
-    return RespondNow(NoArguments());
-  } else if (params->args.action_type ==
-             api::automation_internal::ACTION_TYPE_SUSPENDMEDIA) {
-    content::MediaSession* session = content::MediaSession::Get(contents);
-    session->Suspend(content::MediaSession::SuspendType::SYSTEM);
-    return RespondNow(NoArguments());
+  // Handle internal actions.
+  api::automation_internal::ActionTypePrivate internal_action_type =
+      api::automation_internal::ParseActionTypePrivate(
+          params->args.action_type);
+  content::MediaSession* session = content::MediaSession::Get(contents);
+  switch (internal_action_type) {
+    case api::automation_internal::ACTION_TYPE_PRIVATE_STARTDUCKINGMEDIA:
+      session->StartDucking();
+      return RespondNow(NoArguments());
+    case api::automation_internal::ACTION_TYPE_PRIVATE_STOPDUCKINGMEDIA:
+      session->StopDucking();
+      return RespondNow(NoArguments());
+    case api::automation_internal::ACTION_TYPE_PRIVATE_RESUMEMEDIA:
+      session->Resume(content::MediaSession::SuspendType::SYSTEM);
+      return RespondNow(NoArguments());
+    case api::automation_internal::ACTION_TYPE_PRIVATE_SUSPENDMEDIA:
+      session->Suspend(content::MediaSession::SuspendType::SYSTEM);
+      return RespondNow(NoArguments());
+    case api::automation_internal::ACTION_TYPE_PRIVATE_NONE:
+      // Not a private action.
+      break;
   }
+
   ui::AXActionData data;
   ExtensionFunction::ResponseAction result =
       ConvertToAXActionData(params.get(), &data);
