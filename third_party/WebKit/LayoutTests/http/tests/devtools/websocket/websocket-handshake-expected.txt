@@ -2,7 +2,7 @@ Tests that WebSocket handshake information is passed to Web Inspector.
 
 log: requestMethod: GET
 log: requestHeaders
-log:     Accept-Encoding: gzip, deflate
+log:     Accept-Encoding: ***
 log:     Accept-Language: en-us,en
 log:     Cache-Control: no-cache
 log:     Connection: Upgrade
