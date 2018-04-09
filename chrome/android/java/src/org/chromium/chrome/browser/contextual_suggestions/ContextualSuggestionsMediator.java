@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
-import android.content.Context;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
@@ -57,7 +56,6 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
 
     /**
      * Construct a new {@link ContextualSuggestionsMediator}.
-     * @param context The {@link Context} used to retrieve resources.
      * @param profile The regular {@link Profile}.
      * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
      * @param fullscreenManager The {@link ChromeFullscreenManager} to listen for browser controls
@@ -66,10 +64,9 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
      * @param model The {@link ContextualSuggestionsModel} for the component.
      * @param iphParentView The parent {@link View} used to anchor an in-product help bubble.
      */
-    ContextualSuggestionsMediator(Context context, Profile profile,
-            TabModelSelector tabModelSelector, ChromeFullscreenManager fullscreenManager,
-            ContextualSuggestionsCoordinator coordinator, ContextualSuggestionsModel model,
-            View iphParentView) {
+    ContextualSuggestionsMediator(Profile profile, TabModelSelector tabModelSelector,
+            ChromeFullscreenManager fullscreenManager, ContextualSuggestionsCoordinator coordinator,
+            ContextualSuggestionsModel model, View iphParentView) {
         mProfile = profile;
         mTabModelSelector = tabModelSelector;
         mCoordinator = coordinator;
@@ -211,9 +208,11 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
 
         mModel.setClusterList(clusters);
         mModel.setCloseButtonOnClickListener(view -> {
-            clearSuggestions();
             TrackerFactory.getTrackerForProfile(mProfile).notifyEvent(
                     EventConstants.CONTEXTUAL_SUGGESTIONS_DISMISSED);
+            reportEvent(ContextualSuggestionsEvent.UI_CLOSED);
+
+            clearSuggestions();
         });
         mModel.setTitle(title);
         mCoordinator.preloadContentInSheet();
@@ -230,6 +229,8 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
                 mHasRecordedPeekEventForTab = true;
                 TrackerFactory.getTrackerForProfile(mProfile).notifyEvent(
                         EventConstants.CONTEXTUAL_SUGGESTIONS_PEEKED);
+                reportEvent(ContextualSuggestionsEvent.UI_PEEK_REVERSE_SCROLL);
+
                 maybeShowHelpBubble();
             }
 
@@ -246,6 +247,8 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
                 mCoordinator.showSuggestions(mSuggestionsSource);
                 mCoordinator.removeBottomSheetObserver(this);
                 mSheetObserver = null;
+
+                reportEvent(ContextualSuggestionsEvent.UI_OPENED);
             }
         };
 
@@ -274,6 +277,11 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
         });
 
         mHelpBubble.show();
+    }
+
+    private void reportEvent(@ContextualSuggestionsEvent int event) {
+        mSuggestionsSource.getBridge().reportEvent(
+                mTabModelSelector.getCurrentTab().getWebContents(), event);
     }
 
     // TODO(twellington): Remove after clusters are returned from the backend.
