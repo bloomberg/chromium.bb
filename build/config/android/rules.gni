@@ -2998,35 +2998,39 @@ if (enable_java_templates) {
   #   proto_path (required)
   #       Root directory of .proto files.
   #
-  #   generate_lite (optional, default false)
-  #       Whether to generate lite protos. If false, this will use the nano proto generator.
+  #   generate_nano (optional, default false)
+  #       Whether to generate nano protos. If false, this will use the lite proto generator.
   #       Nano protos are deprecated, so please use lite new proto libraries.
+  #
+  #   generate_lite (optional, default true)
+  #       Whether to generate lite protos. If false, this will use the nano proto generator.
+  #       This variable is deprecated and cannot be used at the same time as generate_nano.
   #
   # Example:
   #  proto_java_library("foo_proto_java") {
   #    proto_path = "src/foo"
   #    sources = [ "$proto_path/foo.proto" ]
-  #    generate_lite = true
   #  }
   template("proto_java_library") {
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
-    _generate_lite =
-        defined(invoker.generate_lite) && invoker.generate_lite == true
+    _generate_nano =
+        (defined(invoker.generate_nano) && invoker.generate_nano == true) ||
+        (defined(invoker.generate_lite) && invoker.generate_lite == false)
 
-    if (_generate_lite) {
-      # Use the regular proto library to generate lite protos.
-      _protoc_dep = "//third_party/protobuf:protoc($host_toolchain)"
-      _protoc_out_dir = get_label_info(_protoc_dep, "root_out_dir")
-      _protoc_bin = "$_protoc_out_dir/protoc"
-      _proto_runtime = "//third_party/protobuf:protobuf_lite_javalib"
-    } else {
+    if (_generate_nano) {
       # Use the legacy Android nano proto generator.
       _protoc_dep =
           "//third_party/android_protobuf:android_protoc($host_toolchain)"
       _protoc_out_dir = get_label_info(_protoc_dep, "root_out_dir")
       _protoc_bin = "$_protoc_out_dir/android_protoc"
       _proto_runtime = "//third_party/android_protobuf:protobuf_nano_javalib"
+    } else {
+      # Use the regular proto library to generate lite protos.
+      _protoc_dep = "//third_party/protobuf:protoc($host_toolchain)"
+      _protoc_out_dir = get_label_info(_protoc_dep, "root_out_dir")
+      _protoc_bin = "$_protoc_out_dir/protoc"
+      _proto_runtime = "//third_party/protobuf:protobuf_lite_javalib"
     }
     _proto_path = invoker.proto_path
     _template_name = target_name
@@ -3057,8 +3061,8 @@ if (enable_java_templates) {
                "--srcjar",
                rebase_path(_srcjar_path, root_build_dir),
              ] + rebase_path(sources, root_build_dir)
-      if (_generate_lite) {
-        args += [ "--lite" ]
+      if (_generate_nano) {
+        args += [ "--nano" ]
       }
     }
 

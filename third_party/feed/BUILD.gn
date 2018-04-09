@@ -40,6 +40,5 @@ android_library("feed_lib_java") {
 
 proto_java_library("feed_lib_proto_java") {
   proto_path = "src"
-  generate_lite = true
   sources = feed_lib_proto_sources
 }

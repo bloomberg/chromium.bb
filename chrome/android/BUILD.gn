@@ -401,7 +401,6 @@ proto_java_library("document_tab_model_info_proto_java") {
   sources = [
     "$proto_path/document_tab_model_info.proto",
   ]
-  generate_lite = true
 }
 
 proto_java_library("partner_location_descriptor_proto_java") {
@@ -409,7 +408,6 @@ proto_java_library("partner_location_descriptor_proto_java") {
   sources = [
     "$proto_path/partner_location_descriptor.proto",
   ]
-  generate_lite = true
 }
 
 proto_java_library("thumbnail_cache_entry_proto_java") {
@@ -417,7 +415,6 @@ proto_java_library("thumbnail_cache_entry_proto_java") {
   sources = [
     "$proto_path/thumbnail_cache_entry.proto",
   ]
-  generate_lite = true
 }
 
 java_cpp_template("resource_id_javagen") {

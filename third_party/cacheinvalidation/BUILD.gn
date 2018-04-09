@@ -129,6 +129,7 @@ if (is_android) {
       "$proto_path/java_client.proto",
       "$proto_path/types.proto",
     ]
+    generate_nano = true
   }
 
   android_library("cacheinvalidation_javalib") {
