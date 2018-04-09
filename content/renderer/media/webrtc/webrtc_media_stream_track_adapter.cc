@@ -184,6 +184,11 @@ void WebRtcMediaStreamTrackAdapter::InitializeRemoteAudioTrack(
   remote_audio_track_adapter_ =
       new RemoteAudioTrackAdapter(main_thread_, webrtc_audio_track.get());
   webrtc_track_ = webrtc_audio_track;
+  // Set the initial volume to zero. When the track is put in an audio tag for
+  // playout, its volume is set to that of the tag. Without this, we could end
+  // up playing out audio that's not attached to any tag, see:
+  // http://crbug.com/810848
+  webrtc_audio_track->GetSource()->SetVolume(0);
   remote_track_can_complete_initialization_.Signal();
   main_thread_->PostTask(
       FROM_HERE,
