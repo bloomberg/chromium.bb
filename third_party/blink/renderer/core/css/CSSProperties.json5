@@ -2775,6 +2775,7 @@
       field_template: "keyword",
       keywords: ["auto", "start", "end", "left", "right", "center", "justify"],
       default_value: "auto",
+      typedom_types: ["Keyword"]
     },
     {
       name: "text-anchor",
@@ -2848,6 +2849,7 @@
       field_template: "<length>",
       default_value: "Length(kFixed)",
       custom_apply_functions_all: true,
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "text-justify",
@@ -2861,6 +2863,7 @@
       default_value: "auto",
       getter: "GetTextJustify",
       type_name: "TextJustify",
+      typedom_types: ["Keyword"]
     },
     {
       name: "text-overflow",
@@ -2883,6 +2886,8 @@
       default_value: "nullptr",
       type_name: "ShadowList",
       converter: "ConvertShadowList",
+      keywords: ["none"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "text-size-adjust",
@@ -2896,6 +2901,8 @@
       getter: "GetTextSizeAdjust",
       type_name: "TextSizeAdjust",
       converter: "ConvertTextSizeAdjust",
+      keywords: ["none", "auto"],
+      typedom_types: ["Keyword", "Percentage"]
     },
     {
       name: "text-transform",
@@ -2917,6 +2924,7 @@
       keywords: ["auto", "under"],
       default_value: "auto",
       type_name: "TextUnderlinePosition",
+      typedom_types: ["Keyword"]
     },
     {
       name: "top",

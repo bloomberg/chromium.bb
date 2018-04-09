@@ -91,6 +91,17 @@ const CSSValue* StyleValueToCSSValue(
       }
       break;
     }
+    case CSSPropertyTextIndent: {
+      // level 1 only accepts single values, which are stored internally
+      // as a single element list.
+      const auto* value = style_value.ToCSSValue();
+      if (value->IsPrimitiveValue()) {
+        CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+        list->Append(*value);
+        return list;
+      }
+      break;
+    }
     default:
       break;
   }
