@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
@@ -12,6 +13,38 @@
 namespace blink {
 namespace scheduler {
 namespace internal {
+
+namespace {
+
+TaskQueueSelectorLogic QueuePriorityToSelectorLogic(
+    TaskQueue::QueuePriority priority) {
+  switch (priority) {
+    case TaskQueue::kControlPriority:
+      return TaskQueueSelectorLogic::kControlPriorityLogic;
+    case TaskQueue::kHighestPriority:
+      return TaskQueueSelectorLogic::kHighestPriorityLogic;
+    case TaskQueue::kHighPriority:
+      return TaskQueueSelectorLogic::kHighPriorityLogic;
+    case TaskQueue::kNormalPriority:
+      return TaskQueueSelectorLogic::kNormalPriorityLogic;
+    case TaskQueue::kLowPriority:
+      return TaskQueueSelectorLogic::kLowPriorityLogic;
+    case TaskQueue::kBestEffortPriority:
+      return TaskQueueSelectorLogic::kBestEffortPriorityLogic;
+    default:
+      NOTREACHED();
+      return TaskQueueSelectorLogic::kCount;
+  }
+}
+
+// Helper function used to report the number of times a selector logic is
+// trigerred. This will create a histogram for the enumerated data.
+void ReportTaskSelectionLogic(TaskQueueSelectorLogic selector_logic) {
+  UMA_HISTOGRAM_ENUMERATION("TaskQueueSelector.TaskServicedPerSelectorLogic",
+                            selector_logic, TaskQueueSelectorLogic::kCount);
+}
+
+}  // namespace
 
 TaskQueueSelector::TaskQueueSelector()
     : prioritizing_selector_(this, "enabled"),
@@ -187,6 +220,7 @@ bool TaskQueueSelector::PrioritizingSelector::SelectWorkQueueToService(
       ChooseOldestWithPriority(TaskQueue::kControlPriority,
                                out_chose_delayed_over_immediate,
                                out_work_queue)) {
+    ReportTaskSelectionLogic(TaskQueueSelectorLogic::kControlPriorityLogic);
     return true;
   }
 
@@ -197,6 +231,8 @@ bool TaskQueueSelector::PrioritizingSelector::SelectWorkQueueToService(
       ChooseOldestWithPriority(TaskQueue::kLowPriority,
                                out_chose_delayed_over_immediate,
                                out_work_queue)) {
+    ReportTaskSelectionLogic(
+        TaskQueueSelectorLogic::kLowPriorityStarvationLogic);
     return true;
   }
 
@@ -207,6 +243,8 @@ bool TaskQueueSelector::PrioritizingSelector::SelectWorkQueueToService(
       ChooseOldestWithPriority(TaskQueue::kNormalPriority,
                                out_chose_delayed_over_immediate,
                                out_work_queue)) {
+    ReportTaskSelectionLogic(
+        TaskQueueSelectorLogic::kNormalPriorityStarvationLogic);
     return true;
   }
 
@@ -217,6 +255,8 @@ bool TaskQueueSelector::PrioritizingSelector::SelectWorkQueueToService(
       ChooseOldestWithPriority(TaskQueue::kHighPriority,
                                out_chose_delayed_over_immediate,
                                out_work_queue)) {
+    ReportTaskSelectionLogic(
+        TaskQueueSelectorLogic::kHighPriorityStarvationLogic);
     return true;
   }
 
@@ -225,6 +265,7 @@ bool TaskQueueSelector::PrioritizingSelector::SelectWorkQueueToService(
        priority < max_priority; priority = NextPriority(priority)) {
     if (ChooseOldestWithPriority(priority, out_chose_delayed_over_immediate,
                                  out_work_queue)) {
+      ReportTaskSelectionLogic(QueuePriorityToSelectorLogic(priority));
       return true;
     }
   }

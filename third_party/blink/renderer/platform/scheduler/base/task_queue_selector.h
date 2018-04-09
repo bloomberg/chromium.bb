@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/pending_task.h"
 #include "base/threading/thread_checker.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector_logic.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
 
 namespace blink {
