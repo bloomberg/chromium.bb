@@ -1,0 +1,41 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_SAFE_BROWSING_TRIGGERS_MOCK_TRIGGER_MANAGER_H_
+#define COMPONENTS_SAFE_BROWSING_TRIGGERS_MOCK_TRIGGER_MANAGER_H_
+
+#include "base/macros.h"
+#include "components/safe_browsing/triggers/trigger_manager.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+namespace safe_browsing {
+
+class MockTriggerManager : public TriggerManager {
+ public:
+  MockTriggerManager();
+  virtual ~MockTriggerManager();
+
+  MOCK_METHOD6(StartCollectingThreatDetails,
+               bool(TriggerType trigger_type,
+                    content::WebContents* web_contents,
+                    const security_interstitials::UnsafeResource& resource,
+                    net::URLRequestContextGetter* request_context_getter,
+                    history::HistoryService* history_service,
+                    const SBErrorOptions& error_display_options));
+
+  MOCK_METHOD6(FinishCollectingThreatDetails,
+               bool(TriggerType trigger_type,
+                    content::WebContents* web_contents,
+                    const base::TimeDelta& delay,
+                    bool did_proceed,
+                    int num_visits,
+                    const SBErrorOptions& error_display_options));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockTriggerManager);
+};
+
+}  // namespace safe_browsing
+
+#endif  // MOCK_TRIGGER_MANAGER_H_
