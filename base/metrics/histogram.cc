@@ -557,8 +557,7 @@ Histogram::Histogram(const char* name,
                      Sample maximum,
                      const BucketRanges* ranges)
     : HistogramBase(name) {
-  // TODO(bcwhite): Make this a DCHECK once crbug/734049 is resolved.
-  CHECK(ranges) << name << ": " << minimum << "-" << maximum;
+  DCHECK(ranges) << name << ": " << minimum << "-" << maximum;
   unlogged_samples_.reset(new SampleVector(HashMetricName(name), ranges));
   logged_samples_.reset(new SampleVector(unlogged_samples_->id(), ranges));
 }
@@ -572,8 +571,7 @@ Histogram::Histogram(const char* name,
                      HistogramSamples::Metadata* meta,
                      HistogramSamples::Metadata* logged_meta)
     : HistogramBase(name) {
-  // TODO(bcwhite): Make this a DCHECK once crbug/734049 is resolved.
-  CHECK(ranges) << name << ": " << minimum << "-" << maximum;
+  DCHECK(ranges) << name << ": " << minimum << "-" << maximum;
   unlogged_samples_.reset(
       new PersistentSampleVector(HashMetricName(name), ranges, meta, counts));
   logged_samples_.reset(new PersistentSampleVector(
@@ -641,15 +639,9 @@ std::unique_ptr<SampleVector> Histogram::SnapshotAllSamples() const {
 }
 
 std::unique_ptr<SampleVector> Histogram::SnapshotUnloggedSamples() const {
-  // TODO(bcwhite): Remove these CHECKs once crbug/734049 is resolved.
-  HistogramSamples* unlogged = unlogged_samples_.get();
-  CHECK(unlogged_samples_);
-  CHECK(unlogged_samples_->id());
-  CHECK(bucket_ranges());
   std::unique_ptr<SampleVector> samples(
       new SampleVector(unlogged_samples_->id(), bucket_ranges()));
   samples->Add(*unlogged_samples_);
-  debug::Alias(&unlogged);
   return samples;
 }
 
