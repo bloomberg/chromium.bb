@@ -1,54 +1,175 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
-}
-.scenario:first-line { font-weight: bold; font-size: 24px; }
-.expected:first-line { font-weight: bold; font-size: 24px; }
-.citation { margin-bottom: 0px; border: 2px solid blue; font-size: 24px; }
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
+<!doctype HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
+// This tests for a crash when attempting to break a blockquote at the end of
+// its content.
+selection_test(
+  [
+    '<div contenteditable>',
+      '<div>',
+         '<blockquote type="cite">',
+           '<div>one</div>',
+           '<div>|<br></div>',
+           '<div>two</div>',
+         '</blockquote>',
+      '</div>',
+    '</div>',
+  ],
+  'insertNewlineInQuotedContent',
+  [
+    '<div contenteditable>',
+      '<div>',
+         '<blockquote type="cite">',
+           '<div>one</div>',
+           '<div><br></div>',
+         '</blockquote>',
+         '|<br>',
+         '<blockquote type="cite">',
+           '<div>two</div>',
+         '</blockquote>',
+      '</div>',
+    '</div>',
+  ],
+  '1 insert BR at empty DIV.');
 
-function editingTest() {
-    moveSelectionForwardByCharacterCommand();
-    moveSelectionForwardByCharacterCommand();
-    moveSelectionForwardByCharacterCommand();
-    moveSelectionForwardByCharacterCommand();
-    insertNewlineInQuotedContentCommand();
-}
+selection_test(
+  [
+    '<div contenteditable>',
+      '<div>',
+        '<blockquote type="cite">',
+          '<div>one</div>',
+          '<div><div><div>|<br></div></div></div>',
+          '<div>two</div>',
+        '</blockquote>',
+      '</div>',
+    '</div>',
+  ],
+  'insertNewlineInQuotedContent',
+  [
+    '<div contenteditable>',
+      '<div>',
+        '<blockquote type="cite">',
+          '<div>one</div>',
+          '<div><div><div><br></div></div></div>',
+        '</blockquote>',
+        '|<br>',
+        '<blockquote type="cite">',
+          '<div>two</div>',
+        '</blockquote>',
+      '</div>',
+    '</div>',
+  ],
+  '2 insert BR at nested empty DIV.');
 
+selection_test(
+  [
+    '<div contenteditable>',
+      '<div>',
+        '<blockquote type="cite">',
+          '<div>one</div>',
+          '<div><div><div>|<br>AB</div></div></div>',
+          '<div>two</div>',
+        '</blockquote>',
+      '</div>',
+    '</div>',
+  ],
+  'insertNewlineInQuotedContent',
+  [
+    '<div contenteditable>',
+      '<div>',
+        '<blockquote type="cite">',
+          '<div>one</div>',
+          '<div><div><div><br></div></div></div>',
+        '</blockquote>',
+        '|<br>',
+        '<blockquote type="cite">',
+          '<div><div><div>AB</div></div></div>',
+          '<div>two</div>',
+        '</blockquote>',
+      '</div>',
+    '</div>',
+  ],
+  '3 insert BR before BR and text');
+
+selection_test(
+  [
+    '<div contenteditable>',
+      '<div>',
+        '<blockquote type="cite">',
+          '<div>one</div>',
+          '<div><div><div>|<br></div>AB</div></div>',
+          '<div>two</div>',
+        '</blockquote>',
+   '</div>',
+    '</div>',
+  ],
+  'insertNewlineInQuotedContent',
+  [
+    '<div contenteditable>',
+      '<div>',
+        '<blockquote type="cite">',
+          '<div>one</div>',
+          '<div><div><div><br></div></div></div>',
+        '</blockquote>',
+        '|<br>',
+        '<blockquote type="cite">',
+          '<div><div>AB</div></div>',
+          '<div>two</div>',
+        '</blockquote>',
+      '</div>',
+    '</div>',
+  ],
+  '4 insert BR at nested empty DIV and text');
+
+selection_test(
+  [
+    '<div contenteditable>',
+      '<div>',
+        '<blockquote type="cite">',
+          '<div>one</div>',
+          '<div><div><div>|<br></div></div></div>',
+          '<br>',
+          '<div>two</div>',
+        '</blockquote>',
+   '</div>',
+    '</div>',
+  ],
+  'insertNewlineInQuotedContent',
+  [
+    '<div contenteditable>',
+      '<div>',
+        '<blockquote type="cite">',
+          '<div>one</div>',
+          '<div><div><div><br></div></div></div>',
+        '</blockquote>',
+        '|<br>',
+        '<blockquote type="cite">',
+          '<br>',
+          '<div>two</div>',
+        '</blockquote>',
+      '</div>',
+    '</div>',
+  ],
+  '5 insert BR at nested empty DIV before BR');
+
+
+
+selection_test(
+  [
+    '<div contenteditable>',
+      '<blockquote type="cite">ab</blockquote>',
+      '<blockquote type="cite">|<br></blockquote>',
+    '</div>',
+  ],
+  'insertNewlineInQuotedContent',
+  [
+    '<div contenteditable>',
+      '<blockquote type="cite">ab</blockquote>',
+      '<blockquote type="cite"><br></blockquote>',
+      '|<br>',
+    '</div>',
+  ],
+  '6 insert BR in empty BLOCKQUOTE');
 </script>
-
-<title>Editing Test</title> 
-</head> 
-<body id="root">
-<div class="explanation">
-<div class="scenario">
-Splitting Mail blockquotes.
-</div>
-<div class="expected">
-Expected Results:
-<br>
-Two blockquotes, with an unquoted blank line in between.<br>
-The first blockquote contains two lines, the second one is blank.<br>
-The second blockquote is a single non-blank line.
-</div>
-</div>
-<div contenteditable class="editing">My citation:
-<div id="test">
-<blockquote class="citation" type="cite"><div>one</div><div style="min-height: 24px;"><br></div><div>two</div></blockquote>
-</div>
-</div>
-
-<script>
-runEditingTest();
-</script>
-
-</body>
-</html>
