@@ -217,6 +217,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // returns true if this scroll would change pages.
   bool HandleScrollFromAppListView(int offset, ui::EventType type);
 
+  // Returns whether the event is within a slot that is occupied by an app icon.
+  bool IsEventNearAppIcon(const ui::LocatedEvent& event);
+
   // Returns the first app list item view in the selected page in the folder.
   AppListItemView* GetCurrentPageFirstItemViewInFolder();
 
