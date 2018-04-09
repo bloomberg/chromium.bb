@@ -43,13 +43,6 @@ public class VrPopupWindow extends PopupWindow {
         mVrPopupContainer.setBackgroundDrawable(getBackground());
         mVrPopupContainer.addView(dialogView, params);
         mVrDialogManager.setDialogView(mVrPopupContainer);
-        mVrPopupContainer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                mVrDialogManager.setDialogSize(getWidth(), getHeight());
-            }
-        });
         mVrDialogManager.initVrDialog(getWidth(), getHeight());
         mVrDialogManager.setDialogFloating();
         mVrDialogManager.setDialogLocation(x, y);
