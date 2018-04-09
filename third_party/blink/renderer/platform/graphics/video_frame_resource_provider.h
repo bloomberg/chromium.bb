@@ -24,7 +24,6 @@ class SharedBitmapManager;
 
 namespace blink {
 
-// Placeholder class, to be implemented in full in later CL.
 // VideoFrameResourceProvider obtains required GPU resources for the video
 // frame.
 // VideoFrameResourceProvider methods are currently called on the media thread.
