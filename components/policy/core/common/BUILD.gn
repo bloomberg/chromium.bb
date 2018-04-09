@@ -150,6 +150,7 @@ source_set("internal") {
     "//components/data_use_measurement/core",
     "//components/json_schema",
     "//components/prefs",
+    "//components/version_info",
     "//extensions/buildflags",
     "//google_apis",
     "//net",

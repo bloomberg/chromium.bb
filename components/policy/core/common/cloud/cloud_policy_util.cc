@@ -20,12 +20,24 @@
 
 #include <utility>
 
+#include "base/logging.h"
+#include "components/version_info/version_info.h"
+
+#if defined(OS_WIN)
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/windows_version.h"
+#endif
 
 #if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#endif
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "base/sys_info.h"
 #endif
 
 namespace policy {
@@ -78,6 +90,27 @@ std::string GetMachineName() {
   NOTREACHED();
   return std::string();
 #endif
+}
+
+std::string GetOSVersion() {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  return base::SysInfo::OperatingSystemVersion();
+#elif defined(OS_MACOSX)
+  return base::mac::GetModelIdentifier();
+#elif defined(OS_WIN)
+  base::win::OSInfo::VersionNumber version_number =
+      base::win::OSInfo::GetInstance()->version_number();
+  return base::StringPrintf("%d.%d.%d.%d", version_number.major,
+                            version_number.minor, version_number.build,
+                            version_number.patch);
+#else
+  NOTREACHED();
+  return std::string();
+#endif
+}
+
+std::string GetOSPlatform() {
+  return version_info::GetOSType();
 }
 
 }  // namespace policy

@@ -14,6 +14,12 @@ namespace policy {
 // Returns the name of the machine.  This function is platform specific.
 POLICY_EXPORT std::string GetMachineName();
 
+// Returns the OS version of the machine.  This function is platform specific.
+POLICY_EXPORT std::string GetOSVersion();
+
+// Returns the OS platform of the machine.  This function is platform specific.
+POLICY_EXPORT std::string GetOSPlatform();
+
 }  // namespace policy
 
 #endif  // COMPONENTS_POLICY_CORE_COMMON_CLOUD_CLOUD_POLICY_UTIL_H_
