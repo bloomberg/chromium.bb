@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.bookmarks.BookmarkPage;
 import org.chromium.chrome.browser.download.DownloadPage;
 import org.chromium.chrome.browser.feed.FeedNewTabPage;
 import org.chromium.chrome.browser.history.HistoryPage;
-import org.chromium.chrome.browser.physicalweb.PhysicalWebDiagnosticsPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -62,14 +61,16 @@ public class NativePageFactory {
                     new RecentTabsManager(tab, tab.getProfile(), activity);
             return new RecentTabsPage(activity, recentTabsManager);
         }
-
-        protected NativePage buildPhysicalWebDiagnosticsPage(Activity activity, Tab tab) {
-            return new PhysicalWebDiagnosticsPage(activity, new TabShim(tab));
-        }
     }
 
     enum NativePageType {
-        NONE, CANDIDATE, NTP, BOOKMARKS, RECENT_TABS, PHYSICAL_WEB, DOWNLOADS, HISTORY,
+        NONE,
+        CANDIDATE,
+        NTP,
+        BOOKMARKS,
+        RECENT_TABS,
+        DOWNLOADS,
+        HISTORY,
     }
 
     private static NativePageType nativePageType(String url, NativePage candidatePage,
@@ -96,12 +97,6 @@ public class NativePageFactory {
             return NativePageType.HISTORY;
         } else if (UrlConstants.RECENT_TABS_HOST.equals(host) && !isIncognito) {
             return NativePageType.RECENT_TABS;
-        } else if (UrlConstants.PHYSICAL_WEB_DIAGNOSTICS_HOST.equals(host)) {
-            if (ChromeFeatureList.isEnabled("PhysicalWeb")) {
-                return NativePageType.PHYSICAL_WEB;
-            } else {
-                return NativePageType.NONE;
-            }
         } else {
             return NativePageType.NONE;
         }
@@ -151,9 +146,6 @@ public class NativePageFactory {
                 break;
             case RECENT_TABS:
                 page = sNativePageBuilder.buildRecentTabsPage(activity, tab);
-                break;
-            case PHYSICAL_WEB:
-                page = sNativePageBuilder.buildPhysicalWebDiagnosticsPage(activity, tab);
                 break;
             default:
                 assert false;
