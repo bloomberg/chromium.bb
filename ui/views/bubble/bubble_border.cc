@@ -206,7 +206,8 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
   // TODO(estade): handle more anchor positions.
   if (UseMaterialDesign() &&
       (arrow_ == TOP_RIGHT || arrow_ == TOP_LEFT || arrow_ == BOTTOM_CENTER ||
-       arrow_ == LEFT_CENTER || arrow_ == RIGHT_CENTER)) {
+       arrow_ == TOP_CENTER || arrow_ == LEFT_CENTER ||
+       arrow_ == RIGHT_CENTER)) {
     gfx::Rect contents_bounds(contents_size);
     // Apply the border part of the inset before calculating coordinates because
     // the border should align with the anchor's border. For the purposes of
@@ -226,6 +227,8 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
           anchor_rect.bottom_left() - contents_bounds.origin();
     } else if (arrow_ == BOTTOM_CENTER) {
       contents_bounds += CenterTop(anchor_rect) - CenterBottom(contents_bounds);
+    } else if (arrow_ == TOP_CENTER) {
+      contents_bounds += CenterBottom(anchor_rect) - CenterTop(contents_bounds);
     } else if (arrow_ == LEFT_CENTER) {
       contents_bounds += RightCenter(anchor_rect) - LeftCenter(contents_bounds);
     } else if (arrow_ == RIGHT_CENTER) {

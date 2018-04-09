@@ -423,9 +423,8 @@ TEST_F(BubbleBorderTest, GetBoundsOriginTest) {
                  : kAnchor.x() + kStrokeWidth - kBorderThickness,
          kTopHorizArrowY},
         {BubbleBorder::TOP_CENTER, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-         UseMd() ? kAnchor.CenterPoint().x()
-                 : kAnchor.CenterPoint().x() - kArrowOffsetForHorizCenter,
-         kTopHorizArrowY + (UseMd() ? kInsets.top() - kStrokeWidth : 0)},
+         kAnchor.CenterPoint().x() - kArrowOffsetForHorizCenter,
+         kTopHorizArrowY},
         {BubbleBorder::BOTTOM_RIGHT, BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
          UseMd() ? kAnchor.CenterPoint().x() - kTotalSizeWithHorizArrow.width()
                  : kAnchor.CenterPoint().x() + kArrowOffsetForNotCenter -
