@@ -499,17 +499,17 @@ const AccountReconcilorTestDiceParam kDiceParams[] = {
     {  "*xAB",  "B",      true,       "",          "*xAB",        "B"},
     {  "*xAB",  "",       true,       "B",         "*xAB",        "B"},
     // Sync enabled, token error on secondary.
-    {  "*AxB",  "AB",     true,       "XA",        "*AxB",        "A"},
-    {  "*AxB",  "BA",     true,       "XA",        "*AxB",        "A"},
-    {  "*AxB",  "A",      true,       "",          "*AxB",        "A"},
-    {  "*AxB",  "B",      true,       "XA",        "*AxB",        "A"},
-    {  "*AxB",  "",       true,       "A",         "*AxB",        "A"},
+    {  "*AxB",  "AB",     true,       "XA",        "*A",          "A"},
+    {  "*AxB",  "BA",     true,       "XA",        "*A",          "A"},
+    {  "*AxB",  "A",      true,       "",          "*A",          "A"},
+    {  "*AxB",  "B",      true,       "XA",        "*A",          "A"},
+    {  "*AxB",  "",       true,       "A",         "*A",          "A"},
     // Sync enabled, token error on both accounts.
-    {  "*xAxB", "AB",     true,       "X",         "*xAxB",       ""},
-    {  "*xAxB", "BA",     true,       "X",         "*xAxB",       ""},
-    {  "*xAxB", "A",      true,       "X",         "*xAxB",       ""},
-    {  "*xAxB", "B",      true,       "X",         "*xAxB",       ""},
-    {  "*xAxB", "",       true,       "",          "*xAxB",       ""},
+    {  "*xAxB", "AB",     true,       "X",         "*xA",         ""},
+    {  "*xAxB", "BA",     true,       "X",         "*xA",         ""},
+    {  "*xAxB", "A",      true,       "X",         "*xA",         ""},
+    {  "*xAxB", "B",      true,       "X",         "*xA",         ""},
+    {  "*xAxB", "",       true,       "",          "*xA",         ""},
     // Sync disabled.
     {  "AB",    "AB",     true,       "",          "AB",          "AB"},
     {  "AB",    "BA",     true,       "",          "AB",          "BA"},
@@ -517,23 +517,23 @@ const AccountReconcilorTestDiceParam kDiceParams[] = {
     {  "AB",    "B",      true,       "A",         "AB",          "BA"},
     {  "AB",    "",       true,       "AB",        "AB",          "AB"},
     // Sync disabled, token error on first account.
-    {  "xAB",   "AB",     true,       "XB",        "xAB",         "B"},
-    {  "xAB",   "BA",     true,       "XB",        "xAB",         "B"},
-    {  "xAB",   "A",      true,       "XB",        "xAB",         "B"},
-    {  "xAB",   "B",      true,       "",          "xAB",         "B"},
-    {  "xAB",   "",       true,       "B",         "xAB",         "B"},
+    {  "xAB",   "AB",     true,       "XB",        "B",           "B"},
+    {  "xAB",   "BA",     true,       "XB",        "B",           "B"},
+    {  "xAB",   "A",      true,       "XB",        "B",           "B"},
+    {  "xAB",   "B",      true,       "",          "B",           "B"},
+    {  "xAB",   "",       true,       "B",         "B",           "B"},
     // Sync disabled, token error on second account       .
-    {  "AxB",   "AB",     true,       "XA",        "AxB",         "A"},
-    {  "AxB",   "BA",     true,       "XA",        "AxB",         "A"},
-    {  "AxB",   "A",      true,       "",          "AxB",         "A"},
-    {  "AxB",   "B",      true,       "XA",        "AxB",         "A"},
-    {  "AxB",   "",       true,       "A",         "AxB",         "A"},
+    {  "AxB",   "AB",     true,       "XA",        "A",           "A"},
+    {  "AxB",   "BA",     true,       "XA",        "A",           "A"},
+    {  "AxB",   "A",      true,       "",          "A",           "A"},
+    {  "AxB",   "B",      true,       "XA",        "A",           "A"},
+    {  "AxB",   "",       true,       "A",         "A",           "A"},
     // Sync disabled, token error on both accounts.
-    {  "xAxB",  "AB",     true,       "X",         "xAxB",        ""},
-    {  "xAxB",  "BA",     true,       "X",         "xAxB",        ""},
-    {  "xAxB",  "A",      true,       "X",         "xAxB",        ""},
-    {  "xAxB",  "B",      true,       "X",         "xAxB",        ""},
-    {  "xAxB",  "",       true,       "",          "xAxB",        ""},
+    {  "xAxB",  "AB",     true,       "X",         "",            ""},
+    {  "xAxB",  "BA",     true,       "X",         "",            ""},
+    {  "xAxB",  "A",      true,       "X",         "",            ""},
+    {  "xAxB",  "B",      true,       "X",         "",            ""},
+    {  "xAxB",  "",       true,       "",          "",            ""},
 
     // Chrome is running: Do not change the order of accounts already present in
     // the Gaia cookies.
@@ -550,17 +550,17 @@ const AccountReconcilorTestDiceParam kDiceParams[] = {
     {  "*xAB",  "B",      false,      "",          "*xAB",        "B"},
     {  "*xAB",  "",       false,      "B",         "*xAB",        "B"},
     // Sync enabled, token error on secondary.
-    {  "*AxB",  "AB",     false,      "XA",        "*AxB",        "A"},
-    {  "*AxB",  "BA",     false,      "XA",        "*AxB",        "A"},
-    {  "*AxB",  "A",      false,      "",          "*AxB",        "A"},
-    {  "*AxB",  "B",      false,      "XA",        "*AxB",        "A"},
-    {  "*AxB",  "",       false,      "A",         "*AxB",        "A"},
+    {  "*AxB",  "AB",     false,      "XA",        "*A",          "A"},
+    {  "*AxB",  "BA",     false,      "XA",        "*A",          "A"},
+    {  "*AxB",  "A",      false,      "",          "*A",          "A"},
+    {  "*AxB",  "B",      false,      "XA",        "*A",          "A"},
+    {  "*AxB",  "",       false,      "A",         "*A",          "A"},
     // Sync enabled, token error on both accounts.
-    {  "*xAxB", "AB",     false,      "X",         "*xAxB",       ""},
-    {  "*xAxB", "BA",     false,      "X",         "*xAxB",       ""},
-    {  "*xAxB", "A",      false,      "X",         "*xAxB",       ""},
-    {  "*xAxB", "B",      false,      "X",         "*xAxB",       ""},
-    {  "*xAxB", "",       false,      "",          "*xAxB",       ""},
+    {  "*xAxB", "AB",     false,      "X",         "*xA",         ""},
+    {  "*xAxB", "BA",     false,      "X",         "*xA",         ""},
+    {  "*xAxB", "A",      false,      "X",         "*xA",         ""},
+    {  "*xAxB", "B",      false,      "X",         "*xA",         ""},
+    {  "*xAxB", "",       false,      "",          "*xA",         ""},
     // Sync disabled.
     {  "AB",    "AB",     false,      "",          "AB",          "AB"},
     {  "AB",    "BA",     false,      "",          "AB",          "BA"},
@@ -568,23 +568,23 @@ const AccountReconcilorTestDiceParam kDiceParams[] = {
     {  "AB",    "B",      false,      "A",         "AB",          "BA"},
     {  "AB",    "",       false,      "AB",        "AB",          "AB"},
     // Sync disabled, token error on first account.
-    {  "xAB",   "AB",     false,      "X",         "xA",          ""},
-    {  "xAB",   "BA",     false,      "XB",        "xAB",         "B"},
-    {  "xAB",   "A",      false,      "X",         "xA",          ""},
-    {  "xAB",   "B",      false,      "",          "xAB",         "B"},
-    {  "xAB",   "",       false,      "B",         "xAB",         "B"},
+    {  "xAB",   "AB",     false,      "X",         "",            ""},
+    {  "xAB",   "BA",     false,      "XB",        "B",           "B"},
+    {  "xAB",   "A",      false,      "X",         "",            ""},
+    {  "xAB",   "B",      false,      "",          "B",           "B"},
+    {  "xAB",   "",       false,      "B",         "B",           "B"},
     // Sync disabled, token error on second account.
-    {  "AxB",   "AB",     false,      "XA",        "AxB",         "A"},
-    {  "AxB",   "BA",     false,      "X",         "xB",          ""},
-    {  "AxB",   "A",      false,      "",          "AxB",         "A"},
-    {  "AxB",   "B",      false,      "X",         "xB",          ""},
-    {  "AxB",   "",       false,      "A",         "AxB",         "A"},
+    {  "AxB",   "AB",     false,      "XA",        "A",           "A"},
+    {  "AxB",   "BA",     false,      "X",         "",            ""},
+    {  "AxB",   "A",      false,      "",          "A",           "A"},
+    {  "AxB",   "B",      false,      "X",         "",            ""},
+    {  "AxB",   "",       false,      "A",         "A",           "A"},
     // Sync disabled, token error on both accounts.
-    {  "xAxB",  "AB",     false,      "X",         "xAxB",        ""},
-    {  "xAxB",  "BA",     false,      "X",         "xAxB",        ""},
-    {  "xAxB",  "A",      false,      "X",         "xAxB",        ""},
-    {  "xAxB",  "B",      false,      "X",         "xAxB",        ""},
-    {  "xAxB",  "",       false,      "",          "xAxB",        ""},
+    {  "xAxB",  "AB",     false,      "X",         "",            ""},
+    {  "xAxB",  "BA",     false,      "X",         "",            ""},
+    {  "xAxB",  "A",      false,      "X",         "",            ""},
+    {  "xAxB",  "B",      false,      "X",         "",            ""},
+    {  "xAxB",  "",       false,      "",          "",            ""},
 
     // Miscellaneous cases.
     // Check that unknown Gaia accounts are signed out.
@@ -598,8 +598,8 @@ const AccountReconcilorTestDiceParam kDiceParams[] = {
     // Required for idempotency check.
     {  "",      "",       false,      "",          "",            ""},
     {  "*A",    "A",      false,      "",          "*A",          "A"},
-    {  "xB",    "",       false,      "",          "xB",          ""},
-    {  "xA",    "",       false,      "",          "xA",          ""},
+    {  "A",     "A",      false,      "",          "A",           "A"},
+    {  "B",     "B",      false,      "",          "B",           "B"},
     {  "*xA",   "",       false,      "",          "*xA",         ""},
     {  "*xAB",  "B",      false,      "",          "*xAB",        "B"},
 };
@@ -691,6 +691,24 @@ class AccountReconcilorTestDice
     ADD_FAILURE() << "Could not check that reconcile is idempotent.";
   }
 
+  void ConfigureCookieManagerService(const std::string& cookies) {
+    if (cookies.size() == 0) {
+      cookie_manager_service()->SetListAccountsResponseNoAccounts();
+    } else if (cookies.size() == 1) {
+      cookie_manager_service()->SetListAccountsResponseOneAccount(
+          accounts_[cookies[0]].email.c_str(),
+          accounts_[cookies[0]].gaia_id.c_str());
+    } else {
+      ASSERT_EQ(2u, cookies.size());
+      cookie_manager_service()->SetListAccountsResponseTwoAccounts(
+          accounts_[cookies[0]].email.c_str(),
+          accounts_[cookies[0]].gaia_id.c_str(),
+          accounts_[cookies[1]].email.c_str(),
+          accounts_[cookies[1]].gaia_id.c_str());
+    }
+    cookie_manager_service()->set_list_accounts_stale_for_testing(true);
+  }
+
   std::map<char, Account> accounts_;
 };
 
@@ -723,20 +741,7 @@ TEST_P(AccountReconcilorTestDice, TableRowTest) {
 
   // Setup cookies.
   std::string cookies(GetParam().cookies);
-  if (cookies.size() == 0) {
-    cookie_manager_service()->SetListAccountsResponseNoAccounts();
-  } else if (cookies.size() == 1) {
-    cookie_manager_service()->SetListAccountsResponseOneAccount(
-        accounts_[GetParam().cookies[0]].email.c_str(),
-        accounts_[GetParam().cookies[0]].gaia_id.c_str());
-  } else {
-    ASSERT_EQ(2u, cookies.size());
-    cookie_manager_service()->SetListAccountsResponseTwoAccounts(
-        accounts_[GetParam().cookies[0]].email.c_str(),
-        accounts_[GetParam().cookies[0]].gaia_id.c_str(),
-        accounts_[GetParam().cookies[1]].email.c_str(),
-        accounts_[GetParam().cookies[1]].gaia_id.c_str());
-  }
+  ConfigureCookieManagerService(cookies);
 
   // Call list accounts now so that the next call completes synchronously.
   cookie_manager_service()->ListAccounts(nullptr, nullptr, "foo");
@@ -782,10 +787,16 @@ TEST_P(AccountReconcilorTestDice, TableRowTest) {
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
   VerifyCurrentTokens(ParseTokenString(GetParam().tokens_after_reconcile));
+
+  testing::Mock::VerifyAndClearExpectations(GetMockReconcilor());
+
   // Another reconcile is sometimes triggered if Chrome accounts have changed.
   // Allow it to finish.
-  cookie_manager_service()->SetListAccountsResponseNoAccounts();
-  cookie_manager_service()->set_list_accounts_stale_for_testing(true);
+  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(testing::_))
+      .WillRepeatedly(testing::Return());
+  EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction())
+      .WillRepeatedly(testing::Return());
+  ConfigureCookieManagerService("");
   base::RunLoop().RunUntilIdle();
 }
 
@@ -1023,9 +1034,9 @@ TEST_F(AccountReconcilorTest, HandleSigninDuringReconcile) {
 
   cookie_manager_service()->SetListAccountsResponseNoAccounts();
   AccountReconcilor* reconcilor = GetMockReconcilor();
-  ASSERT_TRUE(
-      reconcilor->delegate_->ShouldRevokeAllSecondaryTokensBeforeReconcile(
-          std::vector<gaia::ListedAccount>()));
+  ASSERT_EQ(signin::AccountReconcilorDelegate::RevokeTokenOption::kRevoke,
+            reconcilor->delegate_->ShouldRevokeSecondaryTokensBeforeReconcile(
+                std::vector<gaia::ListedAccount>()));
 
   // Signin during reconcile.
   reconcilor->StartReconcile();

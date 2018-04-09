@@ -30,7 +30,7 @@ class DiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
       const std::vector<gaia::ListedAccount>& gaia_accounts,
       const std::string& primary_account,
       bool first_execution) const override;
-  bool ShouldRevokeAllSecondaryTokensBeforeReconcile(
+  RevokeTokenOption ShouldRevokeSecondaryTokensBeforeReconcile(
       const std::vector<gaia::ListedAccount>& gaia_accounts) override;
   void OnReconcileFinished(const std::string& first_account,
                            bool reconcile_is_noop) override;

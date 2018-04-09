@@ -29,9 +29,10 @@ std::string AccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
   return std::string();
 }
 
-bool AccountReconcilorDelegate::ShouldRevokeAllSecondaryTokensBeforeReconcile(
+AccountReconcilorDelegate::RevokeTokenOption
+AccountReconcilorDelegate::ShouldRevokeSecondaryTokensBeforeReconcile(
     const std::vector<gaia::ListedAccount>& gaia_accounts) {
-  return false;
+  return RevokeTokenOption::kDoNotRevoke;
 }
 
 base::TimeDelta AccountReconcilorDelegate::GetReconcileTimeout() const {

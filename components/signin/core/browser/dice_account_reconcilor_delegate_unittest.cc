@@ -33,11 +33,13 @@ TEST(DiceAccountReconcilorDelegateTest, RevokeTokens) {
   sync_preferences::TestingPrefServiceSyncable pref_service;
   TestSigninClient client(&pref_service);
   {
-    // Dice is enabled, don't revoke.
+    // Dice is enabled, revoke only tokens in error state.
     DiceAccountReconcilorDelegate delegate(&client,
                                            AccountConsistencyMethod::kDice);
-    EXPECT_FALSE(delegate.ShouldRevokeAllSecondaryTokensBeforeReconcile(
-        std::vector<gaia::ListedAccount>()));
+    EXPECT_EQ(
+        signin::AccountReconcilorDelegate::RevokeTokenOption::kRevokeIfInError,
+        delegate.ShouldRevokeSecondaryTokensBeforeReconcile(
+            std::vector<gaia::ListedAccount>()));
   }
   {
     DiceAccountReconcilorDelegate delegate(
@@ -45,11 +47,14 @@ TEST(DiceAccountReconcilorDelegateTest, RevokeTokens) {
     // Gaia accounts are not empty, don't revoke.
     gaia::ListedAccount gaia_account;
     gaia_account.id = "other";
-    EXPECT_FALSE(delegate.ShouldRevokeAllSecondaryTokensBeforeReconcile(
-        std::vector<gaia::ListedAccount>{gaia_account}));
+    EXPECT_EQ(
+        signin::AccountReconcilorDelegate::RevokeTokenOption::kDoNotRevoke,
+        delegate.ShouldRevokeSecondaryTokensBeforeReconcile(
+            std::vector<gaia::ListedAccount>{gaia_account}));
     // Revoke.
-    EXPECT_TRUE(delegate.ShouldRevokeAllSecondaryTokensBeforeReconcile(
-        std::vector<gaia::ListedAccount>()));
+    EXPECT_EQ(signin::AccountReconcilorDelegate::RevokeTokenOption::kRevoke,
+              delegate.ShouldRevokeSecondaryTokensBeforeReconcile(
+                  std::vector<gaia::ListedAccount>()));
   }
 }
 
