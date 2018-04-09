@@ -288,7 +288,7 @@ void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
       std::move(job_record->output_dmabuf_fds);
 
   EnqueueOutput(index);
-  input_queue_.push(make_linked_ptr(job_record.release()));
+  input_queue_.emplace(std::move(job_record));
   EnqueueInput();
 }
 
@@ -667,7 +667,7 @@ void V4L2ImageProcessor::Dequeue() {
 
     // Jobs are always processed in FIFO order.
     DCHECK(!running_jobs_.empty());
-    linked_ptr<JobRecord> job_record = running_jobs_.front();
+    std::unique_ptr<JobRecord> job_record = std::move(running_jobs_.front());
     running_jobs_.pop();
 
     DVLOGF(4) << "Processing finished, returning frame, index=" << dqbuf.index;
@@ -684,7 +684,7 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
   DCHECK(!free_input_buffers_.empty());
 
   // Enqueue an input (VIDEO_OUTPUT) buffer for an input video frame.
-  linked_ptr<JobRecord> job_record = input_queue_.front();
+  std::unique_ptr<JobRecord> job_record = std::move(input_queue_.front());
   input_queue_.pop();
   const int index = free_input_buffers_.back();
   InputRecord& input_record = input_buffer_map_[index];
@@ -714,12 +714,13 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
   }
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
   input_record.at_device = true;
-  running_jobs_.push(job_record);
-  free_input_buffers_.pop_back();
-  input_buffer_queued_count_++;
 
   DVLOGF(4) << "enqueued frame ts="
             << job_record->frame->timestamp().InMilliseconds() << " to device.";
+
+  running_jobs_.emplace(std::move(job_record));
+  free_input_buffers_.pop_back();
+  input_buffer_queued_count_++;
 
   return true;
 }
