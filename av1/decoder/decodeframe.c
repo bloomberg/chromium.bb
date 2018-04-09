@@ -2168,7 +2168,7 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
 }
 
 static void read_film_grain(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
-  if (cm->film_grain_params_present) {
+  if (cm->film_grain_params_present && (cm->show_frame || cm->showable_frame)) {
     av1_read_film_grain_params(cm, rb);
   } else {
     memset(&cm->film_grain_params, 0, sizeof(cm->film_grain_params));
@@ -3177,9 +3177,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   if (!frame_is_intra_only(cm)) read_global_motion(cm, rb);
 
   cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
-  if (cm->show_frame || cm->showable_frame) {
-    read_film_grain(cm, rb);
-  }
+  read_film_grain(cm, rb);
 
   set_single_tile_decoding_mode(&pbi->common);
   return 0;
