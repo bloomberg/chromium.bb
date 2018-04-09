@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
+#include "base/sys_info.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -20,11 +23,15 @@
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/ukm/ukm_service.h"
 #include "components/ukm/ukm_source.h"
+#include "components/variations/service/variations_field_trial_creator.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
 #include "content/public/test/test_utils.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/metrics_proto/ukm/report.pb.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -154,6 +161,24 @@ class UkmBrowserTest : public SyncTest {
     auto* service = ukm_service();
     DCHECK(service);
     return service->reporting_service_.ukm_log_store()->has_unsent_logs();
+  }
+
+  ukm::Report GetUkmReport() {
+    EXPECT_TRUE(HasUnsentUkmLogs());
+
+    metrics::PersistedLogs* log_store =
+        ukm_service()->reporting_service_.ukm_log_store();
+    EXPECT_FALSE(log_store->has_staged_log());
+    log_store->StageNextLog();
+    EXPECT_TRUE(log_store->has_staged_log());
+
+    std::string uncompressed_log_data;
+    EXPECT_TRUE(compression::GzipUncompress(log_store->staged_log(),
+                                            &uncompressed_log_data));
+
+    ukm::Report report;
+    EXPECT_TRUE(report.ParseFromString(uncompressed_log_data));
+    return report;
   }
 
  protected:
@@ -403,6 +428,44 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
   EXPECT_TRUE(ukm_enabled());
   // Client ID should have been reset.
   EXPECT_NE(original_client_id, client_id());
+
+  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  CloseBrowserSynchronously(sync_browser);
+}
+
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogProtoData) {
+  MetricsConsentOverride metrics_consent(true);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+
+  Browser* sync_browser = CreateBrowser(profile);
+  EXPECT_TRUE(ukm_enabled());
+  uint64_t original_client_id = client_id();
+  EXPECT_NE(0U, original_client_id);
+
+  // Make sure there is a persistent log.
+  BuildAndStoreUkmLog();
+  EXPECT_TRUE(HasUnsentUkmLogs());
+
+  // Check log contents.
+  ukm::Report report = GetUkmReport();
+  EXPECT_EQ(original_client_id, report.client_id());
+  // Note: The version number reported in the proto may have a suffix, such as
+  // "-64-devel", so use use StartsWith() rather than checking for equality.
+  EXPECT_TRUE(base::StartsWith(report.system_profile().app_version(),
+                               version_info::GetVersionNumber(),
+                               base::CompareCase::SENSITIVE));
+
+// Chrome OS hardware class comes from a different API than on other platforms.
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ(variations::VariationsFieldTrialCreator::GetShortHardwareClass(),
+            report.system_profile().hardware().hardware_class());
+#else   // !defined(OS_CHROMEOS)
+  EXPECT_EQ(base::SysInfo::HardwareModelName(),
+            report.system_profile().hardware().hardware_class());
+#endif  // defined(OS_CHROMEOS)
 
   harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
   CloseBrowserSynchronously(sync_browser);

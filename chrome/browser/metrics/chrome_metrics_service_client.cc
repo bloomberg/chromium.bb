@@ -731,6 +731,11 @@ void ChromeMetricsServiceClient::RegisterUKMProviders() {
           std::make_unique<metrics::NetworkQualityEstimatorProviderImpl>(
               g_browser_process->io_thread())));
 
+#if defined(OS_CHROMEOS)
+  ukm_service_->RegisterMetricsProvider(
+      std::make_unique<ChromeOSMetricsProvider>());
+#endif  // !defined(OS_CHROMEOS)
+
   // TODO(rkaplow): Support synthetic trials for UKM.
   ukm_service_->RegisterMetricsProvider(
       std::make_unique<variations::FieldTrialsProvider>(nullptr,

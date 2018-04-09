@@ -88,8 +88,6 @@ UkmService::UkmService(PrefService* pref_service,
   scheduler_.reset(new ukm::UkmRotationScheduler(rotate_callback,
                                                  get_upload_interval_callback));
 
-  metrics_providers_.Init();
-
   StoreWhitelistedEntries();
 
   DelegatingUkmRecorder::Get()->AddDelegate(self_ptr_factory_.GetWeakPtr());
@@ -105,6 +103,11 @@ void UkmService::Initialize() {
   DCHECK(!initialize_started_);
   DVLOG(1) << "UkmService::Initialize";
   initialize_started_ = true;
+
+  DCHECK_EQ(0, report_count_);
+  client_id_ = LoadOrGenerateClientId(pref_service_);
+  session_id_ = LoadSessionId(pref_service_);
+  metrics_providers_.Init();
 
   StartInitTask();
 }
@@ -202,10 +205,6 @@ void UkmService::RegisterPrefs(PrefRegistrySimple* registry) {
 void UkmService::StartInitTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "UkmService::StartInitTask";
-  client_id_ = LoadOrGenerateClientId(pref_service_);
-  session_id_ = LoadSessionId(pref_service_);
-  report_count_ = 0;
-
   metrics_providers_.AsyncInit(base::Bind(&UkmService::FinishedInitTask,
                                           self_ptr_factory_.GetWeakPtr()));
 }
