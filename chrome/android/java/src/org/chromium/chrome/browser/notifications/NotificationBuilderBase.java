@@ -425,11 +425,29 @@ public abstract class NotificationBuilderBase {
     @TargetApi(Build.VERSION_CODES.M) // For the Icon class.
     protected static void setSmallIconOnBuilder(
             ChromeNotificationBuilder builder, int iconId, @Nullable Bitmap iconBitmap) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && iconBitmap != null) {
+        if (iconBitmap != null && deviceSupportsBitmapStatusBarIcons()) {
             builder.setSmallIcon(Icon.createWithBitmap(iconBitmap));
         } else {
             builder.setSmallIcon(iconId);
         }
+    }
+
+    /**
+     * Returns true if it is safe to call Notification.Builder.setSmallIcon(Icon) on this device.
+     */
+    @VisibleForTesting
+    static boolean deviceSupportsBitmapStatusBarIcons() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            // The Icon class was only added in Android M.
+            return false;
+        }
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M
+                && Build.MANUFACTURER.equalsIgnoreCase("samsung")) {
+            // Updating a notification with a bitmap status bar icon leads to a crash on Samsung
+            // devices on Marshmallow, see https://crbug.com/829367.
+            return false;
+        }
+        return true;
     }
 
     /**

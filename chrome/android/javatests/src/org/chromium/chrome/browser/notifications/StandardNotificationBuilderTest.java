@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import static android.content.Context.NOTIFICATION_SERVICE;
+
 import android.annotation.TargetApi;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -183,7 +186,7 @@ public class StandardNotificationBuilderTest {
                 BitmapFactory.decodeResource(context.getResources(), R.drawable.chrome_sync_logo);
 
         notificationBuilder.setSmallIcon(R.drawable.ic_chrome);
-        notificationBuilder.setSmallIcon(bitmap); // Should override on M+
+        notificationBuilder.setSmallIcon(bitmap);
         notificationBuilder.setChannelId(ChannelDefinitions.CHANNEL_ID_SITES);
 
         Notification notification = notificationBuilder.build();
@@ -192,7 +195,7 @@ public class StandardNotificationBuilderTest {
 
         Assert.assertNotNull(result);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (NotificationBuilderBase.deviceSupportsBitmapStatusBarIcons()) {
             // Check the white overlay was applied.
             Bitmap expected = bitmap.copy(bitmap.getConfig(), true);
             NotificationBuilderBase.applyWhiteOverlayToBitmap(expected);
@@ -209,6 +212,37 @@ public class StandardNotificationBuilderTest {
                     BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_chrome);
             Assert.assertTrue(expected.sameAs(result));
         }
+    }
+
+    /**
+     * Regression test for crash observed on Samsung Marshmallow devices - see crbug/829367.
+     */
+    @Test
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    @SmallTest
+    @Feature({"Browser", "Notifications"})
+    public void testRenotifyWithCustomBadgeDoesNotCrash() {
+        Context context = InstrumentationRegistry.getTargetContext();
+
+        Notification notification = new StandardNotificationBuilder(context)
+                                            .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES)
+                                            .setSmallIcon(R.drawable.ic_chrome)
+                                            .build();
+
+        Bitmap bitmap = Bitmap.createBitmap(new int[] {Color.BLUE}, 1, 1, Bitmap.Config.ARGB_8888);
+
+        Notification notificationWithBitmap =
+                new StandardNotificationBuilder(context)
+                        .setChannelId(ChannelDefinitions.CHANNEL_ID_SITES)
+                        .setSmallIcon(R.drawable.ic_chrome)
+                        .setSmallIcon(bitmap)
+                        .build();
+
+        NotificationManager notificationManager =
+                (NotificationManager) context.getSystemService(NOTIFICATION_SERVICE);
+
+        notificationManager.notify("tag-1", 1, notification);
+        notificationManager.notify("tag-1", 1, notificationWithBitmap);
     }
 
     @Test
