@@ -926,14 +926,22 @@ views::View* ProfileChooserView::CreateDiceSyncErrorView(
   view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(kMenuEdgeMargin),
       kMenuEdgeMargin));
+
+  const bool show_sync_paused_ui = error == sync_ui_util::AUTH_ERROR;
   // Add profile hover button.
   auto current_profile_photo = std::make_unique<BadgedProfilePhoto>(
-      BadgedProfilePhoto::BADGE_TYPE_SYNC_ERROR, avatar_item.icon);
-  HoverButton* current_profile =
-      new HoverButton(this, std::move(current_profile_photo),
-                      l10n_util::GetStringUTF16(IDS_SYNC_ERROR_USER_MENU_TITLE),
-                      avatar_item.username);
-  current_profile->SetStyle(HoverButton::STYLE_ERROR);
+      show_sync_paused_ui ? BadgedProfilePhoto::BADGE_TYPE_SYNC_PAUSED
+                          : BadgedProfilePhoto::BADGE_TYPE_SYNC_ERROR,
+      avatar_item.icon);
+  HoverButton* current_profile = new HoverButton(
+      this, std::move(current_profile_photo),
+      l10n_util::GetStringUTF16(show_sync_paused_ui
+                                    ? IDS_PROFILES_DICE_SYNC_PAUSED_TITLE
+                                    : IDS_SYNC_ERROR_USER_MENU_TITLE),
+      avatar_item.username);
+
+  if (!show_sync_paused_ui)
+    current_profile->SetStyle(HoverButton::STYLE_ERROR);
   current_profile->SetEnabled(false);
   // Remove the default |HoverButton| border from |current_profile| so the
   // insets of |BoxLayout| are used for aligment instead.

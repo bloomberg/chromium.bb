@@ -21,6 +21,7 @@ class BadgedProfilePhoto : public views::View {
     BADGE_TYPE_CHILD,
     BADGE_TYPE_SYNC_COMPLETE,
     BADGE_TYPE_SYNC_ERROR,
+    BADGE_TYPE_SYNC_PAUSED,
   };
 
   static const char kViewClassName[];

@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -503,8 +504,19 @@ void AvatarButton::Update() {
   if (use_generic_button) {
     SetImage(views::Button::STATE_NORMAL, generic_avatar_);
   } else if (error_controller_.HasAvatarError()) {
-    SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(kSyncProblemIcon, 16, gfx::kGoogleRed700));
+    // When DICE is enabled and the error is an auth error, the sync-paused icon
+    // is shown.
+    int dummy;
+    const bool should_show_sync_paused_ui =
+        AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_) &&
+        sync_ui_util::GetMessagesForAvatarSyncError(
+            profile_, *SigninManagerFactory::GetForProfile(profile_), &dummy,
+            &dummy) == sync_ui_util::AUTH_ERROR;
+    SetImage(
+        views::Button::STATE_NORMAL,
+        should_show_sync_paused_ui
+            ? gfx::CreateVectorIcon(kSyncPausedIcon, 16, gfx::kGoogleBlue500)
+            : gfx::CreateVectorIcon(kSyncProblemIcon, 16, gfx::kGoogleRed700));
   } else {
     SetImage(views::Button::STATE_NORMAL, gfx::ImageSkia());
   }
