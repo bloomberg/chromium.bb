@@ -51,7 +51,6 @@ class DynamicGeometryBinding;
 class ScopedRenderPassTexture;
 class StaticGeometryBinding;
 class TextureDrawQuad;
-struct DrawRenderPassDrawQuadParams;
 
 // Class that handles drawing of composited render layers using GL.
 class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
@@ -167,6 +166,8 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
     ScopedGpuMemoryBufferTexture texture;
     int frames_waiting_for_reuse = 0;
   };
+
+  struct DrawRenderPassDrawQuadParams;
 
   // If any of the following functions returns false, then it means that drawing
   // is not possible.
