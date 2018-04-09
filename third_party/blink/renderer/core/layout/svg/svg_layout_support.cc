@@ -48,12 +48,11 @@ namespace blink {
 
 struct SearchCandidate {
   SearchCandidate()
-      : candidate_layout_object(nullptr),
-        candidate_distance(std::numeric_limits<float>::max()) {}
+      : layout_object(nullptr), distance(std::numeric_limits<float>::max()) {}
   SearchCandidate(LayoutObject* layout_object, float distance)
-      : candidate_layout_object(layout_object), candidate_distance(distance) {}
-  LayoutObject* candidate_layout_object;
-  float candidate_distance;
+      : layout_object(layout_object), distance(distance) {}
+  LayoutObject* layout_object;
+  float distance;
 };
 
 FloatRect SVGLayoutSupport::LocalVisualRect(const LayoutObject& object) {
@@ -577,7 +576,7 @@ float SVGLayoutSupport::CalculateScreenFontSizeScalingFactor(
 
 static inline bool CompareCandidateDistance(const SearchCandidate& r1,
                                             const SearchCandidate& r2) {
-  return r1.candidate_distance < r2.candidate_distance;
+  return r1.distance < r2.distance;
 }
 
 static inline float DistanceToChildLayoutObject(LayoutObject* child,
@@ -604,17 +603,17 @@ static SearchCandidate SearchTreeForFindClosestLayoutSVGText(
        child = child->PreviousSibling()) {
     if (child->IsSVGText()) {
       float distance = DistanceToChildLayoutObject(child, point);
-      if (distance >= closest_text.candidate_distance)
+      if (distance >= closest_text.distance)
         continue;
       candidates.clear();
-      closest_text.candidate_layout_object = child;
-      closest_text.candidate_distance = distance;
+      closest_text.layout_object = child;
+      closest_text.distance = distance;
       continue;
     }
 
     if (child->IsSVGContainer() && !layout_object->IsSVGHiddenContainer()) {
       float distance = DistanceToChildLayoutObject(child, point);
-      if (distance > closest_text.candidate_distance)
+      if (distance > closest_text.distance)
         continue;
       candidates.push_back(SearchCandidate(child, distance));
     }
@@ -622,7 +621,7 @@ static SearchCandidate SearchTreeForFindClosestLayoutSVGText(
 
   // If a LayoutSVGText was found and there are no potentially closer sub-trees,
   // just return |closestText|.
-  if (closest_text.candidate_layout_object && candidates.IsEmpty())
+  if (closest_text.layout_object && candidates.IsEmpty())
     return closest_text;
 
   std::stable_sort(candidates.begin(), candidates.end(),
@@ -632,10 +631,9 @@ static SearchCandidate SearchTreeForFindClosestLayoutSVGText(
   // If a LayoutSVGText is found that is strictly closer than any previous
   // candidate, then end the search.
   for (const SearchCandidate& search_candidate : candidates) {
-    if (closest_text.candidate_distance < search_candidate.candidate_distance)
+    if (closest_text.distance < search_candidate.distance)
       break;
-    LayoutObject* candidate_layout_object =
-        search_candidate.candidate_layout_object;
+    LayoutObject* candidate_layout_object = search_candidate.layout_object;
     FloatPoint candidate_local_point =
         candidate_layout_object->LocalToSVGParentTransform().Inverse().MapPoint(
             point);
@@ -643,7 +641,7 @@ static SearchCandidate SearchTreeForFindClosestLayoutSVGText(
     SearchCandidate candidate_text = SearchTreeForFindClosestLayoutSVGText(
         candidate_layout_object, candidate_local_point);
 
-    if (candidate_text.candidate_distance < closest_text.candidate_distance)
+    if (candidate_text.distance < closest_text.distance)
       closest_text = candidate_text;
   }
 
@@ -654,7 +652,7 @@ LayoutObject* SVGLayoutSupport::FindClosestLayoutSVGText(
     const LayoutObject* layout_object,
     const FloatPoint& point) {
   return SearchTreeForFindClosestLayoutSVGText(layout_object, point)
-      .candidate_layout_object;
+      .layout_object;
 }
 
 }  // namespace blink
