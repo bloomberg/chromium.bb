@@ -34,47 +34,48 @@
 // Test object that conforms to GridConsumer and exposes inner state for test
 // verification.
 @interface FakeConsumer : NSObject<GridConsumer>
-@property(nonatomic, strong) NSMutableArray<GridItem*>* items;
-@property(nonatomic, assign) NSUInteger selectedIndex;
+// The fake consumer only keeps the identifiers of items for simplicity
+@property(nonatomic, strong) NSMutableArray<NSString*>* items;
+@property(nonatomic, assign) NSString* selectedItemID;
 @end
 @implementation FakeConsumer
 @synthesize items = _items;
-@synthesize selectedIndex = _selectedIndex;
+@synthesize selectedItemID = _selectedItemID;
 
 - (void)populateItems:(NSArray<GridItem*>*)items
-        selectedIndex:(NSUInteger)selectedIndex {
-  self.selectedIndex = selectedIndex;
-  self.items = [items mutableCopy];
+       selectedItemID:(NSString*)selectedItemID {
+  self.selectedItemID = selectedItemID;
+  self.items = [NSMutableArray array];
+  for (GridItem* item in items) {
+    [self.items addObject:item.identifier];
+  }
 }
 
 - (void)insertItem:(GridItem*)item
            atIndex:(NSUInteger)index
-     selectedIndex:(NSUInteger)selectedIndex {
-  [self.items insertObject:item atIndex:index];
-  self.selectedIndex = selectedIndex;
+    selectedItemID:(NSString*)selectedItemID {
+  [self.items insertObject:item.identifier atIndex:index];
+  self.selectedItemID = selectedItemID;
 }
 
-- (void)removeItemAtIndex:(NSUInteger)index
-            selectedIndex:(NSUInteger)selectedIndex {
-  [self.items removeObjectAtIndex:index];
-  self.selectedIndex = selectedIndex;
+- (void)removeItemWithID:(NSString*)removedItemID
+          selectedItemID:(NSString*)selectedItemID {
+  [self.items removeObject:removedItemID];
+  self.selectedItemID = selectedItemID;
 }
 
-- (void)selectItemAtIndex:(NSUInteger)selectedIndex {
-  self.selectedIndex = selectedIndex;
+- (void)selectItemWithID:(NSString*)selectedItemID {
+  self.selectedItemID = selectedItemID;
 }
 
-- (void)replaceItemAtIndex:(NSUInteger)index withItem:(GridItem*)item {
-  self.items[index] = item;
+- (void)replaceItemID:(NSString*)itemID withItem:(GridItem*)item {
+  NSUInteger index = [self.items indexOfObject:itemID];
+  self.items[index] = item.identifier;
 }
 
-- (void)moveItemFromIndex:(NSUInteger)fromIndex
-                  toIndex:(NSUInteger)toIndex
-            selectedIndex:(NSUInteger)selectedIndex {
-  GridItem* item = self.items[fromIndex];
-  [self.items removeObjectAtIndex:fromIndex];
-  [self.items insertObject:item atIndex:toIndex];
-  self.selectedIndex = selectedIndex;
+- (void)moveItemWithID:(NSString*)itemID toIndex:(NSUInteger)toIndex {
+  [self.items removeObject:itemID];
+  [self.items insertObject:itemID atIndex:toIndex];
 }
 
 @end
@@ -110,7 +111,7 @@ class TabGridMediatorTest : public PlatformTest {
     tab_model_ = OCMClassMock([TabModel class]);
     OCMStub([tab_model_ webStateList]).andReturn(web_state_list_.get());
     OCMStub([tab_model_ browserState]).andReturn(browser_state_.get());
-    original_identifiers_ = [[NSMutableSet alloc] init];
+    NSMutableSet<NSString*>* identifiers = [[NSMutableSet alloc] init];
 
     // Insert some web states.
     for (int i = 0; i < 3; i++) {
@@ -118,12 +119,16 @@ class TabGridMediatorTest : public PlatformTest {
       TabIdTabHelper::CreateForWebState(web_state.get());
       NSString* identifier =
           TabIdTabHelper::FromWebState(web_state.get())->tab_id();
-      [original_identifiers_ addObject:identifier];
+      [identifiers addObject:identifier];
       web_state_list_->InsertWebState(i, std::move(web_state),
                                       WebStateList::INSERT_FORCE_INDEX,
                                       WebStateOpener());
     }
+    original_identifiers_ = [identifiers copy];
     web_state_list_->ActivateWebStateAt(1);
+    original_selected_identifier_ =
+        TabIdTabHelper::FromWebState(web_state_list_->GetWebStateAt(1))
+            ->tab_id();
     consumer_ = [[FakeConsumer alloc] init];
     mediator_ = [[TabGridMediator alloc] initWithConsumer:consumer_];
     mediator_.tabModel = tab_model_;
@@ -139,20 +144,20 @@ class TabGridMediatorTest : public PlatformTest {
   id tab_model_;
   FakeConsumer* consumer_;
   TabGridMediator* mediator_;
-  NSMutableSet* original_identifiers_;
+  NSSet<NSString*>* original_identifiers_;
+  NSString* original_selected_identifier_;
 };
 
 // Tests that the consumer is populated after the tab model is set on the
 // mediator.
 TEST_F(TabGridMediatorTest, ConsumerPopulateItems) {
   EXPECT_EQ(3UL, consumer_.items.count);
-  EXPECT_EQ(1UL, consumer_.selectedIndex);
+  EXPECT_NSEQ(original_selected_identifier_, consumer_.selectedItemID);
 }
 
 // Tests that the consumer is notified when a web state is inserted.
 TEST_F(TabGridMediatorTest, ConsumerInsertItem) {
   ASSERT_EQ(3UL, consumer_.items.count);
-  ASSERT_EQ(1UL, consumer_.selectedIndex);
   auto web_state = std::make_unique<web::TestWebState>();
   TabIdTabHelper::CreateForWebState(web_state.get());
   NSString* item_identifier =
@@ -161,8 +166,10 @@ TEST_F(TabGridMediatorTest, ConsumerInsertItem) {
                                   WebStateList::INSERT_FORCE_INDEX,
                                   WebStateOpener());
   EXPECT_EQ(4UL, consumer_.items.count);
-  EXPECT_EQ(2UL, consumer_.selectedIndex);
-  EXPECT_NSEQ(item_identifier, consumer_.items[1].identifier);
+  // The same ID should be selected after the insertion, since the new web state
+  // wasn't selected.
+  EXPECT_NSEQ(original_selected_identifier_, consumer_.selectedItemID);
+  EXPECT_NSEQ(item_identifier, consumer_.items[1]);
   EXPECT_FALSE([original_identifiers_ containsObject:item_identifier]);
 }
 
@@ -170,14 +177,17 @@ TEST_F(TabGridMediatorTest, ConsumerInsertItem) {
 TEST_F(TabGridMediatorTest, ConsumerRemoveItem) {
   web_state_list_->CloseWebStateAt(1, WebStateList::CLOSE_NO_FLAGS);
   EXPECT_EQ(2UL, consumer_.items.count);
-  EXPECT_EQ(1UL, consumer_.selectedIndex);
+  // Expect that a different web state is selected now.
+  EXPECT_NSNE(original_selected_identifier_, consumer_.selectedItemID);
 }
 
 // Tests that the consumer is notified when the active web state is changed.
 TEST_F(TabGridMediatorTest, ConsumerUpdateSelectedItem) {
-  ASSERT_EQ(1UL, consumer_.selectedIndex);
+  EXPECT_NSEQ(original_selected_identifier_, consumer_.selectedItemID);
   web_state_list_->ActivateWebStateAt(2);
-  EXPECT_EQ(2UL, consumer_.selectedIndex);
+  EXPECT_NSEQ(
+      TabIdTabHelper::FromWebState(web_state_list_->GetWebStateAt(2))->tab_id(),
+      consumer_.selectedItemID);
 }
 
 // Tests that the consumer is notified when a web state is replaced.
@@ -188,20 +198,18 @@ TEST_F(TabGridMediatorTest, ConsumerReplaceItem) {
       TabIdTabHelper::FromWebState(new_web_state.get())->tab_id();
   web_state_list_->ReplaceWebStateAt(1, std::move(new_web_state));
   EXPECT_EQ(3UL, consumer_.items.count);
-  EXPECT_EQ(1UL, consumer_.selectedIndex);
-  EXPECT_NSEQ(new_item_identifier, consumer_.items[1].identifier);
+  EXPECT_NSEQ(new_item_identifier, consumer_.selectedItemID);
+  EXPECT_NSEQ(new_item_identifier, consumer_.items[1]);
   EXPECT_FALSE([original_identifiers_ containsObject:new_item_identifier]);
 }
 
 // Tests that the consumer is notified when a web state is moved.
 TEST_F(TabGridMediatorTest, ConsumerMoveItem) {
-  NSString* item1 = consumer_.items[1].identifier;
-  NSString* item2 = consumer_.items[2].identifier;
-  ASSERT_EQ(1UL, consumer_.selectedIndex);
+  NSString* item1 = consumer_.items[1];
+  NSString* item2 = consumer_.items[2];
   web_state_list_->MoveWebStateAt(1, 2);
-  EXPECT_NSEQ(item1, consumer_.items[2].identifier);
-  EXPECT_NSEQ(item2, consumer_.items[1].identifier);
-  EXPECT_EQ(2UL, consumer_.selectedIndex);
+  EXPECT_NSEQ(item1, consumer_.items[2]);
+  EXPECT_NSEQ(item2, consumer_.items[1]);
 }
 
 // Tests that the active index is updated when |-selectItemAtIndex:| is called.

@@ -9,7 +9,14 @@
 
 // Model object representing an item in a grid.
 @interface GridItem : NSObject
-@property(nonatomic, copy) NSString* identifier;
+
+// Create an item with |identifier|, which cannot be nil.
+- (instancetype)initWithIdentifier:(NSString*)identifier
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
+
+@property(nonatomic, readonly) NSString* identifier;
 @property(nonatomic, copy) NSString* title;
 @end
 

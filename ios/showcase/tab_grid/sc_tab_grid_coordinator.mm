@@ -38,21 +38,24 @@
   self.baseViewController.hidesBarsOnSwipe = YES;
   [self.baseViewController pushViewController:self.viewController animated:YES];
 
-  NSMutableArray* items = [[NSMutableArray alloc] init];
+  NSMutableArray<GridItem*>* items = [[NSMutableArray alloc] init];
   for (int i = 0; i < 10; i++) {
-    GridItem* item = [[GridItem alloc] init];
+    GridItem* item = [[GridItem alloc]
+        initWithIdentifier:[NSString stringWithFormat:@"incogitem%d", i]];
     item.title = @"YouTube - Cat Videos";
     [items addObject:item];
   }
   [self.viewController.incognitoTabsConsumer populateItems:items
-                                             selectedIndex:0];
+                                            selectedItemID:items[0].identifier];
   items = [[NSMutableArray alloc] init];
   for (int i = 0; i < 10; i++) {
-    GridItem* item = [[GridItem alloc] init];
+    GridItem* item = [[GridItem alloc]
+        initWithIdentifier:[NSString stringWithFormat:@"item%d", i]];
     item.title = @"The New York Times - Breaking News";
     [items addObject:item];
   }
-  [self.viewController.regularTabsConsumer populateItems:items selectedIndex:0];
+  [self.viewController.regularTabsConsumer populateItems:items
+                                          selectedItemID:items[0].identifier];
 }
 
 #pragma mark - UINavigationControllerDelegate
