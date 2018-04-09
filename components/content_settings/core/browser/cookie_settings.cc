@@ -82,6 +82,11 @@ bool CookieSettings::ShouldDeleteCookieOnExit(
   DCHECK(IsValidSetting(setting));
   if (setting == CONTENT_SETTING_ALLOW)
     return false;
+  // Non-secure cookies are readable by secure sites. We need to check for
+  // https pattern if http is not allowed. The section below is independent
+  // of the scheme so we can just retry from here.
+  if (!is_https)
+    return ShouldDeleteCookieOnExit(cookie_settings, domain, true);
   // Check if there is a more precise rule that "domain matches" this cookie.
   bool matches_session_only_rule = false;
   for (const auto& entry : cookie_settings) {

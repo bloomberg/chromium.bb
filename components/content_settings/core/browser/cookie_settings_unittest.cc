@@ -148,6 +148,8 @@ TEST_F(CookieSettingsTest, DeleteSessionOnly) {
   EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, true));
   EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, false));
   EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, true));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kSubDomain, false));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kSubDomain, true));
 
   // Delete cookies if site is session only.
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
@@ -156,6 +158,8 @@ TEST_F(CookieSettingsTest, DeleteSessionOnly) {
   EXPECT_TRUE(ShouldDeleteCookieOnExit(kDomain, true));
   EXPECT_TRUE(ShouldDeleteCookieOnExit(kDotDomain, false));
   EXPECT_TRUE(ShouldDeleteCookieOnExit(kDotDomain, true));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kSubDomain, false));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kSubDomain, true));
 
   // Http blocked, https allowed - keep secure and non secure cookies.
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_SESSION_ONLY);
@@ -165,6 +169,8 @@ TEST_F(CookieSettingsTest, DeleteSessionOnly) {
   EXPECT_FALSE(ShouldDeleteCookieOnExit(kDomain, true));
   EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, false));
   EXPECT_FALSE(ShouldDeleteCookieOnExit(kDotDomain, true));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kSubDomain, false));
+  EXPECT_FALSE(ShouldDeleteCookieOnExit(kSubDomain, true));
 
   // Http and https session only, all is deleted.
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
@@ -174,6 +180,8 @@ TEST_F(CookieSettingsTest, DeleteSessionOnly) {
   EXPECT_TRUE(ShouldDeleteCookieOnExit(kDomain, true));
   EXPECT_TRUE(ShouldDeleteCookieOnExit(kDotDomain, false));
   EXPECT_TRUE(ShouldDeleteCookieOnExit(kDotDomain, true));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kSubDomain, false));
+  EXPECT_TRUE(ShouldDeleteCookieOnExit(kSubDomain, true));
 }
 
 TEST_F(CookieSettingsTest, DeletionWithDifferentPorts) {
