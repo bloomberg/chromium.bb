@@ -151,7 +151,7 @@ void MojoVideoDecoder::OnInitializeDone(bool status,
   base::ResetAndReturn(&init_cb_).Run(status);
 }
 
-void MojoVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
+void MojoVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                               const DecodeCB& decode_cb) {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -163,7 +163,7 @@ void MojoVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   }
 
   mojom::DecoderBufferPtr mojo_buffer =
-      mojo_decoder_buffer_writer_->WriteDecoderBuffer(buffer);
+      mojo_decoder_buffer_writer_->WriteDecoderBuffer(std::move(buffer));
   if (!mojo_buffer) {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));

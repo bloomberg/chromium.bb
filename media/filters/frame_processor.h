@@ -124,11 +124,11 @@ class MEDIA_EXPORT FrameProcessor {
   bool HandlePartialAppendWindowTrimming(
       base::TimeDelta append_window_start,
       base::TimeDelta append_window_end,
-      const scoped_refptr<StreamParserBuffer>& buffer);
+      scoped_refptr<StreamParserBuffer> buffer);
 
   // Helper that processes one frame with the coded frame processing algorithm.
   // Returns false on error or true on success.
-  bool ProcessFrame(const scoped_refptr<StreamParserBuffer>& frame,
+  bool ProcessFrame(scoped_refptr<StreamParserBuffer> frame,
                     base::TimeDelta append_window_start,
                     base::TimeDelta append_window_end,
                     base::TimeDelta* timestamp_offset);

@@ -156,7 +156,7 @@ void VpxVideoDecoder::Initialize(
   bound_init_cb.Run(true);
 }
 
-void VpxVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
+void VpxVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                              const DecodeCB& decode_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer);

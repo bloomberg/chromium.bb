@@ -38,7 +38,7 @@ class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
       const InitCB& init_cb,
       const OutputCB& output_cb,
       const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) final;
-  void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+  void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) final;
   void Reset(const base::Closure& closure) final;
   bool NeedsBitstreamConversion() const final;

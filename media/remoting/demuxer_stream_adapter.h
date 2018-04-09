@@ -113,7 +113,7 @@ class DemuxerStreamAdapter {
 
   // Callback function when retrieving data from demuxer.
   void OnNewBuffer(DemuxerStream::Status status,
-                   const scoped_refptr<DecoderBuffer>& input);
+                   scoped_refptr<DecoderBuffer> input);
   // Write the current frame into the mojo data pipe. OnFrameWritten() will be
   // called when the writing has finished.
   void WriteFrame();

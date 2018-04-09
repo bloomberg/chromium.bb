@@ -90,7 +90,7 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder,
       const InitCB& init_cb,
       const OutputCB& output_cb,
       const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) override;
-  void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+  void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
   void Reset(const base::Closure& closure) override;
   bool NeedsBitstreamConversion() const override;

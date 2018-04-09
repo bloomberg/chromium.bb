@@ -367,8 +367,7 @@ void DecoderStream<StreamType>::SatisfyRead(
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::Decode(
-    const scoped_refptr<DecoderBuffer>& buffer) {
+void DecoderStream<StreamType>::Decode(scoped_refptr<DecoderBuffer> buffer) {
   FUNCTION_DVLOG(3);
 
   // We don't know if the decoder will error out on first decode yet. Save the
@@ -383,24 +382,24 @@ void DecoderStream<StreamType>::Decode(
   if (!fallback_buffers_.empty()) {
     fallback_buffers_.push_back(buffer);
 
-    scoped_refptr<DecoderBuffer> temp = fallback_buffers_.front();
+    scoped_refptr<DecoderBuffer> temp = std::move(fallback_buffers_.front());
     fallback_buffers_.pop_front();
-    DecodeInternal(temp);
+    DecodeInternal(std::move(temp));
   } else {
-    DecodeInternal(buffer);
+    DecodeInternal(std::move(buffer));
   }
 }
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::DecodeInternal(
-    const scoped_refptr<DecoderBuffer>& buffer) {
+    scoped_refptr<DecoderBuffer> buffer) {
   FUNCTION_DVLOG(3);
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER) << state_;
   DCHECK_LT(pending_decode_requests_, GetMaxDecodeRequests());
   DCHECK(!reset_cb_);
   DCHECK(buffer);
 
-  traits_.OnDecode(buffer);
+  traits_.OnDecode(*buffer);
 
   int buffer_size = buffer->end_of_stream() ? 0 : buffer->data_size();
 
@@ -415,10 +414,10 @@ void DecoderStream<StreamType>::DecodeInternal(
     duration_tracker_.AddSample(buffer->duration());
 
   ++pending_decode_requests_;
-  decoder_->Decode(buffer,
+  decoder_->Decode(std::move(buffer),
                    base::BindRepeating(&DecoderStream<StreamType>::OnDecodeDone,
                                        fallback_weak_factory_.GetWeakPtr(),
-                                       buffer_size, buffer->end_of_stream()));
+                                       buffer_size, decoding_eos_));
 }
 
 template <DemuxerStream::Type StreamType>
@@ -571,11 +570,11 @@ void DecoderStream<StreamType>::ReadFromDemuxerStream() {
   DCHECK(!reset_cb_);
 
   if (!fallback_buffers_.empty()) {
-    scoped_refptr<DecoderBuffer> buffer = fallback_buffers_.front();
+    scoped_refptr<DecoderBuffer> buffer = std::move(fallback_buffers_.front());
     fallback_buffers_.pop_front();
 
     // Decode the buffer without re-appending it to |pending_buffers_|.
-    DecodeInternal(buffer);
+    DecodeInternal(std::move(buffer));
     return;
   }
 
@@ -591,7 +590,7 @@ void DecoderStream<StreamType>::ReadFromDemuxerStream() {
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnBufferReady(
     DemuxerStream::Status status,
-    const scoped_refptr<DecoderBuffer>& buffer) {
+    scoped_refptr<DecoderBuffer> buffer) {
   FUNCTION_DVLOG(3) << ": " << status << ", "
                     << (buffer ? buffer->AsHumanReadableString() : "nullptr");
 
@@ -614,7 +613,7 @@ void DecoderStream<StreamType>::OnBufferReady(
         // Save valid buffers to be consumed by the new decoder.
         // |pending_buffers_| is copied to |fallback_buffers| in
         // OnDecoderSelected().
-        pending_buffers_.push_back(buffer);
+        pending_buffers_.push_back(std::move(buffer));
         break;
       case DemuxerStream::kConfigChanged:
         // TODO(tguilbert): crbug.com/603713
@@ -722,7 +721,7 @@ void DecoderStream<StreamType>::OnBufferReady(
   }
 
   DCHECK(status == DemuxerStream::kOk) << status;
-  Decode(buffer);
+  Decode(std::move(buffer));
 
   // Read more data if the decoder supports multiple parallel decoding requests.
   if (CanDecodeMore())

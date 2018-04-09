@@ -619,7 +619,7 @@ bool WebMClusterParser::OnBlock(bool is_simple_block,
         base::TimeDelta::FromMicroseconds(discard_padding / 1000)));
   }
 
-  return track->AddBuffer(buffer);
+  return track->AddBuffer(std::move(buffer));
 }
 
 WebMClusterParser::Track::Track(int track_num,
@@ -642,7 +642,7 @@ WebMClusterParser::Track::~Track() = default;
 
 DecodeTimestamp WebMClusterParser::Track::GetReadyUpperBound() {
   DCHECK(ready_buffers_.empty());
-  if (last_added_buffer_missing_duration_.get())
+  if (last_added_buffer_missing_duration_)
     return last_added_buffer_missing_duration_->GetDecodeTimestamp();
 
   return DecodeTimestamp::FromPresentationTime(base::TimeDelta::Max());
@@ -669,10 +669,9 @@ void WebMClusterParser::Track::ExtractReadyBuffers(
   // Not all of |buffers_| are ready yet. Move any that are ready to
   // |ready_buffers_|.
   while (true) {
-    const scoped_refptr<StreamParserBuffer>& buffer = buffers_.front();
-    if (buffer->GetDecodeTimestamp() >= before_timestamp)
+    if (buffers_.front()->GetDecodeTimestamp() >= before_timestamp)
       break;
-    ready_buffers_.push_back(buffer);
+    ready_buffers_.emplace_back(std::move(buffers_.front()));
     buffers_.pop_front();
     DCHECK(!buffers_.empty());
   }
@@ -683,14 +682,14 @@ void WebMClusterParser::Track::ExtractReadyBuffers(
 }
 
 bool WebMClusterParser::Track::AddBuffer(
-    const scoped_refptr<StreamParserBuffer>& buffer) {
+    scoped_refptr<StreamParserBuffer> buffer) {
   DVLOG(2) << "AddBuffer() : " << track_num_
            << " ts " << buffer->timestamp().InSecondsF()
            << " dur " << buffer->duration().InSecondsF()
            << " kf " << buffer->is_key_frame()
            << " size " << buffer->data_size();
 
-  if (last_added_buffer_missing_duration_.get()) {
+  if (last_added_buffer_missing_duration_) {
     base::TimeDelta derived_duration =
         buffer->timestamp() - last_added_buffer_missing_duration_->timestamp();
     last_added_buffer_missing_duration_->set_duration(derived_duration);
@@ -702,24 +701,21 @@ bool WebMClusterParser::Track::AddBuffer(
              << last_added_buffer_missing_duration_->duration().InSecondsF()
              << " kf " << last_added_buffer_missing_duration_->is_key_frame()
              << " size " << last_added_buffer_missing_duration_->data_size();
-    scoped_refptr<StreamParserBuffer> updated_buffer =
-        last_added_buffer_missing_duration_;
-    last_added_buffer_missing_duration_ = NULL;
-    if (!QueueBuffer(updated_buffer))
+    if (!QueueBuffer(std::move(last_added_buffer_missing_duration_)))
       return false;
   }
 
   if (buffer->duration() == kNoTimestamp) {
-    last_added_buffer_missing_duration_ = buffer;
+    last_added_buffer_missing_duration_ = std::move(buffer);
     DVLOG(2) << "AddBuffer() : holding back buffer that is missing duration";
     return true;
   }
 
-  return QueueBuffer(buffer);
+  return QueueBuffer(std::move(buffer));
 }
 
 void WebMClusterParser::Track::ApplyDurationEstimateIfNeeded() {
-  if (!last_added_buffer_missing_duration_.get())
+  if (!last_added_buffer_missing_duration_)
     return;
 
   bool constant_duration_estimate = false;
@@ -754,8 +750,7 @@ void WebMClusterParser::Track::ApplyDurationEstimateIfNeeded() {
 
   // Don't use the applied duration as a future estimation (don't use
   // QueueBuffer() here.)
-  buffers_.push_back(last_added_buffer_missing_duration_);
-  last_added_buffer_missing_duration_ = NULL;
+  buffers_.emplace_back(std::move(last_added_buffer_missing_duration_));
 }
 
 void WebMClusterParser::Track::ClearReadyBuffers() {
@@ -771,8 +766,8 @@ void WebMClusterParser::Track::Reset() {
 }
 
 bool WebMClusterParser::Track::QueueBuffer(
-    const scoped_refptr<StreamParserBuffer>& buffer) {
-  DCHECK(!last_added_buffer_missing_duration_.get());
+    scoped_refptr<StreamParserBuffer> buffer) {
+  DCHECK(!last_added_buffer_missing_duration_);
 
   // WebMClusterParser::OnBlock() gives MEDIA_LOG and parse error on decreasing
   // block timecode detection within a cluster. Therefore, we should not see
@@ -812,7 +807,7 @@ bool WebMClusterParser::Track::QueueBuffer(
     }
   }
 
-  buffers_.push_back(buffer);
+  buffers_.push_back(std::move(buffer));
   return true;
 }
 

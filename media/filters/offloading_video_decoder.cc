@@ -25,14 +25,14 @@ class CancellationHelper {
   // Safe to call from any thread.
   void Cancel() { cancellation_flag_->Set(); }
 
-  void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+  void Decode(scoped_refptr<DecoderBuffer> buffer,
               const VideoDecoder::DecodeCB& decode_cb) {
     if (cancellation_flag_->IsSet()) {
       decode_cb.Run(DecodeStatus::ABORTED);
       return;
     }
 
-    decoder_->Decode(buffer, decode_cb);
+    decoder_->Decode(std::move(buffer), decode_cb);
   }
 
   void Reset(const base::Closure& reset_cb) {
@@ -150,7 +150,7 @@ void OffloadingVideoDecoder::Initialize(
                      waiting_for_decryption_key_cb));
 }
 
-void OffloadingVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
+void OffloadingVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                     const DecodeCB& decode_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(buffer);
@@ -158,14 +158,14 @@ void OffloadingVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 
   DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
   if (!offload_task_runner_) {
-    helper_->decoder()->Decode(buffer, bound_decode_cb);
+    helper_->decoder()->Decode(std::move(buffer), bound_decode_cb);
     return;
   }
 
   offload_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CancellationHelper::Decode,
-                     base::Unretained(helper_.get()), buffer, bound_decode_cb));
+      FROM_HERE, base::BindOnce(&CancellationHelper::Decode,
+                                base::Unretained(helper_.get()),
+                                std::move(buffer), bound_decode_cb));
 }
 
 void OffloadingVideoDecoder::Reset(const base::Closure& reset_cb) {

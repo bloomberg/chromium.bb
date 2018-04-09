@@ -124,7 +124,7 @@ class MojoDecoderBufferWriter {
   //
   // Returns nullptr if the DataPipe is already closed.
   mojom::DecoderBufferPtr WriteDecoderBuffer(
-      const scoped_refptr<DecoderBuffer>& media_buffer);
+      scoped_refptr<DecoderBuffer> media_buffer);
 
  private:
   void ScheduleNextWrite();

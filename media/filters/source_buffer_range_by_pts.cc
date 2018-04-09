@@ -626,7 +626,7 @@ bool SourceBufferRangeByPts::GetBuffersInRange(base::TimeDelta start,
   const size_t previous_size = buffers->size();
   for (BufferQueue::const_iterator it = GetBufferItrAt(first_timestamp, false);
        it != buffers_.end(); ++it) {
-    const scoped_refptr<StreamParserBuffer>& buffer = *it;
+    scoped_refptr<StreamParserBuffer> buffer = *it;
     // Buffers without duration are not supported, so bail if we encounter any.
     if (buffer->duration() == kNoTimestamp ||
         buffer->duration() <= base::TimeDelta()) {
@@ -639,7 +639,7 @@ bool SourceBufferRangeByPts::GetBuffersInRange(base::TimeDelta start,
       continue;
 
     DCHECK(buffer->is_key_frame());
-    buffers->push_back(buffer);
+    buffers->emplace_back(std::move(buffer));
   }
   return previous_size < buffers->size();
 }

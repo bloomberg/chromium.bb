@@ -74,7 +74,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_Normal) {
                                     base::TimeDelta::FromMilliseconds(6)));
 
   // Convert from and back.
-  mojom::DecoderBufferPtr ptr(mojom::DecoderBuffer::From(buffer));
+  mojom::DecoderBufferPtr ptr(mojom::DecoderBuffer::From(*buffer));
   scoped_refptr<DecoderBuffer> result(ptr.To<scoped_refptr<DecoderBuffer>>());
 
   // Compare.
@@ -98,7 +98,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EOS) {
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CreateEOSBuffer());
 
   // Convert from and back.
-  mojom::DecoderBufferPtr ptr(mojom::DecoderBuffer::From(buffer));
+  mojom::DecoderBufferPtr ptr(mojom::DecoderBuffer::From(*buffer));
   scoped_refptr<DecoderBuffer> result(ptr.To<scoped_refptr<DecoderBuffer>>());
 
   // Compare.
@@ -116,7 +116,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_KeyFrame) {
   EXPECT_TRUE(buffer->is_key_frame());
 
   // Convert from and back.
-  mojom::DecoderBufferPtr ptr(mojom::DecoderBuffer::From(buffer));
+  mojom::DecoderBufferPtr ptr(mojom::DecoderBuffer::From(*buffer));
   scoped_refptr<DecoderBuffer> result(ptr.To<scoped_refptr<DecoderBuffer>>());
 
   // Compare.
@@ -144,7 +144,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
       std::make_unique<DecryptConfig>(kKeyId, kIv, subsamples));
 
   // Convert from and back.
-  mojom::DecoderBufferPtr ptr(mojom::DecoderBuffer::From(buffer));
+  mojom::DecoderBufferPtr ptr(mojom::DecoderBuffer::From(*buffer));
   scoped_refptr<DecoderBuffer> result(ptr.To<scoped_refptr<DecoderBuffer>>());
 
   // Compare.
@@ -157,7 +157,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
   buffer->set_decrypt_config(std::make_unique<DecryptConfig>(
       kKeyId, "", std::vector<SubsampleEntry>()));
   result =
-      mojom::DecoderBuffer::From(buffer).To<scoped_refptr<DecoderBuffer>>();
+      mojom::DecoderBuffer::From(*buffer).To<scoped_refptr<DecoderBuffer>>();
   EXPECT_TRUE(buffer->decrypt_config()->Matches(*result->decrypt_config()));
   EXPECT_TRUE(buffer->decrypt_config()->iv().empty());
 }

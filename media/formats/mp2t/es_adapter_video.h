@@ -52,8 +52,7 @@ class MEDIA_EXPORT EsAdapterVideo {
 
   // Provide a new video buffer.
   // Returns true when successful.
-  bool OnNewBuffer(
-      const scoped_refptr<StreamParserBuffer>& stream_parser_buffer);
+  bool OnNewBuffer(scoped_refptr<StreamParserBuffer> stream_parser_buffer);
 
  private:
   using BufferQueue = base::circular_deque<scoped_refptr<StreamParserBuffer>>;
@@ -67,8 +66,7 @@ class MEDIA_EXPORT EsAdapterVideo {
 
   // Replace the leading non key frames by |stream_parser_buffer|
   // (this one must be a key frame).
-  void ReplaceDiscardedFrames(
-      const scoped_refptr<StreamParserBuffer>& stream_parser_buffer);
+  void ReplaceDiscardedFrames(const StreamParserBuffer& stream_parser_buffer);
 
   NewVideoConfigCB new_video_config_cb_;
   EmitBufferCB emit_buffer_cb_;

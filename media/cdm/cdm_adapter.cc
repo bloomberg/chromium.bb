@@ -370,19 +370,19 @@ ASSERT_ENUM_EQ(OutputProtection::ProtectionType::HDCP, cdm::kProtectionHDCP);
 // is used to hold some of the data. |input_buffer| will contain pointers
 // to data contained in |encrypted| and |subsamples|, so the lifetime of
 // |input_buffer| must be <= the lifetime of |encrypted| and |subsamples|.
-void ToCdmInputBuffer(const scoped_refptr<DecoderBuffer>& encrypted_buffer,
+void ToCdmInputBuffer(const DecoderBuffer& encrypted_buffer,
                       std::vector<cdm::SubsampleEntry>* subsamples,
                       cdm::InputBuffer_2* input_buffer) {
   // End of stream buffers are represented as empty resources.
   DCHECK(!input_buffer->data);
-  if (encrypted_buffer->end_of_stream())
+  if (encrypted_buffer.end_of_stream())
     return;
 
-  input_buffer->data = encrypted_buffer->data();
-  input_buffer->data_size = encrypted_buffer->data_size();
-  input_buffer->timestamp = encrypted_buffer->timestamp().InMicroseconds();
+  input_buffer->data = encrypted_buffer.data();
+  input_buffer->data_size = encrypted_buffer.data_size();
+  input_buffer->timestamp = encrypted_buffer.timestamp().InMicroseconds();
 
-  const DecryptConfig* decrypt_config = encrypted_buffer->decrypt_config();
+  const DecryptConfig* decrypt_config = encrypted_buffer.decrypt_config();
   if (!decrypt_config) {
     DVLOG(2) << __func__ << ": Clear buffer.";
     return;
@@ -710,7 +710,7 @@ void CdmAdapter::RegisterNewKeyCB(StreamType stream_type,
 }
 
 void CdmAdapter::Decrypt(StreamType stream_type,
-                         const scoped_refptr<DecoderBuffer>& encrypted,
+                         scoped_refptr<DecoderBuffer> encrypted,
                          const DecryptCB& decrypt_cb) {
   DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -722,7 +722,7 @@ void CdmAdapter::Decrypt(StreamType stream_type,
   std::vector<cdm::SubsampleEntry> subsamples;
   std::unique_ptr<DecryptedBlockImpl> decrypted_block(new DecryptedBlockImpl());
 
-  ToCdmInputBuffer(encrypted, &subsamples, &input_buffer);
+  ToCdmInputBuffer(*encrypted, &subsamples, &input_buffer);
   cdm::Status status = cdm_->Decrypt(input_buffer, decrypted_block.get());
 
   if (status != cdm::kSuccess) {
@@ -736,7 +736,7 @@ void CdmAdapter::Decrypt(StreamType stream_type,
                               decrypted_block->DecryptedBuffer()->Size()));
   decrypted_buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(decrypted_block->Timestamp()));
-  decrypt_cb.Run(Decryptor::kSuccess, decrypted_buffer);
+  decrypt_cb.Run(Decryptor::kSuccess, std::move(decrypted_buffer));
 }
 
 void CdmAdapter::CancelDecrypt(StreamType stream_type) {
@@ -817,9 +817,8 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
   init_cb.Run(true);
 }
 
-void CdmAdapter::DecryptAndDecodeAudio(
-    const scoped_refptr<DecoderBuffer>& encrypted,
-    const AudioDecodeCB& audio_decode_cb) {
+void CdmAdapter::DecryptAndDecodeAudio(scoped_refptr<DecoderBuffer> encrypted,
+                                       const AudioDecodeCB& audio_decode_cb) {
   DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -830,7 +829,7 @@ void CdmAdapter::DecryptAndDecodeAudio(
   std::vector<cdm::SubsampleEntry> subsamples;
   std::unique_ptr<AudioFramesImpl> audio_frames(new AudioFramesImpl());
 
-  ToCdmInputBuffer(encrypted, &subsamples, &input_buffer);
+  ToCdmInputBuffer(*encrypted, &subsamples, &input_buffer);
   cdm::Status status =
       cdm_->DecryptAndDecodeSamples(input_buffer, audio_frames.get());
 
@@ -853,9 +852,8 @@ void CdmAdapter::DecryptAndDecodeAudio(
   audio_decode_cb.Run(Decryptor::kSuccess, audio_frame_list);
 }
 
-void CdmAdapter::DecryptAndDecodeVideo(
-    const scoped_refptr<DecoderBuffer>& encrypted,
-    const VideoDecodeCB& video_decode_cb) {
+void CdmAdapter::DecryptAndDecodeVideo(scoped_refptr<DecoderBuffer> encrypted,
+                                       const VideoDecodeCB& video_decode_cb) {
   DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -866,7 +864,7 @@ void CdmAdapter::DecryptAndDecodeVideo(
   std::vector<cdm::SubsampleEntry> subsamples;
   std::unique_ptr<VideoFrameImpl> video_frame = helper_->CreateCdmVideoFrame();
 
-  ToCdmInputBuffer(encrypted, &subsamples, &input_buffer);
+  ToCdmInputBuffer(*encrypted, &subsamples, &input_buffer);
   cdm::Status status =
       cdm_->DecryptAndDecodeFrame(input_buffer, video_frame.get());
 

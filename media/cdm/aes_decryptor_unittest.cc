@@ -431,8 +431,8 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
     return false;
   }
 
-  MOCK_METHOD2(BufferDecrypted, void(Decryptor::Status,
-                                     const scoped_refptr<DecoderBuffer>&));
+  MOCK_METHOD2(BufferDecrypted,
+               void(Decryptor::Status, scoped_refptr<DecoderBuffer>));
 
   enum DecryptExpectation {
     SUCCESS,
@@ -442,7 +442,7 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
     NO_KEY
   };
 
-  void DecryptAndExpect(const scoped_refptr<DecoderBuffer>& encrypted,
+  void DecryptAndExpect(scoped_refptr<DecoderBuffer> encrypted,
                         const std::vector<uint8_t>& plain_text,
                         DecryptExpectation result) {
     scoped_refptr<DecoderBuffer> decrypted;

@@ -39,17 +39,17 @@ AudioTimestampValidator::AudioTimestampValidator(
 AudioTimestampValidator::~AudioTimestampValidator() = default;
 
 void AudioTimestampValidator::CheckForTimestampGap(
-    const scoped_refptr<DecoderBuffer>& buffer) {
-  if (buffer->end_of_stream())
+    const DecoderBuffer& buffer) {
+  if (buffer.end_of_stream())
     return;
-  DCHECK_NE(kNoTimestamp, buffer->timestamp());
+  DCHECK_NE(kNoTimestamp, buffer.timestamp());
 
   // If audio_base_ts_ == kNoTimestamp, we are processing our first buffer.
   // If stream has neither codec delay nor discard padding, we should expect
   // timestamps and output durations to line up from the start (i.e. be stable).
   if (audio_base_ts_ == kNoTimestamp && !has_codec_delay_ &&
-      buffer->discard_padding().first == base::TimeDelta() &&
-      buffer->discard_padding().second == base::TimeDelta()) {
+      buffer.discard_padding().first == base::TimeDelta() &&
+      buffer.discard_padding().second == base::TimeDelta()) {
     DVLOG(3) << __func__ << " Expecting stable timestamps - stream has neither "
              << "codec delay nor discard padding.";
     limit_unstable_audio_tries_ = 0;
@@ -64,14 +64,14 @@ void AudioTimestampValidator::CheckForTimestampGap(
   // codecs/containers (e.g. chained Ogg) will take several encoded buffers
   // before producing the first decoded output.
   if (!audio_output_ts_helper_) {
-    audio_base_ts_ = buffer->timestamp();
+    audio_base_ts_ = buffer.timestamp();
     DVLOG(3) << __func__
              << " setting audio_base:" << audio_base_ts_.InMicroseconds();
     return;
   }
 
   base::TimeDelta expected_ts = audio_output_ts_helper_->GetTimestamp();
-  base::TimeDelta ts_delta = buffer->timestamp() - expected_ts;
+  base::TimeDelta ts_delta = buffer.timestamp() - expected_ts;
 
   // Reconciling encoded buffer timestamps with decoded output often requires
   // adjusting expectations by some offset. This accounts for varied (and at
@@ -113,7 +113,7 @@ void AudioTimestampValidator::CheckForTimestampGap(
   if (std::abs(ts_delta.InMilliseconds()) > drift_warning_threshold_msec_) {
     MEDIA_LOG(ERROR, media_log_)
         << " Large timestamp gap detected; may cause AV sync to drift."
-        << " time:" << buffer->timestamp().InMicroseconds() << "us"
+        << " time:" << buffer.timestamp().InMicroseconds() << "us"
         << " expected:" << expected_ts.InMicroseconds() << "us"
         << " delta:" << ts_delta.InMicroseconds() << "us";
     // Increase threshold to avoid log spam but, let us know if gap widens.
@@ -121,7 +121,7 @@ void AudioTimestampValidator::CheckForTimestampGap(
   }
   DVLOG(3) << __func__ << " delta:" << ts_delta.InMicroseconds()
            << " expected_ts:" << expected_ts.InMicroseconds()
-           << " actual_ts:" << buffer->timestamp().InMicroseconds()
+           << " actual_ts:" << buffer.timestamp().InMicroseconds()
            << " audio_ts_offset:"
            << audio_output_ts_helper_->base_timestamp().InMicroseconds();
 }

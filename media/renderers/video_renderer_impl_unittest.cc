@@ -468,7 +468,7 @@ class VideoRendererImplTest : public testing::Test {
   WallClockTimeSource time_source_;
 
  private:
-  void DecodeRequested(const scoped_refptr<DecoderBuffer>& buffer,
+  void DecodeRequested(scoped_refptr<DecoderBuffer> buffer,
                        const VideoDecoder::DecodeCB& decode_cb) {
     DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     CHECK(decode_cb_.is_null());

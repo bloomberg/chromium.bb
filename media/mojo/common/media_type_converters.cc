@@ -58,36 +58,33 @@ TypeConverter<std::unique_ptr<media::DecryptConfig>,
 
 // static
 media::mojom::DecoderBufferPtr
-TypeConverter<media::mojom::DecoderBufferPtr,
-              scoped_refptr<media::DecoderBuffer>>::
-    Convert(const scoped_refptr<media::DecoderBuffer>& input) {
-  DCHECK(input);
-
+TypeConverter<media::mojom::DecoderBufferPtr, media::DecoderBuffer>::Convert(
+    const media::DecoderBuffer& input) {
   media::mojom::DecoderBufferPtr mojo_buffer(
       media::mojom::DecoderBuffer::New());
-  if (input->end_of_stream()) {
+  if (input.end_of_stream()) {
     mojo_buffer->is_end_of_stream = true;
     return mojo_buffer;
   }
 
   mojo_buffer->is_end_of_stream = false;
-  mojo_buffer->timestamp = input->timestamp();
-  mojo_buffer->duration = input->duration();
-  mojo_buffer->is_key_frame = input->is_key_frame();
-  mojo_buffer->data_size = base::checked_cast<uint32_t>(input->data_size());
-  mojo_buffer->front_discard = input->discard_padding().first;
-  mojo_buffer->back_discard = input->discard_padding().second;
+  mojo_buffer->timestamp = input.timestamp();
+  mojo_buffer->duration = input.duration();
+  mojo_buffer->is_key_frame = input.is_key_frame();
+  mojo_buffer->data_size = base::checked_cast<uint32_t>(input.data_size());
+  mojo_buffer->front_discard = input.discard_padding().first;
+  mojo_buffer->back_discard = input.discard_padding().second;
 
   // Note: The side data is always small, so this copy is okay.
-  if (input->side_data()) {
-    DCHECK_GT(input->side_data_size(), 0u);
-    mojo_buffer->side_data.assign(input->side_data(),
-                                  input->side_data() + input->side_data_size());
+  if (input.side_data()) {
+    DCHECK_GT(input.side_data_size(), 0u);
+    mojo_buffer->side_data.assign(input.side_data(),
+                                  input.side_data() + input.side_data_size());
   }
 
-  if (input->decrypt_config()) {
+  if (input.decrypt_config()) {
     mojo_buffer->decrypt_config =
-        media::mojom::DecryptConfig::From(*input->decrypt_config());
+        media::mojom::DecryptConfig::From(*input.decrypt_config());
   }
 
   // TODO(dalecurtis): We intentionally do not serialize the data section of

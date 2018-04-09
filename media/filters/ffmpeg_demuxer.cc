@@ -627,7 +627,7 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   if (new_duration > duration_ || duration_ == kNoTimestamp)
     duration_ = new_duration;
 
-  buffer_queue_.Push(buffer);
+  buffer_queue_.Push(std::move(buffer));
   SatisfyPendingRead();
 }
 

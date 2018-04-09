@@ -132,7 +132,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
   }
 
   // Decode |buffer| and expect DecodeDone to get called with |status|.
-  void DecodeAndExpect(const scoped_refptr<DecoderBuffer>& buffer,
+  void DecodeAndExpect(scoped_refptr<DecoderBuffer> buffer,
                        DecodeStatus status) {
     EXPECT_CALL(*this, DecodeDone(status));
     decoder_->Decode(buffer,
@@ -143,7 +143,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
 
   // Helper function to simulate the decrypting and decoding process in the
   // |decryptor_| with a decoding delay of kDecodingDelay buffers.
-  void DecryptAndDecodeAudio(const scoped_refptr<DecoderBuffer>& encrypted,
+  void DecryptAndDecodeAudio(scoped_refptr<DecoderBuffer> encrypted,
                              const Decryptor::AudioDecodeCB& audio_decode_cb) {
     num_decrypt_and_decode_calls_++;
     if (!encrypted->end_of_stream())

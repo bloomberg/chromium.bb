@@ -153,7 +153,7 @@ bool MediaCodecAudioDecoder::CreateMediaCodecLoop() {
   return true;
 }
 
-void MediaCodecAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
+void MediaCodecAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                     const DecodeCB& decode_cb) {
   DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
 
@@ -184,7 +184,7 @@ void MediaCodecAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   // time".
   DCHECK(input_queue_.empty());
 
-  input_queue_.push_back(std::make_pair(buffer, bound_decode_cb));
+  input_queue_.push_back(std::make_pair(std::move(buffer), bound_decode_cb));
 
   codec_loop_->DoPendingWork();
 }
@@ -287,7 +287,7 @@ bool MediaCodecAudioDecoder::IsAnyInputPending() const {
 MediaCodecLoop::InputData MediaCodecAudioDecoder::ProvideInputData() {
   DVLOG(2) << __func__;
 
-  scoped_refptr<DecoderBuffer> decoder_buffer = input_queue_.front().first;
+  const DecoderBuffer* decoder_buffer = input_queue_.front().first.get();
 
   MediaCodecLoop::InputData input_data;
   if (decoder_buffer->end_of_stream()) {

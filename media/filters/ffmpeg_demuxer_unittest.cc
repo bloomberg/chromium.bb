@@ -107,7 +107,7 @@ void CheckStreamStatusNotifications(
 }
 
 void OnReadDone_ExpectEos(DemuxerStream::Status status,
-                          const scoped_refptr<DecoderBuffer>& buffer) {
+                          scoped_refptr<DecoderBuffer> buffer) {
   EXPECT_EQ(status, DemuxerStream::kOk);
   EXPECT_TRUE(buffer->end_of_stream());
 }
@@ -120,7 +120,7 @@ const uint8_t kEncryptedMediaInitData[] = {
 
 static void EosOnReadDone(bool* got_eos_buffer,
                           DemuxerStream::Status status,
-                          const scoped_refptr<DecoderBuffer>& buffer) {
+                          scoped_refptr<DecoderBuffer> buffer) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 
@@ -230,7 +230,7 @@ class FFmpegDemuxerTest : public testing::Test {
   void OnReadDone(const base::Location& location,
                   const ReadExpectation& read_expectation,
                   DemuxerStream::Status status,
-                  const scoped_refptr<DecoderBuffer>& buffer) {
+                  scoped_refptr<DecoderBuffer> buffer) {
     std::string location_str = location.ToString();
     location_str += "\n";
     SCOPED_TRACE(location_str);
@@ -1373,7 +1373,7 @@ INSTANTIATE_TEST_CASE_P(, Mp3SeekFFmpegDemuxerTest,
 
 static void ValidateAnnexB(DemuxerStream* stream,
                            DemuxerStream::Status status,
-                           const scoped_refptr<DecoderBuffer>& buffer) {
+                           scoped_refptr<DecoderBuffer> buffer) {
   EXPECT_EQ(status, DemuxerStream::kOk);
 
   if (buffer->end_of_stream()) {

@@ -26,7 +26,7 @@ class MEDIA_EXPORT AudioTimestampValidator {
   // warning developers when gaps may cause AV sync drift. A DecoderBuffer's
   // timestamp should roughly equal the timestamp of the previous buffer offset
   // by the previous buffer's duration.
-  void CheckForTimestampGap(const scoped_refptr<DecoderBuffer>& buffer);
+  void CheckForTimestampGap(const DecoderBuffer& buffer);
   void RecordOutputDuration(const scoped_refptr<AudioBuffer>& buffer);
 
  private:

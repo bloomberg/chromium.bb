@@ -81,7 +81,7 @@ class MEDIA_EXPORT AudioDecoder {
   // If |buffer| is an EOS buffer then the decoder must be flushed, i.e.
   // |output_cb| must be called for each frame pending in the queue and
   // |decode_cb| must be called after that.
-  virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+  virtual void Decode(scoped_refptr<DecoderBuffer> buffer,
                       const DecodeCB& decode_cb) = 0;
 
   // Resets decoder state. All pending Decode() requests will be finished or

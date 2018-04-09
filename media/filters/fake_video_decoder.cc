@@ -96,7 +96,7 @@ void FakeVideoDecoder::Initialize(
   }
 }
 
-void FakeVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
+void FakeVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                               const DecodeCB& decode_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(reset_cb_.IsNull());
@@ -120,7 +120,7 @@ void FakeVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   if (buffer->end_of_stream()) {
     state_ = STATE_END_OF_STREAM;
   } else {
-    DCHECK(VerifyFakeVideoBufferForTest(buffer, current_config_));
+    DCHECK(VerifyFakeVideoBufferForTest(*buffer, current_config_));
     scoped_refptr<VideoFrame> video_frame = VideoFrame::CreateColorFrame(
         current_config_.coded_size(), 0, 0, 0, buffer->timestamp());
     decoded_frames_.push_back(video_frame);

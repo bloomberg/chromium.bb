@@ -717,7 +717,7 @@ class VideoFrameQualityValidator
   void Initialize(const gfx::Size& coded_size, const gfx::Rect& visible_size);
   // Save original YUV frame to compare it with the decoded frame later.
   void AddOriginalFrame(scoped_refptr<VideoFrame> frame);
-  void AddDecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer);
+  void AddDecodeBuffer(scoped_refptr<DecoderBuffer> buffer);
   // Flush the decoder.
   void Flush();
 
@@ -885,7 +885,7 @@ void VideoFrameQualityValidator::WriteFrameStats() {
 }
 
 void VideoFrameQualityValidator::AddDecodeBuffer(
-    const scoped_refptr<DecoderBuffer>& buffer) {
+    scoped_refptr<DecoderBuffer> buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (decoder_state_ != DECODER_ERROR) {

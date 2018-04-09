@@ -1699,8 +1699,7 @@ SourceBufferStream<RangeClass>::HandleNextBufferWithPreroll(
   }
 
   // Preroll complete, hand out the final buffer.
-  *out_buffer = pending_buffer_;
-  pending_buffer_ = NULL;
+  *out_buffer = std::move(pending_buffer_);
   return SourceBufferStreamStatus::kSuccess;
 }
 
@@ -1711,18 +1710,15 @@ SourceBufferStreamStatus SourceBufferStream<RangeClass>::GetNextBufferInternal(
 
   if (!track_buffer_.empty()) {
     DCHECK(!selected_range_);
-    scoped_refptr<StreamParserBuffer>& next_buffer = track_buffer_.front();
 
-    // If the next buffer is an audio splice frame, the next effective config id
-    // comes from the first splice buffer.
-    if (next_buffer->GetConfigId() != current_config_index_) {
+    if (track_buffer_.front()->GetConfigId() != current_config_index_) {
       config_change_pending_ = true;
       DVLOG(1) << "Config change (track buffer config ID does not match).";
       return SourceBufferStreamStatus::kConfigChange;
     }
 
     DVLOG(3) << __func__ << " Next buffer coming from track_buffer_";
-    *out_buffer = next_buffer;
+    *out_buffer = std::move(track_buffer_.front());
     track_buffer_.pop_front();
     WarnIfTrackBufferExhaustionSkipsForward(*out_buffer);
     highest_output_buffer_timestamp_ = std::max(
@@ -1765,7 +1761,7 @@ SourceBufferStreamStatus SourceBufferStream<RangeClass>::GetNextBufferInternal(
 
 template <typename RangeClass>
 void SourceBufferStream<RangeClass>::WarnIfTrackBufferExhaustionSkipsForward(
-    const scoped_refptr<StreamParserBuffer>& next_buffer) {
+    scoped_refptr<StreamParserBuffer> next_buffer) {
   if (!just_exhausted_track_buffer_)
     return;
 
@@ -2218,13 +2214,13 @@ constexpr bool SourceBufferStream<SourceBufferRangeByPts>::BufferingByPts() {
 
 template <>
 DecodeTimestamp SourceBufferStream<SourceBufferRangeByDts>::BufferGetTimestamp(
-    const scoped_refptr<StreamParserBuffer>& buffer) {
+    scoped_refptr<StreamParserBuffer> buffer) {
   return buffer->GetDecodeTimestamp();
 }
 
 template <>
 DecodeTimestamp SourceBufferStream<SourceBufferRangeByPts>::BufferGetTimestamp(
-    const scoped_refptr<StreamParserBuffer>& buffer) {
+    scoped_refptr<StreamParserBuffer> buffer) {
   return DecodeTimestamp::FromPresentationTime(buffer->timestamp());
 }
 

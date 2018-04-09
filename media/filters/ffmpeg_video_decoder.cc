@@ -264,7 +264,7 @@ void FFmpegVideoDecoder::Initialize(
   bound_init_cb.Run(true);
 }
 
-void FFmpegVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
+void FFmpegVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                 const DecodeCB& decode_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(buffer.get());
@@ -303,7 +303,7 @@ void FFmpegVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   // (any state) -> kNormal:
   //     Any time Reset() is called.
 
-  if (!FFmpegDecode(buffer)) {
+  if (!FFmpegDecode(*buffer)) {
     state_ = kError;
     decode_cb_bound.Run(DecodeStatus::DECODE_ERROR);
     return;
@@ -333,24 +333,23 @@ FFmpegVideoDecoder::~FFmpegVideoDecoder() {
     ReleaseFFmpegResources();
 }
 
-bool FFmpegVideoDecoder::FFmpegDecode(
-    const scoped_refptr<DecoderBuffer>& buffer) {
+bool FFmpegVideoDecoder::FFmpegDecode(const DecoderBuffer& buffer) {
   // Create a packet for input data.
   // Due to FFmpeg API changes we no longer have const read-only pointers.
   AVPacket packet;
   av_init_packet(&packet);
-  if (buffer->end_of_stream()) {
+  if (buffer.end_of_stream()) {
     packet.data = NULL;
     packet.size = 0;
   } else {
-    packet.data = const_cast<uint8_t*>(buffer->data());
-    packet.size = buffer->data_size();
+    packet.data = const_cast<uint8_t*>(buffer.data());
+    packet.size = buffer.data_size();
 
     DCHECK(packet.data);
     DCHECK_GT(packet.size, 0);
 
     // Let FFmpeg handle presentation timestamp reordering.
-    codec_context_->reordered_opaque = buffer->timestamp().InMicroseconds();
+    codec_context_->reordered_opaque = buffer.timestamp().InMicroseconds();
   }
 
   switch (decoding_loop_->DecodePacket(
@@ -359,7 +358,7 @@ bool FFmpegVideoDecoder::FFmpegDecode(
     case FFmpegDecodingLoop::DecodeStatus::kSendPacketFailed:
       MEDIA_LOG(ERROR, media_log_)
           << "Failed to send video packet for decoding: "
-          << buffer->AsHumanReadableString();
+          << buffer.AsHumanReadableString();
       return false;
     case FFmpegDecodingLoop::DecodeStatus::kFrameProcessingFailed:
       // OnNewFrame() should have already issued a MEDIA_LOG for this.
@@ -368,7 +367,7 @@ bool FFmpegVideoDecoder::FFmpegDecode(
       MEDIA_LOG(DEBUG, media_log_)
           << GetDisplayName() << " failed to decode a video frame: "
           << AVErrorToString(decoding_loop_->last_averror_code()) << ", at "
-          << buffer->AsHumanReadableString();
+          << buffer.AsHumanReadableString();
       return false;
     case FFmpegDecodingLoop::DecodeStatus::kOkay:
       break;

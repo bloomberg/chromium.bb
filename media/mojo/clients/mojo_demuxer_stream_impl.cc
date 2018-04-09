@@ -63,10 +63,9 @@ void MojoDemuxerStreamImpl::EnableBitstreamConverter() {
   stream_->EnableBitstreamConverter();
 }
 
-void MojoDemuxerStreamImpl::OnBufferReady(
-    ReadCallback callback,
-    Status status,
-    const scoped_refptr<media::DecoderBuffer>& buffer) {
+void MojoDemuxerStreamImpl::OnBufferReady(ReadCallback callback,
+                                          Status status,
+                                          scoped_refptr<DecoderBuffer> buffer) {
   base::Optional<AudioDecoderConfig> audio_config;
   base::Optional<VideoDecoderConfig> video_config;
 
@@ -97,7 +96,7 @@ void MojoDemuxerStreamImpl::OnBufferReady(
   DCHECK_EQ(status, Status::kOk);
 
   mojom::DecoderBufferPtr mojo_buffer =
-      mojo_decoder_buffer_writer_->WriteDecoderBuffer(buffer);
+      mojo_decoder_buffer_writer_->WriteDecoderBuffer(std::move(buffer));
   if (!mojo_buffer) {
     std::move(callback).Run(Status::kAborted, mojom::DecoderBufferPtr(),
                             audio_config, video_config);

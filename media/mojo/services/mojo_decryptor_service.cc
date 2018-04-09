@@ -163,10 +163,9 @@ void MojoDecryptorService::OnReadDone(StreamType stream_type,
                                  weak_this_, base::Passed(&callback)));
 }
 
-void MojoDecryptorService::OnDecryptDone(
-    DecryptCallback callback,
-    Status status,
-    const scoped_refptr<DecoderBuffer>& buffer) {
+void MojoDecryptorService::OnDecryptDone(DecryptCallback callback,
+                                         Status status,
+                                         scoped_refptr<DecoderBuffer> buffer) {
   DVLOG_IF(1, status != Status::kSuccess) << __func__ << "(" << status << ")";
   DVLOG_IF(3, status == Status::kSuccess) << __func__;
 
@@ -177,7 +176,7 @@ void MojoDecryptorService::OnDecryptDone(
   }
 
   mojom::DecoderBufferPtr mojo_buffer =
-      decrypted_buffer_writer_->WriteDecoderBuffer(buffer);
+      decrypted_buffer_writer_->WriteDecoderBuffer(std::move(buffer));
   if (!mojo_buffer) {
     std::move(callback).Run(Status::kError, nullptr);
     return;

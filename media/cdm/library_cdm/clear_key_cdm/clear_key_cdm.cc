@@ -80,8 +80,8 @@ const char kDummyIndividualizationRequest[] = "dummy individualization request";
 
 static bool g_is_cdm_module_initialized = false;
 
-// Copies |input_buffer| into a media::DecoderBuffer. If the |input_buffer| is
-// empty, an empty (end-of-stream) media::DecoderBuffer is returned.
+// Copies |input_buffer| into a DecoderBuffer. If the |input_buffer| is
+// empty, an empty (end-of-stream) DecoderBuffer is returned.
 static scoped_refptr<media::DecoderBuffer> CopyDecoderBufferFrom(
     const cdm::InputBuffer_2& input_buffer) {
   if (!input_buffer.data) {
@@ -643,13 +643,12 @@ void ClearKeyCdm::TimerExpired(void* context) {
   ScheduleNextRenewal();
 }
 
-static void CopyDecryptResults(
-    media::Decryptor::Status* status_copy,
-    scoped_refptr<media::DecoderBuffer>* buffer_copy,
-    media::Decryptor::Status status,
-    const scoped_refptr<media::DecoderBuffer>& buffer) {
+static void CopyDecryptResults(media::Decryptor::Status* status_copy,
+                               scoped_refptr<DecoderBuffer>* buffer_copy,
+                               media::Decryptor::Status status,
+                               scoped_refptr<DecoderBuffer> buffer) {
   *status_copy = status;
-  *buffer_copy = buffer;
+  *buffer_copy = std::move(buffer);
 }
 
 cdm::Status ClearKeyCdm::Decrypt(const cdm::InputBuffer_1& encrypted_buffer,
@@ -662,7 +661,7 @@ cdm::Status ClearKeyCdm::Decrypt(const cdm::InputBuffer_2& encrypted_buffer,
   DVLOG(1) << __func__;
   DCHECK(encrypted_buffer.data);
 
-  scoped_refptr<media::DecoderBuffer> buffer;
+  scoped_refptr<DecoderBuffer> buffer;
   cdm::Status status = DecryptToMediaDecoderBuffer(encrypted_buffer, &buffer);
 
   if (status != cdm::kSuccess)
@@ -800,7 +799,7 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
   DVLOG(1) << __func__;
   TRACE_EVENT0("media", "ClearKeyCdm::DecryptAndDecodeFrame");
 
-  scoped_refptr<media::DecoderBuffer> buffer;
+  scoped_refptr<DecoderBuffer> buffer;
   cdm::Status status = DecryptToMediaDecoderBuffer(encrypted_buffer, &buffer);
 
   if (status != cdm::kSuccess)
@@ -838,7 +837,7 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeSamples(
     CHECK(false) << "Crash in decrypt-and-decode with crash key system.";
   }
 
-  scoped_refptr<media::DecoderBuffer> buffer;
+  scoped_refptr<DecoderBuffer> buffer;
   cdm::Status status = DecryptToMediaDecoderBuffer(encrypted_buffer, &buffer);
 
   if (status != cdm::kSuccess)
@@ -883,7 +882,7 @@ void ClearKeyCdm::ScheduleNextRenewal() {
 
 cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
     const cdm::InputBuffer_2& encrypted_buffer,
-    scoped_refptr<media::DecoderBuffer>* decrypted_buffer) {
+    scoped_refptr<DecoderBuffer>* decrypted_buffer) {
   DCHECK(decrypted_buffer);
 
   if (!IsSupportedBufferEncryptionScheme(encrypted_buffer.encryption_scheme,
@@ -891,14 +890,13 @@ cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
     return cdm::kDecryptError;
   }
 
-  scoped_refptr<media::DecoderBuffer> buffer =
-      CopyDecoderBufferFrom(encrypted_buffer);
+  scoped_refptr<DecoderBuffer> buffer = CopyDecoderBufferFrom(encrypted_buffer);
 
   // TODO(xhwang): Unify how to check whether a buffer is encrypted.
   // See http://crbug.com/675003
   if (buffer->end_of_stream() || !buffer->decrypt_config() ||
       !buffer->decrypt_config()->is_encrypted()) {
-    *decrypted_buffer = buffer;
+    *decrypted_buffer = std::move(buffer);
     return cdm::kSuccess;
   }
 
@@ -907,7 +905,7 @@ cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
   // The CDM does not care what the stream type is. Pass kVideo
   // for both audio and video decryption.
   cdm_->GetCdmContext()->GetDecryptor()->Decrypt(
-      media::Decryptor::kVideo, buffer,
+      media::Decryptor::kVideo, std::move(buffer),
       base::Bind(&CopyDecryptResults, &status, decrypted_buffer));
 
   if (status == media::Decryptor::kError)

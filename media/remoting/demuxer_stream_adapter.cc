@@ -248,9 +248,8 @@ void DemuxerStreamAdapter::RequestBuffer() {
                                    request_buffer_weak_factory_.GetWeakPtr()));
 }
 
-void DemuxerStreamAdapter::OnNewBuffer(
-    DemuxerStream::Status status,
-    const scoped_refptr<DecoderBuffer>& input) {
+void DemuxerStreamAdapter::OnNewBuffer(DemuxerStream::Status status,
+                                       scoped_refptr<DecoderBuffer> input) {
   DEMUXER_VLOG(3) << "status=" << status;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   if (!is_processing_read_request() || pending_flush_) {

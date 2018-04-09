@@ -114,7 +114,7 @@ void DemuxerStreamAdapter::RequestBuffer(const ReadCB& read_cb) {
 void DemuxerStreamAdapter::OnNewBuffer(
     const ReadCB& read_cb,
     ::media::DemuxerStream::Status status,
-    const scoped_refptr<::media::DecoderBuffer>& input) {
+    scoped_refptr<::media::DecoderBuffer> input) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   is_pending_demuxer_read_ = false;
@@ -160,7 +160,8 @@ void DemuxerStreamAdapter::OnNewBuffer(
 
   // Provides the buffer as well as possibly valid audio and video configs.
   is_pending_read_ = false;
-  scoped_refptr<DecoderBufferBase> buffer(new DecoderBufferAdapter(input));
+  scoped_refptr<DecoderBufferBase> buffer(
+      new DecoderBufferAdapter(std::move(input)));
   read_cb.Run(buffer, audio_config_, video_config_);
 
   // Back to the default audio/video config:

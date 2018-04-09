@@ -468,7 +468,7 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
 
   bool ended() const { return ended_; }
 
-  void DecodeDecoder(const scoped_refptr<DecoderBuffer>& buffer,
+  void DecodeDecoder(scoped_refptr<DecoderBuffer> buffer,
                      const AudioDecoder::DecodeCB& decode_cb) {
     // TODO(scherkus): Make this a DCHECK after threading semantics are fixed.
     if (base::MessageLoop::current() != &message_loop_) {

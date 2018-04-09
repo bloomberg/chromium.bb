@@ -105,13 +105,13 @@ void MojoDecryptor::RegisterNewKeyCB(StreamType stream_type,
 }
 
 void MojoDecryptor::Decrypt(StreamType stream_type,
-                            const scoped_refptr<DecoderBuffer>& encrypted,
+                            scoped_refptr<DecoderBuffer> encrypted,
                             const DecryptCB& decrypt_cb) {
   DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   mojom::DecoderBufferPtr mojo_buffer =
-      decrypt_buffer_writer_->WriteDecoderBuffer(encrypted);
+      decrypt_buffer_writer_->WriteDecoderBuffer(std::move(encrypted));
   if (!mojo_buffer) {
     decrypt_cb.Run(kError, nullptr);
     return;
@@ -153,13 +153,13 @@ void MojoDecryptor::InitializeVideoDecoder(const VideoDecoderConfig& config,
 }
 
 void MojoDecryptor::DecryptAndDecodeAudio(
-    const scoped_refptr<DecoderBuffer>& encrypted,
+    scoped_refptr<DecoderBuffer> encrypted,
     const AudioDecodeCB& audio_decode_cb) {
   DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
   DCHECK(thread_checker_.CalledOnValidThread());
 
   mojom::DecoderBufferPtr mojo_buffer =
-      audio_buffer_writer_->WriteDecoderBuffer(encrypted);
+      audio_buffer_writer_->WriteDecoderBuffer(std::move(encrypted));
   if (!mojo_buffer) {
     audio_decode_cb.Run(kError, AudioFrames());
     return;
@@ -174,13 +174,13 @@ void MojoDecryptor::DecryptAndDecodeAudio(
 }
 
 void MojoDecryptor::DecryptAndDecodeVideo(
-    const scoped_refptr<DecoderBuffer>& encrypted,
+    scoped_refptr<DecoderBuffer> encrypted,
     const VideoDecodeCB& video_decode_cb) {
   DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
   DCHECK(thread_checker_.CalledOnValidThread());
 
   mojom::DecoderBufferPtr mojo_buffer =
-      video_buffer_writer_->WriteDecoderBuffer(encrypted);
+      video_buffer_writer_->WriteDecoderBuffer(std::move(encrypted));
   if (!mojo_buffer) {
     video_decode_cb.Run(kError, nullptr);
     return;
@@ -244,7 +244,7 @@ void MojoDecryptor::OnBufferRead(DecryptOnceCB decrypt_cb,
     return;
   }
 
-  std::move(decrypt_cb).Run(status, buffer);
+  std::move(decrypt_cb).Run(status, std::move(buffer));
 }
 
 void MojoDecryptor::OnAudioDecoded(

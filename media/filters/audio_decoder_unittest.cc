@@ -92,7 +92,7 @@ std::ostream& operator<<(std::ostream& os, const TestParams& params) {
 // discard metadata in favor of setting DiscardPadding on the DecoderBuffer.
 // Allows better testing of AudioDiscardHelper usage.
 void SetDiscardPadding(AVPacket* packet,
-                       const scoped_refptr<DecoderBuffer> buffer,
+                       DecoderBuffer* buffer,
                        double samples_per_second) {
   // Discard negative timestamps.
   if (buffer->timestamp() + buffer->duration() < base::TimeDelta()) {
@@ -167,15 +167,16 @@ class AudioDecoderTest
     return true;
   }
 
-  void DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer) {
+  void DecodeBuffer(scoped_refptr<DecoderBuffer> buffer) {
     ASSERT_FALSE(pending_decode_);
     pending_decode_ = true;
     last_decode_status_ = DecodeStatus::DECODE_ERROR;
 
     base::RunLoop run_loop;
     decoder_->Decode(
-        buffer, base::Bind(&AudioDecoderTest::DecodeFinished,
-                           base::Unretained(this), run_loop.QuitClosure()));
+        std::move(buffer),
+        base::Bind(&AudioDecoderTest::DecodeFinished, base::Unretained(this),
+                   run_loop.QuitClosure()));
     run_loop.Run();
     ASSERT_FALSE(pending_decode_);
   }
@@ -265,11 +266,11 @@ class AudioDecoderTest
     // Don't set discard padding for Opus, it already has discard behavior set
     // based on the codec delay in the AudioDecoderConfig.
     if (decoder_type_ == FFMPEG && params_.codec != kCodecOpus)
-      SetDiscardPadding(&packet, buffer, params_.samples_per_second);
+      SetDiscardPadding(&packet, buffer.get(), params_.samples_per_second);
 
     // DecodeBuffer() shouldn't need the original packet since it uses the copy.
     av_packet_unref(&packet);
-    DecodeBuffer(buffer);
+    DecodeBuffer(std::move(buffer));
   }
 
   void Reset() {
@@ -636,7 +637,7 @@ TEST_P(AudioDecoderTest, NoTimestamp) {
   ASSERT_NO_FATAL_FAILURE(Initialize());
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(0));
   buffer->set_timestamp(kNoTimestamp);
-  DecodeBuffer(buffer);
+  DecodeBuffer(std::move(buffer));
   EXPECT_EQ(DecodeStatus::DECODE_ERROR, last_decode_status());
 }
 
