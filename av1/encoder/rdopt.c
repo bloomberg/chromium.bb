@@ -6375,14 +6375,34 @@ static INLINE void clamp_mv2(MV *mv, const MACROBLOCKD *xd) {
 static int estimate_wedge_sign(const AV1_COMP *cpi, const MACROBLOCK *x,
                                const BLOCK_SIZE bsize, const uint8_t *pred0,
                                int stride0, const uint8_t *pred1, int stride1) {
+  static const BLOCK_SIZE split_qtr[BLOCK_SIZES_ALL] = {
+    //                            4X4
+    BLOCK_INVALID,
+    // 4X8,        8X4,           8X8
+    BLOCK_INVALID, BLOCK_INVALID, BLOCK_4X4,
+    // 8X16,       16X8,          16X16
+    BLOCK_4X8, BLOCK_8X4, BLOCK_8X8,
+    // 16X32,      32X16,         32X32
+    BLOCK_8X16, BLOCK_16X8, BLOCK_16X16,
+    // 32X64,      64X32,         64X64
+    BLOCK_16X32, BLOCK_32X16, BLOCK_32X32,
+    // 64x128,     128x64,        128x128
+    BLOCK_32X64, BLOCK_64X32, BLOCK_64X64,
+    // 4X16,       16X4,          8X32
+    BLOCK_INVALID, BLOCK_INVALID, BLOCK_4X16,
+    // 32X8,       16X64,         64X16
+    BLOCK_16X4, BLOCK_8X32, BLOCK_32X8
+  };
   const struct macroblock_plane *const p = &x->plane[0];
   const uint8_t *src = p->src.buf;
   int src_stride = p->src.stride;
-  const int f_index = bsize - BLOCK_8X8;
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
   uint32_t esq[2][4];
   int64_t tl, br;
+
+  const BLOCK_SIZE f_index = split_qtr[bsize];
+  assert(f_index != BLOCK_INVALID);
 
   if (x->e_mbd.cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     pred0 = CONVERT_TO_BYTEPTR(pred0);

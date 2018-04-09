@@ -173,8 +173,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->auto_min_max_partition_size = RELAXED_NEIGHBORING_MIN_MAX;
     sf->allow_partition_search_skip = 1;
     sf->disable_wedge_search_var_thresh = 100;
-    // TODO(debargha): needs to be redone for 4:1 partitions
-    // sf->fast_wedge_sign_estimate = 1;
+    sf->fast_wedge_sign_estimate = 1;
   }
 
   if (speed >= 3) {
