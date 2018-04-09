@@ -22,11 +22,11 @@ def extract_gn_build_commands(build_ninja_file):
   On error, returns the empty string."""
   result = ""
   with open(build_ninja_file, 'r') as f:
-    # Read until the second blank line. The first thing GN writes to the file
-    # is the "rule gn" and the second is the section for "build build.ninja",
-    # separated by blank lines.
+    # Read until the third blank line. The first thing GN writes to the file
+    # is "ninja_required_version = x.y.z", then the "rule gn" and the third
+    # is the section for "build build.ninja", separated by blank lines.
     num_blank_lines = 0
-    while num_blank_lines < 2:
+    while num_blank_lines < 3:
       line = f.readline()
       if len(line) == 0:
         return ''  # Unexpected EOF.
