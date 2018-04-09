@@ -254,82 +254,6 @@ DocumentThreadableLoader::DocumentThreadableLoader(
 }
 
 void DocumentThreadableLoader::Start(const ResourceRequest& request) {
-  if (out_of_blink_cors_)
-    StartOutOfBlinkCORS(request);
-  else
-    StartBlinkCORS(request);
-}
-
-void DocumentThreadableLoader::StartOutOfBlinkCORS(
-    const ResourceRequest& request) {
-  DCHECK(out_of_blink_cors_);
-
-  // TODO(toyoshim) replace this delegation with an implementation that does not
-  // perform CORS checks but relies on CORSURLLoader for CORS
-  // (https://crbug.com/736308).
-  StartBlinkCORS(request);
-}
-
-void DocumentThreadableLoader::DispatchInitialRequestOutOfBlinkCORS(
-    ResourceRequest& request) {
-  DCHECK(out_of_blink_cors_);
-
-  // TODO(toyoshim) replace this delegation with an implementation that does not
-  // perform CORS checks but relies on CORSURLLoader for CORS
-  // (https://crbug.com/736308).
-  DispatchInitialRequestBlinkCORS(request);
-}
-
-void DocumentThreadableLoader::HandleResponseOutOfBlinkCORS(
-    unsigned long identifier,
-    network::mojom::FetchRequestMode request_mode,
-    network::mojom::FetchCredentialsMode credentials_mode,
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
-  DCHECK(client_);
-  // Out of Blink CORS access check is implemented. But we still need some
-  // additional code to work with unfinished preflight support in Blink.
-  // TODO(toyoshim): Remove following workaround code to support preflight.
-  // (https://crbug.com/736308).
-  if (!actual_request_.IsNull()) {
-    ReportResponseReceived(identifier, response);
-    HandlePreflightResponse(response);
-    return;
-  }
-
-  // TODO(toyoshim): Support Service Worker. (https://crbug.com/736308).
-  if (response.WasFetchedViaServiceWorker()) {
-    HandleResponseBlinkCORS(identifier, request_mode, credentials_mode,
-                            response, std::move(handle));
-    return;
-  }
-
-  client_->DidReceiveResponse(identifier, response, std::move(handle));
-}
-
-bool DocumentThreadableLoader::RedirectReceivedOutOfBlinkCORS(
-    Resource* resource,
-    const ResourceRequest& new_request,
-    const ResourceResponse& redirect_response) {
-  DCHECK(out_of_blink_cors_);
-
-  // TODO(toyoshim) replace this delegation with an implementation that does not
-  // perform CORS checks but relies on CORSURLLoader for CORS
-  // (https://crbug.com/736308).
-  return RedirectReceivedBlinkCORS(resource, new_request, redirect_response);
-}
-
-void DocumentThreadableLoader::MakeCrossOriginAccessRequestOutOfBlinkCORS(
-    const ResourceRequest& request) {
-  DCHECK(out_of_blink_cors_);
-
-  // TODO(toyoshim) replace this delegation with an implementation that does not
-  // perform CORS checks but relies on CORSURLLoader for CORS
-  // (https://crbug.com/736308).
-  MakeCrossOriginAccessRequestBlinkCORS(request);
-}
-
-void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
   // Setting an outgoing referer is only supported in the async code path.
   DCHECK(async_ || request.HttpReferrer().IsEmpty());
 
@@ -415,7 +339,7 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
       !SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           new_request.Url().Protocol()) ||
       !loading_context_->GetResourceFetcher()->IsControlledByServiceWorker()) {
-    DispatchInitialRequestBlinkCORS(new_request);
+    DispatchInitialRequest(new_request);
     return;
   }
 
@@ -432,14 +356,6 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
 }
 
 void DocumentThreadableLoader::DispatchInitialRequest(
-    ResourceRequest& request) {
-  if (out_of_blink_cors_)
-    DispatchInitialRequestOutOfBlinkCORS(request);
-  else
-    DispatchInitialRequestBlinkCORS(request);
-}
-
-void DocumentThreadableLoader::DispatchInitialRequestBlinkCORS(
     ResourceRequest& request) {
   if (!request.IsExternalRequest() && !cors_flag_) {
     LoadRequest(request, resource_loader_options_);
@@ -482,14 +398,6 @@ void DocumentThreadableLoader::LoadPreflightRequest(
 }
 
 void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
-    const ResourceRequest& request) {
-  if (out_of_blink_cors_)
-    MakeCrossOriginAccessRequestOutOfBlinkCORS(request);
-  else
-    MakeCrossOriginAccessRequestBlinkCORS(request);
-}
-
-void DocumentThreadableLoader::MakeCrossOriginAccessRequestBlinkCORS(
     const ResourceRequest& request) {
   DCHECK(CORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode()) ||
          request.IsExternalRequest());
@@ -657,25 +565,14 @@ void DocumentThreadableLoader::Clear() {
   ClearResource();
 }
 
-bool DocumentThreadableLoader::RedirectReceived(
-    Resource* resource,
-    const ResourceRequest& new_request,
-    const ResourceResponse& redirect_response) {
-  if (out_of_blink_cors_) {
-    return RedirectReceivedOutOfBlinkCORS(resource, new_request,
-                                          redirect_response);
-  } else {
-    return RedirectReceivedBlinkCORS(resource, new_request, redirect_response);
-  }
-}
-
 // In this method, we can clear |request| to tell content::WebURLLoaderImpl of
 // Chromium not to follow the redirect. This works only when this method is
 // called by RawResource::willSendRequest(). If called by
 // RawResource::didAddClient(), clearing |request| won't be propagated to
 // content::WebURLLoaderImpl. So, this loader must also get detached from the
 // resource by calling clearResource().
-bool DocumentThreadableLoader::RedirectReceivedBlinkCORS(
+// TODO(toyoshim): Implement OOR-CORS mode specific redirect code.
+bool DocumentThreadableLoader::RedirectReceived(
     Resource* resource,
     const ResourceRequest& new_request,
     const ResourceResponse& redirect_response) {
@@ -976,23 +873,17 @@ void DocumentThreadableLoader::HandleResponse(
     network::mojom::FetchCredentialsMode credentials_mode,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
-  if (out_of_blink_cors_) {
-    HandleResponseOutOfBlinkCORS(identifier, request_mode, credentials_mode,
-                                 response, std::move(handle));
-  } else {
-    HandleResponseBlinkCORS(identifier, request_mode, credentials_mode,
-                            response, std::move(handle));
-  }
-}
-
-void DocumentThreadableLoader::HandleResponseBlinkCORS(
-    unsigned long identifier,
-    network::mojom::FetchRequestMode request_mode,
-    network::mojom::FetchCredentialsMode credentials_mode,
-    const ResourceResponse& response,
-    std::unique_ptr<WebDataConsumerHandle> handle) {
   DCHECK(client_);
 
+  // TODO(toyoshim): Support OOR-CORS preflight and Service Worker case.
+  // https://crbug.com/736308.
+  if (out_of_blink_cors_ && actual_request_.IsNull() &&
+      !response.WasFetchedViaServiceWorker()) {
+    client_->DidReceiveResponse(identifier, response, std::move(handle));
+    return;
+  }
+
+  // Code path for legacy Blink CORS.
   if (!actual_request_.IsNull()) {
     ReportResponseReceived(identifier, response);
     HandlePreflightResponse(response);
@@ -1157,10 +1048,7 @@ void DocumentThreadableLoader::LoadFallbackRequestForServiceWorker() {
   ClearResource();
   ResourceRequest fallback_request(fallback_request_for_service_worker_);
   fallback_request_for_service_worker_ = ResourceRequest();
-  if (out_of_blink_cors_)
-    DispatchInitialRequestOutOfBlinkCORS(fallback_request);
-  else
-    DispatchInitialRequestBlinkCORS(fallback_request);
+  DispatchInitialRequest(fallback_request);
 }
 
 void DocumentThreadableLoader::LoadActualRequest() {
