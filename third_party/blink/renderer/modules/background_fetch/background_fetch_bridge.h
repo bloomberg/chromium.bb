@@ -43,7 +43,7 @@ class BackgroundFetchBridge final
   using UpdateUICallback =
       base::OnceCallback<void(mojom::blink::BackgroundFetchError)>;
 
-  static BackgroundFetchBridge* From(ServiceWorkerRegistration*);
+  static BackgroundFetchBridge* From(ServiceWorkerRegistration* registration);
 
   virtual ~BackgroundFetchBridge();
 
@@ -52,12 +52,12 @@ class BackgroundFetchBridge final
   // registration has been created.
   void Fetch(const String& developer_id,
              Vector<WebServiceWorkerRequest> requests,
-             mojom::blink::BackgroundFetchOptionsPtr,
+             mojom::blink::BackgroundFetchOptionsPtr options,
              const SkBitmap& icon,
-             RegistrationCallback);
+             RegistrationCallback callback);
 
   // Gets the size of the icon to be displayed in Background Fetch UI.
-  void GetIconDisplaySize(GetIconDisplaySizeCallback);
+  void GetIconDisplaySize(GetIconDisplaySizeCallback callback);
 
   // Updates the user interface for the Background Fetch identified by
   // |unique_id| with the updated |title|. Will invoke the |callback| when the
@@ -65,42 +65,44 @@ class BackgroundFetchBridge final
   void UpdateUI(const String& developer_id,
                 const String& unique_id,
                 const String& title,
-                UpdateUICallback);
+                UpdateUICallback callback);
 
   // Aborts the active Background Fetch for |unique_id|. Will invoke the
   // |callback| when the Background Fetch identified by |unique_id| has been
   // aborted, or could not be aborted for operational reasons.
   void Abort(const String& developer_id,
              const String& unique_id,
-             AbortCallback);
+             AbortCallback callback);
 
   // Gets the Background Fetch registration for the given |developer_id|. Will
   // invoke the |callback| with the Background Fetch registration, which may be
   // a nullptr if the |developer_id| does not exist, when the Mojo call has
   // completed.
-  void GetRegistration(const String& developer_id, RegistrationCallback);
+  void GetRegistration(const String& developer_id,
+                       RegistrationCallback callback);
 
   // Gets the sequence of ids for active Background Fetch registrations. Will
   // invoke the |callback| with the |developers_id|s when the Mojo call has
   // completed.
-  void GetDeveloperIds(GetDeveloperIdsCallback);
+  void GetDeveloperIds(GetDeveloperIdsCallback callback);
 
   // Registers the |observer| to receive progress events for the background
   // fetch registration identified by the |unique_id|.
   void AddRegistrationObserver(
       const String& unique_id,
-      mojom::blink::BackgroundFetchRegistrationObserverPtr);
+      mojom::blink::BackgroundFetchRegistrationObserverPtr observer);
 
  private:
-  explicit BackgroundFetchBridge(ServiceWorkerRegistration&);
+  explicit BackgroundFetchBridge(ServiceWorkerRegistration& registration);
 
   // Returns an initialized BackgroundFetchService*. A connection will be
   // established after the first call to this method.
   mojom::blink::BackgroundFetchService* GetService();
 
-  void DidGetRegistration(RegistrationCallback,
-                          mojom::blink::BackgroundFetchError,
-                          mojom::blink::BackgroundFetchRegistrationPtr);
+  void DidGetRegistration(
+      RegistrationCallback callback,
+      mojom::blink::BackgroundFetchError error,
+      mojom::blink::BackgroundFetchRegistrationPtr registration_ptr);
 
   mojom::blink::BackgroundFetchServicePtr background_fetch_service_;
 };

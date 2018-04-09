@@ -69,16 +69,16 @@ class MODULES_EXPORT Notification final
   // Used for JavaScript instantiations of non-persistent notifications. Will
   // automatically schedule for the notification to be displayed to the user
   // when the developer-provided data is valid.
-  static Notification* Create(ExecutionContext*,
+  static Notification* Create(ExecutionContext* context,
                               const String& title,
-                              const NotificationOptions&,
-                              ExceptionState&);
+                              const NotificationOptions& options,
+                              ExceptionState& state);
 
   // Used for embedder-created persistent notifications. Initializes the state
   // of the notification as either Showing or Closed based on |showing|.
-  static Notification* Create(ExecutionContext*,
+  static Notification* Create(ExecutionContext* context,
                               const String& notification_id,
-                              const WebNotificationData&,
+                              const WebNotificationData& data,
                               bool showing);
 
   ~Notification() override;
@@ -108,13 +108,13 @@ class MODULES_EXPORT Notification final
   bool renotify() const;
   bool silent() const;
   bool requireInteraction() const;
-  ScriptValue data(ScriptState*);
-  Vector<v8::Local<v8::Value>> actions(ScriptState*) const;
+  ScriptValue data(ScriptState* script_state);
+  Vector<v8::Local<v8::Value>> actions(ScriptState* script_state) const;
 
-  static String PermissionString(mojom::blink::PermissionStatus);
-  static String permission(ExecutionContext*);
+  static String PermissionString(mojom::blink::PermissionStatus permission);
+  static String permission(ExecutionContext* context);
   static ScriptPromise requestPermission(
-      ScriptState*,
+      ScriptState* script_state,
       V8NotificationPermissionCallback* deprecated_callback = nullptr);
 
   static size_t maxActions();
@@ -126,16 +126,16 @@ class MODULES_EXPORT Notification final
   const AtomicString& InterfaceName() const override;
 
   // ContextLifecycleObserver interface.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext* context) override;
 
   // ScriptWrappable interface.
   bool HasPendingActivity() const final;
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(blink::Visitor* visitor);
 
  protected:
   // EventTarget interface.
-  DispatchEventResult DispatchEventInternal(Event*) final;
+  DispatchEventResult DispatchEventInternal(Event* event) final;
 
  private:
   // The type of notification this instance represents. Non-persistent
@@ -146,7 +146,9 @@ class MODULES_EXPORT Notification final
   // The current phase of the notification in its lifecycle.
   enum class State { kLoading, kShowing, kClosing, kClosed };
 
-  Notification(ExecutionContext*, Type, const WebNotificationData&);
+  Notification(ExecutionContext* context,
+               Type type,
+               const WebNotificationData& data);
 
   // Sets the state of the notification in its lifecycle.
   void SetState(State state) { state_ = state; }
@@ -171,7 +173,7 @@ class MODULES_EXPORT Notification final
   void PrepareShow();
 
   // Shows the notification through the embedder using the loaded resources.
-  void DidLoadResources(NotificationResourcesLoader*);
+  void DidLoadResources(NotificationResourcesLoader* loader);
 
   void DispatchErrorEvent();
 

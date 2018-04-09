@@ -24,7 +24,9 @@ class MODULES_EXPORT BlobEvent final : public Event {
 
   static BlobEvent* Create(const AtomicString& type,
                            const BlobEventInit& initializer);
-  static BlobEvent* Create(const AtomicString& type, Blob*, double);
+  static BlobEvent* Create(const AtomicString& type,
+                           Blob* blob,
+                           double timecode);
 
   Blob* data() const { return blob_.Get(); }
   DOMHighResTimeStamp timecode() const { return timecode_; }
@@ -32,11 +34,11 @@ class MODULES_EXPORT BlobEvent final : public Event {
   // Event
   const AtomicString& InterfaceName() const final;
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(blink::Visitor* visitor);
 
  private:
   BlobEvent(const AtomicString& type, const BlobEventInit& initializer);
-  BlobEvent(const AtomicString& type, Blob*, double);
+  BlobEvent(const AtomicString& type, Blob* blob, double timecode);
 
   Member<Blob> blob_;
   DOMHighResTimeStamp timecode_;

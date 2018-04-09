@@ -22,10 +22,10 @@ class NotificationOptions;
 // notification options. An exception will be thrown on the ExceptionState when
 // the given options do not match the constraints imposed by the specification.
 MODULES_EXPORT WebNotificationData
-CreateWebNotificationData(ExecutionContext*,
+CreateWebNotificationData(ExecutionContext* context,
                           const String& title,
-                          const NotificationOptions&,
-                          ExceptionState&);
+                          const NotificationOptions& options,
+                          ExceptionState& exception_state);
 
 }  // namespace blink
 

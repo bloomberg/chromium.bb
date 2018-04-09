@@ -34,17 +34,19 @@ class MODULES_EXPORT NotificationImageLoader final
   // be decoded.
   using ImageCallback = base::OnceCallback<void(const SkBitmap&)>;
 
-  explicit NotificationImageLoader(Type);
+  explicit NotificationImageLoader(Type type);
   ~NotificationImageLoader() override;
 
   // Scales down |image| according to its type and returns result. If it is
   // already small enough, |image| is returned unchanged.
-  static SkBitmap ScaleDownIfNeeded(const SkBitmap& image, Type);
+  static SkBitmap ScaleDownIfNeeded(const SkBitmap& image, Type type);
 
   // Asynchronously downloads an image from the given url, decodes the loaded
   // data, and passes the bitmap to the callback. Times out if the load takes
   // too long and ImageCallback is invoked with an empty bitmap.
-  void Start(ExecutionContext*, const KURL&, ImageCallback);
+  void Start(ExecutionContext* context,
+             const KURL& url,
+             ImageCallback image_callback);
 
   // Cancels the pending load, if there is one. The |m_imageCallback| will not
   // be run.
@@ -54,7 +56,7 @@ class MODULES_EXPORT NotificationImageLoader final
   void DidReceiveData(const char* data, unsigned length) override;
   void DidFinishLoading(unsigned long resource_identifier,
                         double finish_time) override;
-  void DidFail(const ResourceError&) override;
+  void DidFail(const ResourceError& error) override;
   void DidFailRedirectCheck() override;
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(threadable_loader_); }

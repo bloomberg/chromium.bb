@@ -26,15 +26,16 @@ class WorkerNavigatorBudget final
  public:
   static const char kSupplementName[];
 
-  static WorkerNavigatorBudget& From(WorkerNavigator&);
+  static WorkerNavigatorBudget& From(WorkerNavigator& worker_navigator);
 
-  static BudgetService* budget(ExecutionContext*, WorkerNavigator&);
-  BudgetService* budget(ExecutionContext*);
+  static BudgetService* budget(ExecutionContext* context,
+                               WorkerNavigator& worker_navigator);
+  BudgetService* budget(ExecutionContext* context);
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(blink::Visitor* visitor);
 
  private:
-  explicit WorkerNavigatorBudget(WorkerNavigator&);
+  explicit WorkerNavigatorBudget(WorkerNavigator& worker_navigator);
 
   Member<BudgetService> budget_;
 };

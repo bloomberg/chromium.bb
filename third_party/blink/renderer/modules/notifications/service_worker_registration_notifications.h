@@ -39,34 +39,34 @@ class ServiceWorkerRegistrationNotifications final
  public:
   static const char kSupplementName[];
 
-  static ScriptPromise showNotification(ScriptState*,
-                                        ServiceWorkerRegistration&,
+  static ScriptPromise showNotification(ScriptState* script_state,
+                                        ServiceWorkerRegistration& registration,
                                         const String& title,
-                                        const NotificationOptions&,
-                                        ExceptionState&);
-  static ScriptPromise getNotifications(ScriptState*,
-                                        ServiceWorkerRegistration&,
-                                        const GetNotificationOptions&);
+                                        const NotificationOptions& options,
+                                        ExceptionState& exception_state);
+  static ScriptPromise getNotifications(ScriptState* script_state,
+                                        ServiceWorkerRegistration& registration,
+                                        const GetNotificationOptions& options);
 
   // ContextLifecycleObserver interface.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed(ExecutionContext* context) override;
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(blink::Visitor* visitor);
 
  private:
   ServiceWorkerRegistrationNotifications(ExecutionContext*,
                                          ServiceWorkerRegistration*);
 
   static ServiceWorkerRegistrationNotifications& From(
-      ExecutionContext*,
-      ServiceWorkerRegistration&);
+      ExecutionContext* context,
+      ServiceWorkerRegistration& registration);
 
-  void PrepareShow(const WebNotificationData&,
-                   std::unique_ptr<WebNotificationShowCallbacks>);
-  void DidLoadResources(scoped_refptr<const SecurityOrigin>,
-                        const WebNotificationData&,
-                        std::unique_ptr<WebNotificationShowCallbacks>,
-                        NotificationResourcesLoader*);
+  void PrepareShow(const WebNotificationData& data,
+                   std::unique_ptr<WebNotificationShowCallbacks> callbacks);
+  void DidLoadResources(scoped_refptr<const SecurityOrigin> origin,
+                        const WebNotificationData& data,
+                        std::unique_ptr<WebNotificationShowCallbacks> callbacks,
+                        NotificationResourcesLoader* loader);
 
   Member<ServiceWorkerRegistration> registration_;
   HeapHashSet<Member<NotificationResourcesLoader>> loaders_;

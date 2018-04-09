@@ -46,7 +46,7 @@ String ToBase64URLWithoutPadding(DOMArrayBuffer* buffer) {
 }  // namespace
 
 PushSubscription* PushSubscription::Take(
-    ScriptPromiseResolver*,
+    ScriptPromiseResolver* resolver,
     std::unique_ptr<WebPushSubscription> push_subscription,
     ServiceWorkerRegistration* service_worker_registration) {
   if (!push_subscription)

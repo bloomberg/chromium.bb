@@ -33,7 +33,7 @@ class NotificationManager final
  public:
   static const char kSupplementName[];
 
-  static NotificationManager* From(ExecutionContext*);
+  static NotificationManager* From(ExecutionContext* context);
 
   ~NotificationManager();
 
@@ -42,7 +42,7 @@ class NotificationManager final
   mojom::blink::PermissionStatus GetPermissionStatus();
 
   ScriptPromise RequestPermission(
-      ScriptState*,
+      ScriptState* script_state,
       V8NotificationPermissionCallback* deprecated_callback);
 
   // Shows a notification that is not tied to any service worker.
@@ -52,37 +52,38 @@ class NotificationManager final
   // else displays a new notification.
   void DisplayNonPersistentNotification(
       const String& token,
-      const WebNotificationData&,
-      std::unique_ptr<WebNotificationResources>,
-      mojom::blink::NonPersistentNotificationListenerPtr);
+      const WebNotificationData& notification_data,
+      std::unique_ptr<WebNotificationResources> notification_resources,
+      mojom::blink::NonPersistentNotificationListenerPtr event_listener);
 
   // Closes the notification that was most recently displayed with this token.
   void CloseNonPersistentNotification(const String& token);
 
   // Shows a notification from a service worker.
   void DisplayPersistentNotification(
-      blink::WebServiceWorkerRegistration*,
-      const blink::WebNotificationData&,
-      std::unique_ptr<blink::WebNotificationResources>,
-      std::unique_ptr<blink::WebNotificationShowCallbacks>);
+      blink::WebServiceWorkerRegistration* service_worker_registration,
+      const blink::WebNotificationData& notification_data,
+      std::unique_ptr<blink::WebNotificationResources> notification_resources,
+      std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks);
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(blink::Visitor* visitor);
 
  private:
-  explicit NotificationManager(ExecutionContext&);
+  explicit NotificationManager(ExecutionContext& context);
 
   void DidDisplayPersistentNotification(
-      std::unique_ptr<blink::WebNotificationShowCallbacks>,
-      mojom::blink::PersistentNotificationError);
+      std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks,
+      mojom::blink::PersistentNotificationError error);
 
   // Returns an initialized NotificationServicePtr. A connection will be
   // established the first time this method is called.
   const mojom::blink::NotificationServicePtr& GetNotificationService();
 
   void OnPermissionRequestComplete(
-      ScriptPromiseResolver*,
-      V8PersistentCallbackFunction<V8NotificationPermissionCallback>*,
-      mojom::blink::PermissionStatus);
+      ScriptPromiseResolver* resolver,
+      V8PersistentCallbackFunction<V8NotificationPermissionCallback>*
+          deprecated_callback,
+      mojom::blink::PermissionStatus status);
 
   void OnNotificationServiceConnectionError();
   void OnPermissionServiceConnectionError();

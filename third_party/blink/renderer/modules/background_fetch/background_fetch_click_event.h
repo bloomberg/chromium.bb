@@ -44,8 +44,8 @@ class MODULES_EXPORT BackgroundFetchClickEvent final
 
  private:
   BackgroundFetchClickEvent(const AtomicString& type,
-                            const BackgroundFetchClickEventInit&,
-                            WaitUntilObserver*);
+                            const BackgroundFetchClickEventInit& initializer,
+                            WaitUntilObserver* observer);
 
   AtomicString state_;
 };

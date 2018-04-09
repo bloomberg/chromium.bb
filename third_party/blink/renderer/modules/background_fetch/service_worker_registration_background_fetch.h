@@ -27,15 +27,17 @@ class ServiceWorkerRegistrationBackgroundFetch final
   virtual ~ServiceWorkerRegistrationBackgroundFetch();
 
   static ServiceWorkerRegistrationBackgroundFetch& From(
-      ServiceWorkerRegistration&);
+      ServiceWorkerRegistration& registration);
 
-  static BackgroundFetchManager* backgroundFetch(ServiceWorkerRegistration&);
+  static BackgroundFetchManager* backgroundFetch(
+      ServiceWorkerRegistration& registration);
   BackgroundFetchManager* backgroundFetch();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(blink::Visitor* visitor) override;
 
  private:
-  explicit ServiceWorkerRegistrationBackgroundFetch(ServiceWorkerRegistration*);
+  explicit ServiceWorkerRegistrationBackgroundFetch(
+      ServiceWorkerRegistration* registration);
 
   Member<ServiceWorkerRegistration> registration_;
   Member<BackgroundFetchManager> background_fetch_manager_;

@@ -95,7 +95,7 @@ SkBitmap NotificationImageLoader::ScaleDownIfNeeded(const SkBitmap& image,
   return image;
 }
 
-void NotificationImageLoader::Start(ExecutionContext* execution_context,
+void NotificationImageLoader::Start(ExecutionContext* context,
                                     const KURL& url,
                                     ImageCallback image_callback) {
   DCHECK(!stopped_);
@@ -109,17 +109,16 @@ void NotificationImageLoader::Start(ExecutionContext* execution_context,
   // TODO(mvanouwerkerk): Add an entry for notifications to
   // FetchInitiatorTypeNames and use it.
   ResourceLoaderOptions resource_loader_options;
-  if (execution_context->IsWorkerGlobalScope())
+  if (context->IsWorkerGlobalScope())
     resource_loader_options.request_initiator_context = kWorkerContext;
 
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(WebURLRequest::kRequestContextImage);
   resource_request.SetPriority(ResourceLoadPriority::kMedium);
-  resource_request.SetRequestorOrigin(execution_context->GetSecurityOrigin());
+  resource_request.SetRequestorOrigin(context->GetSecurityOrigin());
 
-  threadable_loader_ = ThreadableLoader::Create(*execution_context, this,
-                                                threadable_loader_options,
-                                                resource_loader_options);
+  threadable_loader_ = ThreadableLoader::Create(
+      *context, this, threadable_loader_options, resource_loader_options);
   threadable_loader_->Start(resource_request);
 }
 

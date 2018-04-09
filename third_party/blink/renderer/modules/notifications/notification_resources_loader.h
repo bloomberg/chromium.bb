@@ -35,7 +35,7 @@ class MODULES_EXPORT NotificationResourcesLoader final
   using CompletionCallback =
       base::OnceCallback<void(NotificationResourcesLoader*)>;
 
-  explicit NotificationResourcesLoader(CompletionCallback);
+  explicit NotificationResourcesLoader(CompletionCallback completion_callback);
   ~NotificationResourcesLoader();
 
   // Starts fetching the resources specified in the given WebNotificationData.
@@ -43,7 +43,8 @@ class MODULES_EXPORT NotificationResourcesLoader final
   // |m_completionCallback| will be run synchronously, otherwise it will be
   // run asynchronously when all fetches have finished. Should not be called
   // more than once.
-  void Start(ExecutionContext*, const WebNotificationData&);
+  void Start(ExecutionContext* context,
+             const WebNotificationData& notification_data);
 
   // Returns a new WebNotificationResources populated with the resources that
   // have been fetched.
@@ -53,13 +54,13 @@ class MODULES_EXPORT NotificationResourcesLoader final
   // pre-finalizer.
   void Stop();
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(blink::Visitor* visitor);
 
  private:
-  void LoadImage(ExecutionContext*,
-                 NotificationImageLoader::Type,
-                 const KURL&,
-                 NotificationImageLoader::ImageCallback);
+  void LoadImage(ExecutionContext* context,
+                 NotificationImageLoader::Type type,
+                 const KURL& url,
+                 NotificationImageLoader::ImageCallback image_callback);
   void DidLoadImage(const SkBitmap& image);
   void DidLoadIcon(const SkBitmap& image);
   void DidLoadBadge(const SkBitmap& image);

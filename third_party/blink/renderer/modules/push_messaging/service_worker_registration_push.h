@@ -24,15 +24,17 @@ class ServiceWorkerRegistrationPush final
   static const char kSupplementName[];
 
   virtual ~ServiceWorkerRegistrationPush();
-  static ServiceWorkerRegistrationPush& From(ServiceWorkerRegistration&);
+  static ServiceWorkerRegistrationPush& From(
+      ServiceWorkerRegistration& registration);
 
-  static PushManager* pushManager(ServiceWorkerRegistration&);
+  static PushManager* pushManager(ServiceWorkerRegistration& registration);
   PushManager* pushManager();
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(blink::Visitor* visitor);
 
  private:
-  explicit ServiceWorkerRegistrationPush(ServiceWorkerRegistration*);
+  explicit ServiceWorkerRegistrationPush(
+      ServiceWorkerRegistration* registration);
 
   Member<ServiceWorkerRegistration> registration_;
   Member<PushManager> push_manager_;

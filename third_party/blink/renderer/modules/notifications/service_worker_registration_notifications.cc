@@ -55,10 +55,9 @@ class NotificationArray {
 }  // namespace
 
 ServiceWorkerRegistrationNotifications::ServiceWorkerRegistrationNotifications(
-    ExecutionContext* execution_context,
+    ExecutionContext* context,
     ServiceWorkerRegistration* registration)
-    : ContextLifecycleObserver(execution_context),
-      registration_(registration) {}
+    : ContextLifecycleObserver(context), registration_(registration) {}
 
 ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
     ScriptState* script_state,
@@ -138,7 +137,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(
 }
 
 void ServiceWorkerRegistrationNotifications::ContextDestroyed(
-    ExecutionContext*) {
+    ExecutionContext* context) {
   for (auto loader : loaders_)
     loader->Stop();
 }

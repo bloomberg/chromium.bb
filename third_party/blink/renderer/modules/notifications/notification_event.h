@@ -38,13 +38,14 @@ class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
   // ExtendableEvent interface.
   const AtomicString& InterfaceName() const override;
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(blink::Visitor* visitor);
 
  private:
-  NotificationEvent(const AtomicString& type, const NotificationEventInit&);
   NotificationEvent(const AtomicString& type,
-                    const NotificationEventInit&,
-                    WaitUntilObserver*);
+                    const NotificationEventInit& initializer);
+  NotificationEvent(const AtomicString& type,
+                    const NotificationEventInit& initializer,
+                    WaitUntilObserver* observer);
 
   Member<Notification> notification_;
   String action_;

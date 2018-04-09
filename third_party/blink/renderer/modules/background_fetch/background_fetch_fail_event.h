@@ -47,17 +47,17 @@ class MODULES_EXPORT BackgroundFetchFailEvent final
   // ExtendableEvent interface.
   const AtomicString& InterfaceName() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(blink::Visitor* visitor) override;
 
  private:
   BackgroundFetchFailEvent(const AtomicString& type,
-                           const BackgroundFetchFailEventInit&);
+                           const BackgroundFetchFailEventInit& initializer);
   BackgroundFetchFailEvent(
       const AtomicString& type,
-      const BackgroundFetchFailEventInit&,
+      const BackgroundFetchFailEventInit& initializer,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches,
-      ScriptState*,
-      WaitUntilObserver*);
+      ScriptState* script_state,
+      WaitUntilObserver* observer);
 
   HeapVector<Member<BackgroundFetchSettledFetch>> fetches_;
 };

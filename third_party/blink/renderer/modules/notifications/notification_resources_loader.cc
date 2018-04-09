@@ -25,7 +25,7 @@ NotificationResourcesLoader::NotificationResourcesLoader(
 NotificationResourcesLoader::~NotificationResourcesLoader() = default;
 
 void NotificationResourcesLoader::Start(
-    ExecutionContext* execution_context,
+    ExecutionContext* context,
     const WebNotificationData& notification_data) {
   DCHECK(!started_);
   started_ = true;
@@ -35,22 +35,22 @@ void NotificationResourcesLoader::Start(
 
   // TODO(johnme): ensure image is not loaded when it will not be used.
   // TODO(mvanouwerkerk): ensure no badge is loaded when it will not be used.
-  LoadImage(execution_context, NotificationImageLoader::Type::kImage,
+  LoadImage(context, NotificationImageLoader::Type::kImage,
             notification_data.image,
             WTF::Bind(&NotificationResourcesLoader::DidLoadImage,
                       WrapWeakPersistent(this)));
-  LoadImage(execution_context, NotificationImageLoader::Type::kIcon,
+  LoadImage(context, NotificationImageLoader::Type::kIcon,
             notification_data.icon,
             WTF::Bind(&NotificationResourcesLoader::DidLoadIcon,
                       WrapWeakPersistent(this)));
-  LoadImage(execution_context, NotificationImageLoader::Type::kBadge,
+  LoadImage(context, NotificationImageLoader::Type::kBadge,
             notification_data.badge,
             WTF::Bind(&NotificationResourcesLoader::DidLoadBadge,
                       WrapWeakPersistent(this)));
 
   action_icons_.resize(num_actions);
   for (size_t i = 0; i < num_actions; i++)
-    LoadImage(execution_context, NotificationImageLoader::Type::kActionIcon,
+    LoadImage(context, NotificationImageLoader::Type::kActionIcon,
               notification_data.actions[i].icon,
               WTF::Bind(&NotificationResourcesLoader::DidLoadActionIcon,
                         WrapWeakPersistent(this), i));
@@ -77,7 +77,7 @@ void NotificationResourcesLoader::Trace(blink::Visitor* visitor) {
 }
 
 void NotificationResourcesLoader::LoadImage(
-    ExecutionContext* execution_context,
+    ExecutionContext* context,
     NotificationImageLoader::Type type,
     const KURL& url,
     NotificationImageLoader::ImageCallback image_callback) {
@@ -88,7 +88,7 @@ void NotificationResourcesLoader::LoadImage(
 
   NotificationImageLoader* image_loader = new NotificationImageLoader(type);
   image_loaders_.push_back(image_loader);
-  image_loader->Start(execution_context, url, std::move(image_callback));
+  image_loader->Start(context, url, std::move(image_callback));
 }
 
 void NotificationResourcesLoader::DidLoadImage(const SkBitmap& image) {
