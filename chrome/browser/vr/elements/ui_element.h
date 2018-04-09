@@ -184,6 +184,11 @@ class UiElement : public cc::AnimationTarget {
 
   // If true, the object has a non-zero opacity.
   bool IsVisible() const;
+
+  // If true, the element is either currently visible or its animation will
+  // cause it to become visible.
+  bool IsOrWillBeVisible() const;
+
   // For convenience, sets opacity to |opacity_when_visible_|.
   virtual void SetVisible(bool visible);
   virtual void SetVisibleImmediately(bool visible);
@@ -354,7 +359,11 @@ class UiElement : public cc::AnimationTarget {
     return bindings_;
   }
 
-  void UpdateBindingsRecursive();
+  void UpdateBindings();
+
+  void set_visibility_bindings_depend_on_child_visibility(bool value) {
+    visibility_bindings_depend_on_child_visibility_ = value;
+  }
 
   gfx::Point3F GetCenter() const;
   gfx::Vector3dF GetNormal() const;
@@ -413,7 +422,7 @@ class UiElement : public cc::AnimationTarget {
   virtual gfx::Transform GetTargetLocalTransform() const;
 
   void UpdateComputedOpacity();
-  void UpdateWorldSpaceTransformRecursive(bool parent_changed);
+  void UpdateWorldSpaceTransform(bool parent_changed);
 
   std::vector<std::unique_ptr<UiElement>>& children() { return children_; }
   const std::vector<std::unique_ptr<UiElement>>& children() const {
@@ -426,10 +435,6 @@ class UiElement : public cc::AnimationTarget {
   // this is ignored (say for head-locked elements that draw in screen space),
   // then this function should return false.
   virtual bool IsWorldPositioned() const;
-
-  bool updated_bindings_this_frame() const {
-    return updated_bindings_this_frame_;
-  }
 
   bool updated_visiblity_this_frame() const {
     return updated_visibility_this_frame_;
@@ -534,7 +539,10 @@ class UiElement : public cc::AnimationTarget {
   // The computed opacity, incorporating opacity of parent objects.
   float computed_opacity_ = 1.0f;
 
-  // Returns true if the last call to UpdateBindings had any effect.
+  // Returns true if the last call to UpdateBindings had any effect. NB: this
+  // value is *not* updated for all elements in the tree each frame. It is
+  // important to only query this value for elements whose visibility has
+  // changed this frame or will be visible.
   bool updated_bindings_this_frame_ = false;
 
   // Return true if the last call to UpdateComputedOpacity had any effect on
@@ -613,6 +621,12 @@ class UiElement : public cc::AnimationTarget {
   bool descendants_updated_ = false;
 
   std::vector<std::unique_ptr<BindingBase>> bindings_;
+
+  // This value causes us to recurse into our children in DoBeginFrame. This
+  // should not be necessary, but we currently have instances where a parent
+  // node's behavior depends on the visibility of its children.
+  // TODO(crbug.com/829880): remove this once we've simplified our bindings.
+  bool visibility_bindings_depend_on_child_visibility_ = false;
 
   UpdatePhase phase_ = kClean;
 

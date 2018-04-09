@@ -99,27 +99,26 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateBindings");
 
     // Propagate updates across bindings.
-    root_element_->UpdateBindingsRecursive();
+    root_element_->UpdateBindings();
   }
 
-  auto& elements = GetAllElements();
   {
     TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateAnimationsAndOpacity");
 
     // Process all animations and pre-binding work. I.e., induce any
     // time-related "dirtiness" on the scene graph.
-    for (auto* element : elements) {
-      element->set_update_phase(UiElement::kDirty);
-      if ((element->DoBeginFrame(current_time, head_pose) ||
-           element->updated_bindings_this_frame()) &&
-          (element->IsVisible() || element->updated_visiblity_this_frame())) {
-        scene_dirty = true;
-      }
-    }
+    scene_dirty |= root_element_->DoBeginFrame(current_time, head_pose);
   }
 
+  auto& elements = GetAllElements();
   {
     TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateLayout");
+
+    // TODO(crbug.com/829535): this state should get set after the last call to
+    // SetSize in SizeAndLayout.
+    for (auto* element : elements) {
+      element->set_update_phase(UiElement::kUpdatedTexturesAndSizes);
+    }
 
     // TODO(mthiesse): We should really only be updating the sizes here, and not
     // actually redrawing the textures because we draw all of the textures as a
@@ -128,14 +127,7 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     // Textures will have to know what their size would be, if they were to draw
     // with their current state, and changing anything other than texture
     // synchronously in response to input should be prohibited.
-    for (auto* element : elements) {
-      element->set_update_phase(UiElement::kUpdatedTexturesAndSizes);
-    }
-    if (root_element_->SizeAndLayOut())
-      scene_dirty = true;
-    for (auto* element : elements) {
-      element->set_update_phase(UiElement::kUpdatedLayout);
-    }
+    scene_dirty |= root_element_->SizeAndLayOut();
   }
 
   if (!scene_dirty) {
@@ -153,7 +145,7 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     // Now that we have finalized our local values, we can safely update our
     // final, baked transform.
     const bool parent_transform_changed = false;
-    root_element_->UpdateWorldSpaceTransformRecursive(parent_transform_changed);
+    root_element_->UpdateWorldSpaceTransform(parent_transform_changed);
   }
 
   return scene_dirty;

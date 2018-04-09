@@ -1033,6 +1033,7 @@ TEST_F(UiTest, OmniboxSuggestionBindings) {
 TEST_F(UiTest, OmniboxSuggestionNavigates) {
   CreateScene(kNotInCct, kNotInWebVr);
   GURL gurl("http://test.com/");
+  model_->push_mode(kModeEditingOmnibox);
   model_->omnibox_suggestions.emplace_back(OmniboxSuggestion(
       base::string16(), base::string16(), ACMatchClassifications(),
       ACMatchClassifications(), AutocompleteMatch::Type::VOICE_SUGGEST, gurl,
@@ -1346,6 +1347,7 @@ TEST_F(UiTest, RepositionHostedUi) {
       scene_->GetUiElementByName(k2dBrowsingRepositioner));
   UiElement* hosted_ui = scene_->GetUiElementByName(k2dBrowsingHostedUi);
 
+  model_->hosted_platform_ui.hosted_ui_enabled = true;
   OnBeginFrame();
   gfx::Transform original = hosted_ui->world_space_transform();
 

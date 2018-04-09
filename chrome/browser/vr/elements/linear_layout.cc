@@ -47,6 +47,8 @@ bool LinearLayout::SizeAndLayOut() {
 
   changed |= PrepareToDraw();
   DoLayOutChildren();
+  set_update_phase(UiElement::kUpdatedTexturesAndSizes);
+  set_update_phase(UiElement::kUpdatedLayout);
   return changed;
 }
 

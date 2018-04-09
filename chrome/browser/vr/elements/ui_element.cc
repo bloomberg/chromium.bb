@@ -246,9 +246,12 @@ bool UiElement::PrepareToDraw() {
 
 bool UiElement::DoBeginFrame(const base::TimeTicks& time,
                              const gfx::Transform& head_pose) {
+  set_update_phase(UiElement::kDirty);
   // TODO(mthiesse): This is overly cautious. We may have keyframe_models but
   // not trigger any updates, so we should refine this logic and have
-  // Animation::Tick return a boolean.
+  // Animation::Tick return a boolean. Similarly, the bindings update may have
+  // had no visual effect and dirtiness should be related to setting properties
+  // that do indeed cause visual updates.
   bool keyframe_models_updated = animation_.keyframe_models().size() > 0;
   animation_.Tick(time);
   last_frame_time_ = time;
@@ -256,8 +259,17 @@ bool UiElement::DoBeginFrame(const base::TimeTicks& time,
   bool begin_frame_updated = OnBeginFrame(time, head_pose);
   UpdateComputedOpacity();
   bool was_visible_at_any_point = IsVisible() || updated_visibility_this_frame_;
-  return (begin_frame_updated || keyframe_models_updated) &&
-         was_visible_at_any_point;
+  bool dirty = (begin_frame_updated || keyframe_models_updated ||
+                updated_bindings_this_frame_) &&
+               was_visible_at_any_point;
+
+  if (was_visible_at_any_point ||
+      visibility_bindings_depend_on_child_visibility_) {
+    for (auto& child : children_)
+      dirty |= child->DoBeginFrame(time, head_pose);
+  }
+
+  return dirty;
 }
 
 bool UiElement::OnBeginFrame(const base::TimeTicks& time,
@@ -288,6 +300,10 @@ void UiElement::SetVisibleImmediately(bool visible) {
 
 bool UiElement::IsVisible() const {
   return opacity() > 0.0f && computed_opacity() > 0.0f;
+}
+
+bool UiElement::IsOrWillBeVisible() const {
+  return IsVisible() || GetTargetOpacity() > 0.0f;
 }
 
 gfx::SizeF UiElement::size() const {
@@ -533,7 +549,7 @@ void UiElement::DumpHierarchy(std::vector<size_t> counts,
   }
   *os << kReset;
 
-  if (!IsVisible() || draw_phase() == kPhaseNone) {
+  if (!IsVisible()) {
     *os << kBlue;
   }
 
@@ -629,16 +645,21 @@ void UiElement::AddBinding(std::unique_ptr<BindingBase> binding) {
   bindings_.push_back(std::move(binding));
 }
 
-void UiElement::UpdateBindingsRecursive() {
+void UiElement::UpdateBindings() {
+  bool should_recur = IsOrWillBeVisible();
   updated_bindings_this_frame_ = false;
   for (auto& binding : bindings_) {
     if (binding->Update())
       updated_bindings_this_frame_ = true;
   }
+  should_recur |= IsOrWillBeVisible();
+
   set_update_phase(UiElement::kUpdatedBindings);
-  for (auto& child : children_) {
-    child->UpdateBindingsRecursive();
-  }
+  if (!should_recur)
+    return;
+
+  for (auto& child : children_)
+    child->UpdateBindings();
 }
 
 gfx::Point3F UiElement::GetCenter() const {
@@ -738,12 +759,14 @@ bool UiElement::IsAnimatingProperty(TargetProperty property) const {
 }
 
 bool UiElement::SizeAndLayOut() {
+  if (!IsVisible())
+    return false;
   bool changed = false;
-  for (auto& child : children_) {
+  for (auto& child : children_)
     changed |= child->SizeAndLayOut();
-  }
   changed |= PrepareToDraw();
   DoLayOutChildren();
+  set_update_phase(UiElement::kUpdatedLayout);
   return changed;
 }
 
@@ -852,7 +875,10 @@ void UiElement::UpdateComputedOpacity() {
   updated_visibility_this_frame_ = IsVisible() != was_visible;
 }
 
-void UiElement::UpdateWorldSpaceTransformRecursive(bool parent_changed) {
+void UiElement::UpdateWorldSpaceTransform(bool parent_changed) {
+  if (!IsVisible() && !updated_visibility_this_frame_)
+    return;
+
   bool changed = false;
   if (ShouldUpdateWorldSpaceTransform(parent_changed)) {
     gfx::Transform transform;
@@ -878,7 +904,7 @@ void UiElement::UpdateWorldSpaceTransformRecursive(bool parent_changed) {
 
   set_update_phase(kUpdatedWorldSpaceTransform);
   for (auto& child : children_) {
-    child->UpdateWorldSpaceTransformRecursive(changed);
+    child->UpdateWorldSpaceTransform(changed);
   }
 
   OnUpdatedWorldSpaceTransform();
