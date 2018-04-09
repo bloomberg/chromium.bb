@@ -25,21 +25,17 @@ DEFAULT_URLS = [
     'https://webvr.info/samples/test-slow-render.html?'
     'latencyPatch=1\&canvasClickPresents=1\&'
     'heavyGpu=1\&workTime=20\&cubeCount=8\&cubeScale=0.4',
-    # Moderate CPU load, light GPU load.
-    'https://webvr.info/samples/test-slow-render.html?'
-    'latencyPatch=1\&canvasClickPresents=1\&'
-    'heavyGpu=1\&workTime=12\&cubeCount=8\&cubeScale=0.3',
-    # Light CPU load, moderate GPU load.
-    'https://webvr.info/samples/test-slow-render.html?'
-    'latencyPatch=1\&canvasClickPresents=1\&'
-    'heavyGpu=1\&workTime=5\&cubeCount=8\&cubeScale=0.4',
-    # Heavy CPU load, very light GPU load.
-    'https://webvr.info/samples/test-slow-render.html?'
-    'latencyPatch=1\&canvasClickPresents=1\&'
-    'workTime=20',
     # No additional CPU load, very light GPU load.
     'https://webvr.info/samples/test-slow-render.html?'
     'latencyPatch=1\&canvasClickPresents=1',
+    # Increased render scale
+    'https://webvr.info/samples/test-slow-render.html?'
+    'latencyPatch=1\&canvasClickPresents=1\&'
+    'renderScale=1.5',
+    # Default render scale, increased load
+    'https://webvr.info/samples/test-slow-render.html?'
+    'latencyPatch=1\&canvasClickPresents=1\&'
+    'renderScale=1\&heavyGpu=1\&cubeScale=0.3\&workTime=10',
 ]
 
 
