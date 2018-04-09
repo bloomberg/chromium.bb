@@ -210,6 +210,7 @@ public class CronetUrlRequestTest {
     /**
      * Tests that disabling connection migration sets the URLRequest load flag correctly.
      */
+    @DisabledTest(message = "crbug.com/830707")
     @Test
     @SmallTest
     @Feature({"Cronet"})
