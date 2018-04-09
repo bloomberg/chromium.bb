@@ -305,31 +305,19 @@ bool LayoutSVGText::NodeAtFloatPoint(HitTestResult& result,
   if (hit_test_action != kHitTestForeground)
     return false;
 
-  const ComputedStyle& style = StyleRef();
-  PointerEventsHitRules hit_rules(PointerEventsHitRules::SVG_TEXT_HITTESTING,
-                                  result.GetHitTestRequest(),
-                                  style.PointerEvents());
-
-  if (hit_rules.require_visible && style.Visibility() != EVisibility::kVisible)
+  FloatPoint local_point;
+  if (!SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
+          *this, LocalToSVGParentTransform(), point_in_parent, local_point))
     return false;
 
-  if ((hit_rules.can_hit_bounding_box && !ObjectBoundingBox().IsEmpty()) ||
-      (hit_rules.can_hit_stroke &&
-       (style.SvgStyle().HasStroke() || !hit_rules.require_stroke)) ||
-      (hit_rules.can_hit_fill &&
-       (style.SvgStyle().HasFill() || !hit_rules.require_fill))) {
-    FloatPoint local_point;
-    if (!SVGLayoutSupport::TransformToUserSpaceAndCheckClipping(
-            *this, LocalToSVGParentTransform(), point_in_parent, local_point))
-      return false;
+  HitTestLocation hit_test_location(local_point);
+  if (LayoutBlock::NodeAtPoint(result, hit_test_location, LayoutPoint(),
+                               hit_test_action))
+    return true;
 
-    HitTestLocation hit_test_location(local_point);
-    if (LayoutBlock::NodeAtPoint(result, hit_test_location, LayoutPoint(),
-                                 hit_test_action))
-      return true;
-
-    // Consider the bounding box if requested.
-    if (hit_rules.can_hit_bounding_box &&
+  // Consider the bounding box if requested.
+  if (StyleRef().PointerEvents() == EPointerEvents::kBoundingBox) {
+    if (IsObjectBoundingBoxValid() &&
         ObjectBoundingBox().Contains(local_point)) {
       const LayoutPoint& local_layout_point = LayoutPoint(local_point);
       UpdateHitTestResult(result, local_layout_point);
