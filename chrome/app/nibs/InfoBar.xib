@@ -28,7 +28,7 @@
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                     <subviews>
                         <button verticalHuggingPriority="750" id="22">
-                            <rect key="frame" x="350" y="5" width="96" height="25"/>
+                            <rect key="frame" x="350" y="7" width="96" height="25"/>
                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                             <buttonCell key="cell" type="roundTextured" title="OKBtn" bezelStyle="texturedRounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="23">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -39,7 +39,7 @@
                             </connections>
                         </button>
                         <button verticalHuggingPriority="750" id="20">
-                            <rect key="frame" x="246" y="5" width="96" height="25"/>
+                            <rect key="frame" x="246" y="7" width="96" height="25"/>
                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                             <buttonCell key="cell" type="roundTextured" title="CancelBtn" bezelStyle="texturedRounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="21">
                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -50,7 +50,7 @@
                             </connections>
                         </button>
                         <button id="15">
-                            <rect key="frame" x="454" y="10" width="16" height="16"/>
+                            <rect key="frame" x="454" y="12" width="16" height="16"/>
                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                             <buttonCell key="cell" type="square" bezelStyle="shadowlessSquare" imagePosition="overlaps" alignment="center" inset="2" id="16" customClass="ImageButtonCell">
                                 <behavior key="behavior" lightByContents="YES"/>
@@ -61,12 +61,12 @@
                             </connections>
                         </button>
                         <imageView id="4">
-                            <rect key="frame" x="5" y="2" width="32" height="32"/>
+                            <rect key="frame" x="5" y="4" width="32" height="32"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <imageCell key="cell" refusesFirstResponder="YES" alignment="left" id="5"/>
                         </imageView>
                         <textField verticalHuggingPriority="750" id="2">
-                            <rect key="frame" x="38" y="10" width="208" height="17"/>
+                            <rect key="frame" x="38" y="12" width="208" height="17"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                             <textFieldCell key="cell" lineBreakMode="truncatingTail" sendsActionOnEndEditing="YES" title="InfoBar text" id="3">
                                 <font key="font" metaFont="system"/>
