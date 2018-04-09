@@ -22,9 +22,11 @@
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/offline_pages/recent_tab_helper.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
+#include "chrome/browser/offline_pages/thumbnail_decoder_impl.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
@@ -239,8 +241,8 @@ void DownloadAsFile(content::WebContents* web_contents, const GURL& url) {
   content::Referrer referrer =
       content::Referrer::SanitizeForRequest(url, entry->GetReferrer());
   dl_params->set_referrer(referrer.url);
-  dl_params->set_referrer_policy(content::Referrer::ReferrerPolicyForUrlRequest(
-      referrer.policy));
+  dl_params->set_referrer_policy(
+      content::Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
 
   dl_params->set_prefer_cache(true);
   dl_params->set_prompt(false);
@@ -345,6 +347,8 @@ static jlong JNI_OfflinePageDownloadBridge_Init(
     DCHECK(aggregator);
     adapter = new DownloadUIAdapter(
         aggregator, offline_page_model, request_coordinator,
+        std::make_unique<ThumbnailDecoderImpl>(
+            std::make_unique<suggestions::ImageDecoderImpl>()),
         std::make_unique<DownloadUIAdapterDelegate>(offline_page_model));
     DownloadUIAdapter::AttachToOfflinePageModel(base::WrapUnique(adapter),
                                                 offline_page_model);

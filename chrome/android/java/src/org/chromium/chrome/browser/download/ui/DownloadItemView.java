@@ -208,8 +208,14 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     public boolean getThumbnail(Callback<Bitmap> callback) {
         if (!mItem.isOfflinePage()) return false;
         OfflineContentAggregatorFactory.forProfile(Profile.getLastUsedProfile())
-                .getVisualsForItem(((OfflineItem) mItem.getItem()).id,
-                        (id, visuals) -> callback.onResult(visuals == null ? null : visuals.icon));
+                .getVisualsForItem(((OfflineItem) mItem.getItem()).id, (id, visuals) -> {
+                    if (visuals == null) {
+                        callback.onResult(null);
+                    } else {
+                        callback.onResult(Bitmap.createScaledBitmap(
+                                visuals.icon, mIconSize, mIconSize, false));
+                    }
+                });
         return true;
     }
 

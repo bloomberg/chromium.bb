@@ -6,4 +6,5 @@ include_rules = [
   "+crypto",
   "+services/metrics/public/cpp",
   "+sql",
+  "+ui/gfx/image",
 ]

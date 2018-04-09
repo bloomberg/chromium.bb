@@ -2812,8 +2812,10 @@ test("unit_tests") {
       "../browser/offline_pages/test_offline_page_model_builder.h",
       "../browser/offline_pages/test_request_coordinator_builder.cc",
       "../browser/offline_pages/test_request_coordinator_builder.h",
+      "../browser/offline_pages/thumbnail_decoder_impl_unittest.cc",
     ]
     deps += [
+      "//components/image_fetcher/core:test_support",
       "//components/offline_pages/content/background_loader:test_support",
       "//components/offline_pages/core:test_support",
       "//components/offline_pages/core/background:test_support",
