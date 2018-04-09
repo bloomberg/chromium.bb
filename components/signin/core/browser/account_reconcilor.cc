@@ -27,6 +27,8 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
+using signin::AccountReconcilorDelegate;
+
 namespace {
 
 // String used for source parameter in GAIA cookie manager calls.
@@ -312,7 +314,7 @@ void AccountReconcilor::StartReconcile() {
                             base::Unretained(this)));
   }
 
-  if (token_service_->GetDelegate()->RefreshTokenHasError(
+  if (token_service_->RefreshTokenHasError(
           signin_manager_->GetAuthenticatedAccountId()) &&
       delegate_->ShouldAbortReconcileIfPrimaryHasError()) {
     VLOG(1) << "AccountReconcilor::StartReconcile: primary has error, abort.";
@@ -356,19 +358,38 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
     std::vector<gaia::ListedAccount> verified_gaia_accounts =
         FilterUnverifiedAccounts(accounts);
     VLOG_IF(1, verified_gaia_accounts.size() < accounts.size())
-        << "Ignoring " << accounts.size() - verified_gaia_accounts.size()
+        << "Ignore " << accounts.size() - verified_gaia_accounts.size()
         << " unverified account(s).";
 
-    if (delegate_->ShouldRevokeAllSecondaryTokensBeforeReconcile(
-            verified_gaia_accounts)) {
-      for (const std::string& account : token_service_->GetAccounts()) {
-        if (account != primary_account)
+    // Revoking tokens for secondary accounts causes the AccountTracker to
+    // completely remove them from Chrome.
+    // Revoking the token for the primary account is not supported (it should be
+    // signed out or put to auth error state instead).
+    AccountReconcilorDelegate::RevokeTokenOption revoke_option =
+        delegate_->ShouldRevokeSecondaryTokensBeforeReconcile(
+            verified_gaia_accounts);
+    for (const std::string& account : token_service_->GetAccounts()) {
+      if (account == primary_account)
+        continue;
+      switch (revoke_option) {
+        case AccountReconcilorDelegate::RevokeTokenOption::kRevokeIfInError:
+          if (token_service_->RefreshTokenHasError(account)) {
+            VLOG(1) << "Revoke token for " << account;
+            token_service_->RevokeCredentials(account);
+          }
+          break;
+        case AccountReconcilorDelegate::RevokeTokenOption::kRevoke:
+          VLOG(1) << "Revoke token for " << account;
           token_service_->RevokeCredentials(account);
+          break;
+        case AccountReconcilorDelegate::RevokeTokenOption::kDoNotRevoke:
+          // Do nothing.
+          break;
       }
     }
 
     if (delegate_->ShouldAbortReconcileIfPrimaryHasError() &&
-        token_service_->GetDelegate()->RefreshTokenHasError(primary_account)) {
+        token_service_->RefreshTokenHasError(primary_account)) {
       VLOG(1) << "Primary account has error, abort.";
       is_reconcile_started_ = false;
       return;
@@ -391,9 +412,9 @@ std::vector<std::string> AccountReconcilor::LoadValidAccountsFromTokenService()
   // reconcile them, since it won't work anyway.  If the list ends up being
   // empty then don't reconcile any accounts.
   for (auto i = chrome_accounts.begin(); i != chrome_accounts.end(); ++i) {
-    if (token_service_->GetDelegate()->RefreshTokenHasError(*i)) {
+    if (token_service_->RefreshTokenHasError(*i)) {
       VLOG(1) << "AccountReconcilor::ValidateAccountsFromTokenService: " << *i
-              << " has error, won't reconcile";
+              << " has error, don't reconcile";
       i->clear();
     }
   }
@@ -506,7 +527,7 @@ void AccountReconcilor::FinishReconcile(
 }
 
 void AccountReconcilor::AbortReconcile() {
-  VLOG(1) << "AccountReconcilor::AbortReconcile: we'll try again later";
+  VLOG(1) << "AccountReconcilor::AbortReconcile: try again later";
   add_to_cookie_.clear();
   CalculateIfReconcileIsDone();
 }
@@ -546,7 +567,7 @@ void AccountReconcilor::RevokeAllSecondaryTokens(
     if (account != primary_account) {
       reconcile_is_noop_ = false;
       if (delegate_->IsAccountConsistencyEnforced()) {
-        VLOG(1) << "Revoking token for " << account;
+        VLOG(1) << "Revoke token for " << account;
         token_service_->RevokeCredentials(account);
       }
     }

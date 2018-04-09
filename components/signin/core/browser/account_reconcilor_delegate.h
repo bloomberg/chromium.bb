@@ -19,6 +19,17 @@ namespace signin {
 // Base class for AccountReconcilorDelegate.
 class AccountReconcilorDelegate {
  public:
+  // Options for revoking refresh tokens.
+  enum class RevokeTokenOption {
+    // Do not revoke the token.
+    kDoNotRevoke,
+    // Revoke the token if it is in auth error state.
+    kRevokeIfInError,
+    // Revoke the token.
+    // TODO(droger): remove this when Dice is launched.
+    kRevoke
+  };
+
   virtual ~AccountReconcilorDelegate() {}
 
   // Returns true if the reconcilor should reconcile the profile. Defaults to
@@ -43,9 +54,9 @@ class AccountReconcilorDelegate {
       const std::string& primary_account,
       bool first_execution) const;
 
-  // Returns true if all secondary accounts should be cleared at the beginning
-  // of the reconcile.
-  virtual bool ShouldRevokeAllSecondaryTokensBeforeReconcile(
+  // Returns whether secondary accounts should be cleared at the beginning of
+  // the reconcile.
+  virtual RevokeTokenOption ShouldRevokeSecondaryTokensBeforeReconcile(
       const std::vector<gaia::ListedAccount>& gaia_accounts);
 
   // Called when reconcile is finished.
