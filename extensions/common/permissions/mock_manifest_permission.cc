@@ -4,7 +4,6 @@
 
 #include "extensions/common/permissions/mock_manifest_permission.h"
 
-#include "base/memory/ptr_util.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

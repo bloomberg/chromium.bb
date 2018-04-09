@@ -4,7 +4,6 @@
 
 #include "extensions/renderer/bindings/api_signature.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "extensions/renderer/bindings/api_binding_test.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"

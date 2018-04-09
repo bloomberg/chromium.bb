@@ -5,7 +5,6 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"

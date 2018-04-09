@@ -4,7 +4,6 @@
 
 #include "extensions/shell/browser/shell_navigation_ui_data.h"
 
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/navigation_handle.h"
 #include "extensions/common/constants.h"
 

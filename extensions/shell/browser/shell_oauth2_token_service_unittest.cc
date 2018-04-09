@@ -4,7 +4,6 @@
 
 #include "extensions/shell/browser/shell_oauth2_token_service.h"
 
-#include "base/memory/ptr_util.h"
 #include "extensions/browser/extensions_test.h"
 
 namespace extensions {

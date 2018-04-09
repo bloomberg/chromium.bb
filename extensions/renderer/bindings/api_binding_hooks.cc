@@ -4,7 +4,6 @@
 
 #include "extensions/renderer/bindings/api_binding_hooks.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
 #include "extensions/renderer/bindings/api_binding_hooks_delegate.h"

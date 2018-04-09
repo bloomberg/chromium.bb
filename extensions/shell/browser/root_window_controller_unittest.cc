@@ -8,7 +8,6 @@
 #include <list>
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"

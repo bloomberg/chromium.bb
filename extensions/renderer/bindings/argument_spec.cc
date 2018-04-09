@@ -4,7 +4,6 @@
 
 #include "extensions/renderer/bindings/argument_spec.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

@@ -5,7 +5,6 @@
 #include "extensions/browser/api/extensions_api_client.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/api/web_request/web_request_event_router_delegate.h"

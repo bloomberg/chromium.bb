@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/usb/public/cpp/filter_utils.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"

@@ -4,7 +4,6 @@
 
 #include "extensions/renderer/bindings/argument_spec_builder.h"
 
-#include "base/memory/ptr_util.h"
 
 namespace extensions {
 

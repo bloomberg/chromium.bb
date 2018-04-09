@@ -4,7 +4,6 @@
 
 #include "extensions/browser/extension_icon_placeholder.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/grit/extensions_browser_resources.h"

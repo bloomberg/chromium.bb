@@ -5,7 +5,6 @@
 #include "extensions/renderer/js_extension_bindings_system.h"
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/timer/elapsed_timer.h"
 #include "content/public/common/content_switches.h"

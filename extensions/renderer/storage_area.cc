@@ -4,7 +4,6 @@
 
 #include "extensions/renderer/storage_area.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/common/api/storage.h"
 #include "extensions/renderer/bindings/api_binding_util.h"

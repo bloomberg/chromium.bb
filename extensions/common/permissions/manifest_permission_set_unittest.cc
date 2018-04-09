@@ -4,7 +4,6 @@
 
 #include "extensions/common/permissions/manifest_permission_set.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/pickle.h"
 #include "base/values.h"
 #include "extensions/common/permissions/mock_manifest_permission.h"

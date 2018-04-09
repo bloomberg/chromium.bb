@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"

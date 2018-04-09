@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "components/version_info/version_info.h"

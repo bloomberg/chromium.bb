@@ -4,7 +4,6 @@
 
 #include "extensions/browser/shared_user_script_master.h"
 
-#include "base/memory/ptr_util.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/host_id.h"

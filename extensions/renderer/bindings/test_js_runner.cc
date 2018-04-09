@@ -5,7 +5,6 @@
 #include "extensions/renderer/bindings/test_js_runner.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 
 namespace extensions {

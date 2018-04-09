@@ -5,7 +5,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "extensions/browser/preload_check_group.h"
 #include "extensions/browser/preload_check_test_util.h"

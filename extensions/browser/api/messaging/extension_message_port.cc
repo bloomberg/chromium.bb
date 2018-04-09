@@ -4,7 +4,6 @@
 
 #include "extensions/browser/api/messaging/extension_message_port.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"

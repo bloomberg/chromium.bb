@@ -4,7 +4,6 @@
 
 #include "extensions/shell/browser/system_logs/shell_system_logs_fetcher.h"
 
-#include "base/memory/ptr_util.h"
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "extensions/shell/browser/system_logs/log_sources/basic_log_source.h"
 

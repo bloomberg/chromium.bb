@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
-#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
