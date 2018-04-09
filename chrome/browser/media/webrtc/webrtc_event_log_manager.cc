@@ -287,13 +287,24 @@ void WebRtcEventLogManager::StartRemoteLogging(
     const std::string& peer_connection_id,
     size_t max_file_size_bytes,
     const std::string& metadata,
-    base::OnceCallback<void(bool)> reply) {
+    base::OnceCallback<void(bool, const std::string&)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!remote_logs_manager_) {
+    MaybeReply(std::move(reply), false,
+               std::string(kStartRemoteLoggingFailureFeatureDisabled));
+    return;
+  }
 
   const BrowserContext* browser_context = GetBrowserContext(render_process_id);
   if (!browser_context || browser_context->IsOffTheRecord()) {
     // RPH died before processing of this notification, or is incognito.
-    MaybeReply(std::move(reply), false);
+    // In the former case, there's no one to report to anyway.
+    // In the latter case, we don't want to expose incognito state to the
+    // JS application, so we give an error message that must be shared with
+    // other common events.
+    MaybeReply(std::move(reply), false,
+               std::string(kStartRemoteLoggingFailureGeneric));
     return;
   }
 
@@ -582,19 +593,19 @@ void WebRtcEventLogManager::StartRemoteLoggingInternal(
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
     const std::string& metadata,
-    base::OnceCallback<void(bool)> reply) {
+    base::OnceCallback<void(bool, const std::string&)> reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  bool result = false;
-  if (remote_logs_manager_) {
-    result = remote_logs_manager_->StartRemoteLogging(
-        render_process_id, browser_context_id, peer_connection_id,
-        browser_context_dir, max_file_size_bytes, metadata);
-  }
+  std::string error_message;
+  const bool result = remote_logs_manager_->StartRemoteLogging(
+      render_process_id, browser_context_id, peer_connection_id,
+      browser_context_dir, max_file_size_bytes, metadata, &error_message);
+  DCHECK_EQ(result, error_message.empty());  // Error set iff has failed.
 
   if (reply) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(std::move(reply), result));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(std::move(reply), result, error_message));
   }
 }
 
@@ -656,6 +667,17 @@ void WebRtcEventLogManager::MaybeReply(base::OnceCallback<void(bool)> reply,
   }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::BindOnce(std::move(reply), value));
+}
+
+void WebRtcEventLogManager::MaybeReply(
+    base::OnceCallback<void(bool, const std::string&)> reply,
+    bool bool_val,
+    const std::string& str_val) {
+  if (!reply) {
+    return;
+  }
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(std::move(reply), bool_val, str_val));
 }
 
 void WebRtcEventLogManager::MaybeReply(

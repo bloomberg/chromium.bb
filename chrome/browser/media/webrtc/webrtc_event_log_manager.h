@@ -142,8 +142,9 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       int render_process_id,
       const std::string& peer_connection_id,
       size_t max_file_size_bytes,
-      const std::string& metadata = "",
-      base::OnceCallback<void(bool)> reply = base::OnceCallback<void(bool)>());
+      const std::string& metadata,
+      base::OnceCallback<void(bool, const std::string&)> reply =
+          base::OnceCallback<void(bool, const std::string&)>());
 
   // Clear WebRTC event logs associated with a given browser context, in a given
   // time range (|delete_begin| inclusive, |delete_end| exclusive), then
@@ -239,13 +240,14 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       const std::string& message,
       base::OnceCallback<void(std::pair<bool, bool>)> reply);
 
-  void StartRemoteLoggingInternal(int render_process_id,
-                                  BrowserContextId browser_context_id,
-                                  const std::string& peer_connection_id,
-                                  const base::FilePath& browser_context_dir,
-                                  size_t max_file_size_bytes,
-                                  const std::string& metadata,
-                                  base::OnceCallback<void(bool)> reply);
+  void StartRemoteLoggingInternal(
+      int render_process_id,
+      BrowserContextId browser_context_id,
+      const std::string& peer_connection_id,
+      const base::FilePath& browser_context_dir,
+      size_t max_file_size_bytes,
+      const std::string& metadata,
+      base::OnceCallback<void(bool, const std::string&)> reply);
 
   void ClearCacheForBrowserContextInternal(BrowserContextId browser_context_id,
                                            const base::Time& delete_begin,
@@ -262,6 +264,9 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // Non-empty replies get posted to BrowserThread::UI.
   void MaybeReply(base::OnceClosure reply);
   void MaybeReply(base::OnceCallback<void(bool)> reply, bool value);
+  void MaybeReply(base::OnceCallback<void(bool, const std::string&)> reply,
+                  bool bool_val,
+                  const std::string& str_val);
   void MaybeReply(base::OnceCallback<void(std::pair<bool, bool>)> reply,
                   bool first,
                   bool second);

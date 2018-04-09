@@ -61,6 +61,21 @@ extern const size_t kRemoteBoundLogFileHeaderSizeBytes;
 // Such expired files will be purged from disk when examined.
 extern const base::TimeDelta kRemoteBoundWebRtcEventLogsMaxRetention;
 
+// StartRemoteLogging could fail for several reasons, but we only report
+// individually those failures that relate to either bad parameters, or calls
+// at a time that makes no sense. Anything else  would leak information to
+// the JS application (too many pending logs, etc.), and is not actionable
+// anyhow.
+// These are made globally visible so that unit tests may check for them.
+extern const char kStartRemoteLoggingFailureFeatureDisabled[];
+extern const char kStartRemoteLoggingFailureUnlimitedSizeDisallowed[];
+extern const char kStartRemoteLoggingFailureMaxSizeTooLarge[];
+extern const char kStartRemoteLoggingFailureMetadaTooLong[];
+extern const char kStartRemoteLoggingFailureMaxSizeTooSmall[];
+extern const char kStartRemoteLoggingFailureUnknownOrInactivePeerConnection[];
+extern const char kStartRemoteLoggingFailureAlreadyLogging[];
+extern const char kStartRemoteLoggingFailureGeneric[];
+
 // For a given Chrome session, this is a unique key for PeerConnections.
 // It's not, however, unique between sessions (after Chrome is restarted).
 struct WebRtcEventLogPeerConnectionKey {

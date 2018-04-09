@@ -268,6 +268,10 @@ class WebrtcLoggingPrivateStartEventLoggingFunction
 
   // ExtensionFunction overrides.
   bool RunAsync() override;
+
+  // |success| if and only if |error_message| is non-empty.
+  // The function must be called on the UI thread.
+  void FireCallback(bool success, const std::string& error_message);
 };
 
 class WebrtcLoggingPrivateGetLogsDirectoryFunction

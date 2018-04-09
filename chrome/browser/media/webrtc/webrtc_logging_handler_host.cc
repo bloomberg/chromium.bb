@@ -256,18 +256,9 @@ void WebRtcLoggingHandlerHost::StartEventLogging(
     const std::string& metadata,
     const GenericDoneCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  auto reply = [](const GenericDoneCallback& callback, bool result) {
-    // Same as callback, but hard-codes the empty string as the *second*
-    // argument; only |result| is truly provided by StartRemoteLogging().
-    // The empty string is given in lieu of an error message, which JS expects
-    // but WebRtcEventLogManager does not provide.
-    callback.Run(result, std::string());
-  };
-
   WebRtcEventLogManager::GetInstance()->StartRemoteLogging(
       render_process_id_, peer_connection_id, max_log_size_bytes, metadata,
-      base::BindOnce(std::move(reply), callback));
+      callback);
 }
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)

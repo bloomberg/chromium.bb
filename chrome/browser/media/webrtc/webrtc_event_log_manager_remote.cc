@@ -46,25 +46,30 @@ void DiscardLogFile(base::File* file, const base::FilePath& file_path) {
 }
 
 bool AreLogParametersValid(size_t max_file_size_bytes,
-                           const std::string& metadata) {
+                           const std::string& metadata,
+                           std::string* error_message) {
   if (max_file_size_bytes == kWebRtcEventLogManagerUnlimitedFileSize) {
     LOG(WARNING) << "Unlimited file sizes not allowed for remote-bound logs.";
+    *error_message = kStartRemoteLoggingFailureUnlimitedSizeDisallowed;
     return false;
   }
 
   if (max_file_size_bytes > kMaxRemoteLogFileSizeBytes) {
     LOG(WARNING) << "File size exceeds maximum allowed.";
+    *error_message = kStartRemoteLoggingFailureMaxSizeTooLarge;
     return false;
   }
 
   if (metadata.length() > kMaxRemoteLogFileMetadataSizeBytes) {
     LOG(ERROR) << "Excessively long metadata.";
+    *error_message = kStartRemoteLoggingFailureMetadaTooLong;
     return false;
   }
 
   if (metadata.size() + kRemoteBoundLogFileHeaderSizeBytes >=
       max_file_size_bytes) {
     LOG(ERROR) << "Max file size and metadata must leave room for event log.";
+    *error_message = kStartRemoteLoggingFailureMaxSizeTooSmall;
     return false;
   }
 
@@ -191,20 +196,24 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     const std::string& peer_connection_id,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
-    const std::string& metadata) {
+    const std::string& metadata,
+    std::string* error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
-  if (!AreLogParametersValid(max_file_size_bytes, metadata)) {
+  if (!AreLogParametersValid(max_file_size_bytes, metadata, error_message)) {
+    // |error_message| will have been set by AreLogParametersValid().
     return false;
   }
 
   if (!BrowserContextEnabled(browser_context_id)) {
+    *error_message = kStartRemoteLoggingFailureGeneric;
     return false;
   }
 
   PeerConnectionKey key;
   if (!FindPeerConnection(render_process_id, peer_connection_id, &key)) {
-    return false;  // Peer connection is either unknown or no longer active.
+    *error_message = kStartRemoteLoggingFailureUnknownOrInactivePeerConnection;
+    return false;
   }
 
   // May not restart active remote logs.
@@ -212,6 +221,7 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
   if (it != active_logs_.end()) {
     LOG(ERROR) << "Remote logging already underway for ("
                << key.render_process_id << ", " << key.lid << ").";
+    *error_message = kStartRemoteLoggingFailureAlreadyLogging;
     return false;
   }
 
@@ -220,11 +230,16 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
   PrunePendingLogs();
 
   if (!AdditionalActiveLogAllowed(key.browser_context_id)) {
+    // Intentionally use a generic error, so as to not leak information such
+    // as this being an incognito session (rejected elsewhere with the same
+    // error), or there being too many other peer connections on other tabs
+    // that might also be logging.
+    *error_message = kStartRemoteLoggingFailureGeneric;
     return false;
   }
 
   return StartWritingLog(key, browser_context_dir, max_file_size_bytes,
-                         metadata);
+                         metadata, error_message);
 }
 
 bool WebRtcRemoteEventLogManager::EventLogWrite(const PeerConnectionKey& key,
@@ -385,7 +400,8 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
     const PeerConnectionKey& key,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
-    const std::string& metadata) {
+    const std::string& metadata,
+    std::string* error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
   // WriteAtCurrentPos() only allows writing up to max-int at a time. We could
@@ -394,6 +410,7 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
   if (metadata.length() >
       static_cast<size_t>(std::numeric_limits<int>::max())) {
     LOG(WARNING) << "Metadata too long to be written in one go.";
+    *error_message = kStartRemoteLoggingFailureMetadaTooLong;
     return false;
   }
 
@@ -413,6 +430,9 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
   base::File file(file_path, file_flags);
   if (!file.IsValid() || !file.created()) {
     LOG(WARNING) << "Couldn't create and/or open remote WebRTC event log file.";
+    // Intentionally using a generic error; look for other places where it's
+    // set for an explanation why.
+    *error_message = kStartRemoteLoggingFailureGeneric;
     return false;
   }
 
@@ -427,6 +447,9 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
   if (written != arraysize(header)) {
     LOG(WARNING) << "Failed to write header to log file.";
     DiscardLogFile(&file, file_path);
+    // Intentionally using a generic error; look for other places where it's
+    // set for an explanation why.
+    *error_message = kStartRemoteLoggingFailureGeneric;
     return false;
   }
 
@@ -435,6 +458,9 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
   if (written != metadata_length) {
     LOG(WARNING) << "Failed to write metadata to log file.";
     DiscardLogFile(&file, file_path);
+    // Intentionally using a generic error; look for other places where it's
+    // set for an explanation why.
+    *error_message = kStartRemoteLoggingFailureGeneric;
     return false;
   }
 

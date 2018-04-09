@@ -10,17 +10,20 @@
 #include "base/json/json_writer.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/webrtc_event_logger.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension_builder.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -71,6 +74,7 @@ void InitializeTestMetaData(base::ListValue* parameters) {
 class WebrtcLoggingPrivateApiTest : public ExtensionApiTest {
  protected:
   void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
     ExtensionApiTest::SetUp();
     extension_ = extensions::ExtensionBuilder("Test").Build();
   }
@@ -130,6 +134,16 @@ class WebrtcLoggingPrivateApiTest : public ExtensionApiTest {
     AppendTabIdAndUrl(&params);
     scoped_refptr<Function> function(CreateFunction<Function>());
     return RunFunction(function.get(), params);
+  }
+
+  template <typename Function>
+  void RunFunctionAndExpectError(const base::ListValue& parameters,
+                                 const std::string& expected_error) {
+    DCHECK(!expected_error.empty());
+    scoped_refptr<Function> function(CreateFunction<Function>());
+    const std::string error_message = utils::RunFunctionAndReturnError(
+        function.get(), ParamsToString(parameters), browser());
+    EXPECT_EQ(error_message, expected_error);
   }
 
   // This function implicitly expects the function to succeed (test failure
@@ -285,27 +299,55 @@ class WebrtcLoggingPrivateApiTest : public ExtensionApiTest {
     return (result_expected == result_returned);
   }
 
-  // This function implicitly expects the function to succeed (test failure
-  // initiated otherwise).
-  // Returns whether the function that was run returned a value, or avoided
-  // returning a value, according to expectation.
+  // This function expects the function to succeed or fail according to
+  // |expect_success| (test failure initiated otherwise). It also implicitly
+  // expects that no value would be returned.
   // TODO(crbug.com/829419): Return success/failure of the executed function.
-  bool StartEventLogging(const std::string& peerConnectionId,
+  void StartEventLogging(const std::string& peerConnectionId,
                          int maxLogSizeBytes,
-                         const std::string& metadata) {
+                         const std::string& metadata,
+                         bool expect_success,
+                         const std::string& expected_error = std::string()) {
+    DCHECK_EQ(expect_success, expected_error.empty());
+
     base::ListValue params;
     AppendTabIdAndUrl(&params);
     params.AppendString(peerConnectionId);
     params.AppendInteger(maxLogSizeBytes);
     params.AppendString(metadata);
-    constexpr bool result_expected = false;
-    const bool result_returned =
-        RunFunction<WebrtcLoggingPrivateStartEventLoggingFunction>(params);
-    return (result_expected == result_returned);
+
+    if (expect_success) {
+      const bool result_returned =
+          RunFunction<WebrtcLoggingPrivateStartEventLoggingFunction>(params);
+      EXPECT_FALSE(result_returned);  // Should never return a value.
+    } else {
+      RunFunctionAndExpectError<WebrtcLoggingPrivateStartEventLoggingFunction>(
+          params, expected_error);
+    }
   }
 
- private:
+  void SetUpPeerConnection(const std::string& peer_connection_id) {
+    auto* manager = content::WebRtcEventLogger::Get();
+    auto* rph = web_contents()->GetRenderViewHost()->GetProcess();
+
+    const int render_process_id = rph->GetID();
+    const int lid = 0;
+
+    manager->PeerConnectionAdded(render_process_id, lid, peer_connection_id);
+  }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<Extension> extension_;
+};
+
+class WebrtcLoggingPrivateApiTestDisabledRemoteLogging
+    : public WebrtcLoggingPrivateApiTest {
+ protected:
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(features::kWebRtcRemoteEventLog);
+    ExtensionApiTest::SetUp();
+    extension_ = extensions::ExtensionBuilder("Test").Build();
+  }
 };
 
 // Helper class to temporarily tell the uploader to save the multipart buffer to
@@ -567,29 +609,127 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
   ASSERT_TRUE(StartAudioDebugRecordings(1));
 }
 
-// TODO(crbug.com/827191): Fix this test (see bug for details).
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
-                       StartEventLoggingForKnownPeerConnection) {
-  auto* manager = content::WebRtcEventLogger::Get();
-  auto* rph = web_contents()->GetRenderViewHost()->GetProcess();
-
-  const int render_process_id = rph->GetID();
-  const int lid = 0;
+                       StartEventLoggingForKnownPeerConnectionSucceeds) {
   const std::string peer_connection_id = "id";
-
-  manager->PeerConnectionAdded(render_process_id, lid, peer_connection_id);
-
-  constexpr int max_size_bytes = 1000;
+  SetUpPeerConnection(peer_connection_id);
+  const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
   const std::string metadata = "metadata";
-  EXPECT_TRUE(StartEventLogging(peer_connection_id, max_size_bytes, metadata));
+  constexpr bool expect_success = true;
+  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
+                    expect_success);
 }
 
-// TODO(crbug.com/827191): Fix this test (see bug for details).
 IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
-                       StartEventLoggingForUnknownPeerConnection) {
+                       StartEventLoggingWithUnlimitedSizeFails) {
+  const std::string peer_connection_id = "id";
+  SetUpPeerConnection(peer_connection_id);
+  const int max_size_bytes = kWebRtcEventLogManagerUnlimitedFileSize;
+  const std::string metadata = "metadata";
+  constexpr bool expect_success = false;
+  const std::string error_message =
+      kStartRemoteLoggingFailureUnlimitedSizeDisallowed;
+  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
+                    expect_success, error_message);
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
+                       StartEventLoggingWithExcessiveMaxSizeFails) {
+  const std::string peer_connection_id = "id";
+  SetUpPeerConnection(peer_connection_id);
+  const int max_size_bytes = kMaxRemoteLogFileSizeBytes + 1;
+  const std::string metadata = "metadata";
+  constexpr bool expect_success = false;
+  const std::string error_message = kStartRemoteLoggingFailureMaxSizeTooLarge;
+  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
+                    expect_success, error_message);
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
+                       StartEventLoggingWithExcessivelyLongMetadataFails) {
+  const std::string peer_connection_id = "id";
+  SetUpPeerConnection(peer_connection_id);
+  const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
+  const std::string metadata(kMaxRemoteLogFileMetadataSizeBytes + 1, 'X');
+  constexpr bool expect_success = false;
+  const std::string error_message = kStartRemoteLoggingFailureMetadaTooLong;
+  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
+                    expect_success, error_message);
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
+                       StartEventLoggingWithMaxSizeTooSmallFails) {
+  const std::string peer_connection_id = "id";
+  SetUpPeerConnection(peer_connection_id);
+  const std::string metadata = "metadata";
+  const size_t max_size_bytes =
+      kRemoteBoundLogFileHeaderSizeBytes + metadata.length();
+  constexpr bool expect_success = false;
+  const std::string error_message = kStartRemoteLoggingFailureMaxSizeTooSmall;
+  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
+                    expect_success, error_message);
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
+                       StartEventLoggingForNeverAddedPeerConnectionFails) {
   // Note that manager->PeerConnectionAdded() is not called.
   const std::string peer_connection_id = "id";
-  constexpr int max_size_bytes = 1000;
+  const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
   const std::string metadata = "metadata";
-  EXPECT_TRUE(StartEventLogging(peer_connection_id, max_size_bytes, metadata));
+  constexpr bool expect_success = false;
+  const std::string error_message =
+      kStartRemoteLoggingFailureUnknownOrInactivePeerConnection;
+  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
+                    expect_success, error_message);
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
+                       StartEventLoggingForWrongPeerConnectionIdFails) {
+  const std::string peer_connection_id_1 = "id1";
+  const std::string peer_connection_id_2 = "id2";
+
+  SetUpPeerConnection(peer_connection_id_1);
+  const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
+  const std::string metadata = "metadata";
+  constexpr bool expect_success = false;
+  const std::string error_message =
+      kStartRemoteLoggingFailureUnknownOrInactivePeerConnection;
+  StartEventLogging(peer_connection_id_2, max_size_bytes, metadata,
+                    expect_success, error_message);
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
+                       StartEventLoggingForAlreadyLoggedPeerConnectionFails) {
+  const std::string peer_connection_id = "id";
+  SetUpPeerConnection(peer_connection_id);
+
+  const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
+  const std::string metadata = "metadata";
+
+  // First call succeeds.
+  {
+    constexpr bool expect_success = true;
+    StartEventLogging(peer_connection_id, max_size_bytes, metadata,
+                      expect_success);
+  }
+
+  // Second call fails.
+  {
+    constexpr bool expect_success = false;
+    const std::string error_message = kStartRemoteLoggingFailureAlreadyLogging;
+    StartEventLogging(peer_connection_id, max_size_bytes, metadata,
+                      expect_success, error_message);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTestDisabledRemoteLogging,
+                       StartEventLoggingFails) {
+  const std::string peer_connection_id = "id";
+  SetUpPeerConnection(peer_connection_id);
+  const int max_size_bytes = kMaxRemoteLogFileSizeBytes;
+  const std::string metadata = "metadata";
+  constexpr bool expect_success = false;
+  const std::string error_message = kStartRemoteLoggingFailureFeatureDisabled;
+  StartEventLogging(peer_connection_id, max_size_bytes, metadata,
+                    expect_success, error_message);
 }
