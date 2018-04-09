@@ -14,6 +14,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 class ExtensionDialogObserver;
+class ExtensionViewViews;
 class GURL;
 class Profile;
 
@@ -92,6 +93,10 @@ class ExtensionDialog : public views::DialogDelegate,
                   ExtensionDialogObserver* observer);
 
   void InitWindow(gfx::NativeWindow parent_window, int width, int height);
+
+  ExtensionViewViews* GetExtensionView() const;
+  static ExtensionViewViews* GetExtensionView(
+      extensions::ExtensionViewHost* host);
 
   // Window Title
   base::string16 window_title_;
