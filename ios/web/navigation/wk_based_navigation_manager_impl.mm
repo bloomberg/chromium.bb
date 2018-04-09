@@ -159,6 +159,11 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
 }
 
 void WKBasedNavigationManagerImpl::CommitPendingItem() {
+  // CommitPendingItem may be called multiple times. Do nothing if there is no
+  // pending item.
+  if (pending_item_index_ == -1 && !pending_item_)
+    return;
+
   bool last_committed_item_was_empty_window_open_item =
       empty_window_open_item_ != nullptr;
 
@@ -190,6 +195,7 @@ void WKBasedNavigationManagerImpl::CommitPendingItem() {
   }
 
   pending_item_index_ = -1;
+  pending_item_.reset();
   // If the last committed item is the empty window open item, then don't update
   // previous item because the new commit replaces the last committed item.
   if (!last_committed_item_was_empty_window_open_item) {
