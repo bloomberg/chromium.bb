@@ -339,11 +339,8 @@ void NativeWidgetMac::SetSize(const gfx::Size& size) {
 }
 
 void NativeWidgetMac::StackAbove(gfx::NativeView native_view) {
-  // NativeWidgetMac currently only has machinery for stacking windows, and only
-  // stacks child windows above parents. That's currently all this is used for.
-  // DCHECK if a new use case comes along.
-  DCHECK(bridge_ && bridge_->parent());
-  DCHECK_EQ([native_view window], bridge_->parent()->GetNSWindow());
+  NSInteger view_parent = native_view.window.windowNumber;
+  [GetNativeWindow() orderWindow:NSWindowAbove relativeTo:view_parent];
 }
 
 void NativeWidgetMac::StackAtTop() {
