@@ -1252,19 +1252,4 @@ void av1_highbd_fwht4x4_c(const int16_t *input, tran_low_t *output,
                           int stride) {
   av1_fwht4x4_c(input, output, stride);
 }
-
-// Forward identity transform.
-void av1_fwd_idtx_c(const int16_t *src_diff, tran_low_t *coeff, int stride,
-                    int bsx, int bsy, TX_TYPE tx_type) {
-  int r, c;
-  const int pels = bsx * bsy;
-  const int shift = 3 - ((pels > 256) + (pels > 1024));
-  if (tx_type == IDTX) {
-    for (r = 0; r < bsy; ++r) {
-      for (c = 0; c < bsx; ++c) coeff[c] = src_diff[c] * (1 << shift);
-      src_diff += stride;
-      coeff += bsx;
-    }
-  }
-}
 #endif  // !AV1_DCT_GTEST

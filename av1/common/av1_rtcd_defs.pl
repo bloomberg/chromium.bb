@@ -174,8 +174,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
   add_proto qw/void av1_fwht4x4/, "const int16_t *input, tran_low_t *output, int stride";
 
-  add_proto qw/void av1_fwd_idtx/, "const int16_t *src_diff, tran_low_t *coeff, int stride, int bsx, int bsy, TX_TYPE tx_type";
-
   #fwd txfm
   add_proto qw/void av1_lowbd_fwd_txfm/, "const int16_t *src_diff, tran_low_t *coeff, int diff_stride, TxfmParam *txfm_param";
   specialize qw/av1_lowbd_fwd_txfm sse2 sse4_1/;
