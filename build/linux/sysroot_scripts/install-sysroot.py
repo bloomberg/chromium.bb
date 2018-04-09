@@ -30,7 +30,6 @@ import sys
 import urllib2
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(os.path.dirname(SCRIPT_DIR)))
 
 URL_PREFIX = 'https://commondatastorage.googleapis.com'
 URL_PATH = 'chrome-linux-sysroot/toolchain'
@@ -43,6 +42,8 @@ ARCH_TRANSLATIONS = {
     'mipsel': 'mips',
     'mips64': 'mips64el',
 }
+
+DEFAULT_TARGET_PLATFORM = 'sid'
 
 class Error(Exception):
   pass
@@ -67,45 +68,50 @@ def main(args):
   parser.add_option('--all', action='store_true',
                     help='Install all sysroot images (useful when updating the'
                          ' images)')
+  parser.add_option('--print-hash',
+                    help='Print the hash of the sysroot for the given arch.')
   options, _ = parser.parse_args(args)
   if not sys.platform.startswith('linux'):
     return 0
 
+  if options.print_hash:
+    arch = options.print_hash
+    print GetSysrootDict(DEFAULT_TARGET_PLATFORM,
+                         ARCH_TRANSLATIONS.get(arch, arch))['Sha1Sum']
+    return 0
   if options.arch:
-    InstallDefaultSysrootForArch(
-        ARCH_TRANSLATIONS.get(options.arch, options.arch))
+    InstallSysroot(DEFAULT_TARGET_PLATFORM,
+                   ARCH_TRANSLATIONS.get(options.arch, options.arch))
   elif options.all:
     for arch in VALID_ARCHS:
-      InstallDefaultSysrootForArch(arch)
+      InstallSysroot(DEFAULT_TARGET_PLATFORM, arch)
   else:
-    print 'You much specify either --arch or --all'
+    print 'You much specify one of the options.'
     return 1
 
   return 0
 
 
-def InstallDefaultSysrootForArch(target_arch):
+def GetSysrootDict(target_platform, target_arch):
   if target_arch not in VALID_ARCHS:
     raise Error('Unknown architecture: %s' % target_arch)
-  InstallSysroot('Sid', target_arch)
-
-
-def InstallSysroot(target_platform, target_arch):
-  # The sysroot directory should match the one specified in
-  # build/config/sysroot.gni.
-  # TODO(thestig) Consider putting this elsewhere to avoid having to recreate
-  # it on every build.
-  linux_dir = os.path.dirname(SCRIPT_DIR)
 
   sysroots_file = os.path.join(SCRIPT_DIR, 'sysroots.json')
   sysroots = json.load(open(sysroots_file))
-  sysroot_key = '%s_%s' % (target_platform.lower(), target_arch)
+  sysroot_key = '%s_%s' % (target_platform, target_arch)
   if sysroot_key not in sysroots:
     raise Error('No sysroot for: %s %s' % (target_platform, target_arch))
-  sysroot_dict = sysroots[sysroot_key]
+  return sysroots[sysroot_key]
+
+
+def InstallSysroot(target_platform, target_arch):
+  sysroot_dict = GetSysrootDict(target_platform, target_arch)
   revision = sysroot_dict['Revision']
   tarball_filename = sysroot_dict['Tarball']
   tarball_sha1sum = sysroot_dict['Sha1Sum']
+  # TODO(thestig) Consider putting this elsewhere to avoid having to recreate
+  # it on every build.
+  linux_dir = os.path.dirname(SCRIPT_DIR)
   sysroot = os.path.join(linux_dir, sysroot_dict['SysrootDir'])
 
   url = '%s/%s/%s/%s' % (URL_PREFIX, URL_PATH, revision, tarball_filename)
