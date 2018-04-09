@@ -85,6 +85,8 @@ public class DisplayAndroid {
     }
 
     /**
+     * Note: For JB pre-MR1, this can sometimes return values smaller than the actual screen.
+     * https://crbug.com/829318
      * @return Display height in physical pixels.
      */
     public int getDisplayHeight() {
@@ -92,6 +94,7 @@ public class DisplayAndroid {
     }
 
     /**
+     * Note: For JB pre-MR1, this can sometimes return values smaller than the actual screen.
      * @return Display width in physical pixels.
      */
     public int getDisplayWidth() {
