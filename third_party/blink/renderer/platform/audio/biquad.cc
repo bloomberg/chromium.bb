@@ -719,14 +719,14 @@ double Biquad::TailFrame(int coef_index, double max_frame) {
   //
   // so
   //
-  //   |h(n)| = |C1|*|r|^(n-1)*|1+C2/C1*(r2/r1)^(n-1)|
-  //          <= |C1|*|r|^(n-1)*[1 + |C2/C1|*|r2/r1|^(n-1)]
-  //          <= |C1|*|r|^(n-1)*[1 + |C2/C1|]
+  //   |h(n)| = |C1|*|r1|^(n-1)*|1+C2/C1*(r2/r1)^(n-1)|
+  //          <= |C1|*|r1|^(n-1)*[1 + |C2/C1|*|r2/r1|^(n-1)]
+  //          <= |C1|*|r1|^(n-1)*[1 + |C2/C1|]
   //
   // by using the triangle inequality and the fact that |r2|<=|r1|.
   // And we want |h(n)|<=eps which is true if
   //
-  //   |C1|*|r|^(n-1)*[1 + |C2/C1|] <= eps
+  //   |C1|*|r1|^(n-1)*[1 + |C2/C1|] <= eps
   //
   // or
   //
@@ -800,14 +800,11 @@ double Biquad::TailFrame(int coef_index, double max_frame) {
 
   if (discrim > 0) {
     // Compute the real roots so that r1 has the largest magnitude.
-    double r1;
-    double r2;
-    if (a1 < 0) {
-      r1 = (-a1 + sqrt(discrim)) / 2;
-    } else {
-      r1 = (-a1 - sqrt(discrim)) / 2;
-    }
-    r2 = a2 / r1;
+    double rplus = (-a1 + sqrt(discrim)) / 2;
+    double rminus = (-a1 - sqrt(discrim)) / 2;
+    double r1 = fabs(rplus) >= fabs(rminus) ? rplus : rminus;
+    // Use the fact that a2 = r1*r2
+    double r2 = a2 / r1;
 
     double c1 = (b0 * r1 * r1 + b1 * r1 + b2) / (r2 - r1);
     double c2 = (b0 * r2 * r2 + b1 * r2 + b2) / (r2 - r1);
@@ -821,7 +818,7 @@ double Biquad::TailFrame(int coef_index, double max_frame) {
     // This may produce a negative tail frame.  Just clamp the tail
     // frame to 0.
     tail_frame = clampTo(
-        1 + log(kMaxTailAmplitude / (fabs(c1) + fabs(c2))) / log(r1), 0);
+        1 + log(kMaxTailAmplitude / (fabs(c1) + fabs(c2))) / log(fabs(r1)), 0);
 
     DCHECK(std::isfinite(tail_frame));
   } else if (discrim < 0) {
