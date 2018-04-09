@@ -25991,7 +25991,6 @@ from previous Chrome versions.
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
   <int value="-1832575380" label="show-saved-copy"/>
   <int value="-1832221649" label="disable-out-of-process-pac"/>
-  <int value="-1830623562" label="hide-non-active-apps-from-shelf"/>
   <int value="-1821058653" label="enable-delay-agnostic-aec"/>
   <int value="-1817209284" label="PayWithGoogleV1:enabled"/>
   <int value="-1816066138" label="CastAllowAllIPs:enabled"/>
@@ -27302,6 +27301,7 @@ from previous Chrome versions.
   <int value="1291966558" label="ScrollAnchoring:disabled"/>
   <int value="1292763218" label="SystemTrayUnified:disabled"/>
   <int value="1294131571" label="disable-winrt-midi-api"/>
+  <int value="1296958520" label="hide-active-apps-from-shelf"/>
   <int value="1298981651" label="disable-new-task-manager"/>
   <int value="1300282719" label="OfflinePagesBackgroundLoading:enabled"/>
   <int value="1302421166" label="NativeNotifications:disabled"/>
