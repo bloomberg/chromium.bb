@@ -529,7 +529,7 @@ static aom_codec_err_t set_encoder_config(
       oxcf->resize_kf_scale_denominator == SCALE_NUMERATOR)
     oxcf->resize_mode = RESIZE_NONE;
 
-  if (extra_cfg->lossless) {
+  if (extra_cfg->lossless || cfg->large_scale_tile) {
     disable_superres(oxcf);
   } else {
     oxcf->superres_mode = (SUPERRES_MODE)cfg->rc_superres_mode;
