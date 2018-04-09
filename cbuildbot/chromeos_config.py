@@ -1966,7 +1966,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       # Run clang-tidy specific stages.
       builder_class_name='clang_tidy_builders.ClangTidyBuilder',
       useflags=append_useflags(['clang_tidy']),
-      boards=['kahlee'],
+      boards=['grunt'],
   )
 
 def PreCqBuilders(site_config, boards_dict, ge_build_config):
