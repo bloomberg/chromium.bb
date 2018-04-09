@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
+#include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
@@ -660,8 +661,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, HostedAppFrame) {
   EXPECT_EQ(0u, browser_actions->VisibleBrowserActions());
 
   // Show the menu.
-  HostedAppButtonContainer::AppMenuButton* menu_button =
-      button_container->app_menu_button_;
+  HostedAppMenuButton* menu_button = button_container->app_menu_button_;
 
   ui::MouseEvent e(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                    ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);

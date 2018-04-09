@@ -1,0 +1,73 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
+
+#include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
+#include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
+#include "chrome/browser/ui/extensions/hosted_app_menu_model.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/app_menu.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/controls/button/menu_button.h"
+
+constexpr int kMenuHighlightFadeDurationMs = 800;
+
+HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
+    : views::MenuButton(base::string16(), this, false),
+      browser_view_(browser_view) {
+  SetInkDropMode(InkDropMode::ON);
+  // This name is guaranteed not to change during the lifetime of this button.
+  // Get the app name only, aka "Google Docs" instead of "My Doc - Google Docs",
+  // because the menu applies to the entire app.
+  base::string16 app_name = base::UTF8ToUTF16(
+      browser_view->browser()->hosted_app_controller()->GetAppShortName());
+  SetAccessibleName(app_name);
+  SetTooltipText(
+      l10n_util::GetStringFUTF16(IDS_HOSTED_APPMENU_TOOLTIP, app_name));
+}
+
+HostedAppMenuButton::~HostedAppMenuButton() {}
+
+void HostedAppMenuButton::SetIconColor(SkColor color) {
+  SetImage(views::Button::STATE_NORMAL,
+           gfx::CreateVectorIcon(kBrowserToolsIcon, color));
+  set_ink_drop_base_color(color);
+}
+
+void HostedAppMenuButton::OnMenuButtonClicked(views::MenuButton* source,
+                                              const gfx::Point& point,
+                                              const ui::Event* event) {
+  Browser* browser = browser_view_->browser();
+  menu_ = std::make_unique<AppMenu>(browser, 0);
+  menu_model_ = std::make_unique<HostedAppMenuModel>(browser_view_, browser);
+  menu_model_->Init();
+  menu_->Init(menu_model_.get());
+
+  menu_->RunMenu(this);
+}
+
+void HostedAppMenuButton::StartHighlightAnimation(base::TimeDelta duration) {
+  GetInkDrop()->SetHoverHighlightFadeDurationMs(kMenuHighlightFadeDurationMs);
+  GetInkDrop()->SetHovered(true);
+  GetInkDrop()->UseDefaultHoverHighlightFadeDuration();
+
+  highlight_off_timer_.Start(FROM_HERE,
+                             duration - base::TimeDelta::FromMilliseconds(
+                                            kMenuHighlightFadeDurationMs),
+                             this, &HostedAppMenuButton::FadeHighlightOff);
+}
+
+void HostedAppMenuButton::FadeHighlightOff() {
+  if (!ShouldEnterHoveredState()) {
+    GetInkDrop()->SetHoverHighlightFadeDurationMs(kMenuHighlightFadeDurationMs);
+    GetInkDrop()->SetHovered(false);
+    GetInkDrop()->UseDefaultHoverHighlightFadeDuration();
+  }
+}
