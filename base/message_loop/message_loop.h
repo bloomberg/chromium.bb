@@ -18,6 +18,7 @@
 #include "base/message_loop/message_loop_task_runner.h"
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_for_io.h"
+#include "base/message_loop/message_pump_for_ui.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/observer_list.h"
 #include "base/pending_task.h"
@@ -442,12 +443,14 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
 #if (defined(USE_OZONE) && !defined(OS_FUCHSIA)) || \
     (defined(USE_X11) && !defined(USE_GLIB))
   // Please see MessagePumpLibevent for definition.
-  bool WatchFileDescriptor(
-      int fd,
-      bool persistent,
-      MessagePumpLibevent::Mode mode,
-      MessagePumpLibevent::FileDescriptorWatcher* controller,
-      MessagePumpLibevent::Watcher* delegate);
+  static_assert(std::is_same<MessagePumpForUI, MessagePumpLibevent>::value,
+                "MessageLoopForUI::WatchFileDescriptor is not supported when "
+                "MessagePumpForUI is not a MessagePumpLibevent.");
+  bool WatchFileDescriptor(int fd,
+                           bool persistent,
+                           MessagePumpForUI::Mode mode,
+                           MessagePumpForUI::FileDescriptorWatcher* controller,
+                           MessagePumpForUI::Watcher* delegate);
 #endif
 };
 
@@ -486,39 +489,31 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
 
 #if !defined(OS_NACL_SFI)
 
+// TODO(gab): Replace usage of these types by straight up MessagePumpForIO usage
+// now that a generic MessagePumpForIO is exposed through message_pump_for_io.h
+// The only historical advantage to defining these types here was coalescing
+// types from multiple impls into one. Recent CLs took care of doing this at a
+// higher level and these now offer no advantage (users still inherit the full
+// headers from message_loop.h's includes (even for callers that aren't using
+// these) and readers must still navigate to the impl to find how to use it).
 #if defined(OS_WIN)
-  typedef MessagePumpForIO::IOHandler IOHandler;
-  typedef MessagePumpForIO::IOContext IOContext;
-#elif defined(OS_FUCHSIA)
-  typedef MessagePumpFuchsia::FdWatcher Watcher;
-  typedef MessagePumpFuchsia::FdWatchController FileDescriptorWatcher;
-
-  enum Mode{WATCH_READ = MessagePumpFuchsia::WATCH_READ,
-            WATCH_WRITE = MessagePumpFuchsia::WATCH_WRITE,
-            WATCH_READ_WRITE = MessagePumpFuchsia::WATCH_READ_WRITE};
-
-  typedef MessagePumpFuchsia::ZxHandleWatchController ZxHandleWatchController;
-  typedef MessagePumpFuchsia::ZxHandleWatcher ZxHandleWatcher;
-#elif defined(OS_IOS)
-  typedef MessagePumpIOSForIO::Watcher Watcher;
-  typedef MessagePumpIOSForIO::FileDescriptorWatcher
-      FileDescriptorWatcher;
-
-  enum Mode {
-    WATCH_READ = MessagePumpIOSForIO::WATCH_READ,
-    WATCH_WRITE = MessagePumpIOSForIO::WATCH_WRITE,
-    WATCH_READ_WRITE = MessagePumpIOSForIO::WATCH_READ_WRITE
-  };
+  using IOHandler = MessagePumpForIO::IOHandler;
+  using IOContext = MessagePumpForIO::IOContext;
 #elif defined(OS_POSIX)
-  using Watcher = MessagePumpLibevent::Watcher;
-  using FileDescriptorWatcher = MessagePumpLibevent::FileDescriptorWatcher;
+  using Watcher = MessagePumpForIO::FdWatcher;
+  using FileDescriptorWatcher = MessagePumpForIO::FdWatchController;
 
   enum Mode {
-    WATCH_READ = MessagePumpLibevent::WATCH_READ,
-    WATCH_WRITE = MessagePumpLibevent::WATCH_WRITE,
-    WATCH_READ_WRITE = MessagePumpLibevent::WATCH_READ_WRITE
+    WATCH_READ = MessagePumpForIO::WATCH_READ,
+    WATCH_WRITE = MessagePumpForIO::WATCH_WRITE,
+    WATCH_READ_WRITE = MessagePumpForIO::WATCH_READ_WRITE
   };
-#endif
+#endif  // defined(OS_WIN) || defined(OS_POSIX)
+
+#if defined(OS_FUCHSIA)
+  using ZxHandleWatchController = MessagePumpFuchsia::ZxHandleWatchController;
+  using ZxHandleWatcher = MessagePumpFuchsia::ZxHandleWatcher;
+#endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_WIN)
   // Please see MessagePumpWin for definitions of these methods.
@@ -526,7 +521,8 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
   bool RegisterJobObject(HANDLE job, IOHandler* handler);
   bool WaitForIOCompletion(DWORD timeout, IOHandler* filter);
 #elif defined(OS_POSIX)
-  // Please see MessagePumpIOSForIO/MessagePumpLibevent for definition.
+  // Please see WatchableIOMessagePumpPosix for definition.
+  // Prefer base::FileDescriptorWatcher for non-critical IO.
   bool WatchFileDescriptor(int fd,
                            bool persistent,
                            Mode mode,

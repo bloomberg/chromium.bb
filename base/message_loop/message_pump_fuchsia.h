@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_pump.h"
+#include "base/message_loop/watchable_io_message_pump_posix.h"
 
 #include <fdio/io.h>
 #include <fdio/private.h>
@@ -18,7 +19,8 @@
 
 namespace base {
 
-class BASE_EXPORT MessagePumpFuchsia : public MessagePump {
+class BASE_EXPORT MessagePumpFuchsia : public MessagePump,
+                                       public WatchableIOMessagePumpPosix {
  public:
   // Implemented by callers to receive notifications of handle & fd events.
   class ZxHandleWatcher {
@@ -28,14 +30,6 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump {
 
    protected:
     virtual ~ZxHandleWatcher() {}
-  };
-
-  class FdWatcher {
-   public:
-    virtual void OnFileCanReadWithoutBlocking(int fd) = 0;
-    virtual void OnFileCanWriteWithoutBlocking(int fd) = 0;
-   protected:
-    virtual ~FdWatcher() {}
   };
 
   // Manages an active watch on an zx_handle_t.
@@ -97,14 +91,15 @@ class BASE_EXPORT MessagePumpFuchsia : public MessagePump {
     DISALLOW_COPY_AND_ASSIGN(ZxHandleWatchController);
   };
 
-  // Object returned by WatchFileDescriptor to manage further watching.
-  class FdWatchController : public ZxHandleWatchController,
+  class FdWatchController : public FdWatchControllerInterface,
+                            public ZxHandleWatchController,
                             public ZxHandleWatcher {
    public:
     explicit FdWatchController(const Location& from_here);
     ~FdWatchController() override;
 
-    bool StopWatchingFileDescriptor();
+    // FdWatchControllerInterface:
+    bool StopWatchingFileDescriptor() override;
 
    private:
     friend class MessagePumpFuchsia;

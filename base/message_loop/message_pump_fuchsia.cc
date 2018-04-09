@@ -71,7 +71,8 @@ void MessagePumpFuchsia::FdWatchController::OnZxHandleSignalled(
 
 MessagePumpFuchsia::FdWatchController::FdWatchController(
     const Location& from_here)
-    : ZxHandleWatchController(from_here) {}
+    : FdWatchControllerInterface(from_here),
+      ZxHandleWatchController(from_here) {}
 
 MessagePumpFuchsia::FdWatchController::~FdWatchController() {
   if (!StopWatchingFileDescriptor())
