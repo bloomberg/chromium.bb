@@ -455,17 +455,22 @@ unpacker.Compressor.prototype.onReadFileChunk_ = function(data) {
 
   // When the entry is read for the first time.
   if (!this.file_) {
-    entry.file(function(file) {
-      this.file_ = file;
-      chrome.fileManagerPrivate.ensureFileDownloaded(entry, () => {
-        if (chrome.runtime.lastError) {
-          console.error(chrome.runtime.lastError.message);
+    entry.file(
+        (file) => {
+          this.file_ = file;
+          chrome.fileManagerPrivate.ensureFileDownloaded(entry, () => {
+            if (chrome.runtime.lastError) {
+              console.error(chrome.runtime.lastError.message);
+              this.onErrorInternal_();
+              return;
+            }
+            readFileChunk();
+          });
+        },
+        (error) => {
+          console.error(error);
           this.onErrorInternal_();
-          return;
-        }
-        readFileChunk();
-      });
-    }.bind(this));
+        });
     return;
   }
 
