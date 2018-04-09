@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
+#include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#include "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_controller.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/passwords/password_bubble_view_base.h"
@@ -100,10 +102,24 @@ void TabDialogsViewsMac::ShowManagePasswordsBubble(bool user_action) {
     return;
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  BrowserWindowController* bwc =
-      [BrowserWindowController browserWindowControllerForWindow:window];
-  gfx::Point anchor_point =
-      ScreenPointFromBrowser(browser, [bwc bookmarkBubblePoint]);
+  bool has_location_bar =
+      browser && browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
+
+  NSPoint ns_anchor_point;
+  views::BubbleBorder::Arrow arrow = views::BubbleBorder::TOP_RIGHT;
+  if (has_location_bar) {
+    BrowserWindowController* bwc =
+        [BrowserWindowController browserWindowControllerForWindow:window];
+    LocationBarViewMac* location_bar = [bwc locationBarBridge];
+    ns_anchor_point = location_bar->GetBubblePointForDecoration(
+        location_bar->manage_passwords_decoration());
+  } else {
+    // Center the bubble if there's no location bar.
+    NSRect content_frame = [[window contentView] frame];
+    ns_anchor_point = NSMakePoint(NSMidX(content_frame), NSMaxY(content_frame));
+    arrow = views::BubbleBorder::TOP_CENTER;
+  }
+  gfx::Point anchor_point = ScreenPointFromBrowser(browser, ns_anchor_point);
   gfx::NativeView parent =
       platform_util::GetViewForWindow(browser->window()->GetNativeWindow());
   DCHECK(parent);
@@ -114,7 +130,7 @@ void TabDialogsViewsMac::ShowManagePasswordsBubble(bool user_action) {
 
   PasswordBubbleViewBase* bubble_view = PasswordBubbleViewBase::CreateBubble(
       web_contents(), nullptr, anchor_point, reason);
-  bubble_view->set_arrow(views::BubbleBorder::TOP_RIGHT);
+  bubble_view->set_arrow(arrow);
   bubble_view->set_parent_window(parent);
   views::BubbleDialogDelegateView::CreateBubble(bubble_view);
   bubble_view->ShowForReason(reason);
