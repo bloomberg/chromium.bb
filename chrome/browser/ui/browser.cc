@@ -420,11 +420,13 @@ Browser::Browser(const CreateParams& params)
   profile_pref_registrar_.Init(profile_->GetPrefs());
   profile_pref_registrar_.Add(
       prefs::kDevToolsDisabled,
-      base::Bind(&Browser::OnDevToolsDisabledChanged, base::Unretained(this)));
+      base::BindRepeating(&Browser::OnDevToolsDisabledChanged,
+                          base::Unretained(this)));
   profile_pref_registrar_.Add(
       bookmarks::prefs::kShowBookmarkBar,
-      base::Bind(&Browser::UpdateBookmarkBarState, base::Unretained(this),
-                 BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE));
+      base::BindRepeating(&Browser::UpdateBookmarkBarState,
+                          base::Unretained(this),
+                          BOOKMARK_BAR_STATE_CHANGE_PREF_CHANGE));
 
   if (search::IsInstantExtendedAPIEnabled() && is_type_tabbed())
     instant_controller_.reset(new BrowserInstantController(this));
