@@ -132,7 +132,7 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 }
 
 - (void)containedPresenterDidDismiss:(id<ContainedPresenter>)presenter {
-  DCHECK(presenter == self.presenter);
+  // No-op.
 }
 
 #pragma mark - Notification callback
