@@ -157,7 +157,9 @@ base::TerminationStatus ChildProcessLauncherHelper::GetTerminationStatus(
                                                      java_peer_)) {
     return base::TERMINATION_STATUS_OOM_PROTECTED;
   }
-  return base::GetTerminationStatus(process.process.Handle(), exit_code);
+  // Note waitpid does not work on Android since these are not actually child
+  // processes. So there is no need for base::GetTerminationStatus.
+  return base::TERMINATION_STATUS_NORMAL_TERMINATION;
 }
 
 // static
