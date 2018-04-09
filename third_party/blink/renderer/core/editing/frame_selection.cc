@@ -997,10 +997,11 @@ void FrameSelection::RevealSelection(const ScrollAlignment& alignment,
   LayoutRect selection_rect =
       LayoutRect(ComputeRectToScroll(reveal_extent_option));
   if (selection_rect == LayoutRect() ||
-      !start.AnchorNode()->GetLayoutObject()->ScrollRectToVisible(
-          selection_rect, WebScrollIntoViewParams(alignment, alignment)))
+      !start.AnchorNode()->GetLayoutObject()->EnclosingBox())
     return;
 
+  start.AnchorNode()->GetLayoutObject()->ScrollRectToVisible(
+      selection_rect, WebScrollIntoViewParams(alignment, alignment));
   UpdateAppearance();
 }
 

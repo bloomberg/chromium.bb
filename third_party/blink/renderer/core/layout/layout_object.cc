@@ -712,21 +712,22 @@ bool LayoutObject::IsFixedPositionObjectInPagedMedia() const {
          view->IsHorizontalWritingMode();
 }
 
-bool LayoutObject::ScrollRectToVisible(const LayoutRect& rect,
-                                       const WebScrollIntoViewParams& params) {
+LayoutRect LayoutObject::ScrollRectToVisible(
+    const LayoutRect& rect,
+    const WebScrollIntoViewParams& params) {
   LayoutBox* enclosing_box = EnclosingBox();
   if (!enclosing_box)
-    return false;
+    return rect;
 
   GetDocument().GetPage()->GetSmoothScrollSequencer()->AbortAnimations();
   WebScrollIntoViewParams new_params(params);
-  new_params.is_for_scroll_sequence =
-      params.is_for_scroll_sequence ||
+  new_params.is_for_scroll_sequence |=
       params.GetScrollType() == kProgrammaticScroll;
-  enclosing_box->ScrollRectToVisibleRecursive(rect, new_params);
+  LayoutRect new_location =
+      enclosing_box->ScrollRectToVisibleRecursive(rect, new_params);
   GetDocument().GetPage()->GetSmoothScrollSequencer()->RunQueuedAnimations();
 
-  return true;
+  return new_location;
 }
 
 LayoutBox* LayoutObject::EnclosingBox() const {

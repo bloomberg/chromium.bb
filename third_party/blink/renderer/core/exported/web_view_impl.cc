@@ -2407,10 +2407,25 @@ bool WebViewImpl::ScrollFocusedEditableElementIntoView() {
 
   element->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
+  // Since the page has been resized, the layout may have changed. The page
+  // scale animation started by ZoomAndScrollToFocusedEditableRect will scroll
+  // only the visual and layout viewports. We'll call ScrollRectToVisible with
+  // the stop_at_main_frame_layout_viewport param to ensure the element is
+  // actually visible in the page.
+  LayoutObject* layout_object = element->GetLayoutObject();
+  DCHECK(layout_object);
+  WebScrollIntoViewParams params(ScrollAlignment::kAlignCenterIfNeeded,
+                                 ScrollAlignment::kAlignCenterIfNeeded,
+                                 kProgrammaticScroll, false,
+                                 kScrollBehaviorInstant);
+  params.stop_at_main_frame_layout_viewport = true;
+  layout_object->ScrollRectToVisible(
+      LayoutRect(layout_object->AbsoluteBoundingBoxRect()), params);
+
   ZoomAndScrollToFocusedEditableElementRect(
       main_frame_view->RootFrameToDocument(
           element->GetDocument().View()->AbsoluteToRootFrame(
-              element->GetLayoutObject()->AbsoluteBoundingBoxRect())),
+              layout_object->AbsoluteBoundingBoxRect())),
       main_frame_view->RootFrameToDocument(
           element->GetDocument().View()->AbsoluteToRootFrame(
               element->GetDocument()

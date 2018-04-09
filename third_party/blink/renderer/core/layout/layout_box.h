@@ -611,8 +611,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void ScrollByRecursively(const ScrollOffset& delta);
   // If makeVisibleInVisualViewport is set, the visual viewport will be scrolled
   // if required to make the rect visible.
-  void ScrollRectToVisibleRecursive(const LayoutRect&,
-                                    const WebScrollIntoViewParams&);
+  LayoutRect ScrollRectToVisibleRecursive(const LayoutRect&,
+                                          const WebScrollIntoViewParams&);
 
   LayoutRectOutsets MarginBoxOutsets() const { return margin_box_outsets_; }
   LayoutUnit MarginTop() const override { return margin_box_outsets_.Top(); }
