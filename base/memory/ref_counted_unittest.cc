@@ -159,7 +159,7 @@ class InitialRefCountIsOne : public base::RefCounted<InitialRefCountIsOne> {
 TEST(RefCountedUnitTest, TestSelfAssignment) {
   SelfAssign* p = new SelfAssign;
   scoped_refptr<SelfAssign> var(p);
-  var = var;
+  var = *&var;  // The *& defeats Clang's -Wself-assign warning.
   EXPECT_EQ(var.get(), p);
   var = std::move(var);
   EXPECT_EQ(var.get(), p);

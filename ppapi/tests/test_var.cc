@@ -65,7 +65,7 @@ std::string TestVar::TestBasicString() {
   // Make sure we can assign a C++ object to itself and it stays alive.
   {
     pp::Var a("test");
-    a = a;
+    a = *&a;  // The *& defeats Clang's -Wself-assign warning.
     ASSERT_TRUE(a.AsString() == "test");
   }
 

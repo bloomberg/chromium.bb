@@ -165,7 +165,7 @@ TEST(CircularDeque, EqualsMove) {
 // Tests that self-assignment is a no-op.
 TEST(CircularDeque, EqualsSelf) {
   circular_deque<int> q = {1, 2, 3, 4, 5, 6};
-  q = q;
+  q = *&q;  // The *& defeats Clang's -Wself-assign warning.
   EXPECT_EQ(6u, q.size());
   for (int i = 0; i < 6; i++)
     EXPECT_EQ(i + 1, q[i]);

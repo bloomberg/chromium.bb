@@ -34,7 +34,7 @@ struct B: public A {
 TEST(LinkedPtrTest, Test) {
   {
     linked_ptr<A> a0, a1, a2;
-    a0 = a0;
+    a0 = *&a0;  // The *& defeats Clang's -Wself-assign warning.
     a1 = a2;
     ASSERT_EQ(a0.get(), static_cast<A*>(nullptr));
     ASSERT_EQ(a1.get(), static_cast<A*>(nullptr));

@@ -242,7 +242,7 @@ TEST(CreditCardTest, AssignmentOperator) {
   EXPECT_TRUE(a == b);
 
   // Assignment to self should not change the profile value.
-  a = a;
+  a = *&a;  // The *& defeats Clang's -Wself-assign warning.
   EXPECT_TRUE(a == b);
 }
 
