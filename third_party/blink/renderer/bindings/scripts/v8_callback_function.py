@@ -11,15 +11,15 @@ from utilities import to_snake_case
 from v8_globals import includes
 
 CALLBACK_FUNCTION_H_INCLUDES = frozenset([
-    'platform/bindings/CallbackFunctionBase.h',
+    'platform/bindings/callback_function_base.h',
 ])
 CALLBACK_FUNCTION_CPP_INCLUDES = frozenset([
-    'bindings/core/v8/ExceptionState.h',
-    'bindings/core/v8/GeneratedCodeHelper.h',
-    'bindings/core/v8/NativeValueTraitsImpl.h',
-    'bindings/core/v8/ToV8ForCore.h',
-    'bindings/core/v8/V8BindingForCore.h',
-    'core/execution_context/ExecutionContext.h',
+    'bindings/core/v8/exception_state.h',
+    'bindings/core/v8/generated_code_helper.h',
+    'bindings/core/v8/native_value_traits_impl.h',
+    'bindings/core/v8/to_v8_for_core.h',
+    'bindings/core/v8/v8_binding_for_core.h',
+    'core/execution_context/execution_context.h',
 ])
 
 

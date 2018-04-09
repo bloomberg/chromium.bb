@@ -141,7 +141,7 @@ class ComponentInfoProviderCore(ComponentInfoProvider):
 
     @property
     def include_path_for_export(self):
-        return 'core/CoreExport.h'
+        return 'core/core_export.h'
 
 
 class ComponentInfoProviderModules(ComponentInfoProvider):
@@ -197,7 +197,7 @@ class ComponentInfoProviderModules(ComponentInfoProvider):
 
     @property
     def include_path_for_export(self):
-        return 'modules/ModulesExport.h'
+        return 'modules/modules_export.h'
 
 
 def load_interfaces_info_overall_pickle(info_dir):

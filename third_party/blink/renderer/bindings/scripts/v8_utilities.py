@@ -148,24 +148,17 @@ def v8_class_name_or_partial(interface):
     return class_name
 
 
-def build_basename(name, snake_case, prefix=None, ext=None):
-    basename = name
+def build_basename(name, prefix=None, ext=None):
+    basename = to_snake_case(name)
     if prefix:
-        basename = prefix + name
-    if snake_case:
-        basename = to_snake_case(basename)
-        if not ext:
-            return basename
-        if ext == '.cpp':
-            return basename + '.cc'
-        return basename + ext
-    if ext:
-        return basename + ext
-    return basename
+        basename = prefix + basename
+    if not ext:
+        return basename
+    return basename + ext
 
 
-def binding_header_basename(name, snake_case):
-    return build_basename(name, snake_case, prefix='V8', ext='.h')
+def binding_header_basename(name):
+    return build_basename(name, prefix='v8_', ext='.h')
 
 
 ################################################################################
@@ -185,7 +178,7 @@ def activity_logging_world_list(member, access_type=''):
     if log_activity and not log_activity.startswith(access_type):
         return set()
 
-    includes.add('platform/bindings/V8DOMActivityLogger.h')
+    includes.add('platform/bindings/v8_dom_activity_logger.h')
     if 'LogAllWorlds' in extended_attributes:
         return set(['', 'ForMainWorld'])
     return set([''])  # At minimum, include isolated worlds.
@@ -250,7 +243,7 @@ def deprecate_as(member):
     extended_attributes = member.extended_attributes
     if 'DeprecateAs' not in extended_attributes:
         return None
-    includes.add('core/frame/Deprecation.h')
+    includes.add('core/frame/deprecation.h')
     return extended_attributes['DeprecateAs']
 
 
@@ -389,10 +382,10 @@ def cpp_name_or_partial(interface):
 def measure_as(definition_or_member, interface):
     extended_attributes = definition_or_member.extended_attributes
     if 'MeasureAs' in extended_attributes:
-        includes.add('core/frame/UseCounter.h')
+        includes.add('core/frame/use_counter.h')
         return lambda suffix: extended_attributes['MeasureAs']
     if 'Measure' in extended_attributes:
-        includes.add('core/frame/UseCounter.h')
+        includes.add('core/frame/use_counter.h')
         measure_as_name = capitalize(definition_or_member.name)
         if interface is not None:
             measure_as_name = '%s_%s' % (capitalize(interface.name), measure_as_name)

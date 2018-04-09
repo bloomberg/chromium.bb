@@ -272,11 +272,6 @@ jumbo_component("wtf") {
     # Inject Visual Studio debug visualizers for our types into all targets
     # that reference this.
     all_dependent_configs = [ "//tools/win/DebugVisualizers:webkit" ]
-  } else {
-    # Non-Windows.
-    if (!snake_case_source_files) {
-      sources -= [ "threading_win.cc" ]
-    }
   }
 
   if (is_android) {

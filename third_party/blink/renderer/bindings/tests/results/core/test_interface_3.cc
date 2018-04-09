@@ -13,7 +13,7 @@
 
 // TODO(dglazkov): Properly sort the includes.
 #include "bindings/tests/idls/core/test_interface_3.h"
-#include "platform/wtf/text/WTFString.h"
+#include "platform/wtf/text/wtf_string.h"
 
 namespace web {
 

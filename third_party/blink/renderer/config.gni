@@ -46,9 +46,6 @@ use_openmax_dl_fft =
                    (current_cpu == "arm" && arm_version >= 7) ||
                    current_cpu == "arm64" || current_cpu == "mipsel")
 
-# TODO(tkent): Remove this flag after the great mv. crbug.com/760462
-snake_case_source_files = true
-
 # feature_defines_list ---------------------------------------------------------
 
 feature_defines_list = []

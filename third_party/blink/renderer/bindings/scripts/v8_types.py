@@ -50,7 +50,7 @@ from idl_types import IdlUnionType
 from utilities import to_snake_case
 import v8_attributes  # for IdlType.constructor_type_name
 from v8_globals import includes
-from v8_utilities import extended_attribute_value_contains
+from v8_utilities import binding_header_basename, extended_attribute_value_contains
 
 
 ################################################################################
@@ -404,32 +404,32 @@ IdlNullableType.is_traceable = property(
 
 INCLUDES_FOR_TYPE = {
     'object': set(),
-    'ArrayBufferView': set(['bindings/core/v8/V8ArrayBufferView.h',
-                            'core/typed_arrays/ArrayBufferViewHelpers.h',
-                            'core/typed_arrays/FlexibleArrayBufferView.h']),
-    'Dictionary': set(['bindings/core/v8/Dictionary.h']),
-    'EventHandler': set(['bindings/core/v8/V8AbstractEventListener.h',
-                         'bindings/core/v8/V8EventListenerHelper.h']),
-    'EventListener': set(['bindings/core/v8/BindingSecurity.h',
-                          'bindings/core/v8/V8EventListenerHelper.h',
-                          'core/frame/LocalDOMWindow.h']),
-    'HTMLCollection': set(['bindings/core/v8/V8HTMLCollection.h',
-                           'core/dom/ClassCollection.h',
-                           'core/dom/TagCollection.h',
-                           'core/html/HTMLCollection.h',
-                           'core/html/HTMLTableRowsCollection.h',
-                           'core/html/forms/HTMLDataListOptionsCollection.h',
-                           'core/html/forms/HTMLFormControlsCollection.h']),
-    'NodeFilter': set(['bindings/core/v8/V8NodeFilterCondition.h']),
-    'NodeList': set(['bindings/core/v8/V8NodeList.h',
-                     'core/dom/NameNodeList.h',
-                     'core/dom/NodeList.h',
-                     'core/dom/StaticNodeList.h',
-                     'core/html/forms/LabelsNodeList.h']),
-    'Promise': set(['bindings/core/v8/ScriptPromise.h']),
-    'SerializedScriptValue': set(['bindings/core/v8/serialization/SerializedScriptValue.h',
-                                  'bindings/core/v8/serialization/SerializedScriptValueFactory.h']),
-    'ScriptValue': set(['bindings/core/v8/ScriptValue.h']),
+    'ArrayBufferView': set(['bindings/core/v8/v8_array_buffer_view.h',
+                            'core/typed_arrays/array_buffer_view_helpers.h',
+                            'core/typed_arrays/flexible_array_buffer_view.h']),
+    'Dictionary': set(['bindings/core/v8/dictionary.h']),
+    'EventHandler': set(['bindings/core/v8/v8_abstract_event_listener.h',
+                         'bindings/core/v8/v8_event_listener_helper.h']),
+    'EventListener': set(['bindings/core/v8/binding_security.h',
+                          'bindings/core/v8/v8_event_listener_helper.h',
+                          'core/frame/local_dom_window.h']),
+    'HTMLCollection': set(['bindings/core/v8/v8_html_collection.h',
+                           'core/dom/class_collection.h',
+                           'core/dom/tag_collection.h',
+                           'core/html/html_collection.h',
+                           'core/html/html_table_rows_collection.h',
+                           'core/html/forms/html_data_list_options_collection.h',
+                           'core/html/forms/html_form_controls_collection.h']),
+    'NodeFilter': set(['bindings/core/v8/v8_node_filter_condition.h']),
+    'NodeList': set(['bindings/core/v8/v8_node_list.h',
+                     'core/dom/name_node_list.h',
+                     'core/dom/node_list.h',
+                     'core/dom/static_node_list.h',
+                     'core/html/forms/labels_node_list.h']),
+    'Promise': set(['bindings/core/v8/script_promise.h']),
+    'SerializedScriptValue': set(['bindings/core/v8/serialization/serialized_script_value.h',
+                                  'bindings/core/v8/serialization/serialized_script_value_factory.h']),
+    'ScriptValue': set(['bindings/core/v8/script_value.h']),
 }
 
 
@@ -443,11 +443,11 @@ def includes_for_type(idl_type, extended_attributes=None):
         return INCLUDES_FOR_TYPE[base_idl_type]
     if base_idl_type in TYPED_ARRAY_TYPES:
         return INCLUDES_FOR_TYPE['ArrayBufferView'].union(
-            set(['bindings/%s/v8/V8%s.h' % (component_dir[base_idl_type], base_idl_type)])
+            set(['bindings/%s/v8/%s' % (component_dir[base_idl_type], binding_header_basename(base_idl_type))])
         )
     if idl_type.is_basic_type:
-        return set(['bindings/core/v8/IDLTypes.h',
-                    'bindings/core/v8/NativeValueTraitsImpl.h'])
+        return set(['bindings/core/v8/idl_types.h',
+                    'bindings/core/v8/native_value_traits_impl.h'])
     if base_idl_type.endswith('ConstructorConstructor'):
         # FIXME: rename to NamedConstructor
         # FIXME: replace with a [NamedConstructorAttribute] extended attribute
@@ -462,11 +462,11 @@ def includes_for_type(idl_type, extended_attributes=None):
         return set()
     if idl_type.is_callback_function:
         component = IdlType.callback_functions[base_idl_type]['component_dir']
-        return set(['bindings/%s/v8/%s.h' % (component, to_snake_case('V8%s' % base_idl_type))])
+        return set(['bindings/%s/v8/%s' % (component, binding_header_basename(base_idl_type))])
     if base_idl_type not in component_dir:
         return set()
-    return set(['bindings/%s/v8/V8%s.h' % (component_dir[base_idl_type],
-                                           base_idl_type)])
+    return set(['bindings/%s/v8/%s' % (component_dir[base_idl_type],
+                                       binding_header_basename(base_idl_type))])
 
 IdlType.includes_for_type = includes_for_type
 
@@ -479,8 +479,8 @@ IdlUnionType.includes_for_type = includes_for_union_type
 
 
 def includes_for_array_or_sequence_type(idl_type, extended_attributes=None):
-    return set.union(set(['bindings/core/v8/IDLTypes.h',
-                          'bindings/core/v8/NativeValueTraitsImpl.h']),
+    return set.union(set(['bindings/core/v8/idl_types.h',
+                          'bindings/core/v8/native_value_traits_impl.h']),
                      idl_type.element_type.includes_for_type(extended_attributes))
 
 IdlArrayOrSequenceType.includes_for_type = includes_for_array_or_sequence_type
@@ -515,18 +515,19 @@ def impl_includes_for_type(idl_type, interfaces_info):
     if native_array_element_type:
         includes_for_type.update(impl_includes_for_type(
                 native_array_element_type, interfaces_info))
-        includes_for_type.add('platform/wtf/Vector.h')
+        includes_for_type.add('platform/wtf/vector.h')
 
     base_idl_type = idl_type.base_type
     if idl_type.is_string_type:
-        includes_for_type.add('platform/wtf/text/WTFString.h')
+        includes_for_type.add('platform/wtf/text/wtf_string.h')
     if base_idl_type in interfaces_info:
         interface_info = interfaces_info[base_idl_type]
         includes_for_type.add(interface_info['include_path'])
     if base_idl_type in INCLUDES_FOR_TYPE:
         includes_for_type.update(INCLUDES_FOR_TYPE[base_idl_type])
     if idl_type.is_array_buffer_view_or_typed_array:
-        return set(['core/typed_arrays/DOMTypedArray.h', 'core/typed_arrays/ArrayBufferViewHelpers.h'])
+        return set(['core/typed_arrays/dom_typed_array.h',
+                    'core/typed_arrays/array_buffer_view_helpers.h'])
     return includes_for_type
 
 

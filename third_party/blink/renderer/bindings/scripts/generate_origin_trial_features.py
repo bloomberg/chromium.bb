@@ -79,7 +79,7 @@ def interface_is_global(interface):
             'PrimaryGlobal' in interface.extended_attributes)
 
 
-def origin_trial_features_info(info_provider, reader, idl_filenames, target_component, snake_case):
+def origin_trial_features_info(info_provider, reader, idl_filenames, target_component):
     """Read a set of IDL files and compile the mapping between interfaces and
     the conditional features defined on them.
 
@@ -127,12 +127,12 @@ def origin_trial_features_info(info_provider, reader, idl_filenames, target_comp
                     parent_interface_info.get('full_path'))
             if interface.is_partial and target_component != parent_component:
                 includes.add('bindings/%s/v8/%s' %
-                             (parent_component, binding_header_basename(interface.name, snake_case)))
+                             (parent_component, binding_header_basename(interface.name)))
                 includes.add('bindings/%s/v8/%s' %
-                             (target_component, binding_header_basename(interface.name + 'Partial', snake_case)))
+                             (target_component, binding_header_basename(interface.name + 'Partial')))
             else:
                 includes.add('bindings/%s/v8/%s' %
-                             (target_component, binding_header_basename(interface.name, snake_case)))
+                             (target_component, binding_header_basename(interface.name)))
                 # If this is a partial interface in the same component as
                 # its parent, then treat it as a non-partial interface.
                 interface.is_partial = False
@@ -148,7 +148,7 @@ def origin_trial_features_info(info_provider, reader, idl_filenames, target_comp
     return features_for_type, types_for_feature, includes
 
 
-def origin_trial_features_context(generator_name, feature_info, snake_case):
+def origin_trial_features_context(generator_name, feature_info):
     context = {'code_generator': generator_name}
 
     # Unpack the feature info tuple.
@@ -156,17 +156,17 @@ def origin_trial_features_context(generator_name, feature_info, snake_case):
 
     # Add includes needed for cpp code and normalize.
     includes.update([
-        'core/context_features/ContextFeatureSettings.h',
-        'core/execution_context/ExecutionContext.h',
-        'core/frame/Frame.h',
+        'core/context_features/context_feature_settings.h',
+        'core/execution_context/execution_context.h',
+        'core/frame/frame.h',
         'core/origin_trials/origin_trials.h',
-        'platform/bindings/OriginTrialFeatures.h',
-        'platform/bindings/ScriptState.h',
+        'platform/bindings/origin_trial_features.h',
+        'platform/bindings/script_state.h',
         # TODO(iclelland): Remove the need to explicitly include this; it is
         # here because the ContextFeatureSettings code needs it.
-        'bindings/core/v8/V8Window.h',
+        'bindings/core/v8/v8_window.h',
     ])
-    context['includes'] = normalize_and_sort_includes(includes, snake_case)
+    context['includes'] = normalize_and_sort_includes(includes)
 
     # For each interface, collect a list of bindings installation functions to
     # call, organized by conditional feature.
@@ -219,12 +219,11 @@ def generate_origin_trial_features(info_provider, options, idl_filenames):
     # from the global info provider and the supplied list of IDL files.
     feature_info = origin_trial_features_info(info_provider,
                                               reader, idl_filenames,
-                                              options.target_component,
-                                              options.snake_case_generated_files)
+                                              options.target_component)
 
     # Convert that mapping into the context required for the Jinja2 templates.
     template_context = origin_trial_features_context(
-        MODULE_PYNAME, feature_info, options.snake_case_generated_files)
+        MODULE_PYNAME, feature_info)
 
     file_basename = 'origin_trial_features_for_%s' % options.target_component
 

@@ -8,16 +8,16 @@ import v8_utilities
 
 
 UNION_CPP_INCLUDES = frozenset([
-    'bindings/core/v8/ToV8ForCore.h',
+    'bindings/core/v8/to_v8_for_core.h',
 ])
 
 UNION_H_INCLUDES = frozenset([
-    'bindings/core/v8/Dictionary.h',
-    'bindings/core/v8/ExceptionState.h',
-    'bindings/core/v8/NativeValueTraits.h',
-    'bindings/core/v8/V8BindingForCore.h',
-    'platform/heap/Handle.h',
-    'platform/wtf/Optional.h',
+    'bindings/core/v8/dictionary.h',
+    'bindings/core/v8/exception_state.h',
+    'bindings/core/v8/native_value_traits.h',
+    'bindings/core/v8/v8_binding_for_core.h',
+    'platform/heap/handle.h',
+    'platform/wtf/optional.h',
 ])
 
 

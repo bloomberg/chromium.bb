@@ -134,8 +134,8 @@ class TypedefResolver(Visitor):
 class CodeGeneratorV8Base(CodeGeneratorBase):
     """Base class for v8 bindings generator and IDL dictionary impl generator"""
 
-    def __init__(self, info_provider, cache_dir, output_dir, snake_case):
-        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir, snake_case)
+    def __init__(self, info_provider, cache_dir, output_dir):
+        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir)
         self.typedef_resolver = TypedefResolver(info_provider)
 
     def generate_code(self, definitions, definition_name):
@@ -153,18 +153,18 @@ class CodeGeneratorV8Base(CodeGeneratorBase):
         raise NotImplementedError()
 
     def get_output_basename(self, definition_name, ext, prefix=None):
-        return build_basename(definition_name, self.snake_case_generated_files, prefix=prefix, ext=ext)
+        return build_basename(definition_name, prefix=prefix, ext=ext)
 
 
 class CodeGeneratorV8(CodeGeneratorV8Base):
-    def __init__(self, info_provider, cache_dir, output_dir, snake_case):
-        CodeGeneratorV8Base.__init__(self, info_provider, cache_dir, output_dir, snake_case)
+    def __init__(self, info_provider, cache_dir, output_dir):
+        CodeGeneratorV8Base.__init__(self, info_provider, cache_dir, output_dir)
 
     def output_paths(self, definition_name):
         header_path = posixpath.join(self.output_dir, self.get_output_basename(
-            definition_name, '.h', prefix='V8'))
+            definition_name, '.h', prefix='v8_'))
         cpp_path = posixpath.join(self.output_dir, self.get_output_basename(
-            definition_name, '.cpp', prefix='V8'))
+            definition_name, '.cc', prefix='v8_'))
         return header_path, cpp_path
 
     def generate_code_internal(self, definitions, definition_name):
@@ -216,7 +216,7 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
             template_context['exported'] = self.info_provider.specifier_for_export
         # Add the include for interface itself
         if IdlType(interface_name).is_typed_array:
-            template_context['header_includes'].add('core/typed_arrays/DOMTypedArray.h')
+            template_context['header_includes'].add('core/typed_arrays/dom_typed_array.h')
         elif interface.is_callback:
             if len(interface.constants) > 0:  # legacy callback interface
                 includes.add(interface_info['include_path'])
@@ -262,8 +262,8 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
 
 
 class CodeGeneratorDictionaryImpl(CodeGeneratorV8Base):
-    def __init__(self, info_provider, cache_dir, output_dir, snake_case):
-        CodeGeneratorV8Base.__init__(self, info_provider, cache_dir, output_dir, snake_case)
+    def __init__(self, info_provider, cache_dir, output_dir):
+        CodeGeneratorV8Base.__init__(self, info_provider, cache_dir, output_dir)
 
     def output_paths(self, definition_name, interface_info):
         output_dir = posixpath.join(self.output_dir,
@@ -271,7 +271,7 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorV8Base):
         header_path = posixpath.join(output_dir,
                                      self.get_output_basename(definition_name, '.h'))
         cpp_path = posixpath.join(output_dir,
-                                  self.get_output_basename(definition_name, '.cpp'))
+                                  self.get_output_basename(definition_name, '.cc'))
         return header_path, cpp_path
 
     def generate_code_internal(self, definitions, definition_name):
@@ -307,8 +307,8 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
     CodeGeneratorDictionaryImpl. It assumes that all union types are already
     collected. It doesn't process idl files directly.
     """
-    def __init__(self, info_provider, cache_dir, output_dir, snake_case, target_component):
-        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir, snake_case)
+    def __init__(self, info_provider, cache_dir, output_dir, target_component):
+        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir)
         self.target_component = target_component
         # The code below duplicates parts of TypedefResolver. We do not use it
         # directly because IdlUnionType is not a type defined in
@@ -327,9 +327,9 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
         template_context['header_includes'].append(
             self.info_provider.include_path_for_export)
         template_context['header_includes'] = normalize_and_sort_includes(
-            template_context['header_includes'], self.snake_case_generated_files)
+            template_context['header_includes'])
         template_context['cpp_includes'] = normalize_and_sort_includes(
-            template_context['cpp_includes'], self.snake_case_generated_files)
+            template_context['cpp_includes'])
         template_context['code_generator'] = self.generator_name
         template_context['exported'] = self.info_provider.specifier_for_export
         snake_base_name = to_snake_case(shorten_union_name(union_type))
@@ -371,8 +371,8 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
 
 
 class CodeGeneratorCallbackFunction(CodeGeneratorBase):
-    def __init__(self, info_provider, cache_dir, output_dir, snake_case, target_component):
-        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir, snake_case)
+    def __init__(self, info_provider, cache_dir, output_dir, target_component):
+        CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir)
         self.target_component = target_component
         self.typedef_resolver = TypedefResolver(info_provider)
 
@@ -395,9 +395,9 @@ class CodeGeneratorCallbackFunction(CodeGeneratorBase):
                     self.info_provider.include_path_for_union_types(argument.idl_type))
 
         template_context['header_includes'] = normalize_and_sort_includes(
-            template_context['header_includes'], self.snake_case_generated_files)
+            template_context['header_includes'])
         template_context['cpp_includes'] = normalize_and_sort_includes(
-            template_context['cpp_includes'], self.snake_case_generated_files)
+            template_context['cpp_includes'])
         template_context['code_generator'] = MODULE_PYNAME
         header_text = render_template(header_template, template_context)
         cpp_text = render_template(cpp_template, template_context)

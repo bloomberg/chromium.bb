@@ -43,12 +43,10 @@ class InternalRuntimeFlagsWriter(make_runtime_features.RuntimeFeatureWriter):
 
     def __init__(self, json5_file_path):
         super(InternalRuntimeFlagsWriter, self).__init__(json5_file_path)
-        basename = self.class_name
-        if json5_generator.Writer.snake_case_source_files:
-            basename = 'internal_runtime_flags'
-        self._outputs = {(basename + '.idl'): self.generate_idl,
-                         (basename + '.h'): self.generate_header,
-                        }
+        self._outputs = {
+            'internal_runtime_flags.idl': self.generate_idl,
+            'internal_runtime_flags.h': self.generate_header,
+        }
 
     @template_expander.use_jinja('templates/' + class_name + '.idl.tmpl')
     def generate_idl(self):

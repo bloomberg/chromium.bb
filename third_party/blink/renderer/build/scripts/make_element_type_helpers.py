@@ -57,8 +57,6 @@ class MakeElementTypeHelpersWriter(json5_generator.Writer):
         }
 
         base_element_header = 'core/%s/%s_element.h' % (self.namespace.lower(), self.namespace.lower())
-        if not self.snake_case_source_files:
-            base_element_header = 'core/%s/%sElement.h' % (self.namespace.lower(), self.namespace)
         self._template_context = {
             'base_element_header': base_element_header,
             'input_files': self._input_files,
