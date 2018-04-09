@@ -27,14 +27,20 @@
 #include "base/path_service.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/crash/content/browser/crash_dump_observer_android.h"
+#include "components/services/heap_profiling/public/cpp/controller.h"
+#include "components/services/heap_profiling/public/cpp/settings.h"
+#include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -138,6 +144,37 @@ bool AwBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // Android WebView does not use default MessageLoop. It has its own
   // Android specific MessageLoop.
   return true;
+}
+
+void AwBrowserMainParts::ServiceManagerConnectionStarted(
+    content::ServiceManagerConnection* connection) {
+  heap_profiling::Mode mode = heap_profiling::GetModeForStartup();
+  // TODO: Add support for heap-profiling other process types if it's deemed to
+  // provide utility. https://crbug.com/827545.
+  if (mode == heap_profiling::Mode::kBrowser) {
+    // Create a Connector that is not bound to any sequence.
+    std::unique_ptr<service_manager::Connector> connector =
+        connection->GetConnector()->Clone();
+
+    // Use it to generate a ProfilingClient for the browser process. This binds
+    // the Connector to the current sequence.
+    heap_profiling::mojom::ProfilingClientPtr profiling_client;
+    heap_profiling::mojom::ProfilingClientRequest request(
+        mojo::MakeRequest(&profiling_client));
+    connector->BindInterface(content::mojom::kBrowserServiceName,
+                             std::move(request));
+
+    // Start the HeapProfilingService and start profiling the browser process.
+    // It's okay to pass the Connector to HeapProfilingService, since both are
+    // bound to the current sequence.
+    heap_profiling_controller_.reset(new heap_profiling::Controller(
+        connection->GetConnector()->Clone(),
+        heap_profiling::GetStackModeForStartup(),
+        heap_profiling::GetSamplingRateForStartup()));
+    heap_profiling_controller_->StartProfilingClient(
+        std::move(profiling_client), getpid(),
+        heap_profiling::mojom::ProcessType::BROWSER);
+  }
 }
 
 }  // namespace android_webview

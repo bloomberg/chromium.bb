@@ -6,7 +6,14 @@
         "renderer": [
           "safe_browsing::mojom::SafeBrowsing",
           "spellcheck::mojom::SpellCheckHost"
+        ],
+        "profiling_client": [
+          "heap_profiling::mojom::ProfilingClient"
         ]
+      },
+      "requires": {
+        "content_browser": [ "profiling_client" ],
+        "heap_profiling": [ "profiling", "heap_profiler" ]
       }
     },
     "navigation:frame": {

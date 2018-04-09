@@ -32,6 +32,8 @@ class AwContentClient : public content::ContentClient {
   void SetGpuInfo(const gpu::GPUInfo& gpu_info) override;
   bool UsingSynchronousCompositing() override;
   media::MediaDrmBridgeClient* GetMediaDrmBridgeClient() override;
+  void OnServiceManagerConnected(
+      content::ServiceManagerConnection* connection) override;
 
   const std::string& gpu_fingerprint() const { return gpu_fingerprint_; }
 

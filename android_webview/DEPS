@@ -11,6 +11,7 @@ include_rules = [
   "+components/network_session_configurator/common",
   "+components/metrics",
   "+components/prefs",
+  "+components/services/heap_profiling/public",
   "+components/version_info",
   # Only allow this header in spellchecking since allowing all of spellchecking
   # would include both browser and renderer components.
@@ -25,6 +26,7 @@ include_rules = [
   "+media/media_buildflags.h",
   "+net",
   "+services/network/public/cpp",
+  "+services/service_manager/public",
   "+services/viz/public/interfaces",
   "+skia",
   "+third_party/skia/include",

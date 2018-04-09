@@ -10,12 +10,17 @@
 #include "android_webview/common/url_constants.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
+#include "base/no_destructor.h"
+#include "components/services/heap_profiling/public/cpp/client.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/simple_connection_filter.h"
 #include "content/public/common/user_agent.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_util.h"
 #include "ipc/ipc_message.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -88,6 +93,21 @@ bool AwContentClient::UsingSynchronousCompositing() {
 media::MediaDrmBridgeClient* AwContentClient::GetMediaDrmBridgeClient() {
   return new AwMediaDrmBridgeClient(
       AwResource::GetConfigKeySystemUuidMapping());
+}
+
+void AwContentClient::OnServiceManagerConnected(
+    content::ServiceManagerConnection* connection) {
+  // This creates a process-wide HeapProfiling::Client that listens for requests
+  // from the HeapProfilingService to start profiling the current process.
+  static base::NoDestructor<heap_profiling::Client> profiling_client;
+
+  std::unique_ptr<service_manager::BinderRegistry> registry(
+      new service_manager::BinderRegistry);
+  registry->AddInterface(
+      base::BindRepeating(&heap_profiling::Client::BindToInterface,
+                          base::Unretained(profiling_client.get())));
+  connection->AddConnectionFilter(
+      std::make_unique<content::SimpleConnectionFilter>(std::move(registry)));
 }
 
 }  // namespace android_webview

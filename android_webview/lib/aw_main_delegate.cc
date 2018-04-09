@@ -20,6 +20,7 @@
 #include "android_webview/common/crash_reporter/crash_keys.h"
 #include "android_webview/gpu/aw_content_gpu_client.h"
 #include "android_webview/renderer/aw_content_renderer_client.h"
+#include "android_webview/utility/aw_content_utility_client.h"
 #include "base/android/apk_assets.h"
 #include "base/android/build_info.h"
 #include "base/command_line.h"
@@ -301,6 +302,11 @@ content::ContentGpuClient* AwMainDelegate::CreateContentGpuClient() {
 content::ContentRendererClient* AwMainDelegate::CreateContentRendererClient() {
   content_renderer_client_.reset(new AwContentRendererClient());
   return content_renderer_client_.get();
+}
+
+content::ContentUtilityClient* AwMainDelegate::CreateContentUtilityClient() {
+  content_utility_client_.reset(new AwContentUtilityClient());
+  return content_utility_client_.get();
 }
 
 }  // namespace android_webview

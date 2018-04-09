@@ -185,6 +185,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       bool is_main_frame,
       ui::PageTransition page_transition,
       bool has_user_gesture) override;
+  void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
 
   static void DisableCreatingTaskScheduler();
 
