@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/pending_task.h"
+#include "base/test/histogram_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
@@ -116,6 +117,7 @@ class TaskQueueSelectorTest : public testing::Test {
           << i;
       queue_to_index_map_.insert(std::make_pair(task_queues_[i].get(), i));
     }
+    histogram_tester_.reset(new base::HistogramTester());
   }
 
   void TearDown() final {
@@ -139,12 +141,17 @@ class TaskQueueSelectorTest : public testing::Test {
   std::unique_ptr<VirtualTimeDomain> virtual_time_domain_;
   std::vector<std::unique_ptr<TaskQueueImpl>> task_queues_;
   std::map<TaskQueueImpl*, size_t> queue_to_index_map_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
 TEST_F(TaskQueueSelectorTest, TestDefaultPriority) {
   size_t queue_order[] = {4, 3, 2, 1, 0};
   PushTasks(queue_order, 5);
   EXPECT_THAT(PopTasks(), testing::ElementsAre(4, 3, 2, 1, 0));
+  EXPECT_EQ(histogram_tester_->GetBucketCount(
+                "TaskQueueSelector.TaskServicedPerSelectorLogic",
+                static_cast<int>(TaskQueueSelectorLogic::kNormalPriorityLogic)),
+            5);
 }
 
 TEST_F(TaskQueueSelectorTest, TestHighestPriority) {
@@ -153,6 +160,11 @@ TEST_F(TaskQueueSelectorTest, TestHighestPriority) {
   selector_.SetQueuePriority(task_queues_[2].get(),
                              TaskQueue::kHighestPriority);
   EXPECT_THAT(PopTasks(), ::testing::ElementsAre(2, 0, 1, 3, 4));
+  EXPECT_EQ(
+      histogram_tester_->GetBucketCount(
+          "TaskQueueSelector.TaskServicedPerSelectorLogic",
+          static_cast<int>(TaskQueueSelectorLogic::kHighestPriorityLogic)),
+      1);
 }
 
 TEST_F(TaskQueueSelectorTest, TestHighPriority) {
@@ -163,6 +175,10 @@ TEST_F(TaskQueueSelectorTest, TestHighPriority) {
   selector_.SetQueuePriority(task_queues_[1].get(), TaskQueue::kHighPriority);
   selector_.SetQueuePriority(task_queues_[0].get(), TaskQueue::kLowPriority);
   EXPECT_THAT(PopTasks(), ::testing::ElementsAre(2, 1, 3, 4, 0));
+  EXPECT_EQ(histogram_tester_->GetBucketCount(
+                "TaskQueueSelector.TaskServicedPerSelectorLogic",
+                static_cast<int>(TaskQueueSelectorLogic::kHighPriorityLogic)),
+            1);
 }
 
 TEST_F(TaskQueueSelectorTest, TestLowPriority) {
@@ -170,6 +186,10 @@ TEST_F(TaskQueueSelectorTest, TestLowPriority) {
   PushTasks(queue_order, 5);
   selector_.SetQueuePriority(task_queues_[2].get(), TaskQueue::kLowPriority);
   EXPECT_THAT(PopTasks(), testing::ElementsAre(0, 1, 3, 4, 2));
+  EXPECT_EQ(histogram_tester_->GetBucketCount(
+                "TaskQueueSelector.TaskServicedPerSelectorLogic",
+                static_cast<int>(TaskQueueSelectorLogic::kLowPriorityLogic)),
+            1);
 }
 
 TEST_F(TaskQueueSelectorTest, TestBestEffortPriority) {
@@ -181,6 +201,11 @@ TEST_F(TaskQueueSelectorTest, TestBestEffortPriority) {
   selector_.SetQueuePriority(task_queues_[3].get(),
                              TaskQueue::kHighestPriority);
   EXPECT_THAT(PopTasks(), ::testing::ElementsAre(3, 1, 4, 2, 0));
+  EXPECT_EQ(
+      histogram_tester_->GetBucketCount(
+          "TaskQueueSelector.TaskServicedPerSelectorLogic",
+          static_cast<int>(TaskQueueSelectorLogic::kBestEffortPriorityLogic)),
+      1);
 }
 
 TEST_F(TaskQueueSelectorTest, TestControlPriority) {
@@ -193,6 +218,11 @@ TEST_F(TaskQueueSelectorTest, TestControlPriority) {
                              TaskQueue::kHighestPriority);
   EXPECT_EQ(TaskQueue::kHighestPriority, task_queues_[2]->GetQueuePriority());
   EXPECT_THAT(PopTasks(), ::testing::ElementsAre(4, 2, 0, 1, 3));
+  EXPECT_EQ(
+      histogram_tester_->GetBucketCount(
+          "TaskQueueSelector.TaskServicedPerSelectorLogic",
+          static_cast<int>(TaskQueueSelectorLogic::kControlPriorityLogic)),
+      1);
 }
 
 TEST_F(TaskQueueSelectorTest, TestObserverWithEnabledQueue) {

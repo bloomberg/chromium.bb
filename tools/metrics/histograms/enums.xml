@@ -43446,6 +43446,21 @@ would be helpful to identify which type is being sent.
   <int value="5" label="Tapped Inside, Different Node"/>
 </enum>
 
+<enum name="TaskQueueSelectorLogic">
+  <summary>
+    Used to record selector logic trigerred when servicing a task queue.
+  </summary>
+  <int value="0" label="Control Priority Logic"/>
+  <int value="1" label="Highest Priority Logic"/>
+  <int value="2" label="High Priority Logic"/>
+  <int value="3" label="Normal Priority Logic"/>
+  <int value="4" label="Low Priority Logic"/>
+  <int value="5" label="Best Effort Priority Logic"/>
+  <int value="6" label="High Priority Starvation Logic"/>
+  <int value="7" label="Normal Priority Starvation Logic"/>
+  <int value="8" label="Low Priority Starvation Logic"/>
+</enum>
+
 <enum name="TcpSocketStatus">
   <int value="0" label="Unknown"/>
   <int value="1" label="Fast Connection Return"/>
