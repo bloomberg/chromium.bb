@@ -59,7 +59,7 @@ void SetDeviceAffiliationID(
     chromeos::FakeSessionManagerClient* fake_session_manager_client,
     const std::set<std::string>& device_affiliation_ids);
 
-// Sets user affiliation ID for |user_name| to |fake_session_manager| from
+// Sets user affiliation ID for |user_account_id| to |fake_session_manager| from
 // |user_affiliation_ids| and modifies |user_policy| so that it contains
 // correct values of user affiliation IDs for future use. To add user policies
 // and have user affiliation IDs valid please use |user_policy| modified by this
@@ -86,7 +86,7 @@ void SetDeviceAffiliationID(
 void SetUserAffiliationIDs(
     policy::UserPolicyBuilder* user_policy,
     chromeos::FakeSessionManagerClient* fake_session_manager_client,
-    const std::string& user_email,
+    const AccountId& user_account_id,
     const std::set<std::string>& user_affiliation_ids);
 
 // Registers the user with the given |account_id| on the device and marks OOBE

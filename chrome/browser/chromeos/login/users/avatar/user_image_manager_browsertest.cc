@@ -625,6 +625,7 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
         static_cast<int>(user_key_bits.size()));
     user_policy_.policy_data().set_username(
         enterprise_account_id_.GetUserEmail());
+    user_policy_.policy_data().set_gaia_id(enterprise_account_id_.GetGaiaId());
 
     policy_image_ = test::ImageLoader(test_data_dir_.Append(
                                           test::kUserAvatarImage2RelativePath))

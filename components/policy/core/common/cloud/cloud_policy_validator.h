@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "components/policy/policy_export.h"
 #include "components/policy/proto/cloud_policy.pb.h"
+#include "components/signin/core/account_id/account_id.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "components/policy/proto/chrome_extension_policy.pb.h"
@@ -76,8 +77,8 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     VALIDATION_BAD_DM_TOKEN,
     // Device id is empty or doesn't match.
     VALIDATION_BAD_DEVICE_ID,
-    // Username doesn't match.
-    VALIDATION_BAD_USERNAME,
+    // User id doesn't match.
+    VALIDATION_BAD_USER,
     // Policy payload protobuf parse error.
     VALIDATION_POLICY_PARSE_ERROR,
     // Policy key signature could not be verified using the hard-coded
@@ -138,6 +139,11 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   // TIMESTAMP_NOT_VALIDATED.
   void ValidateTimestamp(base::Time not_before,
                          ValidateTimestampOption timestamp_option);
+
+  // Instruct the validator to check that the user in the policy blob
+  // matches |account_id|. It checks GAIA ID if both policy blob and
+  // |account_id| have it, otherwise falls back to username check.
+  void ValidateUser(const AccountId& account_id);
 
   // Instruct the validator to check that the username in the policy blob
   // matches |expected_user|. If |canonicalize| is set to true, both values are
@@ -238,7 +244,7 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   // Internal flags indicating what to check.
   enum ValidationFlags {
     VALIDATE_TIMESTAMP   = 1 << 0,
-    VALIDATE_USERNAME    = 1 << 1,
+    VALIDATE_USER        = 1 << 1,
     VALIDATE_DOMAIN      = 1 << 2,
     VALIDATE_DM_TOKEN    = 1 << 3,
     VALIDATE_POLICY_TYPE = 1 << 4,
@@ -289,7 +295,7 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
 
   // Helper functions implementing individual checks.
   Status CheckTimestamp();
-  Status CheckUsername();
+  Status CheckUser();
   Status CheckDomain();
   Status CheckDMToken();
   Status CheckDeviceId();
@@ -317,7 +323,7 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   ValidateTimestampOption timestamp_option_;
   ValidateDMTokenOption dm_token_option_;
   ValidateDeviceIdOption device_id_option_;
-  std::string user_;
+  AccountId account_id_;
   bool canonicalize_user_;
   std::string domain_;
   std::string dm_token_;

@@ -163,6 +163,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
                               user_key_bits.length()),
               base::checked_cast<int>(user_key_bits.length()));
     user_policy_builder->policy_data().set_username(account_id.GetUserEmail());
+    user_policy_builder->policy_data().set_gaia_id(account_id.GetGaiaId());
     return user_policy_builder;
   }
 

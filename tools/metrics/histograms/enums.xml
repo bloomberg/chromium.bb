@@ -12980,6 +12980,31 @@ Called by update_net_error_codes.py.-->
   <int value="18" label="Store Failed">Caching a policy to disk failed.</int>
 </enum>
 
+<enum name="EnterprisePolicyUserVerification">
+  <summary>
+    Defined as MetricPolicyUserVerification in
+    components/policy/core/common/cloud/cloud_policy_validator.cc.
+  </summary>
+  <int value="0" label="Gaia id check failed">
+    Gaia id check was used, but failed.
+  </int>
+  <int value="1" label="Gaia id check succeeded">
+    Gaia id check was used and succeeded.
+  </int>
+  <int value="2" label="Username check failed">
+    Gaia id is not present for user or in the policy, because of that username
+    check was used, but failed.
+  </int>
+  <int value="3" label="Username check succeeded">
+    Gaia id is not present for user, because of that username check was used and
+    succeeded.
+  </int>
+  <int value="4" label="Gaia id missing, username check succeeded">
+    Gaia id is present for user, but not in the policy. Because of that username
+    check was used and succeeded.
+  </int>
+</enum>
+
 <enum name="EnterpriseRetrievePolicyResponseType">
   <summary>
     Status codes produced by SessionManagerClient for policy retrieval requests.
@@ -35791,7 +35816,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="Wrong Settings Entity ID"/>
   <int value="7" label="Bad Timestamp"/>
   <int value="8" label="Wrong Token"/>
-  <int value="9" label="Wrong Username"/>
+  <int value="9" label="Wrong User Gaia ID or Username"/>
   <int value="10" label="Policy Parse Error"/>
   <int value="11" label="Bad Key Validation Signature"/>
 </enum>

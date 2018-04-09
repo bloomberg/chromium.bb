@@ -78,8 +78,8 @@ int GetIDSForValidationStatus(CloudPolicyValidatorBase::Status status) {
       return IDS_POLICY_VALIDATION_BAD_DM_TOKEN;
     case CloudPolicyValidatorBase::VALIDATION_BAD_DEVICE_ID:
       return IDS_POLICY_VALIDATION_BAD_DEVICE_ID;
-    case CloudPolicyValidatorBase::VALIDATION_BAD_USERNAME:
-      return IDS_POLICY_VALIDATION_BAD_USERNAME;
+    case CloudPolicyValidatorBase::VALIDATION_BAD_USER:
+      return IDS_POLICY_VALIDATION_BAD_USER;
     case CloudPolicyValidatorBase::VALIDATION_POLICY_PARSE_ERROR:
       return IDS_POLICY_VALIDATION_POLICY_PARSE_ERROR;
     case CloudPolicyValidatorBase::VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE:

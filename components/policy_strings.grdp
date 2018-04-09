@@ -86,7 +86,7 @@
   <message name="IDS_POLICY_VALIDATION_BAD_DEVICE_ID" desc="Message indicating the policy device id is empty or different from the one expected.">
     Returned policy device id is empty or doesn't match current device id
   </message>
-  <message name="IDS_POLICY_VALIDATION_BAD_USERNAME" desc="Message indicating policy validation failed due to bad username/domain.">
+  <message name="IDS_POLICY_VALIDATION_BAD_USER" desc="Message indicating policy validation failed due to bad user/domain id.">
     Wrong policy subject
   </message>
   <message name="IDS_POLICY_VALIDATION_POLICY_PARSE_ERROR" desc="Message indicating a parse error in policy.">

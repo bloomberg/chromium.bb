@@ -33,6 +33,7 @@ class PolicyBuilder {
   // Constants used as dummy data for filling the PolicyData protobuf.
   static const char kFakeDeviceId[];
   static const char kFakeDomain[];
+  static const char kFakeGaiaId[];
   static const char kFakeMachineName[];
   static const char kFakePolicyType[];
   static const int kFakePublicKeyVersion;

@@ -201,6 +201,8 @@ void PowerPolicyBrowserTestBase::SetUpOnMainThread() {
   InstallUserKey();
   user_policy_.policy_data().set_username(
       user_manager::StubAccountId().GetUserEmail());
+  user_policy_.policy_data().set_gaia_id(
+      user_manager::StubAccountId().GetGaiaId());
 }
 
 void PowerPolicyBrowserTestBase::InstallUserKey() {
