@@ -174,7 +174,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   ServiceWorkerProviderHost* GetProviderHost(int process_id, int provider_id);
   void RemoveProviderHost(int process_id, int provider_id);
   void RemoveAllProviderHostsForProcess(int process_id);
-  std::unique_ptr<ProviderHostIterator> GetProviderHostIterator();
 
   // Returns a ProviderHost iterator for all service worker clients for the
   // |origin|. This only returns clients that are execution ready (i.e., for

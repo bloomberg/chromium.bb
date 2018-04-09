@@ -218,16 +218,10 @@ void ServiceWorkerRegistration::ClaimClients() {
   DCHECK(context_);
   DCHECK(active_version());
 
-  // TODO(falken): This should just use GetClientProviderHostIterator as
-  // we only need same-origin clients.
   for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context_->GetProviderHostIterator();
+           context_->GetClientProviderHostIterator(pattern_.GetOrigin());
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (host->IsHostToRunningServiceWorker())
-      continue;
-    if (!host->is_execution_ready())
-      continue;
     if (host->controller() == active_version())
       continue;
     if (!host->IsContextSecureForServiceWorker())
