@@ -238,6 +238,7 @@ extern const wchar_t kChromeChannelStable[];
 extern const wchar_t kChromeChannelStableExplicit[];
 
 extern const size_t kMaxAppModelIdLength;
+enum : size_t { kMaxDMTokenLength = 4096 };
 
 // Name of the allocator (and associated file) for storing histograms to be
 // reported by Chrome during its next upload.

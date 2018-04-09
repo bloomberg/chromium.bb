@@ -902,6 +902,11 @@ base::Optional<std::string> DecodeDMTokenSwitchValue(
 bool StoreDMToken(const std::string& token) {
   DCHECK(install_static::IsSystemInstall());
 
+  if (token.size() > kMaxDMTokenLength) {
+    LOG(ERROR) << "DMToken length out of bounds";
+    return false;
+  }
+
   std::wstring path;
   std::wstring name;
   InstallUtil::GetMachineLevelUserCloudPolicyDMTokenRegistryPath(&path,
