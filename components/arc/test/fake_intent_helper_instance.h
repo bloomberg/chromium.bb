@@ -55,6 +55,9 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
     return handled_intents_;
   }
 
+  std::vector<Broadcast> GetBroadcastsForAction(
+      const std::string& action) const;
+
   // Sets a list of intent handlers to be returned in response to
   // RequestIntentHandlerList() calls with intents containing |action|.
   void SetIntentHandlers(

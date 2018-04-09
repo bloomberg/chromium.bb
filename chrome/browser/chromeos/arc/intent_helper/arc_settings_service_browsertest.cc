@@ -355,7 +355,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
   // not reflect the pref as it is not dynamically applied.
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcBackupRestoreEnabled));
   EXPECT_TRUE(prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
-  EXPECT_FALSE(fake_backup_settings_instance_->set_backup_enabled_called());
+  EXPECT_EQ(0, fake_backup_settings_instance_->set_backup_enabled_count());
   EXPECT_FALSE(fake_backup_settings_instance_->enabled());
   EXPECT_FALSE(fake_backup_settings_instance_->managed());
 
@@ -372,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
   // not reflect the pref as it is not dynamically applied.
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcBackupRestoreEnabled));
   EXPECT_TRUE(prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
-  EXPECT_FALSE(fake_backup_settings_instance_->set_backup_enabled_called());
+  EXPECT_EQ(0, fake_backup_settings_instance_->set_backup_enabled_count());
   EXPECT_FALSE(fake_backup_settings_instance_->enabled());
   EXPECT_FALSE(fake_backup_settings_instance_->managed());
 
@@ -386,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
   // the pref as it is not dynamically applied.
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcBackupRestoreEnabled));
   EXPECT_FALSE(prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled));
-  EXPECT_FALSE(fake_backup_settings_instance_->set_backup_enabled_called());
+  EXPECT_EQ(0, fake_backup_settings_instance_->set_backup_enabled_count());
   EXPECT_FALSE(fake_backup_settings_instance_->enabled());
   EXPECT_FALSE(fake_backup_settings_instance_->managed());
 }

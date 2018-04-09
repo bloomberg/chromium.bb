@@ -4,6 +4,8 @@
 
 #include "components/arc/test/fake_intent_helper_instance.h"
 
+#include <algorithm>
+#include <iterator>
 #include <utility>
 
 #include "base/bind.h"
@@ -119,6 +121,16 @@ void FakeIntentHelperInstance::SendBroadcast(const std::string& action,
                                              const std::string& cls,
                                              const std::string& extras) {
   broadcasts_.emplace_back(action, package_name, cls, extras);
+}
+
+std::vector<FakeIntentHelperInstance::Broadcast>
+FakeIntentHelperInstance::GetBroadcastsForAction(
+    const std::string& action) const {
+  std::vector<Broadcast> result;
+  std::copy_if(broadcasts_.begin(), broadcasts_.end(),
+               std::back_inserter(result),
+               [action](const Broadcast& b) { return b.action == action; });
+  return result;
 }
 
 }  // namespace arc

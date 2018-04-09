@@ -64,6 +64,31 @@ namespace arc {
 
 namespace {
 
+class ArcInitialStartHandler : public ArcSessionManager::Observer {
+ public:
+  explicit ArcInitialStartHandler(ArcSessionManager* session_manager)
+      : session_manager_(session_manager) {
+    session_manager->AddObserver(this);
+  }
+
+  ~ArcInitialStartHandler() override { session_manager_->RemoveObserver(this); }
+
+  // ArcSessionManager::Observer:
+  void OnArcInitialStart() override {
+    DCHECK(!was_called_);
+    was_called_ = true;
+  }
+
+  bool was_called() const { return was_called_; }
+
+ private:
+  bool was_called_ = false;
+
+  ArcSessionManager* const session_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcInitialStartHandler);
+};
+
 class ArcSessionManagerInLoginScreenTest : public testing::Test {
  public:
   ArcSessionManagerInLoginScreenTest()
@@ -271,6 +296,52 @@ TEST_F(ArcSessionManagerTest, BaseWorkflow) {
   EXPECT_FALSE(arc_session_manager()->arc_start_time().is_null());
 
   ASSERT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
+
+  arc_session_manager()->Shutdown();
+}
+
+// Tests that OnArcInitialStart is called  after the successful ARC provisioning
+// on the first start after OptIn.
+TEST_F(ArcSessionManagerTest, ArcInitialStartFirstProvisioning) {
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+
+  ArcInitialStartHandler start_handler(arc_session_manager());
+  EXPECT_FALSE(start_handler.was_called());
+
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(start_handler.was_called());
+
+  arc_session_manager()->OnTermsOfServiceNegotiatedForTesting(true);
+  arc_session_manager()->StartArcForTesting();
+
+  EXPECT_FALSE(start_handler.was_called());
+
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  EXPECT_TRUE(start_handler.was_called());
+
+  arc_session_manager()->Shutdown();
+}
+
+// Tests that OnArcInitialStart is not called after the successful ARC
+// provisioning on the second and next starts after OptIn.
+TEST_F(ArcSessionManagerTest, ArcInitialStartNextProvisioning) {
+  // Set up the situation that provisioning is successfully done in the
+  // previous session. In this case initial start callback is not called.
+  PrefService* const prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  prefs->SetBoolean(prefs::kArcSignedIn, true);
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+
+  ArcInitialStartHandler start_handler(arc_session_manager());
+
+  arc_session_manager()->RequestEnable();
+  arc_session_manager()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+  EXPECT_FALSE(start_handler.was_called());
 
   arc_session_manager()->Shutdown();
 }

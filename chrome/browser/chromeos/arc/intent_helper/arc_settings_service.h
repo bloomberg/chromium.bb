@@ -8,9 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+
+class Profile;
 
 namespace content {
 class BrowserContext;
@@ -23,7 +26,8 @@ class ArcSettingsServiceImpl;
 
 class ArcSettingsService
     : public KeyedService,
-      public ConnectionObserver<mojom::IntentHelperInstance> {
+      public ConnectionObserver<mojom::IntentHelperInstance>,
+      public ArcSessionManager::Observer {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -38,8 +42,15 @@ class ArcSettingsService
   void OnConnectionReady() override;
   void OnConnectionClosed() override;
 
+  // ArcSessionManager::Observer:
+  void OnArcPlayStoreEnabledChanged(bool enabled) override;
+  void OnArcInitialStart() override;
+
  private:
-  content::BrowserContext* const context_;
+  void SetInitialSettingsPending(bool pending);
+  bool IsInitialSettingsPending() const;
+
+  Profile* const profile_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   std::unique_ptr<ArcSettingsServiceImpl> impl_;
 

@@ -20,12 +20,12 @@ class FakeBackupSettingsInstance : public mojom::BackupSettingsInstance {
 
   void ClearCallHistory();
 
-  bool set_backup_enabled_called() const { return set_backup_enabled_called_; }
+  int set_backup_enabled_count() const { return set_backup_enabled_count_; }
   bool enabled() const { return enabled_; }
   bool managed() const { return managed_; }
 
  private:
-  bool set_backup_enabled_called_ = false;
+  int set_backup_enabled_count_ = 0;
   bool enabled_ = false;
   bool managed_ = false;
 

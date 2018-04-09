@@ -14,7 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -107,11 +107,10 @@ class ArcSettingsServiceFactory
 // about and sends the new values to Android to keep the state in sync.
 class ArcSettingsServiceImpl
     : public chromeos::system::TimezoneSettings::Observer,
-      public ArcSessionManager::Observer,
       public ConnectionObserver<mojom::AppInstance>,
       public chromeos::NetworkStateHandlerObserver {
  public:
-  ArcSettingsServiceImpl(content::BrowserContext* context,
+  ArcSettingsServiceImpl(Profile* profile,
                          ArcBridgeService* arc_bridge_service);
   ~ArcSettingsServiceImpl() override;
 
@@ -122,11 +121,12 @@ class ArcSettingsServiceImpl
   // TimezoneSettings::Observer:
   void TimezoneChanged(const icu::TimeZone& timezone) override;
 
-  // ArcSessionManager::Observer:
-  void OnArcInitialStart() override;
-
   // NetworkStateHandlerObserver:
   void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
+
+  // Retrieves Chrome's state for the settings that need to be synced on the
+  // initial Android boot and send it to Android. Called by ArcSettingsService.
+  void SyncInitialSettings() const;
 
  private:
   PrefService* GetPrefs() const { return profile_->GetPrefs(); }
@@ -140,9 +140,6 @@ class ArcSettingsServiceImpl
   // Stops listening for Chrome settings changes.
   void StopObservingSettingsChanges();
 
-  // Retrieves Chrome's state for the settings that need to be synced on the
-  // initial Android boot and send it to Android.
-  void SyncInitialSettings() const;
   // Retrieves Chrome's state for the settings that need to be synced on each
   // Android boot and send it to Android.
   void SyncBootTimeSettings() const;
@@ -209,23 +206,15 @@ class ArcSettingsServiceImpl
   std::unique_ptr<ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
       default_zoom_level_subscription_;
 
-  base::WeakPtrFactory<ArcSettingsServiceImpl> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(ArcSettingsServiceImpl);
 };
 
 ArcSettingsServiceImpl::ArcSettingsServiceImpl(
-    content::BrowserContext* context,
+    Profile* profile,
     ArcBridgeService* arc_bridge_service)
-    : profile_(Profile::FromBrowserContext(context)),
-      arc_bridge_service_(arc_bridge_service),
-      weak_factory_(this) {
-  DCHECK(profile_);
-
+    : profile_(profile), arc_bridge_service_(arc_bridge_service) {
   StartObservingSettingsChanges();
   SyncBootTimeSettings();
-  DCHECK(ArcSessionManager::Get());
-  ArcSessionManager::Get()->AddObserver(this);
 
   // Note: if App connection is already established, OnConnectionReady()
   // is synchronously called, so that initial sync is done in the method.
@@ -236,10 +225,6 @@ ArcSettingsServiceImpl::~ArcSettingsServiceImpl() {
   StopObservingSettingsChanges();
 
   arc_bridge_service_->app()->RemoveObserver(this);
-
-  ArcSessionManager* arc_session_manager = ArcSessionManager::Get();
-  if (arc_session_manager)
-    arc_session_manager->RemoveObserver(this);
 }
 
 void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
@@ -288,10 +273,6 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
 
 void ArcSettingsServiceImpl::TimezoneChanged(const icu::TimeZone& timezone) {
   SyncTimeZone();
-}
-
-void ArcSettingsServiceImpl::OnArcInitialStart() {
-  SyncInitialSettings();
 }
 
 void ArcSettingsServiceImpl::DefaultNetworkChanged(
@@ -704,21 +685,55 @@ ArcSettingsService* ArcSettingsService::GetForBrowserContext(
 
 ArcSettingsService::ArcSettingsService(content::BrowserContext* context,
                                        ArcBridgeService* bridge_service)
-    : context_(context), arc_bridge_service_(bridge_service) {
+    : profile_(Profile::FromBrowserContext(context)),
+      arc_bridge_service_(bridge_service) {
   arc_bridge_service_->intent_helper()->AddObserver(this);
+  ArcSessionManager::Get()->AddObserver(this);
+
+  if (!IsArcPlayStoreEnabledForProfile(profile_))
+    SetInitialSettingsPending(false);
 }
 
 ArcSettingsService::~ArcSettingsService() {
+  ArcSessionManager::Get()->RemoveObserver(this);
   arc_bridge_service_->intent_helper()->RemoveObserver(this);
 }
 
 void ArcSettingsService::OnConnectionReady() {
   impl_ =
-      std::make_unique<ArcSettingsServiceImpl>(context_, arc_bridge_service_);
+      std::make_unique<ArcSettingsServiceImpl>(profile_, arc_bridge_service_);
+  if (!IsInitialSettingsPending())
+    return;
+  impl_->SyncInitialSettings();
+  SetInitialSettingsPending(false);
 }
 
 void ArcSettingsService::OnConnectionClosed() {
   impl_.reset();
+}
+
+void ArcSettingsService::OnArcPlayStoreEnabledChanged(bool enabled) {
+  if (!enabled)
+    SetInitialSettingsPending(false);
+}
+
+void ArcSettingsService::OnArcInitialStart() {
+  DCHECK(!IsInitialSettingsPending());
+
+  if (!impl_) {
+    SetInitialSettingsPending(true);
+    return;
+  }
+
+  impl_->SyncInitialSettings();
+}
+
+void ArcSettingsService::SetInitialSettingsPending(bool pending) {
+  profile_->GetPrefs()->SetBoolean(prefs::kArcInitialSettingsPending, pending);
+}
+
+bool ArcSettingsService::IsInitialSettingsPending() const {
+  return profile_->GetPrefs()->GetBoolean(prefs::kArcInitialSettingsPending);
 }
 
 }  // namespace arc
