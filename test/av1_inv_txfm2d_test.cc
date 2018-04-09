@@ -24,7 +24,6 @@
 #include "test/util.h"
 
 using libaom_test::ACMRandom;
-using libaom_test::FwdTxfm2dFunc;
 using libaom_test::InvTxfm2dFunc;
 using libaom_test::LbdInvTxfm2dFunc;
 using libaom_test::bd;

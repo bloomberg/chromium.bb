@@ -835,7 +835,8 @@ void av1_fadst32_new_sse4_1(const __m128i *input, __m128i *output,
   }
 }
 
-void fdct64_new_sse4_1(const __m128i *input, __m128i *output, int8_t cos_bit) {
+void av1_fdct64_new_sse4_1(const __m128i *input, __m128i *output,
+                           int8_t cos_bit) {
   const int32_t *cospi = cospi_arr(cos_bit);
   const __m128i __rounding = _mm_set1_epi32(1 << (cos_bit - 1));
 

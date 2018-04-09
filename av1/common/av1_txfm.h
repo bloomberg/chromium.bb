@@ -79,6 +79,9 @@ static INLINE int32_t half_btf(int32_t w0, int32_t in0, int32_t w1, int32_t in1,
 typedef void (*TxfmFunc)(const int32_t *input, int32_t *output, int8_t cos_bit,
                          const int8_t *stage_range);
 
+typedef void (*FwdTxfm2dFunc)(const int16_t *input, int32_t *output, int stride,
+                              TX_TYPE tx_type, int bd);
+
 typedef enum TXFM_TYPE {
   TXFM_TYPE_DCT4,
   TXFM_TYPE_DCT8,

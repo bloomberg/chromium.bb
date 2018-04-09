@@ -2985,10 +2985,7 @@ void av1_lowbd_fwd_txfm2d_16x64_sse2(const int16_t *input, int32_t *output,
   memset(output + 16 * 32, 0, 16 * 32 * sizeof(*output));
 }
 
-typedef void (*FwdTxfm2dFuncSSE2)(const int16_t *input, int32_t *output,
-                                  int stride, TX_TYPE tx_type, int bd);
-
-FwdTxfm2dFuncSSE2 fwd_txfm2d_func_ls[TX_SIZES_ALL] = {
+static FwdTxfm2dFunc fwd_txfm2d_func_ls[TX_SIZES_ALL] = {
   av1_lowbd_fwd_txfm2d_4x4_sse2,    // 4x4 transform
   av1_lowbd_fwd_txfm2d_8x8_sse2,    // 8x8 transform
   av1_lowbd_fwd_txfm2d_16x16_sse2,  // 16x16 transform
@@ -3012,7 +3009,7 @@ FwdTxfm2dFuncSSE2 fwd_txfm2d_func_ls[TX_SIZES_ALL] = {
 
 void av1_lowbd_fwd_txfm_sse2(const int16_t *src_diff, tran_low_t *coeff,
                              int diff_stride, TxfmParam *txfm_param) {
-  FwdTxfm2dFuncSSE2 fwd_txfm2d_func = fwd_txfm2d_func_ls[txfm_param->tx_size];
+  FwdTxfm2dFunc fwd_txfm2d_func = fwd_txfm2d_func_ls[txfm_param->tx_size];
 
   if ((fwd_txfm2d_func == NULL) ||
       (txfm_param->lossless && txfm_param->tx_size == TX_4X4))

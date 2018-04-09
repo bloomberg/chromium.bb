@@ -12,6 +12,8 @@
 #include "./av1_rtcd.h"
 #include "av1/common/enums.h"
 #include "av1/common/av1_txfm.h"
+#include "av1/common/x86/av1_txfm_sse2.h"
+#include "av1/encoder/av1_fwd_txfm1d_cfg.h"
 #include "av1/encoder/x86/av1_txfm1d_sse4.h"
 
 static INLINE void int16_array_with_stride_to_int32_array_without_stride(
@@ -78,4 +80,38 @@ void av1_fwd_txfm2d_32x32_sse4_1(const int16_t *input, int32_t *output,
   av1_get_fwd_txfm_cfg(tx_type, TX_32X32, &cfg);
   (void)bd;
   fwd_txfm2d_sse4_1(input, output, stride, &cfg, txfm_buf);
+}
+
+static FwdTxfm2dFunc fwd_txfm2d_func_ls[TX_SIZES_ALL] = {
+  av1_lowbd_fwd_txfm2d_4x4_sse2,    // 4x4 transform
+  av1_lowbd_fwd_txfm2d_8x8_sse2,    // 8x8 transform
+  av1_lowbd_fwd_txfm2d_16x16_sse2,  // 16x16 transform
+  av1_lowbd_fwd_txfm2d_32x32_sse2,  // 32x32 transform
+  NULL,                             // 64x64 transform
+  av1_lowbd_fwd_txfm2d_4x8_sse2,    // 4x8 transform
+  av1_lowbd_fwd_txfm2d_8x4_sse2,    // 8x4 transform
+  av1_lowbd_fwd_txfm2d_8x16_sse2,   // 8x16 transform
+  av1_lowbd_fwd_txfm2d_16x8_sse2,   // 16x8 transform
+  av1_lowbd_fwd_txfm2d_16x32_sse2,  // 16x32 transform
+  av1_lowbd_fwd_txfm2d_32x16_sse2,  // 32x16 transform
+  NULL,                             // 32x64 transform
+  NULL,                             // 64x32 transform
+  av1_lowbd_fwd_txfm2d_4x16_sse2,   // 4x16 transform
+  av1_lowbd_fwd_txfm2d_16x4_sse2,   // 16x4 transform
+  av1_lowbd_fwd_txfm2d_8x32_sse2,   // 8x32 transform
+  av1_lowbd_fwd_txfm2d_32x8_sse2,   // 32x8 transform
+  NULL,                             // 16x64 transform
+  NULL,                             // 64x16 transform
+};
+
+void av1_lowbd_fwd_txfm_sse4_1(const int16_t *src_diff, tran_low_t *coeff,
+                               int diff_stride, TxfmParam *txfm_param) {
+  FwdTxfm2dFunc fwd_txfm2d_func = fwd_txfm2d_func_ls[txfm_param->tx_size];
+  if ((fwd_txfm2d_func == NULL) ||
+      (txfm_param->lossless && txfm_param->tx_size == TX_4X4)) {
+    av1_lowbd_fwd_txfm_c(src_diff, coeff, diff_stride, txfm_param);
+  } else {
+    fwd_txfm2d_func(src_diff, coeff, diff_stride, txfm_param->tx_type,
+                    txfm_param->bd);
+  }
 }

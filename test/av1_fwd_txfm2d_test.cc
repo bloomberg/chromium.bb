@@ -21,7 +21,6 @@
 #include "./av1_rtcd.h"
 
 using libaom_test::ACMRandom;
-using libaom_test::FwdTxfm2dFunc;
 using libaom_test::TYPE_TXFM;
 using libaom_test::bd;
 using libaom_test::compute_avg_abs_error;
@@ -202,78 +201,95 @@ TEST(AV1FwdTxfm2d, CfgTest) {
   }
 }
 
-#if HAVE_SSE2 && defined(__SSE2__)
-#include "av1/common/x86/av1_txfm_sse2.h"
-FwdTxfm2dFunc fwd_func_sse2_list[TX_SIZES_ALL][2] = {
-  { av1_fwd_txfm2d_4x4_c, av1_lowbd_fwd_txfm2d_4x4_sse2 },      // TX_4X4
-  { av1_fwd_txfm2d_8x8_c, av1_lowbd_fwd_txfm2d_8x8_sse2 },      // TX_8X8
-  { av1_fwd_txfm2d_16x16_c, av1_lowbd_fwd_txfm2d_16x16_sse2 },  // TX_16X16
-  { av1_fwd_txfm2d_32x32_c, av1_lowbd_fwd_txfm2d_32x32_sse2 },  // TX_32X32
-  { av1_fwd_txfm2d_64x64_c, NULL },                             // TX_64X64
-  { av1_fwd_txfm2d_4x8_c, av1_lowbd_fwd_txfm2d_4x8_sse2 },      // TX_4X8
-  { av1_fwd_txfm2d_8x4_c, av1_lowbd_fwd_txfm2d_8x4_sse2 },      // TX_8X4
-  { av1_fwd_txfm2d_8x16_c, av1_lowbd_fwd_txfm2d_8x16_sse2 },    // TX_8X16
-  { av1_fwd_txfm2d_16x8_c, av1_lowbd_fwd_txfm2d_16x8_sse2 },    // TX_16X8
-  { av1_fwd_txfm2d_16x32_c, av1_lowbd_fwd_txfm2d_16x32_sse2 },  // TX_16X32
-  { av1_fwd_txfm2d_32x16_c, av1_lowbd_fwd_txfm2d_32x16_sse2 },  // TX_32X16
-  { NULL, NULL },                                               // TX_32X64
-  { NULL, NULL },                                               // TX_64X32
-  { av1_fwd_txfm2d_4x16_c, av1_lowbd_fwd_txfm2d_4x16_sse2 },    // TX_4X16
-  { av1_fwd_txfm2d_16x4_c, av1_lowbd_fwd_txfm2d_16x4_sse2 },    // TX_16X4
-  { av1_fwd_txfm2d_8x32_c, av1_lowbd_fwd_txfm2d_8x32_sse2 },    // TX_8X32
-  { av1_fwd_txfm2d_32x8_c, av1_lowbd_fwd_txfm2d_32x8_sse2 },    // TX_32X8
-  { av1_fwd_txfm2d_16x64_c, av1_lowbd_fwd_txfm2d_16x64_sse2 },  // TX_16X64
-  { av1_fwd_txfm2d_64x16_c, av1_lowbd_fwd_txfm2d_64x16_sse2 },  // TX_64X16
-};
+typedef void (*lowbd_fwd_txfm_func)(const int16_t *src_diff, tran_low_t *coeff,
+                                    int diff_stride, TxfmParam *txfm_param);
 
-TEST(av1_fwd_txfm2d_sse2, match) {
+void AV1FwdTxfm2dMatchTest(TX_SIZE tx_size, lowbd_fwd_txfm_func target_func) {
   const int bd = 8;
-  for (int tx_size = TX_4X4; tx_size < TX_SIZES_ALL; ++tx_size) {
-    const int rows = tx_size_high[tx_size];
-    const int cols = tx_size_wide[tx_size];
-    for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
-      if ((rows >= 32 || cols >= 32) && tx_type != DCT_DCT && tx_type != IDTX &&
-          tx_type != V_DCT && tx_type != H_DCT) {
-        // No ADST for large size transforms.
-        continue;
-      }
-      FwdTxfm2dFunc ref_func = fwd_func_sse2_list[tx_size][0];
-      FwdTxfm2dFunc target_func = fwd_func_sse2_list[tx_size][1];
-      if (ref_func != NULL && target_func != NULL) {
-        DECLARE_ALIGNED(16, int16_t, input[64 * 64]) = { 0 };
-        DECLARE_ALIGNED(16, int32_t, output[64 * 64]);
-        DECLARE_ALIGNED(16, int32_t, ref_output[64 * 64]);
-        int input_stride = 64;
-        ACMRandom rnd(ACMRandom::DeterministicSeed());
-        for (int cnt = 0; cnt < 500; ++cnt) {
-          if (cnt == 0) {
-            for (int r = 0; r < rows; ++r) {
-              for (int c = 0; c < cols; ++c) {
-                input[r * input_stride + c] = (1 << bd) - 1;
-              }
-            }
-          } else {
-            for (int r = 0; r < rows; ++r) {
-              for (int c = 0; c < cols; ++c) {
-                input[r * input_stride + c] = rnd.Rand16() % (1 << bd);
-              }
+  TxfmParam param;
+  memset(&param, 0, sizeof(param));
+  const int rows = tx_size_high[tx_size];
+  const int cols = tx_size_wide[tx_size];
+  // printf("%d x %d\n", cols, rows);
+  for (int tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
+    if ((rows >= 32 || cols >= 32) && tx_type != DCT_DCT && tx_type != IDTX &&
+        tx_type != V_DCT && tx_type != H_DCT) {
+      // No ADST for large size transforms.
+      continue;
+    }
+    FwdTxfm2dFunc ref_func = libaom_test::fwd_txfm_func_ls[tx_size];
+    if (ref_func != NULL) {
+      DECLARE_ALIGNED(16, int16_t, input[64 * 64]) = { 0 };
+      DECLARE_ALIGNED(16, int32_t, output[64 * 64]);
+      DECLARE_ALIGNED(16, int32_t, ref_output[64 * 64]);
+      int input_stride = 64;
+      ACMRandom rnd(ACMRandom::DeterministicSeed());
+      for (int cnt = 0; cnt < 500; ++cnt) {
+        if (cnt == 0) {
+          for (int r = 0; r < rows; ++r) {
+            for (int c = 0; c < cols; ++c) {
+              input[r * input_stride + c] = (1 << bd) - 1;
             }
           }
-          ref_func(input, ref_output, input_stride, (TX_TYPE)tx_type, bd);
-          target_func(input, output, input_stride, (TX_TYPE)tx_type, bd);
-          const int check_rows = rows / ((rows == 64 || cols == 64) ? 2 : 1);
-          for (int r = 0; r < check_rows; ++r) {
+        } else {
+          for (int r = 0; r < rows; ++r) {
             for (int c = 0; c < cols; ++c) {
-              ASSERT_EQ(ref_output[r * cols + c], output[r * cols + c])
-                  << "[" << r << "," << c << "]"
-                  << " tx_size: " << tx_size << " tx_type: " << tx_type;
+              input[r * input_stride + c] = rnd.Rand16() % (1 << bd);
             }
+          }
+        }
+        param.tx_type = (TX_TYPE)tx_type;
+        param.tx_size = (TX_SIZE)tx_size;
+        param.tx_set_type = EXT_TX_SET_ALL16;
+        param.bd = bd;
+        ref_func(input, ref_output, input_stride, (TX_TYPE)tx_type, bd);
+        target_func(input, output, input_stride, &param);
+        const int check_rows = AOMMIN(32, rows);
+        const int check_cols = AOMMIN(32, rows * cols / check_rows);
+        for (int r = 0; r < check_rows; ++r) {
+          for (int c = 0; c < check_cols; ++c) {
+            ASSERT_EQ(ref_output[r * check_cols + c],
+                      output[r * check_cols + c])
+                << "[" << r << "," << c << "] cnt:" << cnt
+                << " tx_size: " << tx_size << " tx_type: " << tx_type;
           }
         }
       }
     }
   }
 }
+
+#if HAVE_SSE2
+static TX_SIZE fwd_txfm_for_sse2[] = {
+  TX_4X4, TX_8X8, TX_16X16, TX_32X32,
+  // TX_64X64,
+  TX_4X8, TX_8X4, TX_8X16, TX_16X8, TX_16X32, TX_32X16,
+  // TX_32X64,
+  // TX_64X32,
+  TX_4X16, TX_16X4, TX_8X32, TX_32X8,
+  //  TX_16X64,
+  //  TX_64X16,
+};
+TEST(av1_fwd_txfm2d_sse2, match) {
+  const int cnt = sizeof(fwd_txfm_for_sse2) / sizeof(TX_SIZE);
+  for (int i = 0; i < cnt; ++i) {
+    AV1FwdTxfm2dMatchTest(fwd_txfm_for_sse2[i], av1_lowbd_fwd_txfm_sse2);
+  }
+}
 #endif  // HAVE_SSE2
 
+#if HAVE_SSE4_1
+static TX_SIZE fwd_txfm_for_sse41[] = {
+  TX_4X4,
+  //  TX_64X64,
+  //  TX_32X64,
+  //  TX_64X32,
+};
+TEST(av1_fwd_txfm2d_sse4_1, match) {
+  const int cnt = sizeof(fwd_txfm_for_sse41) / sizeof(TX_SIZE);
+  for (int i = 0; i < cnt; ++i) {
+    AV1FwdTxfm2dMatchTest(fwd_txfm_for_sse41[i], av1_lowbd_fwd_txfm_sse4_1);
+  }
+}
+#endif  // HAVE_SSE4_1
 }  // namespace
