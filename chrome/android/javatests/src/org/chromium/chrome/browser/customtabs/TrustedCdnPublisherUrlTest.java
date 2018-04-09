@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.customtabs;
 
 import static org.chromium.chrome.browser.init.ChromeBrowserInitializer.PRIVATE_DATA_DIRECTORY_SUFFIX;
 
+import android.app.Activity;
+import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -37,14 +39,19 @@ import org.chromium.base.test.util.AnnotationRule;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -229,6 +236,72 @@ public class TrustedCdnPublisherUrlTest {
 
     // TODO(bauerb): Test an insecure HTTPS connection.
 
+    @Test
+    @SmallTest
+    @Feature({"UiCatalogue"})
+    @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
+    @OverrideTrustedCdn
+    public void testNavigateAway() throws Exception {
+        runTrustedCdnPublisherUrlTest("https://example.com/test", "com.example.test", "example.com",
+                R.drawable.omnibox_https_valid);
+
+        String otherTestUrl = mWebServer.setResponse("/other.html", PAGE_WITH_TITLE, null);
+        mCustomTabActivityTestRule.loadUrl(otherTestUrl);
+
+        UrlBar urlBar = mCustomTabActivityTestRule.getActivity().findViewById(R.id.url_bar);
+        Assert.assertEquals(UrlFormatter.formatUrlForSecurityDisplay(otherTestUrl, false),
+                urlBar.getText().toString());
+        // TODO(bauerb): The security icon is updated via an animation. Find a way to reliably
+        // disable animations and verify the icon.
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"UiCatalogue"})
+    @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
+    @OverrideTrustedCdn
+    public void testReparent() throws Exception {
+        String publisherUrl = "https://example.com/test";
+        runTrustedCdnPublisherUrlTest(
+                publisherUrl, "com.example.test", "example.com", R.drawable.omnibox_https_valid);
+
+        final Instrumentation.ActivityMonitor monitor =
+                InstrumentationRegistry.getInstrumentation().addMonitor(
+                        ChromeTabbedActivity.class.getName(), /* result = */ null, false);
+        CustomTabActivity customTabActivity = mCustomTabActivityTestRule.getActivity();
+        final Tab tab = customTabActivity.getActivityTab();
+        ThreadUtils.postOnUiThread(() -> {
+            Assert.assertEquals(publisherUrl, tab.getTrustedCdnPublisherUrl());
+            customTabActivity.openCurrentUrlInBrowser(true);
+            Assert.assertNull(customTabActivity.getActivityTab());
+        });
+
+        // Use the extended CriteriaHelper timeout to make sure we get an activity
+        final Activity activity =
+                monitor.waitForActivityWithTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+        Assert.assertNotNull(
+                "Monitor did not get an activity before hitting the timeout", activity);
+        Assert.assertTrue(
+                "Expected activity to be a ChromeActivity, was " + activity.getClass().getName(),
+                activity instanceof ChromeActivity);
+        final ChromeActivity newActivity = (ChromeActivity) activity;
+        CriteriaHelper.pollUiThread(() -> newActivity.getActivityTab() == tab, "Tab did not load");
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertNull(tab.getTrustedCdnPublisherUrl()); });
+
+        String testUrl = mWebServer.getResponseUrl("/test.html");
+        String expectedUrl = UrlFormatter.formatUrlForDisplay(testUrl);
+
+        CriteriaHelper.pollUiThread(Criteria.equals(expectedUrl, () -> {
+            UrlBar urlBar = newActivity.findViewById(R.id.url_bar);
+            return urlBar.getText().toString();
+        }));
+
+        ImageView securityButton = newActivity.findViewById(R.id.security_button);
+        Assert.assertEquals(View.INVISIBLE, securityButton.getVisibility());
+    }
+
     private void runTrustedCdnPublisherUrlTest(@Nullable String publisherUrl, String clientPackage,
             @Nullable String expectedPublisher, int expectedSecurityIcon)
             throws InterruptedException, TimeoutException {
@@ -251,8 +324,6 @@ public class TrustedCdnPublisherUrlTest {
 
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
-        UrlBar urlBar = mCustomTabActivityTestRule.getActivity().findViewById(
-                org.chromium.chrome.R.id.url_bar);
         final String expectedUrl;
         if (expectedPublisher == null) {
             expectedUrl = UrlFormatter.formatUrlForSecurityDisplay(testUrl, false);
@@ -260,16 +331,22 @@ public class TrustedCdnPublisherUrlTest {
             expectedUrl =
                     String.format(Locale.US, "From %s – delivered by Google", expectedPublisher);
         }
+        verifyTrustedCdnUiState(expectedUrl, expectedSecurityIcon);
+    }
+
+    private void verifyTrustedCdnUiState(String expectedUrl, int expectedSecurityIcon) {
+        UrlBar urlBar = mCustomTabActivityTestRule.getActivity().findViewById(R.id.url_bar);
         Assert.assertEquals(expectedUrl, urlBar.getText().toString());
 
-        ImageView securityButton = mCustomTabActivityTestRule.getActivity().findViewById(
-                org.chromium.chrome.R.id.security_button);
+        ImageView securityButton =
+                mCustomTabActivityTestRule.getActivity().findViewById(R.id.security_button);
         if (expectedSecurityIcon == 0) {
             Assert.assertEquals(View.INVISIBLE, securityButton.getVisibility());
         } else {
             Assert.assertEquals(View.VISIBLE, securityButton.getVisibility());
             Bitmap expectedIcon = BitmapFactory.decodeResource(
-                    targetContext.getResources(), expectedSecurityIcon);
+                    InstrumentationRegistry.getTargetContext().getResources(),
+                    expectedSecurityIcon);
             Assert.assertTrue(expectedIcon.sameAs(
                     ((BitmapDrawable) securityButton.getDrawable()).getBitmap()));
         }
