@@ -1576,34 +1576,43 @@ TEST_F(AppListViewTest, FolderViewToPeeking) {
                    ->IsInFolderView());
 }
 
-// Tests that when a click or tap event propagates to the AppListView, if the
-// event location is within the bounds of AppsGridView, do not close the
-// AppListView.
+// Tests that a tap or click in an empty region of the AppsGridView closes the
+// AppList.
 TEST_F(AppListViewTest, TapAndClickWithinAppsGridView) {
   Initialize(0, false, false);
-  delegate_->GetTestModel()->PopulateApps(kInitialItems);
+  // Populate the AppList with a small number of apps so there is an empty
+  // region to click.
+  delegate_->GetTestModel()->PopulateApps(6);
   Show();
   view_->SetState(AppListViewState::FULLSCREEN_ALL_APPS);
   EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
-  ContentsView* contents_view = view_->app_list_main_view()->contents_view();
-  AppsContainerView* container_view = contents_view->GetAppsContainerView();
-  const gfx::Rect grid_view_bounds =
-      container_view->apps_grid_view()->GetBoundsInScreen();
-  gfx::Point target_point = grid_view_bounds.origin();
-  target_point.Offset(100, 100);
-  ASSERT_TRUE(grid_view_bounds.Contains(target_point));
+  AppsGridView* apps_grid_view = view_->app_list_main_view()
+                                     ->contents_view()
+                                     ->GetAppsContainerView()
+                                     ->apps_grid_view();
+  AppsGridViewTestApi test_api(apps_grid_view);
 
-  // Tests gesture tap within apps grid view doesn't close app list view.
-  ui::GestureEvent tap(target_point.x(), target_point.y(), 0, base::TimeTicks(),
+  // Get the point of the first empty region (where app #7 would be) and tap on
+  // it, the AppList should close.
+  const gfx::Point empty_region =
+      test_api.GetItemTileRectOnCurrentPageAt(2, 2).CenterPoint();
+  ui::GestureEvent tap(empty_region.x(), empty_region.y(), 0, base::TimeTicks(),
                        ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  ui::Event::DispatcherApi tap_dispatcher_api(static_cast<ui::Event*>(&tap));
+  tap_dispatcher_api.set_target(view_);
   view_->OnGestureEvent(&tap);
-  EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
+  EXPECT_EQ(AppListViewState::CLOSED, view_->app_list_state());
 
-  // Tests mouse click within apps grid view doesn't close app list view.
-  ui::MouseEvent mouse_click(ui::ET_MOUSE_PRESSED, target_point, target_point,
+  Show();
+
+  // Click on the same empty region, the AppList should close again.
+  ui::MouseEvent mouse_click(ui::ET_MOUSE_PRESSED, empty_region, empty_region,
                              base::TimeTicks(), 0, 0);
+  ui::Event::DispatcherApi mouse_click_dispatcher_api(
+      static_cast<ui::Event*>(&mouse_click));
+  mouse_click_dispatcher_api.set_target(view_);
   view_->OnMouseEvent(&mouse_click);
-  EXPECT_EQ(AppListViewState::FULLSCREEN_ALL_APPS, view_->app_list_state());
+  EXPECT_EQ(AppListViewState::CLOSED, view_->app_list_state());
 }
 
 // Tests that search box should not become a rectangle during drag.

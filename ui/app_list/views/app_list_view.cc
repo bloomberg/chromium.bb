@@ -529,9 +529,9 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
   GetFocusManager()->ClearFocus();
 
   // No-op if app list is on fullscreen all apps state and the event location is
-  // within apps grid view's bounds.
+  // near an app.
   if (app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS &&
-      GetRootAppsGridView()->GetBoundsInScreen().Contains(event->location())) {
+      GetRootAppsGridView()->IsEventNearAppIcon(*event)) {
     return;
   }
 

@@ -1764,6 +1764,22 @@ bool AppsGridView::HandleScrollFromAppListView(int offset, ui::EventType type) {
   return true;
 }
 
+bool AppsGridView::IsEventNearAppIcon(const ui::LocatedEvent& event) {
+  // Convert the event location to AppsGridView coordinates.
+  std::unique_ptr<ui::Event> cloned_event = ui::Event::Clone(event);
+  ui::LocatedEvent* cloned_located_event = cloned_event->AsLocatedEvent();
+  event.target()->ConvertEventToTarget(this, cloned_located_event);
+  const gfx::Point point_in_apps_grid_view = cloned_located_event->location();
+
+  // GetNearestTileIndexForPoint will always return a slot, even if the point is
+  // outside of this.
+  if (!bounds().Contains(point_in_apps_grid_view))
+    return false;
+
+  return GetViewDisplayedAtSlotOnCurrentPage(
+      GetNearestTileIndexForPoint(point_in_apps_grid_view).slot);
+}
+
 AppListItemView* AppsGridView::GetCurrentPageFirstItemViewInFolder() {
   DCHECK(folder_delegate_);
   int first_index = pagination_model_.selected_page() * kMaxFolderItemsPerPage;
