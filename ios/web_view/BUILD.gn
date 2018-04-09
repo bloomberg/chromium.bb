@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/ios/ios_sdk.gni")
 import("//build/config/ios/rules.gni")
 import("//components/cronet/native/include/headers.gni")
@@ -11,6 +12,15 @@ import("//ios/web/js_compile.gni")
 import("//ios/web_view/features.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
+
+buildflag_header("web_view_features") {
+  header = "cwv_web_view_features.h"
+
+  flags = [
+    "IOS_WEB_VIEW_ENABLE_SIGNIN=$ios_web_view_enable_signin",
+    "IOS_WEB_VIEW_ENABLE_AUTOFILL=$ios_web_view_enable_autofill",
+  ]
+}
 
 group("all_tests") {
   testonly = true
@@ -30,12 +40,8 @@ config("config") {
   ]
 }
 
-# These variables are used to share framework sources with both ChromeWebView
-# and CronetChromeWebView frameworks.
+# These are defined as vars so they can be shared with different targets below.
 ios_web_view_public_headers = [
-  "public/cwv_autofill_controller.h",
-  "public/cwv_autofill_controller_delegate.h",
-  "public/cwv_autofill_suggestion.h",
   "public/cwv_export.h",
   "public/cwv_html_element.h",
   "public/cwv_navigation_action.h",
@@ -55,13 +61,21 @@ ios_web_view_public_headers = [
   "public/cwv_web_view.h",
   "public/cwv_web_view_configuration.h",
 ]
-if (ios_web_view_enable_sync) {
+if (ios_web_view_enable_signin) {
   ios_web_view_public_headers += [
-    "public/ChromeSync.h",
     "public/cwv_authentication_controller.h",
     "public/cwv_authentication_controller_delegate.h",
     "public/cwv_identity.h",
-    "public/cwv_web_view_configuration+sync.h",
+    "public/cwv_web_view_configuration_signin.h",
+  ]
+}
+if (ios_web_view_enable_autofill) {
+  ios_web_view_public_headers += [
+    "public/cwv_autofill_controller.h",
+    "public/cwv_autofill_controller_delegate.h",
+    "public/cwv_autofill_suggestion.h",
+    "public/cwv_preferences_autofill.h",
+    "public/cwv_web_view_autofill.h",
   ]
 }
 
@@ -70,10 +84,6 @@ ios_web_view_sources = [
   "internal/app/application_context.h",
   "internal/app/web_view_io_thread.h",
   "internal/app/web_view_io_thread.mm",
-  "internal/autofill/cwv_autofill_controller.mm",
-  "internal/autofill/cwv_autofill_controller_internal.h",
-  "internal/autofill/cwv_autofill_suggestion.mm",
-  "internal/autofill/cwv_autofill_suggestion_internal.h",
   "internal/autofill/web_view_autofill_client_ios.h",
   "internal/autofill/web_view_autofill_client_ios.mm",
   "internal/autofill/web_view_personal_data_manager_factory.cc",
@@ -165,17 +175,25 @@ ios_web_view_sources = [
   "internal/webdata_services/web_view_web_data_service_wrapper_factory.h",
 ]
 ios_web_view_sources += ios_web_view_public_headers
-if (ios_web_view_enable_sync) {
+if (ios_web_view_enable_signin) {
   ios_web_view_sources += [
-    "internal/cwv_web_view_configuration+sync.mm",
     "internal/signin/cwv_authentication_controller.mm",
     "internal/signin/cwv_authentication_controller_internal.h",
     "internal/signin/cwv_identity.mm",
   ]
 }
+if (ios_web_view_enable_autofill) {
+  ios_web_view_sources += [
+    "internal/autofill/cwv_autofill_controller.mm",
+    "internal/autofill/cwv_autofill_controller_internal.h",
+    "internal/autofill/cwv_autofill_suggestion.mm",
+    "internal/autofill/cwv_autofill_suggestion_internal.h",
+  ]
+}
 
 ios_web_view_deps = [
   ":web_view_bundle",
+  ":web_view_features",
   ":packed_resources",
   "//base",
   "//components/autofill/core/browser",
@@ -216,6 +234,12 @@ ios_web_view_deps = [
   "//url",
 ]
 
+# Generate the umbrella header to exclude headers for disabled features.
+# This is preferable to guarding header imports using flags defined in
+# :web_view_features because:
+# 1. Confusing to see headers for unsupported features in umbrella header.
+# 2. A need to include cwv_web_view_features.h as part of public headers and
+#    any headers it itself includes, despite not being part of the public API.
 action("web_view_umbrella_header") {
   script = "//build/config/ios/generate_umbrella_header.py"
 

@@ -8,6 +8,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "ios/web_view/cwv_web_view_features.h"
 #include "ios/web_view/internal/pref_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -43,6 +44,9 @@
   translatePrefs.ResetToDefaults();
 }
 
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
+#pragma mark - Autofill
+
 - (void)setAutofillEnabled:(BOOL)enabled {
   _prefService->SetBoolean(autofill::prefs::kAutofillEnabled, enabled);
 }
@@ -50,5 +54,6 @@
 - (BOOL)isAutofillEnabled {
   return _prefService->GetBoolean(autofill::prefs::kAutofillEnabled);
 }
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
 @end

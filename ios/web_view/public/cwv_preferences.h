@@ -19,11 +19,6 @@ CWV_EXPORT
 @property(nonatomic, assign, getter=isTranslationEnabled)
     BOOL translationEnabled;
 
-// Whether or not autofill as a feature is turned on. Defaults to |YES|.
-// If enabled, contents of submitted forms may be saved and offered as a
-// suggestion in either the same or similar forms.
-@property(nonatomic, assign, getter=isAutofillEnabled) BOOL autofillEnabled;
-
 - (instancetype)init NS_UNAVAILABLE;
 
 // Resets all translation settings back to default. In particular, this will

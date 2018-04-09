@@ -26,6 +26,7 @@
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
+#include "ios/web_view/cwv_web_view_features.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_controller_internal.h"
 #import "ios/web_view/internal/cwv_html_element_internal.h"
 #import "ios/web_view/internal/cwv_navigation_action_internal.h"
@@ -76,6 +77,9 @@ NSString* const kSessionStorageKey = @"sessionStorage";
 @property(nonatomic, readwrite) BOOL loading;
 @property(nonatomic, readwrite, copy) NSString* title;
 @property(nonatomic, readwrite) NSURL* visibleURL;
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
+@property(nonatomic, readonly) CWVAutofillController* autofillController;
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
 // Updates the availability of the back/forward navigation properties exposed
 // through |canGoBack| and |canGoForward|.
@@ -84,8 +88,10 @@ NSString* const kSessionStorageKey = @"sessionStorage";
 - (void)updateCurrentURLs;
 // Updates |title| property.
 - (void)updateTitle;
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 // Returns a new CWVAutofillController created from |_webState|.
 - (CWVAutofillController*)newAutofillController;
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 // Returns a new CWVTranslationController created from |_webState|.
 - (CWVTranslationController*)newTranslationController;
 // Updates |_webState| visiblity.
@@ -97,7 +103,9 @@ static NSString* gUserAgentProduct = nil;
 
 @implementation CWVWebView
 
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 @synthesize autofillController = _autofillController;
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 @synthesize canGoBack = _canGoBack;
 @synthesize canGoForward = _canGoForward;
 @synthesize configuration = _configuration;
@@ -403,6 +411,7 @@ static NSString* gUserAgentProduct = nil;
       initWithTranslateClient:translateClient];
 }
 
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 #pragma mark - Autofill
 
 - (CWVAutofillController*)autofillController {
@@ -429,6 +438,7 @@ static NSString* gUserAgentProduct = nil;
                                        JSAutofillManager:JSAutofillManager
                                      JSSuggestionManager:JSSuggestionManager];
 }
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
 #pragma mark - Preserving and Restoring State
 
@@ -506,12 +516,14 @@ static NSString* gUserAgentProduct = nil;
     _translationController.delegate = delegate;
   }
 
+#if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
   // Recreate and restore the delegate only if previously lazily loaded.
   if (_autofillController) {
     id<CWVAutofillControllerDelegate> delegate = _autofillController.delegate;
     _autofillController = [self newAutofillController];
     _autofillController.delegate = delegate;
   }
+#endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
 
   [self addInternalWebViewAsSubview];
 
