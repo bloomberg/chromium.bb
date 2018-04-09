@@ -139,9 +139,6 @@ class EasyUnlockAppEventConsumer
   void OnDispatchEventToExtension(const std::string& extension_id,
                                   const extensions::Event& event) override {
     if (event.event_name ==
-        easy_unlock_private_api::OnUserInfoUpdated::kEventName) {
-      ConsumeUserInfoUpdated(event.event_args.get());
-    } else if (event.event_name ==
                screenlock_private_api::OnAuthAttempted::kEventName) {
       ConsumeAuthAttempted(event.event_args.get());
     } else {
@@ -231,11 +228,6 @@ class EasyUnlockAppManagerTest : public testing::Test {
     return extensions::ExtensionPrefs::Get(&profile_)
         ->install_directory()
         .AppendASCII("easy_unlock");
-  }
-
-  int UserUpdatedCount() const {
-    return event_router_->GetEventCount(
-        easy_unlock_private_api::OnUserInfoUpdated::kEventName);
   }
 
   int AuthAttemptedCount() const {
@@ -471,72 +463,6 @@ TEST_F(EasyUnlockAppManagerTest, LaunchSetupWhenNotLoaded) {
   EXPECT_EQ(0, AppLaunchedCount());
 }
 
-TEST_F(EasyUnlockAppManagerTest, SendUserUpdated) {
-  SetExtensionSystemReady();
-
-  app_manager_->LoadApp();
-  event_router_->AddLazyEventListener(
-      easy_unlock_private_api::OnUserInfoUpdated::kEventName,
-      extension_misc::kEasyUnlockAppId);
-
-  ASSERT_EQ(0, UserUpdatedCount());
-
-  EXPECT_TRUE(app_manager_->SendUserUpdatedEvent("user", true /* logged_in */,
-                                                 false /* data_ready */));
-
-  EXPECT_EQ(1, UserUpdatedCount());
-
-  EXPECT_EQ("user", event_consumer_.user_id());
-  EXPECT_TRUE(event_consumer_.user_logged_in());
-  EXPECT_FALSE(event_consumer_.user_data_ready());
-}
-
-TEST_F(EasyUnlockAppManagerTest, SendUserUpdatedInvertedFlags) {
-  SetExtensionSystemReady();
-
-  app_manager_->LoadApp();
-  event_router_->AddLazyEventListener(
-      easy_unlock_private_api::OnUserInfoUpdated::kEventName,
-      extension_misc::kEasyUnlockAppId);
-
-  ASSERT_EQ(0, UserUpdatedCount());
-
-  EXPECT_TRUE(app_manager_->SendUserUpdatedEvent("user", false /* logged_in */,
-                                                 true /* data_ready */));
-
-  EXPECT_EQ(1, UserUpdatedCount());
-
-  EXPECT_EQ("user", event_consumer_.user_id());
-  EXPECT_FALSE(event_consumer_.user_logged_in());
-  EXPECT_TRUE(event_consumer_.user_data_ready());
-}
-
-TEST_F(EasyUnlockAppManagerTest, SendUserUpdatedNoRegisteredListeners) {
-  SetExtensionSystemReady();
-
-  app_manager_->LoadApp();
-
-  ASSERT_EQ(0, UserUpdatedCount());
-
-  EXPECT_FALSE(app_manager_->SendUserUpdatedEvent("user", true, true));
-  EXPECT_EQ(0, UserUpdatedCount());
-}
-
-TEST_F(EasyUnlockAppManagerTest, SendUserUpdatedAppDisabled) {
-  SetExtensionSystemReady();
-
-  app_manager_->LoadApp();
-  event_router_->AddLazyEventListener(
-      easy_unlock_private_api::OnUserInfoUpdated::kEventName,
-      extension_misc::kEasyUnlockAppId);
-  app_manager_->DisableAppIfLoaded();
-
-  ASSERT_EQ(0, UserUpdatedCount());
-
-  EXPECT_FALSE(app_manager_->SendUserUpdatedEvent("user", true, true));
-  EXPECT_EQ(0, UserUpdatedCount());
-}
-
 TEST_F(EasyUnlockAppManagerTest, SendAuthAttempted) {
   SetExtensionSystemReady();
 
@@ -544,8 +470,6 @@ TEST_F(EasyUnlockAppManagerTest, SendAuthAttempted) {
   event_router_->AddLazyEventListener(
       screenlock_private_api::OnAuthAttempted::kEventName,
       extension_misc::kEasyUnlockAppId);
-
-  ASSERT_EQ(0, UserUpdatedCount());
 
   EXPECT_TRUE(app_manager_->SendAuthAttemptEvent());
   EXPECT_EQ(1, AuthAttemptedCount());

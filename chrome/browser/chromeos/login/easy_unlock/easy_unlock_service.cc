@@ -530,14 +530,12 @@ void EasyUnlockService::ReloadAppAndLockScreen() {
   // Make sure lock screen state set by the extension gets reset.
   ResetScreenlockState();
   app_manager_->ReloadApp();
-  NotifyUserUpdated();
 }
 
 void EasyUnlockService::UpdateAppState() {
   if (IsAllowed()) {
     EnsureTpmKeyPresentIfNeeded();
     app_manager_->LoadApp();
-    NotifyUserUpdated();
 
     if (proximity_auth_system_)
       proximity_auth_system_->Start();
@@ -566,18 +564,6 @@ void EasyUnlockService::UpdateAppState() {
 
 void EasyUnlockService::DisableAppWithoutResettingScreenlockState() {
   app_manager_->DisableAppIfLoaded();
-}
-
-void EasyUnlockService::NotifyUserUpdated() {
-  const AccountId& account_id = GetAccountId();
-  if (!account_id.is_valid())
-    return;
-
-  // Notify the easy unlock app that the user info changed.
-  bool logged_in = GetType() == TYPE_REGULAR;
-  bool data_ready = logged_in || GetRemoteDevices() != NULL;
-  app_manager_->SendUserUpdatedEvent(account_id.GetUserEmail(), logged_in,
-                                     data_ready);
 }
 
 void EasyUnlockService::NotifyTurnOffOperationStatusChanged() {

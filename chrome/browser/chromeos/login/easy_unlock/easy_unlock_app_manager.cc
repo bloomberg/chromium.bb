@@ -41,9 +41,6 @@ class EasyUnlockAppManagerImpl : public EasyUnlockAppManager {
   void LoadApp() override;
   void DisableAppIfLoaded() override;
   void ReloadApp() override;
-  bool SendUserUpdatedEvent(const std::string& user_id,
-                            bool is_logged_in,
-                            bool data_ready) override;
   bool SendAuthAttemptEvent() override;
 
  private:
@@ -136,41 +133,6 @@ void EasyUnlockAppManagerImpl::ReloadApp() {
     return;
 
   extension_service->ReloadExtension(app_id_);
-}
-
-bool EasyUnlockAppManagerImpl::SendUserUpdatedEvent(const std::string& user_id,
-                                                    bool is_logged_in,
-                                                    bool data_ready) {
-  ExtensionService* extension_service = extension_system_->extension_service();
-  if (!extension_service)
-    return false;
-
-  extensions::EventRouter* event_router =
-      extensions::EventRouter::Get(extension_service->GetBrowserContext());
-  if (!event_router)
-    return false;
-
-  extensions::events::HistogramValue histogram_value =
-      extensions::events::EASY_UNLOCK_PRIVATE_ON_USER_INFO_UPDATED;
-  std::string event_name =
-      extensions::api::easy_unlock_private::OnUserInfoUpdated::kEventName;
-
-  if (!event_router->ExtensionHasEventListener(app_id_, event_name))
-    return false;
-
-  extensions::api::easy_unlock_private::UserInfo info;
-  info.user_id = user_id;
-  info.logged_in = is_logged_in;
-  info.data_ready = data_ready;
-
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(info.ToValue());
-
-  std::unique_ptr<extensions::Event> event(
-      new extensions::Event(histogram_value, event_name, std::move(args)));
-
-  event_router->DispatchEventToExtension(app_id_, std::move(event));
-  return true;
 }
 
 bool EasyUnlockAppManagerImpl::SendAuthAttemptEvent() {

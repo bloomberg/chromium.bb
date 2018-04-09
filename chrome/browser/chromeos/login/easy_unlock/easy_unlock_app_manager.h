@@ -48,11 +48,6 @@ class EasyUnlockAppManager {
   // Reloads Easy Unlock app.
   virtual void ReloadApp() = 0;
 
-  // Sends easyUnlockPrivate.onUserInfoUpdate event to Easy Unlock app.
-  virtual bool SendUserUpdatedEvent(const std::string& user_id,
-                                    bool is_logged_in,
-                                    bool data_ready) = 0;
-
   // Sends screenlockPrivate.onAuthAttempted event to Easy Unlock app.
   virtual bool SendAuthAttemptEvent() = 0;
 };

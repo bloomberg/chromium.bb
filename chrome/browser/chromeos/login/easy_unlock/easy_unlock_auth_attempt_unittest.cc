@@ -70,13 +70,6 @@ class FakeAppManager : public EasyUnlockAppManager {
 
   void ReloadApp() override { ADD_FAILURE() << "Not reached"; }
 
-  bool SendUserUpdatedEvent(const std::string& user_id,
-                            bool is_logged_in,
-                            bool data_ready) override {
-    ADD_FAILURE() << "Not reached";
-    return false;
-  }
-
   bool SendAuthAttemptEvent() override {
     ++auth_attempt_count_;
     return !auth_attempt_should_fail_;
