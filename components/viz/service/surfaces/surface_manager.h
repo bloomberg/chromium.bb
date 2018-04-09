@@ -164,6 +164,10 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // SurfaceId and will never correspond to a surface.
   const SurfaceId& GetRootSurfaceId() const;
 
+  // Returns SurfaceIds of currently alive Surfaces. This may include ids of
+  // Surfaces that are about to be destroyed.
+  std::vector<SurfaceId> GetCreatedSurfaceIds() const;
+
   // Adds all surface references in |references|. This will remove any temporary
   // references for child surface in a surface reference.
   void AddSurfaceReferences(const std::vector<SurfaceReference>& references);
