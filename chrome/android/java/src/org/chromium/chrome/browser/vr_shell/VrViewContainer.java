@@ -8,12 +8,14 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.FrameLayout;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.TraceEvent;
 
 /**
@@ -53,13 +55,24 @@ public class VrViewContainer extends FrameLayout {
     }
 
     @Override
-    protected void dispatchDraw(Canvas canvas) {
+    public void draw(Canvas canvas) {
         if (mSurface == null) return;
         try (TraceEvent e = TraceEvent.scoped("VrViewContainer.dispatchDraw")) {
-            // TODO(mthiesse): Support mSurface.lockHardwareCanvas(); https://crbug.com/692775
-            final Canvas surfaceCanvas = mSurface.lockCanvas(null);
+            // The linter doesn't understand O_MR1+, so we need this line here to prevent the
+            // linter from complaining about lockHardwareCanvas. This won't be reached pre-N
+            // anyways.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
+            Canvas surfaceCanvas = null;
+            if (BuildInfo.isAtLeastP()) {
+                // This seems to have stopped crashing with Android P. It's >10x faster than the
+                // software canvas rendering for Android UI.
+                surfaceCanvas = mSurface.lockHardwareCanvas();
+            } else {
+                surfaceCanvas = mSurface.lockCanvas(null);
+            }
+
             surfaceCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            super.dispatchDraw(surfaceCanvas);
+            super.draw(surfaceCanvas);
             mSurface.unlockCanvasAndPost(surfaceCanvas);
         }
     }
