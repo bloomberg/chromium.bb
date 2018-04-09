@@ -937,6 +937,15 @@ void HTMLSelectElement::OptionInserted(HTMLOptionElement& option,
   }
   SetNeedsValidityCheck();
   last_on_change_selection_.clear();
+
+  if (!GetDocument().IsActive())
+    return;
+
+  GetDocument()
+      .GetFrame()
+      ->GetPage()
+      ->GetChromeClient()
+      .SelectFieldOptionsChanged(*this);
 }
 
 void HTMLSelectElement::OptionRemoved(HTMLOptionElement& option) {
@@ -959,6 +968,15 @@ void HTMLSelectElement::OptionRemoved(HTMLOptionElement& option) {
     SetAutofilled(false);
   SetNeedsValidityCheck();
   last_on_change_selection_.clear();
+
+  if (!GetDocument().IsActive())
+    return;
+
+  GetDocument()
+      .GetFrame()
+      ->GetPage()
+      ->GetChromeClient()
+      .SelectFieldOptionsChanged(*this);
 }
 
 void HTMLSelectElement::OptGroupInsertedOrRemoved(

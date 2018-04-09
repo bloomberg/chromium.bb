@@ -185,6 +185,7 @@ class AutofillManager : public AutofillHandler,
   void OnHidePopup() override;
   void OnSetDataList(const std::vector<base::string16>& values,
                      const std::vector<base::string16>& labels) override;
+  void SelectFieldOptionsDidChange(const FormData& form) override;
   void Reset() override;
 
   // Returns true if the value of the AutofillEnabled pref is true and the

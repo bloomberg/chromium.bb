@@ -87,6 +87,8 @@ void AutofillHandlerProxy::OnSetDataList(
     const std::vector<base::string16>& values,
     const std::vector<base::string16>& labels) {}
 
+void AutofillHandlerProxy::SelectFieldOptionsDidChange(const FormData& form) {}
+
 void AutofillHandlerProxy::Reset() {
   provider_->Reset(this);
 }

@@ -1,10 +1,10 @@
-<!-- A page that is used to test that a dynamic form fill is only triggered the first time the form changes. -->
+<!-- A page that is used to test that a dynamic form fill feature works properly. -->
 <body>
   <form name="addr1.1" id="form1" action="https://example.com/" method="post">
     Name: <input type="text" name="firstname" id="firstname"><br>
     Address: <input type="text" name="address1" id="address1"><br>
     City: <input type="text" name="city" id="city"><br>
-    State: <select name="state">
+    State: <select name="state" id="state">
       <option value="CA">CA</option>
       <option value="MA">MA</option>
       <option value="NY">NY</option>
@@ -29,32 +29,18 @@
 
 <script src="dynamic_form_utils.js"></script>
 <script>
-
-var refilled = false;
+var filled = false;
 var callback_c = false;
 
 function CountryChanged() {
   DynamicallyChangeForm();
-
-  // Prepare the function to trigger a second dynamic form change.
-  document.getElementById("email").addEventListener('change', function(){
-
-    RemoveForm("form1")
-
-    var new_form2 = AddNewFormAndFields();
-    new_form2.setAttribute('id', "form2");
-
-    document.getElementsByTagName('body')[0].appendChild(new_form2);
-
-    if (callback_c)
-      window.domAutomationController.send(document.getElementById("firstname").value != '');
-
-  });
+  filled = true;
+  if (callback_c)
+    window.domAutomationController.send(document.getElementById("firstname").value != '');
 }
 
-function hasFinished() {
-  var first_name_input = document.getElementById("firstname");
-  if (refilled) {
+function hasRefilled() {
+  if (filled) {
     window.domAutomationController.send(document.getElementById("firstname").value != '');
   } else {
     callback_c = true;
