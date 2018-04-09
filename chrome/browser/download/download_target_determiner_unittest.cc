@@ -10,14 +10,15 @@
 
 #include "base/at_exit.h"
 #include "base/files/file_path.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_path_override.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/value_conversions.h"
 #include "build/build_config.h"
@@ -30,6 +31,7 @@
 #include "chrome/browser/download/download_target_info.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/common/safe_browsing/file_type_policies_test_util.h"
@@ -75,8 +77,8 @@ using ::testing::WithArg;
 using ::testing::_;
 using download::DownloadItem;
 using ConflictAction = DownloadPathReservationTracker::FilenameConflictAction;
-using safe_browsing::FileTypePolicies;
 using safe_browsing::DownloadFileType;
+using safe_browsing::FileTypePolicies;
 
 namespace {
 
@@ -285,8 +287,10 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
   void VerifyDownloadTarget(const DownloadTestCase& test_case,
                             const DownloadTargetInfo* target_info);
 
-  const base::FilePath& test_download_dir() const {
-    return test_download_dir_.GetPath();
+  base::FilePath test_download_dir() const {
+    base::FilePath path;
+    CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path));
+    return path;
   }
 
   const base::FilePath& test_virtual_dir() const {
@@ -304,10 +308,13 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
  private:
   void SetUpFileTypePolicies();
 
+  // Resets the global cached DefaultDownloadDirectory instance.
+  base::ShadowingAtExitManager at_exit_manager_;
+  base::ScopedPathOverride download_dir_override_{
+      chrome::DIR_DEFAULT_DOWNLOADS};
   std::unique_ptr<DownloadPrefs> download_prefs_;
   ::testing::NiceMock<MockDownloadTargetDeterminerDelegate> delegate_;
   NullWebContentsDelegate web_contents_delegate_;
-  base::ScopedTempDir test_download_dir_;
   base::FilePath test_virtual_dir_;
   safe_browsing::FileTypePoliciesTestOverlay file_type_configuration_;
 
@@ -319,9 +326,7 @@ void DownloadTargetDeterminerTest::SetUp() {
   CHECK(profile());
   download_prefs_.reset(new DownloadPrefs(profile()));
   web_contents()->SetDelegate(&web_contents_delegate_);
-  ASSERT_TRUE(test_download_dir_.CreateUniqueTempDir());
   test_virtual_dir_ = test_download_dir().Append(FILE_PATH_LITERAL("virtual"));
-  download_prefs_->SetDownloadPath(test_download_dir());
   delegate_.SetupDefaults();
   SetUpFileTypePolicies();
 #if defined(OS_ANDROID)
@@ -2308,7 +2313,7 @@ class ScopedRegisterInternalPlugin {
 };
 
 // We use a slightly different test fixture for tests that touch plugins. SetUp
-// needs to disable plugin discovery and we need to use a
+// needs to disable plugin discovery and we rely on the base class'
 // ShadowingAtExitManager to discard the tainted PluginService. Unfortunately,
 // PluginService carries global state.
 class DownloadTargetDeterminerTestWithPlugin
@@ -2335,8 +2340,6 @@ class DownloadTargetDeterminerTestWithPlugin
  protected:
   content::PluginServiceFilter* old_plugin_service_filter_;
   testing::StrictMock<MockPluginServiceFilter> mock_plugin_filter_;
-  // The ShadowingAtExitManager destroys the tainted PluginService instance.
-  base::ShadowingAtExitManager at_exit_manager_;
 };
 
 // Check if secure handling of filetypes is determined correctly for PPAPI

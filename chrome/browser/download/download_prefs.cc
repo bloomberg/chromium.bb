@@ -45,6 +45,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
+#include "chromeos/dbus/cros_disks_client.h"
 #endif
 
 #if defined(OS_WIN)
@@ -291,7 +292,7 @@ base::FilePath DownloadPrefs::DownloadPath() const {
       return GetDefaultDownloadDirectoryForProfile();
   }
 #endif
-  return *download_path_;
+  return SanitizeDownloadTargetPath(*download_path_);
 }
 
 void DownloadPrefs::SetDownloadPath(const base::FilePath& path) {
@@ -300,7 +301,7 @@ void DownloadPrefs::SetDownloadPath(const base::FilePath& path) {
 }
 
 base::FilePath DownloadPrefs::SaveFilePath() const {
-  return *save_file_path_;
+  return SanitizeDownloadTargetPath(*save_file_path_);
 }
 
 void DownloadPrefs::SetSaveFilePath(const base::FilePath& path) {
@@ -427,6 +428,39 @@ void DownloadPrefs::SaveAutoOpenState() {
     extensions.erase(extensions.size() - 1);
 
   profile_->GetPrefs()->SetString(prefs::kDownloadExtensionsToOpen, extensions);
+}
+
+base::FilePath DownloadPrefs::SanitizeDownloadTargetPath(
+    const base::FilePath& path) const {
+#if defined(OS_CHROMEOS)
+  // If |path| isn't absolute, fall back to the default directory.
+  base::FilePath profile_download_dir = GetDefaultDownloadDirectoryForProfile();
+  if (!path.IsAbsolute())
+    return profile_download_dir;
+
+  // Allow paths that are under the default download directory.
+  base::FilePath relative;
+  if (profile_download_dir.AppendRelativePath(path, &relative) &&
+      !relative.ReferencesParent()) {
+    return profile_download_dir.Append(relative);
+  }
+
+  // Allow paths under the drive mount point.
+  if (drive::util::IsUnderDriveMountPoint(path) && !path.ReferencesParent())
+    return path;
+
+  // Allow removable media.
+  base::FilePath media_mount_point =
+      chromeos::CrosDisksClient::GetRemovableDiskMountPoint();
+  if (media_mount_point.AppendRelativePath(path, &relative) &&
+      !relative.ReferencesParent()) {
+    return media_mount_point.Append(relative);
+  }
+
+  // Fall back to the default download directory for all other paths.
+  return profile_download_dir;
+#endif
+  return path;
 }
 
 bool DownloadPrefs::AutoOpenCompareFunctor::operator()(
