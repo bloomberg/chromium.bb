@@ -343,6 +343,7 @@
     <dimen name="ntp_logo_margin_bottom_modern">64dp</dimen>
     <dimen name="ntp_logo_max_internal_space_bottom_modern">8dp</dimen>
     <dimen name="ntp_search_box_height">62dp</dimen>
+    <dimen name="ntp_search_box_height_modern">40dp</dimen>
     <dimen name="ntp_search_box_shadow_width">4dp</dimen>
     <dimen name="ntp_search_box_transition_length">16dp</dimen>
     <dimen name="ntp_search_box_logo_padding">8dp</dimen>

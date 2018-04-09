@@ -32,6 +32,7 @@
 
     <!-- NTP dimensions -->
     <dimen name="ntp_logo_height">180dp</dimen>
+    <dimen name="ntp_search_box_height_modern">48dp</dimen>
     <dimen name="ntp_search_box_transition_length">60dp</dimen>
 
     <!-- Recent tabs page -->
