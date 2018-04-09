@@ -41,18 +41,24 @@ class GoogleURLTracker
   typedef base::CallbackList<void()> CallbackList;
   typedef CallbackList::Subscription Subscription;
 
-  // The constructor does different things depending on which of these values
-  // you pass it.  Hopefully these are self-explanatory.
+  // The mode of the tracker that controls how the tracker behaves and that must
+  // be passed to its constructor.
   enum Mode {
+    // Use current local Google TLD.
+    // Defer network requests to update TLD until 5 seconds after
+    // creation, to avoid an expensive fetch during Chrome startup.
     NORMAL_MODE,
-    UNIT_TEST_MODE,
+
+    // Always use www.google.com.
+    ALWAYS_DOT_COM_MODE,
   };
 
   static const char kDefaultGoogleHomepage[];
 
   // Only the GoogleURLTrackerFactory and tests should call this.
-  // Note: In UNIT_TEST_MODE, you *must* manually call Shutdown() before this
-  // instance gets destroyed!
+  // Note: you *must* manually call Shutdown() before this instance gets
+  // destroyed if you want to create another instance in the same binary
+  // (e.g. in unit tests).
   GoogleURLTracker(std::unique_ptr<GoogleURLTrackerClient> client, Mode mode);
 
   ~GoogleURLTracker() override;
