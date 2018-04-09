@@ -116,7 +116,7 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Sets the application ID for the window. The application ID identifies the
   // general class of applications to which the window belongs.
   static void SetApplicationId(aura::Window* window, const std::string& id);
-  static const std::string* GetApplicationId(aura::Window* window);
+  static const std::string* GetApplicationId(const aura::Window* window);
 
   // Set the application ID for the surface.
   void SetApplicationId(const std::string& application_id);

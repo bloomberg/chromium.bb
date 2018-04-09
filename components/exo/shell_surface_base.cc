@@ -519,7 +519,8 @@ void ShellSurfaceBase::SetApplicationId(aura::Window* window,
 }
 
 // static
-const std::string* ShellSurfaceBase::GetApplicationId(aura::Window* window) {
+const std::string* ShellSurfaceBase::GetApplicationId(
+    const aura::Window* window) {
   return window->GetProperty(kApplicationIdKey);
 }
 

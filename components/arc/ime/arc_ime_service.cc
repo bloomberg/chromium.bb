@@ -28,6 +28,8 @@ namespace arc {
 
 namespace {
 
+constexpr char kArcAppIdPrefix[] = "org.chromium.arc";
+
 base::Optional<double> g_override_default_device_scale_factor;
 
 double GetDefaultDeviceScaleFactor() {
@@ -45,10 +47,24 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
 
   ~ArcWindowDelegateImpl() override = default;
 
-  bool IsArcWindow(
-      const aura::Window* window) const override {
+  bool IsExoWindow(const aura::Window* window) const override {
     return exo::Surface::AsSurface(window) ||
            exo::ShellSurface::GetMainSurface(window);
+  }
+
+  bool IsArcWindow(const aura::Window* window) const override {
+    if (!IsExoWindow(window))
+      return false;
+    aura::Window* active = exo::WMHelper::GetInstance()->GetActiveWindow();
+    if (!active)
+      return false;
+    // Need to get an application id from the active window because only
+    // ShellSurface window has the application id.
+    const std::string* app_id = exo::ShellSurface::GetApplicationId(active);
+    if (!active->Contains(window) || !app_id)
+      return false;
+    return base::StartsWith(*app_id, kArcAppIdPrefix,
+                            base::CompareCase::SENSITIVE);
   }
 
   void RegisterFocusObserver() override {
@@ -173,7 +189,9 @@ void ArcImeService::ReattachInputMethod(aura::Window* old_window,
 // Overridden from aura::EnvObserver:
 
 void ArcImeService::OnWindowInitialized(aura::Window* new_window) {
-  if (arc_window_delegate_->IsArcWindow(new_window)) {
+  // Register the focus observer when every exo window is created because an
+  // application id might not be set here yet.
+  if (arc_window_delegate_->IsExoWindow(new_window)) {
     if (!is_focus_observer_installed_) {
       arc_window_delegate_->RegisterFocusObserver();
       is_focus_observer_installed_ = true;

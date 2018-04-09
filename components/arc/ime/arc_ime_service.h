@@ -57,6 +57,7 @@ class ArcImeService : public KeyedService,
   class ArcWindowDelegate {
    public:
     virtual ~ArcWindowDelegate() {}
+    virtual bool IsExoWindow(const aura::Window* window) const = 0;
     virtual bool IsArcWindow(const aura::Window* window) const = 0;
     virtual void RegisterFocusObserver() = 0;
     virtual void UnregisterFocusObserver() = 0;
