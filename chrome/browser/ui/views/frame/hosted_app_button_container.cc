@@ -5,25 +5,17 @@
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
-#include "chrome/browser/ui/extensions/hosted_app_menu_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
-#include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
-#include "chrome/grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -31,8 +23,6 @@
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace {
-
-constexpr int kMenuHighlightFadeDurationMs = 800;
 
 constexpr base::TimeDelta kContentSettingsFadeInDuration =
     base::TimeDelta::FromMilliseconds(500);
@@ -148,79 +138,13 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
   }
 }
 
-HostedAppButtonContainer::AppMenuButton::AppMenuButton(
-    BrowserView* browser_view)
-    : views::MenuButton(base::string16(), this, false),
-      browser_view_(browser_view) {
-  SetInkDropMode(InkDropMode::ON);
-  // This name is guaranteed not to change during the lifetime of this button.
-  // Get the app name only, aka "Google Docs" instead of "My Doc - Google Docs",
-  // because the menu applies to the entire app.
-  base::string16 app_name = base::UTF8ToUTF16(
-      browser_view->browser()->hosted_app_controller()->GetAppShortName());
-  SetAccessibleName(app_name);
-  SetTooltipText(
-      l10n_util::GetStringFUTF16(IDS_HOSTED_APPMENU_TOOLTIP, app_name));
-}
-
-HostedAppButtonContainer::AppMenuButton::~AppMenuButton() {}
-
-void HostedAppButtonContainer::AppMenuButton::SetIconColor(SkColor color) {
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(kBrowserToolsIcon, color));
-  set_ink_drop_base_color(color);
-}
-
-void HostedAppButtonContainer::AppMenuButton::OnMenuButtonClicked(
-    views::MenuButton* source,
-    const gfx::Point& point,
-    const ui::Event* event) {
-  Browser* browser = browser_view_->browser();
-  menu_ = std::make_unique<AppMenu>(browser, 0);
-  menu_model_ = std::make_unique<HostedAppMenuModel>(browser_view_, browser);
-  menu_model_->Init();
-  menu_->Init(menu_model_.get());
-
-  menu_->RunMenu(this);
-}
-
-void HostedAppButtonContainer::StartTitlebarAnimation(
-    base::TimeDelta origin_text_slide_duration) {
-  app_menu_button_->StartHighlightAnimation(origin_text_slide_duration);
-
-  fade_in_content_setting_buttons_timer_.Start(
-      FROM_HERE, origin_text_slide_duration, content_settings_container_,
-      &ContentSettingsContainer::FadeIn);
-}
-
-void HostedAppButtonContainer::AppMenuButton::StartHighlightAnimation(
-    base::TimeDelta duration) {
-  GetInkDrop()->SetHoverHighlightFadeDurationMs(kMenuHighlightFadeDurationMs);
-  GetInkDrop()->SetHovered(true);
-  GetInkDrop()->UseDefaultHoverHighlightFadeDuration();
-
-  highlight_off_timer_.Start(
-      FROM_HERE,
-      duration -
-          base::TimeDelta::FromMilliseconds(kMenuHighlightFadeDurationMs),
-      this, &HostedAppButtonContainer::AppMenuButton::FadeHighlightOff);
-}
-
-void HostedAppButtonContainer::AppMenuButton::FadeHighlightOff() {
-  if (!ShouldEnterHoveredState()) {
-    GetInkDrop()->SetHoverHighlightFadeDurationMs(kMenuHighlightFadeDurationMs);
-    GetInkDrop()->SetHovered(false);
-    GetInkDrop()->UseDefaultHoverHighlightFadeDuration();
-  }
-}
-
 HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
                                                    SkColor active_icon_color,
                                                    SkColor inactive_icon_color)
     : browser_view_(browser_view),
       active_icon_color_(active_icon_color),
       inactive_icon_color_(inactive_icon_color),
-      app_menu_button_(new AppMenuButton(browser_view)),
+      app_menu_button_(new HostedAppMenuButton(browser_view)),
       browser_actions_container_(
           new BrowserActionsContainer(browser_view->browser(),
                                       nullptr,
@@ -258,6 +182,15 @@ void HostedAppButtonContainer::SetPaintAsActive(bool active) {
 
   app_menu_button_->SetIconColor(active ? active_icon_color_
                                         : inactive_icon_color_);
+}
+
+void HostedAppButtonContainer::StartTitlebarAnimation(
+    base::TimeDelta origin_text_slide_duration) {
+  app_menu_button_->StartHighlightAnimation(origin_text_slide_duration);
+
+  fade_in_content_setting_buttons_timer_.Start(
+      FROM_HERE, origin_text_slide_duration, content_settings_container_,
+      &ContentSettingsContainer::FadeIn);
 }
 
 void HostedAppButtonContainer::ChildPreferredSizeChanged(views::View* child) {
