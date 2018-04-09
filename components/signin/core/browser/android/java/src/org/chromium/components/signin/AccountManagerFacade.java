@@ -22,6 +22,7 @@ import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -60,6 +61,19 @@ public class AccountManagerFacade {
      */
     @VisibleForTesting
     public static final String FEATURE_IS_CHILD_ACCOUNT_KEY = "service_uca";
+
+    /**
+     * An account feature (corresponding to a Gaia service flag) that specifies whether the account
+     * is a USM account.
+     */
+    @VisibleForTesting
+    public static final String FEATURE_IS_USM_ACCOUNT_KEY = "service_usm";
+
+    /**
+     * Command-line switch that enables USM account support.
+     */
+    @VisibleForTesting
+    public static final String ENABLE_USM_ACCOUNTS_SWITCH = "enable-usm-accounts";
 
     @VisibleForTesting
     public static final String ACCOUNT_RESTRICTION_PATTERNS_KEY = "RestrictAccountsToPatterns";
@@ -513,20 +527,31 @@ public class AccountManagerFacade {
 
     @MainThread
     public void checkChildAccount(Account account, Callback<Boolean> callback) {
-        hasFeatures(account, new String[] {FEATURE_IS_CHILD_ACCOUNT_KEY}, callback);
+        final String[] features;
+        if (CommandLine.getInstance().hasSwitch(ENABLE_USM_ACCOUNTS_SWITCH)) {
+            features = new String[] {FEATURE_IS_CHILD_ACCOUNT_KEY, FEATURE_IS_USM_ACCOUNT_KEY};
+        } else {
+            features = new String[] {FEATURE_IS_CHILD_ACCOUNT_KEY};
+        }
+        hasAnyOfFeatures(account, features, callback);
     }
 
-    private boolean hasFeatures(Account account, String[] features) {
-        return mDelegate.hasFeatures(account, features);
+    private boolean hasFeature(Account account, String feature) {
+        return mDelegate.hasFeatures(account, new String[] {feature});
     }
 
-    private void hasFeatures(
+    private void hasAnyOfFeatures(
             final Account account, final String[] features, final Callback<Boolean> callback) {
         ThreadUtils.assertOnUiThread();
         new AsyncTask<Void, Void, Boolean>() {
             @Override
             public Boolean doInBackground(Void... params) {
-                return hasFeatures(account, features);
+                for (String feature : features) {
+                    if (hasFeature(account, feature)) {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             @Override
