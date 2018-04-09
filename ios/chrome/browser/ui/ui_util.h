@@ -39,6 +39,9 @@ CGFloat CurrentScreenWidth();
 // Returns true if the device is an iPhone X.
 bool IsIPhoneX();
 
+// Returns whether the UI Refresh Location Bar will be used.
+bool IsRefreshLocationBarEnabled();
+
 // Returns whether the UI Refresh Omnibox Popup presentation will be used.
 bool IsRefreshPopupPresentationEnabled();
 

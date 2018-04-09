@@ -7,6 +7,9 @@
 const base::Feature kRefreshPopupPresentation{
     "UIRefreshPopupPresentation", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kUIRefreshLocationBar{"UIRefreshLocationBar",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kUIRefreshPhase1{"UIRefreshPhase1",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
