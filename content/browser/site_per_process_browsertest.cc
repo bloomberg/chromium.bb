@@ -703,6 +703,8 @@ class SitePerProcessProgrammaticScrollTest : public SitePerProcessBrowserTest {
  protected:
   const size_t kInfinity;
   const std::string kIframeOutOfViewHTML = "/iframe_out_of_view.html";
+  const std::string kIframeClippedHTML = "/iframe_clipped.html";
+  const std::string kInputBoxHTML = "/input_box.html";
   const std::string kIframeSelector = "iframe";
   const std::string kInputSelector = "input";
   const gfx::Rect kPositiveXYPlane;
@@ -718,6 +720,11 @@ class SitePerProcessProgrammaticScrollTest : public SitePerProcessBrowserTest {
         base::StringPrintf("notifyWhenVisible(document.querySelector('%s'));",
                            sel.c_str()),
         "VISIBLE");
+  }
+
+  void WaitForViewportToStabilize(FrameTreeNode* node) {
+    RunCommandAndWaitForResponse(node, "notifyWhenViewportStable(0);",
+                                 "VIEWPORT_STABLE");
   }
 
   void AddFocusedInputField(FrameTreeNode* node) {
@@ -1972,6 +1979,75 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
       iframe_bounds_after_scroll_oopif.OffsetFromOrigin();
   ASSERT_TRUE(
       final_visual_viewport_oopif.Intersects(input_bounds_after_scroll_oopif));
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
+                       ScrollClippedFocusedEditableElementIntoView) {
+  GURL url_a(embedded_test_server()->GetURL("a.com", kIframeClippedHTML));
+  GURL child_url_b(embedded_test_server()->GetURL("b.com", kInputBoxHTML));
+
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  WaitForOnLoad(root);
+  NavigateFrameToURL(root->child_at(0), child_url_b);
+  WaitForOnLoad(root->child_at(0));
+
+  SetWindowScroll(root, 0, 0);
+  SetWindowScroll(root->child_at(0), 1000, 2000);
+
+  float scale_before = GetVisualViewportScale(root);
+
+  // The input_box page focuses the input box on load. This call should
+  // simulate the scroll into view we do when an input box is tapped.
+  root->child_at(0)
+      ->current_frame_host()
+      ->GetFrameInputHandler()
+      ->ScrollFocusedEditableNodeIntoRect(gfx::Rect());
+
+  // The scroll into view is animated on the compositor. Make sure we wait
+  // until that's completed before testing the rects.
+  WaitForElementVisible(root, kIframeSelector);
+  WaitForViewportToStabilize(root);
+
+  // These rects are in the coordinate space of the root frame.
+  gfx::Rect visual_viewport_rect = GetVisualViewport(root);
+  gfx::Rect window_rect = GetBoundingClientRect(root, ":root");
+  gfx::Rect iframe_rect = GetBoundingClientRect(root, "iframe");
+  gfx::Rect clip_rect = GetBoundingClientRect(root, "#clip");
+
+  // This is in the coordinate space of the iframe, we'll add the iframe offset
+  // after to put it into the root frame's coordinate space.
+  gfx::Rect input_rect = GetBoundingClientRect(root->child_at(0), "input");
+
+  // Make sure the input rect is visible in the iframe.
+  EXPECT_TRUE(gfx::Rect(iframe_rect.size()).Intersects(input_rect))
+      << "Input box [" << input_rect.ToString() << "] isn't visible in iframe ["
+      << gfx::Rect(iframe_rect.size()).ToString() << "]";
+
+  input_rect += iframe_rect.OffsetFromOrigin();
+
+  // Make sure the input rect is visible through the clipping layer.
+  EXPECT_TRUE(clip_rect.Intersects(input_rect))
+      << "Input box [" << input_rect.ToString() << "] isn't scrolled into view "
+      << "of the clipping layer [" << clip_rect.ToString() << "]";
+
+  // And finally, it should be visible in the layout and visual viewports.
+  EXPECT_TRUE(window_rect.Intersects(input_rect))
+      << "Input box [" << input_rect.ToString() << "] isn't visible in the "
+      << "layout viewport [" << window_rect.ToString() << "]";
+  EXPECT_TRUE(visual_viewport_rect.Intersects(input_rect))
+      << "Input box [" << input_rect.ToString() << "] isn't visible in the "
+      << "visual viewport [" << visual_viewport_rect.ToString() << "]";
+
+  float scale_after = GetVisualViewportScale(root);
+
+// Make sure we still zoom in on the input box on platforms that zoom into the
+// focused editable.
+#if defined(OS_ANDROID)
+  EXPECT_GT(scale_after, scale_before);
+#else
+  EXPECT_FLOAT_EQ(scale_after, scale_before);
+#endif
 }
 
 // Tests OOPIF rendering by checking that the RWH of the iframe generates

@@ -82,6 +82,12 @@ struct WebScrollIntoViewParams {
   WebFloatRect relative_element_bounds = WebFloatRect();
   WebFloatRect relative_caret_bounds = WebFloatRect();
 
+  // If true, avoid recursing the ScrollIntoView into the layout viewport of
+  // the main frame. This is so that we can then do a smooth page scale
+  // animation that zooms both layout and visual viewport into a focused
+  // editable element.
+  bool stop_at_main_frame_layout_viewport = false;
+
   WebScrollIntoViewParams() = default;
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebScrollIntoViewParams(

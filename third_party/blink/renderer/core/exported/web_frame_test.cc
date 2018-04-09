@@ -11833,6 +11833,110 @@ TEST_P(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
   EXPECT_EQ(1, WebView().FakePageScaleAnimationPageScaleForTesting());
 }
 
+TEST_P(WebFrameSimTest, ScrollFocusedIntoViewClipped) {
+  // The Android On-Screen Keyboard (OSK) resizes the Widget Blink is hosted
+  // in. When the keyboard is shown, we scroll and zoom in on the currently
+  // focused editable element. However, the scroll and zoom is a smoothly
+  // animated "PageScaleAnimation" that's performed in CC only on the viewport
+  // layers. There are some situations in which the widget resize causes the
+  // focued input to be hidden by clipping parents that aren't the main frame.
+  // In these cases, there's no way to scroll just the viewport to make the
+  // input visible, we need to also scroll those clip/scroller elements  This
+  // test ensures we do so. https://crbug.com/270018.
+  WebView().Resize(WebSize(400, 600));
+  WebView().SetDefaultPageScaleLimits(0.25f, 5);
+  WebView().EnableFakePageScaleAnimationForTesting(true);
+  WebView().GetPage()->GetSettings().SetTextAutosizingEnabled(false);
+  WebView().GetSettings()->SetViewportMetaEnabled(true);
+  WebView().GetSettings()->SetViewportEnabled(true);
+  WebView().GetSettings()->SetMainFrameResizesAreOrientationChanges(true);
+  WebView().GetSettings()->SetShrinksViewportContentToFit(true);
+  WebView().GetSettings()->SetViewportStyle(WebViewportStyle::kMobile);
+  WebView().GetSettings()->SetAutoZoomFocusedNodeToLegibleScale(true);
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        ::-webkit-scrollbar {
+          width: 0px;
+          height: 0px;
+        }
+        body, html {
+          margin: 0px;
+          width: 100%;
+          height: 100%;
+        }
+        input {
+          padding: 0;
+          position: relative;
+          top: 1400px;
+          width: 100px;
+          height: 20px;
+        }
+        #clip {
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+        }
+        #container {
+          width: 980px;
+          height: 1470px;
+        }
+      </style>
+      <div id="clip">
+        <div id="container">
+          <input type="text" id="target">
+        </div>
+      </div>
+  )HTML");
+
+  Compositor().BeginFrame();
+  WebView().AdvanceFocus(false);
+
+  LocalFrame* frame = ToLocalFrame(WebView().GetPage()->MainFrame());
+  LocalFrameView* frame_view = frame->View();
+  VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
+
+  ASSERT_EQ(FloatPoint(), visual_viewport.VisibleRectInDocument().Location());
+
+  // Simulate the keyboard being shown and resizing the widget. Cause a scroll
+  // into view after.
+  WebView().Resize(WebSize(400, 300));
+
+  float scale_before = visual_viewport.Scale();
+  WebView()
+      .MainFrameImpl()
+      ->FrameWidget()
+      ->ScrollFocusedEditableElementIntoView();
+
+  Element* input = GetDocument().getElementById("target");
+  IntRect input_rect(input->getBoundingClientRect()->top(),
+                     input->getBoundingClientRect()->left(),
+                     input->getBoundingClientRect()->width(),
+                     input->getBoundingClientRect()->height());
+
+  EXPECT_TRUE(frame_view->VisibleContentRect().Contains(input_rect))
+      << "Layout viewport [" << frame_view->VisibleContentRect().ToString()
+      << "] does not contain input rect [" << input_rect.ToString()
+      << "] after scroll into view.";
+
+  EXPECT_TRUE(visual_viewport.VisibleRect().Contains(input_rect))
+      << "Visual viewport [" << visual_viewport.VisibleRect().ToString()
+      << "] does not contain input rect [" << input_rect.ToString()
+      << "] after scroll into view.";
+
+  // Make sure we also zoomed in on the input.
+  EXPECT_GT(WebView().FakePageScaleAnimationPageScaleForTesting(),
+            scale_before);
+
+  // Additional gut-check that we actually scrolled the non-user-scrollable
+  // clip element to make sure the input is in view.
+  Element* clip = GetDocument().getElementById("clip");
+  EXPECT_GT(clip->scrollTop(), 0);
+}
+
 TEST_P(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
   WebView().Resize(WebSize(490, 500));
   WebView().SetDefaultPageScaleLimits(0.5f, 4);

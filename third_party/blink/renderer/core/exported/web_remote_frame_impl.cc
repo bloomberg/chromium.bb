@@ -365,6 +365,13 @@ void WebRemoteFrameImpl::ScrollRectToVisible(
     return;
   }
 
+  // ZoomAndScrollToFocusedEditableElementRect will scroll only the layout and
+  // visual viewports. Ensure the element is actually visible in the viewport
+  // scrolling layer. (i.e. isn't clipped by some other content).
+  WebScrollIntoViewParams new_params(params);
+  new_params.stop_at_main_frame_layout_viewport = true;
+  absolute_rect = owner_object->ScrollRectToVisible(absolute_rect, new_params);
+
   // This is due to something such as scroll focused editable element into
   // view on Android which also requires an automatic zoom into legible scale.
   // This is handled by main frame's WebView.

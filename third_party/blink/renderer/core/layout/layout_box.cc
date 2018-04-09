@@ -635,14 +635,18 @@ void LayoutBox::ScrollToPosition(const FloatPoint& position,
   GetScrollableArea()->ScrollToAbsolutePosition(position, scroll_behavior);
 }
 
-void LayoutBox::ScrollRectToVisibleRecursive(
+LayoutRect LayoutBox::ScrollRectToVisibleRecursive(
     const LayoutRect& absolute_rect,
     const WebScrollIntoViewParams& params) {
   DCHECK(params.GetScrollType() == kProgrammaticScroll ||
          params.GetScrollType() == kUserScroll);
 
   if (!GetFrameView())
-    return;
+    return absolute_rect;
+
+  if (params.stop_at_main_frame_layout_viewport && IsLayoutView() &&
+      GetFrame()->IsMainFrame())
+    return absolute_rect;
 
   // Presumably the same issue as in setScrollTop. See crbug.com/343132.
   DisableCompositingQueryAsserts disabler;
@@ -699,16 +703,19 @@ void LayoutBox::ScrollRectToVisibleRecursive(
   // If we are fixed-position and stick to the viewport, it is useless to
   // scroll the parent.
   if (Style()->GetPosition() == EPosition::kFixed && Container() == View())
-    return;
+    return absolute_rect_for_parent;
 
   if (parent_box) {
-    parent_box->ScrollRectToVisibleRecursive(absolute_rect_for_parent, params);
+    return parent_box->ScrollRectToVisibleRecursive(absolute_rect_for_parent,
+                                                    params);
   } else if (GetFrame()->IsLocalRoot() && !GetFrame()->IsMainFrame()) {
     if (GetFrameView()->SafeToPropagateScrollToParent()) {
       GetFrameView()->ScrollRectToVisibleInRemoteParent(
           absolute_rect_for_parent, params);
     }
   }
+
+  return absolute_rect_for_parent;
 }
 
 void LayoutBox::SetMargin(const NGPhysicalBoxStrut& box) {
