@@ -601,13 +601,7 @@ void MediaControlsImpl::PopulatePanel() {
     button_panel = media_button_panel_;
   }
 
-  // The play button should only be on the button panel if we are playing audio
-  // only or are using the legacy controls.
-  if (!IsModern() || is_acting_as_audio_controls_ ||
-      MediaElement().IsHTMLAudioElement()) {
-    button_panel->ParserAppendChild(play_button_);
-  }
-
+  button_panel->ParserAppendChild(play_button_);
   button_panel->ParserAppendChild(current_time_display_);
   button_panel->ParserAppendChild(duration_display_);
 
