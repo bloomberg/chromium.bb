@@ -1432,21 +1432,23 @@ bool BrowserAccessibilityAndroid::IsIframe() const {
 }
 
 bool BrowserAccessibilityAndroid::ShouldExposeValueAsName() const {
-  base::string16 value = GetValue();
-  if (value.empty())
-    return false;
-
-  if (HasState(ax::mojom::State::kEditable))
-    return true;
-
   switch (GetRole()) {
-    case ax::mojom::Role::kPopUpButton:
     case ax::mojom::Role::kTextField:
     case ax::mojom::Role::kTextFieldWithComboBox:
       return true;
     default:
       break;
   }
+
+  if (HasState(ax::mojom::State::kEditable))
+    return true;
+
+  base::string16 value = GetValue();
+  if (value.empty())
+    return false;
+
+  if (GetRole() == ax::mojom::Role::kPopUpButton)
+    return true;
 
   return false;
 }
