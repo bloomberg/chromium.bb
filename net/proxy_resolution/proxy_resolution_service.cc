@@ -900,10 +900,18 @@ class ProxyResolutionService::Request
 
     // Make a note in the results which configuration was in use at the
     // time of the resolve.
-    results_->set_traffic_annotation(traffic_annotation_);
     results_->did_use_pac_script_ = true;
     results_->proxy_resolve_start_time_ = creation_time_;
     results_->proxy_resolve_end_time_ = TimeTicks::Now();
+
+    // If annotation is not already set, e.g. through TryToCompleteSynchronously
+    // function, use in-progress-resolve annotation.
+    if (!results_->traffic_annotation_.is_valid())
+      results_->set_traffic_annotation(traffic_annotation_);
+
+    // If proxy is set without error, ensure that an annotation is provided.
+    if (!rv)
+      DCHECK(results_->traffic_annotation_.is_valid());
 
     // Reset the state associated with in-progress-resolve.
     traffic_annotation_.reset();

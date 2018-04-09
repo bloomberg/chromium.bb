@@ -575,9 +575,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
   }
 }
 
-// Flaky, see https://crbug.com/823077
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
-                       DISABLED_ProxyConfig) {
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, ProxyConfig) {
   SetProxyPref(embedded_test_server()->host_port_pair());
   TestProxyConfigured();
 }
