@@ -431,7 +431,8 @@ void ManagePasswordsBubbleModel::OnPasswordAction(
 }
 
 void ManagePasswordsBubbleModel::OnSignInToChromeClicked(
-    const AccountInfo& account) {
+    const AccountInfo& account,
+    bool is_default_promo_account) {
   // Enabling sync for an existing account and starting a new sign-in are
   // triggered by the user interacting with the sign-in promo.
   interaction_keeper_->set_sign_in_promo_dismissal_reason(
@@ -439,7 +440,7 @@ void ManagePasswordsBubbleModel::OnSignInToChromeClicked(
   GetProfile()->GetPrefs()->SetBoolean(
       password_manager::prefs::kWasSignInPasswordPromoClicked, true);
   if (delegate_)
-    delegate_->EnableSync(account);
+    delegate_->EnableSync(account, is_default_promo_account);
 }
 
 void ManagePasswordsBubbleModel::OnSkipSignInClicked() {

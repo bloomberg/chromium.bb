@@ -66,7 +66,9 @@ void SigninViewController::ShowSignin(
           SigninManagerFactory::GetForProfile(browser->profile());
       email = manager->GetAuthenticatedAccountInfo().email;
     }
-    ShowDiceSigninTab(mode, browser, access_point, email);
+    ShowDiceSigninTab(mode, browser, access_point,
+                      signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT,
+                      email);
   } else {
     ShowModalSigninDialog(mode, browser, access_point);
   }
@@ -137,6 +139,7 @@ void SigninViewController::ShowDiceSigninTab(
     profiles::BubbleViewMode mode,
     Browser* browser,
     signin_metrics::AccessPoint access_point,
+    signin_metrics::PromoAction promo_action,
     const std::string& email) {
   signin_metrics::Reason signin_reason = GetSigninReasonFromMode(mode);
   GURL signin_url = signin::GetSigninURLForDice(browser->profile(), email);
@@ -156,7 +159,7 @@ void SigninViewController::ShowDiceSigninTab(
   DCHECK_EQ(signin_url, active_contents->GetVisibleURL());
   DiceTabHelper::CreateForWebContents(active_contents);
   DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(active_contents);
-  tab_helper->InitializeSigninFlow(access_point, signin_reason);
+  tab_helper->InitializeSigninFlow(access_point, signin_reason, promo_action);
 }
 
 content::WebContents*

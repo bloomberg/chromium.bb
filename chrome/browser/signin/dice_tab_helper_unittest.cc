@@ -33,7 +33,9 @@ TEST(DiceTabHelperTest, Initialization) {
       signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE;
   signin_metrics::Reason reason =
       signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT;
-  dice_tab_helper->InitializeSigninFlow(access_point, reason);
+  dice_tab_helper->InitializeSigninFlow(
+      access_point, reason,
+      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
   EXPECT_EQ(access_point, dice_tab_helper->signin_access_point());
   EXPECT_EQ(reason, dice_tab_helper->signin_reason());
 }
@@ -57,14 +59,17 @@ TEST(DiceTabHelperTest, Metrics) {
   // Check metrics logged when the Dice tab helper is initialized.
   dice_tab_helper->InitializeSigninFlow(
       signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
-      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT);
+      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+      signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT);
   EXPECT_EQ(1, ua_tester.GetActionCount("Signin_Signin_FromStartPage"));
   EXPECT_EQ(1, ua_tester.GetActionCount("Signin_SigninPage_Loading"));
   EXPECT_EQ(0, ua_tester.GetActionCount("Signin_SigninPage_Shown"));
-  EXPECT_EQ(1, h_tester.GetBucketCount(
-                   "Signin.SigninStartedAccessPoint",
-                   static_cast<int>(
-                       signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE)));
+  h_tester.ExpectUniqueSample(
+      "Signin.SigninStartedAccessPoint",
+      signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE, 1);
+  h_tester.ExpectUniqueSample(
+      "Signin.SigninStartedAccessPoint.NewAccount",
+      signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE, 1);
 
   // First call to did finish load does logs any Signin_SigninPage_Shown user
   // action.
@@ -81,11 +86,14 @@ TEST(DiceTabHelperTest, Metrics) {
   // Check metrics are logged again when the Dice tab helper is re-initialized.
   dice_tab_helper->InitializeSigninFlow(
       signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
-      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT);
+      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+      signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT);
   EXPECT_EQ(2, ua_tester.GetActionCount("Signin_Signin_FromStartPage"));
   EXPECT_EQ(2, ua_tester.GetActionCount("Signin_SigninPage_Loading"));
-  EXPECT_EQ(2, h_tester.GetBucketCount(
-                   "Signin.SigninStartedAccessPoint",
-                   static_cast<int>(
-                       signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE)));
+  h_tester.ExpectUniqueSample(
+      "Signin.SigninStartedAccessPoint",
+      signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE, 2);
+  h_tester.ExpectUniqueSample(
+      "Signin.SigninStartedAccessPoint.WithDefault",
+      signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE, 1);
 }

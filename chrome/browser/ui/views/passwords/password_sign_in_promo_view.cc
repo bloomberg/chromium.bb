@@ -31,8 +31,9 @@ PasswordSignInPromoView::DiceSyncPromoDelegate::~DiceSyncPromoDelegate() =
     default;
 
 void PasswordSignInPromoView::DiceSyncPromoDelegate::OnEnableSync(
-    const AccountInfo& account) {
-  model_->OnSignInToChromeClicked(account);
+    const AccountInfo& account,
+    bool is_default_promo_account) {
+  model_->OnSignInToChromeClicked(account, is_default_promo_account);
 }
 
 PasswordSignInPromoView::PasswordSignInPromoView(
@@ -70,7 +71,8 @@ PasswordSignInPromoView::~PasswordSignInPromoView() = default;
 
 bool PasswordSignInPromoView::Accept() {
   DCHECK(!dice_sync_promo_delegate_);
-  model_->OnSignInToChromeClicked(AccountInfo());
+  model_->OnSignInToChromeClicked(AccountInfo(),
+                                  false /* is_default_promo_account */);
   return true;
 }
 

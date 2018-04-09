@@ -482,8 +482,9 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoOK) {
   account.account_id = "foo_account_id";
   account.gaia = "foo_gaia_id";
   account.email = "foo@bar.com";
-  EXPECT_CALL(*controller(), EnableSync(AccountEq(account)));
-  model()->OnSignInToChromeClicked(account);
+  EXPECT_CALL(*controller(), EnableSync(AccountEq(account), false));
+  model()->OnSignInToChromeClicked(account,
+                                   false /* is_default_promo_account */);
   DestroyModelAndVerifyControllerExpectations();
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonSaveMetric,

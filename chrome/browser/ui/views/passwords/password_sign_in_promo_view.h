@@ -32,7 +32,8 @@ class PasswordSignInPromoView : public views::View {
     ~DiceSyncPromoDelegate() override;
 
     // BubbleSyncPromoDelegate:
-    void OnEnableSync(const AccountInfo& account) override;
+    void OnEnableSync(const AccountInfo& account,
+                      bool is_default_promo_account) override;
 
    private:
     ManagePasswordsBubbleModel* model_;

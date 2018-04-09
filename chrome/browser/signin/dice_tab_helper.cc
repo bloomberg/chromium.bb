@@ -22,13 +22,14 @@ DiceTabHelper::~DiceTabHelper() = default;
 
 void DiceTabHelper::InitializeSigninFlow(
     signin_metrics::AccessPoint access_point,
-    signin_metrics::Reason reason) {
+    signin_metrics::Reason reason,
+    signin_metrics::PromoAction promo_action) {
   signin_access_point_ = access_point;
   signin_reason_ = reason;
   did_finish_loading_signin_page_ = false;
 
   if (signin_reason_ == signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT) {
-    signin_metrics::LogSigninAccessPointStarted(access_point);
+    signin_metrics::LogSigninAccessPointStarted(access_point, promo_action);
     signin_metrics::RecordSigninUserActionForAccessPoint(access_point);
     base::RecordAction(base::UserMetricsAction("Signin_SigninPage_Loading"));
   }

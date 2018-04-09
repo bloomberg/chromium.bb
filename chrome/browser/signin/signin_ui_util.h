@@ -44,9 +44,12 @@ void ShowSigninErrorLearnMorePage(Profile* profile);
 //   then it presents the Chrome sign-in page with |account.emil| prefilled.
 // * If token service has a valid refresh token for |account|, then it
 //   enables sync for |account|.
-void EnableSync(Browser* browser,
-                const AccountInfo& account,
-                signin_metrics::AccessPoint access_point);
+// |is_default_promo_account| is true if |account| corresponds to the default
+// account in the promo. It is ignored if |account| is empty.
+void EnableSyncFromPromo(Browser* browser,
+                         const AccountInfo& account,
+                         signin_metrics::AccessPoint access_point,
+                         bool is_default_promo_account);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Returns the display email string for the given account.  If the profile
@@ -68,12 +71,13 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile);
 std::string GetAllowedDomain(std::string signin_pattern);
 
 namespace internal {
-// Same as |EnableSync| but with a callback that creates a
+// Same as |EnableSyncFromPromo| but with a callback that creates a
 // DiceTurnSyncOnHelper so that it can be unit tested.
-void EnableSync(
+void EnableSyncFromPromo(
     Browser* browser,
     const AccountInfo& account,
     signin_metrics::AccessPoint access_point,
+    bool is_default_promo_account,
     base::OnceCallback<
         void(Profile* profile,
              Browser* browser,

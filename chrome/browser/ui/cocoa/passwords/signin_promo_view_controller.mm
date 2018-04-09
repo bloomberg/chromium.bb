@@ -108,7 +108,8 @@
 - (void)onSignInClicked:(id)sender {
   ManagePasswordsBubbleModel* model = [self.delegate model];
   if (model)
-    model->OnSignInToChromeClicked(AccountInfo());
+    model->OnSignInToChromeClicked(AccountInfo(),
+                                   false /* is_default_promo_account */);
   [self.delegate viewShouldDismiss];
 }
 

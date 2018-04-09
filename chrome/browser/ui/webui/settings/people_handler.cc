@@ -542,8 +542,11 @@ void PeopleHandler::HandleStartSyncingWithEmail(const base::ListValue* args) {
   AccountInfo account =
       account_tracker->FindAccountInfoByEmail(email->GetString());
 
-  signin_ui_util::EnableSync(
-      browser, account, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
+  // TODO(http://crbug.com/819431): Pass the right is_default_promo_account bit
+  // from the settings web_ui.
+  signin_ui_util::EnableSyncFromPromo(
+      browser, account, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS,
+      false /* is_default_promo_account */);
 }
 #endif
 

@@ -168,7 +168,8 @@ void DiceTurnSyncOnHelperDelegateImpl::ShowSigninPageInNewProfile(
   Browser* browser = chrome::FindTabbedBrowser(new_profile, false);
   browser->signin_view_controller()->ShowDiceSigninTab(
       profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser,
-      signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE, username);
+      signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
+      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO, username);
 }
 
 void DiceTurnSyncOnHelperDelegateImpl::OnSyncConfirmationUIClosed(

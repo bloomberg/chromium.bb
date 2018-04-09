@@ -127,7 +127,8 @@ class ManagePasswordsUIController
   void NavigateToSmartLockHelpPage() override;
   void NavigateToPasswordManagerAccountDashboard() override;
   void NavigateToPasswordManagerSettingsPage() override;
-  void EnableSync(const AccountInfo& account) override;
+  void EnableSync(const AccountInfo& account,
+                  bool is_default_promo_account) override;
   void OnDialogHidden() override;
   bool AuthenticateUser() override;
   bool ArePasswordsRevealedWhenBubbleIsOpened() const override;

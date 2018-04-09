@@ -80,7 +80,8 @@ DiceBubbleSyncPromoView::~DiceBubbleSyncPromoView() = default;
 void DiceBubbleSyncPromoView::ButtonPressed(views::Button* sender,
                                             const ui::Event& event) {
   if (sender == signin_button_view_->signin_button()) {
-    EnableSync(signin_button_view_->account());
+    EnableSync(true /* is_default_promo_account */,
+               signin_button_view_->account());
     return;
   }
 
@@ -91,7 +92,8 @@ void DiceBubbleSyncPromoView::ButtonPressed(views::Button* sender,
     dice_accounts_menu_ = std::make_unique<DiceAccountsMenu>(
         accounts_for_submenu_, images_for_submenu_,
         base::BindOnce(&DiceBubbleSyncPromoView::EnableSync,
-                       base::Unretained(this)));
+                       base::Unretained(this),
+                       false /* is_default_promo_account */));
     dice_accounts_menu_->Show(signin_button_view_,
                               signin_button_view_->drop_down_arrow());
     return;
@@ -101,8 +103,10 @@ void DiceBubbleSyncPromoView::ButtonPressed(views::Button* sender,
 }
 
 void DiceBubbleSyncPromoView::EnableSync(
+    bool is_default_promo_account,
     const base::Optional<AccountInfo>& account) {
-  delegate_->OnEnableSync(account.value_or(AccountInfo()));
+  delegate_->OnEnableSync(account.value_or(AccountInfo()),
+                          is_default_promo_account);
 }
 
 const char* DiceBubbleSyncPromoView::GetClassName() const {

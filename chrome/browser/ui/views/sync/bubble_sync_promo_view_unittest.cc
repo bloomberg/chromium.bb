@@ -26,7 +26,8 @@ class BubbleSyncPromoViewTest : public views::ViewsTestBase,
 
  protected:
   // BubbleSyncPromoDelegate:
-  void OnEnableSync(const AccountInfo& account) override {
+  void OnEnableSync(const AccountInfo& account,
+                    bool is_default_promo_account) override {
     // The bubble sync promo view does not allow the user to enable sync
     // for an existing account id.
     DCHECK(account.IsEmpty());

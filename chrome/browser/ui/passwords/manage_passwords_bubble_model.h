@@ -95,7 +95,8 @@ class ManagePasswordsBubbleModel {
 
   // Called by the view when the "Sign in" button or the "Sync to" button in the
   // promo bubble is clicked.
-  void OnSignInToChromeClicked(const AccountInfo& account);
+  void OnSignInToChromeClicked(const AccountInfo& account,
+                               bool is_default_promo_account);
 
   // Called by the view when the "No thanks" button in the promo bubble is
   // clicked.

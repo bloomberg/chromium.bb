@@ -690,8 +690,9 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == signin_with_gaia_account_button_) {
     DCHECK(dice_signin_button_view_->account());
     Hide();
-    signin_ui_util::EnableSync(
-        browser_, dice_signin_button_view_->account().value(), access_point_);
+    signin_ui_util::EnableSyncFromPromo(
+        browser_, dice_signin_button_view_->account().value(), access_point_,
+        true /* is_default_promo_account */);
   } else if (sender == sync_to_another_account_button_) {
     // Extract the promo accounts for the submenu, i.e. remove the first
     // one from the list because it is already shown in a separate button.
@@ -1473,7 +1474,9 @@ void ProfileChooserView::EnableSync(
     const base::Optional<AccountInfo>& account) {
   Hide();
   if (account)
-    signin_ui_util::EnableSync(browser_, account.value(), access_point_);
+    signin_ui_util::EnableSyncFromPromo(browser_, account.value(),
+                                        access_point_,
+                                        false /* is_default_promo_account */);
   else
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN);
 }

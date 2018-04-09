@@ -48,21 +48,21 @@ void SignInPromoViewControllerTest::SetUpSignInPromoState() {
 
 
 TEST_F(SignInPromoViewControllerTest, ClickSignIn) {
-  EXPECT_CALL(*ui_controller(), EnableSync(_));
+  EXPECT_CALL(*ui_controller(), EnableSync(_, false));
   [controller().signInButton performClick:nil];
 
   EXPECT_TRUE([delegate() dismissed]);
 }
 
 TEST_F(SignInPromoViewControllerTest, ClickNo) {
-  EXPECT_CALL(*ui_controller(), EnableSync(_)).Times(0);
+  EXPECT_CALL(*ui_controller(), EnableSync(_, false)).Times(0);
   [controller().noButton performClick:nil];
 
   EXPECT_TRUE([delegate() dismissed]);
 }
 
 TEST_F(SignInPromoViewControllerTest, ClickClose) {
-  EXPECT_CALL(*ui_controller(), EnableSync(_)).Times(0);
+  EXPECT_CALL(*ui_controller(), EnableSync(_, false)).Times(0);
   [controller().closeButton performClick:nil];
 
   EXPECT_TRUE([delegate() dismissed]);
@@ -71,7 +71,7 @@ TEST_F(SignInPromoViewControllerTest, ClickClose) {
 TEST_F(SignInPromoViewControllerTest, CloseBubbleAndHandleClick) {
   // A user may press mouse down, some navigation closes the bubble, mouse up
   // still sends the action.
-  EXPECT_CALL(*ui_controller(), EnableSync(_)).Times(0);
+  EXPECT_CALL(*ui_controller(), EnableSync(_, false)).Times(0);
   [delegate() setModel:nil];
   [controller().signInButton performClick:nil];
   [controller().noButton performClick:nil];
