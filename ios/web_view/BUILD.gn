@@ -31,9 +31,8 @@ config("config") {
 }
 
 # These variables are used to share framework sources with both ChromeWebView
-# and CrNetChromeWebView frameworks.
+# and CronetChromeWebView frameworks.
 ios_web_view_public_headers = [
-  "public/ChromeWebView.h",
   "public/cwv_autofill_controller.h",
   "public/cwv_autofill_controller_delegate.h",
   "public/cwv_autofill_suggestion.h",
@@ -217,22 +216,32 @@ ios_web_view_deps = [
   "//url",
 ]
 
+action("web_view_umbrella_header") {
+  script = "//build/config/ios/generate_umbrella_header.py"
+
+  full_header_path = target_gen_dir + "/ChromeWebView.h"
+  outputs = [
+    full_header_path,
+  ]
+
+  args = [
+    "--output-path",
+    rebase_path(full_header_path, root_build_dir),
+  ]
+
+  args += rebase_path(ios_web_view_public_headers, root_build_dir)
+}
+
 ios_framework_bundle("web_view") {
   output_name = ios_web_view_output_name
   info_plist = "Info.plist"
 
   public_headers = ios_web_view_public_headers
+  public_headers += get_target_outputs(":web_view_umbrella_header")
   if (ios_web_view_include_cronet) {
     public_headers += [ "//components/cronet/ios/Cronet.h" ]
     public_headers += grpc_public_headers
     public_headers += cronet_native_public_headers
-  }
-
-  public = [
-    "public/ChromeWebView.h",
-  ]
-  if (ios_web_view_enable_sync) {
-    public += [ "public/ChromeSync.h" ]
   }
 
   sources = ios_web_view_sources
@@ -241,6 +250,7 @@ ios_framework_bundle("web_view") {
   }
 
   deps = ios_web_view_deps
+  deps += [ ":web_view_umbrella_header" ]
   if (ios_web_view_include_cronet) {
     deps += [ "//components/cronet/ios:cronet_sources" ]
   }
