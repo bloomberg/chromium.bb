@@ -139,7 +139,7 @@ void GetPointer(wl_client* client, wl_resource* resource, uint32_t id) {
     return;
   }
   auto* seat = GetUserDataAs<MockSeat>(resource);
-  seat->pointer_.reset(new MockPointer(pointer_resource));
+  seat->set_pointer(std::make_unique<MockPointer>(pointer_resource));
 }
 
 void GetKeyboard(wl_client* client, wl_resource* resource, uint32_t id) {
@@ -150,7 +150,7 @@ void GetKeyboard(wl_client* client, wl_resource* resource, uint32_t id) {
     return;
   }
   auto* seat = GetUserDataAs<MockSeat>(resource);
-  seat->keyboard_.reset(new MockKeyboard(keyboard_resource));
+  seat->set_keyboard(std::make_unique<MockKeyboard>(keyboard_resource));
 }
 
 void GetTouch(wl_client* client, wl_resource* resource, uint32_t id) {
@@ -161,7 +161,7 @@ void GetTouch(wl_client* client, wl_resource* resource, uint32_t id) {
     return;
   }
   auto* seat = GetUserDataAs<MockSeat>(resource);
-  seat->touch_.reset(new MockTouch(touch_resource));
+  seat->set_touch(std::make_unique<MockTouch>(touch_resource));
 }
 
 const struct wl_seat_interface seat_impl = {
@@ -257,7 +257,7 @@ const struct xdg_surface_interface xdg_surface_impl = {
 
 void GetTopLevel(wl_client* client, wl_resource* resource, uint32_t id) {
   auto* surface = GetUserDataAs<MockXdgSurface>(resource);
-  if (surface->xdg_toplevel) {
+  if (surface->xdg_toplevel()) {
     wl_resource_post_error(resource, ZXDG_SURFACE_V6_ERROR_ALREADY_CONSTRUCTED,
                            "surface has already been constructed");
     return;
@@ -268,7 +268,8 @@ void GetTopLevel(wl_client* client, wl_resource* resource, uint32_t id) {
     wl_client_post_no_memory(client);
     return;
   }
-  surface->xdg_toplevel.reset(new MockXdgTopLevel(xdg_toplevel_resource));
+  surface->set_xdg_toplevel(
+      std::make_unique<MockXdgTopLevel>(xdg_toplevel_resource));
 }
 
 const struct zxdg_surface_v6_interface zxdg_surface_v6_impl = {
@@ -303,7 +304,7 @@ void GetXdgSurfaceImpl(wl_client* client,
                        const struct wl_interface* interface,
                        const void* implementation) {
   auto* surface = GetUserDataAs<MockSurface>(surface_resource);
-  if (surface->xdg_surface) {
+  if (surface->xdg_surface()) {
     uint32_t xdg_error = implementation == &xdg_surface_impl
                              ? XDG_SHELL_ERROR_ROLE
                              : ZXDG_SHELL_V6_ERROR_ROLE;
@@ -317,8 +318,8 @@ void GetXdgSurfaceImpl(wl_client* client,
     wl_client_post_no_memory(client);
     return;
   }
-  surface->xdg_surface.reset(
-      new MockXdgSurface(xdg_surface_resource, implementation));
+  surface->set_xdg_surface(
+      std::make_unique<MockXdgSurface>(xdg_surface_resource, implementation));
 }
 
 // xdg_shell
@@ -384,8 +385,8 @@ MockSurface::MockSurface(wl_resource* resource) : ServerObject(resource) {
 }
 
 MockSurface::~MockSurface() {
-  if (xdg_surface && xdg_surface->resource())
-    wl_resource_destroy(xdg_surface->resource());
+  if (xdg_surface_ && xdg_surface_->resource())
+    wl_resource_destroy(xdg_surface_->resource());
 }
 
 MockSurface* MockSurface::FromResource(wl_resource* resource) {

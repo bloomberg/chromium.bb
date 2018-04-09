@@ -38,7 +38,7 @@ class WaylandTouchTest : public WaylandTest {
 
     Sync();
 
-    touch_ = server_.seat()->touch_.get();
+    touch_ = server_.seat()->touch();
     ASSERT_TRUE(touch_);
   }
 

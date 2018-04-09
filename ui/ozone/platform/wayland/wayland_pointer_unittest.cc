@@ -30,7 +30,7 @@ class WaylandPointerTest : public WaylandTest {
 
     Sync();
 
-    pointer_ = server_.seat()->pointer_.get();
+    pointer_ = server_.seat()->pointer();
     ASSERT_TRUE(pointer_);
   }
 
