@@ -157,6 +157,7 @@ test("zucchini_unittests") {
     "buffer_source_unittest.cc",
     "buffer_view_unittest.cc",
     "crc32_unittest.cc",
+    "disassembler_dex_unittest.cc",
     "element_detection_unittest.cc",
     "encoded_view_unittest.cc",
     "equivalence_map_unittest.cc",
