@@ -7,13 +7,15 @@
 
 #include <string>
 
+#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_path_override.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/download/download_target_info.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -226,9 +229,6 @@ class ChromeDownloadManagerDelegateTest
   // downloads directory.
   base::FilePath GetPathInDownloadDir(const char* path);
 
-  // Set the kDownloadDefaultDirectory user preference to |path|.
-  void SetDefaultDownloadPath(const base::FilePath& path);
-
   void DetermineDownloadTarget(DownloadItem* download,
                                DetermineDownloadTargetResult* result);
 
@@ -238,7 +238,7 @@ class ChromeDownloadManagerDelegateTest
   // method.
   bool CheckForFileExistence(DownloadItem* download);
 
-  const base::FilePath& default_download_path() const;
+  base::FilePath GetDefaultDownloadPath() const;
   TestChromeDownloadManagerDelegate* delegate();
   content::MockDownloadManager* download_manager();
   DownloadPrefs* download_prefs();
@@ -248,8 +248,11 @@ class ChromeDownloadManagerDelegateTest
   void GetNextId(uint32_t next_id) { download_ids_.emplace_back(next_id); }
 
  private:
+  // Resets the global cached DefaultDownloadDirectory instance.
+  base::ShadowingAtExitManager at_exit_manager_;
+  base::ScopedPathOverride download_dir_override_{
+      chrome::DIR_DEFAULT_DOWNLOADS};
   sync_preferences::TestingPrefServiceSyncable* pref_service_;
-  base::ScopedTempDir test_download_dir_;
   std::unique_ptr<content::MockDownloadManager> download_manager_;
   std::unique_ptr<TestChromeDownloadManagerDelegate> delegate_;
   MockWebContentsDelegate web_contents_delegate_;
@@ -270,9 +273,6 @@ void ChromeDownloadManagerDelegateTest::SetUp() {
   delegate_->SetDownloadManager(download_manager_.get());
   pref_service_ = profile()->GetTestingPrefService();
   web_contents()->SetDelegate(&web_contents_delegate_);
-
-  ASSERT_TRUE(test_download_dir_.CreateUniqueTempDir());
-  SetDefaultDownloadPath(test_download_dir_.GetPath());
 }
 
 void ChromeDownloadManagerDelegateTest::TearDown() {
@@ -324,14 +324,8 @@ ChromeDownloadManagerDelegateTest::CreateActiveDownloadItem(int32_t id) {
 base::FilePath ChromeDownloadManagerDelegateTest::GetPathInDownloadDir(
     const char* relative_path) {
   base::FilePath full_path =
-      test_download_dir_.GetPath().AppendASCII(relative_path);
+      GetDefaultDownloadPath().AppendASCII(relative_path);
   return full_path.NormalizePathSeparators();
-}
-
-void ChromeDownloadManagerDelegateTest::SetDefaultDownloadPath(
-    const base::FilePath& path) {
-  pref_service_->SetFilePath(prefs::kDownloadDefaultDirectory, path);
-  pref_service_->SetFilePath(prefs::kSaveFileDefaultDirectory, path);
 }
 
 void StoreDownloadTargetInfo(
@@ -378,9 +372,11 @@ bool ChromeDownloadManagerDelegateTest::CheckForFileExistence(
   return result;
 }
 
-const base::FilePath& ChromeDownloadManagerDelegateTest::default_download_path()
+base::FilePath ChromeDownloadManagerDelegateTest::GetDefaultDownloadPath()
     const {
-  return test_download_dir_.GetPath();
+  base::FilePath path;
+  CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path));
+  return path;
 }
 
 TestChromeDownloadManagerDelegate*
@@ -566,9 +562,9 @@ TEST_F(ChromeDownloadManagerDelegateTest, MaybeDangerousContent) {
 TEST_F(ChromeDownloadManagerDelegateTest, CheckForFileExistence) {
   const char kData[] = "helloworld";
   const size_t kDataLength = sizeof(kData) - 1;
-  base::FilePath existing_path = default_download_path().AppendASCII("foo");
+  base::FilePath existing_path = GetDefaultDownloadPath().AppendASCII("foo");
   base::FilePath non_existent_path =
-      default_download_path().AppendASCII("bar");
+      GetDefaultDownloadPath().AppendASCII("bar");
   base::WriteFile(existing_path, kData, kDataLength);
 
   std::unique_ptr<download::MockDownloadItem> download_item =

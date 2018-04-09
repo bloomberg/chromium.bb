@@ -114,6 +114,10 @@ class DownloadPrefs {
  private:
   void SaveAutoOpenState();
 
+  // Checks whether |path| is a valid download target path. If it is, returns
+  // it as is. If it isn't returns the default download directory.
+  base::FilePath SanitizeDownloadTargetPath(const base::FilePath& path) const;
+
   Profile* profile_;
 
   BooleanPrefMember prompt_for_download_;
