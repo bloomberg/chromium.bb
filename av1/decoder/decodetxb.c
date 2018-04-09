@@ -148,6 +148,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   av1_read_tx_type(cm, xd, blk_row, blk_col, plane, tx_size, r);
   const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
+  const TX_CLASS tx_class = tx_type_to_class[tx_type];
   const TX_SIZE qm_tx_size = av1_get_adjusted_tx_size(tx_size);
   const qm_val_t *iqmatrix =
       IS_2D_TRANSFORM(tx_type)
@@ -159,7 +160,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   int eob_pt = 1;
 
   const int eob_multi_size = txsize_log2_minus4[tx_size];
-  const int eob_multi_ctx = (tx_type_to_class[tx_type] == TX_CLASS_2D) ? 0 : 1;
+  const int eob_multi_ctx = (tx_class == TX_CLASS_2D) ? 0 : 1;
   switch (eob_multi_size) {
     case 0:
       eob_pt =
@@ -222,7 +223,6 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
   *eob = rec_eob_pos(eob_pt, eob_extra);
 
-  const TX_CLASS tx_class = tx_type_to_class[tx_type];
   {
     // Read the non-zero coefficient with scan index eob-1
     // TODO(angiebird): Put this into a function
