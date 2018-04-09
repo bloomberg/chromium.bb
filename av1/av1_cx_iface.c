@@ -600,8 +600,13 @@ static aom_codec_err_t set_encoder_config(
   oxcf->content = extra_cfg->content;
   oxcf->cdf_update_mode = (uint8_t)extra_cfg->cdf_update_mode;
   oxcf->superblock_size = extra_cfg->superblock_size;
-  oxcf->film_grain_test_vector = extra_cfg->film_grain_test_vector;
-  oxcf->film_grain_table_filename = extra_cfg->film_grain_table_filename;
+  if (cfg->large_scale_tile) {
+    oxcf->film_grain_test_vector = 0;
+    oxcf->film_grain_table_filename = NULL;
+  } else {
+    oxcf->film_grain_test_vector = extra_cfg->film_grain_test_vector;
+    oxcf->film_grain_table_filename = extra_cfg->film_grain_table_filename;
+  }
   oxcf->large_scale_tile = cfg->large_scale_tile;
   oxcf->single_tile_decoding =
       (oxcf->large_scale_tile) ? extra_cfg->single_tile_decoding : 0;
