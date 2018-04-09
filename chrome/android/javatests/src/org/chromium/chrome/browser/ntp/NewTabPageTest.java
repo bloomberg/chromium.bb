@@ -631,6 +631,7 @@ public class NewTabPageTest {
                 (NewTabPage) mActivityTestRule.getActivity().getActivityTab().getNativePage();
         RecyclerView recyclerView = ntp.getNewTabPageView().getRecyclerView();
         NewTabPageAdapter adapter = (NewTabPageAdapter) recyclerView.getAdapter();
+        RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
         View view = recyclerView.findViewHolderForAdapterPosition(
                 adapter.getFirstHeaderPosition()).itemView;
 
