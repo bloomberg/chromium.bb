@@ -71,20 +71,12 @@
 
   [self addAdditionalControls];
 
-  // Infobars are drawn a little taller, so have to move its controls to keep
-  // them centered.
-  // TODO(ellyjones): Remove this constant.
-  CGFloat heightDelta = 2;
-  for (NSView* nextSubview in [infoBarView_ subviews]) {
-    NSRect frame = [nextSubview frame];
-    frame.origin.y += heightDelta / 2;
-    [nextSubview setFrame:frame];
-  }
-
   [infoBarView_ setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
   cocoa_l10n_util::FlipAllSubviewsIfNecessary(
       base::mac::ObjCCast<NSView>(infoBarView_));
 
+  // TODO(ellyjones): InfoBar height should be computed from child heights +
+  // appropriate (Harmony) margins, and children repositioned accordingly.
   constexpr int kDefaultBarTargetHeight = 40;
   infobar_->SetTargetHeight(kDefaultBarTargetHeight);
 }
