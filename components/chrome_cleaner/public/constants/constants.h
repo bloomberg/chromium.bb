@@ -65,6 +65,9 @@ extern const char kSessionIdSwitch[];
 // Indicates the group name for the SRTPrompt field trial.
 extern const char kSRTPromptFieldTrialGroupNameSwitch[];
 
+// Indicates the method Chrome will use to prompt the user to reboot if needed.
+extern const char kRebootPromptMethodSwitch[];
+
 // Indicates that metrics reporting is enabled for the current user.
 extern const char kUmaUserSwitch[];
 

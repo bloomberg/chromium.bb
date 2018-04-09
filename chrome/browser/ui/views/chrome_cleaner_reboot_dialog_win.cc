@@ -75,8 +75,12 @@ void ChromeCleanerRebootDialog::Show(Browser* browser) {
 // WidgetDelegate overrides.
 
 ui::ModalType ChromeCleanerRebootDialog::GetModalType() const {
-  return safe_browsing::IsRebootPromptModal() ? ui::MODAL_TYPE_WINDOW
-                                              : ui::MODAL_TYPE_NONE;
+  safe_browsing::RebootPromptType prompt_type =
+      safe_browsing::GetRebootPromptType();
+  DCHECK_NE(safe_browsing::REBOOT_PROMPT_TYPE_OPEN_SETTINGS_PAGE, prompt_type);
+  return prompt_type == safe_browsing::REBOOT_PROMPT_TYPE_SHOW_MODAL_DIALOG
+             ? ui::MODAL_TYPE_WINDOW
+             : ui::MODAL_TYPE_NONE;
 }
 
 base::string16 ChromeCleanerRebootDialog::GetWindowTitle() const {
