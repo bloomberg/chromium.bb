@@ -23,6 +23,7 @@ class ContextualSuggestionsModel
         static final PropertyKey CLOSE_BUTTON_ON_CLICK_LISTENER = new PropertyKey();
         static final PropertyKey TITLE = new PropertyKey();
         static final PropertyKey TOOLBAR_SHADOW_VISIBILITY = new PropertyKey();
+        static final PropertyKey DEFAULT_TOOLBAR_ON_CLICK_LISTENER = new PropertyKey();
 
         private PropertyKey() {}
     }
@@ -76,6 +77,7 @@ class ContextualSuggestionsModel
 
     ClusterListObservable mClusterListObservable = new ClusterListObservable();
     private OnClickListener mCloseButtonOnClickListener;
+    private OnClickListener mDefaultToolbarOnClickListener;
     private String mTitle;
     private boolean mToolbarShadowVisibility;
 
@@ -127,5 +129,20 @@ class ContextualSuggestionsModel
     /** @return Whether the toolbar shadow should be visible. */
     boolean getToolbarShadowVisibility() {
         return mToolbarShadowVisibility;
+    }
+
+    /**
+     * @param listener The default toolbar {@link OnClickListener}.
+     */
+    void setDefaultToolbarClickListener(OnClickListener listener) {
+        mDefaultToolbarOnClickListener = listener;
+        notifyPropertyChanged(PropertyKey.DEFAULT_TOOLBAR_ON_CLICK_LISTENER);
+    }
+
+    /**
+     * @return The default toolbar {@link OnClickListener}.
+     */
+    OnClickListener getDefaultToolbarClickListener() {
+        return mDefaultToolbarOnClickListener;
     }
 }

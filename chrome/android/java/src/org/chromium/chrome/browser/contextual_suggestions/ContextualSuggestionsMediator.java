@@ -192,6 +192,7 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
         mHasRecordedPeekEventForTab = false;
         mModel.setClusterList(new ClusterList(Collections.emptyList()));
         mModel.setCloseButtonOnClickListener(null);
+        mModel.setDefaultToolbarClickListener(null);
         mModel.setTitle(null);
         mCoordinator.removeSuggestions();
         mCurrentRequestUrl = "";
@@ -214,6 +215,7 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
 
             clearSuggestions();
         });
+        mModel.setDefaultToolbarClickListener(view -> mCoordinator.expandBottomSheet());
         mModel.setTitle(title);
         mCoordinator.preloadContentInSheet();
     }

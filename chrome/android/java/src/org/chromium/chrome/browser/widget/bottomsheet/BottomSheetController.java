@@ -297,6 +297,14 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
         }
     }
 
+    /**
+     * Expand the {@link BottomSheet}. If there is no content in the sheet, this is a noop.
+     */
+    public void expandSheet() {
+        if (mBottomSheet.getCurrentSheetContent() == null) return;
+        mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
+    }
+
     @Override
     public void onActivityStateChange(Activity activity, int newState) {
         if (newState == ActivityState.STARTED) {

@@ -132,6 +132,13 @@ public class ContextualSuggestionsCoordinator {
         mBottomSheetController.getBottomSheet().removeObserver(observer);
     }
 
+    /**
+     * Expand the {@link BottomSheet}.
+     */
+    void expandBottomSheet() {
+        mBottomSheetController.expandSheet();
+    }
+
     /** Removes contextual suggestions from the {@link BottomSheet}. */
     void removeSuggestions() {
         if (mToolbarCoordinator != null) {
