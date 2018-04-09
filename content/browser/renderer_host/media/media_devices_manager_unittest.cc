@@ -630,6 +630,10 @@ TEST_F(MediaDevicesManagerTest, SubscribeDeviceChanges) {
 
 TEST_F(MediaDevicesManagerTest, GuessVideoGroupID) {
   MediaDeviceInfoArray audio_devices = {
+      {media::AudioDeviceDescription::kDefaultDeviceId,
+       "Default - Unique USB Mic (1234:5678)", "group_1"},
+      {media::AudioDeviceDescription::kCommunicationsDeviceId,
+       "communications - Unique USB Mic (1234:5678)", "group_1"},
       {"device_id_1", "Microphone (Logitech Webcam C930e)", "group_1"},
       {"device_id_2", "HD Pro Webcam C920", "group_2"},
       {"device_id_3", "Microsoft® LifeCam Cinema(TM)", "group_3"},
@@ -641,6 +645,16 @@ TEST_F(MediaDevicesManagerTest, GuessVideoGroupID) {
       {"device_id_9", "Repeated dual-mic webcam device", "group_7"},
       {"device_id_10", "Repeated dual-mic webcam device", "group_8"},
       {"device_id_11", "Repeated dual-mic webcam device", "group_8"},
+      {"device_id_12", "Unique USB Mic (1234:5678)", "group_1"},
+      {"device_id_13", "Another Unique USB Mic (5678:9abc)", "group_9"},
+      {"device_id_14", "Repeated USB Mic (8765:4321)", "group_10"},
+      {"device_id_15", "Repeated USB Mic (8765:4321)", "group_11"},
+      // Extra entry for communications device added here just to make sure
+      // that it is not incorrectly detected as an extra real device. Real
+      // enumerations contain only the first entry for the communications
+      // device.
+      {media::AudioDeviceDescription::kCommunicationsDeviceId,
+       "communications - Unique USB Mic (1234:5678)", "group_1"},
   };
 
   MediaDeviceInfo logitech_video("logitech_video",
@@ -662,6 +676,14 @@ TEST_F(MediaDevicesManagerTest, GuessVideoGroupID) {
   MediaDeviceInfo repeated_dual_mic2_video(
       "repeated_dual_mic2_video", "Repeated dual-mic webcam device", "");
   MediaDeviceInfo short_label_video("short_label_video", " ()", "");
+  MediaDeviceInfo unique_usb_video("unique_usb_video",
+                                   "Unique USB webcam (1234:5678)", "");
+  MediaDeviceInfo another_unique_usb_video(
+      "another_unique_usb_video", "Another Unique USB webcam (5678:9abc)", "");
+  MediaDeviceInfo repeated_usb1_video("repeated_usb1_video",
+                                      "Repeated USB webcam (8765:4321)", "");
+  MediaDeviceInfo repeated_usb2_video("repeated_usb2_video",
+                                      "Repeated USB webcam (8765:4321)", "");
 
   EXPECT_EQ(GuessVideoGroupID(audio_devices, logitech_video), "group_1");
   EXPECT_EQ(GuessVideoGroupID(audio_devices, hd_pro_video), "group_2");
@@ -679,6 +701,13 @@ TEST_F(MediaDevicesManagerTest, GuessVideoGroupID) {
             repeated_dual_mic2_video.device_id);
   EXPECT_EQ(GuessVideoGroupID(audio_devices, short_label_video),
             short_label_video.device_id);
+  EXPECT_EQ(GuessVideoGroupID(audio_devices, unique_usb_video), "group_1");
+  EXPECT_EQ(GuessVideoGroupID(audio_devices, another_unique_usb_video),
+            "group_9");
+  EXPECT_EQ(GuessVideoGroupID(audio_devices, repeated_usb1_video),
+            repeated_usb1_video.device_id);
+  EXPECT_EQ(GuessVideoGroupID(audio_devices, repeated_usb2_video),
+            repeated_usb2_video.device_id);
 }
 
 }  // namespace content
