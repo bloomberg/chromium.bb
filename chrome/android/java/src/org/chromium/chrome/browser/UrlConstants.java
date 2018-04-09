@@ -61,7 +61,6 @@ public class UrlConstants {
     public static final String INTERESTS_HOST = "interests";
     public static final String INTERESTS_URL = "chrome-native://interests/";
 
-    public static final String PHYSICAL_WEB_DIAGNOSTICS_HOST = "physical-web-diagnostics";
     public static final String PHYSICAL_WEB_URL = "chrome://physical-web/";
 
     public static final String GOOGLE_ACCOUNT_ACTIVITY_CONTROLS_URL =
