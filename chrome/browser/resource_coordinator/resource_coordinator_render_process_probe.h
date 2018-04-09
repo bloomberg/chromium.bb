@@ -15,17 +15,16 @@
 #include "base/process/process_metrics.h"
 #include "base/timer/timer.h"
 
-namespace content {
-class RenderProcessHost;
-}
-
 namespace resource_coordinator {
 
 struct RenderProcessInfo {
   RenderProcessInfo();
   ~RenderProcessInfo();
   double cpu_usage = -1.0;
-  content::RenderProcessHost* host = nullptr;
+  // This structure bounces from the UI thread to blocking threads and back.
+  // It's therefore not safe to store RenderProcessHost pointers, so the ID is
+  // used instead.
+  int render_process_host_id = 0;
   size_t last_gather_cycle_active;
   std::unique_ptr<base::ProcessMetrics> metrics;
 };
