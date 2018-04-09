@@ -5,6 +5,8 @@
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 
 #include <stddef.h>
+#include <string>
+#include <vector>
 
 #include "base/barrier_closure.h"
 #include "base/feature_list.h"
@@ -88,10 +90,11 @@ const base::Feature kUmaShortHWClass{"UmaShortHWClass",
 
 // Called on a background thread to load hardware class information.
 std::string GetHardwareClassOnBackgroundThread() {
-  // TODO(asvitkine): If we switch to the new API permanently, we should also
-  // move this work off the background thread.
-  if (base::FeatureList::IsEnabled(kUmaShortHWClass))
-    return variations::VariationsFieldTrialCreator::GetShortHardwareClass();
+  // If short hardware class feature is enabled, the hardware class should be
+  // getting set synchronously, so this shouldn't be getting called.
+  // TODO(asvitkine): Get rid of the background thread logic after M67 goes to
+  // stable when the new logic has fully rolled out.
+  DCHECK(!base::FeatureList::IsEnabled(kUmaShortHWClass));
 
   std::string hardware_class;
   chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
@@ -144,12 +147,20 @@ ChromeOSMetricsProvider::GetEnrollmentStatus() {
 }
 
 void ChromeOSMetricsProvider::Init() {
+  if (base::FeatureList::IsEnabled(kUmaShortHWClass)) {
+    hardware_class_ =
+        variations::VariationsFieldTrialCreator::GetShortHardwareClass();
+  }
   perf_provider_.Init();
 }
 
 void ChromeOSMetricsProvider::AsyncInit(const base::Closure& done_callback) {
-  base::Closure barrier = base::BarrierClosure(2, done_callback);
-  InitTaskGetHardwareClass(barrier);
+  bool need_hardware_class = !base::FeatureList::IsEnabled(kUmaShortHWClass);
+
+  base::RepeatingClosure barrier =
+      base::BarrierClosure(need_hardware_class ? 2 : 1, done_callback);
+  if (need_hardware_class)
+    InitTaskGetHardwareClass(barrier);
   InitTaskGetBluetoothAdapter(barrier);
 }
 
