@@ -23,7 +23,7 @@ MediaControlPanelElement::MediaControlPanelElement(
     MediaControlsImpl& media_controls)
     : MediaControlDivElement(media_controls, kMediaControlsPanel),
       transition_timer_(
-          media_controls.GetDocument().GetTaskRunner(TaskType::kUnspecedTimer),
+          media_controls.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
           &MediaControlPanelElement::TransitionTimerFired) {
   SetShadowPseudoId(AtomicString("-webkit-media-controls-panel"));

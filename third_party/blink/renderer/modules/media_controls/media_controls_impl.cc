@@ -354,7 +354,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       orientation_lock_delegate_(nullptr),
       rotate_to_fullscreen_delegate_(nullptr),
       hide_media_controls_timer_(
-          media_element.GetDocument().GetTaskRunner(TaskType::kUnspecedTimer),
+          media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
           &MediaControlsImpl::HideMediaControlsTimerFired),
       hide_timer_behavior_flags_(kIgnoreNone),
@@ -364,7 +364,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
           media_element.GetDocument(),
           new MediaControlsResizeObserverDelegate(this))),
       element_size_changed_timer_(
-          media_element.GetDocument().GetTaskRunner(TaskType::kUnspecedTimer),
+          media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
           &MediaControlsImpl::ElementSizeChangedTimerFired),
       keep_showing_until_timer_fires_(false) {
