@@ -2919,15 +2919,9 @@ void av1_lowbd_fwd_txfm2d_64x16_sse2(const int16_t *input, int32_t *output,
   const transform_1d_sse2 row_txfm = row_txfm8x64_arr[tx_type];
   const int width_div8 = (width >> 3);
   const int height_div8 = (height >> 3);
-  int ud_flip, lr_flip;
-  get_flip_cfg(tx_type, &ud_flip, &lr_flip);
 
   for (int i = 0; i < width_div8; i++) {
-    if (ud_flip) {
-      load_buffer_16bit_to_16bit_flip(input + 8 * i, stride, buf0, height);
-    } else {
-      load_buffer_16bit_to_16bit(input + 8 * i, stride, buf0, height);
-    }
+    load_buffer_16bit_to_16bit(input + 8 * i, stride, buf0, height);
     round_shift_16bit(buf0, height, shift[0]);
     col_txfm(buf0, buf0, cos_bit_col);
     round_shift_16bit(buf0, height, shift[1]);
@@ -2937,13 +2931,7 @@ void av1_lowbd_fwd_txfm2d_64x16_sse2(const int16_t *input, int32_t *output,
   }
 
   for (int i = 0; i < height_div8; i++) {
-    __m128i *buf;
-    if (lr_flip) {
-      buf = buf0;
-      flip_buf_sse2(buf1 + width * i, buf, width);
-    } else {
-      buf = buf1 + width * i;
-    }
+    __m128i *buf = buf1 + width * i;
     row_txfm(buf, buf, cos_bit_row);
     round_shift_16bit(buf, width, shift[2]);
     int32_t *output8 = output + 8 * 32 * i;
@@ -2971,15 +2959,9 @@ void av1_lowbd_fwd_txfm2d_16x64_sse2(const int16_t *input, int32_t *output,
   const transform_1d_sse2 row_txfm = row_txfm8x16_arr[tx_type];
   const int width_div8 = (width >> 3);
   const int height_div8 = (height >> 3);
-  int ud_flip, lr_flip;
-  get_flip_cfg(tx_type, &ud_flip, &lr_flip);
 
   for (int i = 0; i < width_div8; i++) {
-    if (ud_flip) {
-      load_buffer_16bit_to_16bit_flip(input + 8 * i, stride, buf0, height);
-    } else {
-      load_buffer_16bit_to_16bit(input + 8 * i, stride, buf0, height);
-    }
+    load_buffer_16bit_to_16bit(input + 8 * i, stride, buf0, height);
     round_shift_16bit(buf0, height, shift[0]);
     col_txfm(buf0, buf0, cos_bit_col);
     round_shift_16bit(buf0, height, shift[1]);
@@ -2989,13 +2971,7 @@ void av1_lowbd_fwd_txfm2d_16x64_sse2(const int16_t *input, int32_t *output,
   }
 
   for (int i = 0; i < AOMMIN(4, height_div8); i++) {
-    __m128i *buf;
-    if (lr_flip) {
-      buf = buf0;
-      flip_buf_sse2(buf1 + width * i, buf, width);
-    } else {
-      buf = buf1 + width * i;
-    }
+    __m128i *buf = buf1 + width * i;
     row_txfm(buf, buf, cos_bit_row);
     round_shift_16bit(buf, width, shift[2]);
     int32_t *output8 = output + 8 * width * i;
@@ -3005,6 +2981,8 @@ void av1_lowbd_fwd_txfm2d_16x64_sse2(const int16_t *input, int32_t *output,
       store_buffer_16bit_to_32bit_w8(buf8, output8 + 8 * j, width, 8);
     }
   }
+  // Zero out the bottom 16x32 area.
+  memset(output + 16 * 32, 0, 16 * 32 * sizeof(*output));
 }
 
 typedef void (*FwdTxfm2dFuncSSE2)(const int16_t *input, int32_t *output,
