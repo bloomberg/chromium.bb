@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.contextual_suggestions;
 import android.support.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegateImpl;
@@ -51,7 +50,7 @@ public class ContextualSuggestionsCoordinator {
         mProfile = Profile.getLastUsedProfile().getOriginalProfile();
 
         mModel = new ContextualSuggestionsModel();
-        mMediator = new ContextualSuggestionsMediator(mActivity, mProfile, tabModelSelector,
+        mMediator = new ContextualSuggestionsMediator(mProfile, tabModelSelector,
                 activity.getFullscreenManager(), this, mModel,
                 mBottomSheetController.getBottomSheet());
     }
@@ -101,17 +100,17 @@ public class ContextualSuggestionsCoordinator {
      * Finish showing the contextual suggestions in the {@link BottomSheet}.
      * {@link #showContentInSheet()} must be called prior to calling this method.
      *
-     * @param suggestionsSource The {@link SuggestionsSource} used to retrieve additional things
-     *                          needed to display suggestions (e.g. favicons, thumbnails).
+     * @param suggestionsSource The {@link ContextualSuggestionsSource} used to retrieve additional
+     *                          things needed to display suggestions (e.g. favicons, thumbnails).
      */
-    void showSuggestions(SuggestionsSource suggestionsSource) {
+    void showSuggestions(ContextualSuggestionsSource suggestionsSource) {
         SuggestionsNavigationDelegate navigationDelegate = new SuggestionsNavigationDelegateImpl(
                 mActivity, mProfile, mBottomSheetController.getBottomSheet(), mTabModelSelector);
-        SuggestionsUiDelegateImpl uiDelegate =
-                new SuggestionsUiDelegateImpl(suggestionsSource, new DummyEventReporter(),
-                        navigationDelegate, mProfile, mBottomSheetController.getBottomSheet(),
-                        mActivity.getChromeApplication().getReferencePool(),
-                        mBottomSheetController.getSnackbarManager());
+        SuggestionsUiDelegateImpl uiDelegate = new SuggestionsUiDelegateImpl(suggestionsSource,
+                new ContextualSuggestionsEventReporter(mTabModelSelector, suggestionsSource),
+                navigationDelegate, mProfile, mBottomSheetController.getBottomSheet(),
+                mActivity.getChromeApplication().getReferencePool(),
+                mBottomSheetController.getSnackbarManager());
 
         mContentCoordinator.showSuggestions(mActivity, mProfile, uiDelegate, mModel,
                 mActivity.getWindowAndroid(), mActivity::closeContextMenu);
