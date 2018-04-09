@@ -50,7 +50,8 @@ class DiceBubbleSyncPromoView : public views::View,
  private:
   // Used to enable sync in the DiceAccountsMenu and when |signin_button_| is
   // pressed.
-  void EnableSync(const base::Optional<AccountInfo>& account);
+  void EnableSync(bool is_default_promo_account,
+                  const base::Optional<AccountInfo>& account);
 
   // views::View:
   const char* GetClassName() const override;

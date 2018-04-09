@@ -14,7 +14,10 @@ class BubbleSyncPromoDelegate {
 
   // Informs the delegate to enable sync for |account| or to present
   // the browser sign-in page if |account| is empty.
-  virtual void OnEnableSync(const AccountInfo& account) = 0;
+  // |is_default_promo_account| is true if |account| corresponds to the default
+  // account in the promo. It is ignored if |account| is empty.
+  virtual void OnEnableSync(const AccountInfo& account,
+                            bool is_default_promo_account) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_SYNC_BUBBLE_SYNC_PROMO_DELEGATE_H_

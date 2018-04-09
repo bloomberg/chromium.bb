@@ -29,7 +29,8 @@ class DiceTabHelper : public content::WebContentsUserData<DiceTabHelper>,
   // Initializes the DiceTabHelper for a new signin flow. Must be called once
   // per signin flow happening in the tab.
   void InitializeSigninFlow(signin_metrics::AccessPoint access_point,
-                            signin_metrics::Reason reason);
+                            signin_metrics::Reason reason,
+                            signin_metrics::PromoAction promo_action);
 
   // content::WebContentsObserver:
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,

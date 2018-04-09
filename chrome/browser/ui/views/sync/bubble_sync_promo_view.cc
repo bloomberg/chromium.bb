@@ -48,5 +48,5 @@ const char* BubbleSyncPromoView::GetClassName() const {
 void BubbleSyncPromoView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                  const gfx::Range& range,
                                                  int event_flags) {
-  delegate_->OnEnableSync(AccountInfo());
+  delegate_->OnEnableSync(AccountInfo(), false /* is_default_promo_account */);
 }

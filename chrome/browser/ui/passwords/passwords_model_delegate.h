@@ -107,7 +107,8 @@ class PasswordsModelDelegate {
   virtual void NavigateToPasswordManagerSettingsPage() = 0;
   // Called by the view when the "Sign in to Chrome" button or the "Sync to"
   // button in the promo bubble are clicked.
-  virtual void EnableSync(const AccountInfo& account) = 0;
+  virtual void EnableSync(const AccountInfo& account,
+                          bool is_default_promo_account) = 0;
 
   // Called from the dialog controller when the dialog is hidden.
   virtual void OnDialogHidden() = 0;

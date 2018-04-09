@@ -480,11 +480,13 @@ void ManagePasswordsUIController::NavigateToPasswordManagerAccountDashboard() {
   Navigate(&params);
 }
 
-void ManagePasswordsUIController::EnableSync(const AccountInfo& account) {
+void ManagePasswordsUIController::EnableSync(const AccountInfo& account,
+                                             bool is_default_promo_account) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  signin_ui_util::EnableSync(
+  signin_ui_util::EnableSyncFromPromo(
       browser, account,
-      signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE);
+      signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE,
+      is_default_promo_account);
 }
 
 void ManagePasswordsUIController::OnDialogHidden() {

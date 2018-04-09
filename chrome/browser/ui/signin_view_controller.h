@@ -21,6 +21,7 @@ class SigninViewControllerTestUtil;
 
 namespace signin_metrics {
 enum class AccessPoint;
+enum class PromoAction;
 }
 
 // Class responsible for showing and hiding all sign-in related UIs
@@ -46,6 +47,7 @@ class SigninViewController {
   void ShowDiceSigninTab(profiles::BubbleViewMode mode,
                          Browser* browser,
                          signin_metrics::AccessPoint access_point,
+                         signin_metrics::PromoAction promo_action,
                          const std::string& email);
 
   // Shows the modal sync confirmation dialog as a browser-modal dialog on top
