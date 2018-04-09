@@ -61,20 +61,21 @@ class NotificationHelperTest : public testing::Test {
 
   void SetUp() override {
     // Back up the existing registration.
-    ASSERT_TRUE(backup_.Initialize(root_, toast_activator_reg_path().c_str(),
+    ASSERT_TRUE(backup_.Initialize(root_, toast_activator_reg_path_.c_str(),
                                    WorkItem::kWow64Default));
 
-    RegisterServer();
+    ASSERT_NO_FATAL_FAILURE(RegisterServer());
   }
 
   void TearDown() override {
-    UnregisterServer();
+    ASSERT_NO_FATAL_FAILURE(UnregisterServer());
 
     // Restore the registration.
-    ASSERT_TRUE(backup_.WriteTo(root_, toast_activator_reg_path().c_str(),
+    ASSERT_TRUE(backup_.WriteTo(root_, toast_activator_reg_path_.c_str(),
                                 WorkItem::kWow64Default));
   }
 
+ private:
   // Registers notification_helper.exe as the server.
   void RegisterServer() {
     std::unique_ptr<WorkItemList> list(WorkItem::CreateWorkItemList());
@@ -82,7 +83,7 @@ class NotificationHelperTest : public testing::Test {
     // Delete the old registration to ensure a clean environment for server
     // registration. This is okay because we have already backed up the existing
     // registration in SetUp(), and will restore it in TearDown().
-    list->AddDeleteRegKeyWorkItem(root_, toast_activator_reg_path(),
+    list->AddDeleteRegKeyWorkItem(root_, toast_activator_reg_path_,
                                   WorkItem::kWow64Default);
 
     // Notification_helper.exe is in the build output directory next to this
@@ -93,7 +94,7 @@ class NotificationHelperTest : public testing::Test {
     base::FilePath notification_helper =
         dir_exe.Append(installer::kNotificationHelperExe);
 
-    base::string16 toast_activator_server_path = toast_activator_reg_path();
+    base::string16 toast_activator_server_path = toast_activator_reg_path_;
     toast_activator_server_path.append(L"\\LocalServer32");
 
     // Command-line featuring the quoted path to the exe.
@@ -116,15 +117,10 @@ class NotificationHelperTest : public testing::Test {
   // Unregisters the server by deleting the registry key installed during the
   // test.
   void UnregisterServer() {
-    ASSERT_TRUE(InstallUtil::DeleteRegistryKey(
-        root_, toast_activator_reg_path(), WorkItem::kWow64Default));
+    ASSERT_TRUE(InstallUtil::DeleteRegistryKey(root_, toast_activator_reg_path_,
+                                               WorkItem::kWow64Default));
   }
 
-  const base::string16& toast_activator_reg_path() const {
-    return toast_activator_reg_path_;
-  }
-
- private:
   // Path to the toast activator registry.
   const base::string16 toast_activator_reg_path_;
 
