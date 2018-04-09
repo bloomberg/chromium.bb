@@ -126,15 +126,37 @@ bool UpdaterState::IsEnterpriseManaged() {
   }
 
   NSError* error = nil;
+
+  NSArray<NSString*>* all_node_names = [session nodeNamesAndReturnError:&error];
+  if (!all_node_names) {
+    DLOG(WARNING) << "ODSession failed to give node names: "
+                  << error.localizedDescription.UTF8String;
+    return false;
+  }
+
+  NSUInteger num_nodes = all_node_names.count;
+  if (num_nodes < 3) {
+    DLOG(WARNING) << "ODSession returned too few node names: "
+                  << all_node_names.description.UTF8String;
+    return false;
+  }
+
+  if (num_nodes > 3) {
+    // Non-enterprise machines have:"/Search", "/Search/Contacts",
+    // "/Local/Default". Everything else would be enterprise management.
+    return true;
+  }
+
   ODNode* node = [ODNode nodeWithSession:session
                                     type:kODNodeTypeAuthentication
                                    error:&error];
   if (node == nil) {
     DLOG(WARNING) << "ODSession cannot obtain the authentication node: "
-        << base::mac::NSToCFCast(error);
+                  << error.localizedDescription.UTF8String;
     return false;
   }
 
+  // Now check the currently logged on user.
   ODQuery* query = [ODQuery queryWithNode:node
                            forRecordTypes:kODRecordTypeUsers
                                 attribute:kODAttributeTypeRecordName
@@ -152,12 +174,12 @@ bool UpdaterState::IsEnterpriseManaged() {
   NSArray* results = [query resultsAllowingPartial:NO error:&error];
   if (!results) {
     DLOG(WARNING) << "ODSession cannot obtain current user node: "
-        << base::mac::NSToCFCast(error);
+                  << error.localizedDescription.UTF8String;
     return false;
   }
   if (results.count != 1) {
-    DLOG(WARNING) << @"ODSession unexpected number of nodes: "
-        << results.count;
+    DLOG(WARNING) << @"ODSession unexpected number of user nodes: "
+                  << results.count;
   }
   for (id element in results) {
     ODRecord* record = base::mac::ObjCCastStrict<ODRecord>(element);
@@ -168,9 +190,27 @@ bool UpdaterState::IsEnterpriseManaged() {
       NSString* attribute_value =
           base::mac::ObjCCastStrict<NSString>(attribute);
       // Example: "uid=johnsmith,ou=People,dc=chromium,dc=org
-      NSRange dc = [attribute_value rangeOfString:@"(^|,)\\s*dc="
-                                          options:NSRegularExpressionSearch];
-      if (dc.length > 0) {
+      NSRange domain_controller =
+          [attribute_value rangeOfString:@"(^|,)\\s*dc="
+                                 options:NSRegularExpressionSearch];
+      if (domain_controller.length > 0) {
+        return true;
+      }
+    }
+
+    // Scan alternative identities.
+    attributes =
+        [record valuesForAttribute:kODAttributeTypeAltSecurityIdentities
+                             error:NULL];
+    for (id attribute in attributes) {
+      NSString* attribute_value =
+          base::mac::ObjCCastStrict<NSString>(attribute);
+      NSRange iCloud =
+          [attribute_value rangeOfString:@"CN=com.apple.idms.appleid.prd"
+                                 options:NSCaseInsensitiveSearch];
+      if (!iCloud.length) {
+        // Any alternative identity that is not iCloud is likely enterprise
+        // management.
         return true;
       }
     }
