@@ -890,6 +890,7 @@ static void init_buffer_indices(AV1_COMP *cpi) {
 void init_seq_coding_tools(SequenceHeader *seq, const AV1EncoderConfig *oxcf) {
   seq->still_picture = (oxcf->limit == 1);
   seq->reduced_still_picture_hdr = seq->still_picture;
+  seq->reduced_still_picture_hdr &= !oxcf->full_still_picture_hdr;
   seq->force_screen_content_tools = 2;
   seq->force_integer_mv = 2;
   seq->enable_order_hint = oxcf->enable_order_hint;

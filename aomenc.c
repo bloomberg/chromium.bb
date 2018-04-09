@@ -269,6 +269,8 @@ static const arg_def_t large_scale_tile =
             "Large scale tile coding (0: off (default), 1: on)");
 static const arg_def_t monochrome =
     ARG_DEF(NULL, "monochrome", 0, "Monochrome video (no chroma planes)");
+static const arg_def_t full_still_picture_hdr = ARG_DEF(
+    NULL, "full-still-picture-hdr", 0, "Use full header for still picture");
 
 static const arg_def_t *global_args[] = { &use_yv12,
                                           &use_i420,
@@ -291,6 +293,7 @@ static const arg_def_t *global_args[] = { &use_yv12,
                                           &lag_in_frames,
                                           &large_scale_tile,
                                           &monochrome,
+                                          &full_still_picture_hdr,
                                           NULL };
 
 static const arg_def_t dropframe_thresh =
@@ -1164,6 +1167,8 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.large_scale_tile = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &monochrome, argi)) {
       config->cfg.monochrome = 1;
+    } else if (arg_match(&arg, &full_still_picture_hdr, argi)) {
+      config->cfg.full_still_picture_hdr = 1;
     } else if (arg_match(&arg, &dropframe_thresh, argi)) {
       config->cfg.rc_dropframe_thresh = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &resize_mode, argi)) {

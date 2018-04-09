@@ -282,6 +282,7 @@ typedef struct AV1EncoderConfig {
   unsigned int large_scale_tile;
   unsigned int single_tile_decoding;
   int monochrome;
+  unsigned int full_still_picture_hdr;
   int enable_dual_filter;
   unsigned int motion_vector_unit_test;
   const cfg_options_t *cfg;

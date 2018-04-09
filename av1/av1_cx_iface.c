@@ -631,6 +631,7 @@ static aom_codec_err_t set_encoder_config(
     oxcf->tile_rows = extra_cfg->tile_rows;
   }
   oxcf->monochrome = cfg->monochrome;
+  oxcf->full_still_picture_hdr = cfg->full_still_picture_hdr;
   oxcf->enable_dual_filter = extra_cfg->use_dual_filter;
   oxcf->enable_order_hint = extra_cfg->enable_order_hint;
   oxcf->enable_jnt_comp =
@@ -1760,6 +1761,7 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         1,            // sframe_mode
         0,            // large_scale_tile
         0,            // monochrome
+        0,            // full_still_picture_hdr
         0,            // save_as_annexb
         0,            // tile_width_count
         0,            // tile_height_count

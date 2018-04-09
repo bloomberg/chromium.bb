@@ -668,6 +668,15 @@ typedef struct aom_codec_enc_cfg {
    */
   unsigned int monochrome;
 
+  /*!\brief full_still_picture_hdr
+   *
+   * If this is nonzero, the encoder will generate a full header even for
+   * still picture encoding. if zero, a reduced header is used for still
+   * picture. This flag has no effect when a regular video with more than
+   * a single frame is encoded.
+   */
+  unsigned int full_still_picture_hdr;
+
   /*!\brief Bitstream syntax mode
    *
    * This value indicates the bitstream syntax mode.
