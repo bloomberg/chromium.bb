@@ -604,9 +604,6 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
 }
 
 void FaviconHandler::DownloadCurrentCandidateOrAskFaviconService() {
-  if (!current_candidate())
-    return;
-
   DCHECK(image_download_request_.IsCancelled());
   DCHECK(manifest_download_request_.IsCancelled());
   DCHECK(current_candidate());
