@@ -99,7 +99,7 @@ class MEDIA_EXPORT VideoDecoder {
   // |output_cb| must be called for each frame pending in the queue and
   // |decode_cb| must be called after that. Callers will not call Decode()
   // again until after the flush completes.
-  virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+  virtual void Decode(scoped_refptr<DecoderBuffer> buffer,
                       const DecodeCB& decode_cb) = 0;
 
   // Resets decoder state. All pending Decode() requests will be finished or

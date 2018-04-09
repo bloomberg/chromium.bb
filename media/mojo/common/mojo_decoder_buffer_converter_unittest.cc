@@ -39,7 +39,7 @@ class MojoDecoderBufferConverter {
         std::move(data_pipe.consumer_handle));
   }
 
-  void ConvertAndVerify(const scoped_refptr<DecoderBuffer>& media_buffer) {
+  void ConvertAndVerify(scoped_refptr<DecoderBuffer> media_buffer) {
     base::RunLoop run_loop;
     base::MockCallback<MojoDecoderBufferReader::ReadCB> mock_cb;
     EXPECT_CALL(mock_cb, Run(MatchesDecoderBuffer(media_buffer)))

@@ -56,7 +56,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
       const InitCB& init_cb,
       const OutputCB& output_cb,
       const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb);
-  void OnDecode(const scoped_refptr<DecoderBuffer>& buffer);
+  void OnDecode(const DecoderBuffer& buffer);
   PostDecodeAction OnDecodeDone(const scoped_refptr<OutputType>& buffer);
   void OnStreamReset(DemuxerStream* stream);
   void OnConfigChanged(const DecoderConfigType& config);
@@ -96,7 +96,7 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
       const InitCB& init_cb,
       const OutputCB& output_cb,
       const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb);
-  void OnDecode(const scoped_refptr<DecoderBuffer>& buffer);
+  void OnDecode(const DecoderBuffer& buffer);
 
   PostDecodeAction OnDecodeDone(const scoped_refptr<OutputType>& buffer);
   void OnStreamReset(DemuxerStream* stream);

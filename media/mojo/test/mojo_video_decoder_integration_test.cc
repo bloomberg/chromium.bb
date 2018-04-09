@@ -92,8 +92,7 @@ class MockVideoDecoder : public VideoDecoder {
   }
 
   MOCK_METHOD2(Decode,
-               void(const scoped_refptr<DecoderBuffer>& buffer,
-                    const DecodeCB&));
+               void(scoped_refptr<DecoderBuffer> buffer, const DecodeCB&));
   MOCK_METHOD1(Reset, void(const base::Closure&));
   MOCK_CONST_METHOD0(NeedsBitstreamConversion, bool());
   MOCK_CONST_METHOD0(CanReadWithoutStalling, bool());
@@ -112,7 +111,7 @@ class MockVideoDecoder : public VideoDecoder {
 
   // Returns an output frame immediately.
   // TODO(sandersd): Extend to support tests of MojoVideoFrame frames.
-  void DoDecode(const scoped_refptr<DecoderBuffer>& buffer,
+  void DoDecode(scoped_refptr<DecoderBuffer> buffer,
                 const DecodeCB& decode_cb) {
     if (!buffer->end_of_stream()) {
       gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
@@ -215,7 +214,7 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
     return result;
   }
 
-  DecodeStatus Decode(const scoped_refptr<DecoderBuffer>& buffer,
+  DecodeStatus Decode(scoped_refptr<DecoderBuffer> buffer,
                       VideoFrame::ReleaseMailboxCB release_cb =
                           VideoFrame::ReleaseMailboxCB()) {
     DecodeStatus result = DecodeStatus::DECODE_ERROR;

@@ -60,7 +60,7 @@ class MEDIA_EXPORT AudioDiscardHelper {
   // |encoded_buffer| will be used as the basis for all future timestamps set on
   // |decoded_buffer|s.  If the first buffer has a negative timestamp it will be
   // clamped to zero.
-  bool ProcessBuffers(const scoped_refptr<DecoderBuffer>& encoded_buffer,
+  bool ProcessBuffers(const DecoderBuffer& encoded_buffer,
                       const scoped_refptr<AudioBuffer>& decoded_buffer);
 
   // Whether any buffers have been processed.

@@ -44,8 +44,7 @@ class MockOffloadableVideoDecoder : public OffloadableVideoDecoder {
            const OutputCB& output_cb,
            const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb));
   MOCK_METHOD2(Decode,
-               void(const scoped_refptr<DecoderBuffer>& buffer,
-                    const DecodeCB&));
+               void(scoped_refptr<DecoderBuffer> buffer, const DecodeCB&));
   MOCK_METHOD1(Reset, void(const base::Closure&));
   MOCK_METHOD0(Detach, void(void));
 };

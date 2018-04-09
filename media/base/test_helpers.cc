@@ -321,13 +321,12 @@ scoped_refptr<DecoderBuffer> CreateFakeVideoBufferForTest(
   return buffer;
 }
 
-bool VerifyFakeVideoBufferForTest(
-    const scoped_refptr<DecoderBuffer>& buffer,
-    const VideoDecoderConfig& config) {
+bool VerifyFakeVideoBufferForTest(const DecoderBuffer& buffer,
+                                  const VideoDecoderConfig& config) {
   // Check if the input |buffer| matches the |config|.
   base::PickleIterator pickle(
-      base::Pickle(reinterpret_cast<const char*>(buffer->data()),
-                   static_cast<int>(buffer->data_size())));
+      base::Pickle(reinterpret_cast<const char*>(buffer.data()),
+                   static_cast<int>(buffer.data_size())));
   std::string header;
   int width = 0;
   int height = 0;

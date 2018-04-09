@@ -131,15 +131,15 @@ static void WriteInt64(uint8_t* buffer, int64_t number) {
 static void OnReadDone(const base::TimeDelta& expected_time,
                        bool* called,
                        DemuxerStream::Status status,
-                       const scoped_refptr<DecoderBuffer>& buffer) {
+                       scoped_refptr<DecoderBuffer> buffer) {
   EXPECT_EQ(status, DemuxerStream::kOk);
   EXPECT_EQ(expected_time, buffer->timestamp());
   *called = true;
 }
 
-static void OnReadDone_AbortExpected(
-    bool* called, DemuxerStream::Status status,
-    const scoped_refptr<DecoderBuffer>& buffer) {
+static void OnReadDone_AbortExpected(bool* called,
+                                     DemuxerStream::Status status,
+                                     scoped_refptr<DecoderBuffer> buffer) {
   EXPECT_EQ(status, DemuxerStream::kAborted);
   EXPECT_EQ(NULL, buffer.get());
   *called = true;
@@ -147,7 +147,7 @@ static void OnReadDone_AbortExpected(
 
 static void OnReadDone_EOSExpected(bool* called,
                                    DemuxerStream::Status status,
-                                   const scoped_refptr<DecoderBuffer>& buffer) {
+                                   scoped_refptr<DecoderBuffer> buffer) {
   EXPECT_EQ(status, DemuxerStream::kOk);
   EXPECT_TRUE(buffer->end_of_stream());
   *called = true;
@@ -1125,13 +1125,14 @@ class ChunkDemuxerTest : public ::testing::TestWithParam<BufferingApi> {
     EXPECT_EQ(expected, ss.str());
   }
 
-  MOCK_METHOD2(ReadDone, void(DemuxerStream::Status status,
-                              const scoped_refptr<DecoderBuffer>&));
+  MOCK_METHOD2(ReadDone,
+               void(DemuxerStream::Status status,
+                    scoped_refptr<DecoderBuffer>));
 
   void StoreStatusAndBuffer(DemuxerStream::Status* status_out,
                             scoped_refptr<DecoderBuffer>* buffer_out,
                             DemuxerStream::Status status,
-                            const scoped_refptr<DecoderBuffer>& buffer) {
+                            scoped_refptr<DecoderBuffer> buffer) {
     *status_out = status;
     *buffer_out = buffer;
   }
@@ -1975,10 +1976,9 @@ class EndOfStreamHelper {
   }
 
  private:
-  static void OnEndOfStreamReadDone(
-      bool* called,
-      DemuxerStream::Status status,
-      const scoped_refptr<DecoderBuffer>& buffer) {
+  static void OnEndOfStreamReadDone(bool* called,
+                                    DemuxerStream::Status status,
+                                    scoped_refptr<DecoderBuffer> buffer) {
     EXPECT_EQ(status, DemuxerStream::kOk);
     EXPECT_TRUE(buffer->end_of_stream());
     *called = true;

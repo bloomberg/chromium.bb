@@ -132,7 +132,7 @@ base::TimeDelta SourceBufferRange::GetApproximateDuration() const {
 }
 
 void SourceBufferRange::UpdateEndTime(
-    const scoped_refptr<StreamParserBuffer>& new_buffer) {
+    scoped_refptr<StreamParserBuffer> new_buffer) {
   base::TimeDelta timestamp = new_buffer->timestamp();
   base::TimeDelta duration = new_buffer->duration();
   DVLOG(1) << __func__ << " timestamp=" << timestamp
@@ -145,7 +145,7 @@ void SourceBufferRange::UpdateEndTime(
     DVLOG(1) << "Updating range end time from <empty> to "
              << timestamp.InMicroseconds() << "us, "
              << (timestamp + duration).InMicroseconds() << "us";
-    highest_frame_ = new_buffer;
+    highest_frame_ = std::move(new_buffer);
     return;
   }
 
@@ -158,7 +158,7 @@ void SourceBufferRange::UpdateEndTime(
                     .InMicroseconds()
              << "us to " << timestamp.InMicroseconds() << "us, "
              << (timestamp + duration).InMicroseconds();
-    highest_frame_ = new_buffer;
+    highest_frame_ = std::move(new_buffer);
   }
 }
 

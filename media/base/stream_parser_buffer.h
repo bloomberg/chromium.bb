@@ -159,10 +159,8 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   //
   // All future timestamp, decode timestamp, config id, or track id changes to
   // this buffer will be applied to the preroll buffer as well.
-  void SetPrerollBuffer(const scoped_refptr<StreamParserBuffer>& preroll);
-  const scoped_refptr<StreamParserBuffer>& preroll_buffer() {
-    return preroll_buffer_;
-  }
+  void SetPrerollBuffer(scoped_refptr<StreamParserBuffer> preroll);
+  scoped_refptr<StreamParserBuffer> preroll_buffer() { return preroll_buffer_; }
 
   void set_timestamp(base::TimeDelta timestamp) override;
 

@@ -147,7 +147,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
   // uncompressed output to |video_frame|. This method works with single
   // and multithreaded decoders. End of stream buffers are used to trigger
   // the frame to be returned in the multithreaded decoder case.
-  DecodeStatus DecodeSingleFrame(const scoped_refptr<DecoderBuffer>& buffer) {
+  DecodeStatus DecodeSingleFrame(scoped_refptr<DecoderBuffer> buffer) {
     InputBuffers input_buffers;
     input_buffers.push_back(buffer);
     input_buffers.push_back(end_of_stream_buffer_);
@@ -185,7 +185,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
               output_frames_[1]->visible_rect().size().height());
   }
 
-  DecodeStatus Decode(const scoped_refptr<DecoderBuffer>& buffer) {
+  DecodeStatus Decode(scoped_refptr<DecoderBuffer> buffer) {
     DecodeStatus status;
     EXPECT_CALL(*this, DecodeDone(_)).WillOnce(SaveArg<0>(&status));
 

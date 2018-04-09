@@ -46,7 +46,7 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
       const InitCB& init_cb,
       const OutputCB& output_cb,
       const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) override;
-  void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+  void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override;
   void Reset(const base::Closure& closure) override;
 
@@ -67,7 +67,7 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
 
   // Handles decoding of an unencrypted encoded buffer. A return value of false
   // indicates that an error has occurred.
-  bool FFmpegDecode(const scoped_refptr<DecoderBuffer>& buffer);
+  bool FFmpegDecode(const DecoderBuffer& buffer);
   bool OnNewFrame(AVFrame* frame);
 
   // Handles (re-)initializing the decoder with a (new) config.

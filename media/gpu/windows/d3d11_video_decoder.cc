@@ -95,12 +95,13 @@ void D3D11VideoDecoder::Initialize(
                                        waiting_for_decryption_key_cb)));
 }
 
-void D3D11VideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
+void D3D11VideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                const DecodeCB& decode_cb) {
   impl_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VideoDecoder::Decode, impl_weak_, buffer,
-                                BindToCurrentThreadIfWeakPtr(
-                                    weak_factory_.GetWeakPtr(), decode_cb)));
+      FROM_HERE,
+      base::BindOnce(
+          &VideoDecoder::Decode, impl_weak_, std::move(buffer),
+          BindToCurrentThreadIfWeakPtr(weak_factory_.GetWeakPtr(), decode_cb)));
 }
 
 void D3D11VideoDecoder::Reset(const base::Closure& closure) {

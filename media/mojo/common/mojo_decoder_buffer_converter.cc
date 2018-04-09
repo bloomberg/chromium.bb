@@ -321,7 +321,7 @@ void MojoDecoderBufferWriter::ScheduleNextWrite() {
 }
 
 mojom::DecoderBufferPtr MojoDecoderBufferWriter::WriteDecoderBuffer(
-    const scoped_refptr<DecoderBuffer>& media_buffer) {
+    scoped_refptr<DecoderBuffer> media_buffer) {
   DVLOG(3) << __func__;
 
   // DecoderBuffer cannot be written if the pipe is already closed.
@@ -333,14 +333,14 @@ mojom::DecoderBufferPtr MojoDecoderBufferWriter::WriteDecoderBuffer(
   }
 
   mojom::DecoderBufferPtr mojo_buffer =
-      mojom::DecoderBuffer::From(media_buffer);
+      mojom::DecoderBuffer::From(*media_buffer);
 
   // A non-EOS buffer can have zero size. See http://crbug.com/663438
   if (media_buffer->end_of_stream() || media_buffer->data_size() == 0)
     return mojo_buffer;
 
   // Queue writing the buffer's data into our DataPipe.
-  pending_buffers_.push_back(media_buffer);
+  pending_buffers_.push_back(std::move(media_buffer));
 
   // Do nothing if a write is already scheduled. Otherwise, to reduce latency,
   // always try to write data to the pipe first.

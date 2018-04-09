@@ -391,7 +391,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // delay. Apps can avoid this behavior by not overlap-appending buffers near
   // current playback position.
   void WarnIfTrackBufferExhaustionSkipsForward(
-      const scoped_refptr<StreamParserBuffer>& next_buffer);
+      scoped_refptr<StreamParserBuffer> next_buffer);
 
   // If |out_buffer| has preroll, sets |pending_buffer_| to feed out preroll and
   // returns true.  Otherwise returns false.
@@ -404,8 +404,7 @@ class MEDIA_EXPORT SourceBufferStream {
   // type (DTS for ByDts, PTS for ByPts) defined in RangeClass to reduce the
   // need for some of these helpers. See https://crbug.com/718641.
   static constexpr bool BufferingByPts();
-  DecodeTimestamp BufferGetTimestamp(
-      const scoped_refptr<StreamParserBuffer>& buffer);
+  DecodeTimestamp BufferGetTimestamp(scoped_refptr<StreamParserBuffer> buffer);
   void RangeAppendBuffersToEnd(RangeClass* range,
                                const BufferQueue& buffers,
                                DecodeTimestamp group_start_time);

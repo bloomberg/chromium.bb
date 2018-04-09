@@ -77,13 +77,13 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
 
   // Callback for DemuxerStream::Read().
   void DecryptBuffer(DemuxerStream::Status status,
-                     const scoped_refptr<DecoderBuffer>& buffer);
+                     scoped_refptr<DecoderBuffer> buffer);
 
   void DecryptPendingBuffer();
 
   // Callback for Decryptor::Decrypt().
   void DeliverBuffer(Decryptor::Status status,
-                     const scoped_refptr<DecoderBuffer>& decrypted_buffer);
+                     scoped_refptr<DecoderBuffer> decrypted_buffer);
 
   // Callback for the |decryptor_| to notify this object that a new key has been
   // added.

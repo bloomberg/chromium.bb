@@ -65,7 +65,7 @@ class MojoDecryptorTest : public ::testing::Test {
   }
 
   void ReturnSharedBufferVideoFrame(
-      const scoped_refptr<DecoderBuffer>& encrypted,
+      scoped_refptr<DecoderBuffer> encrypted,
       const Decryptor::VideoDecodeCB& video_decode_cb) {
     // We don't care about the encrypted data, just create a simple VideoFrame.
     scoped_refptr<VideoFrame> frame(
@@ -80,7 +80,7 @@ class MojoDecryptorTest : public ::testing::Test {
     video_decode_cb.Run(Decryptor::kSuccess, std::move(frame));
   }
 
-  void ReturnAudioFrames(const scoped_refptr<DecoderBuffer>& encrypted,
+  void ReturnAudioFrames(scoped_refptr<DecoderBuffer> encrypted,
                          const Decryptor::AudioDecodeCB& audio_decode_cb) {
     const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_4_0;
     const int kSampleRate = 48000;
@@ -93,7 +93,7 @@ class MojoDecryptorTest : public ::testing::Test {
     audio_decode_cb.Run(Decryptor::kSuccess, audio_frames);
   }
 
-  void ReturnEOSVideoFrame(const scoped_refptr<DecoderBuffer>& encrypted,
+  void ReturnEOSVideoFrame(scoped_refptr<DecoderBuffer> encrypted,
                            const Decryptor::VideoDecodeCB& video_decode_cb) {
     // Simply create and return an End-Of-Stream VideoFrame.
     video_decode_cb.Run(Decryptor::kSuccess, VideoFrame::CreateEOSFrame());
@@ -254,7 +254,7 @@ TEST_F(MojoDecryptorTest, Reset_DuringDecryptAndDecode_AudioAndVideo) {
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(100));
 
   mojo_decryptor_->DecryptAndDecodeAudio(
-      std::move(buffer),
+      buffer,
       base::Bind(&MojoDecryptorTest::AudioDecoded, base::Unretained(this)));
   mojo_decryptor_->DecryptAndDecodeVideo(
       std::move(buffer),

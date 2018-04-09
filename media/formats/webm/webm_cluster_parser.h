@@ -79,7 +79,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     // |last_added_buffer_missing_duration_|. Then, if |buffer| is missing
     // duration, saves |buffer| into |last_added_buffer_missing_duration_|, or
     // otherwise adds |buffer| to |buffers_|.
-    bool AddBuffer(const scoped_refptr<StreamParserBuffer>& buffer);
+    bool AddBuffer(scoped_refptr<StreamParserBuffer> buffer);
 
     // If |last_added_buffer_missing_duration_| is set, updates its duration to
     // be non-kNoTimestamp value of |{min|max}_frame_duration_| or a hard-coded
@@ -105,7 +105,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     // |{min|max}_frame_duration_|, and adds |buffer| to |buffers_|. Returns
     // false if |buffer| failed sanity check and therefore was not added to
     // |buffers_|. Returns true otherwise.
-    bool QueueBuffer(const scoped_refptr<StreamParserBuffer>& buffer);
+    bool QueueBuffer(scoped_refptr<StreamParserBuffer> buffer);
 
     // Helper that calculates the buffer duration to use in
     // ApplyDurationEstimateIfNeeded(). |constant_duration| will be set true

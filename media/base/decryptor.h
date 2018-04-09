@@ -68,8 +68,7 @@ class MEDIA_EXPORT Decryptor {
   // - Only |data|, |data_size| and |timestamp| are set in the returned
   //   DecoderBuffer. The callback handler is responsible for setting other
   //   fields as appropriate.
-  typedef base::Callback<void(Status,
-                              const scoped_refptr<DecoderBuffer>&)> DecryptCB;
+  typedef base::Callback<void(Status, scoped_refptr<DecoderBuffer>)> DecryptCB;
 
   // Decrypts the |encrypted| buffer. The decrypt status and decrypted buffer
   // are returned via the provided callback |decrypt_cb|. The |encrypted| buffer
@@ -78,7 +77,7 @@ class MEDIA_EXPORT Decryptor {
   // |stream_type| has completed. Thus, only one DecryptCB may be pending at
   // a time for a given |stream_type|.
   virtual void Decrypt(StreamType stream_type,
-                       const scoped_refptr<DecoderBuffer>& encrypted,
+                       scoped_refptr<DecoderBuffer> encrypted,
                        const DecryptCB& decrypt_cb) = 0;
 
   // Cancels the scheduled decryption operation for |stream_type| and fires the
@@ -133,12 +132,10 @@ class MEDIA_EXPORT Decryptor {
   // DecryptAndDecodeAudio() should not be called until any previous
   // AudioDecodeCB has completed. Thus, only one AudioDecodeCB may be pending at
   // any time. Same for DecryptAndDecodeVideo();
-  virtual void DecryptAndDecodeAudio(
-      const scoped_refptr<DecoderBuffer>& encrypted,
-      const AudioDecodeCB& audio_decode_cb) = 0;
-  virtual void DecryptAndDecodeVideo(
-      const scoped_refptr<DecoderBuffer>& encrypted,
-      const VideoDecodeCB& video_decode_cb) = 0;
+  virtual void DecryptAndDecodeAudio(scoped_refptr<DecoderBuffer> encrypted,
+                                     const AudioDecodeCB& audio_decode_cb) = 0;
+  virtual void DecryptAndDecodeVideo(scoped_refptr<DecoderBuffer> encrypted,
+                                     const VideoDecodeCB& video_decode_cb) = 0;
 
   // Resets the decoder to an initialized clean state, cancels any scheduled
   // decrypt-and-decode operations, and fires any pending

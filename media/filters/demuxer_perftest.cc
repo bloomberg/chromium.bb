@@ -88,7 +88,7 @@ class StreamReader {
                   bool* end_of_stream,
                   base::TimeDelta* timestamp,
                   media::DemuxerStream::Status status,
-                  const scoped_refptr<media::DecoderBuffer>& buffer);
+                  scoped_refptr<DecoderBuffer> buffer);
   int GetNextStreamIndexToRead();
 
   Streams streams_;
@@ -146,9 +146,9 @@ void StreamReader::OnReadDone(
     bool* end_of_stream,
     base::TimeDelta* timestamp,
     media::DemuxerStream::Status status,
-    const scoped_refptr<media::DecoderBuffer>& buffer) {
+    scoped_refptr<DecoderBuffer> buffer) {
   CHECK_EQ(status, media::DemuxerStream::kOk);
-  CHECK(buffer.get());
+  CHECK(buffer);
   *end_of_stream = buffer->end_of_stream();
   *timestamp = *end_of_stream ? media::kNoTimestamp : buffer->timestamp();
   task_runner->PostTask(FROM_HERE, quit_when_idle_closure);

@@ -404,7 +404,7 @@ class FailingVideoDecoder : public VideoDecoder {
       const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) override {
     init_cb.Run(true);
   }
-  void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+  void Decode(scoped_refptr<DecoderBuffer> buffer,
               const DecodeCB& decode_cb) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(decode_cb, DecodeStatus::DECODE_ERROR));

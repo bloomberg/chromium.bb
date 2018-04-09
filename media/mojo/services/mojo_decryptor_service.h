@@ -68,7 +68,7 @@ class MEDIA_MOJO_EXPORT MojoDecryptorService : public mojom::Decryptor {
   // Callback executed once Decrypt() is done.
   void OnDecryptDone(DecryptCallback callback,
                      Status status,
-                     const scoped_refptr<DecoderBuffer>& buffer);
+                     scoped_refptr<DecoderBuffer> buffer);
 
   // Callbacks executed once decoder initialized.
   void OnAudioDecoderInitialized(InitializeAudioDecoderCallback callback,

@@ -81,7 +81,7 @@ class MockDemuxerStreamAdapter {
 
     demuxer_stream_adapter_->OnReceivedRpc(std::move(rpc));
   }
-  void OnNewBuffer(const scoped_refptr<DecoderBuffer>& frame) {
+  void OnNewBuffer(scoped_refptr<DecoderBuffer> frame) {
     demuxer_stream_adapter_->OnNewBuffer(DemuxerStream::kOk, frame);
   }
 

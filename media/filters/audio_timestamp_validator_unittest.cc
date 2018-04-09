@@ -95,7 +95,7 @@ TEST_P(AudioTimestampValidatorTest, WarnForEraticTimes) {
           std::make_pair(front_discard_, base::TimeDelta()));
     }
 
-    validator.CheckForTimestampGap(encoded_buffer);
+    validator.CheckForTimestampGap(*encoded_buffer);
 
     if (i >= output_delay_) {
       // kFramesPerBuffer is derived to perfectly match kBufferDuration, so
@@ -134,7 +134,7 @@ TEST_P(AudioTimestampValidatorTest, NoWarningForValidTimes) {
           std::make_pair(front_discard_, base::TimeDelta()));
     }
 
-    validator.CheckForTimestampGap(encoded_buffer);
+    validator.CheckForTimestampGap(*encoded_buffer);
 
     if (i >= output_delay_) {
       // kFramesPerBuffer is derived to perfectly match kBufferDuration, so
@@ -179,7 +179,7 @@ TEST_P(AudioTimestampValidatorTest, SingleWarnForSingleLargeGap) {
           std::make_pair(front_discard_, base::TimeDelta()));
     }
 
-    validator.CheckForTimestampGap(encoded_buffer);
+    validator.CheckForTimestampGap(*encoded_buffer);
 
     if (i >= output_delay_) {
       // kFramesPerBuffer is derived to perfectly match kBufferDuration, so
@@ -223,7 +223,7 @@ TEST_P(AudioTimestampValidatorTest, RepeatedWarnForSlowAccumulatingDrift) {
       EXPECT_MEDIA_LOG(HasSubstr("timestamp gap detected"));
     }
 
-    validator.CheckForTimestampGap(encoded_buffer);
+    validator.CheckForTimestampGap(*encoded_buffer);
 
     if (i >= output_delay_) {
       // kFramesPerBuffer is derived to perfectly match kBufferDuration, so

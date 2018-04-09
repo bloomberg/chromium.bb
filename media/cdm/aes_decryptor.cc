@@ -579,7 +579,7 @@ void AesDecryptor::RegisterNewKeyCB(StreamType stream_type,
 }
 
 void AesDecryptor::Decrypt(StreamType stream_type,
-                           const scoped_refptr<DecoderBuffer>& encrypted,
+                           scoped_refptr<DecoderBuffer> encrypted,
                            const DecryptCB& decrypt_cb) {
   CHECK(encrypted->decrypt_config());
 
@@ -607,7 +607,7 @@ void AesDecryptor::Decrypt(StreamType stream_type,
 
   decrypted->set_timestamp(encrypted->timestamp());
   decrypted->set_duration(encrypted->duration());
-  decrypt_cb.Run(kSuccess, decrypted);
+  decrypt_cb.Run(kSuccess, std::move(decrypted));
 }
 
 void AesDecryptor::CancelDecrypt(StreamType stream_type) {
@@ -626,15 +626,13 @@ void AesDecryptor::InitializeVideoDecoder(const VideoDecoderConfig& config,
   init_cb.Run(false);
 }
 
-void AesDecryptor::DecryptAndDecodeAudio(
-    const scoped_refptr<DecoderBuffer>& encrypted,
-    const AudioDecodeCB& audio_decode_cb) {
+void AesDecryptor::DecryptAndDecodeAudio(scoped_refptr<DecoderBuffer> encrypted,
+                                         const AudioDecodeCB& audio_decode_cb) {
   NOTREACHED() << "AesDecryptor does not support audio decoding";
 }
 
-void AesDecryptor::DecryptAndDecodeVideo(
-    const scoped_refptr<DecoderBuffer>& encrypted,
-    const VideoDecodeCB& video_decode_cb) {
+void AesDecryptor::DecryptAndDecodeVideo(scoped_refptr<DecoderBuffer> encrypted,
+                                         const VideoDecodeCB& video_decode_cb) {
   NOTREACHED() << "AesDecryptor does not support video decoding";
 }
 

@@ -53,7 +53,7 @@ class DemuxerStreamAdapter : public CodedFrameProvider {
   // Callback invoked from the demuxer stream to signal a buffer is ready.
   void OnNewBuffer(const ReadCB& read_cb,
                    ::media::DemuxerStream::Status status,
-                   const scoped_refptr<::media::DecoderBuffer>& input);
+                   scoped_refptr<::media::DecoderBuffer> input);
 
   base::ThreadChecker thread_checker_;
 

@@ -182,7 +182,7 @@ scoped_refptr<DecoderBuffer> CreateFakeVideoBufferForTest(
     base::TimeDelta duration);
 
 // Verify if a fake video DecoderBuffer is valid.
-bool VerifyFakeVideoBufferForTest(const scoped_refptr<DecoderBuffer>& buffer,
+bool VerifyFakeVideoBufferForTest(const DecoderBuffer& buffer,
                                   const VideoDecoderConfig& config);
 
 // Compares two {Audio|Video}DecoderConfigs

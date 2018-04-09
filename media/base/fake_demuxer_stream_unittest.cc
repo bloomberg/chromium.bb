@@ -33,13 +33,13 @@ class FakeDemuxerStreamTest : public testing::Test {
   ~FakeDemuxerStreamTest() override = default;
 
   void BufferReady(DemuxerStream::Status status,
-                   const scoped_refptr<DecoderBuffer>& buffer) {
+                   scoped_refptr<DecoderBuffer> buffer) {
     DCHECK(read_pending_);
     read_pending_ = false;
     status_ = status;
-    buffer_ = buffer;
     if (status == DemuxerStream::kOk && !buffer->end_of_stream())
       num_buffers_received_++;
+    buffer_ = std::move(buffer);
   }
 
   enum ReadResult { OK, ABORTED, CONFIG_CHANGED, READ_ERROR, EOS, PENDING };

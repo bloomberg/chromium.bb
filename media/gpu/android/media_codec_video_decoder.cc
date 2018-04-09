@@ -89,13 +89,12 @@ bool ConfigSupported(const VideoDecoderConfig& config,
 
 // static
 PendingDecode PendingDecode::CreateEos() {
-  auto nop = [](DecodeStatus s) {};
-  return {DecoderBuffer::CreateEOSBuffer(), base::Bind(nop)};
+  return {DecoderBuffer::CreateEOSBuffer(), base::DoNothing()};
 }
 
 PendingDecode::PendingDecode(scoped_refptr<DecoderBuffer> buffer,
                              VideoDecoder::DecodeCB decode_cb)
-    : buffer(buffer), decode_cb(decode_cb) {}
+    : buffer(std::move(buffer)), decode_cb(std::move(decode_cb)) {}
 PendingDecode::PendingDecode(PendingDecode&& other) = default;
 PendingDecode::~PendingDecode() = default;
 
@@ -444,14 +443,14 @@ void MediaCodecVideoDecoder::OnCodecConfigured(
   StartTimer();
 }
 
-void MediaCodecVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
+void MediaCodecVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                     const DecodeCB& decode_cb) {
   DVLOG(2) << __func__ << ": " << buffer->AsHumanReadableString();
   if (state_ == State::kError) {
     decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
   }
-  pending_decodes_.emplace_back(buffer, std::move(decode_cb));
+  pending_decodes_.emplace_back(std::move(buffer), std::move(decode_cb));
 
   if (state_ == State::kInitializing) {
     if (lazy_init_pending_)

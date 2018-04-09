@@ -122,7 +122,7 @@ class MEDIA_EXPORT SourceBufferRange {
 
   // Updates |highest_frame_| if |new_buffer| has a higher PTS than
   // |highest_frame_| or if the range was previously empty.
-  void UpdateEndTime(const scoped_refptr<StreamParserBuffer>& new_buffer);
+  void UpdateEndTime(scoped_refptr<StreamParserBuffer> new_buffer);
 
   // Returns true if |timestamp| is allowed in this range as the timestamp of
   // the next buffer in presentation sequence at or after |highest_frame_|.

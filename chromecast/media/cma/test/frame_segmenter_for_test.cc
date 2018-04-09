@@ -275,7 +275,7 @@ void OnMediaTracksUpdated(std::unique_ptr<::media::MediaTracks> tracks) {}
 void OnNewBuffer(BufferList* buffer_list,
                  const base::Closure& finished_cb,
                  ::media::DemuxerStream::Status status,
-                 const scoped_refptr< ::media::DecoderBuffer>& buffer) {
+                 scoped_refptr<::media::DecoderBuffer> buffer) {
   CHECK_EQ(status, ::media::DemuxerStream::kOk);
   CHECK(buffer.get());
   CHECK(buffer_list);

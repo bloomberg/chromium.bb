@@ -88,7 +88,7 @@ class MEDIA_EXPORT TextRenderer {
   // a read from the stream completes.
   void BufferReady(DemuxerStream* text_stream,
                    DemuxerStream::Status status,
-                   const scoped_refptr<DecoderBuffer>& input);
+                   scoped_refptr<DecoderBuffer> input);
 
   // Dispatches the decoded cue delivered on the demuxer's |text_stream|.
   void CueReady(DemuxerStream* text_stream,

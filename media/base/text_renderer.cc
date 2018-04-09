@@ -130,15 +130,14 @@ bool TextRenderer::HasTracks() const {
   return !text_track_state_map_.empty();
 }
 
-void TextRenderer::BufferReady(
-    DemuxerStream* stream,
-    DemuxerStream::Status status,
-    const scoped_refptr<DecoderBuffer>& input) {
+void TextRenderer::BufferReady(DemuxerStream* stream,
+                               DemuxerStream::Status status,
+                               scoped_refptr<DecoderBuffer> input) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_NE(status, DemuxerStream::kConfigChanged);
 
   if (status == DemuxerStream::kAborted) {
-    DCHECK(!input.get());
+    DCHECK(!input);
     DCHECK_GT(pending_read_count_, 0);
     DCHECK(pending_eos_set_.find(stream) != pending_eos_set_.end());
 

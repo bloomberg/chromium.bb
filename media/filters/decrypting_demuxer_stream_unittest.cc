@@ -149,7 +149,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
 
   void ReadAndExpectBufferReadyWith(
       DemuxerStream::Status status,
-      const scoped_refptr<DecoderBuffer>& decrypted_buffer) {
+      scoped_refptr<DecoderBuffer> decrypted_buffer) {
     if (status != DemuxerStream::kOk)
       EXPECT_CALL(*this, BufferReady(status, IsNull()));
     else if (decrypted_buffer->end_of_stream())
@@ -254,8 +254,8 @@ class DecryptingDemuxerStreamTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  MOCK_METHOD2(BufferReady, void(DemuxerStream::Status,
-                                 const scoped_refptr<DecoderBuffer>&));
+  MOCK_METHOD2(BufferReady,
+               void(DemuxerStream::Status, scoped_refptr<DecoderBuffer>));
   MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
 
   base::MessageLoop message_loop_;

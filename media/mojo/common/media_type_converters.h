@@ -37,10 +37,9 @@ struct TypeConverter<std::unique_ptr<media::DecryptConfig>,
 };
 
 template <>
-struct TypeConverter<media::mojom::DecoderBufferPtr,
-                     scoped_refptr<media::DecoderBuffer>> {
+struct TypeConverter<media::mojom::DecoderBufferPtr, media::DecoderBuffer> {
   static media::mojom::DecoderBufferPtr Convert(
-      const scoped_refptr<media::DecoderBuffer>& input);
+      const media::DecoderBuffer& input);
 };
 template <>
 struct TypeConverter<scoped_refptr<media::DecoderBuffer>,

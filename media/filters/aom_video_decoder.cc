@@ -253,7 +253,7 @@ void AomVideoDecoder::Initialize(
   bound_init_cb.Run(true);
 }
 
-void AomVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
+void AomVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                              const DecodeCB& decode_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(buffer);

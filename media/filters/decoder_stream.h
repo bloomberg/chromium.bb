@@ -177,10 +177,10 @@ class MEDIA_EXPORT DecoderStream {
 
   // Decodes |buffer| and returns the result via OnDecodeOutputReady().
   // Saves |buffer| into |pending_buffers_| if appropriate.
-  void Decode(const scoped_refptr<DecoderBuffer>& buffer);
+  void Decode(scoped_refptr<DecoderBuffer> buffer);
 
   // Performs the heavy lifting of the decode call.
-  void DecodeInternal(const scoped_refptr<DecoderBuffer>& buffer);
+  void DecodeInternal(scoped_refptr<DecoderBuffer> buffer);
 
   // Flushes the decoder with an EOS buffer to retrieve internally buffered
   // decoder output.
@@ -197,7 +197,7 @@ class MEDIA_EXPORT DecoderStream {
 
   // Callback for DemuxerStream::Read().
   void OnBufferReady(DemuxerStream::Status status,
-                     const scoped_refptr<DecoderBuffer>& buffer);
+                     scoped_refptr<DecoderBuffer> buffer);
 
   void ReinitializeDecoder();
 

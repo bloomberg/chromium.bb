@@ -33,7 +33,7 @@ class MEDIA_EXPORT DecoderBufferQueue {
   // it will be excluded from duration calculations.
   //
   // It is invalid to push an end-of-stream |buffer|.
-  void Push(const scoped_refptr<DecoderBuffer>& buffer);
+  void Push(scoped_refptr<DecoderBuffer> buffer);
 
   // Pops a DecoderBuffer from the front of the queue.
   //

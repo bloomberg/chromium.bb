@@ -270,7 +270,7 @@ class VideoFrameStreamTest
   // Fake Decrypt() function used by DecryptingDemuxerStream. It does nothing
   // but removes the DecryptConfig to make the buffer unencrypted.
   void Decrypt(Decryptor::StreamType stream_type,
-               const scoped_refptr<DecoderBuffer>& encrypted,
+               scoped_refptr<DecoderBuffer> encrypted,
                const Decryptor::DecryptCB& decrypt_cb) {
     DCHECK(encrypted->decrypt_config());
     if (has_no_key_) {
